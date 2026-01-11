@@ -13,8 +13,10 @@ Briefly describe what the project does, who it serves, and the main value (1–2
 - Key deliverable for them: e.g., "Simple roster export and sign-up form."
 
 ## Team
-- Team lead — Name — email — GitHub  
-- Members — Name — role — GitHub  
+- Team lead — tala jabareen — email — GitHub  
+- Members — fadi sayej — role — GitHub
+- Members — dema dabbagh — role — GitHub
+- Members — ali shabany — role — GitHub
 Include student IDs if required.
 
 ## Quick start (local)
