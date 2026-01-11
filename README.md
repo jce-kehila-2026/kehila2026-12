@@ -1,4 +1,4 @@
-# Project Title
+# שינה את חיים שלך
 One-line description (e.g., "Volunteer scheduling app for [Non‑Profit Name]")
 
 ## Contents
@@ -8,15 +8,15 @@ One-line description (e.g., "Volunteer scheduling app for [Non‑Profit Name]")
 Briefly describe what the project does, who it serves, and the main value (1–2 sentences).
 
 ## Non‑Profit
-- Organization: [Non‑Profit Name]  
+- Organization:  שינה את חיים שלך
 - Primary stakeholder(s): Name — role — email  
 - Key deliverable for them: e.g., "Simple roster export and sign-up form."
 
 ## Team
-- Team lead — tala jabareen — email — GitHub  
-- Members — fadi sayej — role — GitHub
-- Members — dema dabbagh — role — GitHub
-- Members — ali shabany — role — GitHub
+- Team lead — Tala Jabareen — talajabareen12@gmail.com — GitHub  
+- Members — Fadi Sayej — role — GitHub
+- Members — Dema Dabbagh — role — GitHub
+- Members — Dli Shabany — role — GitHub
 Include student IDs if required.
 
 ## Quick start (local)
