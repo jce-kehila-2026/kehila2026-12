@@ -16,7 +16,7 @@ Briefly describe what the project does, who it serves, and the main value (1–2
 - Team lead — Tala Jabareen — talajabareen12@gmail.com — GitHub  
 - Members — Fadi Sayej — role — GitHub
 - Members — Dema Dabbagh — role — GitHub
-- Members — Dli Shabany — role — GitHub
+- Members — Ali Shabany — role — GitHub
 Include student IDs if required.
 
 ## Quick start (local)
