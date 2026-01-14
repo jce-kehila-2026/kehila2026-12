@@ -1,5 +1,5 @@
 # שינה את חיים שלך
-One-line description (e.g., "Volunteer scheduling app for [Non‑Profit Name]")
+A web platform for שינה את החיים שלך that allows patients to access a personal area (אזור אישי) and participate in the organization’s events.
 
 ## Contents
 - [Overview](#overview) • [Non‑Profit](#non-profit) • [Team](#team) • [Quick start](#quick-start) • [Handover](#handover) • [Privacy](#privacy) • [Contacts](#contacts)
