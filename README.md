@@ -14,10 +14,10 @@ The project aims to make the organization’s work more visible, easier to manag
 - Key deliverable for them: e.g., "Simple roster export and sign-up form."
 
 ## Team
-- Team lead — Tala Jabareen — talajabareen12@gmail.com — GitHub  
-- Members — Fadi Sayej — role — GitHub
-- Members — Dema Dabbagh — role — GitHub
-- Members — Ali Shabany — role — GitHub
+- Team lead — Tala Jabareen — talajabareen12@gmail.com — Backend Developer — GitHub  
+- Members — Fadi Sayej — Backend Developer — GitHub
+- Members — Dema Dabbagh — Frontend Developer — GitHub
+- Members — Ali Shabany — Frontend Developer — GitHub
 Include student IDs if required.
 
 ## Quick start (local)
