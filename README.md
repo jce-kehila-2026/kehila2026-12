@@ -16,10 +16,10 @@ Briefly describe what the project does, who it serves, and the main value (1–2
 The goal of this project is to support the non-profit שינה את חיים שלך by providing a clear, simple, and accessible digital solution that helps organize information and improve communication with its target audience.
 The project aims to make the organization’s work more visible, easier to manage, and more efficient, while ensuring usability, clarity, and respect for user privacy.
 ## Team
-- Team lead — Tala Jabareen — talajabareen12@gmail.com — Backend Developer — GitHub  
-- Members — Fadi Sayej — Backend Developer — GitHub
-- Members — Dema Dabbagh — Frontend Developer — GitHub
-- Members — Ali Shabany — Frontend Developer — GitHub
+- Team lead — Tala Jabareen — talajabareen12@gmail.com — Backend Developer - [Tala-Jabareen](url(https://github.com/Tala-Jabareen))  
+- Members — Fadi Sayej — Backend Developer — [Fadi-Sayej]([url](https://github.com/Fadi-Sayej))
+- Members — Dema Dabbagh — Frontend Developer — [demadabbagh]([url](https://github.com/demadabbagh))
+- Members — Ali Shabany — Frontend Developer — [AliShabanyJCE]([url](https://github.com/AliShabanyJCE))
 Include student IDs if required.
 
 ## Quick start (local)
@@ -48,9 +48,9 @@ List data collected (names, emails), storage location, and retention policy. Nev
 Briefly list major limitations or missing features and any workarounds.
 
 ## Contacts
-- Project lead: Name — email  
-- Non‑profit contact: Name — email  
-- Instructor / TA: Name — email
+- Project lead: Tala Jabareen — talajabareen12@gmail.com 
+- Non‑profit contact: טלי רפאל — tali.reimm@gmail.com 
+- Instructor / TA: נועה קרניאל — noaca@post.jce.ac.il
 
 ## License
 Specify license (e.g., MIT) and any IP/ownership notes relevant to the non‑profit.
