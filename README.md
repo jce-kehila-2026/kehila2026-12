@@ -11,7 +11,10 @@ Briefly describe what the project does, who it serves, and the main value (1–2
 - Organization:  שינה את חיים שלך
 - Primary stakeholder(s): Name — role — email  
 - Key deliverable for them: e.g., "Simple roster export and sign-up form."
-
+- 
+## Project-Goals
+The goal of this project is to support the non-profit שינה את חיים שלך by providing a clear, simple, and accessible digital solution that helps organize information and improve communication with its target audience.
+The project aims to make the organization’s work more visible, easier to manage, and more efficient, while ensuring usability, clarity, and respect for user privacy.
 ## Team
 - Team lead — Tala Jabareen — talajabareen12@gmail.com — Backend Developer — GitHub  
 - Members — Fadi Sayej — Backend Developer — GitHub
