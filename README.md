@@ -16,10 +16,10 @@ Briefly describe what the project does, who it serves, and the main value (1–2
 The goal of this project is to support the non-profit שינה את חיים שלך by providing a clear, simple, and accessible digital solution that helps organize information and improve communication with its target audience.
 The project aims to make the organization’s work more visible, easier to manage, and more efficient, while ensuring usability, clarity, and respect for user privacy.
 ## Team
-- Team lead — Tala Jabareen — talajabareen12@gmail.com — Backend Developer — GitHub  
-- Members — Fadi Sayej — Backend Developer — GitHub
-- Members — Dema Dabbagh — Frontend Developer — GitHub
-- Members — Ali Shabany — Frontend Developer — GitHub
+- Team lead — Tala Jabareen — talajabareen12@gmail.com — GitHub  
+- Members — Fadi Sayej — role — GitHub
+- Members — Dema Dabbagh — role — GitHub
+- Members — Ali Shabany — role — GitHub
 Include student IDs if required.
 
 ## Quick start (local)
