@@ -14,10 +14,10 @@ The project aims to make the organization’s work more visible, easier to manag
 - Key deliverable for them: e.g., "Simple roster export and sign-up form."
 
 ## Team
-- Team lead — Tala Jabareen — talajabareen12@gmail.com — role - [Tala-Jabareen](https://github.com/Tala-Jabareen)
-- Members — Fadi Sayej — role — [Fadi-Sayej](https://github.com/Fadi-Sayej)
-- Members — Dema Dabbagh — role — [demadabbagh](https://github.com/demadabbagh)
-- Members — Ali Shabany — role — [AliShabanyJCE](https://github.com/AliShabanyJCE)
+- Team lead — Tala Jabareen — talajabareen12@gmail.com — Backend Developer - [Tala-Jabareen](https://github.com/Tala-Jabareen)
+- Members — Fadi Sayej — Backend Developer — [Fadi-Sayej](https://github.com/Fadi-Sayej)
+- Members — Dema Dabbagh — Frontend Developer — [demadabbagh](https://github.com/demadabbagh)
+- Members — Ali Shabany — Frontend Developer — [AliShabanyJCE](https://github.com/AliShabanyJCE)
 Include student IDs if required.
 
 ## Quick start (local)
