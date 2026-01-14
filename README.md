@@ -13,10 +13,10 @@ Briefly describe what the project does, who it serves, and the main value (1–2
 - Key deliverable for them: e.g., "Simple roster export and sign-up form."
 
 ## Team
-- Team lead — Tala Jabareen — talajabareen12@gmail.com — GitHub  
-- Members — Fadi Sayej — role — GitHub
-- Members — Dema Dabbagh — role — GitHub
-- Members — Ali Shabany — role — GitHub
+- Team lead — Tala Jabareen — talajabareen12@gmail.com — [Tala-Jabareen](url(https://github.com/Tala-Jabareen))  
+- Members — Fadi Sayej — role — [Fadi-Sayej]([url](https://github.com/Fadi-Sayej))
+- Members — Dema Dabbagh — role — [demadabbagh]([url](https://github.com/demadabbagh))
+- Members — Ali Shabany — role — [AliShabanyJCE]([url](https://github.com/AliShabanyJCE))
 Include student IDs if required.
 
 ## Quick start (local)
@@ -45,9 +45,9 @@ List data collected (names, emails), storage location, and retention policy. Nev
 Briefly list major limitations or missing features and any workarounds.
 
 ## Contacts
-- Project lead: Name — email  
-- Non‑profit contact: Name — email  
-- Instructor / TA: Name — email
+- Project lead: Tala Jabareen — talajabareen12@gmail.com 
+- Non‑profit contact: טלי רפאל — tali.reimm@gmail.com 
+- Instructor / TA: נועה קרניאל — noaca@post.jce.ac.il
 
 ## License
 Specify license (e.g., MIT) and any IP/ownership notes relevant to the non‑profit.
