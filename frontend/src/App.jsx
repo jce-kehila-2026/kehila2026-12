@@ -18,6 +18,7 @@ import CMSPage from './features/admin/pages/CMSPage';
 import UserManagementPage from './features/admin/pages/UserManagementPage';
 import AuditLogPage from './features/admin/pages/AuditLogPage';
 import RoleManagementPage from './features/admin/pages/RoleManagementPage';
+import ProfilePage from './features/profile/pages/ProfilePage';
 
 // Emotion caches for RTL and LTR
 const cacheRtl = createCache({ key: 'muirtl', stylisPlugins: [prefixer, rtlPlugin] });
@@ -35,6 +36,7 @@ function ThemedApp() {
         <AdminProvider>
           <Routes>
             <Route path="/login" element={<LoginPage />} />
+            <Route path="/profile" element={<ProfilePage />} />
 
             <Route
               path="/admin"
