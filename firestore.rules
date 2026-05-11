@@ -1,0 +1,59 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Helper Functions ──
+    function getUserRole() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
+    }
+
+    function isAdmin() {
+      return request.auth != null && getUserRole() == 'admin';
+    }
+
+    // ── Users Collection ──
+    match /users/{userId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && request.auth.uid == userId;
+      allow update: if isAdmin();
+      allow delete: if false; // Never allow user deletion from client
+    }
+
+    // ── Audit Logs — APPEND ONLY (Immutable) ──
+    match /audit_logs/{logId} {
+      allow read, create: if isAdmin();
+      allow update, delete: if false; // NO user can modify or delete logs
+    }
+
+    // ── Events ──
+    match /events/{eventId} {
+      allow read: if request.auth != null;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ── Event Registrations ──
+    match /event_registrations/{regId} {
+      allow read: if request.auth != null;
+      allow create, delete: if isAdmin();
+      allow update: if false; // Registrations are immutable once created
+    }
+
+    // ── Articles (CMS) ──
+    match /articles/{articleId} {
+      allow read: if true;       // Public content
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ── Team Profiles (CMS) ──
+    match /team_profiles/{profileId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ── Organization Info (CMS) ──
+    match /org_info/{docId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+  }
+}

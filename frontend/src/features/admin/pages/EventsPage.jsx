@@ -8,23 +8,34 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import TextField from '@mui/material/TextField';
+import MenuItem from '@mui/material/MenuItem';
 import { DataGrid } from '@mui/x-data-grid';
 import AddIcon from '@mui/icons-material/Add';
+
+const EVENT_CATEGORIES = [
+  'Workshop',
+  'Support Group',
+  'Therapy Session',
+  'Community Activity',
+  'Awareness Event',
+  'Other',
+];
 
 export default function EventsPage() {
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
-  
+
   const initialForm = {
     title: '',
-    date: '', // Holds string "YYYY-MM-DDTHH:mm" for the HTML input
+    category: '',
+    startTime: '',
     location: '',
     description: '',
     maxParticipants: '',
   };
-  
+
   const [form, setForm] = useState(initialForm);
 
   const fetchEvents = useCallback(async () => {
@@ -41,13 +52,11 @@ export default function EventsPage() {
 
   useEffect(() => { fetchEvents(); }, [fetchEvents]);
 
-  // Helper to format a Firestore Timestamp to a local datetime string for the input field
   function formatTimestampForInput(ts) {
     if (!ts) return '';
     const d = ts.toDate ? ts.toDate() : new Date(ts);
     if (isNaN(d)) return '';
-    // Offset to local timezone to keep YYYY-MM-DDTHH:mm accurate
-    const tzOffset = d.getTimezoneOffset() * 60000; 
+    const tzOffset = d.getTimezoneOffset() * 60000;
     return new Date(d.getTime() - tzOffset).toISOString().slice(0, 16);
   }
 
@@ -61,7 +70,8 @@ export default function EventsPage() {
     setEditing(ev);
     setForm({
       title: ev.title || '',
-      date: formatTimestampForInput(ev.date),
+      category: ev.category || '',
+      startTime: formatTimestampForInput(ev.startTime),
       location: ev.location || '',
       description: ev.description || '',
       maxParticipants: ev.maxParticipants || '',
@@ -74,10 +84,12 @@ export default function EventsPage() {
     try {
       const dataToSave = {
         title: form.title,
-        date: new Date(form.date), // Firestore automatically converts native Dates to Timestamps
+        category: form.category,
+        startTime: new Date(form.startTime),
         location: form.location,
         description: form.description,
         maxParticipants: Number(form.maxParticipants) || 0,
+        status: 'published',
       };
 
       if (editing) {
@@ -85,7 +97,7 @@ export default function EventsPage() {
       } else {
         await createEvent(dataToSave);
       }
-      
+
       setShowModal(false);
       fetchEvents();
     } catch (err) {
@@ -105,14 +117,16 @@ export default function EventsPage() {
 
   const columns = [
     { field: 'title', headerName: 'Event Title', flex: 1, minWidth: 180 },
+    { field: 'category', headerName: 'Category', width: 160 },
     {
-      field: 'date',
-      headerName: 'Date & Time',
+      field: 'startTime',
+      headerName: 'Start Time',
       width: 180,
       valueGetter: (value) => (value?.toDate ? value.toDate().toLocaleString() : '—'),
     },
     { field: 'location', headerName: 'Location', flex: 1, minWidth: 160 },
-    { field: 'maxParticipants', headerName: 'Capacity', width: 120, align: 'center', headerAlign: 'center' },
+    { field: 'maxParticipants', headerName: 'Capacity', width: 100, align: 'center', headerAlign: 'center' },
+    { field: 'status', headerName: 'Status', width: 110 },
     {
       field: 'actions',
       headerName: 'Actions',
@@ -154,45 +168,55 @@ export default function EventsPage() {
         />
       </Box>
 
-      {/* Create / Edit Modal */}
       <Dialog open={showModal} onClose={() => setShowModal(false)} maxWidth="sm" fullWidth>
         <form onSubmit={handleSave}>
           <DialogTitle>{editing ? 'Edit Event' : 'Add New Event'}</DialogTitle>
           <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, pt: '16px !important' }}>
-            <TextField 
-              label="Event Title" 
-              value={form.title} 
-              onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} 
-              required 
+            <TextField
+              label="Event Title"
+              value={form.title}
+              onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+              required
             />
-            <TextField 
-              helperText="Date & Time" 
-              type="datetime-local" 
-              value={form.date} 
-              onChange={(e) => setForm((f) => ({ ...f, date: e.target.value }))} 
-              required 
-              inputProps={{ dir: 'ltr' }} 
+            <TextField
+              label="Category"
+              select
+              value={form.category}
+              onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
+              required
+            >
+              {EVENT_CATEGORIES.map((cat) => (
+                <MenuItem key={cat} value={cat}>{cat}</MenuItem>
+              ))}
+            </TextField>
+            <TextField
+              helperText="Start Date & Time"
+              type="datetime-local"
+              value={form.startTime}
+              onChange={(e) => setForm((f) => ({ ...f, startTime: e.target.value }))}
+              required
+              inputProps={{ dir: 'ltr' }}
             />
-            <TextField 
-              label="Location" 
-              value={form.location} 
-              onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))} 
-              required 
+            <TextField
+              label="Location"
+              value={form.location}
+              onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))}
+              required
             />
-            <TextField 
-              label="Max Participants (Capacity)" 
-              type="number" 
-              value={form.maxParticipants} 
-              onChange={(e) => setForm((f) => ({ ...f, maxParticipants: e.target.value }))} 
+            <TextField
+              label="Max Participants (Capacity)"
+              type="number"
+              value={form.maxParticipants}
+              onChange={(e) => setForm((f) => ({ ...f, maxParticipants: e.target.value }))}
               inputProps={{ min: 1 }}
-              required 
+              required
             />
-            <TextField 
-              label="Description" 
-              value={form.description} 
-              onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} 
-              multiline 
-              rows={4} 
+            <TextField
+              label="Description"
+              value={form.description}
+              onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+              multiline
+              rows={4}
               required
             />
           </DialogContent>
