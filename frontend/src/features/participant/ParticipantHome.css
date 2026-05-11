@@ -468,3 +468,75 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ── Workshop Feed ─────────────────────────────────────────── */
+
+.workshop-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.workshop-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 20px 24px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(123, 63, 161, 0.14);
+  border-radius: 14px;
+  box-shadow: 0 2px 12px rgba(75, 19, 107, 0.06);
+  transition: box-shadow 0.2s;
+}
+
+.workshop-card:hover {
+  box-shadow: 0 4px 20px rgba(75, 19, 107, 0.12);
+}
+
+.workshop-card__header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.workshop-card__category {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #7b3fa1;
+  background: rgba(123, 63, 161, 0.1);
+  padding: 3px 10px;
+  border-radius: 20px;
+}
+
+.workshop-card__title {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #241332;
+}
+
+.workshop-card__time {
+  font-size: 0.84rem;
+  color: #7b3fa1;
+  font-weight: 500;
+}
+
+.workshop-card__location {
+  font-size: 0.84rem;
+  color: #6b5c7b;
+}
+
+.workshop-card__description {
+  font-size: 0.9rem;
+  color: #4a3a5a;
+  line-height: 1.6;
+  margin: 0;
+}
+
+.workshop-card__capacity {
+  font-size: 0.78rem;
+  color: #9c88ad;
+  font-weight: 500;
+}

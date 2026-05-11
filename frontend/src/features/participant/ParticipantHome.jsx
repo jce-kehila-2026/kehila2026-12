@@ -9,6 +9,7 @@ import PeopleIcon from '@mui/icons-material/People';
 import SpaIcon from '@mui/icons-material/Spa';
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import CalendarPage from '../calendar/CalendarPage';
+import WorkshopFeed from './WorkshopFeed';
 import { useAdmin } from '../admin/context/AdminContext';
 import './ParticipantHome.css';
 
@@ -158,7 +159,18 @@ export default function ParticipantHome() {
           </section>
         )}
 
-        {!['home', 'calendar'].includes(activeView) && (
+        {activeView === 'workshops' && (
+          <section className="participant-content participant-content--single">
+            <div className="participant-panel participant-panel--wide">
+              <div className="participant-section-heading">
+                <h2>Workshops</h2>
+              </div>
+              <WorkshopFeed />
+            </div>
+          </section>
+        )}
+
+        {!['home', 'calendar', 'workshops'].includes(activeView) && (
           <section className="participant-content participant-content--single">
             <div className="participant-panel participant-panel--wide">
               <div className="participant-section-heading">
