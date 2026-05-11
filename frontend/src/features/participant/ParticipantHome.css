@@ -535,8 +535,64 @@
   margin: 0;
 }
 
-.workshop-card__capacity {
-  font-size: 0.78rem;
-  color: #9c88ad;
-  font-weight: 500;
+.workshop-card__footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 4px;
+  flex-wrap: wrap;
+}
+
+.workshop-card__count {
+  font-size: 0.8rem;
+  color: #7b3fa1;
+  font-weight: 600;
+}
+
+.workshop-card__count--full {
+  color: #c0392b;
+}
+
+.workshop-card__register-btn {
+  padding: 8px 22px;
+  border-radius: 20px;
+  border: 2px solid #7b3fa1;
+  background: #7b3fa1;
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.18s, color 0.18s, border-color 0.18s, opacity 0.18s;
+  white-space: nowrap;
+}
+
+.workshop-card__register-btn:hover:not(:disabled) {
+  background: #5e2d80;
+  border-color: #5e2d80;
+}
+
+.workshop-card__register-btn.is-registered {
+  background: transparent;
+  border-color: #c0392b;
+  color: #c0392b;
+  cursor: pointer;
+}
+
+.workshop-card__register-btn.is-registered:hover:not(:disabled) {
+  background: #c0392b;
+  color: #fff;
+}
+
+.workshop-card__register-btn.is-full {
+  background: transparent;
+  border-color: #c0392b;
+  color: #c0392b;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.workshop-card__register-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
 }

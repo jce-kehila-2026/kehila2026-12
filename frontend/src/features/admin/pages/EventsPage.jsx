@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { getAllEvents, createEvent, updateEvent, deleteEvent } from '../services/eventService';
+import { getRegistrationCounts } from '../services/registrationService';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
@@ -23,6 +24,7 @@ const EVENT_CATEGORIES = [
 
 export default function EventsPage() {
   const [events, setEvents] = useState([]);
+  const [counts, setCounts] = useState({});
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
@@ -43,6 +45,10 @@ export default function EventsPage() {
     try {
       const data = await getAllEvents();
       setEvents(data);
+      if (data.length) {
+        const countsData = await getRegistrationCounts(data.map((e) => e.id));
+        setCounts(countsData);
+      }
     } catch (err) {
       console.error('Failed to fetch events:', err);
     } finally {
@@ -126,6 +132,14 @@ export default function EventsPage() {
     },
     { field: 'location', headerName: 'Location', flex: 1, minWidth: 160 },
     { field: 'maxParticipants', headerName: 'Capacity', width: 100, align: 'center', headerAlign: 'center' },
+    {
+      field: 'registered',
+      headerName: 'Registered',
+      width: 110,
+      align: 'center',
+      headerAlign: 'center',
+      valueGetter: (_value, row) => counts[row.id] ?? 0,
+    },
     { field: 'status', headerName: 'Status', width: 110 },
     {
       field: 'actions',
