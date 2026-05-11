@@ -1,5 +1,12 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { subscribeToPublishedEvents } from '../admin/services/eventService';
+import {
+  getRegistrationCounts,
+  getUserRegisteredEventIds,
+  addRegistration,
+  removeRegistration,
+} from '../admin/services/registrationService';
+import { useAdmin } from '../admin/context/AdminContext';
 
 function formatEventDate(ts) {
   if (!ts) return '—';
@@ -16,16 +23,70 @@ function formatEventDate(ts) {
 }
 
 export default function WorkshopFeed() {
+  const { currentUser } = useAdmin();
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [counts, setCounts] = useState({});
+  const [registeredMap, setRegisteredMap] = useState({});
+  const [registering, setRegistering] = useState(null);
+
+  const refreshRegistrationData = useCallback(async (eventList) => {
+    if (!eventList.length || !currentUser?.email) return;
+    const ids = eventList.map((e) => e.id);
+    const [countsData, userRegs] = await Promise.all([
+      getRegistrationCounts(ids),
+      getUserRegisteredEventIds(currentUser.email),
+    ]);
+    setCounts(countsData);
+    setRegisteredMap(userRegs);
+  }, [currentUser?.email]);
 
   useEffect(() => {
     const unsubscribe = subscribeToPublishedEvents((data) => {
       setEvents(data);
       setLoading(false);
+      refreshRegistrationData(data);
     });
     return unsubscribe;
-  }, []);
+  }, [refreshRegistrationData]);
+
+  async function handleRegister(event) {
+    if (!currentUser || registering) return;
+    setRegistering(event.id);
+    try {
+      const regId = await addRegistration({
+        eventId: event.id,
+        participantName: currentUser.displayName || currentUser.email.split('@')[0],
+        participantEmail: currentUser.email,
+      });
+      setRegisteredMap((prev) => ({ ...prev, [event.id]: regId }));
+      setCounts((prev) => ({ ...prev, [event.id]: (prev[event.id] ?? 0) + 1 }));
+    } catch (err) {
+      console.error('Registration failed:', err);
+    } finally {
+      setRegistering(null);
+    }
+  }
+
+  async function handleCancel(event) {
+    if (!currentUser || registering) return;
+    const regId = registeredMap[event.id];
+    if (!regId) return;
+    setRegistering(event.id);
+    try {
+      await removeRegistration(regId, currentUser.displayName || currentUser.email);
+      setRegisteredMap((prev) => {
+        const next = { ...prev };
+        delete next[event.id];
+        return next;
+      });
+      setCounts((prev) => ({ ...prev, [event.id]: Math.max(0, (prev[event.id] ?? 1) - 1) }));
+    } catch (err) {
+      console.error('Cancel registration failed:', err);
+    } finally {
+      setRegistering(null);
+    }
+  }
 
   if (loading) {
     return <p className="participant-empty-view">Loading workshops...</p>;
@@ -37,24 +98,52 @@ export default function WorkshopFeed() {
 
   return (
     <div className="workshop-feed">
-      {events.map((event) => (
-        <article className="workshop-card" key={event.id}>
-          <div className="workshop-card__header">
-            <span className="workshop-card__category">{event.category}</span>
-            <strong className="workshop-card__title">{event.title}</strong>
-          </div>
-          <time className="workshop-card__time">{formatEventDate(event.startTime)}</time>
-          {event.location && (
-            <span className="workshop-card__location">{event.location}</span>
-          )}
-          <p className="workshop-card__description">{event.description}</p>
-          {event.maxParticipants > 0 && (
-            <span className="workshop-card__capacity">
-              Capacity: {event.maxParticipants} participants
-            </span>
-          )}
-        </article>
-      ))}
+      {events.map((event) => {
+        const registered = counts[event.id] ?? 0;
+        const capacity = event.maxParticipants || 0;
+        const isFull = capacity > 0 && registered >= capacity;
+        const isRegistered = Boolean(registeredMap[event.id]);
+        const isLoading = registering === event.id;
+
+        return (
+          <article className="workshop-card" key={event.id}>
+            <div className="workshop-card__header">
+              <span className="workshop-card__category">{event.category}</span>
+              <strong className="workshop-card__title">{event.title}</strong>
+            </div>
+            <time className="workshop-card__time">{formatEventDate(event.startTime)}</time>
+            {event.location && (
+              <span className="workshop-card__location">{event.location}</span>
+            )}
+            <p className="workshop-card__description">{event.description}</p>
+
+            <div className="workshop-card__footer">
+              {capacity > 0 && (
+                <span className={`workshop-card__count${isFull ? ' workshop-card__count--full' : ''}`}>
+                  {registered} / {capacity} registered
+                </span>
+              )}
+              {isRegistered ? (
+                <button
+                  className="workshop-card__register-btn is-registered"
+                  onClick={() => handleCancel(event)}
+                  disabled={isLoading}
+                >
+                  {isLoading ? 'Cancelling…' : 'Cancel Registration'}
+                </button>
+              ) : (
+                <button
+                  className={`workshop-card__register-btn${isFull ? ' is-full' : ''}`}
+                  onClick={() => handleRegister(event)}
+                  disabled={isFull || isLoading}
+                >
+                  {isLoading ? 'Registering…' : isFull ? 'Full' : 'Register'}
+                </button>
+              )}
+            </div>
+          </article>
+        );
+      })}
     </div>
   );
 }

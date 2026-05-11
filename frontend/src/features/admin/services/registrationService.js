@@ -58,14 +58,18 @@ export async function addRegistration(data) {
     registeredAt: serverTimestamp(),
   });
 
-  await logAuditEvent({
-    actionType: 'ADD_REGISTRATION',
-    targetId: ref.id,
-    details: {
-      eventId: data.eventId,
-      participant: data.participantName || data.participantEmail,
-    },
-  });
+  // Audit log is admin-only — participants don't have write access to audit_logs.
+  // Fail silently so a permission error here never blocks the registration itself.
+  try {
+    await logAuditEvent({
+      actionType: 'ADD_REGISTRATION',
+      targetId: ref.id,
+      details: {
+        eventId: data.eventId,
+        participant: data.participantName || data.participantEmail,
+      },
+    });
+  } catch (_) {}
 
   return ref.id;
 }
@@ -78,9 +82,30 @@ export async function addRegistration(data) {
 export async function removeRegistration(regId, participantName) {
   await deleteDoc(doc(db, 'event_registrations', regId));
 
-  await logAuditEvent({
-    actionType: 'REMOVE_REGISTRATION',
-    targetId: regId,
-    details: { removed: participantName },
+  try {
+    await logAuditEvent({
+      actionType: 'REMOVE_REGISTRATION',
+      targetId: regId,
+      details: { removed: participantName },
+    });
+  } catch (_) {}
+}
+
+/**
+ * Get a map of eventId → registrationDocId for all events a user is registered for.
+ * Used by the participant to know which workshops they've already joined.
+ * @param {string} email
+ * @returns {Promise<Record<string, string>>}
+ */
+export async function getUserRegisteredEventIds(email) {
+  const q = query(
+    collection(db, 'event_registrations'),
+    where('participantEmail', '==', email)
+  );
+  const snap = await getDocs(q);
+  const map = {};
+  snap.docs.forEach((d) => {
+    map[d.data().eventId] = d.id;
   });
+  return map;
 }
