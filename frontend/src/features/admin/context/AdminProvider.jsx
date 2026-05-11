@@ -1,9 +1,9 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { doc, getDoc } from 'firebase/firestore';
-import { auth, db } from '../../../firebase';
+import { auth } from '../../../firebase';
 import { AdminContext } from './AdminContext';
 import { logAuditEvent } from '../services/auditService';
+import { resolveUserRole } from '../services/authRoleService';
 
 export default function AdminProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
@@ -17,13 +17,8 @@ export default function AdminProvider({ children }) {
     const unsub = onAuthStateChanged(auth, async (user) => {
       setCurrentUser(user);
       if (user) {
-        try {
-          const snap = await getDoc(doc(db, 'users', user.uid));
-          setUserRole(snap.exists() ? snap.data().role || 'participant' : 'participant');
-        } catch (err) {
-          console.error('Failed to fetch user role:', err);
-          setUserRole('participant');
-        }
+        const role = await resolveUserRole(user);
+        setUserRole(role || 'participant');
       } else {
         setUserRole(null);
         setImpersonatedUserUID(null);

@@ -13,7 +13,6 @@ import ArticleIcon from '@mui/icons-material/Article';
 import PeopleIcon from '@mui/icons-material/People';
 import ShieldIcon from '@mui/icons-material/Shield';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
-import { useAdmin } from '../context/AdminContext';
 
 const NAV_ITEMS = [
   { label: 'Dashboard', path: '/admin/dashboard', icon: <DashboardIcon /> },

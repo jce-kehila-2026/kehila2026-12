@@ -1,0 +1,75 @@
+export const calendarEvents = [
+  {
+    id: 'event-healing-workshop',
+    title: 'Healing Workshop',
+    type: 'event',
+    date: '2026-05-10',
+    startTime: '10:00',
+    endTime: '11:30',
+    location: 'She-Na Wellness Room',
+    description: 'Grounding tools, breath work, and gentle group reflection.',
+    registered: true,
+  },
+  {
+    id: 'event-support-group',
+    title: 'Support Group Meeting',
+    type: 'registration',
+    date: '2026-05-11',
+    startTime: '12:00',
+    endTime: '13:00',
+    location: 'Community Hall',
+    description: 'A facilitated meeting for participants registered this week.',
+    registered: true,
+  },
+  {
+    id: 'appointment-psychologist',
+    title: 'Psychologist Appointment',
+    type: 'appointment',
+    date: '2026-05-12',
+    startTime: '09:00',
+    endTime: '10:00',
+    location: 'Room 3',
+    description: 'Private participant appointment.',
+    registered: true,
+  },
+  {
+    id: 'event-art-circle',
+    title: 'Creative Healing Circle',
+    type: 'event',
+    date: '2026-05-13',
+    startTime: '14:00',
+    endTime: '15:30',
+    location: 'Art Studio',
+    description: 'A calm art-based workshop for self-expression.',
+    registered: false,
+  },
+  {
+    id: 'appointment-massage',
+    title: 'Massage Appointment',
+    type: 'appointment',
+    date: '2026-05-14',
+    startTime: '11:00',
+    endTime: '12:00',
+    location: 'Therapy Room',
+    description: 'Future wellness appointment.',
+    registered: true,
+  },
+];
+
+export const calendarNotes = [
+  {
+    id: 'note-check-in',
+    title: 'Personal Note',
+    date: '2026-05-15',
+    startTime: '13:00',
+    endTime: '13:30',
+    content: 'Bring questions for next support session.',
+  },
+];
+
+export const calendarFirestoreCollections = {
+  events: 'Public workshops and activities available to participants.',
+  registrations: 'Participant event registrations linked by participantId and eventId.',
+  appointments: 'Future participant appointments such as psychologist or massage sessions.',
+  calendar_notes: 'Participant-created private calendar notes linked by participantId.',
+};
