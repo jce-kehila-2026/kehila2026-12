@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { collection, getCountFromServer, query, orderBy, limit, getDocs } from 'firebase/firestore';
+import { collection, getCountFromServer, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
 import { db } from '../../../firebase';
 import { useAdmin } from '../context/AdminContext';
 import Box from '@mui/material/Box';
@@ -37,7 +37,7 @@ export default function DashboardPage() {
     async function fetchStats() {
       try {
         const counts = await Promise.all([
-          getCountFromServer(collection(db, 'events')).then((s) => s.data().count).catch(() => 0),
+          getCountFromServer(query(collection(db, 'events'), where('status', '==', 'published'))).then((s) => s.data().count).catch(() => 0),
           getCountFromServer(collection(db, 'users')).then((s) => s.data().count).catch(() => 0),
           getCountFromServer(collection(db, 'articles')).then((s) => s.data().count).catch(() => 0),
           getCountFromServer(collection(db, 'audit_logs')).then((s) => s.data().count).catch(() => 0),

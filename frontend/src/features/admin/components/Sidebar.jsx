@@ -9,6 +9,7 @@ import Typography from '@mui/material/Typography';
 import Divider from '@mui/material/Divider';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import EventIcon from '@mui/icons-material/Event';
+import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import ArticleIcon from '@mui/icons-material/Article';
 import PeopleIcon from '@mui/icons-material/People';
 import ShieldIcon from '@mui/icons-material/Shield';
@@ -17,6 +18,7 @@ import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 const NAV_ITEMS = [
   { label: 'Dashboard', path: '/admin/dashboard', icon: <DashboardIcon /> },
   { label: 'Events', path: '/admin/events', icon: <EventIcon /> },
+  { label: 'Appointments', path: '/admin/appointments', icon: <CalendarTodayIcon /> },
   { label: 'CMS', path: '/admin/cms', icon: <ArticleIcon /> },
   { label: 'Users', path: '/admin/users', icon: <PeopleIcon /> },
   { label: 'Role Management', path: '/admin/roles', icon: <ShieldIcon /> },
@@ -77,11 +79,14 @@ export default function Sidebar({ drawerWidth = 260 }) {
               key={item.path}
               component={NavLink}
               to={item.path}
-              selected={location.pathname === item.path}
+              selected={location.pathname.startsWith(item.path)}
               id={`nav-${item.label.toLowerCase().replace(/\s/g, '-')}`}
             >
               <ListItemIcon sx={{ minWidth: 36 }}>{item.icon}</ListItemIcon>
-              <ListItemText primary={item.label} primaryTypographyProps={{ fontSize: '0.875rem', fontWeight: 500 }} />
+              <ListItemText
+                primary={item.label}
+                primaryTypographyProps={{ fontSize: '0.875rem', fontWeight: 500 }}
+              />
             </ListItemButton>
           ))}
         </List>

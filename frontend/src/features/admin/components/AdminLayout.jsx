@@ -10,6 +10,7 @@ const DRAWER_WIDTH = 260;
 const ROUTE_TITLES = {
   '/admin/dashboard': 'Dashboard',
   '/admin/events': 'Events Management',
+  '/admin/appointments': 'Appointments',
   '/admin/cms': 'Content Management',
   '/admin/users': 'User Management',
   '/admin/roles': 'Role Management',
