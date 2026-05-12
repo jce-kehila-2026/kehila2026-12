@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 import SaveOutlinedIcon from "@mui/icons-material/SaveOutlined";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { he as dateFnsHe } from "date-fns/locale/he";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/material.css";
 import {
@@ -13,7 +14,6 @@ import {
   Card,
   CardContent,
   Grid,
-  InputAdornment,
   MenuItem,
   Stack,
   TextField,
@@ -21,16 +21,7 @@ import {
 } from "@mui/material";
 import { updateParticipantData } from "../services/participantService";
 
-const contactOptions = [
-  { value: "email", label: "Email" },
-  { value: "phone", label: "Phone Call" },
-  { value: "sms", label: "SMS" },
-  { value: "whatsapp", label: "WhatsApp" },
-];
-const languageOptions = [
-  { value: "english", label: "English" },
-  { value: "hebrew", label: "Hebrew" },
-];
+const defaultT = (key) => key;
 
 function PersonalDetailsForm({
   participantId,
@@ -39,6 +30,12 @@ function PersonalDetailsForm({
   isEditing,
   onFinishEditing,
   onLogout,
+  darkMode = false,
+  t = defaultT,
+  /** Applied locale only: translations, dir, phone/date/menu formatting (not the language dropdown). */
+  locale = "en",
+  onLocaleChange,
+  onSaveLanguage,
 }) {
   const [formData, setFormData] = useState(profile || {});
   const [saving, setSaving] = useState(false);
@@ -50,6 +47,9 @@ function PersonalDetailsForm({
   const handleChange = (event) => {
     const { name, value } = event.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
+    if (name === "language" && onLocaleChange) {
+      onLocaleChange(value === "hebrew" ? "he" : "en");
+    }
   };
   const isValidEmail = (email) => {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
@@ -58,13 +58,13 @@ function PersonalDetailsForm({
   const handleSave = async (event) => {
     event.preventDefault();
     if (!isValidEmail(formData.email || "")) {
-  alert("Please enter a valid email address");
-  return;
-}
+      alert(t("validationEmail"));
+      return;
+    }
   const cleanPhone = formData.phoneNumber.replace(/\D/g, "");
 
 if (cleanPhone.length < 12) {
-  alert("Please enter a valid Israeli phone number");
+  alert(t("validationPhone"));
   return;
 }
     setSaving(true);
@@ -72,44 +72,137 @@ if (cleanPhone.length < 12) {
     try {
       const updated = await updateParticipantData(participantId, formData);
       onProfileUpdated(updated);
-       onFinishEditing();
+      onSaveLanguage?.();
+      onFinishEditing();
     } finally {
       setSaving(false);
     }
   };
 
-  const fieldSx = {
-    "& .MuiOutlinedInput-root": {
+  const fieldSx = useMemo(
+    () => ({
+      "& .MuiOutlinedInput-root": {
+        borderRadius: "14px",
+        backgroundColor: darkMode ? "#0f172a" : "#ffffff",
+        height: 58,
+        paddingRight: "8px",
+
+        "& fieldset": {
+          borderColor: darkMode ? "#475569" : "#d9dee7",
+        },
+
+        "&:hover fieldset": {
+          borderColor: "#f9a8d4",
+        },
+
+        "&.Mui-focused fieldset": {
+          borderColor: "#ec4899",
+        },
+      },
+
+      "& .MuiOutlinedInput-input": {
+        fontSize: 17,
+        color: darkMode ? "#f1f5f9" : "#111827",
+        paddingRight: "8px",
+      },
+    }),
+    [darkMode]
+  );
+
+  const labelMuted = darkMode ? "#cbd5e1" : "#4b5563";
+  const titleColor = darkMode ? "#f8fafc" : "#111827";
+  const subtitleColor = darkMode ? "#94a3b8" : "#6b7280";
+
+  const contactOptions = useMemo(
+    () => [
+      { value: "email", label: t("contactEmail") },
+      { value: "phone", label: t("contactPhone") },
+      { value: "sms", label: t("contactSms") },
+      { value: "whatsapp", label: t("contactWhatsapp") },
+    ],
+    [t]
+  );
+
+  const languageOptions = useMemo(
+    () => [
+      { value: "english", label: t("languageEnglish") },
+      { value: "hebrew", label: t("languageHebrew") },
+    ],
+    [t]
+  );
+
+  const menuPaperSx = useMemo(
+    () => ({
+      direction: locale === "he" ? "rtl" : "ltr",
+      textAlign: locale === "he" ? "right" : "left",
+      ...(darkMode && {
+        bgcolor: "#1e293b",
+        color: "#f1f5f9",
+        border: "1px solid #334155",
+        "& .MuiMenuItem-root": { color: "#e2e8f0" },
+      }),
+    }),
+    [locale, darkMode]
+  );
+
+  const phoneInputStyle = useMemo(
+    () => ({
+      width: "100%",
+      height: "58px",
       borderRadius: "14px",
-      backgroundColor: "#ffffff",
-      height: 58,
-      paddingRight: "8px",
+      fontSize: "17px",
+      border: darkMode ? "1px solid #475569" : "1px solid #d9dee7",
+      backgroundColor: darkMode ? "#0f172a" : "#ffffff",
+      color: darkMode ? "#f1f5f9" : "#111827",
+      direction: "ltr",
+      textAlign: "left",
+      unicodeBidi: "plaintext",
+      paddingLeft: "52px",
+      paddingRight: "12px",
+    }),
+    [darkMode]
+  );
 
-      "& fieldset": {
-        borderColor: "#d9dee7",
-      },
-
-      "&:hover fieldset": {
-        borderColor: "#f9a8d4",
-      },
-
-      "&.Mui-focused fieldset": {
-        borderColor: "#ec4899",
-      },
-    },
-
-    "& .MuiOutlinedInput-input": {
-      fontSize: 17,
-      color: "#111827",
-      paddingRight: "8px",
-    },
+  const phoneButtonStyle = {
+    borderTopLeftRadius: "14px",
+    borderBottomLeftRadius: "14px",
+    border: darkMode ? "1px solid #475569" : "1px solid #d9dee7",
+    backgroundColor: darkMode ? "#1e293b" : "#ffffff",
   };
+
+  const dateFieldSx = useMemo(
+    () => ({
+      "& .MuiOutlinedInput-root": {
+        borderRadius: "14px",
+        backgroundColor: darkMode ? "#0f172a" : "#ffffff",
+        height: 58,
+
+        "& fieldset": {
+          borderColor: darkMode ? "#475569" : "#d9dee7",
+        },
+
+        "&:hover fieldset": {
+          borderColor: "#f9a8d4",
+        },
+
+        "&.Mui-focused fieldset": {
+          borderColor: "#ec4899",
+        },
+      },
+
+      "& input": {
+        fontSize: 17,
+        color: darkMode ? "#f1f5f9" : "#111827",
+      },
+    }),
+    [darkMode]
+  );
 
   const FieldLabel = ({ children }) => (
     <Typography
       sx={{
         mb: 0.8,
-        color: "#4b5563",
+        color: labelMuted,
         fontSize: 14,
         fontWeight: 500,
       }}
@@ -123,9 +216,11 @@ if (cleanPhone.length < 12) {
       elevation={0}
       sx={{
         borderRadius: 6,
-        border: "1px solid #f3d9e5",
-        backgroundColor: "#ffffff",
-        boxShadow: "0 12px 30px rgba(236,72,153,0.08)",
+        border: darkMode ? "1px solid rgba(236, 72, 153, 0.25)" : "1px solid #f3d9e5",
+        backgroundColor: darkMode ? "#1e293b" : "#ffffff",
+        boxShadow: darkMode
+          ? "0 12px 30px rgba(0,0,0,0.35)"
+          : "0 12px 30px rgba(236,72,153,0.08)",
       }}
     >
       <CardContent sx={{ p: { xs: 3, md: 4.5 } }}>
@@ -133,19 +228,19 @@ if (cleanPhone.length < 12) {
           <Box>
             <Typography
               variant="h4"
-              sx={{ fontWeight: 800, color: "#111827", mb: 1 }}
+              sx={{ fontWeight: 800, color: titleColor, mb: 1 }}
             >
-              Personal Details
+              {t("personalDetails")}
             </Typography>
 
-            <Typography sx={{ color: "#6b7280" }}>
-              Update your information and communication preferences.
+            <Typography sx={{ color: subtitleColor }}>
+              {t("personalDetailsSubtitle")}
             </Typography>
           </Box>
 
           <Grid container spacing={3}>
             <Grid item xs={12} md={6}>
-              <FieldLabel>Full Name</FieldLabel>
+              <FieldLabel>{t("fullName")}</FieldLabel>
               <TextField
                 fullWidth
                 name="fullName"
@@ -157,35 +252,62 @@ if (cleanPhone.length < 12) {
             </Grid>
 
             <Grid item xs={12} md={6}>
-  <FieldLabel>Phone Number</FieldLabel>
+              <FieldLabel>{t("phoneNumber")}</FieldLabel>
 
-  <PhoneInput
-    country={"il"}
-    value={formData.phoneNumber}
-    onChange={(phone) =>
-      setFormData((prev) => ({
-        ...prev,
-        phoneNumber: phone,
-      }))
-    }
-    inputStyle={{
-      width: "100%",
-      height: "58px",
-      borderRadius: "14px",
-      fontSize: "17px",
-      border: "1px solid #d9dee7",
-    }}
-    buttonStyle={{
-      borderTopLeftRadius: "14px",
-      borderBottomLeftRadius: "14px",
-      border: "1px solid #d9dee7",
-    }}
-    disabled={!isEditing}
-  />
-</Grid>
+              <Box
+                dir="ltr"
+                lang="en"
+                sx={{
+                  direction: "ltr",
+                  unicodeBidi: "isolate",
+                  "& .react-tel-input": {
+                    direction: "ltr",
+                    textAlign: "left",
+                  },
+                  "& .react-tel-input .flag-dropdown": {
+                    pointerEvents: "auto",
+                    zIndex: 3,
+                  },
+                  "& .react-tel-input .selected-flag": {
+                    pointerEvents: "auto",
+                  },
+                  "& .react-tel-input .form-control": {
+                    direction: "ltr",
+                    textAlign: "left",
+                    unicodeBidi: "plaintext",
+                  },
+                  "& .react-tel-input .country-list": {
+                    direction: "ltr",
+                    textAlign: "left",
+                  },
+                }}
+              >
+                <PhoneInput
+                  country={"il"}
+                  value={formData.phoneNumber}
+                  onChange={(phone) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      phoneNumber: phone,
+                    }))
+                  }
+                  specialLabel=""
+                  containerStyle={{ direction: "ltr" }}
+                  inputProps={{
+                    dir: "ltr",
+                    autoComplete: "tel",
+                    style: { unicodeBidi: "plaintext" },
+                  }}
+                  inputStyle={phoneInputStyle}
+                  buttonStyle={phoneButtonStyle}
+                  dropdownStyle={{ direction: "ltr", textAlign: "left" }}
+                  disabled={!isEditing}
+                />
+              </Box>
+            </Grid>
 
             <Grid item xs={12}>
-              <FieldLabel>Email Address</FieldLabel>
+              <FieldLabel>{t("emailAddress")}</FieldLabel>
               <TextField
                 fullWidth
                 name="email"
@@ -197,7 +319,7 @@ if (cleanPhone.length < 12) {
             </Grid>
 
             <Grid item xs={12} md={6}>
-              <FieldLabel>Street Address</FieldLabel>
+              <FieldLabel>{t("streetAddress")}</FieldLabel>
               <TextField
                 fullWidth
                 name="streetAddress"
@@ -209,7 +331,7 @@ if (cleanPhone.length < 12) {
             </Grid>
 
             <Grid item xs={12} md={6}>
-              <FieldLabel>City</FieldLabel>
+              <FieldLabel>{t("city")}</FieldLabel>
               <TextField
                 fullWidth
                 name="city"
@@ -221,9 +343,9 @@ if (cleanPhone.length < 12) {
             </Grid>
 
             <Grid item xs={12} md={6}>
-  <FieldLabel>Birth Date</FieldLabel>
+  <FieldLabel>{t("birthDate")}</FieldLabel>
 
-  <LocalizationProvider dateAdapter={AdapterDateFns}>
+  <LocalizationProvider dateAdapter={AdapterDateFns} adapterLocale={locale === "he" ? dateFnsHe : undefined}>
     <DatePicker
       value={formData.birthDate
     ? new Date(formData.birthDate)
@@ -240,30 +362,7 @@ if (cleanPhone.length < 12) {
       slotProps={{
         textField: {
           fullWidth: true,
-          sx: {
-            "& .MuiOutlinedInput-root": {
-              borderRadius: "14px",
-              backgroundColor: "#ffffff",
-              height: 58,
-
-              "& fieldset": {
-                borderColor: "#d9dee7",
-              },
-
-              "&:hover fieldset": {
-                borderColor: "#f9a8d4",
-              },
-
-              "&.Mui-focused fieldset": {
-                borderColor: "#ec4899",
-              },
-            },
-
-            "& input": {
-              fontSize: 17,
-              color: "#111827",
-            },
-          },
+          sx: dateFieldSx,
         },
       }}
       disabled={!isEditing}
@@ -272,7 +371,7 @@ if (cleanPhone.length < 12) {
 </Grid>
 
             <Grid item xs={12} md={6}>
-              <FieldLabel>Preferred Contact Method</FieldLabel>
+              <FieldLabel>{t("preferredContactMethod")}</FieldLabel>
               <TextField
   fullWidth
   select
@@ -282,10 +381,7 @@ if (cleanPhone.length < 12) {
   sx={fieldSx}
   MenuProps={{
     PaperProps: {
-      sx: {
-        direction: "ltr",
-        textAlign: "left",
-      },
+      sx: menuPaperSx,
     },
   }}
   disabled={!isEditing}
@@ -300,7 +396,7 @@ if (cleanPhone.length < 12) {
             </Grid>
 
             <Grid item xs={12}>
-              <FieldLabel>Language</FieldLabel>
+              <FieldLabel>{t("language")}</FieldLabel>
               <TextField
                 fullWidth
                 select
@@ -308,6 +404,11 @@ if (cleanPhone.length < 12) {
                 value={formData.language || "english"}
                 onChange={handleChange}
                 sx={fieldSx}
+                MenuProps={{
+                  PaperProps: {
+                    sx: menuPaperSx,
+                  },
+                }}
                 disabled={!isEditing}
               >
                 {languageOptions.map((option) => (
@@ -342,7 +443,7 @@ if (cleanPhone.length < 12) {
         },
       }}
     >
-      {saving ? "Saving..." : "Save Changes"}
+      {saving ? t("saving") : t("saveChanges")}
     </Button>
 
     
@@ -372,14 +473,14 @@ if (cleanPhone.length < 12) {
                 fontSize: 15,
                 color: "#ec4899",
                 borderColor: "#f5c2d9",
-                backgroundColor: "#fff9fc",
+                backgroundColor: darkMode ? "rgba(236, 72, 153, 0.1)" : "#fff9fc",
                 "&:hover": {
                   borderColor: "#ec4899",
-                  backgroundColor: "#fff1f7",
+                  backgroundColor: darkMode ? "rgba(236, 72, 153, 0.2)" : "#fff1f7",
                 },
               }}
             >
-              Logout
+              {t("logout")}
             </Button>
           </Box>
         </Stack>
