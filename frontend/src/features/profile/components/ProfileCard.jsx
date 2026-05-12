@@ -8,12 +8,11 @@ import {
   Card,
   CardContent,
   Chip,
-  IconButton,
   Stack,
   Typography,
 } from "@mui/material";
 
-function ProfileCard({ profile, isEditing, onEdit, darkMode = false }) {
+function ProfileCard({ profile, isEditing, onEdit, darkMode = false, t = (k) => k }) {
   const [previewImage, setPreviewImage] = useState(null);
 
   const initials = (profile?.fullName || "SA")
@@ -55,12 +54,22 @@ function ProfileCard({ profile, isEditing, onEdit, darkMode = false }) {
     >
       <CardContent sx={{ p: 3 }}>
         <Stack spacing={2.4} alignItems="center">
-          <Box sx={{ position: "relative" }}>
+          {/* Avatar + camera only — positioning context is this 92×92 box, not the card */}
+          <Box
+            sx={{
+              position: "relative",
+              width: "92px",
+              height: "92px",
+              flexShrink: 0,
+              overflow: "visible",
+              lineHeight: 0,
+            }}
+          >
             <Avatar
               src={previewImage || profile?.avatarUrl || undefined}
               sx={{
-                width: 92,
-                height: 92,
+                width: "100%",
+                height: "100%",
                 bgcolor: avatarBg,
                 color: avatarColor,
                 fontWeight: 700,
@@ -71,27 +80,44 @@ function ProfileCard({ profile, isEditing, onEdit, darkMode = false }) {
             </Avatar>
 
             {isEditing && (
-              <IconButton
+              <Box
                 component="label"
+                aria-label="Upload profile photo"
                 sx={{
                   position: "absolute",
-                  right: -4,
-                  bottom: -4,
+                  right: "-8px",
+bottom: "-8px",
+width: "32px",
+height: "32px",
+                  zIndex: 1,
+                  
+                  boxSizing: "border-box",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  borderRadius: "50%",
                   bgcolor: "#ec4899",
-                  color: "white",
-                  width: 34,
-                  height: 34,
-                  "&:hover": { bgcolor: "#db2777" },
+                  color: "#ffffff",
+                  border: "2px solid #ffffff",
+                  boxShadow:
+                    "0 2px 12px rgba(0, 0, 0, 0.16), 0 1px 4px rgba(236, 72, 153, 0.45)",
+                  cursor: "pointer",
+                  transition: "background-color 0.2s ease, box-shadow 0.2s ease",
+                  "&:hover": {
+                    bgcolor: "#db2777",
+                    boxShadow:
+                      "0 3px 14px rgba(0, 0, 0, 0.2), 0 2px 6px rgba(236, 72, 153, 0.5)",
+                  },
                 }}
               >
-                <PhotoCameraOutlinedIcon sx={{ fontSize: 18 }} />
+                <PhotoCameraOutlinedIcon sx={{ fontSize: 18, color: "inherit" }} />
                 <input
                   hidden
                   accept="image/*"
                   type="file"
                   onChange={handleImageChange}
                 />
-              </IconButton>
+              </Box>
             )}
           </Box>
 
@@ -112,11 +138,12 @@ function ProfileCard({ profile, isEditing, onEdit, darkMode = false }) {
           <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" justifyContent="center">
             <Chip label={profile?.city || "San Francisco"} sx={{ bgcolor: chipBg, color: chipColor }} />
             <Chip
-  label={`Language: ${
-    (profile?.language || "English").charAt(0).toUpperCase() +
-    (profile?.language || "English").slice(1)
-  }`}
-  sx={{
+              label={`${t("languageChipPrefix")} ${
+                (profile?.language || "english").toLowerCase() === "hebrew"
+                  ? t("languageHebrew")
+                  : t("languageEnglish")
+              }`}
+              sx={{
     bgcolor: chipBg,
     color: chipColor,
     textTransform: "none",
@@ -144,7 +171,7 @@ function ProfileCard({ profile, isEditing, onEdit, darkMode = false }) {
                 },
               }}
             >
-              Edit Profile
+              {t("editProfile")}
             </Button>
           )}
         </Stack>

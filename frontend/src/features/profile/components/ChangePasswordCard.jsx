@@ -14,7 +14,7 @@ import {
   Typography,
 } from "@mui/material";
 
-function ChangePasswordCard({ darkMode = false }) {
+function ChangePasswordCard({ darkMode = false, t = (k) => k }) {
   const [showCurrent, setShowCurrent] = useState(false);
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -98,7 +98,7 @@ function ChangePasswordCard({ darkMode = false }) {
     >
       <IconButton
         type="button"
-        aria-label={visible ? "Hide password" : "Show password"}
+        aria-label={visible ? t("hidePassword") : t("showPassword")}
         onClick={() => setVisible((v) => !v)}
         size="small"
         sx={{
@@ -126,17 +126,17 @@ function ChangePasswordCard({ darkMode = false }) {
         <Stack spacing={3.2}>
           <Box>
             <Typography variant="h4" sx={{ fontWeight: 800, color: titleColor, mb: 1 }}>
-              Change Password
+              {t("changePassword")}
             </Typography>
             <Typography sx={{ color: subtitleColor }}>
-              Update your password to keep your account secure.
+              {t("changePasswordSubtitle")}
             </Typography>
           </Box>
 
           <Stack spacing={3}>
             <Box>
               <Typography sx={{ mb: 0.8, color: labelMuted, fontSize: 14, fontWeight: 500 }}>
-                Current Password
+                {t("currentPassword")}
               </Typography>
               <TextField
                 fullWidth
@@ -153,7 +153,7 @@ function ChangePasswordCard({ darkMode = false }) {
             </Box>
             <Box>
               <Typography sx={{ mb: 0.8, color: labelMuted, fontSize: 14, fontWeight: 500 }}>
-                New Password
+                {t("newPassword")}
               </Typography>
               <TextField
                 fullWidth
@@ -170,7 +170,7 @@ function ChangePasswordCard({ darkMode = false }) {
             </Box>
             <Box>
               <Typography sx={{ mb: 0.8, color: labelMuted, fontSize: 14, fontWeight: 500 }}>
-                Confirm New Password
+                {t("confirmNewPassword")}
               </Typography>
               <TextField
                 fullWidth
@@ -217,7 +217,7 @@ function ChangePasswordCard({ darkMode = false }) {
                 },
               }}
             >
-              Update Password
+              {t("updatePassword")}
             </Button>
           </Box>
         </Stack>
