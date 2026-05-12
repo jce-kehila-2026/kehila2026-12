@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
+import BedtimeOutlinedIcon from "@mui/icons-material/BedtimeOutlined";
 import ChatBubbleOutlineOutlinedIcon from "@mui/icons-material/ChatBubbleOutlineOutlined";
 import EventOutlinedIcon from "@mui/icons-material/EventOutlined";
 import FavoriteBorderOutlinedIcon from "@mui/icons-material/FavoriteBorderOutlined";
 import GroupOutlinedIcon from "@mui/icons-material/GroupOutlined";
 import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
 import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
+import WbSunnyOutlinedIcon from "@mui/icons-material/WbSunnyOutlined";
 import { signOut } from "firebase/auth";
 import {
   Box,
@@ -16,9 +18,14 @@ import {
 import { ThemeProvider, createTheme, useTheme } from "@mui/material/styles";
 import { useNavigate } from "react-router-dom";
 import { auth } from "../../../firebase";
+import ChangePasswordCard from "../components/ChangePasswordCard";
 import PersonalDetailsForm from "../components/PersonalDetailsForm";
 import ProfileCard from "../components/ProfileCard";
 import { getParticipantData } from "../services/participantService";
+
+/** Same pink for moon & sun on light segments; white on active pink segment */
+const DARK_MODE_TOGGLE_ICON_PINK = "#ec4899";
+const DARK_MODE_TOGGLE_ICON_ON_PINK = "#ffffff";
 
 const navItems = [
   { label: "Dashboard", icon: HomeOutlinedIcon },
@@ -33,6 +40,7 @@ function ProfilePage() {
   const participantId = "participant-001";
   const [profile, setProfile] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [darkMode, setDarkMode] = useState(false);
   const navigate = useNavigate();
   const parentTheme = useTheme();
   const ltrTheme = useMemo(
@@ -82,7 +90,9 @@ function ProfilePage() {
         sx={{
           minHeight: "100vh",
           display: "flex",
-          background: "linear-gradient(140deg, #fff8fc 0%, #fdf3f8 100%)",
+          background: darkMode
+            ? "linear-gradient(145deg, #0f172a 0%, #020617 55%, #0c1222 100%)"
+            : "linear-gradient(140deg, #fff8fc 0%, #fdf3f8 100%)",
         }}
       >
         <Box
@@ -90,8 +100,8 @@ function ProfilePage() {
           sx={{
             width: { xs: 92, sm: 210 },
             flexShrink: 0,
-            borderRight: "1px solid #f6dce8",
-            bgcolor: "#fffefe",
+            borderRight: darkMode ? "1px solid #334155" : "1px solid #f6dce8",
+            bgcolor: darkMode ? "#0f172a" : "#fffefe",
             px: { xs: 1, sm: 1.8 },
             py: 3,
           }}
@@ -99,7 +109,7 @@ function ProfilePage() {
           <Typography
             sx={{
               fontWeight: 800,
-              color: "#be185d",
+              color: darkMode ? "#f472b6" : "#be185d",
               fontSize: 36,
               px: 1,
               mb: 3.5,
@@ -122,18 +132,42 @@ function ProfilePage() {
                     px: { xs: 1, sm: 1.3 },
                     py: 1.2,
                     borderRadius: 3,
-                    color: item.active ? "#be185d" : "#374151",
-                    border: item.active ? "1px solid #f2c3dd" : "1px solid transparent",
+                    color: item.active
+                      ? darkMode
+                        ? "#f9a8d4"
+                        : "#be185d"
+                      : darkMode
+                        ? "#94a3b8"
+                        : "#374151",
+                    border: item.active
+                      ? darkMode
+                        ? "1px solid rgba(236, 72, 153, 0.35)"
+                        : "1px solid #f2c3dd"
+                      : "1px solid transparent",
                     background: item.active
-                      ? "linear-gradient(90deg, #fce7f3 0%, #fff3f8 100%)"
+                      ? darkMode
+                        ? "linear-gradient(90deg, rgba(236,72,153,0.18) 0%, rgba(15,23,42,0.9) 100%)"
+                        : "linear-gradient(90deg, #fce7f3 0%, #fff3f8 100%)"
                       : "transparent",
                     "&:hover": {
-                      backgroundColor: item.active ? "#fce7f3" : "#fdf2f8",
+                      backgroundColor: item.active
+                        ? darkMode
+                          ? "rgba(236, 72, 153, 0.15)"
+                          : "#fce7f3"
+                        : darkMode
+                          ? "rgba(148, 163, 184, 0.12)"
+                          : "#fdf2f8",
                     },
                   }}
                 >
                   <Icon sx={{ fontSize: 20 }} />
-                  <Typography sx={{ fontSize: 14.5, display: { xs: "none", sm: "block" } }}>
+                  <Typography
+                    sx={{
+                      fontSize: 14.5,
+                      display: { xs: "none", sm: "block" },
+                      color: "inherit",
+                    }}
+                  >
                     {item.label}
                   </Typography>
                 </ButtonBase>
@@ -151,12 +185,159 @@ function ProfilePage() {
           }}
         >
           <Box sx={{ maxWidth: 1120 }}>
-            <Typography sx={{ fontSize: 52, fontWeight: 700, color: "#111827" }}>
-              Profile Settings
-            </Typography>
-            <Typography sx={{ color: "#6b7280", fontSize: 22, mt: 0.5, mb: 3 }}>
-              Manage your personal details and preferences.
-            </Typography>
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: { xs: "column", sm: "row" },
+                alignItems: { xs: "stretch", sm: "center" },
+                justifyContent: "space-between",
+                gap: { xs: 1.5, sm: 2 },
+                mb: 3,
+              }}
+            >
+              <Box sx={{ flex: 1, minWidth: 0 }}>
+                <Typography
+                  sx={{
+                    fontSize: { xs: 36, sm: 48, md: 52 },
+                    fontWeight: 700,
+                    color: darkMode ? "#f8fafc" : "#111827",
+                    lineHeight: 1.1,
+                  }}
+                >
+                  Profile Settings
+                </Typography>
+                <Typography
+                  sx={{
+                    color: darkMode ? "#94a3b8" : "#6b7280",
+                    fontSize: { xs: 17, sm: 20, md: 22 },
+                    mt: 0.5,
+                  }}
+                >
+                  Manage your personal details and preferences.
+                </Typography>
+              </Box>
+              <Stack
+                direction="row"
+                alignItems="center"
+                flexWrap="nowrap"
+                gap={0.75}
+                sx={{
+                  flexShrink: 0,
+                  alignSelf: { xs: "flex-end", sm: "auto" },
+                  lineHeight: 1,
+                }}
+              >
+                <Typography
+                  component="span"
+                  sx={{
+                    fontSize: 12.5,
+                    fontWeight: 600,
+                    lineHeight: 1.2,
+                    letterSpacing: "0.01em",
+                    color: darkMode ? "#e2e8f0" : "#4b5563",
+                    whiteSpace: "nowrap",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    pr: 0.25,
+                  }}
+                >
+                  Dark Mode
+                </Typography>
+                <ButtonBase
+                  type="button"
+                  role="switch"
+                  aria-checked={darkMode}
+                  aria-label="Toggle dark mode"
+                  disableRipple
+                  onClick={() => setDarkMode((d) => !d)}
+                  sx={{
+                    display: "inline-flex",
+                    flexDirection: "row",
+                    alignItems: "stretch",
+                    borderRadius: 9999,
+                    overflow: "hidden",
+                    border: "1.5px solid #f9a8d4",
+                    bgcolor: "#fffafb",
+                    minWidth: 76,
+                    height: 36,
+                    p: 0,
+                    transition: "border-color 0.28s ease, box-shadow 0.28s ease",
+                    boxShadow: "0 1px 4px rgba(236, 72, 153, 0.12)",
+                    "&:hover": {
+                      borderColor: "#ec4899",
+                      boxShadow: "0 2px 10px rgba(236, 72, 153, 0.2)",
+                    },
+                    "&.Mui-focusVisible": {
+                      outline: "2px solid #ec4899",
+                      outlineOffset: 2,
+                    },
+                  }}
+                >
+                  <Box
+                    aria-hidden
+                    sx={{
+                      flex: "1 1 50%",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      py: 0.75,
+                      px: 1.1,
+                      minWidth: 36,
+                      bgcolor: darkMode ? "#ec4899" : "#fffbfc",
+                      background: darkMode
+                        ? "linear-gradient(180deg, #f472b6 0%, #ec4899 55%, #db2777 100%)"
+                        : "#fffbfc",
+                      transition:
+                        "background 0.28s ease, background-color 0.28s ease",
+                    }}
+                  >
+                    <BedtimeOutlinedIcon
+                      sx={{
+                        fontSize: 18,
+                        width: 18,
+                        height: 18,
+                        flexShrink: 0,
+                        color: darkMode ? DARK_MODE_TOGGLE_ICON_ON_PINK : DARK_MODE_TOGGLE_ICON_PINK,
+                        opacity: 1,
+                        transition: "color 0.28s ease, opacity 0.28s ease",
+                        display: "block",
+                      }}
+                    />
+                  </Box>
+                  <Box
+                    aria-hidden
+                    sx={{
+                      flex: "1 1 50%",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      py: 0.75,
+                      px: 1.1,
+                      minWidth: 36,
+                      bgcolor: darkMode ? "#fff7fb" : "#ec4899",
+                      background: darkMode
+                        ? "#fff7fb"
+                        : "linear-gradient(180deg, #f472b6 0%, #ec4899 55%, #db2777 100%)",
+                      transition:
+                        "background 0.28s ease, background-color 0.28s ease",
+                    }}
+                  >
+                    <WbSunnyOutlinedIcon
+                      sx={{
+                        fontSize: 18,
+                        width: 18,
+                        height: 18,
+                        flexShrink: 0,
+                        color: darkMode ? DARK_MODE_TOGGLE_ICON_PINK : DARK_MODE_TOGGLE_ICON_ON_PINK,
+                        opacity: 1,
+                        transition: "color 0.28s ease, opacity 0.28s ease",
+                        display: "block",
+                      }}
+                    />
+                  </Box>
+                </ButtonBase>
+              </Stack>
+            </Box>
 
             <Box
               sx={{
@@ -166,18 +347,28 @@ function ProfilePage() {
                 alignItems: "start",
               }}
             >
-              <ProfileCard
-  profile={profile}
-  isEditing={isEditing}
-  onEdit={() => setIsEditing(true)}
-/><PersonalDetailsForm
-  participantId={participantId}
-  profile={profile}
-  onProfileUpdated={setProfile}
-  isEditing={isEditing}
-  onFinishEditing={() => setIsEditing(false)}
-  onLogout={handleLogout}
-/>
+              <Box sx={{ gridColumn: { xs: 1, lg: 1 }, gridRow: 1 }}>
+                <ProfileCard
+                  profile={profile}
+                  isEditing={isEditing}
+                  onEdit={() => setIsEditing(true)}
+                  darkMode={darkMode}
+                />
+              </Box>
+              <Box sx={{ gridColumn: { xs: 1, lg: 2 }, gridRow: 1, minWidth: 0 }}>
+                <Stack spacing={{ xs: 2.2, lg: 2.8 }}>
+                  <PersonalDetailsForm
+                    participantId={participantId}
+                    profile={profile}
+                    onProfileUpdated={setProfile}
+                    isEditing={isEditing}
+                    onFinishEditing={() => setIsEditing(false)}
+                    onLogout={handleLogout}
+                    darkMode={darkMode}
+                  />
+                  <ChangePasswordCard darkMode={darkMode} />
+                </Stack>
+              </Box>
             </Box>
           </Box>
         </Box>

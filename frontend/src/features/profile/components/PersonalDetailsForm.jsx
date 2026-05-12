@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
 import SaveOutlinedIcon from "@mui/icons-material/SaveOutlined";
@@ -13,7 +13,6 @@ import {
   Card,
   CardContent,
   Grid,
-  InputAdornment,
   MenuItem,
   Stack,
   TextField,
@@ -39,6 +38,7 @@ function PersonalDetailsForm({
   isEditing,
   onFinishEditing,
   onLogout,
+  darkMode = false,
 }) {
   const [formData, setFormData] = useState(profile || {});
   const [saving, setSaving] = useState(false);
@@ -78,38 +78,101 @@ if (cleanPhone.length < 12) {
     }
   };
 
-  const fieldSx = {
-    "& .MuiOutlinedInput-root": {
-      borderRadius: "14px",
-      backgroundColor: "#ffffff",
-      height: 58,
-      paddingRight: "8px",
+  const fieldSx = useMemo(
+    () => ({
+      "& .MuiOutlinedInput-root": {
+        borderRadius: "14px",
+        backgroundColor: darkMode ? "#0f172a" : "#ffffff",
+        height: 58,
+        paddingRight: "8px",
 
-      "& fieldset": {
-        borderColor: "#d9dee7",
+        "& fieldset": {
+          borderColor: darkMode ? "#475569" : "#d9dee7",
+        },
+
+        "&:hover fieldset": {
+          borderColor: "#f9a8d4",
+        },
+
+        "&.Mui-focused fieldset": {
+          borderColor: "#ec4899",
+        },
       },
 
-      "&:hover fieldset": {
-        borderColor: "#f9a8d4",
+      "& .MuiOutlinedInput-input": {
+        fontSize: 17,
+        color: darkMode ? "#f1f5f9" : "#111827",
+        paddingRight: "8px",
       },
+    }),
+    [darkMode]
+  );
 
-      "&.Mui-focused fieldset": {
-        borderColor: "#ec4899",
-      },
-    },
+  const labelMuted = darkMode ? "#cbd5e1" : "#4b5563";
+  const titleColor = darkMode ? "#f8fafc" : "#111827";
+  const subtitleColor = darkMode ? "#94a3b8" : "#6b7280";
 
-    "& .MuiOutlinedInput-input": {
-      fontSize: 17,
-      color: "#111827",
-      paddingRight: "8px",
-    },
+  const menuPaperSx = {
+    direction: "ltr",
+    textAlign: "left",
+    ...(darkMode && {
+      bgcolor: "#1e293b",
+      color: "#f1f5f9",
+      border: "1px solid #334155",
+      "& .MuiMenuItem-root": { color: "#e2e8f0" },
+    }),
   };
+
+  const phoneInputStyle = {
+    width: "100%",
+    height: "58px",
+    borderRadius: "14px",
+    fontSize: "17px",
+    border: darkMode ? "1px solid #475569" : "1px solid #d9dee7",
+    backgroundColor: darkMode ? "#0f172a" : "#ffffff",
+    color: darkMode ? "#f1f5f9" : "#111827",
+  };
+
+  const phoneButtonStyle = {
+    borderTopLeftRadius: "14px",
+    borderBottomLeftRadius: "14px",
+    border: darkMode ? "1px solid #475569" : "1px solid #d9dee7",
+    backgroundColor: darkMode ? "#1e293b" : "#ffffff",
+  };
+
+  const dateFieldSx = useMemo(
+    () => ({
+      "& .MuiOutlinedInput-root": {
+        borderRadius: "14px",
+        backgroundColor: darkMode ? "#0f172a" : "#ffffff",
+        height: 58,
+
+        "& fieldset": {
+          borderColor: darkMode ? "#475569" : "#d9dee7",
+        },
+
+        "&:hover fieldset": {
+          borderColor: "#f9a8d4",
+        },
+
+        "&.Mui-focused fieldset": {
+          borderColor: "#ec4899",
+        },
+      },
+
+      "& input": {
+        fontSize: 17,
+        color: darkMode ? "#f1f5f9" : "#111827",
+      },
+    }),
+    [darkMode]
+  );
 
   const FieldLabel = ({ children }) => (
     <Typography
       sx={{
         mb: 0.8,
-        color: "#4b5563",
+        color: labelMuted,
         fontSize: 14,
         fontWeight: 500,
       }}
@@ -123,9 +186,11 @@ if (cleanPhone.length < 12) {
       elevation={0}
       sx={{
         borderRadius: 6,
-        border: "1px solid #f3d9e5",
-        backgroundColor: "#ffffff",
-        boxShadow: "0 12px 30px rgba(236,72,153,0.08)",
+        border: darkMode ? "1px solid rgba(236, 72, 153, 0.25)" : "1px solid #f3d9e5",
+        backgroundColor: darkMode ? "#1e293b" : "#ffffff",
+        boxShadow: darkMode
+          ? "0 12px 30px rgba(0,0,0,0.35)"
+          : "0 12px 30px rgba(236,72,153,0.08)",
       }}
     >
       <CardContent sx={{ p: { xs: 3, md: 4.5 } }}>
@@ -133,12 +198,12 @@ if (cleanPhone.length < 12) {
           <Box>
             <Typography
               variant="h4"
-              sx={{ fontWeight: 800, color: "#111827", mb: 1 }}
+              sx={{ fontWeight: 800, color: titleColor, mb: 1 }}
             >
               Personal Details
             </Typography>
 
-            <Typography sx={{ color: "#6b7280" }}>
+            <Typography sx={{ color: subtitleColor }}>
               Update your information and communication preferences.
             </Typography>
           </Box>
@@ -168,18 +233,8 @@ if (cleanPhone.length < 12) {
         phoneNumber: phone,
       }))
     }
-    inputStyle={{
-      width: "100%",
-      height: "58px",
-      borderRadius: "14px",
-      fontSize: "17px",
-      border: "1px solid #d9dee7",
-    }}
-    buttonStyle={{
-      borderTopLeftRadius: "14px",
-      borderBottomLeftRadius: "14px",
-      border: "1px solid #d9dee7",
-    }}
+    inputStyle={phoneInputStyle}
+    buttonStyle={phoneButtonStyle}
     disabled={!isEditing}
   />
 </Grid>
@@ -240,30 +295,7 @@ if (cleanPhone.length < 12) {
       slotProps={{
         textField: {
           fullWidth: true,
-          sx: {
-            "& .MuiOutlinedInput-root": {
-              borderRadius: "14px",
-              backgroundColor: "#ffffff",
-              height: 58,
-
-              "& fieldset": {
-                borderColor: "#d9dee7",
-              },
-
-              "&:hover fieldset": {
-                borderColor: "#f9a8d4",
-              },
-
-              "&.Mui-focused fieldset": {
-                borderColor: "#ec4899",
-              },
-            },
-
-            "& input": {
-              fontSize: 17,
-              color: "#111827",
-            },
-          },
+          sx: dateFieldSx,
         },
       }}
       disabled={!isEditing}
@@ -282,10 +314,7 @@ if (cleanPhone.length < 12) {
   sx={fieldSx}
   MenuProps={{
     PaperProps: {
-      sx: {
-        direction: "ltr",
-        textAlign: "left",
-      },
+      sx: menuPaperSx,
     },
   }}
   disabled={!isEditing}
@@ -308,6 +337,11 @@ if (cleanPhone.length < 12) {
                 value={formData.language || "english"}
                 onChange={handleChange}
                 sx={fieldSx}
+                MenuProps={{
+                  PaperProps: {
+                    sx: menuPaperSx,
+                  },
+                }}
                 disabled={!isEditing}
               >
                 {languageOptions.map((option) => (
@@ -372,10 +406,10 @@ if (cleanPhone.length < 12) {
                 fontSize: 15,
                 color: "#ec4899",
                 borderColor: "#f5c2d9",
-                backgroundColor: "#fff9fc",
+                backgroundColor: darkMode ? "rgba(236, 72, 153, 0.1)" : "#fff9fc",
                 "&:hover": {
                   borderColor: "#ec4899",
-                  backgroundColor: "#fff1f7",
+                  backgroundColor: darkMode ? "rgba(236, 72, 153, 0.2)" : "#fff1f7",
                 },
               }}
             >
