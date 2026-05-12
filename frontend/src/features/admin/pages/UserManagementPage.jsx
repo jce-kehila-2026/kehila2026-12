@@ -1,17 +1,17 @@
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { collection, getDocs } from 'firebase/firestore';
 import { db } from '../../../firebase';
-import { useAdmin } from '../context/AdminContext';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import { DataGrid } from '@mui/x-data-grid';
-import VisibilityIcon from '@mui/icons-material/Visibility';
+import PreviewIcon from '@mui/icons-material/Preview';
 
 export default function UserManagementPage() {
-  const { startImpersonation } = useAdmin();
+  const navigate = useNavigate();
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -68,31 +68,22 @@ export default function UserManagementPage() {
       width: 140,
       valueGetter: (value) => (value?.toDate ? value.toDate().toLocaleDateString() : '—'),
     },
-    {
-      field: 'actions',
-      headerName: 'Actions',
-      width: 140,
-      sortable: false,
-      filterable: false,
-      renderCell: (params) => (
-        <Button
-          size="small"
-          variant="outlined"
-          startIcon={<VisibilityIcon />}
-          onClick={() => startImpersonation(params.row.id, params.row.displayName || params.row.email)}
-          id={`btn-impersonate-${params.row.id}`}
-        >
-          View As
-        </Button>
-      ),
-    },
   ];
 
   return (
     <Box>
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h4">User Management</Typography>
-        <Typography variant="subtitle1" sx={{ mt: 0.5 }}>View registered users and event participants.</Typography>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3 }}>
+        <Box>
+          <Typography variant="h4">User Management</Typography>
+          <Typography variant="subtitle1" sx={{ mt: 0.5 }}>View registered users and event participants.</Typography>
+        </Box>
+        <Button
+          variant="outlined"
+          startIcon={<PreviewIcon />}
+          onClick={() => navigate('/home')}
+        >
+          Preview Participant View
+        </Button>
       </Box>
 
       <TextField
