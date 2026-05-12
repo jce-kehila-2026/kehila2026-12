@@ -41,7 +41,7 @@ service cloud.firestore {
       allow delete: if isAdmin() ||
         (request.auth != null &&
          resource.data.participantEmail == request.auth.token.email);
-      allow update: if isAdmin(); // Admins can update checkedIn for check-in feature
+      allow update: if false; // Registrations are immutable once created
     }
 
     // ── Registrations ──
@@ -73,15 +73,10 @@ service cloud.firestore {
 
     // ── Appointments ──
     match /appointments/{appointmentId} {
-      allow read: if isAdmin()
-        || (request.auth != null && resource.data.participantEmail == request.auth.token.email);
+      allow read: if request.auth != null
+        && resource.data.userId == request.auth.uid;
 
       allow create, update, delete: if isAdmin();
-    }
-
-    // ── Appointment Settings ──
-    match /appt_settings/{docId} {
-      allow read, write: if isAdmin();
     }
 
     // ── Calendar Notes ──
