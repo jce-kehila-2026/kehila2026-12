@@ -3,10 +3,10 @@ import {
   getDocs,
   addDoc,
   deleteDoc,
+  updateDoc,
   doc,
   query,
   where,
-  orderBy,
   serverTimestamp,
 } from 'firebase/firestore';
 import { db } from '../../../firebase';
@@ -19,11 +19,16 @@ import { logAuditEvent } from './auditService';
 export async function getRegistrationsByEvent(eventId) {
   const q = query(
     collection(db, 'event_registrations'),
-    where('eventId', '==', eventId),
-    orderBy('registeredAt', 'desc')
+    where('eventId', '==', eventId)
   );
   const snap = await getDocs(q);
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  const docs = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  // Sort client-side to avoid requiring a composite Firestore index
+  return docs.sort((a, b) => {
+    const aTime = a.registeredAt?.toDate?.() ?? new Date(0);
+    const bTime = b.registeredAt?.toDate?.() ?? new Date(0);
+    return bTime - aTime;
+  });
 }
 
 /**
@@ -89,6 +94,15 @@ export async function removeRegistration(regId, participantName) {
       details: { removed: participantName },
     });
   } catch (_) {}
+}
+
+/**
+ * Mark a registration as checked-in.
+ * Requires isAdmin() update permission on event_registrations in Firestore rules.
+ * @param {string} regId
+ */
+export async function checkInRegistration(regId) {
+  await updateDoc(doc(db, 'event_registrations', regId), { checkedIn: true });
 }
 
 /**

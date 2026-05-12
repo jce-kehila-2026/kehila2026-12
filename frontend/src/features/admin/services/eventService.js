@@ -1,6 +1,16 @@
-import { collection, getDocs, addDoc, updateDoc, deleteDoc, doc, query, orderBy, where, onSnapshot, serverTimestamp } from 'firebase/firestore';
+import { collection, getDocs, getDoc, addDoc, updateDoc, deleteDoc, doc, query, orderBy, where, onSnapshot, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../../firebase';
 import { logAuditEvent } from './auditService';
+
+/**
+ * Fetch a single event by its Firestore document ID.
+ * @param {string} id
+ */
+export async function getEventById(id) {
+  const snap = await getDoc(doc(db, 'events', id));
+  if (!snap.exists()) return null;
+  return { id: snap.id, ...snap.data() };
+}
 
 /**
  * Fetch all events ordered by creation time (newest first).
