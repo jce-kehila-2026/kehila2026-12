@@ -6,7 +6,7 @@ import StatisticsSection from '../components/StatisticsSection';
 import ShenaCenterSection from '../components/ShenaCenterSection';
 import SupportAreasSection from '../components/SupportAreasSection';
 import EventsPreview from '../components/EventsPreview';
-import ArticlesPreview from '../components/ArticlesPreview';
+import ArticlesPreviewSection from '../components/ArticlesPreviewSection';
 import TeamSection from '../components/TeamSection';
 import DonationSection from '../components/DonationSection';
 import ContactSection from '../components/ContactSection';
@@ -50,8 +50,8 @@ export default function PublicHomePage() {
         <StatisticsSection />
         <ShenaCenterSection />
         <SupportAreasSection />
+        <ArticlesPreviewSection />
         <EventsPreview events={content.events} />
-        <ArticlesPreview articles={content.articles} />
         <TeamSection team={content.team} />
         <DonationSection organization={content.organization} />
         <ContactSection organization={content.organization} />
