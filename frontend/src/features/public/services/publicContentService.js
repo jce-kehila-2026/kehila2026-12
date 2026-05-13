@@ -42,25 +42,25 @@ const FALLBACK_ABOUT = {
 const FALLBACK_STATISTICS = [
   {
     id: 'programs',
-    value: '3+',
+    value: 'TBD',
     label: 'Support areas',
-    note: 'Placeholder until CMS data is connected.',
+    note: 'Verified public data will be added later.',
     isVisible: true,
     active: true,
   },
   {
     id: 'activities',
-    value: '6',
+    value: 'TBD',
     label: 'Activity types',
-    note: 'Temporary planning number.',
+    note: 'Public activity details are being prepared.',
     isVisible: true,
     active: true,
   },
   {
     id: 'community',
-    value: '1',
-    label: 'Recovery center',
-    note: 'Prepared for verified public data.',
+    value: 'TBD',
+    label: 'Community services',
+    note: 'Numbers will appear after review.',
     isVisible: true,
     active: true,
   },
@@ -111,7 +111,7 @@ const FALLBACK_SUPPORT_AREAS = [
 
 const FALLBACK_ARTICLES = [
   {
-    id: 'demo-article-1',
+    id: 'fallback-article-1',
     title: 'Finding Support in Community',
     description:
       'Simple guidance on reaching out, staying connected, and finding steady support during difficult seasons.',
@@ -121,7 +121,7 @@ const FALLBACK_ARTICLES = [
     active: true,
   },
   {
-    id: 'demo-article-2',
+    id: 'fallback-article-2',
     title: 'Practical Steps for Everyday Wellbeing',
     description:
       'Helpful reminders for building calm routines, asking for help, and making space for recovery.',
@@ -131,7 +131,7 @@ const FALLBACK_ARTICLES = [
     active: true,
   },
   {
-    id: 'demo-article-3',
+    id: 'fallback-article-3',
     title: 'Understanding Available Resources',
     description:
       'An introduction to the types of community programs, workshops, and support resources that may be available.',
@@ -144,36 +144,36 @@ const FALLBACK_ARTICLES = [
 
 const FALLBACK_TEAM_MEMBERS = [
   {
-    id: 'demo-team-1',
-    name: 'Maya Cohen',
-    role: 'Community Programs Lead',
+    id: 'fallback-team-1',
+    name: 'Community Programs',
+    role: 'Program coordination',
     description: 'Coordinates supportive programs and helps create a welcoming environment for every participant.',
     isVisible: true,
     isPublished: true,
     active: true,
   },
   {
-    id: 'demo-team-2',
-    name: 'Lina Haddad',
-    role: 'Participant Support Coordinator',
+    id: 'fallback-team-2',
+    name: 'Participant Support',
+    role: 'Resource guidance',
     description: 'Guides participants through available resources with care, privacy, and respect.',
     isVisible: true,
     isPublished: true,
     active: true,
   },
   {
-    id: 'demo-team-3',
-    name: 'Noa Levi',
-    role: 'Workshops Facilitator',
+    id: 'fallback-team-3',
+    name: 'Workshops',
+    role: 'Learning and wellbeing',
     description: 'Supports learning circles, community workshops, and practical wellbeing activities.',
     isVisible: true,
     isPublished: true,
     active: true,
   },
   {
-    id: 'demo-team-4',
-    name: 'Sara Mansour',
-    role: 'Volunteer Relations',
+    id: 'fallback-team-4',
+    name: 'Volunteer Relations',
+    role: 'Community coordination',
     description: 'Builds thoughtful connections between volunteers, staff, and community needs.',
     isVisible: true,
     isPublished: true,
@@ -183,42 +183,39 @@ const FALLBACK_TEAM_MEMBERS = [
 
 const FALLBACK_EVENTS = [
   {
-    id: 'demo-event-1',
+    id: 'fallback-event-1',
     title: 'Community Support Circle',
     description:
       'A welcoming group session for sharing, listening, and finding steady support in community.',
-    startDate: '2026-06-12',
-    dateLabel: 'June 12, 2026',
-    time: '17:00',
-    location: 'She-Na Community Center',
+    dateLabel: 'Schedule to be announced',
+    time: '',
+    location: 'Location to be announced',
     isPublic: true,
     isVisible: true,
     active: true,
     status: 'upcoming',
   },
   {
-    id: 'demo-event-2',
+    id: 'fallback-event-2',
     title: 'Wellbeing Skills Workshop',
     description:
       'Practical tools for building calm routines, setting boundaries, and navigating difficult days.',
-    startDate: '2026-06-19',
-    dateLabel: 'June 19, 2026',
-    time: '10:30',
-    location: 'Online',
+    dateLabel: 'Schedule to be announced',
+    time: '',
+    location: 'Location to be announced',
     isPublic: true,
     isVisible: true,
     active: true,
     status: 'upcoming',
   },
   {
-    id: 'demo-event-3',
+    id: 'fallback-event-3',
     title: 'Resource Guidance Session',
     description:
       'A short introduction to available support services, community programs, and next steps.',
-    startDate: '2026-06-26',
-    dateLabel: 'June 26, 2026',
-    time: '14:00',
-    location: 'She-Na Center Hall',
+    dateLabel: 'Schedule to be announced',
+    time: '',
+    location: 'Location to be announced',
     isPublic: true,
     isVisible: true,
     active: true,
@@ -267,7 +264,7 @@ const FALLBACK_DONATION = {
   description:
     'Your support helps keep welcoming programs, resources, and community care available. Online giving will be connected later through the admin-managed donation link.',
   buttonLabel: 'Donate',
-  href: '#contact',
+  href: '#donate',
   isVisible: true,
   active: true,
 };
@@ -276,14 +273,11 @@ const FALLBACK_CONTACT = {
   eyebrow: 'Contact',
   title: 'Get in touch',
   description:
-    'Contact details shown here are temporary placeholders until the public site content is managed from the admin CMS.',
-  email: 'contact@example.org',
+    'Contact details will be published here when they are ready for the public website.',
+  email: '',
   phone: 'Phone number coming soon',
   address: 'Location details coming soon',
-  socialLinks: [
-    { id: 'facebook', label: 'Facebook', href: '#contact', isVisible: true },
-    { id: 'instagram', label: 'Instagram', href: '#contact', isVisible: true },
-  ],
+  socialLinks: [],
   footerText: 'Public community information. Final contact details will be managed from the admin content system.',
   isVisible: true,
   active: true,

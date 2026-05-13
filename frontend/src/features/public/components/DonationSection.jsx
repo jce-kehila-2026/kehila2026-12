@@ -3,7 +3,7 @@ const FALLBACK_DONATION = {
   description:
     'Your support helps keep welcoming programs, resources, and community care available. Online giving will be connected later through the admin-managed donation link.',
   buttonLabel: 'Donate',
-  href: '#contact',
+  href: '#donate',
 };
 
 export default function DonationSection({ donation = {}, organization }) {
@@ -12,7 +12,7 @@ export default function DonationSection({ donation = {}, organization }) {
     ...FALLBACK_DONATION,
     ...donation,
   };
-  const donationHref = donationContent.href || '#contact';
+  const donationHref = donationContent.href || '#donate';
 
   return (
     <section className="public-donation" id="donate" aria-labelledby="public-donation-title">

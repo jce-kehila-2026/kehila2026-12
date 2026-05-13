@@ -53,7 +53,7 @@ export default function EventPreviewCard({ event }) {
         )}
 
         <a className="public-button public-button--secondary public-event-card__button" href="/login">
-          Login to register
+          Login for details
         </a>
       </div>
     </article>

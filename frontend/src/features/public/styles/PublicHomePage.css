@@ -917,64 +917,6 @@
   box-shadow: 0 0 0 6px rgba(36, 107, 95, 0.12);
 }
 
-.public-card-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));
-  gap: 18px;
-  margin-block-start: 28px;
-}
-
-.public-card-grid--team {
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr));
-}
-
-.public-card {
-  min-height: 190px;
-  padding-block: 22px;
-  padding-inline: 22px;
-  background: #ffffff;
-  border: 1px solid #d9e3dc;
-  border-radius: 8px;
-  box-shadow: 0 14px 36px rgba(23, 59, 53, 0.07);
-}
-
-.public-card h3 {
-  margin-block: 0 10px;
-  margin-inline: 0;
-  color: #173b35;
-  font-size: 1.25rem;
-}
-
-.public-card p {
-  margin: 0;
-  color: #52665f;
-  line-height: 1.65;
-}
-
-.public-card__meta {
-  margin-block-end: 10px;
-  color: #b56f45;
-  font-weight: 800;
-}
-
-.public-card--team {
-  text-align: center;
-}
-
-.public-card__avatar {
-  display: grid;
-  width: 58px;
-  height: 58px;
-  margin-block: 0 16px;
-  margin-inline: auto;
-  place-items: center;
-  color: #ffffff;
-  background: #246b5f;
-  border-radius: 50%;
-  font-size: 1.4rem;
-  font-weight: 800;
-}
-
 .public-section--journey {
   background: #ffffff;
 }

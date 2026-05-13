@@ -2,7 +2,7 @@ const FALLBACK_CONTACT = {
   eyebrow: 'Contact',
   title: 'Get in touch',
   description:
-    'Contact details shown here are temporary placeholders until the public site content is managed from the admin CMS.',
+    'Contact details will be published here when they are ready for the public website.',
   email: '',
   phone: '',
   address: '',
@@ -16,15 +16,15 @@ function hasContactValue(value) {
 export default function ContactSection({ contact = {}, organization = {} }) {
   const useFallback = contact.useFallback !== false;
   const fallbackValue = (fieldName) => (useFallback ? FALLBACK_CONTACT[fieldName] : '');
+  const contactEmail = hasContactValue(contact.email) ? contact.email : organization.email;
+  const contactPhone = hasContactValue(contact.phone) ? contact.phone : organization.phone;
+  const contactAddress = hasContactValue(contact.address) ? contact.address : organization.address;
   const contactContent = {
-    eyebrow: contact.eyebrow || FALLBACK_CONTACT.eyebrow,
-    title: contact.title || FALLBACK_CONTACT.title,
-    description: contact.description || FALLBACK_CONTACT.description,
-    email: hasContactValue(organization.email) ? organization.email : fallbackValue('email'),
-    phone: hasContactValue(organization.phone) ? organization.phone : fallbackValue('phone'),
-    address: hasContactValue(organization.address) ? organization.address : fallbackValue('address'),
-    socialLinks: [],
+    ...FALLBACK_CONTACT,
     ...contact,
+    email: hasContactValue(contactEmail) ? contactEmail : fallbackValue('email'),
+    phone: hasContactValue(contactPhone) ? contactPhone : fallbackValue('phone'),
+    address: hasContactValue(contactAddress) ? contactAddress : fallbackValue('address'),
   };
   const socialLinks = Array.isArray(contactContent.socialLinks) ? contactContent.socialLinks.filter(Boolean) : [];
   const hasAnyContact =
@@ -53,7 +53,7 @@ export default function ContactSection({ contact = {}, organization = {} }) {
           {hasContactValue(contactContent.phone) && (
             <article className="public-contact__item">
               <span>Phone</span>
-              {contactContent.phone.includes('coming soon') ? (
+              {contactContent.phone.toLowerCase().includes('coming soon') ? (
                 <p>{contactContent.phone}</p>
               ) : (
                 <a href={`tel:${contactContent.phone}`}>{contactContent.phone}</a>

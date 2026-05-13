@@ -9,9 +9,9 @@ export default function StatisticsSection({ statistics = [], isLoading = false, 
     <section className="public-section public-section--statistics" id="statistics" aria-labelledby="public-statistics-title">
       <div className="public-section__header public-section__header--centered">
         <p className="public-eyebrow">Statistics</p>
-        <h2 id="public-statistics-title">Current focus in simple numbers</h2>
+        <h2 id="public-statistics-title">Public impact details</h2>
         <p className="public-section__text">
-          These are temporary public placeholders. Verified numbers can replace them from Firestore later.
+          Verified public numbers will be shared here after they are reviewed and approved.
         </p>
       </div>
 
@@ -23,7 +23,7 @@ export default function StatisticsSection({ statistics = [], isLoading = false, 
         <div className="public-statistics__grid" data-content-source="fallback">
           {statistics.map((statistic) => (
             <article className="public-statistics__card" key={statistic.id || statistic.label}>
-              <strong>{statistic.value || '0'}</strong>
+              <strong>{statistic.value || 'TBD'}</strong>
               <span>{statistic.label || 'Statistic'}</span>
               {statistic.note ? <p>{statistic.note}</p> : null}
             </article>
