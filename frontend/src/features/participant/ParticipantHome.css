@@ -2,9 +2,9 @@
   min-height: 100vh;
   display: grid;
   grid-template-columns: 260px minmax(0, 1fr);
-  background: linear-gradient(135deg, #fff8fc 0%, #f6ecfb 48%, #fff5f9 100%);
+  background: #fff9fc;
   color: #241332;
-  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: "Poppins", Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 .participant-sidebar {
@@ -65,7 +65,7 @@
 
 .participant-nav {
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
 }
 
 .participant-nav a,
@@ -73,24 +73,43 @@
 .participant-logout {
   align-items: center;
   gap: 12px;
-  min-height: 46px;
+  min-height: 48px;
   border: 0;
-  border-radius: 12px;
+  border-radius: 16px;
   background: transparent;
-  color: rgba(75, 19, 107, 0.66);
+  color: rgba(75, 19, 107, 0.58);
   font: inherit;
   font-weight: 800;
   padding: 0 14px;
   text-decoration: none;
+  transition:
+    background-color 0.22s ease,
+    color 0.22s ease,
+    box-shadow 0.22s ease,
+    transform 0.18s ease;
+}
+
+.participant-nav a:hover,
+.participant-nav button:hover,
+.participant-logout:hover {
+  background: rgba(181, 123, 232, 0.1);
+  color: #5b2d8a;
+  transform: translateX(1px);
 }
 
 .participant-nav a.is-active,
-.participant-nav a:hover,
-.participant-nav button.is-active,
-.participant-nav button:hover,
+.participant-nav button.is-active {
+  background: rgba(181, 123, 232, 0.18);
+  color: #6b3f9e;
+  box-shadow: 0 4px 18px rgba(181, 123, 232, 0.12);
+  border: 1px solid rgba(181, 123, 232, 0.22);
+}
+
+.participant-nav a.is-active:hover,
+.participant-nav button.is-active:hover,
 .participant-logout:hover {
-  background: #f5e8fb;
-  color: #4b136b;
+  background: rgba(181, 123, 232, 0.22);
+  color: #5b2d8a;
 }
 
 .participant-nav button {
@@ -460,8 +479,10 @@
 .participant-home--dark .participant-nav button.is-active,
 .participant-home--dark .participant-nav button:hover,
 .participant-home--dark .participant-logout:hover {
-  background: rgba(236, 72, 153, 0.15);
-  color: #f9a8d4;
+  background: rgba(196, 165, 245, 0.16);
+  color: #e9d5ff;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(196, 165, 245, 0.28);
 }
 
 .participant-home--dark .participant-topbar p {

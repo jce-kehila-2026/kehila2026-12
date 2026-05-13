@@ -1,11 +1,11 @@
 import { useMemo, useState } from 'react';
-import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
-import EventAvailableIcon from '@mui/icons-material/EventAvailable';
-import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
-import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
+import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
+import EventAvailableOutlinedIcon from '@mui/icons-material/EventAvailableOutlined';
+import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined';
+import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
 import LogoutIcon from '@mui/icons-material/Logout';
 import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
-import PeopleIcon from '@mui/icons-material/People';
+import PeopleOutlineOutlinedIcon from '@mui/icons-material/PeopleOutlineOutlined';
 import SpaIcon from '@mui/icons-material/Spa';
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import { useNavigate } from 'react-router-dom';
@@ -17,18 +17,18 @@ import { useAdmin } from '../admin/context/AdminContext';
 import './ParticipantHome.css';
 
 const overviewCards = [
-  { label: 'Upcoming workshops', value: '4', icon: EventAvailableIcon, tone: 'gold' },
+  { label: 'Upcoming workshops', value: '4', icon: EventAvailableOutlinedIcon, tone: 'gold' },
   { label: 'Registered activities', value: '2', icon: TaskAltIcon, tone: 'violet' },
-  { label: 'Appointments', value: '2', icon: FavoriteBorderIcon, tone: 'rose' },
+  { label: 'Appointments', value: '2', icon: FavoriteBorderOutlinedIcon, tone: 'rose' },
   { label: 'Personal notes', value: '1', icon: NotificationsNoneIcon, tone: 'lavender' },
 ];
 
 const participantNavItems = [
-  { key: 'home', label: 'Home', icon: HomeRoundedIcon },
-  { key: 'calendar', label: 'Calendar', icon: CalendarMonthIcon },
-  { key: 'workshops', label: 'Workshops', icon: EventAvailableIcon },
-  { key: 'appointments', label: 'Appointments', icon: FavoriteBorderIcon },
-  { key: 'profile', label: 'Profile', icon: PeopleIcon },
+  { key: 'home', label: 'Home', icon: HomeOutlinedIcon },
+  { key: 'calendar', label: 'Calendar', icon: CalendarMonthOutlinedIcon },
+  { key: 'workshops', label: 'Workshops', icon: EventAvailableOutlinedIcon },
+  { key: 'appointments', label: 'Appointments', icon: FavoriteBorderOutlinedIcon },
+  { key: 'profile', label: 'Profile', icon: PeopleOutlineOutlinedIcon },
 ];
 
 const activityItems = [
@@ -204,11 +204,7 @@ export default function ParticipantHome() {
         {activeView === 'appointments' && (
           <section className="participant-content participant-content--single">
             <div className="participant-panel participant-panel--wide">
-              <AppointmentPage
-                darkMode={darkMode}
-                onDarkModeChange={setDarkMode}
-                embedInDashboard
-              />
+              <AppointmentPage embedInDashboard />
             </div>
           </section>
         )}
