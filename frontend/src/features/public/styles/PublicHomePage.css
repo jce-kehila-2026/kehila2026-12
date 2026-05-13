@@ -28,6 +28,31 @@
   max-width: 100%;
 }
 
+.public-homepage :where(a, button):focus-visible {
+  outline: 3px solid #b56f45;
+  outline-offset: 4px;
+}
+
+.public-skip-link {
+  position: fixed;
+  inset-block-start: 12px;
+  inset-inline-start: 12px;
+  z-index: 100;
+  padding-block: 10px;
+  padding-inline: 14px;
+  color: #ffffff;
+  background: #173b35;
+  border-radius: 6px;
+  font-weight: 800;
+  text-decoration: none;
+  transform: translateY(calc(-100% - 24px));
+  transition: transform 160ms ease;
+}
+
+.public-skip-link:focus-visible {
+  transform: translateY(0);
+}
+
 .public-navbar {
   position: sticky;
   top: 0;
@@ -116,7 +141,8 @@
   align-items: center;
   justify-content: center;
   min-height: 40px;
-  padding: 9px 16px;
+  padding-block: 9px;
+  padding-inline: 16px;
   color: #ffffff;
   background: #246b5f;
   border-radius: 6px;
@@ -131,7 +157,8 @@
   display: none;
   width: 42px;
   height: 42px;
-  padding: 10px;
+  padding-block: 10px;
+  padding-inline: 10px;
   background: #ffffff;
   border: 1px solid #d9e3dc;
   border-radius: 8px;
@@ -153,7 +180,8 @@
   align-items: center;
   gap: clamp(28px, 6vw, 76px);
   min-height: 560px;
-  padding: clamp(64px, 9vw, 112px) clamp(20px, 5vw, 72px);
+  padding-block: clamp(64px, 9vw, 112px);
+  padding-inline: clamp(20px, 5vw, 72px);
   color: #173b35;
   background:
     linear-gradient(135deg, rgba(237, 243, 239, 0.96), rgba(248, 250, 247, 0.92)),
@@ -167,7 +195,8 @@
 }
 
 .public-eyebrow {
-  margin: 0 0 10px;
+  margin-block: 0 10px;
+  margin-inline: 0;
   color: #b56f45;
   font-size: 0.82rem;
   font-weight: 800;
@@ -222,7 +251,8 @@
   align-items: center;
   justify-content: center;
   min-height: 46px;
-  padding: 11px 20px;
+  padding-block: 11px;
+  padding-inline: 20px;
   border: 1px solid transparent;
   border-radius: 6px;
   font-weight: 800;
@@ -258,7 +288,8 @@
   display: grid;
   width: 100%;
   min-height: clamp(300px, 38vw, 460px);
-  padding: clamp(20px, 4vw, 36px);
+  padding-block: clamp(20px, 4vw, 36px);
+  padding-inline: clamp(20px, 4vw, 36px);
   place-items: center;
   background:
     linear-gradient(145deg, rgba(36, 107, 95, 0.88), rgba(23, 59, 53, 0.9)),
@@ -270,7 +301,8 @@
 
 .public-hero__visual-card {
   width: min(100%, 360px);
-  padding: clamp(24px, 5vw, 40px);
+  padding-block: clamp(24px, 5vw, 40px);
+  padding-inline: clamp(24px, 5vw, 40px);
   color: #173b35;
   background: rgba(255, 255, 255, 0.92);
   border: 1px solid rgba(255, 255, 255, 0.82);
@@ -298,7 +330,8 @@
 }
 
 .public-section {
-  padding: clamp(56px, 8vw, 96px) clamp(20px, 5vw, 72px);
+  padding-block: clamp(56px, 8vw, 96px);
+  padding-inline: clamp(20px, 5vw, 72px);
 }
 
 .public-section--muted {
@@ -352,7 +385,8 @@
 }
 
 .public-about__card {
-  padding: 20px;
+  padding-block: 20px;
+  padding-inline: 20px;
   background: #f8faf7;
   border: 1px solid #d9e3dc;
   border-radius: 8px;
@@ -386,7 +420,8 @@
 .public-statistics__card {
   display: grid;
   min-height: 190px;
-  padding: clamp(22px, 4vw, 32px);
+  padding-block: clamp(22px, 4vw, 32px);
+  padding-inline: clamp(22px, 4vw, 32px);
   align-content: start;
   gap: 10px;
   background: #ffffff;
@@ -415,7 +450,8 @@
 
 .public-section__empty {
   margin-block-start: 28px;
-  padding: 22px;
+  padding-block: 22px;
+  padding-inline: 22px;
   color: #52665f;
   background: #ffffff;
   border: 1px dashed #b8c8c0;
@@ -459,7 +495,8 @@
 .public-center__visual {
   display: grid;
   min-height: 360px;
-  padding: clamp(20px, 4vw, 34px);
+  padding-block: clamp(20px, 4vw, 34px);
+  padding-inline: clamp(20px, 4vw, 34px);
   place-items: center;
   background:
     linear-gradient(145deg, rgba(237, 243, 239, 0.95), rgba(255, 255, 255, 0.92)),
@@ -471,7 +508,8 @@
 
 .public-center__visual-card {
   width: min(100%, 360px);
-  padding: 28px;
+  padding-block: 28px;
+  padding-inline: 28px;
   background: #ffffff;
   border: 1px solid #d9e3dc;
   border-radius: 8px;
@@ -520,7 +558,8 @@
 .public-support__card {
   display: grid;
   min-height: 230px;
-  padding: 24px;
+  padding-block: 24px;
+  padding-inline: 24px;
   align-content: start;
   background: #ffffff;
   border: 1px solid #d9e3dc;
@@ -598,7 +637,8 @@
 .public-article-card__body {
   display: grid;
   gap: 14px;
-  padding: 22px;
+  padding-block: 22px;
+  padding-inline: 22px;
   align-content: start;
 }
 
@@ -684,7 +724,8 @@
 .public-team-card__body {
   display: grid;
   gap: 10px;
-  padding: 22px;
+  padding-block: 22px;
+  padding-inline: 22px;
   align-content: start;
 }
 
@@ -779,7 +820,8 @@
 .public-event-card__body {
   display: grid;
   gap: 18px;
-  padding: 22px;
+  padding-block: 22px;
+  padding-inline: 22px;
   align-content: start;
 }
 
@@ -805,7 +847,8 @@
   display: grid;
   gap: 10px;
   margin: 0;
-  padding: 14px;
+  padding-block: 14px;
+  padding-inline: 14px;
   background: #f8faf7;
   border: 1px solid #d9e3dc;
   border-radius: 8px;
@@ -840,7 +883,8 @@
   align-items: center;
   gap: 12px;
   margin-block-start: 28px;
-  padding: 20px;
+  padding-block: 20px;
+  padding-inline: 20px;
   color: #455a53;
   background: #ffffff;
   border: 1px solid #d9e3dc;
@@ -877,7 +921,7 @@
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(100%, 230px), 1fr));
   gap: 18px;
-  margin-top: 28px;
+  margin-block-start: 28px;
 }
 
 .public-card-grid--team {
@@ -886,7 +930,8 @@
 
 .public-card {
   min-height: 190px;
-  padding: 22px;
+  padding-block: 22px;
+  padding-inline: 22px;
   background: #ffffff;
   border: 1px solid #d9e3dc;
   border-radius: 8px;
@@ -894,7 +939,8 @@
 }
 
 .public-card h3 {
-  margin: 0 0 10px;
+  margin-block: 0 10px;
+  margin-inline: 0;
   color: #173b35;
   font-size: 1.25rem;
 }
@@ -906,7 +952,7 @@
 }
 
 .public-card__meta {
-  margin-bottom: 10px;
+  margin-block-end: 10px;
   color: #b56f45;
   font-weight: 800;
 }
@@ -919,7 +965,8 @@
   display: grid;
   width: 58px;
   height: 58px;
-  margin: 0 auto 16px;
+  margin-block: 0 16px;
+  margin-inline: auto;
   place-items: center;
   color: #ffffff;
   background: #246b5f;
@@ -962,7 +1009,8 @@
   position: relative;
   display: grid;
   min-height: 260px;
-  padding: 24px;
+  padding-block: 24px;
+  padding-inline: 24px;
   align-content: start;
   gap: 10px;
   background: #f8faf7;
@@ -985,7 +1033,8 @@
 }
 
 .public-journey__label {
-  margin: 8px 0 0;
+  margin-block: 8px 0;
+  margin-inline: 0;
   color: #b56f45;
   font-size: 0.82rem;
   font-weight: 800;
@@ -1013,7 +1062,8 @@
   gap: 28px;
   margin-block: clamp(44px, 7vw, 72px);
   margin-inline: clamp(20px, 5vw, 72px);
-  padding: clamp(36px, 6vw, 56px);
+  padding-block: clamp(36px, 6vw, 56px);
+  padding-inline: clamp(36px, 6vw, 56px);
   color: #ffffff;
   background: #173b35;
   border-radius: 8px;
@@ -1056,7 +1106,8 @@
 .public-contact__item {
   display: grid;
   min-height: 150px;
-  padding: 22px;
+  padding-block: 22px;
+  padding-inline: 22px;
   align-content: start;
   gap: 10px;
   background: #ffffff;
@@ -1133,7 +1184,8 @@
 }
 
 .public-footer__group h2 {
-  margin: 0 0 14px;
+  margin-block: 0 14px;
+  margin-inline: 0;
   color: #ffffff;
   font-size: 0.92rem;
   letter-spacing: 0;
@@ -1213,7 +1265,8 @@
     align-items: center;
     justify-content: center;
     min-height: 44px;
-    padding: 10px 12px;
+    padding-block: 10px;
+    padding-inline: 12px;
     background: #ffffff;
     border: 1px solid #d9e3dc;
     border-radius: 8px;
@@ -1348,7 +1401,8 @@
   .public-donation {
     margin-block: 36px;
     margin-inline: 16px;
-    padding: 28px 18px;
+    padding-block: 28px;
+    padding-inline: 18px;
   }
 
   .public-footer {

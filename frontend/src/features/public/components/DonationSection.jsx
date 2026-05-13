@@ -15,10 +15,10 @@ export default function DonationSection({ donation = {}, organization }) {
   const donationHref = donationContent.href || '#contact';
 
   return (
-    <section className="public-donation" id="donate">
+    <section className="public-donation" id="donate" aria-labelledby="public-donation-title">
       <div className="public-donation__content">
         <p className="public-eyebrow">{donationContent.eyebrow}</p>
-        <h2>{donationContent.title || `Help ${organizationName} grow community programs`}</h2>
+        <h2 id="public-donation-title">{donationContent.title || `Help ${organizationName} grow community programs`}</h2>
         <p>{donationContent.description}</p>
       </div>
       <a className="public-button public-button--primary public-donation__button" href={donationHref}>

@@ -13,10 +13,10 @@ export default function AboutSection({ about = {}, organization, supportAreas = 
   };
 
   return (
-    <section className="public-section public-section--about" id="about">
+    <section className="public-section public-section--about" id="about" aria-labelledby="public-about-title">
       <div className="public-section__header">
         <p className="public-eyebrow">About</p>
-        <h2>{aboutContent.title}</h2>
+        <h2 id="public-about-title">{aboutContent.title}</h2>
       </div>
       <div className="public-about__content">
         <p className="public-section__text">{aboutContent.intro}</p>

@@ -16,10 +16,10 @@ export default function HeroSection({ hero = {}, organization, loading }) {
   };
 
   return (
-    <section className="public-hero" id="home">
+    <section className="public-hero" id="home" aria-labelledby="public-hero-title">
       <div className="public-hero__content">
         <p className="public-eyebrow">{loading ? 'Preparing public content' : heroContent.eyebrow}</p>
-        <h1>{heroContent.title}</h1>
+        <h1 id="public-hero-title">{heroContent.title}</h1>
         <p className="public-hero__description">{heroContent.message}</p>
         <p className="public-hero__support">{heroContent.supportText}</p>
         <div className="public-hero__actions">
@@ -34,9 +34,11 @@ export default function HeroSection({ hero = {}, organization, loading }) {
           </a>
         </div>
       </div>
-      <div className="public-hero__visual" aria-label="Supportive community visual placeholder">
+      <div className="public-hero__visual" aria-labelledby="public-hero-visual-title">
         <div className="public-hero__visual-card">
-          <span className="public-hero__visual-mark">She-Na</span>
+          <span className="public-hero__visual-mark" id="public-hero-visual-title">
+            She-Na
+          </span>
           <p>Knowledge, health, and emotional support for recovering women.</p>
         </div>
       </div>

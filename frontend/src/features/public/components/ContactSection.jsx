@@ -34,10 +34,10 @@ export default function ContactSection({ contact = {}, organization = {} }) {
     socialLinks.length > 0;
 
   return (
-    <section className="public-section public-contact" id="contact">
+    <section className="public-section public-contact" id="contact" aria-labelledby="public-contact-title">
       <div className="public-section__header">
         <p className="public-eyebrow">{contactContent.eyebrow}</p>
-        <h2>{contactContent.title}</h2>
+        <h2 id="public-contact-title">{contactContent.title}</h2>
         <p className="public-section__text">{contactContent.description}</p>
       </div>
 
@@ -71,13 +71,13 @@ export default function ContactSection({ contact = {}, organization = {} }) {
           {socialLinks.length > 0 && (
             <article className="public-contact__item public-contact__item--social">
               <span>Social</span>
-              <div className="public-contact__social">
+              <nav className="public-contact__social" aria-label="Contact social links">
                 {socialLinks.map((link) => (
                   <a href={link.href || '#contact'} key={link.id || link.label}>
                     {link.label}
                   </a>
                 ))}
-              </div>
+              </nav>
             </article>
           )}
         </div>

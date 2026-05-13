@@ -49,10 +49,10 @@ export default function EventsPreviewSection({
   const publicUpcomingEvents = getPublicUpcomingEvents(events, maxItems);
 
   return (
-    <section className="public-section public-section--events public-section--muted" id="events">
+    <section className="public-section public-section--events public-section--muted" id="events" aria-labelledby="public-events-title">
       <div className="public-section__header public-section__header--events">
         <p className="public-eyebrow">Events</p>
-        <h2>Upcoming Activities</h2>
+        <h2 id="public-events-title">Upcoming Activities</h2>
         <p className="public-section__text">
           Discover upcoming support activities, workshops, and community gatherings open to visitors.
         </p>

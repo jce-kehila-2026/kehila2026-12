@@ -6,10 +6,10 @@ export default function StatisticsSection({ statistics = [], isLoading = false, 
   const hasStatistics = statistics.length > 0;
 
   return (
-    <section className="public-section public-section--statistics" id="statistics">
+    <section className="public-section public-section--statistics" id="statistics" aria-labelledby="public-statistics-title">
       <div className="public-section__header public-section__header--centered">
         <p className="public-eyebrow">Statistics</p>
-        <h2>Current focus in simple numbers</h2>
+        <h2 id="public-statistics-title">Current focus in simple numbers</h2>
         <p className="public-section__text">
           These are temporary public placeholders. Verified numbers can replace them from Firestore later.
         </p>

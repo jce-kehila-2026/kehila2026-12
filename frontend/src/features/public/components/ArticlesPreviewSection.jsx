@@ -28,10 +28,10 @@ export default function ArticlesPreviewSection({
   const visibleArticles = getVisibleArticles(articles, maxItems);
 
   return (
-    <section className="public-section public-section--articles public-section--muted" id="articles">
+    <section className="public-section public-section--articles public-section--muted" id="articles" aria-labelledby="public-articles-title">
       <div className="public-section__header public-section__header--articles">
         <p className="public-eyebrow">Articles</p>
-        <h2>Knowledge &amp; Support</h2>
+        <h2 id="public-articles-title">Knowledge &amp; Support</h2>
         <p className="public-section__text">
           Helpful articles, practical resources, and supportive guidance for women and families.
         </p>

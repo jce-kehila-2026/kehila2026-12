@@ -102,8 +102,11 @@ export default function PublicHomePage() {
 
   return (
     <div className="public-homepage">
+      <a className="public-skip-link" href="#public-main">
+        Skip to main content
+      </a>
       <PublicNavbar organization={content.organization} />
-      <main>
+      <main id="public-main">
         {error ? (
           <ErrorState message="Some public content could not be loaded. Showing available information." />
         ) : null}

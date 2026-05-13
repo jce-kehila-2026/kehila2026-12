@@ -2,10 +2,10 @@ export default function ShenaCenterSection({ center = {} }) {
   const activities = Array.isArray(center.activities) ? center.activities.filter(Boolean) : [];
 
   return (
-    <section className="public-section public-section--center" id="center" data-content-source="fallback">
+    <section className="public-section public-section--center" id="center" aria-labelledby="public-center-title" data-content-source="fallback">
       <div className="public-center__content">
         <p className="public-eyebrow">{center.eyebrow || 'SHEna Center'}</p>
-        <h2>{center.title || 'A calm recovery center for steady support'}</h2>
+        <h2 id="public-center-title">{center.title || 'A calm recovery center for steady support'}</h2>
         <p className="public-section__text">
           {center.description ||
             'The SHEna center is a respectful place for recovering women to find guidance, practical tools, and community connection.'}
@@ -22,12 +22,12 @@ export default function ShenaCenterSection({ center = {} }) {
         </a>
       </div>
 
-      <div className="public-center__visual" aria-label="SHEna recovery center visual placeholder">
+      <div className="public-center__visual" aria-labelledby="public-center-card-title">
         <div className="public-center__visual-card">
           <span className="public-center__icon" aria-hidden="true">
             SH
           </span>
-          <h3>Recovery, dignity, and care</h3>
+          <h3 id="public-center-card-title">Recovery, dignity, and care</h3>
           <p>Center text and imagery can later be managed from Firestore.</p>
         </div>
       </div>

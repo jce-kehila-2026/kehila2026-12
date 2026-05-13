@@ -29,10 +29,10 @@ export default function TeamPreviewSection({
   const visibleTeamMembers = getVisibleTeamMembers(teamMembers, maxItems);
 
   return (
-    <section className="public-section public-section--team-preview" id="team">
+    <section className="public-section public-section--team-preview" id="team" aria-labelledby="public-team-title">
       <div className="public-section__header public-section__header--team">
         <p className="public-eyebrow">Team</p>
-        <h2>Meet the Team</h2>
+        <h2 id="public-team-title">Meet the Team</h2>
         <p className="public-section__text">
           Dedicated people supporting She-Na&apos;s community with professionalism, care, and respect.
         </p>

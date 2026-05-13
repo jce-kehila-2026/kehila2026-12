@@ -48,13 +48,13 @@ export default function PublicFooter({ organization, contact = {} }) {
         <div className="public-footer__group">
           <h2>Social</h2>
           {socialLinks.length ? (
-            <div className="public-footer__social" aria-label="Social media links">
+            <nav className="public-footer__social" aria-label="Footer social links">
               {socialLinks.map((link) => (
                 <a href={link.href || '#contact'} key={link.id || link.label}>
                   {link.label || 'Social link'}
                 </a>
               ))}
-            </div>
+            </nav>
           ) : (
             <p className="public-footer__text">Social links coming soon</p>
           )}

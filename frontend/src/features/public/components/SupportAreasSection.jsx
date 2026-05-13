@@ -6,10 +6,10 @@ export default function SupportAreasSection({ supportAreas = [], isLoading = fal
   const visibleSupportAreas = Array.isArray(supportAreas) ? supportAreas.filter(Boolean) : [];
 
   return (
-    <section className="public-section public-section--support" id="support">
+    <section className="public-section public-section--support" id="support" aria-labelledby="public-support-title">
       <div className="public-section__header">
         <p className="public-eyebrow">Support Areas</p>
-        <h2>Focused support for recovery and growth</h2>
+        <h2 id="public-support-title">Focused support for recovery and growth</h2>
       </div>
 
       {isLoading ? (

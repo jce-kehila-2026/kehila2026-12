@@ -12,6 +12,7 @@ const PUBLIC_LINKS = [
 export default function PublicNavbar({ organization }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const organizationName = organization?.name || 'She-Na';
+  const menuButtonLabel = isMenuOpen ? 'Close public navigation' : 'Open public navigation';
 
   function closeMenu() {
     setIsMenuOpen(false);
@@ -32,12 +33,12 @@ export default function PublicNavbar({ organization }) {
           type="button"
           aria-controls="public-navigation"
           aria-expanded={isMenuOpen}
-          aria-label="Toggle public navigation"
+          aria-label={menuButtonLabel}
           onClick={() => setIsMenuOpen((currentValue) => !currentValue)}
         >
-          <span />
-          <span />
-          <span />
+          <span aria-hidden="true" />
+          <span aria-hidden="true" />
+          <span aria-hidden="true" />
         </button>
       </div>
 
