@@ -40,8 +40,9 @@ const FALLBACK_CONTENT = {
   team: [
     {
       id: 'fallback-team-1',
-      title: 'Our Team',
-      content: 'Team profiles will appear here once they are published in the CMS.',
+      name: 'Our Team',
+      role: 'She-Na',
+      description: 'Team profiles will appear here once they are published in the CMS.',
     },
   ],
 };
@@ -80,17 +81,16 @@ async function fetchCollection(collectionName, maxItems = 6) {
 }
 
 export async function getPublicHomepageContent() {
-  const [orgInfo, articles, teamProfiles] = await Promise.all([
+  const [orgInfo, articles] = await Promise.all([
     fetchCollection('org_info', 1),
     fetchCollection('articles', 3),
-    fetchCollection('team_profiles', 4),
   ]);
 
   return {
     organization: normalizeOrganization(orgInfo),
     events: FALLBACK_CONTENT.events,
     articles: articles.length ? articles : FALLBACK_CONTENT.articles,
-    team: teamProfiles.length ? teamProfiles : FALLBACK_CONTENT.team,
+    team: FALLBACK_CONTENT.team,
   };
 }
 
