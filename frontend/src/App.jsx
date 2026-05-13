@@ -16,7 +16,7 @@ import LoginPage from './features/admin/pages/LoginPage';
 import DashboardPage from './features/admin/pages/DashboardPage';
 import EventsPage from './features/admin/pages/EventsPage';
 import EventDetailPage from './features/admin/pages/EventDetailPage';
-import AppointmentsPage from './features/admin/pages/AppointmentsPage';
+// import AppointmentsPage from './features/admin/pages/AppointmentsPage';
 import CMSPage from './features/admin/pages/CMSPage';
 import UserManagementPage from './features/admin/pages/UserManagementPage';
 import AuditLogPage from './features/admin/pages/AuditLogPage';
@@ -83,7 +83,7 @@ function ThemedApp() {
               <Route path="dashboard" element={<DashboardPage />} />
               <Route path="events" element={<EventsPage />} />
               <Route path="events/:eventId" element={<EventDetailPage />} />
-              <Route path="appointments" element={<AppointmentsPage />} />
+              <Route path="appointments" element={<div>Appointments Page</div>} />
               <Route path="calendar" element={<Navigate to="/home" replace />} />
               <Route path="cms" element={<CMSPage />} />
               <Route path="users" element={<UserManagementPage />} />

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import EventAvailableIcon from '@mui/icons-material/EventAvailable';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
@@ -10,9 +10,10 @@ import SpaIcon from '@mui/icons-material/Spa';
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import { useNavigate } from 'react-router-dom';
 import CalendarPage from '../calendar/CalendarPage';
+import AppointmentPage from '../appointments/pages/AppointmentPage';
+import ProfilePage from '../profile/pages/ProfilePage';
 import WorkshopFeed from './WorkshopFeed';
 import { useAdmin } from '../admin/context/AdminContext';
-import { getAppointmentsByEmail } from '../admin/services/appointmentService';
 import './ParticipantHome.css';
 
 const overviewCards = [
@@ -48,104 +49,12 @@ const activityItems = [
   },
 ];
 
-const STATUS_STYLES = {
-  pending:  { background: '#FFF3CD', color: '#856404' },
-  approved: { background: '#D1E7DD', color: '#0A3622' },
-  cancelled:{ background: '#F8D7DA', color: '#58151C' },
-};
-
-function AppointmentCard({ appt }) {
-  const style = STATUS_STYLES[appt.status] ?? STATUS_STYLES.pending;
-  return (
-    <article style={{
-      background: '#fff',
-      borderRadius: 12,
-      padding: '18px 20px',
-      boxShadow: '0 1px 6px rgba(0,0,0,0.08)',
-      display: 'flex',
-      flexDirection: 'column',
-      gap: 6,
-    }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-        <strong style={{ fontSize: '1rem', color: '#1a1a2e' }}>{appt.type || 'Appointment'}</strong>
-        <span style={{
-          ...style,
-          fontSize: '0.72rem', fontWeight: 700, padding: '3px 10px',
-          borderRadius: 20, textTransform: 'capitalize',
-        }}>
-          {appt.status || 'pending'}
-        </span>
-      </div>
-      <span style={{ fontSize: '0.85rem', color: '#555' }}>
-        {appt.date} {appt.time ? `at ${appt.time}` : ''}
-      </span>
-      {appt.providerName && (
-        <span style={{ fontSize: '0.82rem', color: '#888' }}>With: {appt.providerName}</span>
-      )}
-      {appt.notes && (
-        <p style={{ margin: 0, fontSize: '0.82rem', color: '#666', borderTop: '1px solid #f0f0f0', paddingTop: 8 }}>
-          {appt.notes}
-        </p>
-      )}
-    </article>
-  );
-}
-
-function ParticipantAppointments({ email }) {
-  const [appointments, setAppointments] = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (!email) return;
-    getAppointmentsByEmail(email)
-      .then(setAppointments)
-      .finally(() => setLoading(false));
-  }, [email]);
-
-  if (loading) return <p style={{ color: '#888', padding: '16px 0' }}>Loading appointments…</p>;
-
-  if (appointments.length === 0) {
-    return (
-      <div style={{ textAlign: 'center', padding: '40px 0', color: '#aaa' }}>
-        <FavoriteBorderIcon style={{ fontSize: 48, marginBottom: 12, opacity: 0.4 }} />
-        <p style={{ margin: 0 }}>You have no appointments scheduled yet.</p>
-      </div>
-    );
-  }
-
-  const upcoming = appointments.filter((a) => a.status !== 'cancelled');
-  const past = appointments.filter((a) => a.status === 'cancelled');
-
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
-      {upcoming.length > 0 && (
-        <div>
-          <p style={{ margin: '0 0 12px', fontSize: '0.8rem', fontWeight: 700, color: '#888', textTransform: 'uppercase', letterSpacing: 1 }}>
-            Upcoming
-          </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {upcoming.map((a) => <AppointmentCard key={a.id} appt={a} />)}
-          </div>
-        </div>
-      )}
-      {past.length > 0 && (
-        <div>
-          <p style={{ margin: '0 0 12px', fontSize: '0.8rem', fontWeight: 700, color: '#888', textTransform: 'uppercase', letterSpacing: 1 }}>
-            Cancelled
-          </p>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-            {past.map((a) => <AppointmentCard key={a.id} appt={a} />)}
-          </div>
-        </div>
-      )}
-    </div>
-  );
-}
-
 export default function ParticipantHome() {
   const navigate = useNavigate();
   const { currentUser, userRole, logout } = useAdmin();
   const [activeView, setActiveView] = useState('home');
+  /** Shared with ProfilePage so toggling dark mode restyles the whole dashboard (sidebar, topbar, panels). */
+  const [darkMode, setDarkMode] = useState(false);
   const displayName = useMemo(() => {
     if (currentUser?.displayName) return currentUser.displayName.split(' ')[0];
     if (currentUser?.email) return currentUser.email.split('@')[0];
@@ -175,7 +84,10 @@ export default function ParticipantHome() {
           </button>
         </div>
       )}
-    <main className="participant-home" dir="ltr">
+    <main
+      className={`participant-home${darkMode ? ' participant-home--dark' : ''}`}
+      dir="ltr"
+    >
       <aside className="participant-sidebar" aria-label="Participant navigation">
         <div className="participant-brand">
           <span className="participant-brand__mark">S</span>
@@ -292,16 +204,29 @@ export default function ParticipantHome() {
         {activeView === 'appointments' && (
           <section className="participant-content participant-content--single">
             <div className="participant-panel participant-panel--wide">
-              <div className="participant-section-heading">
-                <span>My schedule</span>
-                <h2>Appointments</h2>
-              </div>
-              <ParticipantAppointments email={currentUser?.email} />
+              <AppointmentPage
+                darkMode={darkMode}
+                onDarkModeChange={setDarkMode}
+                embedInDashboard
+              />
             </div>
           </section>
         )}
 
-        {!['home', 'calendar', 'workshops', 'appointments'].includes(activeView) && (
+        {/* Profile nav: show shared profile / personal details page (same component as /profile route) */}
+        {activeView === 'profile' && (
+          <section className="participant-content participant-content--single">
+            <div className="participant-panel participant-panel--wide">
+              <ProfilePage
+                darkMode={darkMode}
+                onDarkModeChange={setDarkMode}
+                embedInDashboard
+              />
+            </div>
+          </section>
+        )}
+
+        {!['home', 'calendar', 'workshops', 'appointments', 'profile'].includes(activeView) && (
           <section className="participant-content participant-content--single">
             <div className="participant-panel participant-panel--wide">
               <div className="participant-section-heading">

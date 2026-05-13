@@ -4,12 +4,6 @@ import { CacheProvider } from "@emotion/react";
 import { prefixer } from "stylis";
 import rtlPlugin from "stylis-plugin-rtl";
 import BedtimeOutlinedIcon from "@mui/icons-material/BedtimeOutlined";
-import ChatBubbleOutlineOutlinedIcon from "@mui/icons-material/ChatBubbleOutlineOutlined";
-import EventOutlinedIcon from "@mui/icons-material/EventOutlined";
-import FavoriteBorderOutlinedIcon from "@mui/icons-material/FavoriteBorderOutlined";
-import GroupOutlinedIcon from "@mui/icons-material/GroupOutlined";
-import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
-import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import WbSunnyOutlinedIcon from "@mui/icons-material/WbSunnyOutlined";
 import { signOut } from "firebase/auth";
 import {
@@ -26,7 +20,10 @@ import { auth } from "../../../firebase";
 import ChangePasswordCard from "../components/ChangePasswordCard";
 import PersonalDetailsForm from "../components/PersonalDetailsForm";
 import ProfileCard from "../components/ProfileCard";
-import { getParticipantData } from "../services/participantService";
+import {
+  getParticipantData,
+  createParticipantProfile,
+} from "../services/participantService";
 
 const DARK_MODE_TOGGLE_ICON_PINK = "#ec4899";
 const DARK_MODE_TOGGLE_ICON_ON_PINK = "#ffffff";
@@ -43,21 +40,23 @@ const profileCacheLtr = createCache({
   stylisPlugins: [prefixer],
 });
 
-const navDefs = [
-  { labelKey: "navDashboard", icon: HomeOutlinedIcon, active: false },
-  { labelKey: "navCommunity", icon: GroupOutlinedIcon, active: false },
-  { labelKey: "navMessages", icon: ChatBubbleOutlineOutlinedIcon, active: false },
-  { labelKey: "navEvents", icon: EventOutlinedIcon, active: false },
-  { labelKey: "navResources", icon: FavoriteBorderOutlinedIcon, active: false },
-  { labelKey: "navSettings", icon: SettingsOutlinedIcon, active: true },
-];
-
-function ProfilePage() {
-  const participantId = "participant-001";
+function ProfilePage({
+  darkMode: darkModeFromParent,
+  onDarkModeChange,
+  embedInDashboard = false,
+} = {}) {
+  const user = auth.currentUser;
+const participantId = user?.uid;
 
   const [profile, setProfile] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
+  const [darkModeInternal, setDarkModeInternal] = useState(false);
+
+  /** When embedded in ParticipantHome, dark mode is owned by the parent so the whole shell stays in sync. */
+  const darkModeControlled =
+    typeof darkModeFromParent === "boolean" && typeof onDarkModeChange === "function";
+  const darkMode = darkModeControlled ? darkModeFromParent : darkModeInternal;
+  const setDarkMode = darkModeControlled ? onDarkModeChange : setDarkModeInternal;
 
   // locale = the language that is actually applied to the page
   const [locale, setLocale] = useState("en");
@@ -91,19 +90,44 @@ function ProfilePage() {
   };
 
   useEffect(() => {
-    let mounted = true;
+  let mounted = true;
 
-    async function loadData() {
-      const data = await getParticipantData(participantId);
+  async function loadData() {
+    try {
+      let data = await getParticipantData(participantId);
+
+      if (!data && user) {
+        const defaultProfile = {
+          fullName: user.displayName || "",
+          email: user.email || "",
+          phoneNumber: "",
+          streetAddress: "",
+          city: "",
+          birthDate: "",
+          preferredContactMethod: "email",
+          language: "english",
+          avatarUrl: "",
+        };
+
+        await createParticipantProfile(participantId, defaultProfile);
+
+        data = defaultProfile;
+      }
+
       if (mounted) setProfile(data);
+    } catch (error) {
+      console.error(error);
+
+      if (mounted) setProfile({});
     }
+  }
 
-    loadData();
+  loadData();
 
-    return () => {
-      mounted = false;
-    };
-  }, []);
+  return () => {
+    mounted = false;
+  };
+}, []);
 
   useEffect(() => {
     if (!profile?.language) return;
@@ -126,10 +150,14 @@ function ProfilePage() {
           <Box
             dir="ltr"
             sx={{
-              minHeight: "100vh",
+              minHeight: embedInDashboard ? "min(240px, 40vh)" : "100vh",
               display: "grid",
               placeItems: "center",
-              background: "linear-gradient(140deg, #fff8fc 0%, #fdf3f8 100%)",
+              background: embedInDashboard
+                ? "transparent"
+                : darkMode
+                  ? "linear-gradient(145deg, #0f172a 0%, #020617 55%, #0c1222 100%)"
+                  : "linear-gradient(140deg, #fff8fc 0%, #fdf3f8 100%)",
             }}
           >
             <CircularProgress sx={{ color: "#ec4899" }} />
@@ -146,107 +174,28 @@ function ProfilePage() {
           dir={locale === "he" ? "rtl" : "ltr"}
           lang={locale === "he" ? "he" : "en"}
           sx={{
-            minHeight: "100vh",
+            minHeight: embedInDashboard ? "auto" : "100vh",
             display: "flex",
+            flexDirection: "column",
             transition: "background 0.25s ease",
-            background: darkMode
-              ? "linear-gradient(145deg, #0f172a 0%, #020617 55%, #0c1222 100%)"
-              : "linear-gradient(140deg, #fff8fc 0%, #fdf3f8 100%)",
+            background: embedInDashboard
+              ? "transparent"
+              : darkMode
+                ? "linear-gradient(145deg, #0f172a 0%, #020617 55%, #0c1222 100%)"
+                : "linear-gradient(140deg, #fff8fc 0%, #fdf3f8 100%)",
           }}
         >
-          <Box
-            component="aside"
-            sx={{
-              width: { xs: 92, sm: 210 },
-              flexShrink: 0,
-              borderInlineEnd: darkMode
-                ? "1px solid #334155"
-                : "1px solid #f6dce8",
-              bgcolor: darkMode ? "#0f172a" : "#fffefe",
-              px: { xs: 1, sm: 1.8 },
-              py: 3,
-            }}
-          >
-            <Typography
-              sx={{
-                fontWeight: 800,
-                color: darkMode ? "#f472b6" : "#be185d",
-                fontSize: 36,
-                px: 1,
-                mb: 3.5,
-                display: { xs: "none", sm: "block" },
-              }}
-            >
-              She-Na
-            </Typography>
-
-            <Stack spacing={0.8}>
-              {navDefs.map((item) => {
-                const Icon = item.icon;
-
-                return (
-                  <ButtonBase
-                    key={item.labelKey}
-                    sx={{
-                      width: "100%",
-                      justifyContent: "flex-start",
-                      gap: 1.1,
-                      px: { xs: 1, sm: 1.3 },
-                      py: 1.2,
-                      borderRadius: 3,
-                      color: item.active
-                        ? darkMode
-                          ? "#f9a8d4"
-                          : "#be185d"
-                        : darkMode
-                          ? "#94a3b8"
-                          : "#374151",
-                      border: item.active
-                        ? darkMode
-                          ? "1px solid rgba(236, 72, 153, 0.35)"
-                          : "1px solid #f2c3dd"
-                        : "1px solid transparent",
-                      background: item.active
-                        ? darkMode
-                          ? "linear-gradient(90deg, rgba(236,72,153,0.18) 0%, rgba(15,23,42,0.9) 100%)"
-                          : "linear-gradient(90deg, #fce7f3 0%, #fff3f8 100%)"
-                        : "transparent",
-                      "&:hover": {
-                        backgroundColor: item.active
-                          ? darkMode
-                            ? "rgba(236, 72, 153, 0.15)"
-                            : "#fce7f3"
-                          : darkMode
-                            ? "rgba(148, 163, 184, 0.12)"
-                            : "#fdf2f8",
-                      },
-                    }}
-                  >
-                    <Icon sx={{ fontSize: 20 }} />
-                    <Typography
-                      sx={{
-                        fontSize: 14.5,
-                        display: { xs: "none", sm: "block" },
-                        color: "inherit",
-                      }}
-                    >
-                      {t(item.labelKey)}
-                    </Typography>
-                  </ButtonBase>
-                );
-              })}
-            </Stack>
-          </Box>
-
           <Box
             component="main"
             sx={{
               flex: 1,
+              width: "100%",
+              minWidth: 0,
               px: { xs: 2, sm: 4 },
               py: { xs: 2.5, sm: 3.6 },
             }}
           >
-            <Box sx={{ maxWidth: 1120 }}>
+            <Box sx={{ maxWidth: { xs: "100%", lg: 1320 }, width: "100%" }}>
               <Box
                 sx={{
                   display: "flex",

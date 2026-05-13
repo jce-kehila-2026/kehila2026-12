@@ -1,4 +1,10 @@
 import { useState } from "react";
+import {
+  EmailAuthProvider,
+  reauthenticateWithCredential,
+  updatePassword,
+} from "firebase/auth";
+import { auth } from "../../../firebase";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
@@ -18,6 +24,58 @@ function ChangePasswordCard({ darkMode = false, t = (k) => k }) {
   const [showCurrent, setShowCurrent] = useState(false);
   const [showNew, setShowNew] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+const [newPassword, setNewPassword] = useState("");
+const [confirmPassword, setConfirmPassword] = useState("");
+const [savingPassword, setSavingPassword] = useState(false);
+const handlePasswordChange = async () => {
+  try {
+    setSavingPassword(true);
+
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      alert("Please fill all password fields");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      alert("Passwords do not match");
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      alert("Password must be at least 6 characters");
+      return;
+    }
+
+    const user = auth.currentUser;
+
+    if (!user || !user.email) {
+      alert("No authenticated user found");
+      return;
+    }
+
+    const credential = EmailAuthProvider.credential(
+      user.email,
+      currentPassword
+    );
+
+    await reauthenticateWithCredential(user, credential);
+
+    await updatePassword(user, newPassword);
+
+    alert("Password updated successfully");
+
+    setCurrentPassword("");
+    setNewPassword("");
+    setConfirmPassword("");
+  } catch (error) {
+    console.error(error);
+
+    alert(error.message);
+  } finally {
+    setSavingPassword(false);
+  }
+};
 
   const cardSx = darkMode
     ? {
@@ -143,6 +201,8 @@ function ChangePasswordCard({ darkMode = false, t = (k) => k }) {
                 variant="outlined"
                 type={showCurrent ? "text" : "password"}
                 autoComplete="current-password"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
                 sx={fieldSx}
                 slotProps={{
                   input: {
@@ -160,6 +220,8 @@ function ChangePasswordCard({ darkMode = false, t = (k) => k }) {
                 variant="outlined"
                 type={showNew ? "text" : "password"}
                 autoComplete="new-password"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
                 sx={fieldSx}
                 slotProps={{
                   input: {
@@ -177,6 +239,8 @@ function ChangePasswordCard({ darkMode = false, t = (k) => k }) {
                 variant="outlined"
                 type={showConfirm ? "text" : "password"}
                 autoComplete="new-password"
+                value={confirmPassword}
+onChange={(e) => setConfirmPassword(e.target.value)}
                 sx={fieldSx}
                 slotProps={{
                   input: {
@@ -191,6 +255,8 @@ function ChangePasswordCard({ darkMode = false, t = (k) => k }) {
             <Button
               type="button"
               variant="contained"
+              onClick={handlePasswordChange}
+disabled={savingPassword}
               startIcon={<LockOutlinedIcon sx={{ fontSize: 20 }} />}
               sx={{
                 width: "58%",

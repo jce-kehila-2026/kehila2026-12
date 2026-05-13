@@ -70,8 +70,8 @@ if (cleanPhone.length < 12) {
     setSaving(true);
 
     try {
-      const updated = await updateParticipantData(participantId, formData);
-      onProfileUpdated(updated);
+     await updateParticipantData(participantId, formData);
+      onProfileUpdated(formData);
       onSaveLanguage?.();
       onFinishEditing();
     } finally {
@@ -267,19 +267,50 @@ if (cleanPhone.length < 12) {
                   "& .react-tel-input .flag-dropdown": {
                     pointerEvents: "auto",
                     zIndex: 3,
+                    ...(darkMode && {
+                      backgroundColor: "#1e293b !important",
+                      borderColor: "#475569 !important",
+                      borderRight: "1px solid #475569 !important",
+                    }),
                   },
                   "& .react-tel-input .selected-flag": {
                     pointerEvents: "auto",
+                    ...(darkMode && {
+                      backgroundColor: "#1e293b !important",
+                    }),
                   },
                   "& .react-tel-input .form-control": {
                     direction: "ltr",
                     textAlign: "left",
                     unicodeBidi: "plaintext",
+                    ...(darkMode && {
+                      backgroundColor: "#0f172a !important",
+                      color: "#f1f5f9 !important",
+                      borderColor: "#475569 !important",
+                      border: "1px solid #475569 !important",
+                    }),
                   },
                   "& .react-tel-input .country-list": {
                     direction: "ltr",
                     textAlign: "left",
+                    ...(darkMode && {
+                      backgroundColor: "#0f172a !important",
+                      color: "#f1f5f9 !important",
+                      borderColor: "#475569 !important",
+                      border: "1px solid #475569 !important",
+                    }),
                   },
+                  ...(darkMode && {
+                    "& .react-tel-input .country-list .country": {
+                      color: "#f1f5f9 !important",
+                    },
+                    "& .react-tel-input .country-list .country:hover": {
+                      backgroundColor: "rgba(236, 72, 153, 0.12) !important",
+                    },
+                    "& .react-tel-input .country-list .country.highlight": {
+                      backgroundColor: "rgba(236, 72, 153, 0.18) !important",
+                    },
+                  }),
                 }}
               >
                 <PhoneInput

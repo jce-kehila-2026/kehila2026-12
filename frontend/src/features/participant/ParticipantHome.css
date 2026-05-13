@@ -428,6 +428,206 @@
   }
 }
 
+/* ── Dashboard dark mode (shared with Profile settings toggle) ─────────── */
+
+.participant-home.participant-home--dark {
+  background: linear-gradient(145deg, #0f172a 0%, #020617 55%, #0c1222 100%);
+  color: #e2e8f0;
+}
+
+.participant-home--dark .participant-sidebar {
+  border-right-color: #334155;
+  background: #0f172a;
+  box-shadow: 12px 0 44px rgba(0, 0, 0, 0.35);
+}
+
+.participant-home--dark .participant-brand strong {
+  color: #fbcfe8;
+}
+
+.participant-home--dark .participant-brand small {
+  color: rgba(244, 114, 182, 0.65);
+}
+
+.participant-home--dark .participant-nav a,
+.participant-home--dark .participant-nav button,
+.participant-home--dark .participant-logout {
+  color: #94a3b8;
+}
+
+.participant-home--dark .participant-nav a.is-active,
+.participant-home--dark .participant-nav a:hover,
+.participant-home--dark .participant-nav button.is-active,
+.participant-home--dark .participant-nav button:hover,
+.participant-home--dark .participant-logout:hover {
+  background: rgba(236, 72, 153, 0.15);
+  color: #f9a8d4;
+}
+
+.participant-home--dark .participant-topbar p {
+  color: #f8fafc;
+}
+
+.participant-home--dark .participant-topbar strong {
+  color: #94a3b8;
+}
+
+.participant-home--dark .participant-profile span {
+  color: #cbd5e1;
+}
+
+.participant-home--dark .participant-profile strong {
+  background: rgba(236, 72, 153, 0.22);
+  color: #fbcfe8;
+}
+
+.participant-home--dark .participant-hero {
+  background:
+    radial-gradient(circle at 82% 30%, rgba(236, 72, 153, 0.2), transparent 13rem),
+    linear-gradient(135deg, #1e293b, #312e81 55%, #1e1b4b);
+}
+
+.participant-home--dark .participant-hero span {
+  color: #f9a8d4;
+}
+
+.participant-home--dark .participant-hero h1 {
+  color: #f8fafc;
+}
+
+.participant-home--dark .participant-hero p {
+  color: #cbd5e1;
+}
+
+.participant-home--dark .participant-hero__art {
+  background: rgba(15, 23, 42, 0.55);
+  color: #f472b6;
+}
+
+.participant-home--dark .participant-panel {
+  border-color: rgba(236, 72, 153, 0.28);
+  background: #1e293b;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+}
+
+.participant-home--dark .participant-section-heading span {
+  color: #94a3b8;
+}
+
+.participant-home--dark .participant-section-heading h2 {
+  color: #fbcfe8;
+}
+
+.participant-home--dark .participant-activity {
+  background: #0f172a;
+  border: 1px solid rgba(51, 65, 85, 0.9);
+}
+
+.participant-home--dark .participant-activity strong {
+  color: #f9a8d4;
+}
+
+.participant-home--dark .participant-activity span {
+  color: #f472b6;
+}
+
+.participant-home--dark .participant-activity p {
+  color: #cbd5e1;
+}
+
+.participant-home--dark .participant-empty-view {
+  background: #0f172a;
+  color: #cbd5e1;
+  border: 1px solid rgba(51, 65, 85, 0.9);
+}
+
+.participant-home--dark .participant-panel .calendar-page--embedded .calendar-board {
+  border-color: rgba(236, 72, 153, 0.25);
+  background: #0f172a;
+}
+
+.participant-home--dark .participant-panel .calendar-page--embedded .calendar-card {
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.35);
+}
+
+.participant-home--dark .workshop-card {
+  background: #1e293b;
+  border-color: rgba(236, 72, 153, 0.28);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.35);
+}
+
+.participant-home--dark .workshop-card__category {
+  color: #f9a8d4;
+  background: rgba(236, 72, 153, 0.15);
+}
+
+.participant-home--dark .workshop-card__title {
+  color: #f8fafc;
+}
+
+.participant-home--dark .workshop-card__time {
+  color: #cbd5e1;
+}
+
+.participant-home--dark .workshop-card__location {
+  color: #94a3b8;
+}
+
+.participant-home--dark .workshop-card__description {
+  color: #cbd5e1;
+}
+
+.participant-home--dark .workshop-card__count {
+  color: #f9a8d4;
+}
+
+.participant-appointment-card {
+  background: #ffffff;
+}
+
+.participant-home--dark .participant-appointment-card {
+  background: #0f172a;
+  border: 1px solid rgba(51, 65, 85, 0.9);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.35);
+}
+
+.participant-home--dark .participant-appointment-card strong {
+  color: #f8fafc !important;
+}
+
+.participant-home--dark .participant-appointment-card > span {
+  color: #94a3b8 !important;
+}
+
+.participant-home--dark .participant-appointment-card p {
+  color: #cbd5e1 !important;
+  border-top-color: #334155 !important;
+}
+
+.participant-appointments-heading {
+  color: #888;
+}
+
+.participant-home--dark .participant-appointments-heading {
+  color: #94a3b8;
+}
+
+.participant-appointments-loading {
+  color: #888;
+}
+
+.participant-home--dark .participant-appointments-loading {
+  color: #94a3b8;
+}
+
+.participant-appointments-empty {
+  color: #aaa;
+}
+
+.participant-home--dark .participant-appointments-empty {
+  color: #94a3b8;
+}
+
 @media (max-width: 760px) {
   .participant-home {
     display: block;
