@@ -1,4 +1,4 @@
-import { collection, getDocs, getDoc, addDoc, updateDoc, deleteDoc, doc, query, orderBy, where, onSnapshot, serverTimestamp } from 'firebase/firestore';
+import { collection, getDocs, getDoc, addDoc, updateDoc, deleteDoc, doc, query, orderBy, onSnapshot, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../../firebase';
 import { logAuditEvent } from './auditService';
 
@@ -29,11 +29,14 @@ export async function getAllEvents() {
 export function subscribeToPublishedEvents(callback) {
   const q = query(
     collection(db, 'events'),
-    where('status', '==', 'published'),
     orderBy('createdAt', 'desc')
   );
   return onSnapshot(q, (snap) => {
-    callback(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+    callback(
+      snap.docs
+        .map((d) => ({ id: d.id, ...d.data() }))
+        .filter((event) => event.status === 'published')
+    );
   });
 }
 

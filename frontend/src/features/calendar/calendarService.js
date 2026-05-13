@@ -29,8 +29,24 @@ function toTimeKey(date, fallback = '09:00') {
   return `${hours}:${minutes}`;
 }
 
+function normalizeTime(value, fallback = '09:00') {
+  if (!value) return fallback;
+
+  if (typeof value === 'string') {
+    const match = value.match(/^(\d{1,2}):(\d{2})/);
+    if (match) {
+      return `${match[1].padStart(2, '0')}:${match[2]}`;
+    }
+  }
+
+  const date = toDate(value);
+  if (date) return toTimeKey(date, fallback);
+
+  return fallback;
+}
+
 function addMinutes(time, minutesToAdd) {
-  const [hours, minutes] = time.split(':').map(Number);
+  const [hours, minutes] = normalizeTime(time).split(':').map(Number);
   const date = new Date();
   date.setHours(hours, minutes + minutesToAdd, 0, 0);
 
@@ -39,8 +55,8 @@ function addMinutes(time, minutesToAdd) {
 
 function normalizeEvent(docData, registeredEventIds) {
   const date = toDate(docData.date || docData.startAt || docData.startDate);
-  const startTime = docData.startTime || toTimeKey(date, '10:00');
-  const endTime = docData.endTime || (docData.endAt ? toTimeKey(toDate(docData.endAt)) : addMinutes(startTime, 60));
+  const startTime = normalizeTime(docData.startTime || docData.time || date, '10:00');
+  const endTime = normalizeTime(docData.endTime || docData.endAt, addMinutes(startTime, 60));
 
   return {
     id: docData.id,
@@ -57,8 +73,8 @@ function normalizeEvent(docData, registeredEventIds) {
 
 function normalizeAppointment(docData) {
   const date = toDate(docData.date || docData.startAt || docData.startDate);
-  const startTime = docData.startTime || toTimeKey(date, '09:00');
-  const endTime = docData.endTime || (docData.endAt ? toTimeKey(toDate(docData.endAt)) : addMinutes(startTime, 60));
+  const startTime = normalizeTime(docData.startTime || docData.time || date, '09:00');
+  const endTime = normalizeTime(docData.endTime || docData.endAt, addMinutes(startTime, 60));
   const appointmentType = docData.appointmentType || docData.type || 'Appointment';
 
   return {
@@ -69,14 +85,14 @@ function normalizeAppointment(docData) {
     startTime,
     endTime,
     location: docData.location || docData.room || '',
-    description: docData.description || docData.notes || 'Future participant appointment.',
+    description: docData.description || docData.notes || `${docData.providerName || 'Provider'} appointment.`,
     registered: true,
   };
 }
 
 function normalizeNote(docData) {
   const date = toDate(docData.date || docData.startAt);
-  const startTime = docData.startTime || docData.time || toTimeKey(date, '10:00');
+  const startTime = normalizeTime(docData.startTime || docData.time || date, '10:00');
 
   return {
     id: docData.id,
@@ -84,7 +100,7 @@ function normalizeNote(docData) {
     type: 'note',
     date: docData.dateKey || toDateKey(date),
     startTime,
-    endTime: docData.endTime || addMinutes(startTime, 30),
+    endTime: normalizeTime(docData.endTime, addMinutes(startTime, 30)),
     content: docData.content || docData.note || '',
     registered: false,
   };
@@ -102,11 +118,17 @@ async function getUserCollection(name, user) {
   return getCollection(name, [where('userId', '==', user.uid)]);
 }
 
+async function getUserCollectionByEmail(name, user, emailField = 'participantEmail') {
+  if (!user?.email) return [];
+
+  return getCollection(name, [where(emailField, '==', user.email)]);
+}
+
 export async function getCalendarData(user) {
   const [events, registrations, appointments, notes] = await Promise.all([
     getCollection('events'),
-    getUserCollection('registrations', user),
-    getUserCollection('appointments', user),
+    getUserCollectionByEmail('event_registrations', user),
+    getUserCollectionByEmail('appointments', user),
     getUserCollection('calendar_notes', user),
   ]);
 

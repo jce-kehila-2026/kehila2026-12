@@ -19,6 +19,12 @@ service cloud.firestore {
       allow delete: if false; // Never allow user deletion from client
     }
 
+    // Admin lookup records used during role resolution.
+    match /admins/{adminId} {
+      allow read: if request.auth != null;
+      allow create, update, delete: if isAdmin();
+    }
+
     // ── Audit Logs — APPEND ONLY (Immutable) ──
     match /audit_logs/{logId} {
       allow read, create: if isAdmin();
@@ -73,15 +79,17 @@ service cloud.firestore {
 
     // ── Appointments ──
     match /appointments/{appointmentId} {
-      allow read: if request.auth != null
-        && resource.data.userId == request.auth.uid;
+      allow read: if isAdmin()
+        || (request.auth != null && resource.data.userId == request.auth.uid)
+        || (request.auth != null && resource.data.participantEmail == request.auth.token.email);
 
       allow create, update, delete: if isAdmin();
     }
 
     // ── Calendar Notes ──
     match /calendar_notes/{noteId} {
-      allow read: if request.auth != null;
+      allow read: if isAdmin()
+        || (request.auth != null && resource.data.userId == request.auth.uid);
 
       allow create: if request.auth != null
         && request.resource.data.userId == request.auth.uid;

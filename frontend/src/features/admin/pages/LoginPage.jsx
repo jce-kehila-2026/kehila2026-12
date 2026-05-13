@@ -102,7 +102,13 @@ export default function LoginPage() {
       navigate(getPostLoginPath(role), { replace: true });
     } catch (err) {
       if (err.code !== 'auth/popup-closed-by-user') {
-        setError('Google sign-in failed. Please try again.');
+        const messages = {
+          'auth/unauthorized-domain': 'Google sign-in is not allowed from this address. Open the app at http://localhost:5173 or add this domain in Firebase Authentication.',
+          'auth/operation-not-allowed': 'Google sign-in is not enabled for this Firebase project.',
+          'auth/popup-blocked': 'The Google sign-in popup was blocked. Please allow popups and try again.',
+          'auth/account-exists-with-different-credential': 'An account already exists with this email using another sign-in method.',
+        };
+        setError(messages[err.code] || 'Google sign-in failed. Please try again.');
       }
     } finally {
       setSubmitting(false);
