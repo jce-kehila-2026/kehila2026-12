@@ -2,6 +2,9 @@ import { useEffect, useState } from 'react';
 import PublicNavbar from '../components/PublicNavbar';
 import HeroSection from '../components/HeroSection';
 import AboutSection from '../components/AboutSection';
+import StatisticsSection from '../components/StatisticsSection';
+import ShenaCenterSection from '../components/ShenaCenterSection';
+import SupportAreasSection from '../components/SupportAreasSection';
 import EventsPreview from '../components/EventsPreview';
 import ArticlesPreview from '../components/ArticlesPreview';
 import TeamSection from '../components/TeamSection';
@@ -44,6 +47,9 @@ export default function PublicHomePage() {
       <main>
         <HeroSection organization={content.organization} loading={loading} />
         <AboutSection organization={content.organization} />
+        <StatisticsSection />
+        <ShenaCenterSection />
+        <SupportAreasSection />
         <EventsPreview events={content.events} />
         <ArticlesPreview articles={content.articles} />
         <TeamSection team={content.team} />
