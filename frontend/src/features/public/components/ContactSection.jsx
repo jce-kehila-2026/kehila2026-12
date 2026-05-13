@@ -1,17 +1,91 @@
-export default function ContactSection({ organization }) {
+const FALLBACK_CONTACT = {
+  eyebrow: 'Contact',
+  title: 'Get in touch',
+  description:
+    'Contact details will be published here when they are ready for the public website.',
+  email: '',
+  phone: '',
+  address: '',
+  socialLinks: [],
+};
+
+function hasContactValue(value) {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
+export default function ContactSection({ contact = {}, organization = {} }) {
+  const useFallback = contact.useFallback !== false;
+  const fallbackValue = (fieldName) => (useFallback ? FALLBACK_CONTACT[fieldName] : '');
+  const contactEmail = hasContactValue(contact.email) ? contact.email : organization.email;
+  const contactPhone = hasContactValue(contact.phone) ? contact.phone : organization.phone;
+  const contactAddress = hasContactValue(contact.address) ? contact.address : organization.address;
+  const contactContent = {
+    ...FALLBACK_CONTACT,
+    ...contact,
+    email: hasContactValue(contactEmail) ? contactEmail : fallbackValue('email'),
+    phone: hasContactValue(contactPhone) ? contactPhone : fallbackValue('phone'),
+    address: hasContactValue(contactAddress) ? contactAddress : fallbackValue('address'),
+  };
+  const socialLinks = Array.isArray(contactContent.socialLinks) ? contactContent.socialLinks.filter(Boolean) : [];
+  const hasAnyContact =
+    hasContactValue(contactContent.email) ||
+    hasContactValue(contactContent.phone) ||
+    hasContactValue(contactContent.address) ||
+    socialLinks.length > 0;
+
   return (
-    <section className="public-section public-contact" id="contact">
+    <section className="public-section public-contact" id="contact" aria-labelledby="public-contact-title">
       <div className="public-section__header">
-        <p className="public-eyebrow">Contact</p>
-        <h2>Get in Touch</h2>
+        <p className="public-eyebrow">{contactContent.eyebrow}</p>
+        <h2 id="public-contact-title">{contactContent.title}</h2>
+        <p className="public-section__text">{contactContent.description}</p>
       </div>
-      <div className="public-contact__details">
-        {organization.email && (
-          <a href={`mailto:${organization.email}`}>{organization.email}</a>
-        )}
-        {organization.phone && <a href={`tel:${organization.phone}`}>{organization.phone}</a>}
-        {organization.address && <span>{organization.address}</span>}
-      </div>
+
+      {hasAnyContact ? (
+        <div className="public-contact__details">
+          {hasContactValue(contactContent.email) && (
+            <article className="public-contact__item">
+              <span>Email</span>
+              <a href={`mailto:${contactContent.email}`}>{contactContent.email}</a>
+            </article>
+          )}
+
+          {hasContactValue(contactContent.phone) && (
+            <article className="public-contact__item">
+              <span>Phone</span>
+              {contactContent.phone.toLowerCase().includes('coming soon') ? (
+                <p>{contactContent.phone}</p>
+              ) : (
+                <a href={`tel:${contactContent.phone}`}>{contactContent.phone}</a>
+              )}
+            </article>
+          )}
+
+          {hasContactValue(contactContent.address) && (
+            <article className="public-contact__item">
+              <span>Location</span>
+              <p>{contactContent.address}</p>
+            </article>
+          )}
+
+          {socialLinks.length > 0 && (
+            <article className="public-contact__item public-contact__item--social">
+              <span>Social</span>
+              <nav className="public-contact__social" aria-label="Contact social links">
+                {socialLinks.map((link) => (
+                  <a href={link.href || '#contact'} key={link.id || link.label}>
+                    {link.label}
+                  </a>
+                ))}
+              </nav>
+            </article>
+          )}
+        </div>
+      ) : (
+        <div className="public-section__empty">
+          Contact information will be published here once it is available.
+        </div>
+      )}
     </section>
   );
 }
