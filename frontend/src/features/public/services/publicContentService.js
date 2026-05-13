@@ -14,15 +14,42 @@ const FALLBACK_CONTENT = {
   events: [
     {
       id: 'fallback-event-1',
-      title: 'Community Workshop',
-      date: 'Coming soon',
-      content: 'Upcoming public activities will appear here once they are published.',
+      title: 'Community Support Circle',
+      description:
+        'A welcoming group session for sharing, listening, and finding steady support in community.',
+      startDate: '2026-06-12',
+      dateLabel: 'June 12, 2026',
+      time: '17:00',
+      location: 'She-Na Community Center',
+      isPublic: true,
+      active: true,
+      status: 'upcoming',
     },
     {
       id: 'fallback-event-2',
-      title: 'Support Circle',
-      date: 'Coming soon',
-      content: 'CMS-managed event previews can be connected when the collection is confirmed.',
+      title: 'Wellbeing Skills Workshop',
+      description:
+        'Practical tools for building calm routines, setting boundaries, and navigating difficult days.',
+      startDate: '2026-06-19',
+      dateLabel: 'June 19, 2026',
+      time: '10:30',
+      location: 'Online',
+      isPublic: true,
+      active: true,
+      status: 'upcoming',
+    },
+    {
+      id: 'fallback-event-3',
+      title: 'Resource Guidance Session',
+      description:
+        'A short introduction to available support services, community programs, and next steps.',
+      startDate: '2026-06-26',
+      dateLabel: 'June 26, 2026',
+      time: '14:00',
+      location: 'She-Na Center Hall',
+      isPublic: true,
+      active: true,
+      status: 'upcoming',
     },
   ],
   articles: [

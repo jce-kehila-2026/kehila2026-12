@@ -672,6 +672,132 @@
   line-height: 1.65;
 }
 
+.public-section--events {
+  background: #edf3ef;
+}
+
+.public-section__header--events {
+  max-width: 760px;
+}
+
+.public-section__header--events .public-section__text {
+  margin-block-start: 14px;
+}
+
+.public-events-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+  margin-block-start: 32px;
+}
+
+.public-event-card {
+  display: grid;
+  min-height: 100%;
+  overflow: hidden;
+  background: #ffffff;
+  border: 1px solid #d9e3dc;
+  border-radius: 8px;
+  box-shadow: 0 16px 38px rgba(23, 59, 53, 0.08);
+}
+
+.public-event-card__media {
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  background: #dce8e2;
+}
+
+.public-event-card__media img,
+.public-event-card__placeholder {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.public-event-card__media img {
+  object-fit: cover;
+}
+
+.public-event-card__placeholder {
+  position: relative;
+  background:
+    linear-gradient(135deg, rgba(36, 107, 95, 0.18), rgba(181, 111, 69, 0.13)),
+    #f8faf7;
+}
+
+.public-event-card__placeholder span {
+  position: absolute;
+  inset-block-start: 50%;
+  inset-inline-start: 50%;
+  width: min(42%, 112px);
+  aspect-ratio: 1;
+  background:
+    linear-gradient(145deg, #ffffff, rgba(255, 255, 255, 0.7));
+  border: 1px solid rgba(36, 107, 95, 0.16);
+  border-radius: 8px;
+  transform: translate(-50%, -50%) rotate(-5deg);
+  box-shadow: 0 16px 30px rgba(23, 59, 53, 0.08);
+}
+
+.public-event-card__body {
+  display: grid;
+  gap: 18px;
+  padding: 22px;
+  align-content: start;
+}
+
+.public-event-card__content {
+  display: grid;
+  gap: 10px;
+}
+
+.public-event-card__content h3 {
+  margin: 0;
+  color: #173b35;
+  font-size: 1.25rem;
+  line-height: 1.25;
+}
+
+.public-event-card__description {
+  margin: 0;
+  color: #52665f;
+  line-height: 1.65;
+}
+
+.public-event-card__details {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 14px;
+  background: #f8faf7;
+  border: 1px solid #d9e3dc;
+  border-radius: 8px;
+}
+
+.public-event-card__details div {
+  display: grid;
+  gap: 3px;
+}
+
+.public-event-card__details dt {
+  color: #b56f45;
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.public-event-card__details dd {
+  margin: 0;
+  color: #314943;
+  font-weight: 700;
+  line-height: 1.45;
+}
+
+.public-event-card__button {
+  justify-self: start;
+  min-width: 156px;
+}
+
 .public-state {
   display: flex;
   align-items: center;
@@ -919,6 +1045,7 @@
   .public-support__grid,
   .public-articles-grid,
   .public-team-grid,
+  .public-events-grid,
   .public-card-grid,
   .public-card-grid--team {
     grid-template-columns: 1fr;
@@ -949,7 +1076,8 @@
   }
 
   .public-hero__actions,
-  .public-button {
+  .public-button,
+  .public-event-card__button {
     width: 100%;
   }
 
