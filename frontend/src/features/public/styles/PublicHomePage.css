@@ -122,18 +122,19 @@
 
 .public-hero {
   display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(280px, 0.95fr);
+  align-items: center;
+  gap: clamp(28px, 6vw, 76px);
   min-height: 560px;
-  padding: clamp(72px, 10vw, 132px) clamp(20px, 5vw, 72px);
+  padding: clamp(64px, 9vw, 112px) clamp(20px, 5vw, 72px);
+  color: #173b35;
   background:
-    linear-gradient(105deg, rgba(23, 59, 53, 0.94), rgba(36, 107, 95, 0.82)),
-    url("https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1800&q=80");
-  background-position: center;
-  background-size: cover;
-  color: #ffffff;
+    linear-gradient(135deg, rgba(237, 243, 239, 0.96), rgba(248, 250, 247, 0.92)),
+    #f8faf7;
 }
 
 .public-hero__content {
-  max-width: 760px;
+  max-width: 720px;
 }
 
 .public-eyebrow {
@@ -145,23 +146,37 @@
   text-transform: uppercase;
 }
 
-.public-hero .public-eyebrow,
 .public-donation .public-eyebrow {
   color: #f2c6a8;
 }
 
+.public-hero .public-eyebrow {
+  color: #8f5938;
+}
+
 .public-hero h1 {
-  max-width: 760px;
+  max-width: 720px;
   margin: 0;
-  font-size: clamp(3rem, 8vw, 6.25rem);
-  line-height: 0.94;
+  color: #173b35;
+  font-size: clamp(2.6rem, 6vw, 5rem);
+  line-height: 1;
 }
 
 .public-hero__description {
-  max-width: 640px;
-  margin: 24px 0 0;
-  color: #eff7f3;
+  max-width: 620px;
+  margin-block: 24px 0;
+  margin-inline: 0;
+  color: #314943;
   font-size: 1.18rem;
+  line-height: 1.65;
+}
+
+.public-hero__support {
+  max-width: 620px;
+  margin-block: 12px 0;
+  margin-inline: 0;
+  color: #52665f;
+  font-size: 1rem;
   line-height: 1.7;
 }
 
@@ -169,7 +184,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
-  margin-top: 32px;
+  margin-block-start: 32px;
 }
 
 .public-button {
@@ -191,7 +206,61 @@
 
 .public-button--secondary {
   color: #ffffff;
-  border-color: rgba(255, 255, 255, 0.72);
+  background: #246b5f;
+}
+
+.public-button--tertiary {
+  color: #173b35;
+  background: #ffffff;
+  border-color: #cbd8d1;
+}
+
+.public-button:hover,
+.public-button:focus-visible {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px rgba(23, 59, 53, 0.12);
+}
+
+.public-hero__visual {
+  display: grid;
+  min-height: clamp(300px, 38vw, 460px);
+  padding: clamp(20px, 4vw, 36px);
+  place-items: center;
+  background:
+    linear-gradient(145deg, rgba(36, 107, 95, 0.88), rgba(23, 59, 53, 0.9)),
+    #246b5f;
+  border: 1px solid rgba(23, 59, 53, 0.12);
+  border-radius: 8px;
+  box-shadow: 0 24px 60px rgba(23, 59, 53, 0.16);
+}
+
+.public-hero__visual-card {
+  width: min(100%, 360px);
+  padding: clamp(24px, 5vw, 40px);
+  color: #173b35;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid rgba(255, 255, 255, 0.82);
+  border-radius: 8px;
+  box-shadow: 0 18px 38px rgba(23, 59, 53, 0.14);
+}
+
+.public-hero__visual-mark {
+  display: inline-flex;
+  margin-block-end: 18px;
+  padding-block: 8px;
+  padding-inline: 12px;
+  color: #ffffff;
+  background: #246b5f;
+  border-radius: 6px;
+  font-weight: 800;
+}
+
+.public-hero__visual-card p {
+  margin: 0;
+  color: #314943;
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.55;
 }
 
 .public-section {
@@ -206,6 +275,7 @@
   display: grid;
   grid-template-columns: minmax(220px, 0.8fr) minmax(280px, 1.2fr);
   gap: clamp(24px, 5vw, 72px);
+  background: #ffffff;
 }
 
 .public-section__header h2,
@@ -221,6 +291,39 @@
   color: #455a53;
   font-size: 1.1rem;
   line-height: 1.8;
+}
+
+.public-about__content {
+  display: grid;
+  gap: 16px;
+}
+
+.public-about__cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-block-start: 14px;
+}
+
+.public-about__card {
+  padding: 20px;
+  background: #f8faf7;
+  border: 1px solid #d9e3dc;
+  border-radius: 8px;
+  box-shadow: 0 12px 28px rgba(23, 59, 53, 0.06);
+}
+
+.public-about__card h3 {
+  margin-block: 0 10px;
+  margin-inline: 0;
+  color: #173b35;
+  font-size: 1rem;
+}
+
+.public-about__card p {
+  margin: 0;
+  color: #52665f;
+  line-height: 1.65;
 }
 
 .public-card-grid {
@@ -425,9 +528,15 @@
   }
 
   .public-section--about,
+  .public-hero,
+  .public-about__cards,
   .public-card-grid,
   .public-card-grid--team {
     grid-template-columns: 1fr;
+  }
+
+  .public-hero {
+    min-height: auto;
   }
 
   .public-donation,
@@ -447,12 +556,16 @@
   }
 
   .public-hero {
-    min-height: 520px;
+    padding-block: 48px 56px;
   }
 
   .public-hero__actions,
   .public-button {
     width: 100%;
+  }
+
+  .public-hero__visual {
+    min-height: 260px;
   }
 
   .public-navbar__links,
