@@ -1,25 +1,10 @@
-const FALLBACK_SUPPORT_AREAS = [
-  {
-    id: 'independence',
-    icon: 'I',
-    title: 'Independence',
-    description: 'Practical guidance for routines, confidence, and daily decisions.',
-  },
-  {
-    id: 'health',
-    icon: 'H',
-    title: 'Health',
-    description: 'Support that respects care needs, body wellbeing, and personal pace.',
-  },
-  {
-    id: 'emotional-mental-support',
-    icon: 'E',
-    title: 'Emotional / Mental Support',
-    description: 'Listening spaces, encouragement, and steady community connection.',
-  },
-];
+import EmptyState from './EmptyState';
+import ErrorState from './ErrorState';
+import LoadingState from './LoadingState';
 
-export default function SupportAreasSection({ supportAreas = FALLBACK_SUPPORT_AREAS }) {
+export default function SupportAreasSection({ supportAreas = [], isLoading = false, hasError = false }) {
+  const visibleSupportAreas = Array.isArray(supportAreas) ? supportAreas.filter(Boolean) : [];
+
   return (
     <section className="public-section public-section--support" id="support">
       <div className="public-section__header">
@@ -27,17 +12,25 @@ export default function SupportAreasSection({ supportAreas = FALLBACK_SUPPORT_AR
         <h2>Focused support for recovery and growth</h2>
       </div>
 
-      <div className="public-support__grid" data-content-source="fallback">
-        {supportAreas.map((area) => (
-          <article className="public-support__card" key={area.id}>
-            <span className="public-support__icon" aria-hidden="true">
-              {area.icon}
-            </span>
-            <h3>{area.title}</h3>
-            <p>{area.description}</p>
-          </article>
-        ))}
-      </div>
+      {isLoading ? (
+        <LoadingState message="Loading support areas..." />
+      ) : hasError ? (
+        <ErrorState message="Could not load support areas. Showing other available content." />
+      ) : visibleSupportAreas.length ? (
+        <div className="public-support__grid" data-content-source="fallback">
+          {visibleSupportAreas.map((area) => (
+            <article className="public-support__card" key={area.id || area.title}>
+              <span className="public-support__icon" aria-hidden="true">
+                {area.icon || (area.title || 'S').charAt(0)}
+              </span>
+              <h3>{area.title || 'Support area'}</h3>
+              <p>{area.description || area.text || 'Support details will appear here when available.'}</p>
+            </article>
+          ))}
+        </div>
+      ) : (
+        <EmptyState message="Support areas will appear here when public data is available." />
+      )}
     </section>
   );
 }

@@ -1,10 +1,18 @@
-export default function HeroSection({ organization, loading }) {
+export default function HeroSection({ hero = {}, organization, loading }) {
   const heroContent = {
-    eyebrow: organization?.tagline || 'Support for women in recovery',
-    title: organization?.name ? `${organization.name}: support for every step forward` : 'She-Na: support for every step forward',
+    eyebrow: hero.eyebrow || organization?.tagline || 'Support for women in recovery',
+    title:
+      hero.title ||
+      (organization?.name ? `${organization.name}: support for every step forward` : 'She-Na: support for every step forward'),
     message:
+      hero.message ||
       organization?.description ||
       'A warm community helping recovering women find knowledge, care, and steady support.',
+    supportText:
+      hero.supportText ||
+      'She-Na supports recovering women with respectful guidance, practical resources, and a caring place to turn to.',
+    primaryAction: hero.primaryAction || { label: 'Donate', href: '#donate' },
+    secondaryAction: hero.secondaryAction || { label: 'Join / Get Support', href: '#contact' },
   };
 
   return (
@@ -13,15 +21,13 @@ export default function HeroSection({ organization, loading }) {
         <p className="public-eyebrow">{loading ? 'Preparing public content' : heroContent.eyebrow}</p>
         <h1>{heroContent.title}</h1>
         <p className="public-hero__description">{heroContent.message}</p>
-        <p className="public-hero__support">
-          She-Na supports recovering women with respectful guidance, practical resources, and a caring place to turn to.
-        </p>
+        <p className="public-hero__support">{heroContent.supportText}</p>
         <div className="public-hero__actions">
-          <a className="public-button public-button--primary" href="#donate">
-            Donate
+          <a className="public-button public-button--primary" href={heroContent.primaryAction.href || '#donate'}>
+            {heroContent.primaryAction.label || 'Donate'}
           </a>
-          <a className="public-button public-button--secondary" href="#contact">
-            Join / Get Support
+          <a className="public-button public-button--secondary" href={heroContent.secondaryAction.href || '#contact'}>
+            {heroContent.secondaryAction.label || 'Join / Get Support'}
           </a>
           <a className="public-button public-button--tertiary" href="/login">
             Login

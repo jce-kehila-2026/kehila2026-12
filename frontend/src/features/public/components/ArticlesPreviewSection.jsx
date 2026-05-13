@@ -3,36 +3,13 @@ import EmptyState from './EmptyState';
 import ErrorState from './ErrorState';
 import LoadingState from './LoadingState';
 
-const DEMO_ARTICLES = [
-  {
-    id: 'demo-article-1',
-    title: 'Finding Support in Community',
-    description:
-      'Simple guidance on reaching out, staying connected, and finding steady support during difficult seasons.',
-    isPublished: true,
-    active: true,
-  },
-  {
-    id: 'demo-article-2',
-    title: 'Practical Steps for Everyday Wellbeing',
-    description:
-      'Helpful reminders for building calm routines, asking for help, and making space for recovery.',
-    isPublished: true,
-    active: true,
-  },
-  {
-    id: 'demo-article-3',
-    title: 'Understanding Available Resources',
-    description:
-      'An introduction to the types of community programs, workshops, and support resources that may be available.',
-    isPublished: true,
-    active: true,
-  },
-];
-
 function getVisibleArticles(articles, maxItems) {
   return (Array.isArray(articles) ? articles : [])
     .filter((article) => {
+      if (!article || typeof article !== 'object') {
+        return false;
+      }
+
       const isPublished = article.isPublished !== false && article.published !== false;
       const isActive = article.active !== false && article.status !== 'inactive';
       const isDraft = article.status === 'draft';
@@ -43,7 +20,7 @@ function getVisibleArticles(articles, maxItems) {
 }
 
 export default function ArticlesPreviewSection({
-  articles = DEMO_ARTICLES,
+  articles = [],
   maxItems = 3,
   isLoading = false,
   hasError = false,
@@ -63,7 +40,7 @@ export default function ArticlesPreviewSection({
       {isLoading ? (
         <LoadingState message="Loading articles..." />
       ) : hasError ? (
-        <ErrorState />
+        <ErrorState message="Could not load articles. Showing other available content." />
       ) : visibleArticles.length ? (
         <div className="public-articles-grid">
           {visibleArticles.map((article) => (

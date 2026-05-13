@@ -3,13 +3,10 @@ const FALLBACK_CONTACT = {
   title: 'Get in touch',
   description:
     'Contact details shown here are temporary placeholders until the public site content is managed from the admin CMS.',
-  email: 'contact@example.org',
-  phone: 'Phone number coming soon',
-  address: 'Location details coming soon',
-  socialLinks: [
-    { id: 'facebook', label: 'Facebook', href: '#contact' },
-    { id: 'instagram', label: 'Instagram', href: '#contact' },
-  ],
+  email: '',
+  phone: '',
+  address: '',
+  socialLinks: [],
 };
 
 function hasContactValue(value) {
@@ -26,10 +23,10 @@ export default function ContactSection({ contact = {}, organization = {} }) {
     email: hasContactValue(organization.email) ? organization.email : fallbackValue('email'),
     phone: hasContactValue(organization.phone) ? organization.phone : fallbackValue('phone'),
     address: hasContactValue(organization.address) ? organization.address : fallbackValue('address'),
-    socialLinks: useFallback ? FALLBACK_CONTACT.socialLinks : [],
+    socialLinks: [],
     ...contact,
   };
-  const socialLinks = Array.isArray(contactContent.socialLinks) ? contactContent.socialLinks : [];
+  const socialLinks = Array.isArray(contactContent.socialLinks) ? contactContent.socialLinks.filter(Boolean) : [];
   const hasAnyContact =
     hasContactValue(contactContent.email) ||
     hasContactValue(contactContent.phone) ||

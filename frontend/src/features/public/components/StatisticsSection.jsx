@@ -1,25 +1,8 @@
-const FALLBACK_STATISTICS = [
-  {
-    id: 'programs',
-    value: '3+',
-    label: 'Support areas',
-    note: 'Placeholder until CMS data is connected.',
-  },
-  {
-    id: 'activities',
-    value: '6',
-    label: 'Activity types',
-    note: 'Temporary planning number.',
-  },
-  {
-    id: 'community',
-    value: '1',
-    label: 'Recovery center',
-    note: 'Prepared for verified public data.',
-  },
-];
+import EmptyState from './EmptyState';
+import ErrorState from './ErrorState';
+import LoadingState from './LoadingState';
 
-export default function StatisticsSection({ statistics = FALLBACK_STATISTICS }) {
+export default function StatisticsSection({ statistics = [], isLoading = false, hasError = false }) {
   const hasStatistics = statistics.length > 0;
 
   return (
@@ -32,20 +15,22 @@ export default function StatisticsSection({ statistics = FALLBACK_STATISTICS }) 
         </p>
       </div>
 
-      {hasStatistics ? (
+      {isLoading ? (
+        <LoadingState message="Loading statistics..." />
+      ) : hasError ? (
+        <ErrorState message="Could not load statistics. Showing other available content." />
+      ) : hasStatistics ? (
         <div className="public-statistics__grid" data-content-source="fallback">
           {statistics.map((statistic) => (
-            <article className="public-statistics__card" key={statistic.id}>
-              <strong>{statistic.value}</strong>
-              <span>{statistic.label}</span>
-              <p>{statistic.note}</p>
+            <article className="public-statistics__card" key={statistic.id || statistic.label}>
+              <strong>{statistic.value || '0'}</strong>
+              <span>{statistic.label || 'Statistic'}</span>
+              {statistic.note ? <p>{statistic.note}</p> : null}
             </article>
           ))}
         </div>
       ) : (
-        <div className="public-section__empty" data-empty-state="statistics">
-          Statistics will appear here when public data is available.
-        </div>
+        <EmptyState message="Statistics will appear here when public data is available." />
       )}
     </section>
   );
