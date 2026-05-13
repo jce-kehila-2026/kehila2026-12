@@ -1,18 +1,20 @@
+import {
+  collection,
+  getDocs,
+  query,
+  where,
+  orderBy,
+  limit,
+  doc,
+  getDoc,
+} from 'firebase/firestore';
+import { db } from '../../../firebase';
+
 // Public homepage content service.
 //
-// Commit 10 keeps the public website read-only and fallback-driven.
-// These temporary values are here so the homepage can keep rendering while the
-// Admin CMS and Firestore document contracts are finalized.
-//
-// Future Firestore work:
-// - Real data should come from the same Firestore collections used by the Admin CMS.
-// - Collection names and field names must be confirmed with the team before adding queries.
-// - Only public, published, active, and visible content should be displayed here.
-// - This service must remain read-only: no add, update, delete, or collection creation.
-//
-// When collection contracts are confirmed, import read helpers only, for example:
-// import { collection, getDocs, limit, orderBy, query, where } from 'firebase/firestore';
-// import { db } from '../../../firebase';
+// This service is read-only. It only reads from Firestore collections already
+// used elsewhere in the project, and falls back to static content whenever a
+// public content contract is missing, empty, or unavailable.
 
 const FALLBACK_HERO = {
   eyebrow: 'Support for women in recovery',
@@ -321,6 +323,60 @@ function asArray(value) {
   return Array.isArray(value) ? value : [];
 }
 
+function warnAndFallback(message, error) {
+  if (error) {
+    console.warn(`[publicContentService] ${message}`, error);
+  } else {
+    console.warn(`[publicContentService] ${message}`);
+  }
+}
+
+function hasText(value) {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
+function textOrFallback(value, fallbackValue) {
+  return hasText(value) ? value.trim() : fallbackValue;
+}
+
+function toDate(value) {
+  if (!value) return null;
+  if (value.toDate) return value.toDate();
+  if (value instanceof Date) return value;
+
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function toDateKey(date) {
+  if (!date) return '';
+
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
+}
+
+function toTimeKey(date, fallback = '') {
+  if (!date) return fallback;
+
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+
+  return `${hours}:${minutes}`;
+}
+
+function formatDateLabel(date) {
+  if (!date) return '';
+
+  return new Intl.DateTimeFormat('en', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  }).format(date);
+}
+
 function isVisiblePublicContent(item) {
   if (!item || typeof item !== 'object') {
     return false;
@@ -357,35 +413,100 @@ function withFallbackArray(items, fallbackItems, maxItems) {
   return typeof maxItems === 'number' ? safeItems.slice(0, maxItems) : safeItems;
 }
 
-// Firestore query placeholders belong here after collection names are confirmed.
-// Example shape only:
-// async function getConfirmedPublicDocs(collectionName, constraints = []) {
-//   const docsQuery = query(collection(db, collectionName), ...constraints);
-//   const snapshot = await getDocs(docsQuery);
-//   return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-// }
+async function getConfirmedPublicDocs(collectionName, constraints = []) {
+  const docsQuery = constraints.length
+    ? query(collection(db, collectionName), ...constraints)
+    : collection(db, collectionName);
+  const snapshot = await getDocs(docsQuery);
+  return snapshot.docs.map((documentSnapshot) => ({ id: documentSnapshot.id, ...documentSnapshot.data() }));
+}
+
+async function getConfirmedPublicDoc(collectionName, documentId) {
+  const snapshot = await getDoc(doc(db, collectionName, documentId));
+  return snapshot.exists() ? { id: snapshot.id, ...snapshot.data() } : null;
+}
+
+function normalizeEvent(docData, fallbackEvent = {}) {
+  const startDate = toDate(docData.startTime);
+  const title = textOrFallback(docData.title, fallbackEvent.title || 'She-Na Event');
+  const description = textOrFallback(docData.description, fallbackEvent.description || '');
+
+  if (!title || !description || !startDate) {
+    return null;
+  }
+
+  return {
+    ...fallbackEvent,
+    id: docData.id || fallbackEvent.id,
+    title,
+    category: docData.category || fallbackEvent.category || '',
+    description,
+    startDate: startDate.toISOString(),
+    startTime: startDate.toISOString(),
+    date: toDateKey(startDate),
+    dateLabel: formatDateLabel(startDate),
+    time: toTimeKey(startDate, fallbackEvent.time || ''),
+    location: textOrFallback(docData.location, fallbackEvent.location || ''),
+    maxParticipants: Number(docData.maxParticipants) || 0,
+    isPublic: true,
+    isVisible: true,
+    isPublished: docData.status === 'published',
+    active: docData.status === 'published',
+    status: docData.status || 'published',
+  };
+}
 
 export async function getPublicStatistics() {
+  // TODO: Connect statistics after the CMS confirms a collection/document contract
+  // and public visibility fields for homepage metrics.
   return cloneFallback(FALLBACK_STATISTICS).filter(isVisiblePublicContent);
 }
 
 export async function getSupportAreas() {
+  // TODO: Connect support areas after the CMS confirms a collection/document
+  // contract and public visibility fields for support area cards.
   return cloneFallback(FALLBACK_SUPPORT_AREAS).filter(isVisiblePublicContent);
 }
 
 export async function getPublishedArticles(maxItems = 3) {
+  // TODO: The Admin CMS confirms the `articles` collection and `title`/`content`
+  // fields, but not public/published/active field names. Keep fallback articles
+  // until those fields are confirmed so unpublished CMS drafts are not exposed.
   return withFallbackArray(FALLBACK_ARTICLES, FALLBACK_ARTICLES, maxItems);
 }
 
 export async function getVisibleTeamMembers(maxItems = 4) {
+  // TODO: The Admin CMS confirms the `team_profiles` collection and
+  // `title`/`content` fields, but not visible/active field names or the public
+  // profile field contract. Keep fallback team data until those are confirmed.
   return withFallbackArray(FALLBACK_TEAM_MEMBERS, FALLBACK_TEAM_MEMBERS, maxItems);
 }
 
 export async function getPublicUpcomingEvents(maxItems = 3) {
-  return withFallbackArray(FALLBACK_EVENTS, FALLBACK_EVENTS, maxItems).filter(isUpcomingEvent);
+  try {
+    const docs = await getConfirmedPublicDocs('events', [
+      where('status', '==', 'published'),
+      where('startTime', '>=', new Date()),
+      orderBy('startTime', 'asc'),
+      limit(maxItems),
+    ]);
+
+    const events = docs
+      .map((eventDoc, index) => normalizeEvent(eventDoc, FALLBACK_EVENTS[index]))
+      .filter(Boolean)
+      .filter(isVisiblePublicContent)
+      .filter(isUpcomingEvent);
+
+    return events.length ? events : cloneFallback(FALLBACK_EVENTS).filter(isUpcomingEvent).slice(0, maxItems);
+  } catch (error) {
+    warnAndFallback('Failed to load public events from Firestore. Using fallback events.', error);
+    return cloneFallback(FALLBACK_EVENTS).filter(isUpcomingEvent).slice(0, maxItems);
+  }
 }
 
 export async function getRecoveryJourney() {
+  // TODO: Connect recovery journey after the CMS confirms a homepage content
+  // collection/document contract and stage visibility fields.
   const journey = cloneFallback(FALLBACK_RECOVERY_JOURNEY);
 
   return {
@@ -395,10 +516,15 @@ export async function getRecoveryJourney() {
 }
 
 export async function getDonationSettings() {
+  // TODO: Connect donation settings after the CMS confirms a donation content
+  // collection/document contract and public fields.
   return cloneFallback(FALLBACK_DONATION);
 }
 
 export async function getContactInfo() {
+  // TODO: Connect contact details after the CMS confirms contact document IDs
+  // and field names. The existing `org_info` collection only confirms generic
+  // `title` and `content` fields.
   const contact = cloneFallback(FALLBACK_CONTACT);
 
   return {
@@ -408,6 +534,10 @@ export async function getContactInfo() {
 }
 
 export async function getHomepageContent() {
+  // TODO: The CMS currently confirms `org_info` with generic `title` and
+  // `content` fields, but it does not confirm document IDs or section-specific
+  // fields for hero, about, center, contact, donation, or homepage statistics.
+  // Keep those sections on fallback until that public CMS contract exists.
   const [
     statistics,
     supportAreas,
