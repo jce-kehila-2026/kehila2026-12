@@ -1,6 +1,6 @@
 export default function DonationSection({ organization }) {
   return (
-    <section className="public-donation" id="donation">
+    <section className="public-donation" id="donate">
       <div>
         <p className="public-eyebrow">Support</p>
         <h2>Help {organization.name} grow community programs</h2>
