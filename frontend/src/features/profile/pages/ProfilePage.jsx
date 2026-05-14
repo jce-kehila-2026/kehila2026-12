@@ -374,8 +374,12 @@ function ProfilePage({
                 <Box sx={{ gridColumn: { xs: 1, lg: 1 }, gridRow: 1 }}>
                   <ProfileCard
                     profile={profile}
+                    participantId={participantId}
                     isEditing={isEditing}
                     onEdit={() => setIsEditing(true)}
+                    onAvatarUpdated={(patch) =>
+                      setProfile((prev) => ({ ...prev, ...patch }))
+                    }
                     darkMode={darkMode}
                     t={t}
                   />

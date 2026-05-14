@@ -89,6 +89,8 @@ export async function createAppointment(appointmentData = {}) {
     participantId,
     participantName,
     createdAt: serverTimestamp(),
+    /** Participant bookings require admin approval before they are confirmed. */
+    status: "pending",
   };
 
   await setDoc(ref, payload);

@@ -352,14 +352,14 @@ function AppointmentBookingForm({
         date: dateStr,
         time: selectedTime,
         notes: notes.trim(),
-        status: "confirmed",
+        status: "pending",
       });
 
       setProviderId("");
       setDate(new Date());
       setSelectedTime("");
       setNotes("");
-      showMessage("Your appointment was booked successfully.", "success");
+      showMessage("Appointment booked successfully", "success");
 
       if (typeof onBookingComplete === "function") {
         await onBookingComplete();

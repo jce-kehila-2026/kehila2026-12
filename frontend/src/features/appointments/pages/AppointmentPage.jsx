@@ -3,7 +3,7 @@ import createCache from "@emotion/cache";
 import { CacheProvider } from "@emotion/react";
 import FavoriteBorderRoundedIcon from "@mui/icons-material/FavoriteBorderRounded";
 import LocalFloristRoundedIcon from "@mui/icons-material/LocalFloristRounded";
-import { Box, Card, CardContent, Stack, Typography } from "@mui/material";
+import { Alert, Box, Card, CardContent, Snackbar, Stack, Typography } from "@mui/material";
 import { ThemeProvider, createTheme, useTheme } from "@mui/material/styles";
 import AppointmentBookingForm from "../components/AppointmentBookingForm";
 import AppointmentCard from "../components/AppointmentCard";
@@ -146,6 +146,11 @@ function AppointmentPage({ embedInDashboard = false, locale = "en" } = {}) {
   const [selectedType, setSelectedType] = useState(null);
   const [myAppointments, setMyAppointments] = useState([]);
   const [therapists, setTherapists] = useState([]);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "info",
+  });
 
   useEffect(() => {
     let cancelled = false;
@@ -235,12 +240,22 @@ function AppointmentPage({ embedInDashboard = false, locale = "en" } = {}) {
   }, [selectedType, therapists]);
 
   const handleCancel = async (id) => {
+    const row = myAppointments.find((a) => a.id === id);
+    if (!row || normalizeAppointmentStatus(row.status) === "cancelled") {
+      return;
+    }
+
     setMyAppointments((prev) =>
       prev.map((a) => (a.id === id ? { ...a, status: "cancelled" } : a))
     );
     try {
       await cancelAppointment(id);
       await loadMyAppointments();
+      setSnackbar({
+        open: true,
+        message: "Appointment cancelled successfully",
+        severity: "success",
+      });
     } catch (e) {
       console.error("Failed to cancel appointment", e);
       await loadMyAppointments();
@@ -423,6 +438,22 @@ function AppointmentPage({ embedInDashboard = false, locale = "en" } = {}) {
               </Stack>
             </Box>
           </Box>
+
+          <Snackbar
+            open={snackbar.open}
+            autoHideDuration={6000}
+            onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
+            anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+          >
+            <Alert
+              onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
+              severity={snackbar.severity}
+              variant="filled"
+              sx={{ width: "100%" }}
+            >
+              {snackbar.message}
+            </Alert>
+          </Snackbar>
         </Box>
       </ThemeProvider>
     </CacheProvider>

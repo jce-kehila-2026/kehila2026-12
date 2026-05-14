@@ -12,11 +12,11 @@ const STATUS_STYLES = {
     },
   },
   pending: {
-    label: "Pending",
+    label: "Pending Approval",
     sx: {
-      bgcolor: "rgba(254, 243, 199, 0.85)",
-      color: "#b45309",
-      border: "1px solid rgba(253, 224, 138, 0.65)",
+      bgcolor: "rgba(255, 237, 213, 0.92)",
+      color: "#c2410c",
+      border: "1px solid rgba(251, 146, 60, 0.55)",
     },
   },
   cancelled: {

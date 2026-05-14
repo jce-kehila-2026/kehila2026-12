@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import PhotoCameraOutlinedIcon from "@mui/icons-material/PhotoCameraOutlined";
 import {
@@ -8,13 +8,35 @@ import {
   Card,
   CardContent,
   Chip,
+  CircularProgress,
   Stack,
   Typography,
 } from "@mui/material";
 import { WELLNESS, WELLNESS_DARK } from "../../appointments/appointmentTypeMeta";
+import { uploadParticipantProfileImage } from "../services/participantService";
 
-function ProfileCard({ profile, isEditing, onEdit, darkMode = false, t = (k) => k }) {
+function ProfileCard({
+  profile,
+  participantId,
+  isEditing,
+  onEdit,
+  onAvatarUpdated,
+  darkMode = false,
+  t = (k) => k,
+}) {
   const [previewImage, setPreviewImage] = useState(null);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const [avatarError, setAvatarError] = useState("");
+  const blobUrlRef = useRef(null);
+
+  const revokeBlob = () => {
+    if (blobUrlRef.current) {
+      URL.revokeObjectURL(blobUrlRef.current);
+      blobUrlRef.current = null;
+    }
+  };
+
+  useEffect(() => () => revokeBlob(), []);
 
   const initials = (profile?.fullName || "SA")
     .split(" ")
@@ -23,13 +45,39 @@ function ProfileCard({ profile, isEditing, onEdit, darkMode = false, t = (k) => 
     .slice(0, 2)
     .toUpperCase();
 
-  const handleImageChange = (event) => {
-    const file = event.target.files[0];
-
+  const handleImageChange = async (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
     if (!file) return;
 
-    const imageUrl = URL.createObjectURL(file);
-    setPreviewImage(imageUrl);
+    if (!participantId) {
+      setAvatarError("Not signed in.");
+      return;
+    }
+
+    setAvatarError("");
+    revokeBlob();
+    const blob = URL.createObjectURL(file);
+    blobUrlRef.current = blob;
+    setPreviewImage(blob);
+
+    setAvatarUploading(true);
+    try {
+      const url = await uploadParticipantProfileImage(participantId, file);
+      revokeBlob();
+      setPreviewImage(url);
+      setAvatarError("");
+      onAvatarUpdated?.({ avatarUrl: url });
+    } catch (e) {
+      console.error(e);
+      revokeBlob();
+      setPreviewImage(null);
+      setAvatarError(
+        e?.message || "Could not upload photo. Please try again."
+      );
+    } finally {
+      setAvatarUploading(false);
+    }
   };
 
   const w = darkMode ? WELLNESS_DARK : WELLNESS;
@@ -73,6 +121,22 @@ function ProfileCard({ profile, isEditing, onEdit, darkMode = false, t = (k) => 
               {initials}
             </Avatar>
 
+            {avatarUploading ? (
+              <Box
+                sx={{
+                  position: "absolute",
+                  inset: 0,
+                  borderRadius: "50%",
+                  display: "grid",
+                  placeItems: "center",
+                  bgcolor: "rgba(255,255,255,0.55)",
+                  pointerEvents: "none",
+                }}
+              >
+                <CircularProgress size={36} sx={{ color: WELLNESS.primary }} />
+              </Box>
+            ) : null}
+
             {isEditing && (
               <Box
                 component="label"
@@ -93,13 +157,15 @@ function ProfileCard({ profile, isEditing, onEdit, darkMode = false, t = (k) => 
                   color: "#ffffff",
                   border: darkMode ? "2px solid #1e293b" : "2px solid #ffffff",
                   boxShadow: "0 4px 14px rgba(181, 123, 232, 0.35)",
-                  cursor: "pointer",
+                  cursor: avatarUploading ? "default" : "pointer",
+                  opacity: avatarUploading ? 0.55 : 1,
+                  pointerEvents: avatarUploading ? "none" : "auto",
                   transition:
                     "transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease",
                   "&:hover": {
                     background:
                       "linear-gradient(135deg, #a66ee0 0%, #b57be8 100%)",
-                    transform: "translateY(-1px)",
+                    transform: avatarUploading ? "none" : "translateY(-1px)",
                     boxShadow: "0 6px 18px rgba(181, 123, 232, 0.42)",
                   },
                 }}
@@ -109,11 +175,26 @@ function ProfileCard({ profile, isEditing, onEdit, darkMode = false, t = (k) => 
                   hidden
                   accept="image/*"
                   type="file"
+                  disabled={avatarUploading}
                   onChange={handleImageChange}
                 />
               </Box>
             )}
           </Box>
+
+          {avatarError ? (
+            <Typography
+              variant="caption"
+              sx={{
+                color: "#b91c1c",
+                textAlign: "center",
+                maxWidth: 260,
+                lineHeight: 1.35,
+              }}
+            >
+              {avatarError}
+            </Typography>
+          ) : null}
 
           <Box textAlign="center" width="100%">
             <Typography
