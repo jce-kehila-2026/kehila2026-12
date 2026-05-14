@@ -515,6 +515,98 @@ function normalizeArticle(docData, fallbackArticle = {}) {
   };
 }
 
+function hasOwnField(item, fieldName) {
+  return Object.prototype.hasOwnProperty.call(item, fieldName);
+}
+
+function isVisiblePublicTeamMember(member) {
+  if (!member || typeof member !== 'object') {
+    return false;
+  }
+
+  if (member.hidden === true || member.status === 'inactive' || member.status === 'draft' || member.status === 'unpublished') {
+    return false;
+  }
+
+  const falseWhenPresentFields = ['isVisible', 'visible', 'isPublished', 'published', 'active', 'isPublic', 'public'];
+
+  return falseWhenPresentFields.every((fieldName) => !hasOwnField(member, fieldName) || member[fieldName] !== false);
+}
+
+function normalizeTeamMember(docData) {
+  const name = firstTextValue(
+    docData.name,
+    docData.fullName,
+    docData.displayName,
+    docData.title,
+  );
+  const role = firstTextValue(
+    docData.role,
+    docData.position,
+    docData.jobTitle,
+    docData.subtitle,
+  );
+  const content = firstTextValue(docData.content, docData.bio, docData.body, docData.text);
+  const description = firstTextValue(
+    docData.description,
+    docData.summary,
+    docData.excerpt,
+    stripHtml(content),
+  );
+
+  if (!name && !description) {
+    return null;
+  }
+
+  return {
+    id: docData.id,
+    name: name || 'Team member',
+    title: docData.title || name || '',
+    role,
+    position: role,
+    description,
+    content,
+    imageUrl: firstTextValue(
+      docData.imageUrl,
+      docData.imageURL,
+      docData.photoUrl,
+      docData.photoURL,
+      docData.avatarUrl,
+      docData.avatarURL,
+      docData.image,
+      docData.photo,
+      docData.avatar,
+    ),
+    imageAlt: firstTextValue(docData.imageAlt, docData.altText, name ? `${name} profile photo` : ''),
+    isPublic: docData.isPublic !== false && docData.public !== false,
+    isVisible: docData.isVisible !== false && docData.visible !== false && docData.hidden !== true,
+    isPublished: docData.isPublished !== false && docData.published !== false && docData.status !== 'draft' && docData.status !== 'unpublished',
+    active: docData.active !== false && docData.status !== 'inactive',
+    status: docData.status || 'published',
+    order: docData.order ?? docData.displayOrder ?? docData.sortOrder ?? 0,
+    createdAt: docData.createdAt || '',
+    updatedAt: docData.updatedAt || '',
+  };
+}
+
+function compareTeamMembers(left, right) {
+  const leftOrder = Number(left.order);
+  const rightOrder = Number(right.order);
+
+  if (Number.isFinite(leftOrder) && Number.isFinite(rightOrder) && leftOrder !== rightOrder) {
+    return leftOrder - rightOrder;
+  }
+
+  const leftDate = toDate(left.updatedAt || left.createdAt);
+  const rightDate = toDate(right.updatedAt || right.createdAt);
+
+  if (!leftDate && !rightDate) return 0;
+  if (!leftDate) return 1;
+  if (!rightDate) return -1;
+
+  return rightDate.getTime() - leftDate.getTime();
+}
+
 export async function getPublicStatistics() {
   // TODO: Connect statistics after the CMS confirms a collection/document contract
   // and public visibility fields for homepage metrics.
@@ -553,10 +645,19 @@ export async function getPublishedArticles(maxItems = 3) {
 }
 
 export async function getVisibleTeamMembers(maxItems = 4) {
-  // TODO: The Admin CMS confirms the `team_profiles` collection and
-  // `title`/`content` fields, but not visible/active field names or the public
-  // profile field contract. Keep fallback team data until those are confirmed.
-  return withFallbackArray(FALLBACK_TEAM_MEMBERS, FALLBACK_TEAM_MEMBERS, maxItems);
+  try {
+    const docs = await getConfirmedPublicDocs('team_profiles');
+    const teamMembers = docs
+      .map((teamMemberDoc) => normalizeTeamMember(teamMemberDoc))
+      .filter(Boolean)
+      .filter(isVisiblePublicTeamMember)
+      .sort(compareTeamMembers);
+
+    return teamMembers.length ? teamMembers.slice(0, maxItems) : cloneFallback(FALLBACK_TEAM_MEMBERS).slice(0, maxItems);
+  } catch (error) {
+    warnAndFallback('Failed to load public team profiles from Firestore. Using fallback team members.', error);
+    return cloneFallback(FALLBACK_TEAM_MEMBERS).slice(0, maxItems);
+  }
 }
 
 export async function getPublicUpcomingEvents(maxItems = 3) {
