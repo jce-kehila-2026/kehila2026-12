@@ -17,14 +17,14 @@ export default function SupportAreasSection({ supportAreas = [], isLoading = fal
       ) : hasError ? (
         <ErrorState message="Could not load support areas. Showing other available content." />
       ) : visibleSupportAreas.length ? (
-        <div className="public-support__grid" data-content-source="fallback">
+        <div className="public-support__grid">
           {visibleSupportAreas.map((area) => (
             <article className="public-support__card" key={area.id || area.title}>
               <span className="public-support__icon" aria-hidden="true">
-                {area.icon || (area.title || 'S').charAt(0)}
+                {area.icon}
               </span>
-              <h3>{area.title || 'Support area'}</h3>
-              <p>{area.description || area.text || 'Support details will appear here when available.'}</p>
+              <h3>{area.title}</h3>
+              <p>{area.description || area.text}</p>
             </article>
           ))}
         </div>

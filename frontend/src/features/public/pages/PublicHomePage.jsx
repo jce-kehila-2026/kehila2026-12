@@ -14,64 +14,11 @@ import ContactSection from '../components/ContactSection';
 import PublicFooter from '../components/PublicFooter';
 import EmptyState from '../components/EmptyState';
 import ErrorState from '../components/ErrorState';
-import { FALLBACK_CONTENT, getPublicHomepageContent } from '../services/publicContentService';
+import { getFallbackPublicHomepageContent, getPublicHomepageContent } from '../services/publicContentService';
 import '../styles/PublicHomePage.css';
 
-function normalizeHomepageContent(homepageContent) {
-  const safeContent = homepageContent && typeof homepageContent === 'object' ? homepageContent : {};
-  const arrayOrFallback = (fieldName, legacyFieldName) => {
-    if (Array.isArray(safeContent[fieldName])) {
-      return safeContent[fieldName];
-    }
-
-    if (legacyFieldName && Array.isArray(safeContent[legacyFieldName])) {
-      return safeContent[legacyFieldName];
-    }
-
-    return FALLBACK_CONTENT[fieldName];
-  };
-
-  return {
-    ...FALLBACK_CONTENT,
-    ...safeContent,
-    organization: {
-      ...FALLBACK_CONTENT.organization,
-      ...(safeContent.organization || {}),
-    },
-    hero: {
-      ...FALLBACK_CONTENT.hero,
-      ...(safeContent.hero || {}),
-    },
-    about: {
-      ...FALLBACK_CONTENT.about,
-      ...(safeContent.about || {}),
-    },
-    contact: {
-      ...FALLBACK_CONTENT.contact,
-      ...(safeContent.contact || {}),
-    },
-    donation: {
-      ...FALLBACK_CONTENT.donation,
-      ...(safeContent.donation || {}),
-    },
-    center: {
-      ...FALLBACK_CONTENT.center,
-      ...(safeContent.center || {}),
-    },
-    statistics: arrayOrFallback('statistics'),
-    supportAreas: arrayOrFallback('supportAreas'),
-    articles: arrayOrFallback('articles'),
-    teamMembers: arrayOrFallback('teamMembers', 'team'),
-    events: arrayOrFallback('events'),
-    recoveryJourney: {
-      ...FALLBACK_CONTENT.recoveryJourney,
-      ...(safeContent.recoveryJourney || safeContent.journey || {}),
-    },
-  };
-}
-
 export default function PublicHomePage() {
-  const [content, setContent] = useState(FALLBACK_CONTENT);
+  const [content, setContent] = useState(() => getFallbackPublicHomepageContent());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
@@ -82,12 +29,12 @@ export default function PublicHomePage() {
       try {
         const homepageContent = await getPublicHomepageContent();
         if (isMounted) {
-          setContent(normalizeHomepageContent(homepageContent));
+          setContent(homepageContent);
           setError(null);
         }
       } catch (loadError) {
         if (isMounted) {
-          setContent(FALLBACK_CONTENT);
+          setContent(getFallbackPublicHomepageContent());
           setError(loadError);
         }
       } finally {
@@ -117,8 +64,8 @@ export default function PublicHomePage() {
         {!loading && !content ? (
           <EmptyState message="Public homepage content is not available yet." />
         ) : null}
-        <HeroSection hero={content.hero} organization={content.organization} loading={loading} />
-        <AboutSection about={content.about} organization={content.organization} supportAreas={content.supportAreas} />
+        <HeroSection hero={content.hero} loading={loading} />
+        <AboutSection about={content.about} supportAreas={content.supportAreas} />
         <StatisticsSection statistics={content.statistics} isLoading={loading} />
         <ShenaCenterSection center={content.center} />
         <SupportAreasSection supportAreas={content.supportAreas} isLoading={loading} />
@@ -126,7 +73,7 @@ export default function PublicHomePage() {
         <TeamPreviewSection teamMembers={content.teamMembers} isLoading={loading} />
         <EventsPreviewSection events={content.events} isLoading={loading} />
         <RecoveryJourneySection journey={content.recoveryJourney} />
-        <DonationSection donation={content.donation} organization={content.organization} />
+        <DonationSection donation={content.donation} />
         <ContactSection contact={content.contact} organization={content.organization} />
       </main>
       <PublicFooter organization={content.organization} contact={content.contact} />

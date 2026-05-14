@@ -1,30 +1,16 @@
-const FALLBACK_CONTACT = {
-  eyebrow: 'Contact',
-  title: 'Get in touch',
-  description:
-    'Contact details will be published here when they are ready for the public website.',
-  email: '',
-  phone: '',
-  address: '',
-  socialLinks: [],
-};
-
 function hasContactValue(value) {
   return typeof value === 'string' && value.trim().length > 0;
 }
 
 export default function ContactSection({ contact = {}, organization = {} }) {
-  const useFallback = contact.useFallback !== false;
-  const fallbackValue = (fieldName) => (useFallback ? FALLBACK_CONTACT[fieldName] : '');
   const contactEmail = hasContactValue(contact.email) ? contact.email : organization.email;
   const contactPhone = hasContactValue(contact.phone) ? contact.phone : organization.phone;
   const contactAddress = hasContactValue(contact.address) ? contact.address : organization.address;
   const contactContent = {
-    ...FALLBACK_CONTACT,
     ...contact,
-    email: hasContactValue(contactEmail) ? contactEmail : fallbackValue('email'),
-    phone: hasContactValue(contactPhone) ? contactPhone : fallbackValue('phone'),
-    address: hasContactValue(contactAddress) ? contactAddress : fallbackValue('address'),
+    email: hasContactValue(contactEmail) ? contactEmail : '',
+    phone: hasContactValue(contactPhone) ? contactPhone : '',
+    address: hasContactValue(contactAddress) ? contactAddress : '',
   };
   const socialLinks = Array.isArray(contactContent.socialLinks) ? contactContent.socialLinks.filter(Boolean) : [];
   const hasAnyContact =
@@ -73,7 +59,7 @@ export default function ContactSection({ contact = {}, organization = {} }) {
               <span>Social</span>
               <nav className="public-contact__social" aria-label="Contact social links">
                 {socialLinks.map((link) => (
-                  <a href={link.href || '#contact'} key={link.id || link.label}>
+                  <a href={link.href} key={link.id || link.label}>
                     {link.label}
                   </a>
                 ))}

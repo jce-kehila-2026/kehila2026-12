@@ -3,11 +3,9 @@ function hasValue(value) {
 }
 
 export default function PublicFooter({ organization, contact = {} }) {
-  const organizationName = organization?.name || 'She-Na';
+  const organizationName = organization.name;
   const currentYear = new Date().getFullYear();
-  const footerText =
-    contact.footerText ||
-    'Public community information. Final contact details will be managed from the admin content system.';
+  const footerText = contact.footerText;
   const email = hasValue(contact.email) ? contact.email : organization?.email;
   const phone = hasValue(contact.phone) ? contact.phone : organization?.phone;
   const address = hasValue(contact.address) ? contact.address : organization?.address;
@@ -50,8 +48,8 @@ export default function PublicFooter({ organization, contact = {} }) {
           {socialLinks.length ? (
             <nav className="public-footer__social" aria-label="Footer social links">
               {socialLinks.map((link) => (
-                <a href={link.href || '#contact'} key={link.id || link.label}>
-                  {link.label || 'Social link'}
+                <a href={link.href} key={link.id || link.label}>
+                  {link.label}
                 </a>
               ))}
             </nav>

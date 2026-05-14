@@ -5,7 +5,7 @@ export default function ArticleCard({ article }) {
     content,
     imageUrl,
     imageAlt,
-    readMoreUrl = '#articles',
+    readMoreUrl,
   } = article;
 
   const summary = description || content;
@@ -14,7 +14,7 @@ export default function ArticleCard({ article }) {
     <article className="public-article-card">
       <div className="public-article-card__media">
         {imageUrl ? (
-          <img src={imageUrl} alt={imageAlt || title} loading="lazy" />
+          <img src={imageUrl} alt={imageAlt} loading="lazy" />
         ) : (
           <div className="public-article-card__placeholder" aria-hidden="true">
             <span />

@@ -11,7 +11,7 @@ const PUBLIC_LINKS = [
 
 export default function PublicNavbar({ organization }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
-  const organizationName = organization?.name || 'She-Na';
+  const organizationName = organization.name;
   const menuButtonLabel = isMenuOpen ? 'Close public navigation' : 'Open public navigation';
 
   function closeMenu() {

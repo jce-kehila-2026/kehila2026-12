@@ -30,6 +30,8 @@ const FALLBACK_HERO = {
     label: 'Join / Get Support',
     href: '#contact',
   },
+  visualTitle: 'She-Na',
+  visualText: 'Knowledge, health, and emotional support for recovering women.',
 };
 
 const FALLBACK_ABOUT = {
@@ -78,6 +80,9 @@ const FALLBACK_CENTER = {
   ],
   ctaLabel: 'Join / Get Support',
   ctaHref: '#contact',
+  visualIcon: 'SH',
+  visualTitle: 'Recovery, dignity, and care',
+  visualText: 'Center text and imagery can later be managed from Firestore.',
   isVisible: true,
   active: true,
 };
@@ -307,6 +312,71 @@ export const FALLBACK_CONTENT = {
   contact: FALLBACK_CONTACT,
 };
 
+export function normalizePublicHomepageContent(homepageContent) {
+  const safeContent = homepageContent && typeof homepageContent === 'object' ? homepageContent : {};
+  const arrayOrFallback = (fieldName, legacyFieldName) => {
+    if (Array.isArray(safeContent[fieldName])) {
+      return safeContent[fieldName];
+    }
+
+    if (legacyFieldName && Array.isArray(safeContent[legacyFieldName])) {
+      return safeContent[legacyFieldName];
+    }
+
+    return cloneFallback(FALLBACK_CONTENT[fieldName]);
+  };
+
+  return {
+    ...cloneFallback(FALLBACK_CONTENT),
+    ...safeContent,
+    organization: {
+      ...cloneFallback(FALLBACK_CONTENT.organization),
+      ...(safeContent.organization || {}),
+    },
+    hero: {
+      ...cloneFallback(FALLBACK_CONTENT.hero),
+      ...(safeContent.hero || {}),
+      primaryAction: {
+        ...cloneFallback(FALLBACK_CONTENT.hero.primaryAction),
+        ...(safeContent.hero?.primaryAction || {}),
+      },
+      secondaryAction: {
+        ...cloneFallback(FALLBACK_CONTENT.hero.secondaryAction),
+        ...(safeContent.hero?.secondaryAction || {}),
+      },
+    },
+    about: {
+      ...cloneFallback(FALLBACK_CONTENT.about),
+      ...(safeContent.about || {}),
+    },
+    contact: {
+      ...cloneFallback(FALLBACK_CONTENT.contact),
+      ...(safeContent.contact || {}),
+    },
+    donation: {
+      ...cloneFallback(FALLBACK_CONTENT.donation),
+      ...(safeContent.donation || {}),
+    },
+    center: {
+      ...cloneFallback(FALLBACK_CONTENT.center),
+      ...(safeContent.center || {}),
+    },
+    statistics: arrayOrFallback('statistics'),
+    supportAreas: arrayOrFallback('supportAreas'),
+    articles: arrayOrFallback('articles'),
+    teamMembers: arrayOrFallback('teamMembers', 'team'),
+    events: arrayOrFallback('events'),
+    recoveryJourney: {
+      ...cloneFallback(FALLBACK_CONTENT.recoveryJourney),
+      ...(safeContent.recoveryJourney || safeContent.journey || {}),
+    },
+  };
+}
+
+export function getFallbackPublicHomepageContent() {
+  return normalizePublicHomepageContent(FALLBACK_CONTENT);
+}
+
 function cloneFallback(value) {
   return JSON.parse(JSON.stringify(value));
 }
@@ -465,6 +535,8 @@ function normalizeEvent(docData, fallbackEvent = {}) {
     dateLabel: formatDateLabel(startDate),
     time: toTimeKey(startDate, fallbackEvent.time || ''),
     location: textOrFallback(docData.location, fallbackEvent.location || ''),
+    imageUrl: firstTextValue(docData.imageUrl, docData.imageURL, docData.image, fallbackEvent.imageUrl),
+    imageAlt: firstTextValue(docData.imageAlt, docData.altText, title),
     maxParticipants: Number(docData.maxParticipants) || 0,
     isPublic: true,
     isVisible: true,
@@ -988,14 +1060,10 @@ export async function getHomepageContent() {
     getRecoveryJourney(),
     getDonationSettings(),
   ]);
-  const organization = orgInfo.organization || cloneFallback(FALLBACK_ORGANIZATION);
-  const about = orgInfo.about || cloneFallback(FALLBACK_ABOUT);
-  const contact = orgInfo.contact || cloneFallback(FALLBACK_CONTACT);
-
-  return {
-    organization,
+  return normalizePublicHomepageContent({
+    organization: orgInfo.organization,
     hero: cloneFallback(FALLBACK_HERO),
-    about,
+    about: orgInfo.about,
     statistics,
     center: cloneFallback(FALLBACK_CENTER),
     supportAreas,
@@ -1004,8 +1072,8 @@ export async function getHomepageContent() {
     events,
     recoveryJourney,
     donation,
-    contact,
-  };
+    contact: orgInfo.contact,
+  });
 }
 
 // Backward-compatible name used by the current public page. Components can move
