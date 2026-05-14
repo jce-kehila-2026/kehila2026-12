@@ -443,6 +443,46 @@ function firstTextValue(...values) {
   return values.find(hasText)?.trim() || '';
 }
 
+function getImageTextValue(value, fieldNames) {
+  if (hasText(value)) {
+    return value.trim();
+  }
+
+  if (!value || typeof value !== 'object') {
+    return '';
+  }
+
+  return firstTextValue(...fieldNames.map((fieldName) => value[fieldName]));
+}
+
+function firstImageUrl(...values) {
+  const urlFields = ['url', 'src', 'href', 'downloadUrl', 'imageUrl', 'photoUrl', 'avatarUrl'];
+
+  for (const value of values) {
+    const imageUrl = getImageTextValue(value, urlFields);
+
+    if (imageUrl) {
+      return imageUrl;
+    }
+  }
+
+  return '';
+}
+
+function firstImageAlt(fallbackAlt, ...values) {
+  const altFields = ['alt', 'altText', 'imageAlt', 'description', 'caption', 'title'];
+
+  for (const value of values) {
+    const imageAlt = getImageTextValue(value, altFields);
+
+    if (imageAlt) {
+      return imageAlt;
+    }
+  }
+
+  return fallbackAlt || '';
+}
+
 function stripHtml(value) {
   return hasText(value) ? value.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim() : '';
 }
@@ -535,8 +575,18 @@ function normalizeEvent(docData, fallbackEvent = {}) {
     dateLabel: formatDateLabel(startDate),
     time: toTimeKey(startDate, fallbackEvent.time || ''),
     location: textOrFallback(docData.location, fallbackEvent.location || ''),
-    imageUrl: firstTextValue(docData.imageUrl, docData.imageURL, docData.image, fallbackEvent.imageUrl),
-    imageAlt: firstTextValue(docData.imageAlt, docData.altText, title),
+    imageUrl: firstImageUrl(
+      docData.imageUrl,
+      docData.imageURL,
+      docData.thumbnailUrl,
+      docData.coverImageUrl,
+      docData.heroImageUrl,
+      docData.image,
+      docData.thumbnail,
+      docData.coverImage,
+      fallbackEvent.imageUrl,
+    ),
+    imageAlt: firstImageAlt(title, docData.imageAlt, docData.altText, docData.image, docData.thumbnail, docData.coverImage),
     maxParticipants: Number(docData.maxParticipants) || 0,
     isPublic: true,
     isVisible: true,
@@ -561,12 +611,19 @@ function normalizeArticle(docData, fallbackArticle = {}) {
     return null;
   }
 
-  const imageUrl = firstTextValue(
+  const imageUrl = firstImageUrl(
     docData.imageUrl,
     docData.imageURL,
-    docData.image,
     docData.thumbnailUrl,
+    docData.thumbnailURL,
+    docData.coverImageUrl,
+    docData.coverImageURL,
+    docData.heroImageUrl,
+    docData.heroImageURL,
+    docData.image,
+    docData.thumbnail,
     docData.coverImage,
+    docData.heroImage,
     fallbackArticle.imageUrl,
   );
   const publishedDate = toDate(docData.publishedAt || docData.publishDate || docData.createdAt || docData.updatedAt);
@@ -578,7 +635,7 @@ function normalizeArticle(docData, fallbackArticle = {}) {
     description,
     content,
     imageUrl,
-    imageAlt: firstTextValue(docData.imageAlt, docData.altText, title),
+    imageAlt: firstImageAlt(title, docData.imageAlt, docData.altText, docData.image, docData.thumbnail, docData.coverImage, docData.heroImage),
     readMoreUrl: firstTextValue(docData.readMoreUrl, docData.url, docData.link, fallbackArticle.readMoreUrl) || '#articles',
     publishedAt: publishedDate ? publishedDate.toISOString() : docData.publishedAt || docData.createdAt || '',
     isPublic: docData.isPublic !== false && docData.public !== false,
@@ -644,18 +701,37 @@ function normalizeTeamMember(docData) {
     position: role,
     description,
     content,
-    imageUrl: firstTextValue(
+    imageUrl: firstImageUrl(
       docData.imageUrl,
       docData.imageURL,
       docData.photoUrl,
       docData.photoURL,
       docData.avatarUrl,
       docData.avatarURL,
+      docData.profileImageUrl,
+      docData.profileImageURL,
+      docData.headshotUrl,
+      docData.headshotURL,
+      docData.portraitUrl,
+      docData.portraitURL,
       docData.image,
       docData.photo,
       docData.avatar,
+      docData.profileImage,
+      docData.headshot,
+      docData.portrait,
     ),
-    imageAlt: firstTextValue(docData.imageAlt, docData.altText, name ? `${name} profile photo` : ''),
+    imageAlt: firstImageAlt(
+      name ? `${name} profile photo` : '',
+      docData.imageAlt,
+      docData.altText,
+      docData.image,
+      docData.photo,
+      docData.avatar,
+      docData.profileImage,
+      docData.headshot,
+      docData.portrait,
+    ),
     isPublic: docData.isPublic !== false && docData.public !== false,
     isVisible: docData.isVisible !== false && docData.visible !== false && docData.hidden !== true,
     isPublished: docData.isPublished !== false && docData.published !== false && docData.status !== 'draft' && docData.status !== 'unpublished',

@@ -14,7 +14,7 @@ export default function ArticleCard({ article }) {
     <article className="public-article-card">
       <div className="public-article-card__media">
         {imageUrl ? (
-          <img src={imageUrl} alt={imageAlt} loading="lazy" />
+          <img src={imageUrl} alt={imageAlt || title} loading="lazy" />
         ) : (
           <div className="public-article-card__placeholder" aria-hidden="true">
             <span />

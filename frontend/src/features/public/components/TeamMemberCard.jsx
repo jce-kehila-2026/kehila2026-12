@@ -15,7 +15,7 @@ export default function TeamMemberCard({ member }) {
     <article className="public-team-card">
       <div className="public-team-card__media">
         {imageUrl ? (
-          <img src={imageUrl} alt={imageAlt} loading="lazy" />
+          <img src={imageUrl} alt={imageAlt || name} loading="lazy" />
         ) : (
           <div className="public-team-card__placeholder" aria-hidden="true">
             {getInitials(name)}

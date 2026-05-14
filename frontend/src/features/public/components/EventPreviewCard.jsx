@@ -21,7 +21,7 @@ export default function EventPreviewCard({ event }) {
     <article className="public-event-card">
       <div className="public-event-card__media">
         {imageUrl ? (
-          <img src={imageUrl} alt={imageAlt} loading="lazy" />
+          <img src={imageUrl} alt={imageAlt || title} loading="lazy" />
         ) : (
           <div className="public-event-card__placeholder" aria-hidden="true">
             <span />
