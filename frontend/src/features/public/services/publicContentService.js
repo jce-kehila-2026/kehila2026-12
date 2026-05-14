@@ -379,6 +379,10 @@ function stripHtml(value) {
   return hasText(value) ? value.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim() : '';
 }
 
+function normalizedKey(value) {
+  return hasText(value) ? value.trim().toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '') : '';
+}
+
 function isVisiblePublicContent(item) {
   if (!item || typeof item !== 'object') {
     return false;
@@ -519,6 +523,10 @@ function hasOwnField(item, fieldName) {
   return Object.prototype.hasOwnProperty.call(item, fieldName);
 }
 
+function hasAnyOwnField(item, fieldNames) {
+  return fieldNames.some((fieldName) => hasOwnField(item, fieldName));
+}
+
 function isVisiblePublicTeamMember(member) {
   if (!member || typeof member !== 'object') {
     return false;
@@ -605,6 +613,259 @@ function compareTeamMembers(left, right) {
   if (!rightDate) return -1;
 
   return rightDate.getTime() - leftDate.getTime();
+}
+
+function isVisibleOrgInfoDoc(docData) {
+  if (!docData || typeof docData !== 'object') {
+    return false;
+  }
+
+  if (docData.hidden === true || docData.status === 'inactive' || docData.status === 'draft' || docData.status === 'unpublished') {
+    return false;
+  }
+
+  const falseWhenPresentFields = ['isVisible', 'visible', 'isPublished', 'published', 'active', 'isPublic', 'public'];
+
+  return falseWhenPresentFields.every((fieldName) => !hasOwnField(docData, fieldName) || docData[fieldName] !== false);
+}
+
+function normalizeSocialLink(link, index) {
+  if (!link || typeof link !== 'object') {
+    return null;
+  }
+
+  const href = firstTextValue(link.href, link.url, link.link);
+  const label = firstTextValue(link.label, link.name, link.title, href);
+
+  if (!href && !label) {
+    return null;
+  }
+
+  return {
+    id: link.id || `social-${index}`,
+    label: label || 'Social link',
+    href: href || '#contact',
+    isVisible: link.isVisible !== false && link.visible !== false && link.hidden !== true,
+    active: link.active !== false && link.status !== 'inactive',
+  };
+}
+
+function normalizeSocialLinks(value) {
+  return asArray(value).map(normalizeSocialLink).filter(Boolean).filter(isVisiblePublicContent);
+}
+
+function getOrgInfoSectionKey(docData) {
+  const keyCandidates = [
+    docData.section,
+    docData.type,
+    docData.category,
+    docData.key,
+    docData.slug,
+    docData.id,
+    docData.title,
+  ].map(normalizedKey);
+
+  if (keyCandidates.some((key) => ['organization', 'organisation', 'org', 'org_info', 'organization_info', 'about_us'].includes(key))) {
+    return 'organization';
+  }
+
+  if (keyCandidates.some((key) => ['about', 'about_she_na', 'about_shena'].includes(key))) {
+    return 'about';
+  }
+
+  if (keyCandidates.some((key) => ['contact', 'contact_info', 'contact_details', 'contacts'].includes(key))) {
+    return 'contact';
+  }
+
+  const searchableText = keyCandidates.join(' ');
+
+  if (searchableText.includes('contact')) {
+    return 'contact';
+  }
+
+  if (searchableText.includes('about')) {
+    return 'about';
+  }
+
+  if (searchableText.includes('organization') || searchableText.includes('organisation')) {
+    return 'organization';
+  }
+
+  return '';
+}
+
+function normalizeOrganizationInfo(docData) {
+  const content = firstTextValue(docData.content, docData.description, docData.body, docData.text);
+  const name = firstTextValue(docData.name, docData.organizationName, docData.orgName, docData.title);
+  const description = firstTextValue(docData.description, docData.summary, docData.tagline, stripHtml(content));
+
+  if (!name && !description && !docData.email && !docData.phone && !docData.address) {
+    return null;
+  }
+
+  return {
+    name: name || '',
+    tagline: firstTextValue(docData.tagline, docData.subtitle, docData.eyebrow),
+    description,
+    email: firstTextValue(docData.email, docData.contactEmail),
+    phone: firstTextValue(docData.phone, docData.phoneNumber, docData.contactPhone),
+    address: firstTextValue(docData.address, docData.location),
+  };
+}
+
+function normalizeAboutInfo(docData) {
+  const content = firstTextValue(docData.content, docData.body, docData.text);
+  const title = firstTextValue(docData.aboutTitle, docData.heading, docData.title);
+  const intro = firstTextValue(docData.intro, docData.summary, docData.description, stripHtml(content));
+  const body = firstTextValue(docData.body, docData.details, docData.longDescription, stripHtml(content));
+
+  if (!title && !intro && !body) {
+    return null;
+  }
+
+  return {
+    title,
+    intro,
+    body,
+  };
+}
+
+function normalizeContactInfo(docData) {
+  const content = firstTextValue(docData.content, docData.body, docData.text);
+  const title = firstTextValue(docData.contactTitle, docData.heading, docData.title);
+  const description = firstTextValue(docData.description, docData.summary, stripHtml(content));
+  const email = firstTextValue(docData.email, docData.contactEmail);
+  const phone = firstTextValue(docData.phone, docData.phoneNumber, docData.contactPhone);
+  const address = firstTextValue(docData.address, docData.location);
+  const socialLinks = normalizeSocialLinks(docData.socialLinks || docData.social || docData.links);
+
+  if (!title && !description && !email && !phone && !address && !socialLinks.length && !docData.footerText) {
+    return null;
+  }
+
+  return {
+    eyebrow: firstTextValue(docData.eyebrow, docData.label),
+    title,
+    description,
+    email,
+    phone,
+    address,
+    socialLinks,
+    footerText: firstTextValue(docData.footerText, docData.footer, docData.note),
+    useFallback: docData.useFallback,
+  };
+}
+
+function mergeSectionData(currentValue, nextValue) {
+  if (!nextValue) {
+    return currentValue;
+  }
+
+  if (!currentValue) {
+    return nextValue;
+  }
+
+  return Object.entries(nextValue).reduce((mergedValue, [key, value]) => {
+    if (Array.isArray(value)) {
+      return value.length ? { ...mergedValue, [key]: value } : mergedValue;
+    }
+
+    return value !== undefined && value !== '' ? { ...mergedValue, [key]: value } : mergedValue;
+  }, currentValue);
+}
+
+function normalizeOrgInfoContent(docs) {
+  return asArray(docs).filter(isVisibleOrgInfoDoc).reduce(
+    (content, docData) => {
+      const sectionKey = getOrgInfoSectionKey(docData);
+      const hasOrganizationFields = hasAnyOwnField(docData, [
+        'name',
+        'organizationName',
+        'orgName',
+        'tagline',
+        'logoUrl',
+      ]);
+      const hasAboutFields = hasAnyOwnField(docData, [
+        'aboutTitle',
+        'intro',
+        'summary',
+        'body',
+        'details',
+        'longDescription',
+      ]);
+      const hasContactFields = hasAnyOwnField(docData, [
+        'contactTitle',
+        'email',
+        'contactEmail',
+        'phone',
+        'phoneNumber',
+        'contactPhone',
+        'address',
+        'location',
+        'socialLinks',
+        'social',
+        'links',
+        'footerText',
+      ]);
+
+      if (sectionKey === 'organization') {
+        return {
+          ...content,
+          organization: mergeSectionData(content.organization, normalizeOrganizationInfo(docData)),
+        };
+      }
+
+      if (sectionKey === 'about') {
+        return {
+          ...content,
+          about: mergeSectionData(content.about, normalizeAboutInfo(docData)),
+        };
+      }
+
+      if (sectionKey === 'contact') {
+        return {
+          ...content,
+          contact: mergeSectionData(content.contact, normalizeContactInfo(docData)),
+        };
+      }
+
+      return {
+        organization: hasOrganizationFields
+          ? mergeSectionData(content.organization, normalizeOrganizationInfo(docData))
+          : content.organization,
+        about: hasAboutFields ? mergeSectionData(content.about, normalizeAboutInfo(docData)) : content.about,
+        contact: hasContactFields ? mergeSectionData(content.contact, normalizeContactInfo(docData)) : content.contact,
+      };
+    },
+    {
+      organization: null,
+      about: null,
+      contact: null,
+    },
+  );
+}
+
+export async function getOrgInfoContent() {
+  try {
+    const docs = await getConfirmedPublicDocs('org_info');
+    const orgInfoContent = normalizeOrgInfoContent(docs);
+    const hasMatchingData = Boolean(orgInfoContent.organization || orgInfoContent.about || orgInfoContent.contact);
+
+    return hasMatchingData
+      ? orgInfoContent
+      : {
+          organization: cloneFallback(FALLBACK_ORGANIZATION),
+          about: cloneFallback(FALLBACK_ABOUT),
+          contact: cloneFallback(FALLBACK_CONTACT),
+        };
+  } catch (error) {
+    warnAndFallback('Failed to load public organization info from Firestore. Using fallback organization content.', error);
+    return {
+      organization: cloneFallback(FALLBACK_ORGANIZATION),
+      about: cloneFallback(FALLBACK_ABOUT),
+      contact: cloneFallback(FALLBACK_CONTACT),
+    };
+  }
 }
 
 export async function getPublicStatistics() {
@@ -700,23 +961,18 @@ export async function getDonationSettings() {
 }
 
 export async function getContactInfo() {
-  // TODO: Connect contact details after the CMS confirms contact document IDs
-  // and field names. The existing `org_info` collection only confirms generic
-  // `title` and `content` fields.
-  const contact = cloneFallback(FALLBACK_CONTACT);
+  const { contact } = await getOrgInfoContent();
+  const safeContact = contact || cloneFallback(FALLBACK_CONTACT);
 
   return {
-    ...contact,
-    socialLinks: asArray(contact.socialLinks).filter(isVisiblePublicContent),
+    ...safeContact,
+    socialLinks: asArray(safeContact.socialLinks).filter(isVisiblePublicContent),
   };
 }
 
 export async function getHomepageContent() {
-  // TODO: The CMS currently confirms `org_info` with generic `title` and
-  // `content` fields, but it does not confirm document IDs or section-specific
-  // fields for hero, about, center, contact, donation, or homepage statistics.
-  // Keep those sections on fallback until that public CMS contract exists.
   const [
+    orgInfo,
     statistics,
     supportAreas,
     articles,
@@ -724,8 +980,8 @@ export async function getHomepageContent() {
     events,
     recoveryJourney,
     donation,
-    contact,
   ] = await Promise.all([
+    getOrgInfoContent(),
     getPublicStatistics(),
     getSupportAreas(),
     getPublishedArticles(),
@@ -733,13 +989,15 @@ export async function getHomepageContent() {
     getPublicUpcomingEvents(),
     getRecoveryJourney(),
     getDonationSettings(),
-    getContactInfo(),
   ]);
+  const organization = orgInfo.organization || cloneFallback(FALLBACK_ORGANIZATION);
+  const about = orgInfo.about || cloneFallback(FALLBACK_ABOUT);
+  const contact = orgInfo.contact || cloneFallback(FALLBACK_CONTACT);
 
   return {
-    organization: cloneFallback(FALLBACK_ORGANIZATION),
+    organization,
     hero: cloneFallback(FALLBACK_HERO),
-    about: cloneFallback(FALLBACK_ABOUT),
+    about,
     statistics,
     center: cloneFallback(FALLBACK_CENTER),
     supportAreas,
