@@ -8,7 +8,12 @@ import { ThemeProvider, createTheme, useTheme } from "@mui/material/styles";
 import AppointmentBookingForm from "../components/AppointmentBookingForm";
 import AppointmentCard from "../components/AppointmentCard";
 import AppointmentTypeSection from "../components/AppointmentTypeSection";
-import { WELLNESS } from "../appointmentTypeMeta";
+import { APPOINTMENT_TYPE_OPTIONS, WELLNESS } from "../appointmentTypeMeta";
+import { auth } from "../../../firebase";
+import {
+  cancelAppointment,
+  getParticipantAppointments,
+} from "../services/appointmentService";
 
 const appointmentsCacheRtl = createCache({
   key: "appointments-mui-rtl",
@@ -104,17 +109,32 @@ const SAMPLE_PROVIDERS = [
   },
 ];
 
-const SAMPLE_MY_APPOINTMENTS = [
-  {
-    id: "a1",
-    dateIso: "2026-05-22",
-    time: "10:00",
-    provider: "Dr. Michal Levi",
-    appointmentType: "Psychologist",
-    durationMins: 50,
-    status: "confirmed",
-  },
-];
+function normalizeAppointmentStatus(raw) {
+  const s = String(raw ?? "")
+    .trim()
+    .toLowerCase();
+  if (s === "confirmed") return "confirmed";
+  if (s === "cancelled" || s === "canceled") return "cancelled";
+  if (s === "pending") return "pending";
+  return "pending";
+}
+
+function mapAppointmentDocToCard(docRow) {
+  const typeKey = docRow.type || "";
+  const opt =
+    APPOINTMENT_TYPE_OPTIONS.find((o) => o.key === typeKey) ||
+    APPOINTMENT_TYPE_OPTIONS[0];
+  const typeLabel = opt.label;
+  return {
+    id: docRow.id,
+    dateIso: docRow.date,
+    time: docRow.time,
+    provider: docRow.therapistName,
+    appointmentType: typeLabel,
+    durationMins: opt.durationMins,
+    status: normalizeAppointmentStatus(docRow.status),
+  };
+}
 
 function HeaderIllustration() {
   const purple = WELLNESS.primary;
@@ -203,7 +223,26 @@ function HeaderIllustration() {
  */
 function AppointmentPage({ embedInDashboard = false, locale = "en" } = {}) {
   const [selectedType, setSelectedType] = useState(null);
-  const [myAppointments, setMyAppointments] = useState(SAMPLE_MY_APPOINTMENTS);
+  const [myAppointments, setMyAppointments] = useState([]);
+
+  const loadMyAppointments = useCallback(async () => {
+    const uid = auth.currentUser?.uid;
+    if (!uid) {
+      setMyAppointments([]);
+      return;
+    }
+    try {
+      const rows = await getParticipantAppointments(uid);
+      setMyAppointments(rows.map(mapAppointmentDocToCard));
+    } catch (e) {
+      console.error("Failed to load appointments", e);
+      setMyAppointments([]);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadMyAppointments();
+  }, [loadMyAppointments]);
 
   const parentTheme = useTheme();
   const pageTheme = useMemo(
@@ -232,10 +271,17 @@ function AppointmentPage({ embedInDashboard = false, locale = "en" } = {}) {
     }));
   }, [selectedType]);
 
-  const handleCancel = (id) => {
+  const handleCancel = async (id) => {
     setMyAppointments((prev) =>
       prev.map((a) => (a.id === id ? { ...a, status: "cancelled" } : a))
     );
+    try {
+      await cancelAppointment(id);
+      await loadMyAppointments();
+    } catch (e) {
+      console.error("Failed to cancel appointment", e);
+      await loadMyAppointments();
+    }
   };
 
   const panelBorder = "1px solid rgba(181, 123, 232, 0.14)";
@@ -376,6 +422,7 @@ function AppointmentPage({ embedInDashboard = false, locale = "en" } = {}) {
                 <AppointmentBookingForm
                   selectedAppointmentTypeKey={selectedType}
                   providerOptions={filteredProviderOptions}
+                  onBookingComplete={loadMyAppointments}
                 />
 
                 <Card

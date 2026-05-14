@@ -3,19 +3,27 @@ import CalendarMonthRoundedIcon from "@mui/icons-material/CalendarMonthRounded";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
+import { format } from "date-fns";
 import {
+  Alert,
   Box,
   Button,
   Card,
   CardContent,
   InputLabel,
   MenuItem,
+  Snackbar,
   Stack,
   TextField,
   Typography,
 } from "@mui/material";
 import { ThemeProvider, createTheme, useTheme } from "@mui/material/styles";
+import { auth } from "../../../firebase";
 import { WELLNESS } from "../appointmentTypeMeta";
+import {
+  checkDuplicateAppointment,
+  createAppointment,
+} from "../services/appointmentService";
 
 /**
  * Default bookable times (every 15 min, 08:00–18:00). Override via `timeSlotOptions` prop when wiring availability.
@@ -41,11 +49,13 @@ function providerDisplayName(p) {
  * @param {string | null} selectedAppointmentTypeKey — appointment type card key; filters therapists
  * @param {{ id: string, name: string, specialty?: string }[]} providerOptions — therapists matching the selected type
  * @param {string[]} [timeSlotOptions] — optional HH:mm list; defaults to generated slots
+ * @param {() => void | Promise<void>} [onBookingComplete] — refresh list after successful book
  */
 function AppointmentBookingForm({
   selectedAppointmentTypeKey = null,
   providerOptions = [],
   timeSlotOptions,
+  onBookingComplete,
 } = {}) {
   const outerTheme = useTheme();
   const ltrTheme = useMemo(
@@ -61,6 +71,16 @@ function AppointmentBookingForm({
   const [date, setDate] = useState(() => new Date());
   const [selectedTime, setSelectedTime] = useState("");
   const [notes, setNotes] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    message: "",
+    severity: "info",
+  });
+
+  const showMessage = (message, severity = "info") => {
+    setSnackbar({ open: true, message, severity });
+  };
 
   useEffect(() => {
     setProviderId((prev) => {
@@ -263,8 +283,76 @@ function AppointmentBookingForm({
     textAlign: "left",
   };
 
-  const handleBook = () => {
-    // UI placeholder — connect booking API when ready
+  const handleBook = async () => {
+    if (!selectedAppointmentTypeKey) {
+      showMessage("Please select an appointment type.", "error");
+      return;
+    }
+    if (!providerId) {
+      showMessage("Please select a therapist.", "error");
+      return;
+    }
+    if (!date || Number.isNaN(date.getTime?.())) {
+      showMessage("Please select a date.", "error");
+      return;
+    }
+    if (!selectedTime) {
+      showMessage("Please select a time.", "error");
+      return;
+    }
+    if (!auth.currentUser) {
+      showMessage("You must be signed in to book an appointment.", "error");
+      return;
+    }
+
+    const therapist = providerOptions.find((p) => p.id === providerId);
+    const therapistName = therapist?.name?.trim() || "";
+    if (!therapistName) {
+      showMessage("Please select a therapist.", "error");
+      return;
+    }
+
+    const dateStr = format(date, "yyyy-MM-dd");
+
+    setSaving(true);
+    try {
+      const isDuplicate = await checkDuplicateAppointment(
+        dateStr,
+        selectedTime,
+        therapistName
+      );
+      if (isDuplicate) {
+        showMessage("This appointment time is already booked.", "error");
+        return;
+      }
+
+      await createAppointment({
+        type: selectedAppointmentTypeKey,
+        therapistName,
+        date: dateStr,
+        time: selectedTime,
+        notes: notes.trim(),
+        status: "confirmed",
+      });
+
+      setProviderId("");
+      setDate(new Date());
+      setSelectedTime("");
+      setNotes("");
+      showMessage("Your appointment was booked successfully.", "success");
+
+      if (typeof onBookingComplete === "function") {
+        await onBookingComplete();
+      }
+    } catch (err) {
+      console.error(err);
+      showMessage(
+        err?.message || "Could not book appointment. Please try again.",
+        "error"
+      );
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -513,6 +601,7 @@ function AppointmentBookingForm({
               <Button
                 type="button"
                 variant="contained"
+                disabled={saving}
                 onClick={handleBook}
                 startIcon={<CalendarMonthRoundedIcon sx={{ fontSize: 22 }} />}
                 sx={{
@@ -544,6 +633,22 @@ function AppointmentBookingForm({
         </Stack>
       </CardContent>
     </Card>
+
+        <Snackbar
+          open={snackbar.open}
+          autoHideDuration={6000}
+          onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
+          anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+        >
+          <Alert
+            onClose={() => setSnackbar((s) => ({ ...s, open: false }))}
+            severity={snackbar.severity}
+            variant="filled"
+            sx={{ width: "100%" }}
+          >
+            {snackbar.message}
+          </Alert>
+        </Snackbar>
       </Box>
     </ThemeProvider>
   );

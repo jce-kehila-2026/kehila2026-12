@@ -22,12 +22,23 @@ const STATUS_STYLES = {
   cancelled: {
     label: "Cancelled",
     sx: {
-      bgcolor: "rgba(254, 226, 226, 0.75)",
+      bgcolor: "rgba(220, 38, 38, 0.14)",
       color: "#b91c1c",
-      border: "1px solid rgba(252, 165, 165, 0.55)",
+      border: "1px solid rgba(220, 38, 38, 0.5)",
+      fontWeight: 700,
     },
   },
 };
+
+function normalizeStatus(status) {
+  const s = String(status ?? "")
+    .trim()
+    .toLowerCase();
+  if (s === "confirmed") return "confirmed";
+  if (s === "cancelled" || s === "canceled") return "cancelled";
+  if (s === "pending") return "pending";
+  return "pending";
+}
 
 function parseAppointmentDate(appointment) {
   if (appointment.dateIso) {
@@ -63,8 +74,10 @@ function formatDateTimeLine(d, timeStr) {
  */
 function AppointmentCard({ appointment, onCancel }) {
   const { time, provider, appointmentType, status, durationMins } = appointment;
-  const st = STATUS_STYLES[status] || STATUS_STYLES.pending;
-  const canCancel = status === "confirmed" || status === "pending";
+  const statusKey = normalizeStatus(status);
+  const st = STATUS_STYLES[statusKey] || STATUS_STYLES.pending;
+  const canCancel =
+    (statusKey === "confirmed" || statusKey === "pending") && Boolean(onCancel);
 
   const d = parseAppointmentDate(appointment);
   const dateTimeLine = formatDateTimeLine(d, time);
@@ -218,7 +231,7 @@ function AppointmentCard({ appointment, onCancel }) {
             {st.label}
           </Box>
 
-          {canCancel && onCancel ? (
+          {canCancel ? (
             <Button
               type="button"
               variant="outlined"
