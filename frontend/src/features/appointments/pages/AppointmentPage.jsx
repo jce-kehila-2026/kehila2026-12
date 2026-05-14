@@ -14,6 +14,10 @@ import {
   cancelAppointment,
   getParticipantAppointments,
 } from "../services/appointmentService";
+import {
+  getAvailableTherapists,
+  therapistTypeForFilter,
+} from "../services/therapistService";
 
 const appointmentsCacheRtl = createCache({
   key: "appointments-mui-rtl",
@@ -24,90 +28,6 @@ const appointmentsCacheLtr = createCache({
   key: "appointments-mui-ltr",
   prepend: true,
 });
-
-const SAMPLE_PROVIDERS = [
-  {
-    id: "michal",
-    name: "Dr. Michal Levi",
-    specialty: "Psychologist",
-    appointmentTypeKeys: ["psychologist"],
-    schedule: "Sunday, Thursday",
-    availability: "available",
-    initials: "ML",
-  },
-  {
-    id: "noa-therapist",
-    name: "Noa Ben-Ami",
-    specialty: "Therapist",
-    appointmentTypeKeys: ["therapist"],
-    schedule: "Tuesday, Thursday",
-    availability: "available",
-    initials: "NB",
-  },
-  {
-    id: "margarita",
-    name: "Margarita",
-    specialty: "Reflexology",
-    appointmentTypeKeys: ["reflexology"],
-    schedule: "Monday 10:30–12:30",
-    availability: "limited",
-    initials: "M",
-  },
-  {
-    id: "shagi",
-    name: "Shagi",
-    specialty: "Acupuncture & Herbal Medicine",
-    appointmentTypeKeys: ["acupuncture"],
-    schedule: "Wednesday 10:30–12:30",
-    availability: "available",
-    initials: "S",
-  },
-  {
-    id: "omer",
-    name: "Omer",
-    specialty: "Acupuncture & Herbal Medicine",
-    appointmentTypeKeys: ["acupuncture"],
-    schedule: "Wednesday 10:30–12:30",
-    availability: "available",
-    initials: "O",
-  },
-  {
-    id: "yael-massage",
-    name: "Yael Rosen",
-    specialty: "Massage Therapy",
-    appointmentTypeKeys: ["massage"],
-    schedule: "Friday",
-    availability: "available",
-    initials: "YR",
-  },
-  {
-    id: "oshrat",
-    name: "Oshrat Yosefson",
-    specialty: "NLP",
-    appointmentTypeKeys: ["nlp"],
-    schedule: "",
-    availability: "available",
-    initials: "OY",
-  },
-  {
-    id: "lilach",
-    name: "Lilach Fisher",
-    specialty: "Reflexology",
-    appointmentTypeKeys: ["reflexology"],
-    schedule: "",
-    availability: "limited",
-    initials: "LF",
-  },
-  {
-    id: "ayelet",
-    name: "Ayelet Shabtai",
-    specialty: "NLP / Touch Therapy",
-    appointmentTypeKeys: ["touchTherapy"],
-    schedule: "",
-    availability: "available",
-    initials: "AS",
-  },
-];
 
 function normalizeAppointmentStatus(raw) {
   const s = String(raw ?? "")
@@ -120,7 +40,8 @@ function normalizeAppointmentStatus(raw) {
 }
 
 function mapAppointmentDocToCard(docRow) {
-  const typeKey = docRow.type || "";
+  const rawType = docRow.type || "";
+  const typeKey = rawType === "massageTherapy" ? "massage" : rawType;
   const opt =
     APPOINTMENT_TYPE_OPTIONS.find((o) => o.key === typeKey) ||
     APPOINTMENT_TYPE_OPTIONS[0];
@@ -224,6 +145,36 @@ function HeaderIllustration() {
 function AppointmentPage({ embedInDashboard = false, locale = "en" } = {}) {
   const [selectedType, setSelectedType] = useState(null);
   const [myAppointments, setMyAppointments] = useState([]);
+  const [therapists, setTherapists] = useState([]);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const list = await getAvailableTherapists();
+        // Temporary: debug Firestore therapists loading
+        console.log(
+          "[Appointments] therapists loaded from Firestore collection `therapists` (status available):",
+          list
+        );
+        if (!cancelled) setTherapists(list);
+        if (!cancelled && list.length === 0) {
+          console.error(
+            "[Appointments] No therapists loaded. Check: (1) Firestore collection name is `therapists`, (2) security rules allow reads, (3) documents exist, (4) each document has status `available` (case-insensitive)."
+          );
+        }
+      } catch (e) {
+        console.error(
+          "[Appointments] Failed to load therapists from Firestore collection `therapists`:",
+          e
+        );
+        if (!cancelled) setTherapists([]);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const loadMyAppointments = useCallback(async () => {
     const uid = auth.currentUser?.uid;
@@ -261,15 +212,27 @@ function AppointmentPage({ embedInDashboard = false, locale = "en" } = {}) {
   const appointmentsCache = locale === "he" ? appointmentsCacheRtl : appointmentsCacheLtr;
 
   const filteredProviderOptions = useMemo(() => {
+    // Temporary: debug therapist filtering (strict therapist.type match)
+    console.log("[Appointments] selected appointment type (UI key):", selectedType);
+
     if (!selectedType) return [];
-    return SAMPLE_PROVIDERS.filter((p) =>
-      (p.appointmentTypeKeys ?? []).includes(selectedType)
-    ).map((p) => ({
-      id: p.id,
-      name: p.name,
-      specialty: p.specialty,
+
+    const typeKeyForTherapist = therapistTypeForFilter(selectedType);
+    console.log(
+      "[Appointments] therapist.type compared to (must equal):",
+      typeKeyForTherapist
+    );
+
+    const filtered = therapists.filter((t) => t.type === typeKeyForTherapist);
+    console.log("[Appointments] filtered therapists after type filter:", filtered);
+
+    return filtered.map((t) => ({
+      id: t.id,
+      name: t.name,
+      specialty: t.specialty,
+      availableTimes: t.availableTimes,
     }));
-  }, [selectedType]);
+  }, [selectedType, therapists]);
 
   const handleCancel = async (id) => {
     setMyAppointments((prev) =>

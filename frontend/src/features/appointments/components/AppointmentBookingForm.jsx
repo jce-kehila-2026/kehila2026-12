@@ -47,7 +47,7 @@ function providerDisplayName(p) {
 /**
  * Section 2 — book appointment (therapist, date, time, notes, CTA). Light wellness UI only.
  * @param {string | null} selectedAppointmentTypeKey — appointment type card key; filters therapists
- * @param {{ id: string, name: string, specialty?: string }[]} providerOptions — therapists matching the selected type
+ * @param {{ id: string, name: string, specialty?: string, availableTimes?: string[] }[]} providerOptions — therapists matching the selected type
  * @param {string[]} [timeSlotOptions] — optional HH:mm list; defaults to generated slots
  * @param {() => void | Promise<void>} [onBookingComplete] — refresh list after successful book
  */
@@ -91,15 +91,35 @@ function AppointmentBookingForm({
     });
   }, [selectedAppointmentTypeKey, providerOptions]);
 
+  useEffect(() => {
+    setSelectedTime("");
+  }, [providerId]);
+
   const therapistSelectDisabled =
     !selectedAppointmentTypeKey || providerOptions.length === 0;
 
+  const selectedProvider = useMemo(
+    () => providerOptions.find((p) => p.id === providerId),
+    [providerOptions, providerId]
+  );
+
   const slotOptions = useMemo(() => {
+    if (!providerId) return [];
+    const fromTherapist = selectedProvider?.availableTimes;
+    if (Array.isArray(fromTherapist) && fromTherapist.length > 0) {
+      return fromTherapist;
+    }
     if (Array.isArray(timeSlotOptions) && timeSlotOptions.length > 0) {
       return timeSlotOptions;
     }
-    return buildDefaultTimeSlotStrings();
-  }, [timeSlotOptions]);
+    return [];
+  }, [providerId, selectedProvider, timeSlotOptions]);
+
+  useEffect(() => {
+    if (selectedTime && slotOptions.length > 0 && !slotOptions.includes(selectedTime)) {
+      setSelectedTime("");
+    }
+  }, [selectedTime, slotOptions]);
 
   const fieldSx = useMemo(
     () => ({
