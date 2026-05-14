@@ -19,8 +19,17 @@ import '../styles/PublicHomePage.css';
 
 function normalizeHomepageContent(homepageContent) {
   const safeContent = homepageContent && typeof homepageContent === 'object' ? homepageContent : {};
-  const arrayOrFallback = (fieldName) =>
-    Array.isArray(safeContent[fieldName]) ? safeContent[fieldName] : FALLBACK_CONTENT[fieldName];
+  const arrayOrFallback = (fieldName, legacyFieldName) => {
+    if (Array.isArray(safeContent[fieldName])) {
+      return safeContent[fieldName];
+    }
+
+    if (legacyFieldName && Array.isArray(safeContent[legacyFieldName])) {
+      return safeContent[legacyFieldName];
+    }
+
+    return FALLBACK_CONTENT[fieldName];
+  };
 
   return {
     ...FALLBACK_CONTENT,
@@ -52,13 +61,8 @@ function normalizeHomepageContent(homepageContent) {
     statistics: arrayOrFallback('statistics'),
     supportAreas: arrayOrFallback('supportAreas'),
     articles: arrayOrFallback('articles'),
-    team: arrayOrFallback('team'),
-    teamMembers: arrayOrFallback('teamMembers'),
+    teamMembers: arrayOrFallback('teamMembers', 'team'),
     events: arrayOrFallback('events'),
-    journey: {
-      ...FALLBACK_CONTENT.journey,
-      ...(safeContent.journey || safeContent.recoveryJourney || {}),
-    },
     recoveryJourney: {
       ...FALLBACK_CONTENT.recoveryJourney,
       ...(safeContent.recoveryJourney || safeContent.journey || {}),
@@ -119,9 +123,9 @@ export default function PublicHomePage() {
         <ShenaCenterSection center={content.center} />
         <SupportAreasSection supportAreas={content.supportAreas} isLoading={loading} />
         <ArticlesPreviewSection articles={content.articles} isLoading={loading} />
-        <TeamPreviewSection teamMembers={content.teamMembers || content.team} isLoading={loading} />
+        <TeamPreviewSection teamMembers={content.teamMembers} isLoading={loading} />
         <EventsPreviewSection events={content.events} isLoading={loading} />
-        <RecoveryJourneySection journey={content.recoveryJourney || content.journey} />
+        <RecoveryJourneySection journey={content.recoveryJourney} />
         <DonationSection donation={content.donation} organization={content.organization} />
         <ContactSection contact={content.contact} organization={content.organization} />
       </main>
