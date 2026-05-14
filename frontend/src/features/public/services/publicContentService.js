@@ -393,6 +393,30 @@ function warnAndFallback(message, error) {
   }
 }
 
+function fallbackOrgInfoContent() {
+  return {
+    organization: cloneFallback(FALLBACK_ORGANIZATION),
+    about: cloneFallback(FALLBACK_ABOUT),
+    contact: cloneFallback(FALLBACK_CONTACT),
+  };
+}
+
+async function loadHomepageSection(sectionName, loader, fallbackValue) {
+  try {
+    const sectionContent = await loader();
+
+    if (sectionContent === undefined || sectionContent === null) {
+      warnAndFallback(`Public ${sectionName} content was empty. Using fallback ${sectionName} content.`);
+      return cloneFallback(fallbackValue);
+    }
+
+    return sectionContent;
+  } catch (error) {
+    warnAndFallback(`Failed to load public ${sectionName} content. Using fallback ${sectionName} content.`, error);
+    return cloneFallback(fallbackValue);
+  }
+}
+
 function hasText(value) {
   return typeof value === 'string' && value.trim().length > 0;
 }
@@ -997,20 +1021,15 @@ export async function getOrgInfoContent() {
     const orgInfoContent = normalizeOrgInfoContent(docs);
     const hasMatchingData = Boolean(orgInfoContent.organization || orgInfoContent.about || orgInfoContent.contact);
 
-    return hasMatchingData
-      ? orgInfoContent
-      : {
-          organization: cloneFallback(FALLBACK_ORGANIZATION),
-          about: cloneFallback(FALLBACK_ABOUT),
-          contact: cloneFallback(FALLBACK_CONTACT),
-        };
+    if (!hasMatchingData) {
+      warnAndFallback('No matching public organization info was found in Firestore. Using fallback organization content.');
+      return fallbackOrgInfoContent();
+    }
+
+    return orgInfoContent;
   } catch (error) {
     warnAndFallback('Failed to load public organization info from Firestore. Using fallback organization content.', error);
-    return {
-      organization: cloneFallback(FALLBACK_ORGANIZATION),
-      about: cloneFallback(FALLBACK_ABOUT),
-      contact: cloneFallback(FALLBACK_CONTACT),
-    };
+    return fallbackOrgInfoContent();
   }
 }
 
@@ -1117,39 +1136,45 @@ export async function getContactInfo() {
 }
 
 export async function getHomepageContent() {
-  const [
-    orgInfo,
-    statistics,
-    supportAreas,
-    articles,
-    teamMembers,
-    events,
-    recoveryJourney,
-    donation,
-  ] = await Promise.all([
-    getOrgInfoContent(),
-    getPublicStatistics(),
-    getSupportAreas(),
-    getPublishedArticles(),
-    getVisibleTeamMembers(),
-    getPublicUpcomingEvents(),
-    getRecoveryJourney(),
-    getDonationSettings(),
-  ]);
-  return normalizePublicHomepageContent({
-    organization: orgInfo.organization,
-    hero: cloneFallback(FALLBACK_HERO),
-    about: orgInfo.about,
-    statistics,
-    center: cloneFallback(FALLBACK_CENTER),
-    supportAreas,
-    articles,
-    teamMembers,
-    events,
-    recoveryJourney,
-    donation,
-    contact: orgInfo.contact,
-  });
+  try {
+    const [
+      orgInfo,
+      statistics,
+      supportAreas,
+      articles,
+      teamMembers,
+      events,
+      recoveryJourney,
+      donation,
+    ] = await Promise.all([
+      loadHomepageSection('organization info', getOrgInfoContent, fallbackOrgInfoContent()),
+      loadHomepageSection('statistics', getPublicStatistics, FALLBACK_STATISTICS),
+      loadHomepageSection('support areas', getSupportAreas, FALLBACK_SUPPORT_AREAS),
+      loadHomepageSection('articles', getPublishedArticles, FALLBACK_ARTICLES),
+      loadHomepageSection('team profiles', getVisibleTeamMembers, FALLBACK_TEAM_MEMBERS),
+      loadHomepageSection('events', getPublicUpcomingEvents, FALLBACK_EVENTS),
+      loadHomepageSection('recovery journey', getRecoveryJourney, FALLBACK_RECOVERY_JOURNEY),
+      loadHomepageSection('donation settings', getDonationSettings, FALLBACK_DONATION),
+    ]);
+
+    return normalizePublicHomepageContent({
+      organization: orgInfo.organization,
+      hero: cloneFallback(FALLBACK_HERO),
+      about: orgInfo.about,
+      statistics,
+      center: cloneFallback(FALLBACK_CENTER),
+      supportAreas,
+      articles,
+      teamMembers,
+      events,
+      recoveryJourney,
+      donation,
+      contact: orgInfo.contact,
+    });
+  } catch (error) {
+    warnAndFallback('Unexpected failure while composing public homepage content. Using full fallback homepage content.', error);
+    return getFallbackPublicHomepageContent();
+  }
 }
 
 // Backward-compatible name used by the current public page. Components can move
