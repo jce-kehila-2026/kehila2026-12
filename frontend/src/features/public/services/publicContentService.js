@@ -371,6 +371,14 @@ function formatDateLabel(date) {
   }).format(date);
 }
 
+function firstTextValue(...values) {
+  return values.find(hasText)?.trim() || '';
+}
+
+function stripHtml(value) {
+  return hasText(value) ? value.replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim() : '';
+}
+
 function isVisiblePublicContent(item) {
   if (!item || typeof item !== 'object') {
     return false;
@@ -384,6 +392,20 @@ function isVisiblePublicContent(item) {
   const isCancelled = item.cancelled === true || item.status === 'cancelled';
 
   return isPublic && isVisible && isPublished && isActive && !isDraft && !isCancelled;
+}
+
+function isVisiblePublicArticle(article) {
+  if (!article || typeof article !== 'object') {
+    return false;
+  }
+
+  const isPublic = article.isPublic !== false && article.public !== false;
+  const isVisible = article.isVisible !== false && article.visible !== false && article.hidden !== true;
+  const isPublished = article.isPublished !== false && article.published !== false;
+  const isActive = article.active !== false && article.status !== 'inactive';
+  const isDraft = article.status === 'draft' || article.status === 'unpublished';
+
+  return isPublic && isVisible && isPublished && isActive && !isDraft;
 }
 
 function isUpcomingEvent(event) {
@@ -450,6 +472,49 @@ function normalizeEvent(docData, fallbackEvent = {}) {
   };
 }
 
+function normalizeArticle(docData, fallbackArticle = {}) {
+  const content = firstTextValue(docData.content, docData.body, docData.text, fallbackArticle.content);
+  const title = firstTextValue(docData.title, docData.name, fallbackArticle.title);
+  const description = firstTextValue(
+    docData.description,
+    docData.summary,
+    docData.excerpt,
+    stripHtml(content),
+    fallbackArticle.description,
+  );
+
+  if (!title || !description) {
+    return null;
+  }
+
+  const imageUrl = firstTextValue(
+    docData.imageUrl,
+    docData.imageURL,
+    docData.image,
+    docData.thumbnailUrl,
+    docData.coverImage,
+    fallbackArticle.imageUrl,
+  );
+  const publishedDate = toDate(docData.publishedAt || docData.publishDate || docData.createdAt || docData.updatedAt);
+
+  return {
+    ...fallbackArticle,
+    id: docData.id || fallbackArticle.id,
+    title,
+    description,
+    content,
+    imageUrl,
+    imageAlt: firstTextValue(docData.imageAlt, docData.altText, title),
+    readMoreUrl: firstTextValue(docData.readMoreUrl, docData.url, docData.link, fallbackArticle.readMoreUrl) || '#articles',
+    publishedAt: publishedDate ? publishedDate.toISOString() : docData.publishedAt || docData.createdAt || '',
+    isPublic: docData.isPublic !== false && docData.public !== false,
+    isVisible: docData.isVisible !== false && docData.visible !== false && docData.hidden !== true,
+    isPublished: docData.isPublished !== false && docData.published !== false && docData.status !== 'draft' && docData.status !== 'unpublished',
+    active: docData.active !== false && docData.status !== 'inactive',
+    status: docData.status || fallbackArticle.status || 'published',
+  };
+}
+
 export async function getPublicStatistics() {
   // TODO: Connect statistics after the CMS confirms a collection/document contract
   // and public visibility fields for homepage metrics.
@@ -463,10 +528,28 @@ export async function getSupportAreas() {
 }
 
 export async function getPublishedArticles(maxItems = 3) {
-  // TODO: The Admin CMS confirms the `articles` collection and `title`/`content`
-  // fields, but not public/published/active field names. Keep fallback articles
-  // until those fields are confirmed so unpublished CMS drafts are not exposed.
-  return withFallbackArray(FALLBACK_ARTICLES, FALLBACK_ARTICLES, maxItems);
+  try {
+    const docs = await getConfirmedPublicDocs('articles');
+    const articles = docs
+      .map((articleDoc, index) => normalizeArticle(articleDoc, FALLBACK_ARTICLES[index]))
+      .filter(Boolean)
+      .filter(isVisiblePublicArticle)
+      .sort((left, right) => {
+        const leftDate = toDate(left.publishedAt);
+        const rightDate = toDate(right.publishedAt);
+
+        if (!leftDate && !rightDate) return 0;
+        if (!leftDate) return 1;
+        if (!rightDate) return -1;
+
+        return rightDate.getTime() - leftDate.getTime();
+      });
+
+    return articles.length ? articles.slice(0, maxItems) : cloneFallback(FALLBACK_ARTICLES).slice(0, maxItems);
+  } catch (error) {
+    warnAndFallback('Failed to load public articles from Firestore. Using fallback articles.', error);
+    return cloneFallback(FALLBACK_ARTICLES).slice(0, maxItems);
+  }
 }
 
 export async function getVisibleTeamMembers(maxItems = 4) {
