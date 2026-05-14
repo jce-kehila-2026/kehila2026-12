@@ -1,6 +1,6 @@
 function getEventDateTime(event) {
-  const date = event?.dateLabel || event?.date || event?.startDate || '';
-  const time = event?.timeLabel || event?.time || event?.startTime || '';
+  const date = event.dateLabel || event.date || event.startDate;
+  const time = event.timeLabel || event.time || event.startTime;
 
   if (date && time) {
     return `${date} · ${time}`;
@@ -10,18 +10,18 @@ function getEventDateTime(event) {
 }
 
 export default function EventPreviewCard({ event }) {
-  const title = event?.title || 'Community activity';
-  const description = event?.description || event?.content || '';
+  const title = event.title;
+  const description = event.description || event.content;
   const dateTime = getEventDateTime(event);
-  const location = event?.location || event?.venue || '';
-  const imageUrl = event?.imageUrl || event?.image || '';
-  const imageAlt = event?.imageAlt || `${title} activity preview`;
+  const location = event.location || event.venue;
+  const imageUrl = event.imageUrl || event.image;
+  const imageAlt = event.imageAlt;
 
   return (
     <article className="public-event-card">
       <div className="public-event-card__media">
         {imageUrl ? (
-          <img src={imageUrl} alt={imageAlt} loading="lazy" />
+          <img src={imageUrl} alt={imageAlt || title} loading="lazy" />
         ) : (
           <div className="public-event-card__placeholder" aria-hidden="true">
             <span />

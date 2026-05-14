@@ -1,8 +1,4 @@
 function getInitials(name) {
-  if (!name) {
-    return 'S';
-  }
-
   return name
     .split(' ')
     .filter(Boolean)
@@ -13,17 +9,13 @@ function getInitials(name) {
 }
 
 export default function TeamMemberCard({ member }) {
-  const name = member?.name || member?.title || 'Team member';
-  const role = member?.role || member?.position || '';
-  const description = member?.description || member?.content || '';
-  const imageUrl = member?.imageUrl || member?.photoUrl || member?.avatarUrl || '';
-  const imageAlt = member?.imageAlt || `${name} profile photo`;
+  const { name, role, description, imageUrl, imageAlt } = member;
 
   return (
     <article className="public-team-card">
       <div className="public-team-card__media">
         {imageUrl ? (
-          <img src={imageUrl} alt={imageAlt} loading="lazy" />
+          <img src={imageUrl} alt={imageAlt || name} loading="lazy" />
         ) : (
           <div className="public-team-card__placeholder" aria-hidden="true">
             {getInitials(name)}

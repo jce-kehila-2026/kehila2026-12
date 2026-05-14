@@ -20,11 +20,11 @@ export default function StatisticsSection({ statistics = [], isLoading = false, 
       ) : hasError ? (
         <ErrorState message="Could not load statistics. Showing other available content." />
       ) : hasStatistics ? (
-        <div className="public-statistics__grid" data-content-source="fallback">
+        <div className="public-statistics__grid">
           {statistics.map((statistic) => (
             <article className="public-statistics__card" key={statistic.id || statistic.label}>
-              <strong>{statistic.value || 'TBD'}</strong>
-              <span>{statistic.label || 'Statistic'}</span>
+              <strong>{statistic.value}</strong>
+              <span>{statistic.label}</span>
               {statistic.note ? <p>{statistic.note}</p> : null}
             </article>
           ))}

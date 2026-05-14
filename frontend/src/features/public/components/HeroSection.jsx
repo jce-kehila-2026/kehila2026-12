@@ -1,33 +1,19 @@
-export default function HeroSection({ hero = {}, organization, loading }) {
-  const heroContent = {
-    eyebrow: hero.eyebrow || organization?.tagline || 'Support for women in recovery',
-    title:
-      hero.title ||
-      (organization?.name ? `${organization.name}: support for every step forward` : 'She-Na: support for every step forward'),
-    message:
-      hero.message ||
-      organization?.description ||
-      'A warm community helping recovering women find knowledge, care, and steady support.',
-    supportText:
-      hero.supportText ||
-      'She-Na supports recovering women with respectful guidance, practical resources, and a caring place to turn to.',
-    primaryAction: hero.primaryAction || { label: 'Donate', href: '#donate' },
-    secondaryAction: hero.secondaryAction || { label: 'Join / Get Support', href: '#contact' },
-  };
+export default function HeroSection({ hero = {}, loading }) {
+  const { primaryAction = {}, secondaryAction = {} } = hero;
 
   return (
     <section className="public-hero" id="home" aria-labelledby="public-hero-title">
       <div className="public-hero__content">
-        <p className="public-eyebrow">{loading ? 'Preparing public content' : heroContent.eyebrow}</p>
-        <h1 id="public-hero-title">{heroContent.title}</h1>
-        <p className="public-hero__description">{heroContent.message}</p>
-        <p className="public-hero__support">{heroContent.supportText}</p>
+        <p className="public-eyebrow">{loading ? 'Preparing public content' : hero.eyebrow}</p>
+        <h1 id="public-hero-title">{hero.title}</h1>
+        <p className="public-hero__description">{hero.message}</p>
+        <p className="public-hero__support">{hero.supportText}</p>
         <div className="public-hero__actions">
-          <a className="public-button public-button--primary" href={heroContent.primaryAction.href || '#donate'}>
-            {heroContent.primaryAction.label || 'Donate'}
+          <a className="public-button public-button--primary" href={primaryAction.href}>
+            {primaryAction.label}
           </a>
-          <a className="public-button public-button--secondary" href={heroContent.secondaryAction.href || '#contact'}>
-            {heroContent.secondaryAction.label || 'Join / Get Support'}
+          <a className="public-button public-button--secondary" href={secondaryAction.href}>
+            {secondaryAction.label}
           </a>
           <a className="public-button public-button--tertiary" href="/login">
             Login
@@ -37,9 +23,9 @@ export default function HeroSection({ hero = {}, organization, loading }) {
       <div className="public-hero__visual" aria-labelledby="public-hero-visual-title">
         <div className="public-hero__visual-card">
           <span className="public-hero__visual-mark" id="public-hero-visual-title">
-            She-Na
+            {hero.visualTitle}
           </span>
-          <p>Knowledge, health, and emotional support for recovering women.</p>
+          <p>{hero.visualText}</p>
         </div>
       </div>
     </section>

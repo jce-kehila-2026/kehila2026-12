@@ -5,7 +5,7 @@ export default function ArticleCard({ article }) {
     content,
     imageUrl,
     imageAlt,
-    readMoreUrl = '#articles',
+    readMoreUrl,
   } = article;
 
   const summary = description || content;
