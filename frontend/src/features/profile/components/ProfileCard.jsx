@@ -11,6 +11,7 @@ import {
   Stack,
   Typography,
 } from "@mui/material";
+import { WELLNESS, WELLNESS_DARK } from "../../appointments/appointmentTypeMeta";
 
 function ProfileCard({ profile, isEditing, onEdit, darkMode = false, t = (k) => k }) {
   const [previewImage, setPreviewImage] = useState(null);
@@ -31,30 +32,23 @@ function ProfileCard({ profile, isEditing, onEdit, darkMode = false, t = (k) => 
     setPreviewImage(imageUrl);
   };
 
-  const cardBorder = darkMode ? "1px solid rgba(236, 72, 153, 0.25)" : "1px solid #f8dce9";
-  const cardBg = darkMode ? "#1e293b" : undefined;
-  const cardShadow = darkMode ? "0 12px 30px rgba(0,0,0,0.35)" : undefined;
-  const nameColor = darkMode ? "#f8fafc" : "#1f2937";
-  const emailColor = darkMode ? "#94a3b8" : "#4b5563";
-  const chipBg = darkMode ? "rgba(236, 72, 153, 0.15)" : "#fdf2f8";
-  const chipColor = darkMode ? "#fbcfe8" : "#9d174d";
-  const avatarBg = darkMode ? "rgba(236, 72, 153, 0.25)" : "#fbcfe8";
-  const avatarColor = darkMode ? "#fce7f3" : "#be185d";
+  const w = darkMode ? WELLNESS_DARK : WELLNESS;
 
   return (
     <Card
       elevation={0}
       sx={{
         minWidth: { lg: 300 },
-        borderRadius: 4,
-        border: cardBorder,
-        backgroundColor: cardBg,
-        boxShadow: cardShadow,
+        borderRadius: w.radiusLg,
+        border: darkMode
+          ? "1px solid rgba(196, 165, 245, 0.28)"
+          : "1px solid rgba(181, 123, 232, 0.22)",
+        backgroundColor: w.card,
+        boxShadow: w.shadowCard,
       }}
     >
       <CardContent sx={{ p: 3 }}>
         <Stack spacing={2.4} alignItems="center">
-          {/* Avatar + camera only — positioning context is this 92×92 box, not the card */}
           <Box
             sx={{
               position: "relative",
@@ -70,8 +64,8 @@ function ProfileCard({ profile, isEditing, onEdit, darkMode = false, t = (k) => 
               sx={{
                 width: "100%",
                 height: "100%",
-                bgcolor: avatarBg,
-                color: avatarColor,
+                bgcolor: darkMode ? "rgba(196, 165, 245, 0.22)" : "#EAD7FF",
+                color: darkMode ? WELLNESS_DARK.primary : "#7c3aad",
                 fontWeight: 700,
                 fontSize: 40,
               }}
@@ -86,27 +80,27 @@ function ProfileCard({ profile, isEditing, onEdit, darkMode = false, t = (k) => 
                 sx={{
                   position: "absolute",
                   right: "-8px",
-bottom: "-8px",
-width: "32px",
-height: "32px",
+                  bottom: "-8px",
+                  width: "32px",
+                  height: "32px",
                   zIndex: 1,
-                  
                   boxSizing: "border-box",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   borderRadius: "50%",
-                  bgcolor: "#ec4899",
+                  background: `linear-gradient(135deg, ${WELLNESS.primary} 0%, #c49ef0 100%)`,
                   color: "#ffffff",
-                  border: "2px solid #ffffff",
-                  boxShadow:
-                    "0 2px 12px rgba(0, 0, 0, 0.16), 0 1px 4px rgba(236, 72, 153, 0.45)",
+                  border: darkMode ? "2px solid #1e293b" : "2px solid #ffffff",
+                  boxShadow: "0 4px 14px rgba(181, 123, 232, 0.35)",
                   cursor: "pointer",
-                  transition: "background-color 0.2s ease, box-shadow 0.2s ease",
+                  transition:
+                    "transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease",
                   "&:hover": {
-                    bgcolor: "#db2777",
-                    boxShadow:
-                      "0 3px 14px rgba(0, 0, 0, 0.2), 0 2px 6px rgba(236, 72, 153, 0.5)",
+                    background:
+                      "linear-gradient(135deg, #a66ee0 0%, #b57be8 100%)",
+                    transform: "translateY(-1px)",
+                    boxShadow: "0 6px 18px rgba(181, 123, 232, 0.42)",
                   },
                 }}
               >
@@ -125,18 +119,38 @@ height: "32px",
             <Typography
               variant="h5"
               noWrap
-              sx={{ fontWeight: 700, color: nameColor, fontSize: "1.6rem" }}
+              sx={{
+                fontWeight: 700,
+                color: w.text,
+                fontSize: "1.6rem",
+              }}
             >
               {profile?.fullName}
             </Typography>
 
-            <Typography variant="body2" sx={{ color: emailColor, mt: 0.7 }}>
+            <Typography variant="body2" sx={{ color: w.muted, mt: 0.7 }}>
               {profile?.email}
             </Typography>
           </Box>
 
-          <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" justifyContent="center">
-            <Chip label={profile?.city || "San Francisco"} sx={{ bgcolor: chipBg, color: chipColor }} />
+          <Stack
+            direction="row"
+            spacing={1}
+            useFlexGap
+            flexWrap="wrap"
+            justifyContent="center"
+          >
+            <Chip
+              label={profile?.city || "San Francisco"}
+              sx={{
+                bgcolor: darkMode ? "rgba(196, 165, 245, 0.14)" : "rgba(234, 215, 255, 0.85)",
+                color: darkMode ? "#e9d5ff" : "#5b2d9e",
+                fontWeight: 600,
+                border: darkMode
+                  ? "1px solid rgba(196, 165, 245, 0.35)"
+                  : "1px solid rgba(181, 123, 232, 0.2)",
+              }}
+            />
             <Chip
               label={`${t("languageChipPrefix")} ${
                 (profile?.language || "english").toLowerCase() === "hebrew"
@@ -144,11 +158,15 @@ height: "32px",
                   : t("languageEnglish")
               }`}
               sx={{
-    bgcolor: chipBg,
-    color: chipColor,
-    textTransform: "none",
-  }}
-/>
+                bgcolor: darkMode ? "rgba(196, 165, 245, 0.14)" : "rgba(234, 215, 255, 0.85)",
+                color: darkMode ? "#e9d5ff" : "#5b2d9e",
+                fontWeight: 600,
+                border: darkMode
+                  ? "1px solid rgba(196, 165, 245, 0.35)"
+                  : "1px solid rgba(181, 123, 232, 0.2)",
+                textTransform: "none",
+              }}
+            />
           </Stack>
 
           {!isEditing && (
@@ -160,14 +178,26 @@ height: "32px",
               sx={{
                 mt: 1,
                 textTransform: "none",
-                borderRadius: 99,
-                borderColor: darkMode ? "rgba(244, 114, 182, 0.45)" : "#e9b5d2",
-                color: darkMode ? "#f9a8d4" : "#be185d",
+                borderRadius: "18px",
+                borderWidth: 1.5,
+                borderColor: darkMode
+                  ? "rgba(196, 165, 245, 0.45)"
+                  : "rgba(181, 123, 232, 0.55)",
+                color: darkMode ? WELLNESS_DARK.primary : "#6b3f9e",
                 fontWeight: 600,
                 py: 1.1,
+                transition:
+                  "border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease",
                 "&:hover": {
-                  borderColor: darkMode ? "#f472b6" : undefined,
-                  backgroundColor: darkMode ? "rgba(236, 72, 153, 0.08)" : undefined,
+                  borderColor: WELLNESS.primary,
+                  borderWidth: 1.5,
+                  backgroundColor: darkMode
+                    ? "rgba(196, 165, 245, 0.1)"
+                    : "rgba(181, 123, 232, 0.08)",
+                  boxShadow: darkMode
+                    ? "0 4px 14px rgba(0, 0, 0, 0.25)"
+                    : "0 4px 14px rgba(181, 123, 232, 0.15)",
+                  transform: "translateY(-1px)",
                 },
               }}
             >

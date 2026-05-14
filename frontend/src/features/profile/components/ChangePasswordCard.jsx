@@ -19,6 +19,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import { WELLNESS, WELLNESS_DARK } from "../../appointments/appointmentTypeMeta";
 
 function ChangePasswordCard({ darkMode = false, t = (k) => k }) {
   const [showCurrent, setShowCurrent] = useState(false);
@@ -79,24 +80,25 @@ const handlePasswordChange = async () => {
 
   const cardSx = darkMode
     ? {
-        borderRadius: 6,
-        border: "1px solid rgba(236, 72, 153, 0.25)",
-        backgroundColor: "#1e293b",
-        boxShadow: "0 12px 30px rgba(0,0,0,0.35)",
+        borderRadius: WELLNESS.radiusLg,
+        border: "1px solid rgba(196, 165, 245, 0.22)",
+        backgroundColor: WELLNESS_DARK.card,
+        boxShadow: WELLNESS_DARK.shadowCard,
       }
     : {
-        borderRadius: 6,
-        border: "1px solid #f3d9e5",
-        backgroundColor: "#ffffff",
-        boxShadow: "0 12px 30px rgba(236,72,153,0.08)",
+        borderRadius: WELLNESS.radiusLg,
+        border: "1px solid rgba(181, 123, 232, 0.14)",
+        backgroundColor: WELLNESS.card,
+        boxShadow: WELLNESS.shadowCard,
       };
 
   const inputRootBase = {
-    borderRadius: "14px",
+    borderRadius: "18px",
     height: 58,
     paddingRight: "14px",
     display: "flex",
     alignItems: "center",
+    transition: "border-color 0.2s ease, box-shadow 0.2s ease",
     "& .MuiInputAdornment-root": {
       margin: 0,
       marginLeft: 4,
@@ -114,9 +116,13 @@ const handlePasswordChange = async () => {
         "& .MuiOutlinedInput-root": {
           ...inputRootBase,
           backgroundColor: "#0f172a",
-          "& fieldset": { borderColor: "#475569" },
-          "&:hover fieldset": { borderColor: "#f9a8d4" },
-          "&.Mui-focused fieldset": { borderColor: "#ec4899" },
+          "& fieldset": { borderColor: "rgba(148, 163, 184, 0.35)" },
+          "&:hover fieldset": { borderColor: WELLNESS_DARK.primary },
+          "&.Mui-focused fieldset": {
+            borderColor: WELLNESS.primary,
+            borderWidth: "1.5px",
+          },
+          "&.Mui-focused": { boxShadow: WELLNESS_DARK.focusRing },
         },
         "& .MuiOutlinedInput-input": {
           fontSize: 17,
@@ -126,20 +132,24 @@ const handlePasswordChange = async () => {
     : {
         "& .MuiOutlinedInput-root": {
           ...inputRootBase,
-          backgroundColor: "#ffffff",
-          "& fieldset": { borderColor: "#d9dee7" },
-          "&:hover fieldset": { borderColor: "#f9a8d4" },
-          "&.Mui-focused fieldset": { borderColor: "#ec4899" },
+          backgroundColor: WELLNESS.card,
+          "& fieldset": { borderColor: "rgba(181, 123, 232, 0.2)" },
+          "&:hover fieldset": { borderColor: WELLNESS.primary },
+          "&.Mui-focused fieldset": {
+            borderColor: WELLNESS.primary,
+            borderWidth: "1.5px",
+          },
+          "&.Mui-focused": { boxShadow: WELLNESS.focusRing },
         },
         "& .MuiOutlinedInput-input": {
           fontSize: 17,
-          color: "#111827",
+          color: WELLNESS.text,
         },
       };
 
-  const labelMuted = darkMode ? "#cbd5e1" : "#4b5563";
-  const titleColor = darkMode ? "#f8fafc" : "#111827";
-  const subtitleColor = darkMode ? "#94a3b8" : "#6b7280";
+  const labelMuted = darkMode ? WELLNESS_DARK.muted : WELLNESS.muted;
+  const titleColor = darkMode ? WELLNESS_DARK.text : WELLNESS.text;
+  const subtitleColor = darkMode ? "#94a3b8" : WELLNESS.muted;
 
   const adornment = (visible, setVisible) => (
     <InputAdornment
@@ -160,12 +170,16 @@ const handlePasswordChange = async () => {
         onClick={() => setVisible((v) => !v)}
         size="small"
         sx={{
-          color: darkMode ? "#f9a8d4" : "#ec4899",
+          color: darkMode ? "#d4c4f7" : "#9d5bd6",
           borderRadius: 2,
           p: "6px",
           mr: 0.25,
+          transition: "background-color 0.2s ease, color 0.2s ease",
           "&:hover": {
-            backgroundColor: darkMode ? "rgba(236, 72, 153, 0.12)" : "rgba(236, 72, 153, 0.08)",
+            color: darkMode ? WELLNESS_DARK.primary : WELLNESS.primary,
+            backgroundColor: darkMode
+              ? "rgba(196, 165, 245, 0.12)"
+              : "rgba(181, 123, 232, 0.1)",
           },
         }}
       >
@@ -267,15 +281,23 @@ disabled={savingPassword}
                 justifyContent: "center",
                 gap: 1,
                 textTransform: "none",
-                borderRadius: 3,
-                py: 1.4,
-                fontWeight: 700,
+                borderRadius: "18px",
+                py: 1.35,
+                fontWeight: 800,
                 fontSize: 16,
-                background: "linear-gradient(135deg, #ec4899 0%, #db2777 100%)",
-                boxShadow: "0 3px 12px rgba(236, 72, 153, 0.14)",
+                fontFamily: '"Poppins", "Inter", sans-serif',
+                color: "#fff",
+                background: `linear-gradient(135deg, ${WELLNESS.primary} 0%, #e879c8 100%)`,
+                boxShadow: "0 8px 22px rgba(181, 123, 232, 0.28)",
+                transition: "transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease",
                 "&:hover": {
-                  background: "linear-gradient(135deg, #db2777 0%, #be185d 100%)",
-                  boxShadow: "0 4px 14px rgba(236, 72, 153, 0.18)",
+                  background: "linear-gradient(135deg, #a66ee0 0%, #df6aad 100%)",
+                  boxShadow: "0 10px 26px rgba(181, 123, 232, 0.36)",
+                  transform: "translateY(-1px)",
+                },
+                "&:disabled": {
+                  background: "linear-gradient(135deg, rgba(181,123,232,0.45) 0%, rgba(232,121,200,0.45) 100%)",
+                  color: "rgba(255,255,255,0.85)",
                 },
                 "& .MuiButton-startIcon": {
                   marginRight: 0,

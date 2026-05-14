@@ -3,9 +3,9 @@ import createCache from "@emotion/cache";
 import { CacheProvider } from "@emotion/react";
 import { prefixer } from "stylis";
 import rtlPlugin from "stylis-plugin-rtl";
+import { signOut } from "firebase/auth";
 import BedtimeOutlinedIcon from "@mui/icons-material/BedtimeOutlined";
 import WbSunnyOutlinedIcon from "@mui/icons-material/WbSunnyOutlined";
-import { signOut } from "firebase/auth";
 import {
   Box,
   ButtonBase,
@@ -24,9 +24,7 @@ import {
   getParticipantData,
   createParticipantProfile,
 } from "../services/participantService";
-
-const DARK_MODE_TOGGLE_ICON_PINK = "#ec4899";
-const DARK_MODE_TOGGLE_ICON_ON_PINK = "#ffffff";
+import { WELLNESS, WELLNESS_DARK } from "../../appointments/appointmentTypeMeta";
 
 const profileCacheRtl = createCache({
   key: "profile-mui-rtl",
@@ -40,28 +38,28 @@ const profileCacheLtr = createCache({
   stylisPlugins: [prefixer],
 });
 
+const profilePageBg =
+  "linear-gradient(145deg, #F7EEFF 0%, #FFF9FC 42%, #fdf8ff 100%)";
+
 function ProfilePage({
   darkMode: darkModeFromParent,
   onDarkModeChange,
   embedInDashboard = false,
 } = {}) {
   const user = auth.currentUser;
-const participantId = user?.uid;
+  const participantId = user?.uid;
 
   const [profile, setProfile] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [darkModeInternal, setDarkModeInternal] = useState(false);
 
-  /** When embedded in ParticipantHome, dark mode is owned by the parent so the whole shell stays in sync. */
   const darkModeControlled =
-    typeof darkModeFromParent === "boolean" && typeof onDarkModeChange === "function";
+    typeof darkModeFromParent === "boolean" &&
+    typeof onDarkModeChange === "function";
   const darkMode = darkModeControlled ? darkModeFromParent : darkModeInternal;
   const setDarkMode = darkModeControlled ? onDarkModeChange : setDarkModeInternal;
 
-  // locale = the language that is actually applied to the page
   const [locale, setLocale] = useState("en");
-
-  // selectedLanguage = the dropdown value before clicking Save Changes
   const [selectedLanguage, setSelectedLanguage] = useState("en");
 
   const navigate = useNavigate();
@@ -90,44 +88,44 @@ const participantId = user?.uid;
   };
 
   useEffect(() => {
-  let mounted = true;
+    let mounted = true;
 
-  async function loadData() {
-    try {
-      let data = await getParticipantData(participantId);
+    async function loadData() {
+      try {
+        let data = await getParticipantData(participantId);
 
-      if (!data && user) {
-        const defaultProfile = {
-          fullName: user.displayName || "",
-          email: user.email || "",
-          phoneNumber: "",
-          streetAddress: "",
-          city: "",
-          birthDate: "",
-          preferredContactMethod: "email",
-          language: "english",
-          avatarUrl: "",
-        };
+        if (!data && user) {
+          const defaultProfile = {
+            fullName: user.displayName || "",
+            email: user.email || "",
+            phoneNumber: "",
+            streetAddress: "",
+            city: "",
+            birthDate: "",
+            preferredContactMethod: "email",
+            language: "english",
+            avatarUrl: "",
+          };
 
-        await createParticipantProfile(participantId, defaultProfile);
+          await createParticipantProfile(participantId, defaultProfile);
 
-        data = defaultProfile;
+          data = defaultProfile;
+        }
+
+        if (mounted) setProfile(data);
+      } catch (error) {
+        console.error(error);
+
+        if (mounted) setProfile({});
       }
-
-      if (mounted) setProfile(data);
-    } catch (error) {
-      console.error(error);
-
-      if (mounted) setProfile({});
     }
-  }
 
-  loadData();
+    loadData();
 
-  return () => {
-    mounted = false;
-  };
-}, []);
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   useEffect(() => {
     if (!profile?.language) return;
@@ -156,11 +154,15 @@ const participantId = user?.uid;
               background: embedInDashboard
                 ? "transparent"
                 : darkMode
-                  ? "linear-gradient(145deg, #0f172a 0%, #020617 55%, #0c1222 100%)"
-                  : "linear-gradient(140deg, #fff8fc 0%, #fdf3f8 100%)",
+                  ? WELLNESS_DARK.pageBg
+                  : profilePageBg,
             }}
           >
-            <CircularProgress sx={{ color: "#ec4899" }} />
+            <CircularProgress
+              sx={{
+                color: darkMode ? WELLNESS_DARK.primary : WELLNESS.primary,
+              }}
+            />
           </Box>
         </ThemeProvider>
       </CacheProvider>
@@ -181,8 +183,8 @@ const participantId = user?.uid;
             background: embedInDashboard
               ? "transparent"
               : darkMode
-                ? "linear-gradient(145deg, #0f172a 0%, #020617 55%, #0c1222 100%)"
-                : "linear-gradient(140deg, #fff8fc 0%, #fdf3f8 100%)",
+                ? WELLNESS_DARK.pageBg
+                : profilePageBg,
           }}
         >
           <Box
@@ -211,7 +213,7 @@ const participantId = user?.uid;
                     sx={{
                       fontSize: { xs: 36, sm: 48, md: 52 },
                       fontWeight: 700,
-                      color: darkMode ? "#f8fafc" : "#111827",
+                      color: darkMode ? WELLNESS_DARK.text : WELLNESS.text,
                       lineHeight: 1.1,
                     }}
                   >
@@ -220,7 +222,7 @@ const participantId = user?.uid;
 
                   <Typography
                     sx={{
-                      color: darkMode ? "#94a3b8" : "#6b7280",
+                      color: darkMode ? WELLNESS_DARK.muted : WELLNESS.muted,
                       fontSize: { xs: 17, sm: 20, md: 22 },
                       mt: 0.5,
                     }}
@@ -270,20 +272,25 @@ const participantId = user?.uid;
                       alignItems: "stretch",
                       borderRadius: 9999,
                       overflow: "hidden",
-                      border: "1.5px solid #f9a8d4",
-                      bgcolor: "#fffafb",
+                      border: "1.5px solid rgba(181, 123, 232, 0.38)",
+                      bgcolor: darkMode ? "#1e293b" : "#fffbff",
                       minWidth: 76,
                       height: 36,
                       p: 0,
                       transition:
-                        "border-color 0.28s ease, box-shadow 0.28s ease",
-                      boxShadow: "0 1px 4px rgba(236, 72, 153, 0.12)",
+                        "border-color 0.28s ease, box-shadow 0.28s ease, transform 0.22s ease",
+                      boxShadow: darkMode
+                        ? "0 2px 12px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(196, 165, 245, 0.12)"
+                        : "0 2px 10px rgba(181, 123, 232, 0.14)",
                       "&:hover": {
-                        borderColor: "#ec4899",
-                        boxShadow: "0 2px 10px rgba(236, 72, 153, 0.2)",
+                        borderColor: "rgba(181, 123, 232, 0.65)",
+                        boxShadow: darkMode
+                          ? "0 4px 16px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(196, 165, 245, 0.22)"
+                          : "0 4px 16px rgba(181, 123, 232, 0.22)",
+                        transform: "translateY(-1px)",
                       },
                       "&.Mui-focusVisible": {
-                        outline: "2px solid #ec4899",
+                        outline: `2px solid ${WELLNESS.primary}`,
                         outlineOffset: 2,
                       },
                     }}
@@ -298,10 +305,9 @@ const participantId = user?.uid;
                         py: 0.75,
                         px: 1.1,
                         minWidth: 36,
-                        bgcolor: darkMode ? "#ec4899" : "#fffbfc",
                         background: darkMode
-                          ? "linear-gradient(180deg, #f472b6 0%, #ec4899 55%, #db2777 100%)"
-                          : "#fffbfc",
+                          ? `linear-gradient(145deg, ${WELLNESS.primary} 0%, #8b5cf6 55%, #7c3aed 100%)`
+                          : "linear-gradient(180deg, rgba(234,215,255,0.55) 0%, #fffbff 100%)",
                         transition:
                           "background 0.28s ease, background-color 0.28s ease",
                       }}
@@ -312,10 +318,8 @@ const participantId = user?.uid;
                           width: 18,
                           height: 18,
                           flexShrink: 0,
-                          color: darkMode
-                            ? DARK_MODE_TOGGLE_ICON_ON_PINK
-                            : DARK_MODE_TOGGLE_ICON_PINK,
-                          opacity: 1,
+                          color: darkMode ? "#ffffff" : "#9d5bd6",
+                          opacity: darkMode ? 1 : 0.85,
                           transition: "color 0.28s ease, opacity 0.28s ease",
                           display: "block",
                         }}
@@ -332,10 +336,9 @@ const participantId = user?.uid;
                         py: 0.75,
                         px: 1.1,
                         minWidth: 36,
-                        bgcolor: darkMode ? "#fff7fb" : "#ec4899",
                         background: darkMode
-                          ? "#fff7fb"
-                          : "linear-gradient(180deg, #f472b6 0%, #ec4899 55%, #db2777 100%)",
+                          ? "linear-gradient(180deg, #1e293b 0%, #0f172a 100%)"
+                          : `linear-gradient(145deg, ${WELLNESS.primary} 0%, #c4a5f5 100%)`,
                         transition:
                           "background 0.28s ease, background-color 0.28s ease",
                       }}
@@ -346,9 +349,7 @@ const participantId = user?.uid;
                           width: 18,
                           height: 18,
                           flexShrink: 0,
-                          color: darkMode
-                            ? DARK_MODE_TOGGLE_ICON_PINK
-                            : DARK_MODE_TOGGLE_ICON_ON_PINK,
+                          color: darkMode ? WELLNESS_DARK.primary : "#ffffff",
                           opacity: 1,
                           transition: "color 0.28s ease, opacity 0.28s ease",
                           display: "block",
