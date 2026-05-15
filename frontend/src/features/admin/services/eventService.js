@@ -25,8 +25,9 @@ export async function getAllEvents() {
  * Subscribe to published events in real time, sorted by createdAt descending.
  * Returns an unsubscribe function — call it in a useEffect cleanup.
  * @param {(events: Object[]) => void} callback
+ * @param {(error: Error) => void} [onError]
  */
-export function subscribeToPublishedEvents(callback) {
+export function subscribeToPublishedEvents(callback, onError) {
   const q = query(
     collection(db, 'events'),
     orderBy('createdAt', 'desc')
@@ -37,7 +38,7 @@ export function subscribeToPublishedEvents(callback) {
         .map((d) => ({ id: d.id, ...d.data() }))
         .filter((event) => event.status === 'published')
     );
-  });
+  }, onError);
 }
 
 /**

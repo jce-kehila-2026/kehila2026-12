@@ -14,7 +14,7 @@ import ProtectedRoute from './features/admin/components/ProtectedRoute';
 import AdminLayout from './features/admin/components/AdminLayout';
 import LoginPage from './features/admin/pages/LoginPage';
 import DashboardPage from './features/admin/pages/DashboardPage';
-import EventsPage from './features/admin/pages/EventsPage';
+import AdminEventsPage from './features/admin/pages/EventsPage';
 import EventDetailPage from './features/admin/pages/EventDetailPage';
 // import AppointmentsPage from './features/admin/pages/AppointmentsPage';
 import CMSPage from './features/admin/pages/CMSPage';
@@ -23,6 +23,7 @@ import AuditLogPage from './features/admin/pages/AuditLogPage';
 import RoleManagementPage from './features/admin/pages/RoleManagementPage';
 import ProfilePage from './features/profile/pages/ProfilePage';
 import CalendarPage from './features/calendar/CalendarPage';
+import EventsPage from './features/events/EventsPage';
 import ParticipantHome from './features/participant/ParticipantHome';
 import AppointmentPage from './features/appointments/pages/AppointmentPage';
 import PublicHomePage from './features/public/pages/PublicHomePage';
@@ -74,6 +75,14 @@ function ThemedApp() {
               }
             />
             <Route path="/appointments" element={<AppointmentPage />} />
+            <Route
+              path="/events"
+              element={
+                <AuthenticatedRoute>
+                  <EventsPage />
+                </AuthenticatedRoute>
+              }
+            />
 
             <Route
               path="/admin"
@@ -85,7 +94,7 @@ function ThemedApp() {
             >
               <Route index element={<Navigate to="dashboard" replace />} />
               <Route path="dashboard" element={<DashboardPage />} />
-              <Route path="events" element={<EventsPage />} />
+              <Route path="events" element={<AdminEventsPage />} />
               <Route path="events/:eventId" element={<EventDetailPage />} />
               <Route path="appointments" element={<div>Appointments Page</div>} />
               <Route path="calendar" element={<Navigate to="/home" replace />} />

@@ -27,6 +27,8 @@ const initialForm = {
   title: '',
   category: '',
   startTime: '',
+  endTime: '',
+  instructor: '',
   location: '',
   description: '',
   maxParticipants: '',
@@ -70,6 +72,8 @@ export default function EventsPage() {
         title: form.title,
         category: form.category,
         startTime: new Date(form.startTime),
+        endTime: form.endTime ? new Date(form.endTime) : null,
+        instructor: form.instructor,
         location: form.location,
         description: form.description,
         maxParticipants: Number(form.maxParticipants) || 0,
@@ -194,6 +198,19 @@ export default function EventsPage() {
               onChange={(e) => setForm((f) => ({ ...f, startTime: e.target.value }))}
               required
               inputProps={{ dir: 'ltr' }}
+            />
+            <TextField
+              helperText="End Date & Time (optional)"
+              type="datetime-local"
+              value={form.endTime}
+              onChange={(e) => setForm((f) => ({ ...f, endTime: e.target.value }))}
+              inputProps={{ dir: 'ltr' }}
+            />
+            <TextField
+              label="Instructor / Therapist"
+              value={form.instructor}
+              onChange={(e) => setForm((f) => ({ ...f, instructor: e.target.value }))}
+              placeholder="She-Na team"
             />
             <TextField
               label="Location"
