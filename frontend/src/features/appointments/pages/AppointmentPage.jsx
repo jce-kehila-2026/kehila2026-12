@@ -1,8 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import createCache from "@emotion/cache";
 import { CacheProvider } from "@emotion/react";
-import FavoriteBorderRoundedIcon from "@mui/icons-material/FavoriteBorderRounded";
-import LocalFloristRoundedIcon from "@mui/icons-material/LocalFloristRounded";
 import { Alert, Box, Card, CardContent, Snackbar, Stack, Typography } from "@mui/material";
 import { ThemeProvider, createTheme, useTheme } from "@mui/material/styles";
 import AppointmentBookingForm from "../components/AppointmentBookingForm";
@@ -18,6 +16,7 @@ import {
   getAvailableTherapists,
   therapistTypeForFilter,
 } from "../services/therapistService";
+import appointmentsHeroImage from "../../../assets/appointments-hero.png";
 
 const appointmentsCacheRtl = createCache({
   key: "appointments-mui-rtl",
@@ -55,88 +54,6 @@ function mapAppointmentDocToCard(docRow) {
     durationMins: opt.durationMins,
     status: normalizeAppointmentStatus(docRow.status),
   };
-}
-
-function HeaderIllustration() {
-  const purple = WELLNESS.primary;
-  const pink = "#e879c8";
-  const green = "#6ee7b7";
-  return (
-    <Box
-      aria-hidden
-      sx={{
-        width: { xs: "100%", md: 200 },
-        maxWidth: 280,
-        height: { xs: 160, md: 180 },
-        alignSelf: "center",
-        position: "relative",
-        flexShrink: 0,
-      }}
-    >
-      <Box
-        sx={{
-          position: "absolute",
-          left: "50%",
-          top: "50%",
-          transform: "translate(-50%, -50%)",
-          width: 132,
-          height: 132,
-          borderRadius: "28px",
-          bgcolor: "rgba(181, 123, 232, 0.1)",
-          border: "1px solid rgba(181, 123, 232, 0.2)",
-          display: "grid",
-          placeItems: "center",
-          boxShadow: "0 14px 40px rgba(181, 123, 232, 0.12)",
-        }}
-      >
-        <svg width="88" height="88" viewBox="0 0 88 88" fill="none">
-          <rect x="18" y="14" width="52" height="44" rx="10" stroke={purple} strokeWidth="2.2" />
-          <path d="M28 26h32M28 34h22" stroke={purple} strokeWidth="2" strokeLinecap="round" opacity="0.55" />
-          <path
-            d="M44 58c-8 0-14 6-14 14h28c0-8-6-14-14-14z"
-            stroke={pink}
-            strokeWidth="2"
-            fill="rgba(252, 228, 236, 0.6)"
-          />
-          <path
-            d="M62 20c4 2 6 7 4 12-1.5 4-6 6-10 5"
-            stroke={green}
-            strokeWidth="2"
-            strokeLinecap="round"
-            fill="none"
-          />
-          <ellipse cx="66" cy="18" rx="5" ry="8" transform="rotate(25 66 18)" fill={green} opacity="0.35" />
-        </svg>
-      </Box>
-      <Box
-        sx={{
-          position: "absolute",
-          top: 8,
-          right: { xs: "18%", md: 0 },
-          color: pink,
-          opacity: 0.95,
-          animation: "floatY 5s ease-in-out infinite",
-          "@keyframes floatY": {
-            "0%, 100%": { transform: "translateY(0)" },
-            "50%": { transform: "translateY(-6px)" },
-          },
-        }}
-      >
-        <FavoriteBorderRoundedIcon sx={{ fontSize: 36 }} />
-      </Box>
-      <Box
-        sx={{
-          position: "absolute",
-          bottom: 4,
-          left: { xs: "12%", md: -4 },
-          color: green,
-          opacity: 0.9,
-        }}
-      >
-        <LocalFloristRoundedIcon sx={{ fontSize: 34 }} />
-      </Box>
-    </Box>
-  );
 }
 
 /**
@@ -322,12 +239,57 @@ function AppointmentPage({ embedInDashboard = false, locale = "en" } = {}) {
                   overflow: "hidden",
                   borderRadius: WELLNESS.radiusLg,
                   border: embedInDashboard ? "none" : panelBorder,
-                  bgcolor: embedInDashboard ? "transparent" : WELLNESS.card,
                   boxShadow: embedInDashboard ? "none" : panelShadow,
-                  p: { xs: 2.5, sm: 3, md: 3.5 },
                   mb: { xs: 2.5, md: 3 },
+                  isolation: "isolate",
+                  minHeight: { md: 312, lg: 332 },
+                  background:
+                    "linear-gradient(145deg, rgba(255, 250, 252, 0.98) 0%, rgba(248, 242, 255, 0.55) 48%, rgba(255, 253, 255, 0.97) 100%)",
+                  p: { xs: 3, sm: 3.75, md: 4.5, lg: 5 },
                 }}
               >
+                {/* Single wide wash: warm (copy) → cool (imagery), no center line */}
+                <Box
+                  aria-hidden
+                  sx={{
+                    position: "absolute",
+                    inset: 0,
+                    zIndex: 0,
+                    pointerEvents: "none",
+                    background:
+                      locale === "he"
+                        ? "linear-gradient(to left, rgba(255, 240, 246, 0.5) 0%, rgba(254, 246, 250, 0.32) 18%, rgba(251, 246, 252, 0.2) 38%, rgba(248, 244, 252, 0.16) 50%, rgba(243, 238, 252, 0.2) 62%, rgba(236, 230, 250, 0.3) 82%, rgba(237, 232, 252, 0.44) 100%)"
+                        : "linear-gradient(to right, rgba(255, 240, 246, 0.5) 0%, rgba(254, 246, 250, 0.32) 18%, rgba(251, 246, 252, 0.2) 38%, rgba(248, 244, 252, 0.16) 50%, rgba(243, 238, 252, 0.2) 62%, rgba(236, 230, 250, 0.3) 82%, rgba(237, 232, 252, 0.44) 100%)",
+                  }}
+                />
+                <Box
+                  aria-hidden
+                  sx={{
+                    position: "absolute",
+                    top: { xs: "-18%", md: "-12%" },
+                    right: { xs: "-25%", md: "-8%" },
+                    width: { xs: 200, md: 300 },
+                    height: { xs: 200, md: 300 },
+                    borderRadius: "50%",
+                    background:
+                      "radial-gradient(circle, rgba(181, 123, 232, 0.22) 0%, rgba(181, 123, 232, 0.06) 45%, transparent 70%)",
+                    pointerEvents: "none",
+                  }}
+                />
+                <Box
+                  aria-hidden
+                  sx={{
+                    position: "absolute",
+                    bottom: { xs: "-28%", md: "-22%" },
+                    left: { xs: "-20%", md: "-12%" },
+                    width: { xs: 220, md: 280 },
+                    height: { xs: 220, md: 280 },
+                    borderRadius: "50%",
+                    background:
+                      "radial-gradient(circle, rgba(232, 121, 200, 0.18) 0%, rgba(252, 228, 236, 0.08) 50%, transparent 72%)",
+                    pointerEvents: "none",
+                  }}
+                />
                 <Box
                   aria-hidden
                   sx={{
@@ -335,44 +297,145 @@ function AppointmentPage({ embedInDashboard = false, locale = "en" } = {}) {
                     inset: 0,
                     pointerEvents: "none",
                     background:
-                      "radial-gradient(520px 240px at 88% 0%, rgba(181,123,232,0.12), transparent 58%)",
+                      "radial-gradient(560px 300px at 90% 12%, rgba(181, 123, 232, 0.12), transparent 58%)",
                   }}
                 />
+                <Box
+                  component="img"
+                  src={appointmentsHeroImage}
+                  alt=""
+                  sx={(theme) => ({
+                    display: { xs: "none", md: "block" },
+                    position: "absolute",
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    zIndex: 0,
+                    pointerEvents: "none",
+                    height: { md: "118%", lg: "120%" },
+                    width: { md: "58%", lg: "56%" },
+                    insetInlineEnd: { md: theme.spacing(-1.5) },
+                    objectFit: "cover",
+                    objectPosition:
+                      theme.direction === "rtl" ? "38% 46%" : "62% 46%",
+                    borderRadius: 0,
+                    filter: "saturate(0.96) brightness(1.02)",
+                    maskImage:
+                      theme.direction === "rtl"
+                        ? "linear-gradient(270deg, transparent 0%, rgba(0,0,0,0.06) 6%, rgba(0,0,0,0.28) 22%, rgba(0,0,0,0.72) 46%, rgba(0,0,0,0.95) 68%, #000 100%)"
+                        : "linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.06) 6%, rgba(0,0,0,0.28) 22%, rgba(0,0,0,0.72) 46%, rgba(0,0,0,0.95) 68%, #000 100%)",
+                    WebkitMaskImage:
+                      theme.direction === "rtl"
+                        ? "linear-gradient(270deg, transparent 0%, rgba(0,0,0,0.06) 6%, rgba(0,0,0,0.28) 22%, rgba(0,0,0,0.72) 46%, rgba(0,0,0,0.95) 68%, #000 100%)"
+                        : "linear-gradient(90deg, transparent 0%, rgba(0,0,0,0.06) 6%, rgba(0,0,0,0.28) 22%, rgba(0,0,0,0.72) 46%, rgba(0,0,0,0.95) 68%, #000 100%)",
+                  })}
+                />
+                {/* Soft blend between copy and imagery (desktop) — sits over image, under text */}
+                <Box
+                  aria-hidden
+                  sx={(theme) => ({
+                    display: { xs: "none", md: "block" },
+                    position: "absolute",
+                    top: 0,
+                    bottom: 0,
+                    width: "70%",
+                    zIndex: 1,
+                    pointerEvents: "none",
+                    ...(theme.direction === "rtl"
+                      ? {
+                          left: 0,
+                          background:
+                            "linear-gradient(to left, rgba(255, 251, 255, 0.38) 0%, rgba(249, 244, 252, 0.24) 16%, rgba(246, 241, 252, 0.14) 36%, rgba(243, 238, 252, 0.08) 58%, rgba(255, 251, 255, 0.03) 82%, transparent 100%)",
+                        }
+                      : {
+                          right: 0,
+                          background:
+                            "linear-gradient(to right, rgba(255, 251, 255, 0.38) 0%, rgba(249, 244, 252, 0.24) 16%, rgba(246, 241, 252, 0.14) 36%, rgba(243, 238, 252, 0.08) 58%, rgba(255, 251, 255, 0.03) 82%, transparent 100%)",
+                        }),
+                  })}
+                />
+                <Box
+                  aria-hidden
+                  sx={{
+                    position: "absolute",
+                    top: "18%",
+                    left: "6%",
+                    width: 8,
+                    height: 8,
+                    borderRadius: "50%",
+                    bgcolor: "rgba(181, 123, 232, 0.35)",
+                    display: { xs: "none", md: "block" },
+                    pointerEvents: "none",
+                  }}
+                />
+                <Box
+                  aria-hidden
+                  sx={{
+                    position: "absolute",
+                    top: "52%",
+                    left: "14%",
+                    width: 5,
+                    height: 5,
+                    borderRadius: "50%",
+                    bgcolor: "rgba(232, 121, 200, 0.45)",
+                    display: { xs: "none", lg: "block" },
+                    pointerEvents: "none",
+                  }}
+                />
+                <Box
+                  aria-hidden
+                  sx={{
+                    position: "absolute",
+                    bottom: "22%",
+                    left: "22%",
+                    width: 6,
+                    height: 6,
+                    borderRadius: "50%",
+                    bgcolor: "rgba(181, 123, 232, 0.25)",
+                    display: { xs: "none", md: "block" },
+                    pointerEvents: "none",
+                  }}
+                />
+
                 <Stack
                   direction={{ xs: "column", md: "row" }}
-                  spacing={{ xs: 2.5, md: 3.5 }}
+                  spacing={{ xs: 3, md: 0 }}
                   alignItems={{ xs: "center", md: "center" }}
-                  justifyContent={{ md: "space-between" }}
-                  sx={{ position: "relative" }}
+                  justifyContent={{ md: "flex-start" }}
+                  sx={{ position: "relative", zIndex: 2 }}
                 >
                   <Box
                     sx={{
                       flex: 1,
                       minWidth: 0,
-                      maxWidth: { md: 720 },
-                      textAlign: { xs: "center", md: "left" },
+                      maxWidth: { md: "58%", lg: "56%" },
+                      textAlign: { xs: "center", md: "start" },
+                      alignSelf: { xs: "stretch", md: "center" },
+                      pr: { md: 1.25, lg: 1.5 },
                     }}
                   >
                     <Typography
+                      component="h1"
                       sx={{
                         fontWeight: 800,
-                        fontSize: { xs: "1.75rem", sm: "2.15rem", md: "2.35rem" },
-                        letterSpacing: "-0.03em",
-                        lineHeight: 1.12,
+                        fontSize: { xs: "1.85rem", sm: "2.2rem", md: "2.45rem", lg: "2.55rem" },
+                        letterSpacing: "-0.035em",
+                        lineHeight: 1.08,
                         color: WELLNESS.text,
+                        fontFamily: '"Poppins", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
                       }}
                     >
                       Personal Appointments
                     </Typography>
                     <Typography
                       sx={{
-                        mt: 1.25,
+                        mt: { xs: 1.5, md: 2 },
                         mx: { xs: "auto", md: 0 },
-                        maxWidth: 620,
-                        fontSize: { xs: 15, sm: 16 },
-                        lineHeight: 1.55,
+                        maxWidth: 560,
+                        fontSize: { xs: 15, sm: 17 },
+                        lineHeight: 1.65,
                         color: WELLNESS.muted,
                         fontWeight: 500,
+                        fontFamily: '"Poppins", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
                       }}
                     >
                       Book private one-on-one therapy and treatment sessions that are personalized to your needs.
@@ -381,16 +444,61 @@ function AppointmentPage({ embedInDashboard = false, locale = "en" } = {}) {
                       direction="row"
                       flexWrap="wrap"
                       useFlexGap
-                      gap={1}
+                      gap={1.25}
                       sx={{
-                        mt: 2,
+                        mt: { xs: 2.25, md: 2.75 },
                         justifyContent: { xs: "center", md: "flex-start" },
+                        rowGap: 1,
                       }}
                     >
                       {["Private & Confidential", "Easy Booking", "Personalized Care"].map(featurePill)}
                     </Stack>
                   </Box>
-                  <HeaderIllustration />
+
+                  <Box
+                    sx={{
+                      display: { xs: "block", md: "none" },
+                      position: "relative",
+                      width: "100%",
+                      maxWidth: 400,
+                      mx: "auto",
+                      mt: 0.25,
+                    }}
+                  >
+                    <Box
+                      aria-hidden
+                      sx={{
+                        position: "absolute",
+                        left: "50%",
+                        transform: "translateX(-50%)",
+                        top: 0,
+                        width: "120%",
+                        height: "55%",
+                        maxWidth: 480,
+                        pointerEvents: "none",
+                        background:
+                          "radial-gradient(ellipse 70% 90% at 50% 0%, rgba(255, 251, 255, 0.92) 0%, rgba(247, 238, 255, 0.45) 45%, transparent 78%)",
+                      }}
+                    />
+                    <Box
+                      component="img"
+                      src={appointmentsHeroImage}
+                      alt=""
+                      sx={{
+                        position: "relative",
+                        zIndex: 0,
+                        display: "block",
+                        width: "min(100%, 380px)",
+                        height: "auto",
+                        maxHeight: 260,
+                        mx: "auto",
+                        objectFit: "contain",
+                        borderRadius: 0,
+                        opacity: 0.97,
+                        filter: "saturate(0.96)",
+                      }}
+                    />
+                  </Box>
                 </Stack>
               </Box>
 
