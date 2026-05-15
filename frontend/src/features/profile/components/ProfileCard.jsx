@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import PhotoCameraOutlinedIcon from "@mui/icons-material/PhotoCameraOutlined";
 import {
@@ -8,12 +8,35 @@ import {
   Card,
   CardContent,
   Chip,
+  CircularProgress,
   Stack,
   Typography,
 } from "@mui/material";
+import { WELLNESS, WELLNESS_DARK } from "../../appointments/appointmentTypeMeta";
+import { uploadParticipantProfileImage } from "../services/participantService";
 
-function ProfileCard({ profile, isEditing, onEdit, darkMode = false, t = (k) => k }) {
+function ProfileCard({
+  profile,
+  participantId,
+  isEditing,
+  onEdit,
+  onAvatarUpdated,
+  darkMode = false,
+  t = (k) => k,
+}) {
   const [previewImage, setPreviewImage] = useState(null);
+  const [avatarUploading, setAvatarUploading] = useState(false);
+  const [avatarError, setAvatarError] = useState("");
+  const blobUrlRef = useRef(null);
+
+  const revokeBlob = () => {
+    if (blobUrlRef.current) {
+      URL.revokeObjectURL(blobUrlRef.current);
+      blobUrlRef.current = null;
+    }
+  };
+
+  useEffect(() => () => revokeBlob(), []);
 
   const initials = (profile?.fullName || "SA")
     .split(" ")
@@ -22,39 +45,58 @@ function ProfileCard({ profile, isEditing, onEdit, darkMode = false, t = (k) => 
     .slice(0, 2)
     .toUpperCase();
 
-  const handleImageChange = (event) => {
-    const file = event.target.files[0];
-
+  const handleImageChange = async (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
     if (!file) return;
 
-    const imageUrl = URL.createObjectURL(file);
-    setPreviewImage(imageUrl);
+    if (!participantId) {
+      setAvatarError("Not signed in.");
+      return;
+    }
+
+    setAvatarError("");
+    revokeBlob();
+    const blob = URL.createObjectURL(file);
+    blobUrlRef.current = blob;
+    setPreviewImage(blob);
+
+    setAvatarUploading(true);
+    try {
+      const url = await uploadParticipantProfileImage(participantId, file);
+      revokeBlob();
+      setPreviewImage(url);
+      setAvatarError("");
+      onAvatarUpdated?.({ avatarUrl: url });
+    } catch (e) {
+      console.error(e);
+      revokeBlob();
+      setPreviewImage(null);
+      setAvatarError(
+        e?.message || "Could not upload photo. Please try again."
+      );
+    } finally {
+      setAvatarUploading(false);
+    }
   };
 
-  const cardBorder = darkMode ? "1px solid rgba(236, 72, 153, 0.25)" : "1px solid #f8dce9";
-  const cardBg = darkMode ? "#1e293b" : undefined;
-  const cardShadow = darkMode ? "0 12px 30px rgba(0,0,0,0.35)" : undefined;
-  const nameColor = darkMode ? "#f8fafc" : "#1f2937";
-  const emailColor = darkMode ? "#94a3b8" : "#4b5563";
-  const chipBg = darkMode ? "rgba(236, 72, 153, 0.15)" : "#fdf2f8";
-  const chipColor = darkMode ? "#fbcfe8" : "#9d174d";
-  const avatarBg = darkMode ? "rgba(236, 72, 153, 0.25)" : "#fbcfe8";
-  const avatarColor = darkMode ? "#fce7f3" : "#be185d";
+  const w = darkMode ? WELLNESS_DARK : WELLNESS;
 
   return (
     <Card
       elevation={0}
       sx={{
         minWidth: { lg: 300 },
-        borderRadius: 4,
-        border: cardBorder,
-        backgroundColor: cardBg,
-        boxShadow: cardShadow,
+        borderRadius: w.radiusLg,
+        border: darkMode
+          ? "1px solid rgba(196, 165, 245, 0.28)"
+          : "1px solid rgba(181, 123, 232, 0.22)",
+        backgroundColor: w.card,
+        boxShadow: w.shadowCard,
       }}
     >
       <CardContent sx={{ p: 3 }}>
         <Stack spacing={2.4} alignItems="center">
-          {/* Avatar + camera only — positioning context is this 92×92 box, not the card */}
           <Box
             sx={{
               position: "relative",
@@ -70,14 +112,30 @@ function ProfileCard({ profile, isEditing, onEdit, darkMode = false, t = (k) => 
               sx={{
                 width: "100%",
                 height: "100%",
-                bgcolor: avatarBg,
-                color: avatarColor,
+                bgcolor: darkMode ? "rgba(196, 165, 245, 0.22)" : "#EAD7FF",
+                color: darkMode ? WELLNESS_DARK.primary : "#7c3aad",
                 fontWeight: 700,
                 fontSize: 40,
               }}
             >
               {initials}
             </Avatar>
+
+            {avatarUploading ? (
+              <Box
+                sx={{
+                  position: "absolute",
+                  inset: 0,
+                  borderRadius: "50%",
+                  display: "grid",
+                  placeItems: "center",
+                  bgcolor: "rgba(255,255,255,0.55)",
+                  pointerEvents: "none",
+                }}
+              >
+                <CircularProgress size={36} sx={{ color: WELLNESS.primary }} />
+              </Box>
+            ) : null}
 
             {isEditing && (
               <Box
@@ -86,27 +144,29 @@ function ProfileCard({ profile, isEditing, onEdit, darkMode = false, t = (k) => 
                 sx={{
                   position: "absolute",
                   right: "-8px",
-bottom: "-8px",
-width: "32px",
-height: "32px",
+                  bottom: "-8px",
+                  width: "32px",
+                  height: "32px",
                   zIndex: 1,
-                  
                   boxSizing: "border-box",
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
                   borderRadius: "50%",
-                  bgcolor: "#ec4899",
+                  background: `linear-gradient(135deg, ${WELLNESS.primary} 0%, #c49ef0 100%)`,
                   color: "#ffffff",
-                  border: "2px solid #ffffff",
-                  boxShadow:
-                    "0 2px 12px rgba(0, 0, 0, 0.16), 0 1px 4px rgba(236, 72, 153, 0.45)",
-                  cursor: "pointer",
-                  transition: "background-color 0.2s ease, box-shadow 0.2s ease",
+                  border: darkMode ? "2px solid #1e293b" : "2px solid #ffffff",
+                  boxShadow: "0 4px 14px rgba(181, 123, 232, 0.35)",
+                  cursor: avatarUploading ? "default" : "pointer",
+                  opacity: avatarUploading ? 0.55 : 1,
+                  pointerEvents: avatarUploading ? "none" : "auto",
+                  transition:
+                    "transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease",
                   "&:hover": {
-                    bgcolor: "#db2777",
-                    boxShadow:
-                      "0 3px 14px rgba(0, 0, 0, 0.2), 0 2px 6px rgba(236, 72, 153, 0.5)",
+                    background:
+                      "linear-gradient(135deg, #a66ee0 0%, #b57be8 100%)",
+                    transform: avatarUploading ? "none" : "translateY(-1px)",
+                    boxShadow: "0 6px 18px rgba(181, 123, 232, 0.42)",
                   },
                 }}
               >
@@ -115,28 +175,63 @@ height: "32px",
                   hidden
                   accept="image/*"
                   type="file"
+                  disabled={avatarUploading}
                   onChange={handleImageChange}
                 />
               </Box>
             )}
           </Box>
 
+          {avatarError ? (
+            <Typography
+              variant="caption"
+              sx={{
+                color: "#b91c1c",
+                textAlign: "center",
+                maxWidth: 260,
+                lineHeight: 1.35,
+              }}
+            >
+              {avatarError}
+            </Typography>
+          ) : null}
+
           <Box textAlign="center" width="100%">
             <Typography
               variant="h5"
               noWrap
-              sx={{ fontWeight: 700, color: nameColor, fontSize: "1.6rem" }}
+              sx={{
+                fontWeight: 700,
+                color: w.text,
+                fontSize: "1.6rem",
+              }}
             >
               {profile?.fullName}
             </Typography>
 
-            <Typography variant="body2" sx={{ color: emailColor, mt: 0.7 }}>
+            <Typography variant="body2" sx={{ color: w.muted, mt: 0.7 }}>
               {profile?.email}
             </Typography>
           </Box>
 
-          <Stack direction="row" spacing={1} useFlexGap flexWrap="wrap" justifyContent="center">
-            <Chip label={profile?.city || "San Francisco"} sx={{ bgcolor: chipBg, color: chipColor }} />
+          <Stack
+            direction="row"
+            spacing={1}
+            useFlexGap
+            flexWrap="wrap"
+            justifyContent="center"
+          >
+            <Chip
+              label={profile?.city || "San Francisco"}
+              sx={{
+                bgcolor: darkMode ? "rgba(196, 165, 245, 0.14)" : "rgba(234, 215, 255, 0.85)",
+                color: darkMode ? "#e9d5ff" : "#5b2d9e",
+                fontWeight: 600,
+                border: darkMode
+                  ? "1px solid rgba(196, 165, 245, 0.35)"
+                  : "1px solid rgba(181, 123, 232, 0.2)",
+              }}
+            />
             <Chip
               label={`${t("languageChipPrefix")} ${
                 (profile?.language || "english").toLowerCase() === "hebrew"
@@ -144,11 +239,15 @@ height: "32px",
                   : t("languageEnglish")
               }`}
               sx={{
-    bgcolor: chipBg,
-    color: chipColor,
-    textTransform: "none",
-  }}
-/>
+                bgcolor: darkMode ? "rgba(196, 165, 245, 0.14)" : "rgba(234, 215, 255, 0.85)",
+                color: darkMode ? "#e9d5ff" : "#5b2d9e",
+                fontWeight: 600,
+                border: darkMode
+                  ? "1px solid rgba(196, 165, 245, 0.35)"
+                  : "1px solid rgba(181, 123, 232, 0.2)",
+                textTransform: "none",
+              }}
+            />
           </Stack>
 
           {!isEditing && (
@@ -160,14 +259,26 @@ height: "32px",
               sx={{
                 mt: 1,
                 textTransform: "none",
-                borderRadius: 99,
-                borderColor: darkMode ? "rgba(244, 114, 182, 0.45)" : "#e9b5d2",
-                color: darkMode ? "#f9a8d4" : "#be185d",
+                borderRadius: "18px",
+                borderWidth: 1.5,
+                borderColor: darkMode
+                  ? "rgba(196, 165, 245, 0.45)"
+                  : "rgba(181, 123, 232, 0.55)",
+                color: darkMode ? WELLNESS_DARK.primary : "#6b3f9e",
                 fontWeight: 600,
                 py: 1.1,
+                transition:
+                  "border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease",
                 "&:hover": {
-                  borderColor: darkMode ? "#f472b6" : undefined,
-                  backgroundColor: darkMode ? "rgba(236, 72, 153, 0.08)" : undefined,
+                  borderColor: WELLNESS.primary,
+                  borderWidth: 1.5,
+                  backgroundColor: darkMode
+                    ? "rgba(196, 165, 245, 0.1)"
+                    : "rgba(181, 123, 232, 0.08)",
+                  boxShadow: darkMode
+                    ? "0 4px 14px rgba(0, 0, 0, 0.25)"
+                    : "0 4px 14px rgba(181, 123, 232, 0.15)",
+                  transform: "translateY(-1px)",
                 },
               }}
             >
