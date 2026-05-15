@@ -141,6 +141,7 @@ export async function getCalendarData(user) {
   return {
     events: events
       .filter((event) => !event.status || event.status === 'published')
+      .filter((event) => registeredEventIds.has(event.id))
       .map((event) => normalizeEvent(event, registeredEventIds))
       .filter((event) => event.date),
     appointments: appointments.map(normalizeAppointment).filter((appointment) => appointment.date),
