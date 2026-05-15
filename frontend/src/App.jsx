@@ -24,6 +24,7 @@ import RoleManagementPage from './features/admin/pages/RoleManagementPage';
 import ProfilePage from './features/profile/pages/ProfilePage';
 import CalendarPage from './features/calendar/CalendarPage';
 import ParticipantHome from './features/participant/ParticipantHome';
+import PublicHomePage from './features/public/pages/PublicHomePage';
 import { useAdmin } from './features/admin/context/AdminContext';
 import { getPostLoginPath } from './features/admin/services/authRoleService';
 
@@ -52,6 +53,7 @@ function ThemedApp() {
         <AdminProvider>
           <Routes>
             <Route path="/" element={<RoleRedirect />} />
+            <Route path="/public" element={<PublicHomePage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route

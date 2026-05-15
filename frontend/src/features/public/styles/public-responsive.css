@@ -1,0 +1,191 @@
+@media (max-width: 900px) {
+  .public-navbar {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+    padding-block: 12px;
+    padding-inline: clamp(16px, 4vw, 32px);
+  }
+
+  .public-navbar__bar {
+    justify-content: space-between;
+    width: 100%;
+    gap: 14px;
+  }
+
+  .public-navbar__toggle {
+    display: inline-block;
+    flex: 0 0 auto;
+  }
+
+  .public-navbar__menu {
+    display: none;
+    width: 100%;
+    padding-block-start: 10px;
+  }
+
+  .public-navbar__menu--open {
+    display: grid;
+    gap: 16px;
+  }
+
+  .public-navbar__links {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px 12px;
+    width: 100%;
+  }
+
+  .public-navbar__links a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding-block: 10px;
+    padding-inline: 12px;
+    background: #ffffff;
+    border: 1px solid #d9e3dc;
+    border-radius: 8px;
+    text-align: center;
+  }
+
+  .public-navbar__login {
+    width: 100%;
+    min-height: 46px;
+  }
+
+  .public-section--about,
+  .public-hero,
+  .public-section--center,
+  .public-journey__timeline,
+  .public-donation {
+    grid-template-columns: 1fr;
+  }
+
+  .public-journey__timeline::before {
+    inset-block: 32px 32px;
+    inset-inline-start: 22px;
+    width: 2px;
+    height: auto;
+  }
+
+  .public-hero {
+    min-height: auto;
+  }
+
+  .public-hero h1 {
+    max-width: 12ch;
+  }
+
+  .public-section--center {
+    align-items: start;
+  }
+
+  .public-footer__main {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 560px) {
+  .public-navbar {
+    position: static;
+    padding-inline: 16px;
+  }
+
+  .public-navbar__brand {
+    min-width: 0;
+    font-size: 1.05rem;
+  }
+
+  .public-navbar__brand span:last-child {
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .public-navbar__links {
+    grid-template-columns: 1fr;
+  }
+
+  .public-navbar__links a {
+    justify-content: flex-start;
+    text-align: start;
+  }
+
+  .public-hero {
+    padding-block: 42px 50px;
+    padding-inline: 16px;
+  }
+
+  .public-hero h1 {
+    max-width: 100%;
+    font-size: clamp(2.25rem, 13vw, 3.1rem);
+    line-height: 1.05;
+  }
+
+  .public-hero__description {
+    font-size: 1.04rem;
+    line-height: 1.6;
+  }
+
+  .public-hero__actions,
+  .public-button,
+  .public-event-card__button {
+    width: 100%;
+  }
+
+  .public-hero__visual {
+    min-height: 260px;
+    padding: 18px;
+  }
+
+  .public-section {
+    padding-block: 48px;
+    padding-inline: 16px;
+  }
+
+  .public-section__header h2,
+  .public-donation h2,
+  .public-center__content h2,
+  .public-section--support h2 {
+    font-size: clamp(1.85rem, 10vw, 2.45rem);
+    line-height: 1.12;
+  }
+
+  .public-section__text {
+    font-size: 1rem;
+    line-height: 1.7;
+  }
+
+  .public-section__header--centered {
+    text-align: start;
+  }
+
+  .public-center__visual {
+    min-height: 280px;
+  }
+
+  .public-article-card__body,
+  .public-team-card__body,
+  .public-event-card__body,
+  .public-support__card,
+  .public-statistics__card,
+  .public-about__card,
+  .public-contact__item {
+    padding: 18px;
+  }
+
+  .public-donation {
+    margin-block: 36px;
+    margin-inline: 16px;
+    padding-block: 28px;
+    padding-inline: 18px;
+  }
+
+  .public-footer {
+    padding-inline: 16px;
+  }
+
+  .public-footer__main {
+    grid-template-columns: 1fr;
+  }
+}
