@@ -54,7 +54,7 @@ function addMinutes(time, minutesToAdd) {
 }
 
 function normalizeEvent(docData, registeredEventIds) {
-  const date = toDate(docData.date || docData.startAt || docData.startDate);
+  const date = toDate(docData.date || docData.startAt || docData.startDate || docData.startTime);
   const startTime = normalizeTime(docData.startTime || docData.time || date, '10:00');
   const endTime = normalizeTime(docData.endTime || docData.endAt, addMinutes(startTime, 60));
 
@@ -139,7 +139,10 @@ export async function getCalendarData(user) {
   );
 
   return {
-    events: events.map((event) => normalizeEvent(event, registeredEventIds)).filter((event) => event.date),
+    events: events
+      .filter((event) => !event.status || event.status === 'published')
+      .map((event) => normalizeEvent(event, registeredEventIds))
+      .filter((event) => event.date),
     appointments: appointments.map(normalizeAppointment).filter((appointment) => appointment.date),
     notes: notes.map(normalizeNote).filter((note) => note.date),
   };
