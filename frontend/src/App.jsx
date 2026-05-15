@@ -9,6 +9,7 @@ import rtlPlugin from 'stylis-plugin-rtl';
 import { createAppTheme } from './theme';
 import { DirectionProvider, useDirection } from './features/admin/context/DirectionContext';
 import AdminProvider from './features/admin/context/AdminProvider';
+import AuthenticatedRoute from './features/admin/components/AuthenticatedRoute';
 import ProtectedRoute from './features/admin/components/ProtectedRoute';
 import AdminLayout from './features/admin/components/AdminLayout';
 import LoginPage from './features/admin/pages/LoginPage';
@@ -21,6 +22,7 @@ import UserManagementPage from './features/admin/pages/UserManagementPage';
 import AuditLogPage from './features/admin/pages/AuditLogPage';
 import RoleManagementPage from './features/admin/pages/RoleManagementPage';
 import ProfilePage from './features/profile/pages/ProfilePage';
+import CalendarPage from './features/calendar/CalendarPage';
 import ParticipantHome from './features/participant/ParticipantHome';
 import AppointmentPage from './features/appointments/pages/AppointmentPage';
 import PublicHomePage from './features/public/pages/PublicHomePage';
@@ -53,11 +55,25 @@ function ThemedApp() {
           <Routes>
             <Route path="/" element={<RoleRedirect />} />
             <Route path="/public" element={<PublicHomePage />} />
-            <Route path="/home" element={<ParticipantHome />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/profile" element={<ProfilePage />} />
+            <Route
+              path="/home"
+              element={
+                <AuthenticatedRoute>
+                  <ParticipantHome />
+                </AuthenticatedRoute>
+              }
+            />
+            <Route
+              path="/calendar"
+              element={
+                <AuthenticatedRoute>
+                  <CalendarPage />
+                </AuthenticatedRoute>
+              }
+            />
             <Route path="/appointments" element={<AppointmentPage />} />
-            <Route path="/calendar" element={<Navigate to="/home" replace />} />
 
             <Route
               path="/admin"

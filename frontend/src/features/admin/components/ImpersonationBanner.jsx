@@ -1,11 +1,18 @@
+import { useNavigate } from 'react-router-dom';
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
 import { useAdmin } from '../context/AdminContext';
 
 export default function ImpersonationBanner() {
+  const navigate = useNavigate();
   const { isImpersonating, impersonatedDisplayName, impersonatedUserUID, stopImpersonation } =
     useAdmin();
+
+  function handleExit() {
+    stopImpersonation();
+    navigate('/admin/users');
+  }
 
   if (!isImpersonating) return null;
 
@@ -44,7 +51,7 @@ export default function ImpersonationBanner() {
             color="inherit"
             size="small"
             variant="outlined"
-            onClick={stopImpersonation}
+            onClick={handleExit}
             id="btn-exit-impersonation"
             sx={{
               borderColor: 'rgba(255,255,255,0.5)',
