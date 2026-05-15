@@ -70,7 +70,7 @@ function ThemedApp() {
               path="/calendar"
               element={
                 <AuthenticatedRoute>
-                  <CalendarPage />
+                  <ParticipantHome initialView="calendar" />
                 </AuthenticatedRoute>
               }
             />
