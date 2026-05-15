@@ -1,5 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
-import { getAllEvents, createEvent, updateEvent, deleteEvent } from '../services/eventService';
+import { useNavigate } from 'react-router-dom';
+import { getAllEvents, createEvent, deleteEvent } from '../services/eventService';
+import { getRegistrationCounts } from '../services/registrationService';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
@@ -8,23 +10,34 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import TextField from '@mui/material/TextField';
+import MenuItem from '@mui/material/MenuItem';
 import { DataGrid } from '@mui/x-data-grid';
 import AddIcon from '@mui/icons-material/Add';
 
+const EVENT_CATEGORIES = [
+  'Workshop',
+  'Support Group',
+  'Therapy Session',
+  'Community Activity',
+  'Awareness Event',
+  'Other',
+];
+
+const initialForm = {
+  title: '',
+  category: '',
+  startTime: '',
+  location: '',
+  description: '',
+  maxParticipants: '',
+};
+
 export default function EventsPage() {
+  const navigate = useNavigate();
   const [events, setEvents] = useState([]);
+  const [counts, setCounts] = useState({});
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
-  const [editing, setEditing] = useState(null);
-  
-  const initialForm = {
-    title: '',
-    date: '', // Holds string "YYYY-MM-DDTHH:mm" for the HTML input
-    location: '',
-    description: '',
-    maxParticipants: '',
-  };
-  
   const [form, setForm] = useState(initialForm);
 
   const fetchEvents = useCallback(async () => {
@@ -32,6 +45,10 @@ export default function EventsPage() {
     try {
       const data = await getAllEvents();
       setEvents(data);
+      if (data.length) {
+        const countsData = await getRegistrationCounts(data.map((e) => e.id));
+        setCounts(countsData);
+      }
     } catch (err) {
       console.error('Failed to fetch events:', err);
     } finally {
@@ -41,55 +58,27 @@ export default function EventsPage() {
 
   useEffect(() => { fetchEvents(); }, [fetchEvents]);
 
-  // Helper to format a Firestore Timestamp to a local datetime string for the input field
-  function formatTimestampForInput(ts) {
-    if (!ts) return '';
-    const d = ts.toDate ? ts.toDate() : new Date(ts);
-    if (isNaN(d)) return '';
-    // Offset to local timezone to keep YYYY-MM-DDTHH:mm accurate
-    const tzOffset = d.getTimezoneOffset() * 60000; 
-    return new Date(d.getTime() - tzOffset).toISOString().slice(0, 16);
-  }
-
   function openCreate() {
-    setEditing(null);
     setForm(initialForm);
     setShowModal(true);
   }
 
-  function openEdit(ev) {
-    setEditing(ev);
-    setForm({
-      title: ev.title || '',
-      date: formatTimestampForInput(ev.date),
-      location: ev.location || '',
-      description: ev.description || '',
-      maxParticipants: ev.maxParticipants || '',
-    });
-    setShowModal(true);
-  }
-
-  async function handleSave(e) {
+  async function handleCreate(e) {
     e.preventDefault();
     try {
-      const dataToSave = {
+      await createEvent({
         title: form.title,
-        date: new Date(form.date), // Firestore automatically converts native Dates to Timestamps
+        category: form.category,
+        startTime: new Date(form.startTime),
         location: form.location,
         description: form.description,
         maxParticipants: Number(form.maxParticipants) || 0,
-      };
-
-      if (editing) {
-        await updateEvent(editing.id, dataToSave);
-      } else {
-        await createEvent(dataToSave);
-      }
-      
+        status: 'published',
+      });
       setShowModal(false);
       fetchEvents();
     } catch (err) {
-      console.error('Save event failed:', err);
+      console.error('Create event failed:', err);
     }
   }
 
@@ -105,14 +94,24 @@ export default function EventsPage() {
 
   const columns = [
     { field: 'title', headerName: 'Event Title', flex: 1, minWidth: 180 },
+    { field: 'category', headerName: 'Category', width: 160 },
     {
-      field: 'date',
-      headerName: 'Date & Time',
+      field: 'startTime',
+      headerName: 'Start Time',
       width: 180,
       valueGetter: (value) => (value?.toDate ? value.toDate().toLocaleString() : '—'),
     },
     { field: 'location', headerName: 'Location', flex: 1, minWidth: 160 },
-    { field: 'maxParticipants', headerName: 'Capacity', width: 120, align: 'center', headerAlign: 'center' },
+    { field: 'maxParticipants', headerName: 'Capacity', width: 100, align: 'center', headerAlign: 'center' },
+    {
+      field: 'registered',
+      headerName: 'Registered',
+      width: 110,
+      align: 'center',
+      headerAlign: 'center',
+      valueGetter: (_value, row) => counts[row.id] ?? 0,
+    },
+    { field: 'status', headerName: 'Status', width: 110 },
     {
       field: 'actions',
       headerName: 'Actions',
@@ -121,8 +120,21 @@ export default function EventsPage() {
       filterable: false,
       renderCell: (params) => (
         <Box sx={{ display: 'flex', gap: 1 }}>
-          <Button size="small" variant="outlined" onClick={() => openEdit(params.row)}>Edit</Button>
-          <Button size="small" variant="outlined" color="error" onClick={() => handleDelete(params.row.id, params.row.title)}>Delete</Button>
+          <Button
+            size="small"
+            variant="outlined"
+            onClick={() => navigate(`/admin/events/${params.row.id}`)}
+          >
+            View
+          </Button>
+          <Button
+            size="small"
+            variant="outlined"
+            color="error"
+            onClick={() => handleDelete(params.row.id, params.row.title)}
+          >
+            Delete
+          </Button>
         </Box>
       ),
     },
@@ -154,51 +166,61 @@ export default function EventsPage() {
         />
       </Box>
 
-      {/* Create / Edit Modal */}
       <Dialog open={showModal} onClose={() => setShowModal(false)} maxWidth="sm" fullWidth>
-        <form onSubmit={handleSave}>
-          <DialogTitle>{editing ? 'Edit Event' : 'Add New Event'}</DialogTitle>
+        <form onSubmit={handleCreate}>
+          <DialogTitle>Add New Event</DialogTitle>
           <DialogContent sx={{ display: 'flex', flexDirection: 'column', gap: 2.5, pt: '16px !important' }}>
-            <TextField 
-              label="Event Title" 
-              value={form.title} 
-              onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} 
-              required 
+            <TextField
+              label="Event Title"
+              value={form.title}
+              onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
+              required
             />
-            <TextField 
-              helperText="Date & Time" 
-              type="datetime-local" 
-              value={form.date} 
-              onChange={(e) => setForm((f) => ({ ...f, date: e.target.value }))} 
-              required 
-              inputProps={{ dir: 'ltr' }} 
+            <TextField
+              label="Category"
+              select
+              value={form.category}
+              onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
+              required
+            >
+              {EVENT_CATEGORIES.map((cat) => (
+                <MenuItem key={cat} value={cat}>{cat}</MenuItem>
+              ))}
+            </TextField>
+            <TextField
+              helperText="Start Date & Time"
+              type="datetime-local"
+              value={form.startTime}
+              onChange={(e) => setForm((f) => ({ ...f, startTime: e.target.value }))}
+              required
+              inputProps={{ dir: 'ltr' }}
             />
-            <TextField 
-              label="Location" 
-              value={form.location} 
-              onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))} 
-              required 
+            <TextField
+              label="Location"
+              value={form.location}
+              onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))}
+              required
             />
-            <TextField 
-              label="Max Participants (Capacity)" 
-              type="number" 
-              value={form.maxParticipants} 
-              onChange={(e) => setForm((f) => ({ ...f, maxParticipants: e.target.value }))} 
+            <TextField
+              label="Max Participants (Capacity)"
+              type="number"
+              value={form.maxParticipants}
+              onChange={(e) => setForm((f) => ({ ...f, maxParticipants: e.target.value }))}
               inputProps={{ min: 1 }}
-              required 
+              required
             />
-            <TextField 
-              label="Description" 
-              value={form.description} 
-              onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))} 
-              multiline 
-              rows={4} 
+            <TextField
+              label="Description"
+              value={form.description}
+              onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+              multiline
+              rows={4}
               required
             />
           </DialogContent>
           <DialogActions sx={{ px: 3, pb: 2 }}>
             <Button onClick={() => setShowModal(false)} color="inherit">Cancel</Button>
-            <Button type="submit" variant="contained">{editing ? 'Save Changes' : 'Create Event'}</Button>
+            <Button type="submit" variant="contained">Create Event</Button>
           </DialogActions>
         </form>
       </Dialog>
