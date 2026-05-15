@@ -1,4 +1,4 @@
-import { collection, getDocs, getDoc, addDoc, updateDoc, deleteDoc, doc, query, orderBy, where, onSnapshot, serverTimestamp } from 'firebase/firestore';
+import { collection, getDocs, getDoc, addDoc, updateDoc, deleteDoc, doc, query, orderBy, onSnapshot, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../../firebase';
 import { logAuditEvent } from './auditService';
 
@@ -25,16 +25,20 @@ export async function getAllEvents() {
  * Subscribe to published events in real time, sorted by createdAt descending.
  * Returns an unsubscribe function — call it in a useEffect cleanup.
  * @param {(events: Object[]) => void} callback
+ * @param {(error: Error) => void} [onError]
  */
-export function subscribeToPublishedEvents(callback) {
+export function subscribeToPublishedEvents(callback, onError) {
   const q = query(
     collection(db, 'events'),
-    where('status', '==', 'published'),
     orderBy('createdAt', 'desc')
   );
   return onSnapshot(q, (snap) => {
-    callback(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
-  });
+    callback(
+      snap.docs
+        .map((d) => ({ id: d.id, ...d.data() }))
+        .filter((event) => event.status === 'published')
+    );
+  }, onError);
 }
 
 /**

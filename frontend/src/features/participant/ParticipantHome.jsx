@@ -26,7 +26,7 @@ const overviewCards = [
 const participantNavItems = [
   { key: 'home', label: 'Home', icon: HomeOutlinedIcon },
   { key: 'calendar', label: 'Calendar', icon: CalendarMonthOutlinedIcon },
-  { key: 'workshops', label: 'Workshops', icon: EventAvailableOutlinedIcon },
+  { key: 'workshops', label: 'Workshops', icon: EventAvailableOutlinedIcon, path: '/events' },
   { key: 'appointments', label: 'Appointments', icon: FavoriteBorderOutlinedIcon },
   { key: 'profile', label: 'Profile', icon: PeopleOutlineOutlinedIcon },
 ];
@@ -104,7 +104,7 @@ export default function ParticipantHome() {
               <button
                 className={activeView === item.key ? 'is-active' : ''}
                 type="button"
-                onClick={() => setActiveView(item.key)}
+                onClick={() => (item.path ? navigate(item.path) : setActiveView(item.key))}
                 key={item.label}
               >
                 <Icon fontSize="small" />
