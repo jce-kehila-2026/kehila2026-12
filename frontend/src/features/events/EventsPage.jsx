@@ -1,21 +1,25 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutlineOutlined';
+import Diversity3Icon from '@mui/icons-material/Diversity3';
 import EventAvailableIcon from '@mui/icons-material/EventAvailable';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import GroupsRoundedIcon from '@mui/icons-material/GroupsRounded';
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
 import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined';
 import LogoutIcon from '@mui/icons-material/Logout';
+import MenuBookIcon from '@mui/icons-material/MenuBookOutlined';
 import PaletteOutlinedIcon from '@mui/icons-material/PaletteOutlined';
 import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined';
-import PeopleIcon from '@mui/icons-material/People';
 import PsychologyAltOutlinedIcon from '@mui/icons-material/PsychologyAltOutlined';
 import SelfImprovementIcon from '@mui/icons-material/SelfImprovement';
+import SettingsIcon from '@mui/icons-material/Settings';
 import SpaIcon from '@mui/icons-material/Spa';
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import PersonIcon from '@mui/icons-material/Person';
+import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivismOutlined';
 import { useNavigate } from 'react-router-dom';
 import { useAdmin } from '../admin/context/AdminContext';
 import { subscribeToPublishedEvents } from '../admin/services/eventService';
@@ -32,9 +36,12 @@ const ALL_CATEGORY = 'All';
 const participantNavItems = [
   { key: 'home', label: 'Home', icon: HomeRoundedIcon, path: '/home' },
   { key: 'calendar', label: 'Calendar', icon: CalendarMonthIcon, path: '/calendar' },
-  { key: 'events', label: 'Events', icon: EventAvailableIcon, path: '/events' },
+  { key: 'workshops', label: 'Workshops', icon: EventAvailableIcon, path: '/events' },
   { key: 'appointments', label: 'Appointments', icon: FavoriteBorderIcon, path: '/home' },
-  { key: 'profile', label: 'Profile', icon: PeopleIcon, path: '/profile' },
+  { key: 'resources', label: 'Resources', icon: MenuBookIcon, path: '/home' },
+  { key: 'community', label: 'Community', icon: Diversity3Icon, path: '/home' },
+  { key: 'messages', label: 'Messages', icon: ChatBubbleOutlineIcon, path: '/home', badge: 3 },
+  { key: 'settings', label: 'Settings', icon: SettingsIcon, path: '/home' },
 ];
 
 const eventIconMap = {
@@ -299,7 +306,7 @@ export default function EventsPage() {
           <span className="events-brand__mark">S</span>
           <span className="events-brand__text">
             <strong>She-Na</strong>
-            <small>Participant Space</small>
+            <small>Your journey matters</small>
           </span>
         </button>
 
@@ -308,17 +315,27 @@ export default function EventsPage() {
             const Icon = item.icon;
             return (
               <button
-                className={item.key === 'events' ? 'is-active' : ''}
+                className={item.key === 'workshops' ? 'is-active' : ''}
                 type="button"
                 onClick={() => navigate(item.path)}
                 key={item.key}
               >
                 <Icon fontSize="small" />
                 <span>{item.label}</span>
+                {item.badge && <small>{item.badge}</small>}
               </button>
             );
           })}
         </nav>
+
+        <div className="events-support-card">
+          <VolunteerActivismIcon />
+          <strong>Need Support?</strong>
+          <span>We are here for you.</span>
+          <button type="button" onClick={() => navigate('/home')}>
+            Contact Us
+          </button>
+        </div>
 
         <button className="events-logout" type="button" onClick={logout}>
           <LogoutIcon fontSize="small" />

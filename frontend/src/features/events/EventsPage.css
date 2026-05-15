@@ -1,7 +1,7 @@
 .events-page {
   min-height: 100vh;
   display: grid;
-  grid-template-columns: 260px minmax(0, 1fr);
+  grid-template-columns: 274px minmax(0, 1fr);
   background:
     radial-gradient(circle at 12% 9%, rgba(244, 91, 165, 0.22), transparent 22rem),
     radial-gradient(circle at 92% 16%, rgba(123, 63, 161, 0.2), transparent 24rem),
@@ -16,8 +16,8 @@
   height: 100vh;
   display: flex;
   flex-direction: column;
-  gap: 34px;
-  padding: 30px 22px;
+  gap: 28px;
+  padding: 28px 20px;
   border-right: 1px solid rgba(123, 63, 161, 0.12);
   background: rgba(255, 255, 255, 0.88);
   box-shadow: 12px 0 44px rgba(75, 19, 107, 0.07);
@@ -50,11 +50,11 @@
 }
 
 .events-brand__mark {
-  width: 44px;
-  height: 44px;
+  width: 48px;
+  height: 48px;
   display: grid;
   place-items: center;
-  border-radius: 14px;
+  border-radius: 16px;
   background: linear-gradient(135deg, #ec168c, #7b3fa1);
   color: #ffffff;
   font-size: 1.2rem;
@@ -67,40 +67,114 @@
 }
 
 .events-brand strong {
-  color: #4b136b;
-  font-size: 1.2rem;
+  color: #7b3fa1;
+  font-size: 1.22rem;
+  line-height: 1;
 }
 
 .events-brand small {
   color: rgba(75, 19, 107, 0.55);
+  font-size: 0.78rem;
   font-weight: 800;
 }
 
 .events-nav {
+  flex: 1;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
+  overflow: auto;
+  padding-right: 4px;
 }
 
 .events-nav button,
 .events-logout {
+  position: relative;
   align-items: center;
   gap: 12px;
+  width: 100%;
   min-height: 46px;
   border: 0;
-  border-radius: 12px;
+  border-radius: 14px;
   background: transparent;
-  color: rgba(75, 19, 107, 0.66);
+  color: rgba(45, 23, 72, 0.7);
   cursor: pointer;
   font: inherit;
-  font-weight: 800;
+  font-size: 0.9rem;
+  font-weight: 850;
   padding: 0 14px;
+  text-align: left;
+  transition: transform 180ms ease, background 180ms ease, color 180ms ease, box-shadow 180ms ease;
 }
 
 .events-nav button.is-active,
 .events-nav button:hover,
 .events-logout:hover {
-  background: #f5e8fb;
+  background: rgba(244, 240, 250, 0.9);
   color: #4b136b;
+  transform: translateX(2px);
+}
+
+.events-nav button.is-active {
+  background: linear-gradient(135deg, #4b136b, #6c2f8f);
+  color: #ffffff;
+  box-shadow: 0 14px 28px rgba(75, 19, 107, 0.22);
+}
+
+.events-nav button small {
+  margin-left: auto;
+  flex: 0 0 auto;
+  display: inline-grid;
+  place-items: center;
+  width: 22px;
+  min-width: 22px;
+  max-width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background: #ec168c;
+  color: #ffffff;
+  font-size: 0.72rem;
+  line-height: 1;
+  font-weight: 900;
+  padding: 0;
+}
+
+.events-support-card {
+  display: grid;
+  gap: 7px;
+  border: 1px solid rgba(236, 22, 140, 0.12);
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at 92% 12%, rgba(244, 91, 165, 0.22), transparent 6rem),
+    #fff2f9;
+  color: #4b136b;
+  padding: 18px;
+}
+
+.events-support-card svg {
+  color: #ec168c;
+}
+
+.events-support-card strong {
+  font-size: 0.95rem;
+}
+
+.events-support-card span {
+  color: rgba(75, 19, 107, 0.62);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.events-support-card button {
+  min-height: 38px;
+  margin-top: 8px;
+  border: 0;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #ec168c, #f45ba5);
+  color: #ffffff;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 900;
 }
 
 .events-logout {
@@ -544,7 +618,7 @@
 
 @media (max-width: 1180px) {
   .events-page {
-    grid-template-columns: 88px minmax(0, 1fr);
+    grid-template-columns: 94px minmax(0, 1fr);
   }
 
   .events-sidebar {
@@ -554,6 +628,8 @@
 
   .events-brand__text,
   .events-nav span,
+  .events-nav button small,
+  .events-support-card,
   .events-logout span {
     display: none;
   }
@@ -561,7 +637,7 @@
   .events-nav button,
   .events-logout {
     justify-content: center;
-    width: 48px;
+    width: 52px;
     padding: 0;
   }
 
