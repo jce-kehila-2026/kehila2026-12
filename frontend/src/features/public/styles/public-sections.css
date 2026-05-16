@@ -78,8 +78,8 @@
   padding-block: 11px;
   padding-inline: 20px;
   border: 1px solid transparent;
-  border-radius: 6px;
-  font-weight: 800;
+  border-radius: 8px;
+  font-weight: 700;
   text-decoration: none;
   text-align: center;
   overflow-wrap: anywhere;
@@ -88,24 +88,24 @@
 
 .public-button--primary {
   color: #ffffff;
-  background: #b56f45;
+  background: linear-gradient(135deg, #DF327B, #ec168c);
 }
 
 .public-button--secondary {
   color: #ffffff;
-  background: #246b5f;
+  background: linear-gradient(135deg, #6B3F97, #4b136b);
 }
 
 .public-button--tertiary {
-  color: #173b35;
-  background: #ffffff;
-  border-color: #cbd8d1;
+  color: #6B3F97;
+  background: #fff8fc;
+  border-color: #f3d9e5;
 }
 
 .public-button:hover,
 .public-button:focus-visible {
   transform: translateY(-1px);
-  box-shadow: 0 12px 24px rgba(23, 59, 53, 0.12);
+  box-shadow: 0 12px 24px rgba(236, 72, 153, 0.16);
 }
 
 .public-hero__visual {
