@@ -77,6 +77,22 @@ service cloud.firestore {
       allow create, update, delete: if isAdmin();
     }
 
+    // Public homepage sections
+    match /homepage_statistics/{docId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /support_areas/{docId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    match /homepage_content/{docId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
     // ── Appointments ──
     match /appointments/{appointmentId} {
       allow read: if isAdmin()

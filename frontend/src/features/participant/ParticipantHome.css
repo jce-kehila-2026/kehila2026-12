@@ -776,8 +776,10 @@
   border: 0;
   border-radius: 999px;
   background: #fff6df;
+  color: #4b136b;
   cursor: pointer;
-  font-size: 1.45rem;
+  font-size: 0.9rem;
+  font-weight: 950;
   transition: transform 160ms ease, box-shadow 160ms ease;
 }
 
@@ -896,6 +898,45 @@
   padding: 6px 10px;
 }
 
+.dashboard-card--motivation {
+  border-color: rgba(236, 22, 140, 0.18);
+  background:
+    radial-gradient(circle at 95% 10%, rgba(236, 22, 140, 0.1), transparent 10rem),
+    rgba(255, 255, 255, 0.9);
+}
+
+.dashboard-card--motivation p {
+  color: rgba(36, 19, 50, 0.68);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+.motivation-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.motivation-actions span {
+  color: rgba(75, 19, 107, 0.62);
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.motivation-actions button {
+  border: 0;
+  border-radius: 999px;
+  background: #4b136b;
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 900;
+  padding: 10px 16px;
+}
+
 .participant-content {
   align-items: flex-start;
   display: grid;
@@ -954,6 +995,54 @@
 .participant-placeholder-view h2 {
   margin: 4px 0 8px;
   color: #4b136b;
+}
+
+.resources-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.resource-card {
+  min-height: 210px;
+  display: grid;
+  align-content: start;
+  gap: 12px;
+  border: 1px solid rgba(123, 63, 161, 0.1);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 95% 12%, rgba(255, 255, 255, 0.92), transparent 7rem),
+    #fff8fc;
+  padding: 18px;
+}
+
+.resource-card span,
+.resource-card small {
+  justify-self: start;
+  border-radius: 999px;
+  background: #fff2f9;
+  color: #ec168c;
+  font-size: 0.72rem;
+  font-weight: 900;
+  padding: 6px 10px;
+}
+
+.resource-card h3 {
+  color: #241332;
+  font-size: 1rem;
+  line-height: 1.35;
+}
+
+.resource-card p {
+  color: rgba(36, 19, 50, 0.66);
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.resource-card small {
+  align-self: end;
+  background: rgba(123, 63, 161, 0.08);
+  color: #7b3fa1;
 }
 
 .participant-panel .calendar-page--embedded {
@@ -1160,6 +1249,7 @@
 .participant-home--dark .week-agenda__item,
 .participant-home--dark .community-post,
 .participant-home--dark .recommendation-card,
+.participant-home--dark .resource-card,
 .participant-home--dark .workshop-card {
   border-color: rgba(236, 72, 153, 0.22);
   background: #1e293b;
@@ -1213,6 +1303,10 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .resources-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
   .participant-panel .calendar-page--embedded .calendar-layout {
     grid-template-columns: 1fr;
   }
@@ -1257,6 +1351,7 @@
   }
 
   .dashboard-overview,
+  .resources-grid,
   .dashboard-rail {
     grid-template-columns: 1fr;
   }

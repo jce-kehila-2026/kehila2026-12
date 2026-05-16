@@ -280,8 +280,8 @@ const FALLBACK_CONTACT = {
   description:
     'Contact details will be published here when they are ready for the public website.',
   email: '',
-  phone: 'Phone number coming soon',
-  address: 'Location details coming soon',
+  phone: '',
+  address: '',
   socialLinks: [],
   footerText: 'Public community information. Final contact details will be managed from the admin content system.',
   isVisible: true,
@@ -565,6 +565,12 @@ function withFallbackArray(items, fallbackItems, maxItems) {
   return typeof maxItems === 'number' ? safeItems.slice(0, maxItems) : safeItems;
 }
 
+function numberOrText(value, fallbackValue = '') {
+  if (value === 0) return '0';
+  if (typeof value === 'number' && Number.isFinite(value)) return String(value);
+  return firstTextValue(value, fallbackValue);
+}
+
 async function getConfirmedPublicDocs(collectionName, constraints = []) {
   const docsQuery = constraints.length
     ? query(collection(db, collectionName), ...constraints)
@@ -618,6 +624,125 @@ function normalizeEvent(docData, fallbackEvent = {}) {
     active: docData.status === 'published',
     status: docData.status || 'published',
   };
+}
+
+function normalizeStatistic(docData, fallbackStatistic = {}) {
+  const label = firstTextValue(docData.label, docData.title, docData.name, fallbackStatistic.label);
+  const value = numberOrText(docData.value ?? docData.count ?? docData.total ?? docData.number, fallbackStatistic.value);
+
+  if (!label || !value) {
+    return null;
+  }
+
+  return {
+    ...fallbackStatistic,
+    id: docData.id || normalizedKey(label) || fallbackStatistic.id,
+    value,
+    label,
+    note: firstTextValue(docData.note, docData.description, docData.summary, fallbackStatistic.note),
+    isPublic: docData.isPublic !== false && docData.public !== false,
+    isVisible: docData.isVisible !== false && docData.visible !== false && docData.hidden !== true,
+    isPublished: docData.isPublished !== false && docData.published !== false,
+    active: docData.active !== false && docData.status !== 'inactive',
+    status: docData.status || fallbackStatistic.status || 'published',
+    order: docData.order ?? docData.displayOrder ?? docData.sortOrder ?? 0,
+  };
+}
+
+function normalizeSupportArea(docData, fallbackArea = {}) {
+  const title = firstTextValue(docData.title, docData.name, docData.label, fallbackArea.title);
+  const description = firstTextValue(docData.description, docData.summary, docData.content, docData.text, fallbackArea.description);
+
+  if (!title || !description) {
+    return null;
+  }
+
+  return {
+    ...fallbackArea,
+    id: docData.id || normalizedKey(title) || fallbackArea.id,
+    icon: firstTextValue(docData.icon, docData.initial, fallbackArea.icon) || title.charAt(0),
+    title,
+    description,
+    isPublic: docData.isPublic !== false && docData.public !== false,
+    isVisible: docData.isVisible !== false && docData.visible !== false && docData.hidden !== true,
+    isPublished: docData.isPublished !== false && docData.published !== false,
+    active: docData.active !== false && docData.status !== 'inactive',
+    status: docData.status || fallbackArea.status || 'published',
+    order: docData.order ?? docData.displayOrder ?? docData.sortOrder ?? 0,
+  };
+}
+
+function normalizeJourneyStage(stage, index) {
+  if (!stage || typeof stage !== 'object') {
+    return null;
+  }
+
+  const title = firstTextValue(stage.title, stage.name, stage.heading);
+  const description = firstTextValue(stage.description, stage.summary, stage.content, stage.text);
+
+  if (!title || !description) {
+    return null;
+  }
+
+  return {
+    id: stage.id || normalizedKey(title) || `stage-${index + 1}`,
+    label: firstTextValue(stage.label, stage.eyebrow, `Step ${index + 1}`),
+    title,
+    description,
+    isVisible: stage.isVisible !== false && stage.visible !== false && stage.hidden !== true,
+    active: stage.active !== false && stage.status !== 'inactive',
+    order: stage.order ?? stage.displayOrder ?? stage.sortOrder ?? index,
+  };
+}
+
+function normalizeRecoveryJourney(docData = {}, fallbackJourney = FALLBACK_RECOVERY_JOURNEY) {
+  const stages = asArray(docData.stages || docData.items || docData.steps)
+    .map(normalizeJourneyStage)
+    .filter(Boolean)
+    .filter(isVisiblePublicContent)
+    .sort(compareOrderedContent);
+
+  return {
+    ...fallbackJourney,
+    id: docData.id || fallbackJourney.id,
+    eyebrow: firstTextValue(docData.eyebrow, docData.label, fallbackJourney.eyebrow),
+    title: firstTextValue(docData.title, docData.heading, fallbackJourney.title),
+    description: firstTextValue(docData.description, docData.summary, docData.content, fallbackJourney.description),
+    stages: stages.length ? stages : cloneFallback(fallbackJourney.stages),
+    isPublic: docData.isPublic !== false && docData.public !== false,
+    isVisible: docData.isVisible !== false && docData.visible !== false && docData.hidden !== true,
+    isPublished: docData.isPublished !== false && docData.published !== false,
+    active: docData.active !== false && docData.status !== 'inactive',
+    status: docData.status || fallbackJourney.status || 'published',
+  };
+}
+
+function normalizeDonationSettings(docData = {}, fallbackDonation = FALLBACK_DONATION) {
+  return {
+    ...fallbackDonation,
+    id: docData.id || fallbackDonation.id,
+    eyebrow: firstTextValue(docData.eyebrow, docData.label, fallbackDonation.eyebrow),
+    title: firstTextValue(docData.title, docData.heading, fallbackDonation.title),
+    description: firstTextValue(docData.description, docData.summary, docData.content, fallbackDonation.description),
+    buttonLabel: firstTextValue(docData.buttonLabel, docData.ctaLabel, docData.label, fallbackDonation.buttonLabel),
+    href: firstTextValue(docData.href, docData.url, docData.link, docData.donationUrl, fallbackDonation.href),
+    isPublic: docData.isPublic !== false && docData.public !== false,
+    isVisible: docData.isVisible !== false && docData.visible !== false && docData.hidden !== true,
+    isPublished: docData.isPublished !== false && docData.published !== false,
+    active: docData.active !== false && docData.status !== 'inactive',
+    status: docData.status || fallbackDonation.status || 'published',
+  };
+}
+
+function compareOrderedContent(left, right) {
+  const leftOrder = Number(left.order);
+  const rightOrder = Number(right.order);
+
+  if (Number.isFinite(leftOrder) && Number.isFinite(rightOrder) && leftOrder !== rightOrder) {
+    return leftOrder - rightOrder;
+  }
+
+  return 0;
 }
 
 function normalizeArticle(docData, fallbackArticle = {}) {
@@ -1034,15 +1159,35 @@ export async function getOrgInfoContent() {
 }
 
 export async function getPublicStatistics() {
-  // TODO: Connect statistics after the CMS confirms a collection/document contract
-  // and public visibility fields for homepage metrics.
-  return cloneFallback(FALLBACK_STATISTICS).filter(isVisiblePublicContent);
+  try {
+    const docs = await getConfirmedPublicDocs('homepage_statistics');
+    const statistics = docs
+      .map((statisticDoc, index) => normalizeStatistic(statisticDoc, FALLBACK_STATISTICS[index]))
+      .filter(Boolean)
+      .filter(isVisiblePublicContent)
+      .sort(compareOrderedContent);
+
+    return statistics.length ? statistics : cloneFallback(FALLBACK_STATISTICS).filter(isVisiblePublicContent);
+  } catch (error) {
+    warnAndFallback('Failed to load public homepage statistics from Firestore. Using fallback statistics.', error);
+    return cloneFallback(FALLBACK_STATISTICS).filter(isVisiblePublicContent);
+  }
 }
 
 export async function getSupportAreas() {
-  // TODO: Connect support areas after the CMS confirms a collection/document
-  // contract and public visibility fields for support area cards.
-  return cloneFallback(FALLBACK_SUPPORT_AREAS).filter(isVisiblePublicContent);
+  try {
+    const docs = await getConfirmedPublicDocs('support_areas');
+    const supportAreas = docs
+      .map((areaDoc, index) => normalizeSupportArea(areaDoc, FALLBACK_SUPPORT_AREAS[index]))
+      .filter(Boolean)
+      .filter(isVisiblePublicContent)
+      .sort(compareOrderedContent);
+
+    return supportAreas.length ? supportAreas : cloneFallback(FALLBACK_SUPPORT_AREAS).filter(isVisiblePublicContent);
+  } catch (error) {
+    warnAndFallback('Failed to load public support areas from Firestore. Using fallback support areas.', error);
+    return cloneFallback(FALLBACK_SUPPORT_AREAS).filter(isVisiblePublicContent);
+  }
 }
 
 export async function getPublishedArticles(maxItems = 3) {
@@ -1109,20 +1254,35 @@ export async function getPublicUpcomingEvents(maxItems = 3) {
 }
 
 export async function getRecoveryJourney() {
-  // TODO: Connect recovery journey after the CMS confirms a homepage content
-  // collection/document contract and stage visibility fields.
-  const journey = cloneFallback(FALLBACK_RECOVERY_JOURNEY);
+  try {
+    const docData = await getConfirmedPublicDoc('homepage_content', 'recovery_journey');
+    const journey = docData ? normalizeRecoveryJourney(docData) : cloneFallback(FALLBACK_RECOVERY_JOURNEY);
 
-  return {
-    ...journey,
-    stages: asArray(journey.stages).filter((stage) => stage.isVisible !== false && stage.hidden !== true),
-  };
+    return {
+      ...journey,
+      stages: asArray(journey.stages).filter((stage) => stage.isVisible !== false && stage.hidden !== true),
+    };
+  } catch (error) {
+    warnAndFallback('Failed to load public recovery journey from Firestore. Using fallback recovery journey.', error);
+    const journey = cloneFallback(FALLBACK_RECOVERY_JOURNEY);
+
+    return {
+      ...journey,
+      stages: asArray(journey.stages).filter((stage) => stage.isVisible !== false && stage.hidden !== true),
+    };
+  }
 }
 
 export async function getDonationSettings() {
-  // TODO: Connect donation settings after the CMS confirms a donation content
-  // collection/document contract and public fields.
-  return cloneFallback(FALLBACK_DONATION);
+  try {
+    const docData = await getConfirmedPublicDoc('homepage_content', 'donation');
+    const donation = docData ? normalizeDonationSettings(docData) : cloneFallback(FALLBACK_DONATION);
+
+    return isVisiblePublicContent(donation) ? donation : cloneFallback(FALLBACK_DONATION);
+  } catch (error) {
+    warnAndFallback('Failed to load public donation settings from Firestore. Using fallback donation settings.', error);
+    return cloneFallback(FALLBACK_DONATION);
+  }
 }
 
 export async function getContactInfo() {
