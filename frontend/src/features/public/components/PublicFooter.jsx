@@ -38,7 +38,7 @@ export default function PublicFooter({ organization, contact = {} }) {
             {hasValue(phone) ? <span>{phone}</span> : null}
             {hasValue(address) ? <span>{address}</span> : null}
             {!hasValue(email) && !hasValue(phone) && !hasValue(address) ? (
-              <span>Contact details coming soon</span>
+              <span>Contact information will be published when available.</span>
             ) : null}
           </address>
         </div>
@@ -54,7 +54,7 @@ export default function PublicFooter({ organization, contact = {} }) {
               ))}
             </nav>
           ) : (
-            <p className="public-footer__text">Social links coming soon</p>
+            <p className="public-footer__text">Social links will be published when available.</p>
           )}
         </div>
       </div>

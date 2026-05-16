@@ -2,9 +2,12 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutlineOutlined';
+import CloseIcon from '@mui/icons-material/Close';
 import Diversity3Icon from '@mui/icons-material/Diversity3';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import EventAvailableIcon from '@mui/icons-material/EventAvailable';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
+import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined';
 import GroupsRoundedIcon from '@mui/icons-material/GroupsRounded';
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
 import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined';
@@ -16,11 +19,14 @@ import PsychologyAltOutlinedIcon from '@mui/icons-material/PsychologyAltOutlined
 import SelfImprovementIcon from '@mui/icons-material/SelfImprovement';
 import SettingsIcon from '@mui/icons-material/Settings';
 import SpaIcon from '@mui/icons-material/Spa';
+import SendOutlinedIcon from '@mui/icons-material/SendOutlined';
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import PersonIcon from '@mui/icons-material/Person';
 import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivismOutlined';
 import { useNavigate } from 'react-router-dom';
+import appointmentsHero from '../../assets/appointments-hero.png';
 import { useAdmin } from '../admin/context/AdminContext';
 import { subscribeToPublishedEvents } from '../admin/services/eventService';
 import {
@@ -29,9 +35,31 @@ import {
   getUserRegisteredEventIds,
   removeRegistration,
 } from '../admin/services/registrationService';
+import { createWorkshopSuggestion } from './workshopSuggestionService';
 import './EventsPage.css';
 
 const ALL_CATEGORY = 'All';
+
+const suggestionCategories = [
+  'Anxiety Support',
+  'Meditation',
+  'Yoga',
+  'Art Therapy',
+  'Journaling',
+  'Self Confidence',
+  'Women Circle',
+  'Breathing Sessions',
+  'Career Support',
+  'Emotional Healing',
+];
+
+const emptySuggestionForm = {
+  title: '',
+  category: '',
+  description: '',
+  reason: '',
+  anonymous: false,
+};
 
 const participantNavItems = [
   { key: 'home', label: 'Home', icon: HomeRoundedIcon, path: '/home' },
@@ -64,9 +92,9 @@ function formatEventDate(value) {
   if (!date) return 'To be scheduled';
 
   return new Intl.DateTimeFormat('en', {
-    weekday: 'long',
     month: 'long',
     day: 'numeric',
+    year: 'numeric',
   }).format(date);
 }
 
@@ -84,7 +112,7 @@ function formatEventTime(startValue, endValue) {
 }
 
 function getEventTone(index) {
-  return ['pink', 'purple', 'deep', 'rose', 'violet', 'lavender'][index % 6];
+  return ['pink', 'purple', 'orange', 'violet', 'rose', 'lavender'][index % 6];
 }
 
 function getEventIcon(category = '') {
@@ -97,30 +125,22 @@ function getEventIcon(category = '') {
 }
 
 function EventCard({ event, isRegistered, onToggleRegistration }) {
-  const Icon = eventIconMap[event.icon] || AutoAwesomeIcon;
   const isFull = event.capacity > 0 && event.participants >= event.capacity && !isRegistered;
   const actionDisabled = event.isRegistering || isFull;
 
   return (
-    <article className={`events-card events-card--${event.tone}`}>
-      <div className="events-card__visual">
-        <span className={`events-card__badge${isRegistered ? ' is-registered' : ''}`}>
-          {isRegistered ? (
-            <>
-              <TaskAltIcon fontSize="small" />
-              Registered
-            </>
-          ) : (
-            isFull ? 'Full' : 'Open'
-          )}
-        </span>
-        <div className="events-card__illustration" aria-hidden="true">
-          <Icon />
-        </div>
+    <article className={`events-card events-card--${event.tone}`} style={{ '--event-card-image': `url("${event.imageUrl}")` }}>
+      <div className="events-card__visual" aria-hidden="true">
+        <span className="events-card__category">{event.category}</span>
+        {isRegistered && (
+          <span className="events-card__registered">
+            <TaskAltIcon fontSize="small" />
+            Registered
+          </span>
+        )}
       </div>
 
       <div className="events-card__body">
-        <span className="events-card__category">{event.category}</span>
         <h2>{event.title}</h2>
         <p>{event.description}</p>
 
@@ -136,16 +156,11 @@ function EventCard({ event, isRegistered, onToggleRegistration }) {
             <dd>{event.time}</dd>
           </div>
           <div>
-            <PersonIcon fontSize="small" />
-            <dt>Instructor</dt>
-            <dd>{event.instructor}</dd>
-          </div>
-          <div>
             <PeopleAltOutlinedIcon fontSize="small" />
             <dt>Participants</dt>
-            <dd>{event.capacity > 0 ? `${event.participants} / ${event.capacity}` : event.participants}</dd>
+            <dd>{event.capacity > 0 ? `${event.participants} / ${event.capacity} spots left` : `${event.participants} registered`}</dd>
           </div>
-          <div className="events-card__detail-wide">
+          <div>
             <LocationOnOutlinedIcon fontSize="small" />
             <dt>Location</dt>
             <dd>{event.location}</dd>
@@ -164,10 +179,133 @@ function EventCard({ event, isRegistered, onToggleRegistration }) {
               ? 'Cancel Registration'
               : isFull
                 ? 'Fully Booked'
-                : 'Register'}
+                : 'Register Now'}
         </button>
       </div>
     </article>
+  );
+}
+
+function HeroIllustration() {
+  return (
+    <div className="events-hero-art" aria-hidden="true">
+      <span className="events-hero-art__leaf events-hero-art__leaf--one" />
+      <span className="events-hero-art__leaf events-hero-art__leaf--two" />
+      <span className="events-hero-art__leaf events-hero-art__leaf--three" />
+      <span className="events-hero-art__body" />
+      <span className="events-hero-art__head" />
+      <span className="events-hero-art__hair" />
+      <span className="events-hero-art__legs" />
+    </div>
+  );
+}
+
+function SuggestWorkshopModal({
+  form,
+  errors,
+  successMessage,
+  submitError,
+  isSubmitting,
+  onChange,
+  onSubmit,
+  onClose,
+}) {
+  return (
+    <div className="suggest-modal" role="presentation">
+      <div className="suggest-modal__overlay" onClick={onClose} />
+      <section className="suggest-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="suggest-modal-title">
+        <button className="suggest-modal__close" type="button" onClick={onClose} aria-label="Close suggestion form">
+          <CloseIcon />
+        </button>
+
+        <div className="suggest-modal__header">
+          <span className="suggest-modal__mark">
+            <FavoriteBorderOutlinedIcon />
+          </span>
+          <h2 id="suggest-modal-title">What would you like to see next?</h2>
+          <p>Suggest a workshop, session, or support circle you would love to see in our community.</p>
+        </div>
+
+        {successMessage && <div className="suggest-modal__success">{successMessage}</div>}
+        {submitError && <div className="suggest-modal__error">{submitError}</div>}
+
+        <form className="suggest-form" onSubmit={onSubmit}>
+          <label className="suggest-form__field">
+            <span>Workshop title *</span>
+            <div className="suggest-form__control">
+              <EditOutlinedIcon />
+              <input
+                value={form.title}
+                onChange={(event) => onChange('title', event.target.value)}
+                placeholder="Example: Anxiety support circle"
+              />
+            </div>
+            {errors.title && <small>{errors.title}</small>}
+          </label>
+
+          <label className="suggest-form__field">
+            <span>Category *</span>
+            <div className="suggest-form__control">
+              <GroupsRoundedIcon />
+              <select value={form.category} onChange={(event) => onChange('category', event.target.value)}>
+                <option value="">Select a category</option>
+                {suggestionCategories.map((category) => (
+                  <option value={category} key={category}>{category}</option>
+                ))}
+              </select>
+            </div>
+            {errors.category && <small>{errors.category}</small>}
+          </label>
+
+          <label className="suggest-form__field">
+            <span>Short description *</span>
+            <div className="suggest-form__control suggest-form__control--textarea">
+              <MenuBookIcon />
+              <textarea
+                value={form.description}
+                onChange={(event) => onChange('description', event.target.value)}
+                placeholder="Describe the workshop or session idea..."
+                rows={3}
+              />
+            </div>
+            {errors.description && <small>{errors.description}</small>}
+          </label>
+
+          <label className="suggest-form__field">
+            <span>Why would this help you?</span>
+            <div className="suggest-form__control suggest-form__control--textarea">
+              <FavoriteBorderIcon />
+              <textarea
+                value={form.reason}
+                onChange={(event) => onChange('reason', event.target.value)}
+                placeholder="Tell us why this topic would be meaningful or helpful..."
+                rows={3}
+              />
+            </div>
+          </label>
+
+          <label className="suggest-form__anonymous">
+            <input
+              type="checkbox"
+              checked={form.anonymous}
+              onChange={(event) => onChange('anonymous', event.target.checked)}
+            />
+            <span>
+              Submit anonymously
+              <small>Your name will not be visible.</small>
+            </span>
+          </label>
+
+          <div className="suggest-form__actions">
+            <button className="suggest-form__cancel" type="button" onClick={onClose}>Cancel</button>
+            <button className="suggest-form__submit" type="submit" disabled={isSubmitting}>
+              <SendOutlinedIcon fontSize="small" />
+              {isSubmitting ? 'Submitting...' : 'Submit Suggestion'}
+            </button>
+          </div>
+        </form>
+      </section>
+    </div>
   );
 }
 
@@ -181,6 +319,13 @@ export default function EventsPage() {
   const [loadingEvents, setLoadingEvents] = useState(true);
   const [eventsError, setEventsError] = useState('');
   const [registeringId, setRegisteringId] = useState(null);
+  const [suggestions, setSuggestions] = useState([]);
+  const [suggestionForm, setSuggestionForm] = useState(emptySuggestionForm);
+  const [suggestionErrors, setSuggestionErrors] = useState({});
+  const [suggestionSuccess, setSuggestionSuccess] = useState('');
+  const [suggestionSubmitError, setSuggestionSubmitError] = useState('');
+  const [isSubmittingSuggestion, setIsSubmittingSuggestion] = useState(false);
+  const [isSuggestionModalOpen, setIsSuggestionModalOpen] = useState(false);
 
   const displayName = useMemo(() => {
     if (currentUser?.displayName) return currentUser.displayName.split(' ')[0];
@@ -236,8 +381,18 @@ export default function EventsPage() {
 
   const displayEvents = useMemo(
     () =>
-      events.map((event, index) => {
+      [...events].sort((left, right) => {
+        const leftDate = toDate(left.startTime);
+        const rightDate = toDate(right.startTime);
+
+        if (!leftDate && !rightDate) return 0;
+        if (!leftDate) return 1;
+        if (!rightDate) return -1;
+
+        return leftDate.getTime() - rightDate.getTime();
+      }).map((event, index) => {
         const registeredCount = counts[event.id] ?? 0;
+        const imageUrl = event.imageUrl || event.thumbnailUrl || event.coverImageUrl || appointmentsHero;
 
         return {
           id: event.id,
@@ -252,6 +407,7 @@ export default function EventsPage() {
           location: event.location || 'She-Na Center',
           tone: event.tone || getEventTone(index),
           icon: event.icon || getEventIcon(event.category),
+          imageUrl,
           isRegistering: registeringId === event.id,
         };
       }),
@@ -296,6 +452,64 @@ export default function EventsPage() {
       setEventsError('Could not update your registration. Please try again.');
     } finally {
       setRegisteringId(null);
+    }
+  }
+
+  function openSuggestionModal() {
+    setSuggestionErrors({});
+    setSuggestionSuccess('');
+    setSuggestionSubmitError('');
+    setIsSuggestionModalOpen(true);
+  }
+
+  function closeSuggestionModal() {
+    setIsSuggestionModalOpen(false);
+    setSuggestionErrors({});
+    setSuggestionSubmitError('');
+    setIsSubmittingSuggestion(false);
+  }
+
+  function updateSuggestionField(fieldName, value) {
+    setSuggestionForm((current) => ({ ...current, [fieldName]: value }));
+    setSuggestionErrors((current) => ({ ...current, [fieldName]: '' }));
+    setSuggestionSubmitError('');
+  }
+
+  function validateSuggestionForm() {
+    const nextErrors = {};
+
+    if (!suggestionForm.title.trim()) nextErrors.title = 'Please enter a workshop title.';
+    if (!suggestionForm.category) nextErrors.category = 'Please choose a category.';
+    if (!suggestionForm.description.trim()) nextErrors.description = 'Please add a short description.';
+
+    setSuggestionErrors(nextErrors);
+
+    return Object.keys(nextErrors).length === 0;
+  }
+
+  async function handleSubmitSuggestion(event) {
+    event.preventDefault();
+
+    if (!validateSuggestionForm()) return;
+
+    setIsSubmittingSuggestion(true);
+    setSuggestionSubmitError('');
+
+    try {
+      const suggestion = await createWorkshopSuggestion(suggestionForm, currentUser);
+      setSuggestions((current) => [suggestion, ...current]);
+      setSuggestionSuccess('Thank you. Your suggestion was submitted successfully 💜');
+      setSuggestionForm(emptySuggestionForm);
+
+      window.setTimeout(() => {
+        setIsSuggestionModalOpen(false);
+        setSuggestionSuccess('');
+      }, 1200);
+    } catch (error) {
+      console.error('Failed to submit workshop suggestion:', error);
+      setSuggestionSubmitError('Could not submit your suggestion. Please check Firestore rules and try again.');
+    } finally {
+      setIsSubmittingSuggestion(false);
     }
   }
 
@@ -347,7 +561,7 @@ export default function EventsPage() {
         <header className="events-topbar">
           <div>
             <p>Participant space</p>
-            <strong>{new Intl.DateTimeFormat('en', { weekday: 'long', month: 'long', day: 'numeric' }).format(new Date())}</strong>
+            <strong>{new Intl.DateTimeFormat('en', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }).format(new Date())}</strong>
           </div>
           <div className="events-profile">
             <span>{currentUser?.email || 'Participant'}</span>
@@ -357,33 +571,22 @@ export default function EventsPage() {
 
         <section className="events-hero">
           <div className="events-hero__content">
-            <span className="events-kicker">She-Na wellness programs</span>
-            <h1>Events & Workshops</h1>
+            <h1>Workshops & Sessions</h1>
             <p>Discover calming, empowering sessions designed to support movement, reflection, creativity, and connection.</p>
-          </div>
-          <div className="events-hero__summary" aria-label="Events summary">
-            <div>
-              <strong>{events.length}</strong>
-              <span>Workshops</span>
+            <div className="events-hero__summary" aria-label="Workshop summary">
+              <div>
+                <EventAvailableIcon />
+                <strong>{events.length}</strong>
+                <span>Upcoming Workshops</span>
+              </div>
+              <div>
+                <TaskAltIcon />
+                <strong>{Object.keys(registeredMap).length}</strong>
+                <span>Registered</span>
+              </div>
             </div>
-            <div>
-              <strong>{Object.keys(registeredMap).length}</strong>
-              <span>Registered</span>
-            </div>
           </div>
-        </section>
-
-        <section className="events-filter" aria-label="Filter events by category">
-          {categories.map((category) => (
-            <button
-              className={activeCategory === category ? 'is-active' : ''}
-              type="button"
-              onClick={() => setActiveCategory(category)}
-              key={category}
-            >
-              {category}
-            </button>
-          ))}
+          <HeroIllustration />
         </section>
 
         {(loadingEvents || eventsError) && (
@@ -392,15 +595,49 @@ export default function EventsPage() {
           </div>
         )}
 
-        <section className="events-grid" aria-label="Events and workshops">
-          {filteredEvents.map((event) => (
-            <EventCard
-              event={event}
-              isRegistered={Boolean(registeredMap[event.id])}
-              onToggleRegistration={handleToggleRegistration}
-              key={event.id}
-            />
-          ))}
+        <section className="events-suggestion">
+          <div className="events-suggestion__icon" aria-hidden="true">
+            <CalendarMonthIcon />
+            <TaskAltIcon />
+          </div>
+          <div>
+            <h2>Can't find what you're looking for?</h2>
+            <p>Let us know what topics or sessions you'd like to see next.</p>
+          </div>
+          <button type="button" onClick={openSuggestionModal}>
+            Suggest a Workshop
+            <ArrowForwardIcon fontSize="small" />
+          </button>
+        </section>
+
+        <section className="events-workshops-panel">
+          <section className="events-filter" aria-label="Filter events by category">
+            {categories.map((category) => (
+              <button
+                className={activeCategory === category ? 'is-active' : ''}
+                type="button"
+                onClick={() => setActiveCategory(category)}
+                key={category}
+              >
+                {category}
+              </button>
+            ))}
+          </section>
+
+          <div className="events-list-heading">
+            <h2>Upcoming Workshops</h2>
+          </div>
+
+          <section className="events-grid" aria-label="Events and workshops">
+            {filteredEvents.map((event) => (
+              <EventCard
+                event={event}
+                isRegistered={Boolean(registeredMap[event.id])}
+                onToggleRegistration={handleToggleRegistration}
+                key={event.id}
+              />
+            ))}
+          </section>
         </section>
 
         {!loadingEvents && filteredEvents.length === 0 && (
@@ -412,6 +649,19 @@ export default function EventsPage() {
               Open Admin Events
             </button>
           </section>
+        )}
+
+        {isSuggestionModalOpen && (
+          <SuggestWorkshopModal
+            form={suggestionForm}
+            errors={suggestionErrors}
+            successMessage={suggestionSuccess}
+            submitError={suggestionSubmitError}
+            isSubmitting={isSubmittingSuggestion}
+            onChange={updateSuggestionField}
+            onSubmit={handleSubmitSuggestion}
+            onClose={closeSuggestionModal}
+          />
         )}
       </section>
     </main>

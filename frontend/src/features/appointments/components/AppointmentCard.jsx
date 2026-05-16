@@ -138,7 +138,7 @@ function AppointmentCard({ appointment, onCancel }) {
                 letterSpacing: "-0.02em",
                 color: WELLNESS.text,
                 lineHeight: 1.3,
-                fontFamily: '"Poppins", "Inter", sans-serif',
+                fontFamily: '"Plus Jakarta Sans", sans-serif',
               }}
             >
               {typeOpt.label}{" "}
@@ -161,7 +161,7 @@ function AppointmentCard({ appointment, onCancel }) {
                 fontWeight: 600,
                 color: WELLNESS.muted,
                 lineHeight: 1.4,
-                fontFamily: '"Poppins", "Inter", sans-serif',
+                fontFamily: '"Plus Jakarta Sans", sans-serif',
               }}
             >
               {provider}
@@ -174,7 +174,7 @@ function AppointmentCard({ appointment, onCancel }) {
                 fontWeight: 500,
                 color: "#5b5670",
                 lineHeight: 1.45,
-                fontFamily: '"Poppins", "Inter", sans-serif',
+                fontFamily: '"Plus Jakarta Sans", sans-serif',
                 fontVariantNumeric: "tabular-nums",
               }}
             >
@@ -196,7 +196,7 @@ function AppointmentCard({ appointment, onCancel }) {
                   bgcolor: WELLNESS.lightPink,
                   color: "#7c4fa8",
                   border: "1px solid rgba(181, 123, 232, 0.18)",
-                  fontFamily: '"Poppins", "Inter", sans-serif',
+                  fontFamily: '"Plus Jakarta Sans", sans-serif',
                 }}
               >
                 {durationLabel}
@@ -224,7 +224,7 @@ function AppointmentCard({ appointment, onCancel }) {
               fontSize: 12,
               fontWeight: 600,
               letterSpacing: "0.02em",
-              fontFamily: '"Poppins", "Inter", sans-serif',
+              fontFamily: '"Plus Jakarta Sans", sans-serif',
               ...st.sx,
             }}
           >
@@ -247,7 +247,7 @@ function AppointmentCard({ appointment, onCancel }) {
                 fontWeight: 600,
                 fontSize: 12.5,
                 lineHeight: 1.2,
-                fontFamily: '"Poppins", "Inter", sans-serif',
+                fontFamily: '"Plus Jakarta Sans", sans-serif',
                 borderColor: "rgba(248, 113, 113, 0.5)",
                 color: "#dc2626",
                 transition: "transform 0.18s ease, border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease",
@@ -269,3 +269,4 @@ function AppointmentCard({ appointment, onCancel }) {
 }
 
 export default AppointmentCard;
+

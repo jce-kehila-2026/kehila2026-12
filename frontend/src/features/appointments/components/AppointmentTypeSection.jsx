@@ -18,13 +18,13 @@ function AppointmentTypeSection({ value, onChange }) {
         border: "1px solid rgba(181, 123, 232, 0.14)",
         backgroundColor: WELLNESS.card,
         boxShadow: WELLNESS.shadowCard,
-        fontFamily: '"Poppins", "Inter", sans-serif',
+        fontFamily: '"Plus Jakarta Sans", sans-serif',
       }}
     >
       <CardContent sx={{ p: { xs: 2.75, sm: 3.25 }, "&:last-child": { pb: { xs: 2.75, sm: 3.25 } } }}>
         <Typography
           sx={{
-            fontFamily: '"Poppins", "Inter", sans-serif',
+            fontFamily: '"Plus Jakarta Sans", sans-serif',
             fontWeight: 800,
             fontSize: { xs: "1.25rem", sm: "1.45rem" },
             letterSpacing: "-0.02em",
@@ -178,3 +178,4 @@ function AppointmentTypeSection({ value, onChange }) {
 }
 
 export default AppointmentTypeSection;
+

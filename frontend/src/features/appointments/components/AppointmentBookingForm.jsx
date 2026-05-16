@@ -138,7 +138,7 @@ function AppointmentBookingForm({
       "& .MuiOutlinedInput-input": {
         py: 1.15,
         fontSize: 15,
-        fontFamily: '"Poppins", "Inter", sans-serif',
+        fontFamily: '"Plus Jakarta Sans", sans-serif',
         color: WELLNESS.text,
       },
     }),
@@ -160,7 +160,7 @@ function AppointmentBookingForm({
       },
       "& input": {
         fontSize: 15,
-        fontFamily: '"Poppins", "Inter", sans-serif',
+        fontFamily: '"Plus Jakarta Sans", sans-serif',
         color: WELLNESS.text,
       },
     }),
@@ -188,7 +188,7 @@ function AppointmentBookingForm({
         direction: "ltr",
         textAlign: "left",
         justifyContent: "flex-start",
-        fontFamily: '"Poppins", "Inter", sans-serif',
+        fontFamily: '"Plus Jakarta Sans", sans-serif',
         paddingInlineStart: "16px !important",
         paddingInlineEnd: "16px !important",
       },
@@ -266,7 +266,7 @@ function AppointmentBookingForm({
 
   const placeholderTypographySx = {
     color: "#9ca3af",
-    fontFamily: '"Poppins", "Inter", sans-serif',
+    fontFamily: '"Plus Jakarta Sans", sans-serif',
     textAlign: "left",
     width: "100%",
     direction: "ltr",
@@ -293,7 +293,7 @@ function AppointmentBookingForm({
   );
 
   const labelSx = {
-    fontFamily: '"Poppins", "Inter", sans-serif',
+    fontFamily: '"Plus Jakarta Sans", sans-serif',
     fontSize: 13,
     fontWeight: 700,
     letterSpacing: "0.02em",
@@ -389,7 +389,7 @@ function AppointmentBookingForm({
         border: "1px solid rgba(181, 123, 232, 0.14)",
         backgroundColor: WELLNESS.card,
         boxShadow: WELLNESS.shadowCard,
-        fontFamily: '"Poppins", "Inter", sans-serif',
+        fontFamily: '"Plus Jakarta Sans", sans-serif',
         overflow: "visible",
       }}
     >
@@ -402,7 +402,7 @@ function AppointmentBookingForm({
       >
         <Typography
           sx={{
-            fontFamily: '"Poppins", "Inter", sans-serif',
+            fontFamily: '"Plus Jakarta Sans", sans-serif',
             fontWeight: 800,
             fontSize: { xs: "1.25rem", sm: "1.45rem" },
             letterSpacing: "-0.02em",
@@ -472,7 +472,7 @@ function AppointmentBookingForm({
                       <Typography
                         component="span"
                         sx={{
-                          fontFamily: '"Poppins", "Inter", sans-serif',
+                          fontFamily: '"Plus Jakarta Sans", sans-serif',
                           color: WELLNESS.text,
                           textAlign: "left",
                           width: "100%",
@@ -546,7 +546,7 @@ function AppointmentBookingForm({
                       <Typography
                         component="span"
                         sx={{
-                          fontFamily: '"Poppins", "Inter", sans-serif',
+                          fontFamily: '"Plus Jakarta Sans", sans-serif',
                           fontVariantNumeric: "tabular-nums",
                           textAlign: "left",
                           width: "100%",
@@ -599,7 +599,7 @@ function AppointmentBookingForm({
                 slotProps={{
                   input: {
                     sx: {
-                      fontFamily: '"Poppins", "Inter", sans-serif',
+                      fontFamily: '"Plus Jakarta Sans", sans-serif',
                       "& textarea::placeholder": {
                         color: "#9ca3af",
                         opacity: 1,
@@ -634,7 +634,7 @@ function AppointmentBookingForm({
                   borderRadius: "18px",
                   fontWeight: 800,
                   fontSize: 15,
-                  fontFamily: '"Poppins", "Inter", sans-serif',
+                  fontFamily: '"Plus Jakarta Sans", sans-serif',
                   whiteSpace: "nowrap",
                   background: `linear-gradient(135deg, ${WELLNESS.primary} 0%, #e879c8 100%)`,
                   boxShadow: "0 8px 22px rgba(181, 123, 232, 0.28)",
@@ -675,3 +675,4 @@ function AppointmentBookingForm({
 }
 
 export default AppointmentBookingForm;
+

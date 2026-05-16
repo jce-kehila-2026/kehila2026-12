@@ -27,7 +27,7 @@ import AppointmentPage from '../appointments/pages/AppointmentPage';
 import ProfilePage from '../profile/pages/ProfilePage';
 import WorkshopFeed from './WorkshopFeed';
 import { useAdmin } from '../admin/context/AdminContext';
-import { communityHighlights, moodOptions, recommendations } from './dashboardMockData';
+import { communityHighlights, moodOptions, recommendations, resourceGuides } from './dashboardMockData';
 import './ParticipantHome.css';
 
 const overviewIconMap = {
@@ -93,7 +93,7 @@ function formatScheduleDate(date) {
 
 function getCalendarTone(type, index = 0) {
   if (type === 'appointment') return 'rose';
-  if (type === 'note') return 'lavender';
+  if (type === 'note') return 'amber';
   return ['violet', 'pink', 'amber'][index % 3];
 }
 
@@ -110,7 +110,7 @@ function WellnessIllustration() {
   );
 }
 
-function HeroSection({ displayName, onExplore }) {
+function HeroSection({ displayName, onExplore, onDailyMotivation }) {
   return (
     <section className="dashboard-hero">
       <div className="dashboard-hero__copy">
@@ -122,7 +122,7 @@ function HeroSection({ displayName, onExplore }) {
             Explore Workshops
             <ChevronRightOutlinedIcon fontSize="small" />
           </button>
-          <button type="button" className="dashboard-hero__play">
+          <button type="button" className="dashboard-hero__play" onClick={onDailyMotivation}>
             <PlayArrowRoundedIcon />
             Daily Motivation
           </button>
@@ -133,7 +133,7 @@ function HeroSection({ displayName, onExplore }) {
   );
 }
 
-function OverviewGrid({ cards }) {
+function OverviewGrid({ cards, onCardAction }) {
   return (
     <section className="dashboard-overview" aria-label="Participant overview">
       {cards.map((card) => {
@@ -146,7 +146,7 @@ function OverviewGrid({ cards }) {
             <div>
               <strong>{card.value}</strong>
               <p>{card.label}</p>
-              <button type="button">
+              <button type="button" onClick={() => onCardAction?.(card)}>
                 {card.action}
                 <ChevronRightOutlinedIcon fontSize="small" />
               </button>
@@ -167,7 +167,7 @@ function UpcomingSchedule({ items, onViewCalendar }) {
           {items.map((item) => (
             <article className="schedule-item" key={`${item.id}-${item.startTime}`}>
               <span className={`schedule-item__icon schedule-item__icon--${item.tone}`}>
-                <SpaIcon />
+                {item.type === 'note' ? <EditNoteOutlinedIcon /> : <SpaIcon />}
               </span>
               <div>
                 <h3>{item.title}</h3>
@@ -188,25 +188,39 @@ function UpcomingSchedule({ items, onViewCalendar }) {
 }
 
 function WeeklyCalendarPreview({ days, activities, weekLabel }) {
+  const defaultSelectedDate = days.find((day) => day.selected)?.dateKey || days[0]?.dateKey || '';
+  const [selectedDateKey, setSelectedDateKey] = useState(defaultSelectedDate);
+
+  useEffect(() => {
+    if (!days.some((day) => day.dateKey === selectedDateKey)) {
+      setSelectedDateKey(defaultSelectedDate);
+    }
+  }, [days, defaultSelectedDate, selectedDateKey]);
+
+  const selectedActivities = activities.filter((item) => item.dateKey === selectedDateKey);
+
   return (
     <DashboardCard className="dashboard-card--week">
       <SectionHeading eyebrow={weekLabel} title="This Week" />
       <div className="week-strip">
         {days.map((day) => (
           <button
-            className={`${day.selected ? 'is-selected' : ''}${day.highlighted ? ' is-highlighted' : ''}`}
+            className={`${day.dateKey === selectedDateKey ? 'is-selected' : ''}${day.highlighted ? ' is-highlighted' : ''}`}
             type="button"
+            onClick={() => setSelectedDateKey(day.dateKey)}
             key={`${day.day}-${day.date}`}
+            aria-pressed={day.dateKey === selectedDateKey}
           >
             <span>{day.day}</span>
             <strong>{day.date}</strong>
+            {day.hasNote && <small className="week-strip__note-dot" aria-label="Personal note on this day" />}
           </button>
         ))}
       </div>
-      {activities.length > 0 ? (
+      {selectedActivities.length > 0 ? (
         <div className="week-agenda">
-          {activities.map((item) => (
-            <article className={`week-agenda__item week-agenda__item--${item.tone}`} key={`${item.id}-${item.time}`}>
+          {selectedActivities.map((item) => (
+            <article className={`week-agenda__item week-agenda__item--${item.tone}`} key={`${item.id}-${item.dateKey}-${item.time}`}>
               <time>{item.time}</time>
               <div>
                 <strong>{item.title}</strong>
@@ -216,7 +230,7 @@ function WeeklyCalendarPreview({ days, activities, weekLabel }) {
           ))}
         </div>
       ) : (
-        <p className="dashboard-empty-state">No registered activities this week.</p>
+        <p className="dashboard-empty-state">No registered activities or personal notes for this day.</p>
       )}
     </DashboardCard>
   );
@@ -278,10 +292,10 @@ function CommunityHighlights() {
   );
 }
 
-function Recommendations() {
+function Recommendations({ onOpenResources }) {
   return (
     <DashboardCard className="dashboard-card--recommendations">
-      <SectionHeading eyebrow="Based on your journey" title="Recommended For You" />
+      <SectionHeading eyebrow="Based on your journey" title="Recommended For You" action="Open resources" onAction={onOpenResources} />
       <div className="recommendation-row">
         {recommendations.map((item) => (
           <article className={`recommendation-card recommendation-card--${item.tone}`} key={item.title}>
@@ -289,7 +303,7 @@ function Recommendations() {
               <SelfImprovementOutlinedIcon />
             </div>
             <strong>{item.title}</strong>
-            <span>{item.category}</span>
+            <span>{item.category} - {item.duration}</span>
           </article>
         ))}
       </div>
@@ -297,18 +311,70 @@ function Recommendations() {
   );
 }
 
-function HomeDashboard({ displayName, navigate, overviewCards, scheduleItems, weekDays, weekActivities, weekLabel, loading }) {
+function MotivationPanel({ item, onClose, onOpenResources }) {
+  if (!item) return null;
+
+  return (
+    <DashboardCard className="dashboard-card--motivation">
+      <SectionHeading eyebrow="Daily motivation" title={item.title} action="Open resources" onAction={onOpenResources} />
+      <p>{item.description}</p>
+      <div className="motivation-actions">
+        <span>{item.category} - {item.duration}</span>
+        <button type="button" onClick={onClose}>Done for now</button>
+      </div>
+    </DashboardCard>
+  );
+}
+
+function ResourceLibrary() {
+  return (
+    <section className="participant-content participant-content--single">
+      <div className="participant-panel participant-panel--wide">
+        <div className="participant-section-heading">
+          <span>Care tools</span>
+          <h2>Resources</h2>
+        </div>
+        <div className="resources-grid">
+          {[...resourceGuides, ...recommendations].map((resource) => (
+            <article className={`resource-card resource-card--${resource.tone || 'violet'}`} key={resource.title}>
+              <span>{resource.category}</span>
+              <h3>{resource.title}</h3>
+              <p>{resource.description}</p>
+              <small>{resource.duration}</small>
+            </article>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function HomeDashboard({ displayName, navigate, setActiveView, overviewCards, scheduleItems, weekDays, weekActivities, weekLabel, loading }) {
+  const [motivation, setMotivation] = useState(null);
+  const openResources = () => setActiveView('resources');
+  const openDailyMotivation = () => {
+    const todayIndex = new Date().getDate() % recommendations.length;
+    setMotivation(recommendations[todayIndex]);
+  };
+  const handleOverviewAction = (card) => {
+    if (card.target === 'events') navigate('/events');
+    if (card.target === 'appointments') setActiveView('appointments');
+    if (card.target === 'calendar') setActiveView('calendar');
+    if (card.target === 'resources') setActiveView('resources');
+  };
+
   return (
     <div className="dashboard-home-grid">
       <div className="dashboard-primary">
-        <HeroSection displayName={displayName} onExplore={() => navigate('/events')} />
-        <OverviewGrid cards={overviewCards} />
+        <HeroSection displayName={displayName} onExplore={() => navigate('/events')} onDailyMotivation={openDailyMotivation} />
+        <OverviewGrid cards={overviewCards} onCardAction={handleOverviewAction} />
+        <MotivationPanel item={motivation} onClose={() => setMotivation(null)} onOpenResources={openResources} />
         {loading && <p className="dashboard-loading-state">Refreshing your live schedule...</p>}
         <div className="dashboard-two-column">
-          <UpcomingSchedule items={scheduleItems} onViewCalendar={() => navigate('/calendar')} />
+          <UpcomingSchedule items={scheduleItems} onViewCalendar={() => setActiveView('calendar')} />
           <WeeklyCalendarPreview days={weekDays} activities={weekActivities} weekLabel={weekLabel} />
         </div>
-        <Recommendations />
+        <Recommendations onOpenResources={openResources} />
       </div>
       <aside className="dashboard-rail">
         <MoodCheckIn />
@@ -359,18 +425,27 @@ export default function ParticipantHome({ initialView = 'home' }) {
       ...dashboardData.events.map((item, index) => ({ ...item, tone: getCalendarTone(item.type, index) })),
       ...dashboardData.appointments.map((item, index) => ({ ...item, tone: getCalendarTone(item.type, index) })),
     ];
-    const upcomingItems = calendarItems
+    const weeklyCalendarItems = [
+      ...calendarItems,
+      ...dashboardData.notes.map((item, index) => ({ ...item, tone: getCalendarTone(item.type, index) })),
+    ];
+    const upcomingItems = weeklyCalendarItems
       .map((item) => ({ ...item, parsedDate: parseCalendarDate(item) }))
       .filter((item) => item.parsedDate && item.parsedDate >= today)
       .sort((a, b) => a.parsedDate - b.parsedDate);
+    const weeklyItems = weeklyCalendarItems
+      .map((item) => ({ ...item, parsedDate: parseCalendarDate(item) }))
+      .filter((item) => item.parsedDate)
+      .sort((a, b) => a.parsedDate - b.parsedDate);
     const scheduleItems = upcomingItems.slice(0, 3).map((item) => ({
       id: item.id,
+      type: item.type,
       title: item.title,
-      category: item.type === 'appointment' ? 'Appointment' : 'Workshop',
+      category: item.type === 'appointment' ? 'Appointment' : item.type === 'note' ? 'Personal Note' : 'Workshop',
       date: formatScheduleDate(item.parsedDate),
       time: `${item.startTime} - ${item.endTime}`,
       startTime: item.startTime,
-      description: item.description || item.content || 'More details will be added soon.',
+      description: item.type === 'note' ? item.content || 'Personal reminder' : item.description || item.content || 'More details will be added soon.',
       location: item.location || 'She-Na Center',
       tone: item.tone,
     }));
@@ -384,26 +459,30 @@ export default function ParticipantHome({ initialView = 'home' }) {
       return {
         day: new Intl.DateTimeFormat('en', { weekday: 'short' }).format(date),
         date: String(date.getDate()),
+        dateKey: key,
         selected: key === toDateKey(today),
-        highlighted: upcomingItems.some((item) => item.date === key),
+        highlighted: weeklyItems.some((item) => item.date === key),
+        hasNote: weeklyItems.some((item) => item.type === 'note' && item.date === key),
       };
     });
-    const weekActivities = upcomingItems
+    const weekActivities = weeklyItems
       .filter((item) => item.parsedDate >= weekStart && item.parsedDate <= weekEnd)
-      .slice(0, 3)
       .map((item) => ({
         id: item.id,
+        dateKey: item.date,
         time: item.startTime,
         title: item.title,
-        location: item.location || 'She-Na Center',
+        location: item.type === 'note' ? item.content || 'Personal reminder' : item.location || 'She-Na Center',
         tone: item.tone,
       }));
     const weekLabel = `${new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric' }).format(weekStart)} - ${new Intl.DateTimeFormat('en', { month: 'short', day: 'numeric' }).format(weekEnd)}`;
+    const upcomingWorkshopCount = upcomingItems.filter((item) => item.type !== 'appointment').length;
+    const upcomingAppointmentCount = upcomingItems.filter((item) => item.type === 'appointment').length;
     const overviewCards = [
-      { label: 'Upcoming Workshops', value: String(dashboardData.events.length), tone: 'amber', action: 'View all' },
-      { label: 'Registered Activities', value: String(dashboardData.events.length), tone: 'violet', action: 'View all' },
-      { label: 'Upcoming Appointments', value: String(dashboardData.appointments.length), tone: 'rose', action: 'View all' },
-      { label: 'Personal Notes', value: String(dashboardData.notes.length), tone: 'lavender', action: 'View all' },
+      { label: 'Upcoming Workshops', value: String(upcomingWorkshopCount), tone: 'amber', action: 'View all', target: 'events' },
+      { label: 'Registered Activities', value: String(dashboardData.events.length), tone: 'violet', action: 'View all', target: 'events' },
+      { label: 'Upcoming Appointments', value: String(upcomingAppointmentCount), tone: 'rose', action: 'View all', target: 'appointments' },
+      { label: 'Personal Notes', value: String(dashboardData.notes.length), tone: 'lavender', action: 'View all', target: 'calendar' },
     ];
     return { overviewCards, scheduleItems, weekActivities, weekDays, weekLabel };
   }, [dashboardData]);
@@ -486,7 +565,7 @@ export default function ParticipantHome({ initialView = 'home' }) {
           </header>
 
           {activeView === 'home' && (
-            <HomeDashboard displayName={displayName} navigate={navigate} loading={loadingDashboard} {...dashboardSummary} />
+            <HomeDashboard displayName={displayName} navigate={navigate} setActiveView={setActiveView} loading={loadingDashboard} {...dashboardSummary} />
           )}
 
           {activeView === 'calendar' && (
@@ -520,6 +599,8 @@ export default function ParticipantHome({ initialView = 'home' }) {
             </section>
           )}
 
+          {activeView === 'resources' && <ResourceLibrary />}
+
           {activeView === 'profile' && (
             <section className="participant-content participant-content--single">
               <div className="participant-panel participant-panel--wide">
@@ -528,7 +609,7 @@ export default function ParticipantHome({ initialView = 'home' }) {
             </section>
           )}
 
-          {!['home', 'calendar', 'workshops', 'appointments', 'profile'].includes(activeView) && (
+          {!['home', 'calendar', 'workshops', 'appointments', 'resources', 'profile'].includes(activeView) && (
             <section className="participant-content participant-content--single">
               <div className="participant-panel participant-panel--wide participant-placeholder-view">
                 <MoodOutlinedIcon />

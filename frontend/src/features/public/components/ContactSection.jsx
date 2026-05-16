@@ -39,11 +39,7 @@ export default function ContactSection({ contact = {}, organization = {} }) {
           {hasContactValue(contactContent.phone) && (
             <article className="public-contact__item">
               <span>Phone</span>
-              {contactContent.phone.toLowerCase().includes('coming soon') ? (
-                <p>{contactContent.phone}</p>
-              ) : (
-                <a href={`tel:${contactContent.phone}`}>{contactContent.phone}</a>
-              )}
+              <a href={`tel:${contactContent.phone}`}>{contactContent.phone}</a>
             </article>
           )}
 

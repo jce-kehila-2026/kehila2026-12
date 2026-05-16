@@ -285,7 +285,7 @@ disabled={savingPassword}
                 py: 1.35,
                 fontWeight: 800,
                 fontSize: 16,
-                fontFamily: '"Poppins", "Inter", sans-serif',
+                fontFamily: '"Plus Jakarta Sans", sans-serif',
                 color: "#fff",
                 background: `linear-gradient(135deg, ${WELLNESS.primary} 0%, #e879c8 100%)`,
                 boxShadow: "0 8px 22px rgba(181, 123, 232, 0.28)",
@@ -315,3 +315,4 @@ disabled={savingPassword}
 }
 
 export default ChangePasswordCard;
+

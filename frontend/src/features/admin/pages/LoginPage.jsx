@@ -171,12 +171,12 @@ export default function LoginPage() {
                 bgcolor: '#fff',
                 color: '#DF327B',
                 fontSize: 24,
-                fontWeight: 900,
+                fontWeight: 800,
               }}
             >
               S
             </Box>
-            <Typography variant="h5" sx={{ fontWeight: 900 }}>
+            <Typography variant="h5" sx={{ fontWeight: 800 }}>
               She-Na
             </Typography>
           </Box>
@@ -226,7 +226,7 @@ export default function LoginPage() {
         >
           <CardContent sx={{ width: '100%', p: { xs: 3, sm: 6, lg: 7 } }}>
             <Box sx={{ mb: 4 }}>
-              <Typography variant="h3" sx={{ fontSize: { xs: '2rem', sm: '2.65rem' }, fontWeight: 900, mb: 1 }}>
+              <Typography variant="h3" sx={{ fontSize: { xs: '2rem', sm: '2.65rem' }, fontWeight: 800, mb: 1 }}>
                 {authMode === 'login' ? 'Welcome Back!' : 'Create Account'}
               </Typography>
               <Typography color="text.secondary" sx={{ fontSize: '1rem' }}>
@@ -353,7 +353,7 @@ export default function LoginPage() {
 
             <Typography align="center" color="text.secondary" sx={{ mt: 4, fontWeight: 600 }}>
               {authMode === 'login' ? "Don't have an account? " : 'Already have an account? '}
-              <Link component="button" type="button" underline="hover" disabled={submitting} onClick={toggleAuthMode} sx={{ color: '#4B136B', fontWeight: 900 }}>
+              <Link component="button" type="button" underline="hover" disabled={submitting} onClick={toggleAuthMode} sx={{ color: '#4B136B', fontWeight: 800 }}>
                 {authMode === 'login' ? 'Sign up here' : 'Sign in here'}
               </Link>
             </Typography>
@@ -363,3 +363,4 @@ export default function LoginPage() {
     </Box>
   );
 }
+
