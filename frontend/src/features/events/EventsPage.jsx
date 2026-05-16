@@ -2,9 +2,12 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutlineOutlined';
+import CloseIcon from '@mui/icons-material/Close';
 import Diversity3Icon from '@mui/icons-material/Diversity3';
+import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import EventAvailableIcon from '@mui/icons-material/EventAvailable';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
+import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined';
 import GroupsRoundedIcon from '@mui/icons-material/GroupsRounded';
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
 import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined';
@@ -16,6 +19,7 @@ import PsychologyAltOutlinedIcon from '@mui/icons-material/PsychologyAltOutlined
 import SelfImprovementIcon from '@mui/icons-material/SelfImprovement';
 import SettingsIcon from '@mui/icons-material/Settings';
 import SpaIcon from '@mui/icons-material/Spa';
+import SendOutlinedIcon from '@mui/icons-material/SendOutlined';
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
@@ -31,9 +35,31 @@ import {
   getUserRegisteredEventIds,
   removeRegistration,
 } from '../admin/services/registrationService';
+import { createWorkshopSuggestion } from './workshopSuggestionService';
 import './EventsPage.css';
 
 const ALL_CATEGORY = 'All';
+
+const suggestionCategories = [
+  'Anxiety Support',
+  'Meditation',
+  'Yoga',
+  'Art Therapy',
+  'Journaling',
+  'Self Confidence',
+  'Women Circle',
+  'Breathing Sessions',
+  'Career Support',
+  'Emotional Healing',
+];
+
+const emptySuggestionForm = {
+  title: '',
+  category: '',
+  description: '',
+  reason: '',
+  anonymous: false,
+};
 
 const participantNavItems = [
   { key: 'home', label: 'Home', icon: HomeRoundedIcon, path: '/home' },
@@ -174,6 +200,115 @@ function HeroIllustration() {
   );
 }
 
+function SuggestWorkshopModal({
+  form,
+  errors,
+  successMessage,
+  submitError,
+  isSubmitting,
+  onChange,
+  onSubmit,
+  onClose,
+}) {
+  return (
+    <div className="suggest-modal" role="presentation">
+      <div className="suggest-modal__overlay" onClick={onClose} />
+      <section className="suggest-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="suggest-modal-title">
+        <button className="suggest-modal__close" type="button" onClick={onClose} aria-label="Close suggestion form">
+          <CloseIcon />
+        </button>
+
+        <div className="suggest-modal__header">
+          <span className="suggest-modal__mark">
+            <FavoriteBorderOutlinedIcon />
+          </span>
+          <h2 id="suggest-modal-title">What would you like to see next?</h2>
+          <p>Suggest a workshop, session, or support circle you would love to see in our community.</p>
+        </div>
+
+        {successMessage && <div className="suggest-modal__success">{successMessage}</div>}
+        {submitError && <div className="suggest-modal__error">{submitError}</div>}
+
+        <form className="suggest-form" onSubmit={onSubmit}>
+          <label className="suggest-form__field">
+            <span>Workshop title *</span>
+            <div className="suggest-form__control">
+              <EditOutlinedIcon />
+              <input
+                value={form.title}
+                onChange={(event) => onChange('title', event.target.value)}
+                placeholder="Example: Anxiety support circle"
+              />
+            </div>
+            {errors.title && <small>{errors.title}</small>}
+          </label>
+
+          <label className="suggest-form__field">
+            <span>Category *</span>
+            <div className="suggest-form__control">
+              <GroupsRoundedIcon />
+              <select value={form.category} onChange={(event) => onChange('category', event.target.value)}>
+                <option value="">Select a category</option>
+                {suggestionCategories.map((category) => (
+                  <option value={category} key={category}>{category}</option>
+                ))}
+              </select>
+            </div>
+            {errors.category && <small>{errors.category}</small>}
+          </label>
+
+          <label className="suggest-form__field">
+            <span>Short description *</span>
+            <div className="suggest-form__control suggest-form__control--textarea">
+              <MenuBookIcon />
+              <textarea
+                value={form.description}
+                onChange={(event) => onChange('description', event.target.value)}
+                placeholder="Describe the workshop or session idea..."
+                rows={3}
+              />
+            </div>
+            {errors.description && <small>{errors.description}</small>}
+          </label>
+
+          <label className="suggest-form__field">
+            <span>Why would this help you?</span>
+            <div className="suggest-form__control suggest-form__control--textarea">
+              <FavoriteBorderIcon />
+              <textarea
+                value={form.reason}
+                onChange={(event) => onChange('reason', event.target.value)}
+                placeholder="Tell us why this topic would be meaningful or helpful..."
+                rows={3}
+              />
+            </div>
+          </label>
+
+          <label className="suggest-form__anonymous">
+            <input
+              type="checkbox"
+              checked={form.anonymous}
+              onChange={(event) => onChange('anonymous', event.target.checked)}
+            />
+            <span>
+              Submit anonymously
+              <small>Your name will not be visible.</small>
+            </span>
+          </label>
+
+          <div className="suggest-form__actions">
+            <button className="suggest-form__cancel" type="button" onClick={onClose}>Cancel</button>
+            <button className="suggest-form__submit" type="submit" disabled={isSubmitting}>
+              <SendOutlinedIcon fontSize="small" />
+              {isSubmitting ? 'Submitting...' : 'Submit Suggestion'}
+            </button>
+          </div>
+        </form>
+      </section>
+    </div>
+  );
+}
+
 export default function EventsPage() {
   const navigate = useNavigate();
   const { currentUser, logout } = useAdmin();
@@ -184,6 +319,13 @@ export default function EventsPage() {
   const [loadingEvents, setLoadingEvents] = useState(true);
   const [eventsError, setEventsError] = useState('');
   const [registeringId, setRegisteringId] = useState(null);
+  const [suggestions, setSuggestions] = useState([]);
+  const [suggestionForm, setSuggestionForm] = useState(emptySuggestionForm);
+  const [suggestionErrors, setSuggestionErrors] = useState({});
+  const [suggestionSuccess, setSuggestionSuccess] = useState('');
+  const [suggestionSubmitError, setSuggestionSubmitError] = useState('');
+  const [isSubmittingSuggestion, setIsSubmittingSuggestion] = useState(false);
+  const [isSuggestionModalOpen, setIsSuggestionModalOpen] = useState(false);
 
   const displayName = useMemo(() => {
     if (currentUser?.displayName) return currentUser.displayName.split(' ')[0];
@@ -313,6 +455,64 @@ export default function EventsPage() {
     }
   }
 
+  function openSuggestionModal() {
+    setSuggestionErrors({});
+    setSuggestionSuccess('');
+    setSuggestionSubmitError('');
+    setIsSuggestionModalOpen(true);
+  }
+
+  function closeSuggestionModal() {
+    setIsSuggestionModalOpen(false);
+    setSuggestionErrors({});
+    setSuggestionSubmitError('');
+    setIsSubmittingSuggestion(false);
+  }
+
+  function updateSuggestionField(fieldName, value) {
+    setSuggestionForm((current) => ({ ...current, [fieldName]: value }));
+    setSuggestionErrors((current) => ({ ...current, [fieldName]: '' }));
+    setSuggestionSubmitError('');
+  }
+
+  function validateSuggestionForm() {
+    const nextErrors = {};
+
+    if (!suggestionForm.title.trim()) nextErrors.title = 'Please enter a workshop title.';
+    if (!suggestionForm.category) nextErrors.category = 'Please choose a category.';
+    if (!suggestionForm.description.trim()) nextErrors.description = 'Please add a short description.';
+
+    setSuggestionErrors(nextErrors);
+
+    return Object.keys(nextErrors).length === 0;
+  }
+
+  async function handleSubmitSuggestion(event) {
+    event.preventDefault();
+
+    if (!validateSuggestionForm()) return;
+
+    setIsSubmittingSuggestion(true);
+    setSuggestionSubmitError('');
+
+    try {
+      const suggestion = await createWorkshopSuggestion(suggestionForm, currentUser);
+      setSuggestions((current) => [suggestion, ...current]);
+      setSuggestionSuccess('Thank you. Your suggestion was submitted successfully 💜');
+      setSuggestionForm(emptySuggestionForm);
+
+      window.setTimeout(() => {
+        setIsSuggestionModalOpen(false);
+        setSuggestionSuccess('');
+      }, 1200);
+    } catch (error) {
+      console.error('Failed to submit workshop suggestion:', error);
+      setSuggestionSubmitError('Could not submit your suggestion. Please check Firestore rules and try again.');
+    } finally {
+      setIsSubmittingSuggestion(false);
+    }
+  }
+
   return (
     <main className="events-page" dir="ltr">
       <aside className="events-sidebar" aria-label="Participant navigation">
@@ -395,6 +595,21 @@ export default function EventsPage() {
           </div>
         )}
 
+        <section className="events-suggestion">
+          <div className="events-suggestion__icon" aria-hidden="true">
+            <CalendarMonthIcon />
+            <TaskAltIcon />
+          </div>
+          <div>
+            <h2>Can't find what you're looking for?</h2>
+            <p>Let us know what topics or sessions you'd like to see next.</p>
+          </div>
+          <button type="button" onClick={openSuggestionModal}>
+            Suggest a Workshop
+            <ArrowForwardIcon fontSize="small" />
+          </button>
+        </section>
+
         <section className="events-workshops-panel">
           <section className="events-filter" aria-label="Filter events by category">
             {categories.map((category) => (
@@ -436,20 +651,18 @@ export default function EventsPage() {
           </section>
         )}
 
-        <section className="events-suggestion">
-          <div className="events-suggestion__icon" aria-hidden="true">
-            <CalendarMonthIcon />
-            <TaskAltIcon />
-          </div>
-          <div>
-            <h2>Can't find what you're looking for?</h2>
-            <p>Let us know what topics or sessions you'd like to see next.</p>
-          </div>
-          <button type="button" onClick={() => navigate('/home')}>
-            Suggest a Workshop
-            <ArrowForwardIcon fontSize="small" />
-          </button>
-        </section>
+        {isSuggestionModalOpen && (
+          <SuggestWorkshopModal
+            form={suggestionForm}
+            errors={suggestionErrors}
+            successMessage={suggestionSuccess}
+            submitError={suggestionSubmitError}
+            isSubmitting={isSubmittingSuggestion}
+            onChange={updateSuggestionField}
+            onSubmit={handleSubmitSuggestion}
+            onClose={closeSuggestionModal}
+          />
+        )}
       </section>
     </main>
   );

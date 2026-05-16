@@ -784,6 +784,247 @@
   box-shadow: 0 12px 28px rgba(75, 19, 107, 0.07);
 }
 
+.suggest-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.suggest-modal__overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(35, 20, 58, 0.42);
+  backdrop-filter: blur(8px);
+}
+
+.suggest-modal__dialog {
+  position: relative;
+  z-index: 1;
+  width: min(640px, 100%);
+  max-height: min(92vh, 860px);
+  overflow-y: auto;
+  border: 1px solid rgba(123, 63, 161, 0.12);
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(244, 91, 165, 0.08), transparent 15rem),
+    #fff;
+  box-shadow: 0 34px 90px rgba(35, 20, 95, 0.24);
+  padding: 32px;
+}
+
+.suggest-modal__close {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #4b136b;
+  cursor: pointer;
+}
+
+.suggest-modal__header {
+  display: grid;
+  justify-items: center;
+  padding: 0 36px 20px;
+  text-align: center;
+}
+
+.suggest-modal__mark {
+  width: 70px;
+  height: 70px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: #ffe1f0;
+  color: #ec168c;
+  margin-bottom: 16px;
+}
+
+.suggest-modal__mark svg {
+  width: 34px;
+  height: 34px;
+}
+
+.suggest-modal__header h2 {
+  margin: 0;
+  color: #24105f;
+  font-size: 1.5rem;
+  line-height: 1.2;
+}
+
+.suggest-modal__header p {
+  max-width: 420px;
+  margin: 10px 0 0;
+  color: rgba(35, 20, 95, 0.62);
+  font-size: 0.94rem;
+  font-weight: 800;
+  line-height: 1.45;
+}
+
+.suggest-modal__success {
+  margin-bottom: 18px;
+  border: 1px solid rgba(22, 138, 69, 0.16);
+  border-radius: 16px;
+  background: #eefaf3;
+  color: #168a45;
+  font-weight: 900;
+  padding: 14px 16px;
+  text-align: center;
+}
+
+.suggest-modal__error {
+  margin-bottom: 18px;
+  border: 1px solid rgba(180, 35, 102, 0.2);
+  border-radius: 16px;
+  background: #fff2f8;
+  color: #b42366;
+  font-weight: 900;
+  line-height: 1.45;
+  padding: 14px 16px;
+  text-align: center;
+}
+
+.suggest-form {
+  display: grid;
+  gap: 18px;
+}
+
+.suggest-form__field {
+  display: grid;
+  gap: 8px;
+}
+
+.suggest-form__field > span,
+.suggest-form__anonymous {
+  color: #24105f;
+  font-size: 0.86rem;
+  font-weight: 950;
+}
+
+.suggest-form__control {
+  display: grid;
+  grid-template-columns: 46px minmax(0, 1fr);
+  align-items: stretch;
+  border: 1px solid rgba(123, 63, 161, 0.16);
+  border-radius: 14px;
+  background: #fff;
+  overflow: hidden;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.suggest-form__control:focus-within {
+  border-color: rgba(123, 63, 161, 0.42);
+  box-shadow: 0 0 0 4px rgba(123, 63, 161, 0.08);
+}
+
+.suggest-form__control > svg {
+  align-self: stretch;
+  width: 46px;
+  height: 100%;
+  background: #f4f0fa;
+  color: #7b3fa1;
+  padding: 13px;
+}
+
+.suggest-form__control input,
+.suggest-form__control select,
+.suggest-form__control textarea {
+  width: 100%;
+  min-height: 48px;
+  border: 0;
+  outline: 0;
+  background: transparent;
+  color: #24105f;
+  font: inherit;
+  font-size: 0.92rem;
+  font-weight: 750;
+  padding: 0 14px;
+}
+
+.suggest-form__control select {
+  cursor: pointer;
+}
+
+.suggest-form__control textarea {
+  min-height: 86px;
+  padding-block: 13px;
+  resize: vertical;
+}
+
+.suggest-form__field small {
+  color: #b42366;
+  font-size: 0.78rem;
+  font-weight: 850;
+}
+
+.suggest-form__anonymous {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.suggest-form__anonymous input {
+  width: 28px;
+  height: 28px;
+  accent-color: #7b3fa1;
+}
+
+.suggest-form__anonymous span {
+  display: grid;
+  gap: 3px;
+}
+
+.suggest-form__anonymous small {
+  color: rgba(35, 20, 95, 0.56);
+  font-size: 0.78rem;
+  font-weight: 800;
+}
+
+.suggest-form__actions {
+  display: grid;
+  grid-template-columns: minmax(120px, 0.55fr) minmax(0, 1fr);
+  gap: 16px;
+  margin-top: 6px;
+}
+
+.suggest-form__actions button {
+  min-height: 50px;
+  border-radius: 13px;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 950;
+}
+
+.suggest-form__cancel {
+  border: 1px solid rgba(123, 63, 161, 0.32);
+  background: #fff;
+  color: #4b136b;
+}
+
+.suggest-form__submit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 0;
+  background: linear-gradient(135deg, #7b3fa1, #ec6fa2);
+  color: #fff;
+  box-shadow: 0 14px 28px rgba(123, 63, 161, 0.18);
+}
+
+.suggest-form__submit:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
 @media (max-width: 1180px) {
   .events-page {
     grid-template-columns: 94px minmax(0, 1fr);
@@ -877,6 +1118,10 @@
     width: 100%;
     justify-content: center;
   }
+
+  .suggest-modal__dialog {
+    padding: 28px 22px;
+  }
 }
 
 @media (max-width: 560px) {
@@ -899,6 +1144,23 @@
   }
 
   .events-card__details {
+    grid-template-columns: 1fr;
+  }
+
+  .suggest-modal {
+    padding: 12px;
+  }
+
+  .suggest-modal__dialog {
+    border-radius: 22px;
+    padding: 24px 16px;
+  }
+
+  .suggest-modal__header {
+    padding-inline: 30px;
+  }
+
+  .suggest-form__actions {
     grid-template-columns: 1fr;
   }
 }
