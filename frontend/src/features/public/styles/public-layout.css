@@ -3,9 +3,9 @@
   max-width: 100%;
   overflow-x: hidden;
   min-height: 100vh;
-  color: #1f2933;
-  background: #f8faf7;
-  font-family: var(--font-sans);
+  color: #241332;
+  background: #fff8fc;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   direction: ltr;
   text-align: start;
   scroll-behavior: smooth;
@@ -29,7 +29,7 @@
 }
 
 .public-homepage :where(a, button):focus-visible {
-  outline: 3px solid #b56f45;
+  outline: 3px solid #ec4899;
   outline-offset: 4px;
 }
 
@@ -41,7 +41,7 @@
   padding-block: 10px;
   padding-inline: 14px;
   color: #ffffff;
-  background: #173b35;
+  background: #4b136b;
   border-radius: 6px;
   font-weight: 800;
   text-decoration: none;
@@ -63,8 +63,8 @@
   gap: clamp(18px, 3vw, 32px);
   padding-block: 14px;
   padding-inline: clamp(20px, 5vw, 72px);
-  background: rgba(248, 250, 247, 0.94);
-  border-bottom: 1px solid #dde5dc;
+  background: rgba(255, 248, 252, 0.94);
+  border-bottom: 1px solid #f3d9e5;
   backdrop-filter: blur(12px);
 }
 
@@ -90,23 +90,26 @@
   align-items: center;
   min-width: 0;
   gap: 10px;
-  color: #173b35;
+  color: #4b136b;
   font-size: 1.2rem;
   font-weight: 800;
   text-decoration: none;
   white-space: nowrap;
 }
 
-.public-navbar__logo {
-  display: inline-grid;
-  width: 36px;
-  height: 36px;
-  place-items: center;
-  color: #ffffff;
-  background: #246b5f;
-  border-radius: 8px;
-  font-size: 1rem;
-  line-height: 1;
+.public-navbar__brand-image {
+  display: block;
+  width: auto;
+  max-width: min(180px, 32vw);
+  max-height: 48px;
+  object-fit: contain;
+}
+
+@media (max-width: 560px) {
+  .public-navbar__brand-image {
+    max-width: min(150px, 52vw);
+    max-height: 40px;
+  }
 }
 
 .public-navbar__links {
@@ -120,7 +123,7 @@
 
 .public-navbar__links a,
 .public-navbar__login {
-  color: #314943;
+  color: rgba(75, 19, 107, 0.72);
   font-size: 0.95rem;
   font-weight: 700;
   text-decoration: none;
@@ -133,7 +136,7 @@
 
 .public-navbar__links a:hover,
 .public-navbar__links a:focus-visible {
-  color: #173b35;
+  color: #DF327B;
 }
 
 .public-navbar__login {
@@ -144,13 +147,13 @@
   padding-block: 9px;
   padding-inline: 16px;
   color: #ffffff;
-  background: #246b5f;
+  background: linear-gradient(135deg, #DF327B, #ec168c);
   border-radius: 6px;
 }
 
 .public-navbar__login:hover,
 .public-navbar__login:focus-visible {
-  background: #173b35;
+  background: linear-gradient(135deg, #6B3F97, #4b136b);
 }
 
 .public-navbar__toggle {
@@ -160,7 +163,7 @@
   padding-block: 10px;
   padding-inline: 10px;
   background: #ffffff;
-  border: 1px solid #d9e3dc;
+  border: 1px solid #f3d9e5;
   border-radius: 8px;
   cursor: pointer;
 }
@@ -170,7 +173,7 @@
   width: 100%;
   height: 2px;
   margin-block: 4px;
-  background: #173b35;
+  background: #4b136b;
   border-radius: 999px;
 }
 

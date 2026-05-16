@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import sheNaLogo from '../../../assets/she-na-logo.png';
 
 const PUBLIC_LINKS = [
   { label: 'Home', href: '#home' },
@@ -22,10 +23,7 @@ export default function PublicNavbar({ organization }) {
     <header className="public-navbar">
       <div className="public-navbar__bar">
         <a className="public-navbar__brand" href="#home" aria-label={`${organizationName} home`} onClick={closeMenu}>
-          <span className="public-navbar__logo" aria-hidden="true">
-            S
-          </span>
-          <span>{organizationName}</span>
+          <img className="public-navbar__brand-image" src={sheNaLogo} alt="She-Na logo" />
         </a>
 
         <button

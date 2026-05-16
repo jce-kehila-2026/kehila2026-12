@@ -43,10 +43,19 @@
     min-height: 44px;
     padding-block: 10px;
     padding-inline: 12px;
-    background: #ffffff;
-    border: 1px solid #d9e3dc;
+    color: #4b136b;
+    background: #fff8fc;
+    border: 1px solid #f3d9e5;
     border-radius: 8px;
+    box-shadow: 0 8px 18px rgba(236, 72, 153, 0.08);
     text-align: center;
+  }
+
+  .public-navbar__links a:hover,
+  .public-navbar__links a:focus-visible {
+    color: #DF327B;
+    background: #fdf3f8;
+    border-color: rgba(236, 72, 153, 0.28);
   }
 
   .public-navbar__login {
@@ -131,6 +140,10 @@
   .public-button,
   .public-event-card__button {
     width: 100%;
+  }
+
+  .public-button {
+    box-shadow: 0 10px 22px rgba(75, 19, 107, 0.1);
   }
 
   .public-hero__visual {
