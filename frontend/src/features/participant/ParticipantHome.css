@@ -646,6 +646,16 @@
   color: #7b3fa1;
 }
 
+.schedule-item__icon--amber {
+  background: #ffe9b9;
+  color: #d58a00;
+}
+
+.schedule-item__tag--amber {
+  background: #fff6df;
+  color: #b97700;
+}
+
 .schedule-item h3 {
   color: #241332;
   font-size: 0.96rem;
@@ -684,6 +694,7 @@
 }
 
 .week-strip button {
+  position: relative;
   display: grid;
   gap: 5px;
   border: 0;
@@ -712,6 +723,22 @@
 
 .week-strip strong {
   font-size: 1rem;
+}
+
+.week-strip__note-dot {
+  position: absolute;
+  right: 8px;
+  bottom: 7px;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #f0ae28;
+  box-shadow: 0 0 0 3px rgba(240, 174, 40, 0.18);
+}
+
+.week-strip button.is-selected .week-strip__note-dot {
+  background: #ffe9b9;
+  box-shadow: 0 0 0 3px rgba(255, 233, 185, 0.24);
 }
 
 .week-agenda {
