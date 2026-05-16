@@ -5,7 +5,7 @@
     radial-gradient(circle at 92% 14%, rgba(236, 22, 140, 0.2), transparent 26rem),
     linear-gradient(135deg, #fbf2f8 0%, #f5e6f2 36%, #eadff2 100%);
   color: #3a0f53;
-  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: var(--font-sans);
   padding: 28px;
 }
 
@@ -65,7 +65,7 @@
 .calendar-brand__text {
   color: #4b136b;
   font-size: 1.35rem;
-  font-weight: 900;
+  font-weight: 700;
   letter-spacing: 0.06em;
 }
 
@@ -326,7 +326,7 @@
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.26);
   font-size: 0.66rem;
-  font-weight: 900;
+  font-weight: 700;
   text-transform: uppercase;
 }
 
@@ -343,7 +343,7 @@
 .note-form label {
   color: #4b136b;
   font-size: 0.78rem;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .note-form input,
@@ -381,7 +381,7 @@
   color: #ffffff;
   cursor: pointer;
   font: inherit;
-  font-weight: 900;
+  font-weight: 700;
   padding: 13px 18px;
 }
 
@@ -431,7 +431,7 @@
   border: 0;
   cursor: pointer;
   font: inherit;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .calendar-view-toggle button {
@@ -477,7 +477,7 @@
   border-bottom: 1px solid #ece9f6;
   background: #f7f5fd;
   color: #4b136b;
-  font-weight: 900;
+  font-weight: 700;
   text-align: center;
 }
 
@@ -519,7 +519,7 @@
 .month-calendar__date {
   align-self: flex-end;
   color: rgba(75, 19, 107, 0.72);
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .month-calendar__items {
@@ -534,7 +534,7 @@
   background: #f7e1ec;
   color: #9d0f61;
   font-size: 0.74rem;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 1.25;
   overflow: hidden;
   padding: 8px;
@@ -562,7 +562,7 @@
 
 .month-calendar__more {
   color: rgba(75, 19, 107, 0.58);
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .day-calendar {
@@ -586,7 +586,7 @@
 
 .day-calendar__summary span {
   color: rgba(75, 19, 107, 0.62);
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .day-calendar__timeline {
@@ -604,7 +604,7 @@
 .day-calendar__slot time {
   padding: 16px;
   color: rgba(75, 19, 107, 0.58);
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .day-calendar__slot > div {
@@ -644,7 +644,7 @@
   background: rgba(255, 255, 255, 0.75);
   color: #4b136b;
   font-size: 0.82rem;
-  font-weight: 900;
+  font-weight: 700;
   padding: 10px 14px;
 }
 
@@ -707,7 +707,7 @@
 .weekly-calendar__day span {
   margin-top: 4px;
   font-size: 0.8rem;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .weekly-calendar__day.is-selected {
@@ -807,3 +807,32 @@
     padding: 22px;
   }
 }
+
+.calendar-page :where(.calendar-hero h1) {
+  font-weight: 800;
+  color: #151126;
+}
+
+.calendar-page :where(.weekly-calendar__top h2, .card-heading h2, .note-modal h2, .calendar-brand__text) {
+  font-weight: 700;
+  color: #3a0f53;
+}
+
+.calendar-page :where(button, .calendar-day__event, .calendar-summary span, .note-card__title) {
+  font-weight: 600;
+}
+
+.calendar-page :where(label, input, textarea, select) {
+  font-weight: 500;
+}
+
+.calendar-page :where(.calendar-hero p, .calendar-event p, .note-card p) {
+  font-weight: 400;
+  color: rgba(58, 15, 83, 0.64);
+}
+
+.calendar-page :where(.calendar-kicker, .calendar-summary span, .calendar-event time, .note-card time, small) {
+  font-weight: 300;
+  color: rgba(75, 19, 107, 0.58);
+}
+

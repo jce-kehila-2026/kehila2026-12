@@ -350,7 +350,7 @@
   color: #ffffff;
   background: #246b5f;
   border-radius: 8px;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .public-center__visual-card h3,
@@ -409,3 +409,4 @@
   gap: 20px;
   margin-block-start: 32px;
 }
+

@@ -125,7 +125,7 @@ function AppointmentPage({ embedInDashboard = false, locale = "en" } = {}) {
         direction: locale === "he" ? "rtl" : "ltr",
         typography: {
           ...parentTheme.typography,
-          fontFamily: '"Poppins", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+          fontFamily: '"Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
         },
       }),
     [parentTheme, locale]
@@ -421,7 +421,7 @@ function AppointmentPage({ embedInDashboard = false, locale = "en" } = {}) {
                         letterSpacing: "-0.035em",
                         lineHeight: 1.08,
                         color: WELLNESS.text,
-                        fontFamily: '"Poppins", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+                        fontFamily: '"Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
                       }}
                     >
                       Personal Appointments
@@ -435,7 +435,7 @@ function AppointmentPage({ embedInDashboard = false, locale = "en" } = {}) {
                         lineHeight: 1.65,
                         color: WELLNESS.muted,
                         fontWeight: 500,
-                        fontFamily: '"Poppins", "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+                        fontFamily: '"Plus Jakarta Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
                       }}
                     >
                       Book private one-on-one therapy and treatment sessions that are personalized to your needs.
@@ -531,7 +531,7 @@ function AppointmentPage({ embedInDashboard = false, locale = "en" } = {}) {
                         letterSpacing: "-0.02em",
                         color: WELLNESS.text,
                         mb: 2,
-                        fontFamily: '"Poppins", "Inter", sans-serif',
+                        fontFamily: '"Plus Jakarta Sans", sans-serif',
                       }}
                     >
                       3. My Appointments
@@ -569,3 +569,4 @@ function AppointmentPage({ embedInDashboard = false, locale = "en" } = {}) {
 }
 
 export default AppointmentPage;
+

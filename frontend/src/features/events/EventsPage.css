@@ -7,7 +7,7 @@
     radial-gradient(circle at 20% 12%, rgba(123, 63, 161, 0.08), transparent 22rem),
     #fffafd;
   color: #21124a;
-  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: var(--font-sans);
 }
 
 .events-sidebar {
@@ -58,7 +58,7 @@
   background: linear-gradient(135deg, #ec168c, #7b3fa1);
   color: #fff;
   font-size: 1.2rem;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .events-brand__text {
@@ -100,7 +100,7 @@
   cursor: pointer;
   font: inherit;
   font-size: 0.9rem;
-  font-weight: 850;
+  font-weight: 600;
   padding: 0 14px;
   text-align: left;
   transition: transform 180ms ease, background 180ms ease, color 180ms ease, box-shadow 180ms ease;
@@ -134,7 +134,7 @@
   color: #fff;
   font-size: 0.72rem;
   line-height: 1;
-  font-weight: 900;
+  font-weight: 700;
   padding: 0;
 }
 
@@ -174,7 +174,7 @@
   cursor: pointer;
   font: inherit;
   font-size: 0.84rem;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .events-logout {
@@ -219,7 +219,7 @@
 .events-topbar p {
   color: #23145f;
   font-size: 1.82rem;
-  font-weight: 950;
+  font-weight: 800;
   line-height: 1.1;
 }
 
@@ -228,7 +228,7 @@
   margin-top: 10px;
   color: rgba(35, 20, 95, 0.58);
   font-size: 1rem;
-  font-weight: 850;
+  font-weight: 600;
 }
 
 .events-profile {
@@ -238,7 +238,7 @@
 
 .events-profile span {
   color: rgba(35, 20, 95, 0.68);
-  font-weight: 850;
+  font-weight: 600;
 }
 
 .events-profile strong {
@@ -285,7 +285,7 @@
   margin-top: 14px;
   color: rgba(35, 20, 95, 0.72);
   font-size: 1.02rem;
-  font-weight: 750;
+  font-weight: 400;
   line-height: 1.65;
 }
 
@@ -335,7 +335,7 @@
   margin-top: 7px;
   color: rgba(35, 20, 95, 0.68);
   font-size: 0.9rem;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .events-hero-art {
@@ -436,7 +436,7 @@
 .events-status {
   margin-top: 22px;
   color: #4b136b;
-  font-weight: 900;
+  font-weight: 700;
   padding: 16px 18px;
 }
 
@@ -467,7 +467,7 @@
   cursor: pointer;
   font: inherit;
   font-size: 0.86rem;
-  font-weight: 950;
+  font-weight: 800;
   padding: 0 24px;
   transition: transform 160ms ease, background 160ms ease, color 160ms ease, box-shadow 160ms ease;
 }
@@ -529,7 +529,7 @@
   background: rgba(255, 255, 255, 0.86);
   color: #7b3fa1;
   font-size: 0.78rem;
-  font-weight: 950;
+  font-weight: 800;
   padding: 8px 18px;
 }
 
@@ -553,7 +553,7 @@
   background: rgba(232, 250, 239, 0.94);
   color: #168a45;
   font-size: 0.76rem;
-  font-weight: 950;
+  font-weight: 800;
   padding: 8px 12px;
   box-shadow: 0 10px 24px rgba(75, 19, 107, 0.1);
 }
@@ -577,7 +577,7 @@
   margin-top: 12px;
   color: rgba(35, 20, 95, 0.66);
   font-size: 0.92rem;
-  font-weight: 750;
+  font-weight: 400;
   line-height: 1.45;
 }
 
@@ -621,7 +621,7 @@
   min-width: 0;
   color: rgba(35, 20, 95, 0.72);
   font-size: 0.84rem;
-  font-weight: 850;
+  font-weight: 600;
   overflow-wrap: anywhere;
 }
 
@@ -638,7 +638,7 @@
   cursor: pointer;
   font: inherit;
   font-size: 0.92rem;
-  font-weight: 950;
+  font-weight: 800;
   box-shadow: 0 12px 24px rgba(123, 63, 161, 0.18);
   transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
 }
@@ -707,7 +707,7 @@
   color: #fff;
   cursor: pointer;
   font: inherit;
-  font-weight: 900;
+  font-weight: 700;
   padding: 0 20px;
 }
 
@@ -778,7 +778,7 @@
   color: #24105f;
   cursor: pointer;
   font: inherit;
-  font-weight: 950;
+  font-weight: 800;
   padding: 0 28px;
   white-space: nowrap;
   box-shadow: 0 12px 28px rgba(75, 19, 107, 0.07);
@@ -875,7 +875,7 @@
   border-radius: 16px;
   background: #eefaf3;
   color: #168a45;
-  font-weight: 900;
+  font-weight: 700;
   padding: 14px 16px;
   text-align: center;
 }
@@ -886,7 +886,7 @@
   border-radius: 16px;
   background: #fff2f8;
   color: #b42366;
-  font-weight: 900;
+  font-weight: 700;
   line-height: 1.45;
   padding: 14px 16px;
   text-align: center;
@@ -906,7 +906,7 @@
 .suggest-form__anonymous {
   color: #24105f;
   font-size: 0.86rem;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .suggest-form__control {
@@ -945,7 +945,7 @@
   color: #24105f;
   font: inherit;
   font-size: 0.92rem;
-  font-weight: 750;
+  font-weight: 400;
   padding: 0 14px;
 }
 
@@ -962,7 +962,7 @@
 .suggest-form__field small {
   color: #b42366;
   font-size: 0.78rem;
-  font-weight: 850;
+  font-weight: 600;
 }
 
 .suggest-form__anonymous {
@@ -1000,7 +1000,7 @@
   border-radius: 13px;
   cursor: pointer;
   font: inherit;
-  font-weight: 950;
+  font-weight: 800;
 }
 
 .suggest-form__cancel {
@@ -1164,3 +1164,36 @@
     grid-template-columns: 1fr;
   }
 }
+
+.events-page :where(.events-hero h1, .events-topbar p) {
+  font-weight: 800;
+  color: #151126;
+}
+
+.events-page :where(.events-list-heading h2, .events-card h2, .events-suggestion h2, .suggest-modal__header h2) {
+  font-weight: 700;
+  color: #21124a;
+}
+
+.events-page :where(.events-nav button.is-active, .events-card__action, .events-suggestion button, .suggest-form__submit, .suggest-form__cancel) {
+  font-weight: 700;
+}
+
+.events-page :where(.events-card__category, .events-card__registered, .events-hero__summary span, .suggest-form__field > span) {
+  font-weight: 600;
+}
+
+.events-page :where(.events-nav button, .events-profile span, .suggest-form__control input, .suggest-form__control select, .suggest-form__control textarea) {
+  font-weight: 500;
+}
+
+.events-page :where(.events-hero p, .events-card p, .events-suggestion p, .suggest-modal__header p) {
+  font-weight: 400;
+  color: rgba(35, 20, 58, 0.64);
+}
+
+.events-page :where(.events-topbar strong, .events-brand small, .events-card__details dd, .suggest-form__anonymous small, .suggest-form__field small) {
+  font-weight: 300;
+  color: rgba(35, 20, 58, 0.56);
+}
+

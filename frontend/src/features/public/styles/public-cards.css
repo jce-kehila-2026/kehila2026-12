@@ -382,7 +382,7 @@
   background: #246b5f;
   border: 4px solid #ffffff;
   border-radius: 50%;
-  font-weight: 900;
+  font-weight: 700;
   box-shadow: 0 0 0 1px #d9e3dc;
 }
 
@@ -575,3 +575,4 @@
   border-top: 1px solid rgba(246, 251, 248, 0.18);
   font-size: 0.92rem;
 }
+

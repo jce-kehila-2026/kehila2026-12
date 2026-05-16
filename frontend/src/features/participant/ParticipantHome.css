@@ -6,7 +6,7 @@
     radial-gradient(circle at 78% 8%, rgba(236, 22, 140, 0.1), transparent 25rem),
     linear-gradient(135deg, #fff9fc 0%, #f7f1fb 46%, #fffdfd 100%);
   color: #201033;
-  font-family: "Poppins", Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-family: var(--font-sans);
 }
 
 .participant-admin-preview {
@@ -82,7 +82,7 @@
   background: linear-gradient(135deg, #ec168c, #7b3fa1);
   color: #fff;
   font-size: 1.25rem;
-  font-weight: 900;
+  font-weight: 700;
   box-shadow: 0 14px 26px rgba(236, 22, 140, 0.22);
 }
 
@@ -125,7 +125,7 @@
   cursor: pointer;
   font: inherit;
   font-size: 0.9rem;
-  font-weight: 850;
+  font-weight: 600;
   padding: 0 14px;
   text-align: left;
   transition: transform 180ms ease, background 180ms ease, color 180ms ease, box-shadow 180ms ease;
@@ -154,7 +154,7 @@
   background: #ec168c;
   color: #fff;
   font-size: 0.72rem;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .participant-support-card {
@@ -193,7 +193,7 @@
   cursor: pointer;
   font: inherit;
   font-size: 0.84rem;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .participant-logout {
@@ -229,7 +229,7 @@
 .participant-topbar p {
   color: #241332;
   font-size: clamp(1.45rem, 2.5vw, 2rem);
-  font-weight: 950;
+  font-weight: 800;
   line-height: 1.1;
 }
 
@@ -271,7 +271,7 @@
   background: #ec168c;
   color: #fff;
   font-size: 0.65rem;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .participant-profile {
@@ -292,7 +292,7 @@
 .participant-profile span {
   display: grid;
   color: #241332;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .participant-profile small {
@@ -361,7 +361,7 @@
   display: inline-flex;
   color: #7b3fa1;
   font-size: 0.86rem;
-  font-weight: 950;
+  font-weight: 800;
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
@@ -398,7 +398,7 @@
   border-radius: 15px;
   cursor: pointer;
   font: inherit;
-  font-weight: 900;
+  font-weight: 700;
   padding: 0 22px;
 }
 
@@ -554,7 +554,7 @@
   margin: 6px 0 4px;
   color: #201033;
   font-size: 0.88rem;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .dashboard-stat button,
@@ -565,7 +565,7 @@
   cursor: pointer;
   font: inherit;
   font-size: 0.78rem;
-  font-weight: 900;
+  font-weight: 700;
   padding: 0;
 }
 
@@ -610,7 +610,7 @@
   margin-bottom: 4px;
   color: rgba(75, 19, 107, 0.58);
   font-size: 0.76rem;
-  font-weight: 850;
+  font-weight: 600;
 }
 
 .dashboard-section-heading button {
@@ -681,7 +681,7 @@
   background: #fff2f9;
   color: #ec168c;
   font-size: 0.72rem;
-  font-weight: 900;
+  font-weight: 700;
   padding: 7px 12px;
   white-space: nowrap;
 }
@@ -767,7 +767,7 @@
   min-width: 52px;
   color: rgba(75, 19, 107, 0.62);
   font-size: 0.8rem;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .week-agenda__item strong,
@@ -806,7 +806,7 @@
   color: #4b136b;
   cursor: pointer;
   font-size: 0.9rem;
-  font-weight: 950;
+  font-weight: 800;
   transition: transform 160ms ease, box-shadow 160ms ease;
 }
 
@@ -866,7 +866,7 @@
   margin-top: 12px;
   color: rgba(75, 19, 107, 0.64);
   font-size: 0.82rem;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .community-post footer span {
@@ -921,7 +921,7 @@
   background: #fff2f9;
   color: #ec168c;
   font-size: 0.72rem;
-  font-weight: 900;
+  font-weight: 700;
   padding: 6px 10px;
 }
 
@@ -949,7 +949,7 @@
 .motivation-actions span {
   color: rgba(75, 19, 107, 0.62);
   font-size: 0.82rem;
-  font-weight: 900;
+  font-weight: 700;
 }
 
 .motivation-actions button {
@@ -960,7 +960,7 @@
   cursor: pointer;
   font: inherit;
   font-size: 0.82rem;
-  font-weight: 900;
+  font-weight: 700;
   padding: 10px 16px;
 }
 
@@ -988,7 +988,7 @@
 .participant-section-heading span {
   color: rgba(75, 19, 107, 0.58);
   font-size: 0.78rem;
-  font-weight: 900;
+  font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
@@ -1050,7 +1050,7 @@
   background: #fff2f9;
   color: #ec168c;
   font-size: 0.72rem;
-  font-weight: 900;
+  font-weight: 700;
   padding: 6px 10px;
 }
 
@@ -1392,3 +1392,36 @@
     margin-left: 0;
   }
 }
+
+.participant-home :where(.dashboard-hero h1, .participant-topbar p) {
+  font-weight: 800;
+  color: #151126;
+}
+
+.participant-home :where(.dashboard-section-heading h2, .participant-section-heading h2, .schedule-item h3, .community-post h3, .recommendation-card strong, .resource-card h3, .workshop-card__title) {
+  font-weight: 700;
+  color: #201033;
+}
+
+.participant-home :where(.participant-nav button.is-active, .dashboard-hero__actions button, .participant-support-card button, .participant-logout) {
+  font-weight: 700;
+}
+
+.participant-home :where(.dashboard-stat p, .schedule-item__tag, .week-agenda__item strong, .resource-card span, .resource-card small) {
+  font-weight: 600;
+}
+
+.participant-home :where(.participant-nav button, .participant-profile span, .dashboard-section-heading button) {
+  font-weight: 500;
+}
+
+.participant-home :where(.dashboard-hero p, .schedule-item p, .community-post p, .resource-card p, .workshop-card__description) {
+  font-weight: 400;
+  color: rgba(32, 16, 51, 0.64);
+}
+
+.participant-home :where(.participant-brand small, .participant-profile small, .community-post small, .dashboard-section-heading span, .participant-section-heading span, .week-agenda__item span) {
+  font-weight: 300;
+  color: rgba(75, 19, 107, 0.56);
+}
+

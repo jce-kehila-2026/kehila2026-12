@@ -43,7 +43,7 @@ function ProviderCard({ provider, darkMode = false }) {
           fontSize: "0.95rem",
           fontWeight: 800,
           flexShrink: 0,
-          fontFamily: '"Poppins", "Inter", sans-serif',
+          fontFamily: '"Plus Jakarta Sans", sans-serif',
           bgcolor: darkMode ? "rgba(196, 165, 245, 0.2)" : "rgba(181, 123, 232, 0.16)",
           color: darkMode ? "#f3e8ff" : "#6b3f9e",
           border: darkMode ? "1px solid rgba(196,165,245,0.28)" : "1px solid rgba(181, 123, 232, 0.22)",
@@ -60,7 +60,7 @@ function ProviderCard({ provider, darkMode = false }) {
             lineHeight: 1.25,
             color: nameColor,
             letterSpacing: "-0.02em",
-            fontFamily: '"Poppins", "Inter", sans-serif',
+            fontFamily: '"Plus Jakarta Sans", sans-serif',
           }}
         >
           {name}
@@ -95,7 +95,7 @@ function ProviderCard({ provider, darkMode = false }) {
           fontWeight: 800,
           flexShrink: 0,
           alignSelf: "center",
-          fontFamily: '"Poppins", "Inter", sans-serif',
+          fontFamily: '"Plus Jakarta Sans", sans-serif',
           ...(isLimited
             ? {
                 bgcolor: darkMode ? "rgba(251, 191, 36, 0.14)" : "rgba(254, 243, 199, 0.85)",
@@ -114,3 +114,4 @@ function ProviderCard({ provider, darkMode = false }) {
 }
 
 export default ProviderCard;
+

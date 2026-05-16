@@ -2,3 +2,30 @@
 @import "./public-sections.css";
 @import "./public-cards.css";
 @import "./public-responsive.css";
+
+.public-homepage :where(.public-hero h1) {
+  font-weight: 800;
+  color: #151126;
+}
+
+.public-homepage :where(.public-section__header h2, .public-donation h2, .public-card h3, .public-footer h2) {
+  font-weight: 700;
+}
+
+.public-homepage :where(.public-button, .public-navbar__login, .public-eyebrow, .public-statistics__card span) {
+  font-weight: 600;
+}
+
+.public-homepage :where(.public-navbar__links a, .public-contact__item span) {
+  font-weight: 500;
+}
+
+.public-homepage :where(.public-section__text, .public-card p, .public-donation p, .public-footer__text) {
+  font-weight: 400;
+  color: rgba(31, 41, 51, 0.66);
+}
+
+.public-homepage :where(small, time, .public-article-card__meta) {
+  font-weight: 300;
+}
+
