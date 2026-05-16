@@ -18,9 +18,11 @@ import SettingsIcon from '@mui/icons-material/Settings';
 import SpaIcon from '@mui/icons-material/Spa';
 import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import PersonIcon from '@mui/icons-material/Person';
 import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivismOutlined';
 import { useNavigate } from 'react-router-dom';
+import appointmentsHero from '../../assets/appointments-hero.png';
 import { useAdmin } from '../admin/context/AdminContext';
 import { subscribeToPublishedEvents } from '../admin/services/eventService';
 import {
@@ -64,9 +66,9 @@ function formatEventDate(value) {
   if (!date) return 'To be scheduled';
 
   return new Intl.DateTimeFormat('en', {
-    weekday: 'long',
     month: 'long',
     day: 'numeric',
+    year: 'numeric',
   }).format(date);
 }
 
@@ -84,7 +86,7 @@ function formatEventTime(startValue, endValue) {
 }
 
 function getEventTone(index) {
-  return ['pink', 'purple', 'deep', 'rose', 'violet', 'lavender'][index % 6];
+  return ['pink', 'purple', 'orange', 'violet', 'rose', 'lavender'][index % 6];
 }
 
 function getEventIcon(category = '') {
@@ -97,30 +99,22 @@ function getEventIcon(category = '') {
 }
 
 function EventCard({ event, isRegistered, onToggleRegistration }) {
-  const Icon = eventIconMap[event.icon] || AutoAwesomeIcon;
   const isFull = event.capacity > 0 && event.participants >= event.capacity && !isRegistered;
   const actionDisabled = event.isRegistering || isFull;
 
   return (
-    <article className={`events-card events-card--${event.tone}`}>
-      <div className="events-card__visual">
-        <span className={`events-card__badge${isRegistered ? ' is-registered' : ''}`}>
-          {isRegistered ? (
-            <>
-              <TaskAltIcon fontSize="small" />
-              Registered
-            </>
-          ) : (
-            isFull ? 'Full' : 'Open'
-          )}
-        </span>
-        <div className="events-card__illustration" aria-hidden="true">
-          <Icon />
-        </div>
+    <article className={`events-card events-card--${event.tone}`} style={{ '--event-card-image': `url("${event.imageUrl}")` }}>
+      <div className="events-card__visual" aria-hidden="true">
+        <span className="events-card__category">{event.category}</span>
+        {isRegistered && (
+          <span className="events-card__registered">
+            <TaskAltIcon fontSize="small" />
+            Registered
+          </span>
+        )}
       </div>
 
       <div className="events-card__body">
-        <span className="events-card__category">{event.category}</span>
         <h2>{event.title}</h2>
         <p>{event.description}</p>
 
@@ -136,16 +130,11 @@ function EventCard({ event, isRegistered, onToggleRegistration }) {
             <dd>{event.time}</dd>
           </div>
           <div>
-            <PersonIcon fontSize="small" />
-            <dt>Instructor</dt>
-            <dd>{event.instructor}</dd>
-          </div>
-          <div>
             <PeopleAltOutlinedIcon fontSize="small" />
             <dt>Participants</dt>
-            <dd>{event.capacity > 0 ? `${event.participants} / ${event.capacity}` : event.participants}</dd>
+            <dd>{event.capacity > 0 ? `${event.participants} / ${event.capacity} spots left` : `${event.participants} registered`}</dd>
           </div>
-          <div className="events-card__detail-wide">
+          <div>
             <LocationOnOutlinedIcon fontSize="small" />
             <dt>Location</dt>
             <dd>{event.location}</dd>
@@ -164,10 +153,24 @@ function EventCard({ event, isRegistered, onToggleRegistration }) {
               ? 'Cancel Registration'
               : isFull
                 ? 'Fully Booked'
-                : 'Register'}
+                : 'Register Now'}
         </button>
       </div>
     </article>
+  );
+}
+
+function HeroIllustration() {
+  return (
+    <div className="events-hero-art" aria-hidden="true">
+      <span className="events-hero-art__leaf events-hero-art__leaf--one" />
+      <span className="events-hero-art__leaf events-hero-art__leaf--two" />
+      <span className="events-hero-art__leaf events-hero-art__leaf--three" />
+      <span className="events-hero-art__body" />
+      <span className="events-hero-art__head" />
+      <span className="events-hero-art__hair" />
+      <span className="events-hero-art__legs" />
+    </div>
   );
 }
 
@@ -236,8 +239,18 @@ export default function EventsPage() {
 
   const displayEvents = useMemo(
     () =>
-      events.map((event, index) => {
+      [...events].sort((left, right) => {
+        const leftDate = toDate(left.startTime);
+        const rightDate = toDate(right.startTime);
+
+        if (!leftDate && !rightDate) return 0;
+        if (!leftDate) return 1;
+        if (!rightDate) return -1;
+
+        return leftDate.getTime() - rightDate.getTime();
+      }).map((event, index) => {
         const registeredCount = counts[event.id] ?? 0;
+        const imageUrl = event.imageUrl || event.thumbnailUrl || event.coverImageUrl || appointmentsHero;
 
         return {
           id: event.id,
@@ -252,6 +265,7 @@ export default function EventsPage() {
           location: event.location || 'She-Na Center',
           tone: event.tone || getEventTone(index),
           icon: event.icon || getEventIcon(event.category),
+          imageUrl,
           isRegistering: registeringId === event.id,
         };
       }),
@@ -347,7 +361,7 @@ export default function EventsPage() {
         <header className="events-topbar">
           <div>
             <p>Participant space</p>
-            <strong>{new Intl.DateTimeFormat('en', { weekday: 'long', month: 'long', day: 'numeric' }).format(new Date())}</strong>
+            <strong>{new Intl.DateTimeFormat('en', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }).format(new Date())}</strong>
           </div>
           <div className="events-profile">
             <span>{currentUser?.email || 'Participant'}</span>
@@ -357,33 +371,22 @@ export default function EventsPage() {
 
         <section className="events-hero">
           <div className="events-hero__content">
-            <span className="events-kicker">She-Na wellness programs</span>
-            <h1>Events & Workshops</h1>
+            <h1>Workshops & Sessions</h1>
             <p>Discover calming, empowering sessions designed to support movement, reflection, creativity, and connection.</p>
-          </div>
-          <div className="events-hero__summary" aria-label="Events summary">
-            <div>
-              <strong>{events.length}</strong>
-              <span>Workshops</span>
+            <div className="events-hero__summary" aria-label="Workshop summary">
+              <div>
+                <EventAvailableIcon />
+                <strong>{events.length}</strong>
+                <span>Upcoming Workshops</span>
+              </div>
+              <div>
+                <TaskAltIcon />
+                <strong>{Object.keys(registeredMap).length}</strong>
+                <span>Registered</span>
+              </div>
             </div>
-            <div>
-              <strong>{Object.keys(registeredMap).length}</strong>
-              <span>Registered</span>
-            </div>
           </div>
-        </section>
-
-        <section className="events-filter" aria-label="Filter events by category">
-          {categories.map((category) => (
-            <button
-              className={activeCategory === category ? 'is-active' : ''}
-              type="button"
-              onClick={() => setActiveCategory(category)}
-              key={category}
-            >
-              {category}
-            </button>
-          ))}
+          <HeroIllustration />
         </section>
 
         {(loadingEvents || eventsError) && (
@@ -392,15 +395,34 @@ export default function EventsPage() {
           </div>
         )}
 
-        <section className="events-grid" aria-label="Events and workshops">
-          {filteredEvents.map((event) => (
-            <EventCard
-              event={event}
-              isRegistered={Boolean(registeredMap[event.id])}
-              onToggleRegistration={handleToggleRegistration}
-              key={event.id}
-            />
-          ))}
+        <section className="events-workshops-panel">
+          <section className="events-filter" aria-label="Filter events by category">
+            {categories.map((category) => (
+              <button
+                className={activeCategory === category ? 'is-active' : ''}
+                type="button"
+                onClick={() => setActiveCategory(category)}
+                key={category}
+              >
+                {category}
+              </button>
+            ))}
+          </section>
+
+          <div className="events-list-heading">
+            <h2>Upcoming Workshops</h2>
+          </div>
+
+          <section className="events-grid" aria-label="Events and workshops">
+            {filteredEvents.map((event) => (
+              <EventCard
+                event={event}
+                isRegistered={Boolean(registeredMap[event.id])}
+                onToggleRegistration={handleToggleRegistration}
+                key={event.id}
+              />
+            ))}
+          </section>
         </section>
 
         {!loadingEvents && filteredEvents.length === 0 && (
@@ -413,6 +435,21 @@ export default function EventsPage() {
             </button>
           </section>
         )}
+
+        <section className="events-suggestion">
+          <div className="events-suggestion__icon" aria-hidden="true">
+            <CalendarMonthIcon />
+            <TaskAltIcon />
+          </div>
+          <div>
+            <h2>Can't find what you're looking for?</h2>
+            <p>Let us know what topics or sessions you'd like to see next.</p>
+          </div>
+          <button type="button" onClick={() => navigate('/home')}>
+            Suggest a Workshop
+            <ArrowForwardIcon fontSize="small" />
+          </button>
+        </section>
       </section>
     </main>
   );

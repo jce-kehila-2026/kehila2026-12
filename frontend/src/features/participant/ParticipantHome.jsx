@@ -371,7 +371,7 @@ function HomeDashboard({ displayName, navigate, setActiveView, overviewCards, sc
         <MotivationPanel item={motivation} onClose={() => setMotivation(null)} onOpenResources={openResources} />
         {loading && <p className="dashboard-loading-state">Refreshing your live schedule...</p>}
         <div className="dashboard-two-column">
-          <UpcomingSchedule items={scheduleItems} onViewCalendar={() => navigate('/calendar')} />
+          <UpcomingSchedule items={scheduleItems} onViewCalendar={() => setActiveView('calendar')} />
           <WeeklyCalendarPreview days={weekDays} activities={weekActivities} weekLabel={weekLabel} />
         </div>
         <Recommendations onOpenResources={openResources} />
