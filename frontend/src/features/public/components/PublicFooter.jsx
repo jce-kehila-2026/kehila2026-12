@@ -1,3 +1,5 @@
+import footerLogo from '../../../assets/logo2.png';
+
 function hasValue(value) {
   return typeof value === 'string' && value.trim().length > 0;
 }
@@ -5,7 +7,6 @@ function hasValue(value) {
 export default function PublicFooter({ organization, contact = {} }) {
   const organizationName = organization.name;
   const currentYear = new Date().getFullYear();
-  const footerText = contact.footerText;
   const email = hasValue(contact.email) ? contact.email : organization?.email;
   const phone = hasValue(contact.phone) ? contact.phone : organization?.phone;
   const address = hasValue(contact.address) ? contact.address : organization?.address;
@@ -15,8 +16,7 @@ export default function PublicFooter({ organization, contact = {} }) {
     <footer className="public-footer">
       <div className="public-footer__main">
         <div className="public-footer__brand">
-          <p className="public-footer__name">{organizationName}</p>
-          <p className="public-footer__text">{footerText}</p>
+          <img className="public-footer__brand-logo" src={footerLogo} alt="She-Na logo" />
         </div>
 
         <div className="public-footer__group">

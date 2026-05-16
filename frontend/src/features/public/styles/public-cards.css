@@ -536,6 +536,14 @@
   gap: clamp(24px, 4vw, 52px);
 }
 
+.public-footer__brand-logo {
+  display: block;
+  width: min(220px, 100%);
+  height: auto;
+  max-height: 72px;
+  object-fit: contain;
+}
+
 .public-footer__name {
   font-size: 1.25rem;
   font-weight: 800;

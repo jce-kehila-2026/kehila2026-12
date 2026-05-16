@@ -97,16 +97,19 @@
   white-space: nowrap;
 }
 
-.public-navbar__logo {
-  display: inline-grid;
-  width: 36px;
-  height: 36px;
-  place-items: center;
-  color: #ffffff;
-  background: linear-gradient(135deg, #DF327B, #7b3fa1);
-  border-radius: 8px;
-  font-size: 1rem;
-  line-height: 1;
+.public-navbar__brand-image {
+  display: block;
+  width: auto;
+  max-width: min(180px, 32vw);
+  max-height: 48px;
+  object-fit: contain;
+}
+
+@media (max-width: 560px) {
+  .public-navbar__brand-image {
+    max-width: min(150px, 52vw);
+    max-height: 40px;
+  }
 }
 
 .public-navbar__links {
