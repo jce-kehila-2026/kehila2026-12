@@ -98,7 +98,7 @@ export default function DashboardPage() {
                 {loading ? (
                   <Skeleton variant="text" width={60} sx={{ fontSize: '1.8rem' }} />
                 ) : (
-                  <Typography variant="h4" sx={{ fontWeight: 800, letterSpacing: -1, mb: 0.5 }}>
+                  <Typography variant="h4" sx={{ fontWeight: 800, letterSpacing: 0, mb: 0.5 }}>
                     {stats[card.key]}
                   </Typography>
                 )}

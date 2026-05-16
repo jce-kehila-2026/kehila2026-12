@@ -48,16 +48,19 @@ export function createAppTheme(direction = 'rtl') {
       divider: 'rgba(0, 0, 0, 0.08)',
     },
     typography: {
-      fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
-      h1: { fontWeight: 800, letterSpacing: '-0.5px' },
-      h2: { fontWeight: 700, letterSpacing: '-0.3px' },
-      h3: { fontWeight: 700 },
+      fontFamily: "'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      h1: { fontWeight: 800, letterSpacing: 0, color: '#151126' },
+      h2: { fontWeight: 800, letterSpacing: 0, color: '#151126' },
+      h3: { fontWeight: 700, letterSpacing: 0, color: '#151126' },
       h4: { fontWeight: 700 },
       h5: { fontWeight: 600 },
       h6: { fontWeight: 600 },
-      subtitle1: { fontWeight: 500, color: '#4B5563' },
-      subtitle2: { fontWeight: 500, color: '#6B7280', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '1.5px' },
-      button: { fontWeight: 600, textTransform: 'none' },
+      body1: { fontWeight: 400, color: '#374151' },
+      body2: { fontWeight: 400, color: '#4B5563' },
+      subtitle1: { fontWeight: 600, color: '#4B5563' },
+      subtitle2: { fontWeight: 500, color: '#6B7280', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: 0 },
+      caption: { fontWeight: 300, color: '#6B7280' },
+      button: { fontWeight: 700, textTransform: 'none', letterSpacing: 0 },
     },
     shape: {
       borderRadius: 10,
@@ -79,6 +82,7 @@ export function createAppTheme(direction = 'rtl') {
           root: {
             borderRadius: 8,
             padding: '8px 18px',
+            fontWeight: 700,
           },
           containedPrimary: {
             '&:hover': {
@@ -129,10 +133,18 @@ export function createAppTheme(direction = 'rtl') {
           size: 'small',
         },
       },
+      MuiInputLabel: {
+        styleOverrides: {
+          root: {
+            fontWeight: 500,
+          },
+        },
+      },
       MuiOutlinedInput: {
         styleOverrides: {
           root: {
             backgroundColor: '#FFFFFF',
+            fontWeight: 400,
             '&:hover .MuiOutlinedInput-notchedOutline': {
               borderColor: 'rgba(0, 0, 0, 0.2)',
             },
@@ -183,6 +195,7 @@ export function createAppTheme(direction = 'rtl') {
             '&.Mui-selected': {
               backgroundColor: 'rgba(223, 50, 123, 0.08)',
               color: '#DF327B',
+              fontWeight: 700,
               '& .MuiListItemIcon-root': {
                 color: '#DF327B',
               },

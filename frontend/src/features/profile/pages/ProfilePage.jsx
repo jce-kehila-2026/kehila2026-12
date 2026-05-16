@@ -3,15 +3,9 @@ import createCache from "@emotion/cache";
 import { CacheProvider } from "@emotion/react";
 import { prefixer } from "stylis";
 import rtlPlugin from "stylis-plugin-rtl";
-import BedtimeOutlinedIcon from "@mui/icons-material/BedtimeOutlined";
-import ChatBubbleOutlineOutlinedIcon from "@mui/icons-material/ChatBubbleOutlineOutlined";
-import EventOutlinedIcon from "@mui/icons-material/EventOutlined";
-import FavoriteBorderOutlinedIcon from "@mui/icons-material/FavoriteBorderOutlined";
-import GroupOutlinedIcon from "@mui/icons-material/GroupOutlined";
-import HomeOutlinedIcon from "@mui/icons-material/HomeOutlined";
-import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
-import WbSunnyOutlinedIcon from "@mui/icons-material/WbSunnyOutlined";
 import { signOut } from "firebase/auth";
+import BedtimeOutlinedIcon from "@mui/icons-material/BedtimeOutlined";
+import WbSunnyOutlinedIcon from "@mui/icons-material/WbSunnyOutlined";
 import {
   Box,
   ButtonBase,
@@ -26,10 +20,11 @@ import { auth } from "../../../firebase";
 import ChangePasswordCard from "../components/ChangePasswordCard";
 import PersonalDetailsForm from "../components/PersonalDetailsForm";
 import ProfileCard from "../components/ProfileCard";
-import { getParticipantData } from "../services/participantService";
-
-const DARK_MODE_TOGGLE_ICON_PINK = "#ec4899";
-const DARK_MODE_TOGGLE_ICON_ON_PINK = "#ffffff";
+import {
+  getParticipantData,
+  createParticipantProfile,
+} from "../services/participantService";
+import { WELLNESS, WELLNESS_DARK } from "../../appointments/appointmentTypeMeta";
 
 const profileCacheRtl = createCache({
   key: "profile-mui-rtl",
@@ -43,26 +38,28 @@ const profileCacheLtr = createCache({
   stylisPlugins: [prefixer],
 });
 
-const navDefs = [
-  { labelKey: "navDashboard", icon: HomeOutlinedIcon, active: false },
-  { labelKey: "navCommunity", icon: GroupOutlinedIcon, active: false },
-  { labelKey: "navMessages", icon: ChatBubbleOutlineOutlinedIcon, active: false },
-  { labelKey: "navEvents", icon: EventOutlinedIcon, active: false },
-  { labelKey: "navResources", icon: FavoriteBorderOutlinedIcon, active: false },
-  { labelKey: "navSettings", icon: SettingsOutlinedIcon, active: true },
-];
+const profilePageBg =
+  "linear-gradient(145deg, #F7EEFF 0%, #FFF9FC 42%, #fdf8ff 100%)";
 
-function ProfilePage() {
-  const participantId = "participant-001";
+function ProfilePage({
+  darkMode: darkModeFromParent,
+  onDarkModeChange,
+  embedInDashboard = false,
+} = {}) {
+  const user = auth.currentUser;
+  const participantId = user?.uid;
 
   const [profile, setProfile] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
+  const [darkModeInternal, setDarkModeInternal] = useState(false);
 
-  // locale = the language that is actually applied to the page
+  const darkModeControlled =
+    typeof darkModeFromParent === "boolean" &&
+    typeof onDarkModeChange === "function";
+  const darkMode = darkModeControlled ? darkModeFromParent : darkModeInternal;
+  const setDarkMode = darkModeControlled ? onDarkModeChange : setDarkModeInternal;
+
   const [locale, setLocale] = useState("en");
-
-  // selectedLanguage = the dropdown value before clicking Save Changes
   const [selectedLanguage, setSelectedLanguage] = useState("en");
 
   const navigate = useNavigate();
@@ -94,8 +91,33 @@ function ProfilePage() {
     let mounted = true;
 
     async function loadData() {
-      const data = await getParticipantData(participantId);
-      if (mounted) setProfile(data);
+      try {
+        let data = await getParticipantData(participantId);
+
+        if (!data && user) {
+          const defaultProfile = {
+            fullName: user.displayName || "",
+            email: user.email || "",
+            phoneNumber: "",
+            streetAddress: "",
+            city: "",
+            birthDate: "",
+            preferredContactMethod: "email",
+            language: "english",
+            avatarUrl: "",
+          };
+
+          await createParticipantProfile(participantId, defaultProfile);
+
+          data = defaultProfile;
+        }
+
+        if (mounted) setProfile(data);
+      } catch (error) {
+        console.error(error);
+
+        if (mounted) setProfile({});
+      }
     }
 
     loadData();
@@ -126,13 +148,21 @@ function ProfilePage() {
           <Box
             dir="ltr"
             sx={{
-              minHeight: "100vh",
+              minHeight: embedInDashboard ? "min(240px, 40vh)" : "100vh",
               display: "grid",
               placeItems: "center",
-              background: "linear-gradient(140deg, #fff8fc 0%, #fdf3f8 100%)",
+              background: embedInDashboard
+                ? "transparent"
+                : darkMode
+                  ? WELLNESS_DARK.pageBg
+                  : profilePageBg,
             }}
           >
-            <CircularProgress sx={{ color: "#ec4899" }} />
+            <CircularProgress
+              sx={{
+                color: darkMode ? WELLNESS_DARK.primary : WELLNESS.primary,
+              }}
+            />
           </Box>
         </ThemeProvider>
       </CacheProvider>
@@ -146,107 +176,28 @@ function ProfilePage() {
           dir={locale === "he" ? "rtl" : "ltr"}
           lang={locale === "he" ? "he" : "en"}
           sx={{
-            minHeight: "100vh",
+            minHeight: embedInDashboard ? "auto" : "100vh",
             display: "flex",
+            flexDirection: "column",
             transition: "background 0.25s ease",
-            background: darkMode
-              ? "linear-gradient(145deg, #0f172a 0%, #020617 55%, #0c1222 100%)"
-              : "linear-gradient(140deg, #fff8fc 0%, #fdf3f8 100%)",
+            background: embedInDashboard
+              ? "transparent"
+              : darkMode
+                ? WELLNESS_DARK.pageBg
+                : profilePageBg,
           }}
         >
-          <Box
-            component="aside"
-            sx={{
-              width: { xs: 92, sm: 210 },
-              flexShrink: 0,
-              borderInlineEnd: darkMode
-                ? "1px solid #334155"
-                : "1px solid #f6dce8",
-              bgcolor: darkMode ? "#0f172a" : "#fffefe",
-              px: { xs: 1, sm: 1.8 },
-              py: 3,
-            }}
-          >
-            <Typography
-              sx={{
-                fontWeight: 800,
-                color: darkMode ? "#f472b6" : "#be185d",
-                fontSize: 36,
-                px: 1,
-                mb: 3.5,
-                display: { xs: "none", sm: "block" },
-              }}
-            >
-              She-Na
-            </Typography>
-
-            <Stack spacing={0.8}>
-              {navDefs.map((item) => {
-                const Icon = item.icon;
-
-                return (
-                  <ButtonBase
-                    key={item.labelKey}
-                    sx={{
-                      width: "100%",
-                      justifyContent: "flex-start",
-                      gap: 1.1,
-                      px: { xs: 1, sm: 1.3 },
-                      py: 1.2,
-                      borderRadius: 3,
-                      color: item.active
-                        ? darkMode
-                          ? "#f9a8d4"
-                          : "#be185d"
-                        : darkMode
-                          ? "#94a3b8"
-                          : "#374151",
-                      border: item.active
-                        ? darkMode
-                          ? "1px solid rgba(236, 72, 153, 0.35)"
-                          : "1px solid #f2c3dd"
-                        : "1px solid transparent",
-                      background: item.active
-                        ? darkMode
-                          ? "linear-gradient(90deg, rgba(236,72,153,0.18) 0%, rgba(15,23,42,0.9) 100%)"
-                          : "linear-gradient(90deg, #fce7f3 0%, #fff3f8 100%)"
-                        : "transparent",
-                      "&:hover": {
-                        backgroundColor: item.active
-                          ? darkMode
-                            ? "rgba(236, 72, 153, 0.15)"
-                            : "#fce7f3"
-                          : darkMode
-                            ? "rgba(148, 163, 184, 0.12)"
-                            : "#fdf2f8",
-                      },
-                    }}
-                  >
-                    <Icon sx={{ fontSize: 20 }} />
-                    <Typography
-                      sx={{
-                        fontSize: 14.5,
-                        display: { xs: "none", sm: "block" },
-                        color: "inherit",
-                      }}
-                    >
-                      {t(item.labelKey)}
-                    </Typography>
-                  </ButtonBase>
-                );
-              })}
-            </Stack>
-          </Box>
-
           <Box
             component="main"
             sx={{
               flex: 1,
+              width: "100%",
+              minWidth: 0,
               px: { xs: 2, sm: 4 },
               py: { xs: 2.5, sm: 3.6 },
             }}
           >
-            <Box sx={{ maxWidth: 1120 }}>
+            <Box sx={{ maxWidth: { xs: "100%", lg: 1320 }, width: "100%" }}>
               <Box
                 sx={{
                   display: "flex",
@@ -262,7 +213,7 @@ function ProfilePage() {
                     sx={{
                       fontSize: { xs: 36, sm: 48, md: 52 },
                       fontWeight: 700,
-                      color: darkMode ? "#f8fafc" : "#111827",
+                      color: darkMode ? WELLNESS_DARK.text : WELLNESS.text,
                       lineHeight: 1.1,
                     }}
                   >
@@ -271,7 +222,7 @@ function ProfilePage() {
 
                   <Typography
                     sx={{
-                      color: darkMode ? "#94a3b8" : "#6b7280",
+                      color: darkMode ? WELLNESS_DARK.muted : WELLNESS.muted,
                       fontSize: { xs: 17, sm: 20, md: 22 },
                       mt: 0.5,
                     }}
@@ -321,20 +272,25 @@ function ProfilePage() {
                       alignItems: "stretch",
                       borderRadius: 9999,
                       overflow: "hidden",
-                      border: "1.5px solid #f9a8d4",
-                      bgcolor: "#fffafb",
+                      border: "1.5px solid rgba(181, 123, 232, 0.38)",
+                      bgcolor: darkMode ? "#1e293b" : "#fffbff",
                       minWidth: 76,
                       height: 36,
                       p: 0,
                       transition:
-                        "border-color 0.28s ease, box-shadow 0.28s ease",
-                      boxShadow: "0 1px 4px rgba(236, 72, 153, 0.12)",
+                        "border-color 0.28s ease, box-shadow 0.28s ease, transform 0.22s ease",
+                      boxShadow: darkMode
+                        ? "0 2px 12px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(196, 165, 245, 0.12)"
+                        : "0 2px 10px rgba(181, 123, 232, 0.14)",
                       "&:hover": {
-                        borderColor: "#ec4899",
-                        boxShadow: "0 2px 10px rgba(236, 72, 153, 0.2)",
+                        borderColor: "rgba(181, 123, 232, 0.65)",
+                        boxShadow: darkMode
+                          ? "0 4px 16px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(196, 165, 245, 0.22)"
+                          : "0 4px 16px rgba(181, 123, 232, 0.22)",
+                        transform: "translateY(-1px)",
                       },
                       "&.Mui-focusVisible": {
-                        outline: "2px solid #ec4899",
+                        outline: `2px solid ${WELLNESS.primary}`,
                         outlineOffset: 2,
                       },
                     }}
@@ -349,10 +305,9 @@ function ProfilePage() {
                         py: 0.75,
                         px: 1.1,
                         minWidth: 36,
-                        bgcolor: darkMode ? "#ec4899" : "#fffbfc",
                         background: darkMode
-                          ? "linear-gradient(180deg, #f472b6 0%, #ec4899 55%, #db2777 100%)"
-                          : "#fffbfc",
+                          ? `linear-gradient(145deg, ${WELLNESS.primary} 0%, #8b5cf6 55%, #7c3aed 100%)`
+                          : "linear-gradient(180deg, rgba(234,215,255,0.55) 0%, #fffbff 100%)",
                         transition:
                           "background 0.28s ease, background-color 0.28s ease",
                       }}
@@ -363,10 +318,8 @@ function ProfilePage() {
                           width: 18,
                           height: 18,
                           flexShrink: 0,
-                          color: darkMode
-                            ? DARK_MODE_TOGGLE_ICON_ON_PINK
-                            : DARK_MODE_TOGGLE_ICON_PINK,
-                          opacity: 1,
+                          color: darkMode ? "#ffffff" : "#9d5bd6",
+                          opacity: darkMode ? 1 : 0.85,
                           transition: "color 0.28s ease, opacity 0.28s ease",
                           display: "block",
                         }}
@@ -383,10 +336,9 @@ function ProfilePage() {
                         py: 0.75,
                         px: 1.1,
                         minWidth: 36,
-                        bgcolor: darkMode ? "#fff7fb" : "#ec4899",
                         background: darkMode
-                          ? "#fff7fb"
-                          : "linear-gradient(180deg, #f472b6 0%, #ec4899 55%, #db2777 100%)",
+                          ? "linear-gradient(180deg, #1e293b 0%, #0f172a 100%)"
+                          : `linear-gradient(145deg, ${WELLNESS.primary} 0%, #c4a5f5 100%)`,
                         transition:
                           "background 0.28s ease, background-color 0.28s ease",
                       }}
@@ -397,9 +349,7 @@ function ProfilePage() {
                           width: 18,
                           height: 18,
                           flexShrink: 0,
-                          color: darkMode
-                            ? DARK_MODE_TOGGLE_ICON_PINK
-                            : DARK_MODE_TOGGLE_ICON_ON_PINK,
+                          color: darkMode ? WELLNESS_DARK.primary : "#ffffff",
                           opacity: 1,
                           transition: "color 0.28s ease, opacity 0.28s ease",
                           display: "block",
@@ -424,8 +374,12 @@ function ProfilePage() {
                 <Box sx={{ gridColumn: { xs: 1, lg: 1 }, gridRow: 1 }}>
                   <ProfileCard
                     profile={profile}
+                    participantId={participantId}
                     isEditing={isEditing}
                     onEdit={() => setIsEditing(true)}
+                    onAvatarUpdated={(patch) =>
+                      setProfile((prev) => ({ ...prev, ...patch }))
+                    }
                     darkMode={darkMode}
                     t={t}
                   />
