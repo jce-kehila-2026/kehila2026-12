@@ -1,16 +1,46 @@
-@media (max-width: 900px) {
+@media (max-width: 1180px) {
+  .public-about__cards,
+  .public-statistics__grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .public-support__grid,
+  .public-team-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .public-footer__main {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 1120px) {
+  .public-homepage {
+    --public-navbar-offset: 76px;
+  }
+
   .public-navbar {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 12px;
+    min-height: auto;
     padding-block: 12px;
-    padding-inline: clamp(16px, 4vw, 32px);
+    padding-inline: clamp(18px, 4vw, 34px);
+  }
+
+  .public-navbar__inner {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 0;
   }
 
   .public-navbar__bar {
     justify-content: space-between;
     width: 100%;
     gap: 14px;
+    min-width: 0;
+  }
+
+  .public-navbar__brand-image {
+    max-width: min(150px, 46vw);
+    max-height: 44px;
   }
 
   .public-navbar__toggle {
@@ -21,18 +51,19 @@
   .public-navbar__menu {
     display: none;
     width: 100%;
-    padding-block-start: 10px;
+    padding-block-start: 14px;
   }
 
   .public-navbar__menu--open {
     display: grid;
-    gap: 16px;
+    grid-template-columns: 1fr;
+    gap: 14px;
   }
 
   .public-navbar__links {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 8px 12px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
     width: 100%;
   }
 
@@ -40,166 +71,192 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-height: 44px;
-    padding-block: 10px;
+    min-height: 46px;
+    padding-block: 12px;
     padding-inline: 12px;
-    color: #4b136b;
-    background: #fff8fc;
-    border: 1px solid #f3d9e5;
-    border-radius: 8px;
-    box-shadow: 0 8px 18px rgba(236, 72, 153, 0.08);
+    background: var(--public-soft);
+    border: 1px solid var(--public-line);
+    border-radius: 999px;
     text-align: center;
   }
 
-  .public-navbar__links a:hover,
-  .public-navbar__links a:focus-visible {
-    color: #DF327B;
-    background: #fdf3f8;
-    border-color: rgba(236, 72, 153, 0.28);
+  .public-navbar__links a::after {
+    display: none;
   }
 
-  .public-navbar__login {
+  .public-navbar__actions {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 10px;
     width: 100%;
-    min-height: 46px;
   }
 
-  .public-section--about,
-  .public-hero,
-  .public-section--center,
-  .public-journey__timeline,
-  .public-donation {
-    grid-template-columns: 1fr;
-  }
-
-  .public-journey__timeline::before {
-    inset-block: 32px 32px;
-    inset-inline-start: 22px;
-    width: 2px;
-    height: auto;
-  }
-
-  .public-hero {
-    min-height: auto;
-  }
-
-  .public-hero h1 {
-    max-width: 12ch;
-  }
-
-  .public-section--center {
-    align-items: start;
-  }
-
-  .public-footer__main {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+  .public-navbar__cta {
+    width: 100%;
+    min-height: 50px;
+    padding-inline: 18px;
   }
 }
 
-@media (max-width: 560px) {
-  .public-navbar {
-    position: static;
-    padding-inline: 16px;
+@media (max-width: 940px) {
+  .public-hero {
+    min-height: 680px;
+    padding-block: 82px 92px;
   }
 
-  .public-navbar__brand {
-    min-width: 0;
-    font-size: 1.05rem;
+  .public-section--about {
+    grid-template-columns: 1fr;
   }
 
-  .public-navbar__brand span:last-child {
-    overflow: hidden;
-    text-overflow: ellipsis;
+  .public-section__header {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 720px) {
+  .public-homepage {
+    --public-shadow: 0 14px 34px rgba(58, 27, 84, 0.1);
   }
 
   .public-navbar__links {
     grid-template-columns: 1fr;
   }
 
+  .public-navbar__actions {
+    grid-template-columns: 1fr;
+  }
+
   .public-navbar__links a {
-    justify-content: flex-start;
-    text-align: start;
+    justify-content: center;
+    white-space: normal;
   }
 
   .public-hero {
-    padding-block: 42px 50px;
-    padding-inline: 16px;
+    min-height: 620px;
+    padding-inline: 18px;
   }
 
   .public-hero h1 {
-    max-width: 100%;
-    font-size: clamp(2.25rem, 13vw, 3.1rem);
-    line-height: 1.05;
+    max-width: 10ch;
+    font-size: clamp(3rem, 15vw, 4.4rem);
   }
 
   .public-hero__description {
-    font-size: 1.04rem;
-    line-height: 1.6;
+    font-size: 1.28rem;
   }
 
   .public-hero__actions,
-  .public-button,
-  .public-event-card__button {
+  .public-button {
     width: 100%;
   }
 
   .public-button {
-    box-shadow: 0 10px 22px rgba(75, 19, 107, 0.1);
+    min-height: 58px;
   }
 
-  .public-hero__visual {
-    min-height: 260px;
-    padding: 18px;
+  .public-hero__scroll {
+    display: none;
   }
 
   .public-section {
-    padding-block: 48px;
-    padding-inline: 16px;
+    padding-block: 58px;
+    padding-inline: 18px;
+  }
+
+  .public-section__header--centered,
+  .public-section__header--team {
+    text-align: start;
   }
 
   .public-section__header h2,
   .public-donation h2,
-  .public-center__content h2,
   .public-section--support h2 {
-    font-size: clamp(1.85rem, 10vw, 2.45rem);
-    line-height: 1.12;
+    font-size: clamp(2.2rem, 11vw, 3rem);
+  }
+
+  .public-about__cards,
+  .public-support__grid,
+  .public-statistics__grid,
+  .public-team-grid,
+  .public-footer__main {
+    grid-template-columns: 1fr;
+  }
+
+  .public-about__cards,
+  .public-support__grid,
+  .public-statistics__grid,
+  .public-team-grid {
+    gap: 18px;
+    margin-block-start: 34px;
+  }
+
+  .public-about__card,
+  .public-statistics__card,
+  .public-team-card {
+    min-height: auto;
+  }
+
+  .public-support__body,
+  .public-about__card,
+  .public-team-card {
+    padding-inline: 22px;
+  }
+
+  .public-donation {
+    padding-block: 58px;
+    padding-inline: 18px;
+  }
+
+  .public-donation__content {
+    border-radius: 26px;
+  }
+
+  .public-footer {
+    padding-block: 48px 24px;
+    padding-inline: 18px;
+  }
+
+  .public-footer__bottom {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 420px) {
+  .public-navbar__brand-image {
+    max-width: 128px;
+  }
+
+  .public-hero {
+    min-height: 560px;
+  }
+
+  .public-hero .public-eyebrow {
+    min-height: 46px;
+    padding-inline: 16px;
+    font-size: 0.88rem;
+  }
+
+  .public-hero h1 {
+    font-size: clamp(2.75rem, 16vw, 3.6rem);
+  }
+
+  .public-hero__description {
+    font-size: 1.12rem;
   }
 
   .public-section__text {
     font-size: 1rem;
-    line-height: 1.7;
   }
 
-  .public-section__header--centered {
-    text-align: start;
+  .public-about__icon {
+    width: 64px;
+    height: 64px;
+    font-size: 1.8rem;
   }
 
-  .public-center__visual {
-    min-height: 280px;
-  }
-
-  .public-article-card__body,
-  .public-team-card__body,
-  .public-event-card__body,
-  .public-support__card,
-  .public-statistics__card,
-  .public-about__card,
-  .public-contact__item {
-    padding: 18px;
-  }
-
-  .public-donation {
-    margin-block: 36px;
-    margin-inline: 16px;
-    padding-block: 28px;
-    padding-inline: 18px;
-  }
-
-  .public-footer {
-    padding-inline: 16px;
-  }
-
-  .public-footer__main {
-    grid-template-columns: 1fr;
+  .public-support__icon {
+    width: 54px;
+    height: 54px;
   }
 }
-

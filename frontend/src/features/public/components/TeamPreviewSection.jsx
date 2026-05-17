@@ -22,34 +22,34 @@ function getVisibleTeamMembers(teamMembers, maxItems) {
 
 export default function TeamPreviewSection({
   teamMembers = [],
-  maxItems = 4,
+  maxItems = 3,
   isLoading = false,
   hasError = false,
 }) {
   const visibleTeamMembers = getVisibleTeamMembers(teamMembers, maxItems);
 
   return (
-    <section className="public-section public-section--team-preview" id="team" aria-labelledby="public-team-title">
-      <div className="public-section__header public-section__header--team">
-        <p className="public-eyebrow">Team</p>
-        <h2 id="public-team-title">Meet the Team</h2>
-        <p className="public-section__text">
-          Dedicated people supporting She-Na&apos;s community with professionalism, care, and respect.
+    <section className="public-section public-section--team-preview" id="stories" aria-labelledby="public-team-title">
+      <div className="public-section__header public-section__header--team reveal">
+        <p className="public-eyebrow">קולות מהקהילה</p>
+        <h2 id="public-team-title">סיפורי השראה</h2>
+        <p className="public-section__text reveal reveal-delay-1">
+          סיפורים אמיתיים של נשים שמצאו תמיכה, כוח ותקווה במסע שלהן.
         </p>
       </div>
 
       {isLoading ? (
-        <LoadingState message="Loading team information..." />
+        <LoadingState message="טוענות סיפורי השראה..." />
       ) : hasError ? (
-        <ErrorState message="Could not load the team information. Please try again later." />
+        <ErrorState message="לא ניתן לטעון את סיפורי ההשראה. נסי שוב מאוחר יותר." />
       ) : visibleTeamMembers.length ? (
-        <div className="public-team-grid">
+        <div className="public-team-grid stagger-children">
           {visibleTeamMembers.map((member) => (
             <TeamMemberCard member={member} key={member.id || member.name} />
           ))}
         </div>
       ) : (
-        <EmptyState message="No team members are available at the moment." />
+        <EmptyState message="סיפורי ההשראה יופיעו כאן כאשר התוכן הציבורי יהיה זמין." />
       )}
     </section>
   );

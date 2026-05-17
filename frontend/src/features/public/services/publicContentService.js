@@ -17,52 +17,61 @@ import { db } from '../../../firebase';
 // public content contract is missing, empty, or unavailable.
 
 const FALLBACK_HERO = {
-  eyebrow: 'Support for women in recovery',
-  title: 'She-Na: support for every step forward',
-  message: 'A warm community helping recovering women find knowledge, care, and steady support.',
-  supportText:
-    'She-Na supports recovering women with respectful guidance, practical resources, and a caring place to turn to.',
+  eyebrow: 'קהילה תומכת לנשים',
+  title: 'את לא לבד במסע שלך',
+  message: 'קהילה תומכת לנשים ולמתמודדות עם סרטן',
+  supportText: 'מרחב חם, בטוח ומקצועי לתמיכה, ליווי, למידה ותקווה לאורך הדרך.',
   primaryAction: {
-    label: 'Donate',
-    href: '#donate',
-  },
-  secondaryAction: {
-    label: 'Join / Get Support',
+    label: 'להצטרף לקהילה',
     href: '#contact',
   },
-  visualTitle: 'She-Na',
-  visualText: 'Knowledge, health, and emotional support for recovering women.',
+  secondaryAction: {
+    label: 'לתרום עכשיו',
+    href: '#donate',
+  },
+  imageUrl: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1800&q=82',
+  imageAlt: 'נשים בקהילה תומכת',
+  visualTitle: 'SHE-NA',
+  visualText: 'קהילה, תמיכה וליווי נשי בגובה העיניים.',
 };
 
 const FALLBACK_ABOUT = {
-  title: 'About She-Na',
-  intro: 'She-Na provides a welcoming space for programs, resources, and community-led support.',
-  body:
-    'The organization supports recovering women as they rebuild daily routines, strengthen wellbeing, and connect with people who understand their journey.',
+  title: 'מי אנחנו?',
+  intro:
+    'SHE-NA היא ארגון ללא כוונת רווח המעניק תמיכה רגשית, חברתית וחינוכית לנשים ולמתמודדות עם סרטן. אנו מאמינות בכוח של קהילה תומכת ובחשיבות של ליווי אישי ומקצועי במסע האתגרי.',
+  body: '',
 };
 
 const FALLBACK_STATISTICS = [
   {
-    id: 'programs',
-    value: 'TBD',
-    label: 'Support areas',
-    note: 'Verified public data will be added later.',
+    id: 'women',
+    value: '+2,500',
+    label: 'נשים בקהילה',
+    note: 'מרחב תמיכה חי, מכיל ונגיש.',
     isVisible: true,
     active: true,
   },
   {
-    id: 'activities',
-    value: 'TBD',
-    label: 'Activity types',
-    note: 'Public activity details are being prepared.',
+    id: 'events',
+    value: '+120',
+    label: 'אירועים שנתיים',
+    note: 'סדנאות, הרצאות ומפגשי קהילה.',
     isVisible: true,
     active: true,
   },
   {
-    id: 'community',
-    value: 'TBD',
-    label: 'Community services',
-    note: 'Numbers will appear after review.',
+    id: 'volunteers',
+    value: '+85',
+    label: 'מתנדבים',
+    note: 'נשים ואנשי מקצוע שמלווים באהבה.',
+    isVisible: true,
+    active: true,
+  },
+  {
+    id: 'stories',
+    value: '+1,500',
+    label: 'סיפורי הצלחה',
+    note: 'רגעים של תקווה, חוסן ושינוי.',
     isVisible: true,
     active: true,
   },
@@ -89,26 +98,62 @@ const FALLBACK_CENTER = {
 
 const FALLBACK_SUPPORT_AREAS = [
   {
-    id: 'independence',
-    icon: 'I',
-    title: 'Independence',
-    description: 'Practical guidance for routines, confidence, and daily decisions.',
+    id: 'support-groups',
+    icon: 'groups',
+    title: 'קבוצות תמיכה',
+    description: 'מפגשי תמיכה קבוצתיים במרחב בטוח ותומך עם נשים שעוברות חוויות דומות.',
+    imageUrl: 'https://images.unsplash.com/photo-1517486808906-6ca8b3f04846?auto=format&fit=crop&w=1000&q=78',
+    readMoreUrl: '#contact',
     isVisible: true,
     active: true,
   },
   {
-    id: 'health',
-    icon: 'H',
-    title: 'Health',
-    description: 'Support that respects care needs, body wellbeing, and personal pace.',
+    id: 'lectures-workshops',
+    icon: 'workshop',
+    title: 'הרצאות וסדנאות',
+    description: 'ידע מעשי, כלים רגשיים וסדנאות העצמה שמחזקות את ההתמודדות היומיומית.',
+    imageUrl: 'https://images.unsplash.com/photo-1552664730-d307ca884978?auto=format&fit=crop&w=1000&q=78',
+    readMoreUrl: '#articles',
     isVisible: true,
     active: true,
   },
   {
-    id: 'emotional-mental-support',
-    icon: 'E',
-    title: 'Emotional / Mental Support',
-    description: 'Listening spaces, encouragement, and steady community connection.',
+    id: 'inspiration-stories',
+    icon: 'heart',
+    title: 'סיפורי השראה',
+    description: 'סיפורים אמיתיים של נשים שמצאו תקווה, כוח ומשמעות בתוך המסע.',
+    imageUrl: 'https://images.unsplash.com/photo-1543269865-cbf427effbad?auto=format&fit=crop&w=1000&q=78',
+    readMoreUrl: '#stories',
+    isVisible: true,
+    active: true,
+  },
+  {
+    id: 'chat-support',
+    icon: 'chat',
+    title: "צ'אט ותמיכה",
+    description: 'ערוץ תמיכה נגיש לשיחה, שיתוף וליווי ברגעים שבהם צריך מענה קרוב.',
+    imageUrl: 'https://images.unsplash.com/photo-1551836022-d5d88e9218df?auto=format&fit=crop&w=1000&q=78',
+    readMoreUrl: '#contact',
+    isVisible: true,
+    active: true,
+  },
+  {
+    id: 'donations-community',
+    icon: 'gift',
+    title: 'תרומות לקהילה',
+    description: 'תרומות שמאפשרות להרחיב פעילות, להנגיש ליווי ולתמוך בנשים נוספות.',
+    imageUrl: 'https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?auto=format&fit=crop&w=1000&q=78',
+    readMoreUrl: '#donate',
+    isVisible: true,
+    active: true,
+  },
+  {
+    id: 'women-events',
+    icon: 'calendar',
+    title: 'אירועים לנשים',
+    description: 'ערבי העצמה, מפגשי רווחה וחגיגות קהילתיות שמחברות ומחזקות.',
+    imageUrl: 'https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=1000&q=78',
+    readMoreUrl: '#support',
     isVisible: true,
     active: true,
   },
@@ -117,30 +162,33 @@ const FALLBACK_SUPPORT_AREAS = [
 const FALLBACK_ARTICLES = [
   {
     id: 'fallback-article-1',
-    title: 'Finding Support in Community',
+    title: 'סיפורי השראה',
     description:
-      'Simple guidance on reaching out, staying connected, and finding steady support during difficult seasons.',
-    readMoreUrl: '#articles',
+      'סיפורים אמיתיים של נשים אמיצות שעוברות את המסע עם תקווה וחוזק.',
+    imageUrl: 'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=1000&q=78',
+    readMoreUrl: '#stories',
     isPublished: true,
     isVisible: true,
     active: true,
   },
   {
     id: 'fallback-article-2',
-    title: 'Practical Steps for Everyday Wellbeing',
+    title: 'הרצאות וסדנאות',
     description:
-      'Helpful reminders for building calm routines, asking for help, and making space for recovery.',
-    readMoreUrl: '#articles',
+      'סדנאות העשרה, הרצאות מעוררות השראה וכלים מעשיים להתמודדות.',
+    imageUrl: 'https://images.unsplash.com/photo-1573497491208-6b1acb260507?auto=format&fit=crop&w=1000&q=78',
+    readMoreUrl: '#support',
     isPublished: true,
     isVisible: true,
     active: true,
   },
   {
     id: 'fallback-article-3',
-    title: 'Understanding Available Resources',
+    title: 'קבוצות תמיכה',
     description:
-      'An introduction to the types of community programs, workshops, and support resources that may be available.',
-    readMoreUrl: '#articles',
+      'מפגשי תמיכה קבוצתיים עם הקשבה, הכלה וחיבור לנשים במסע דומה.',
+    imageUrl: 'https://images.unsplash.com/photo-1543269865-cbf427effbad?auto=format&fit=crop&w=1000&q=78',
+    readMoreUrl: '#contact',
     isPublished: true,
     isVisible: true,
     active: true,
@@ -150,36 +198,30 @@ const FALLBACK_ARTICLES = [
 const FALLBACK_TEAM_MEMBERS = [
   {
     id: 'fallback-team-1',
-    name: 'Community Programs',
-    role: 'Program coordination',
-    description: 'Coordinates supportive programs and helps create a welcoming environment for every participant.',
+    name: 'רחל כהן',
+    role: 'מתמודדת מנצחת',
+    description: 'הקהילה של SHE-NA היתה האור שלי בתקופה החשוכה ביותר. מצאתי כאן לא רק תמיכה, אלא משפחה אמיתית שהבינה אותי.',
+    imageUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=600&q=78',
     isVisible: true,
     isPublished: true,
     active: true,
   },
   {
     id: 'fallback-team-2',
-    name: 'Participant Support',
-    role: 'Resource guidance',
-    description: 'Guides participants through available resources with care, privacy, and respect.',
+    name: 'שרה לוי',
+    role: 'מתנדבת ותומכת',
+    description: 'אחרי שעברתי את המסע בעצמי, החלטתי לתת חזרה. כל יום שאני עוזרת לאישה אחרת מזכיר לי את הכוח שיש בנו.',
+    imageUrl: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=600&q=78',
     isVisible: true,
     isPublished: true,
     active: true,
   },
   {
     id: 'fallback-team-3',
-    name: 'Workshops',
-    role: 'Learning and wellbeing',
-    description: 'Supports learning circles, community workshops, and practical wellbeing activities.',
-    isVisible: true,
-    isPublished: true,
-    active: true,
-  },
-  {
-    id: 'fallback-team-4',
-    name: 'Volunteer Relations',
-    role: 'Community coordination',
-    description: 'Builds thoughtful connections between volunteers, staff, and community needs.',
+    name: 'מיכל אברהם',
+    role: 'חברת קהילה',
+    description: 'הסדנאות וההרצאות שינו את הדרך שבה אני מסתכלת על החיים. למדתי שיש תקווה ושאני יכולה להיות חזקה יותר ממה שחשבתי.',
+    imageUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=78',
     isVisible: true,
     isPublished: true,
     active: true,
@@ -264,32 +306,36 @@ const FALLBACK_RECOVERY_JOURNEY = {
 };
 
 const FALLBACK_DONATION = {
-  eyebrow: 'Support',
-  title: 'Help She-Na grow community programs',
+  eyebrow: 'עזרי לנו להמשיך לתמוך',
+  title: 'כל תרומה, קטנה כגדולה, עוזרת לנו להמשיך לספק תמיכה, ליווי ותקווה לנשים במסע שלהן.',
   description:
-    'Your support helps keep welcoming programs, resources, and community care available. Online giving will be connected later through the admin-managed donation link.',
-  buttonLabel: 'Donate',
+    'ביחד נוכל ליצור שינוי אמיתי ולהגיע לנשים נוספות שזקוקות לקהילה חמה ובטוחה.',
+  buttonLabel: 'לתרומה',
   href: '#donate',
   isVisible: true,
   active: true,
 };
 
 const FALLBACK_CONTACT = {
-  eyebrow: 'Contact',
-  title: 'Get in touch',
+  eyebrow: 'צרי קשר',
+  title: 'אנחנו כאן בשבילך',
   description:
-    'Contact details will be published here when they are ready for the public website.',
-  email: '',
-  phone: '',
+    'אפשר לפנות אלינו להצטרפות, תמיכה, התנדבות או שיתוף פעולה.',
+  email: 'info@she-na.org.il',
+  phone: '03-1234567',
   address: '',
-  socialLinks: [],
-  footerText: 'Public community information. Final contact details will be managed from the admin content system.',
+  socialLinks: [
+    { id: 'linkedin', label: 'LinkedIn', href: '#contact', isVisible: true, active: true },
+    { id: 'instagram', label: 'Instagram', href: '#contact', isVisible: true, active: true },
+    { id: 'facebook', label: 'Facebook', href: '#contact', isVisible: true, active: true },
+  ],
+  footerText: 'קהילה תומכת לנשים ולמתמודדות עם סרטן. יחד אנחנו חזקות יותר.',
   isVisible: true,
   active: true,
 };
 
 const FALLBACK_ORGANIZATION = {
-  name: 'She-Na',
+  name: 'SHE-NA',
   tagline: FALLBACK_HERO.eyebrow,
   description: FALLBACK_ABOUT.intro,
   email: FALLBACK_CONTACT.email,
@@ -663,12 +709,71 @@ function normalizeSupportArea(docData, fallbackArea = {}) {
     icon: firstTextValue(docData.icon, docData.initial, fallbackArea.icon) || title.charAt(0),
     title,
     description,
+    imageUrl: firstImageUrl(
+      docData.imageUrl,
+      docData.imageURL,
+      docData.thumbnailUrl,
+      docData.coverImageUrl,
+      docData.heroImageUrl,
+      docData.image,
+      docData.thumbnail,
+      docData.coverImage,
+      fallbackArea.imageUrl,
+    ),
+    imageAlt: firstImageAlt(title, docData.imageAlt, docData.altText, docData.image, docData.thumbnail, docData.coverImage),
+    readMoreUrl: firstTextValue(docData.readMoreUrl, docData.url, docData.link, docData.href, fallbackArea.readMoreUrl) || '#support',
     isPublic: docData.isPublic !== false && docData.public !== false,
     isVisible: docData.isVisible !== false && docData.visible !== false && docData.hidden !== true,
     isPublished: docData.isPublished !== false && docData.published !== false,
     active: docData.active !== false && docData.status !== 'inactive',
     status: docData.status || fallbackArea.status || 'published',
     order: docData.order ?? docData.displayOrder ?? docData.sortOrder ?? 0,
+  };
+}
+
+function normalizeHeroContent(docData = {}, fallbackHero = FALLBACK_HERO) {
+  const title = firstTextValue(docData.title, docData.heading, fallbackHero.title);
+  const message = firstTextValue(docData.message, docData.subtitle, docData.description, docData.summary, fallbackHero.message);
+
+  return {
+    ...fallbackHero,
+    id: docData.id || fallbackHero.id,
+    eyebrow: firstTextValue(docData.eyebrow, docData.label, fallbackHero.eyebrow),
+    title,
+    message,
+    supportText: firstTextValue(docData.supportText, docData.body, docData.content, docData.text, fallbackHero.supportText),
+    imageUrl: firstImageUrl(
+      docData.imageUrl,
+      docData.imageURL,
+      docData.heroImageUrl,
+      docData.heroImageURL,
+      docData.coverImageUrl,
+      docData.coverImageURL,
+      docData.image,
+      docData.heroImage,
+      docData.coverImage,
+      fallbackHero.imageUrl,
+    ),
+    imageAlt: firstImageAlt(title, docData.imageAlt, docData.altText, docData.image, docData.heroImage, docData.coverImage),
+    visualTitle: firstTextValue(docData.visualTitle, docData.badgeTitle, fallbackHero.visualTitle),
+    visualText: firstTextValue(docData.visualText, docData.badgeText, fallbackHero.visualText),
+    primaryAction: {
+      ...fallbackHero.primaryAction,
+      ...(docData.primaryAction || {}),
+      label: firstTextValue(docData.primaryAction?.label, docData.primaryCtaLabel, docData.ctaLabel, fallbackHero.primaryAction.label),
+      href: firstTextValue(docData.primaryAction?.href, docData.primaryCtaHref, docData.ctaHref, fallbackHero.primaryAction.href),
+    },
+    secondaryAction: {
+      ...fallbackHero.secondaryAction,
+      ...(docData.secondaryAction || {}),
+      label: firstTextValue(docData.secondaryAction?.label, docData.secondaryCtaLabel, fallbackHero.secondaryAction.label),
+      href: firstTextValue(docData.secondaryAction?.href, docData.secondaryCtaHref, fallbackHero.secondaryAction.href),
+    },
+    isPublic: docData.isPublic !== false && docData.public !== false,
+    isVisible: docData.isVisible !== false && docData.visible !== false && docData.hidden !== true,
+    isPublished: docData.isPublished !== false && docData.published !== false,
+    active: docData.active !== false && docData.status !== 'inactive',
+    status: docData.status || fallbackHero.status || 'published',
   };
 }
 
@@ -1158,6 +1263,18 @@ export async function getOrgInfoContent() {
   }
 }
 
+export async function getHeroContent() {
+  try {
+    const docData = await getConfirmedPublicDoc('homepage_content', 'hero');
+    const hero = docData ? normalizeHeroContent(docData) : cloneFallback(FALLBACK_HERO);
+
+    return isVisiblePublicContent(hero) ? hero : cloneFallback(FALLBACK_HERO);
+  } catch (error) {
+    warnAndFallback('Failed to load public hero content from Firestore. Using fallback hero content.', error);
+    return cloneFallback(FALLBACK_HERO);
+  }
+}
+
 export async function getPublicStatistics() {
   try {
     const docs = await getConfirmedPublicDocs('homepage_statistics');
@@ -1299,6 +1416,7 @@ export async function getHomepageContent() {
   try {
     const [
       orgInfo,
+      hero,
       statistics,
       supportAreas,
       articles,
@@ -1308,6 +1426,7 @@ export async function getHomepageContent() {
       donation,
     ] = await Promise.all([
       loadHomepageSection('organization info', getOrgInfoContent, fallbackOrgInfoContent()),
+      loadHomepageSection('hero', getHeroContent, FALLBACK_HERO),
       loadHomepageSection('statistics', getPublicStatistics, FALLBACK_STATISTICS),
       loadHomepageSection('support areas', getSupportAreas, FALLBACK_SUPPORT_AREAS),
       loadHomepageSection('articles', getPublishedArticles, FALLBACK_ARTICLES),
@@ -1319,7 +1438,7 @@ export async function getHomepageContent() {
 
     return normalizePublicHomepageContent({
       organization: orgInfo.organization,
-      hero: cloneFallback(FALLBACK_HERO),
+      hero,
       about: orgInfo.about,
       statistics,
       center: cloneFallback(FALLBACK_CENTER),

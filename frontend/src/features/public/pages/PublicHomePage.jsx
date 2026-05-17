@@ -1,26 +1,34 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import PublicNavbar from '../components/PublicNavbar';
 import HeroSection from '../components/HeroSection';
 import AboutSection from '../components/AboutSection';
 import StatisticsSection from '../components/StatisticsSection';
-import ShenaCenterSection from '../components/ShenaCenterSection';
 import SupportAreasSection from '../components/SupportAreasSection';
-import EventsPreviewSection from '../components/EventsPreviewSection';
-import RecoveryJourneySection from '../components/RecoveryJourneySection';
-import ArticlesPreviewSection from '../components/ArticlesPreviewSection';
 import TeamPreviewSection from '../components/TeamPreviewSection';
 import DonationSection from '../components/DonationSection';
-import ContactSection from '../components/ContactSection';
 import PublicFooter from '../components/PublicFooter';
 import EmptyState from '../components/EmptyState';
 import ErrorState from '../components/ErrorState';
+import useRevealOnScroll from '../hooks/useRevealOnScroll';
 import { getFallbackPublicHomepageContent, getPublicHomepageContent } from '../services/publicContentService';
 import '../styles/PublicHomePage.css';
 
 export default function PublicHomePage() {
+  const pageRef = useRef(null);
   const [content, setContent] = useState(() => getFallbackPublicHomepageContent());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const revealRefreshKey = useMemo(
+    () => [
+      loading ? 'loading' : 'ready',
+      content.supportAreas?.length || 0,
+      content.statistics?.length || 0,
+      content.teamMembers?.length || 0,
+    ].join(':'),
+    [content.statistics?.length, content.supportAreas?.length, content.teamMembers?.length, loading],
+  );
+
+  useRevealOnScroll(pageRef, revealRefreshKey);
 
   useEffect(() => {
     let isMounted = true;
@@ -52,9 +60,9 @@ export default function PublicHomePage() {
   }, []);
 
   return (
-    <div className="public-homepage">
+    <div className="public-homepage" ref={pageRef}>
       <a className="public-skip-link" href="#public-main">
-        Skip to main content
+        דילוג לתוכן המרכזי
       </a>
       <PublicNavbar organization={content.organization} />
       <main id="public-main">
@@ -66,15 +74,10 @@ export default function PublicHomePage() {
         ) : null}
         <HeroSection hero={content.hero} loading={loading} />
         <AboutSection about={content.about} supportAreas={content.supportAreas} />
-        <StatisticsSection statistics={content.statistics} isLoading={loading} />
-        <ShenaCenterSection center={content.center} />
         <SupportAreasSection supportAreas={content.supportAreas} isLoading={loading} />
-        <ArticlesPreviewSection articles={content.articles} isLoading={loading} />
+        <StatisticsSection statistics={content.statistics} isLoading={loading} />
         <TeamPreviewSection teamMembers={content.teamMembers} isLoading={loading} />
-        <EventsPreviewSection events={content.events} isLoading={loading} />
-        <RecoveryJourneySection journey={content.recoveryJourney} />
         <DonationSection donation={content.donation} />
-        <ContactSection contact={content.contact} organization={content.organization} />
       </main>
       <PublicFooter organization={content.organization} contact={content.contact} />
     </div>

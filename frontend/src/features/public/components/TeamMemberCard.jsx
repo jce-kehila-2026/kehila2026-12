@@ -12,7 +12,8 @@ export default function TeamMemberCard({ member }) {
   const { name, role, description, imageUrl, imageAlt } = member;
 
   return (
-    <article className="public-team-card">
+    <article className="public-team-card reveal">
+      <span className="public-team-card__quote-mark" aria-hidden="true">”</span>
       <div className="public-team-card__media">
         {imageUrl ? (
           <img src={imageUrl} alt={imageAlt || name} loading="lazy" />
@@ -24,9 +25,9 @@ export default function TeamMemberCard({ member }) {
       </div>
 
       <div className="public-team-card__body">
+        {description ? <p className="public-team-card__description">"{description}"</p> : null}
         <h3>{name}</h3>
         {role ? <p className="public-team-card__role">{role}</p> : null}
-        {description ? <p className="public-team-card__description">{description}</p> : null}
       </div>
     </article>
   );
