@@ -153,6 +153,18 @@ async function copyCollection(srcName, dstName) {
   }
 }
 
+async function mergeParticipantsIntoUsers() {
+  console.log(`\n── Merging participants/* → users/* ──`);
+  const snap = await db.collection('participants').get();
+  console.log(`Found ${snap.size} participant docs.`);
+  for (const d of snap.docs) {
+    // setDoc with merge keeps existing fields on users/{uid} (role, email, etc.)
+    // while folding in profile fields (firstName, lastName, avatarUrl, phone, …).
+    await db.doc(`users/${d.id}`).set(d.data(), { merge: true });
+    console.log(`  ✓ users/${d.id}`);
+  }
+}
+
 async function backfillAuditExpiresAt() {
   console.log(`\n── Backfilling audit_logs.expiresAt ──`);
   const snap = await db.collection('audit_logs').get();
@@ -220,6 +232,7 @@ async function main() {
   await copyCollection('articles', 'cms_articles');
   await copyCollection('team_profiles', 'cms_team');
   await copyCollection('org_info', 'cms_org');
+  await mergeParticipantsIntoUsers();
   await backfillAuditExpiresAt();
   await seedStats();
   console.log('\n✅ Migration complete.');

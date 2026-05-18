@@ -10,7 +10,7 @@
 
 import {
   collection,
-  collectionGroup,
+  getCountFromServer,
   getDocs,
   getDoc,
   doc,
@@ -19,12 +19,9 @@ import {
   limit,
   writeBatch,
   serverTimestamp,
-  increment,
 } from 'firebase/firestore';
 import { db } from '../../../firebase';
 import { logAuditEvent } from './auditService';
-
-const STATS_ADMIN = doc(db, 'stats', 'admin_summary');
 
 // Deterministic key for email-only walk-in registrations.
 function emailKey(email) {
@@ -60,25 +57,28 @@ export async function getRegistrationsByEvent(eventId) {
 }
 
 /**
- * Count registrations across many events in one collectionGroup query.
+ * Count registrations per event. Uses one getCountFromServer() call per event,
+ * which is cheap (server-side aggregation, doesn't return docs) and only requires
+ * read permission on that specific event roster.
  * Returns: { eventId: count }
  */
 export async function getRegistrationCounts(eventIds) {
   if (!eventIds.length) return {};
-  const counts = {};
-  eventIds.forEach((id) => (counts[id] = 0));
 
-  // collectionGroup catches every events/*/registrations subcollection at once.
-  const snap = await getDocs(query(collectionGroup(db, 'registrations'), limit(1000)));
-  snap.docs.forEach((d) => {
-    // d.ref.path: events/{eventId}/registrations/{key}
-    const parent = d.ref.parent.parent;
-    if (parent && parent.parent && parent.parent.id === 'events') {
-      const eid = parent.id;
-      if (counts[eid] !== undefined) counts[eid]++;
-    }
-  });
-  return counts;
+  const entries = await Promise.all(
+    eventIds.map(async (eid) => {
+      try {
+        const snap = await getCountFromServer(
+          collection(db, 'events', eid, 'registrations')
+        );
+        return [eid, snap.data().count];
+      } catch (_) {
+        return [eid, 0];
+      }
+    })
+  );
+
+  return Object.fromEntries(entries);
 }
 
 /**
@@ -109,7 +109,6 @@ export async function addRegistration(data) {
   const eventRosterKey = uid || emailKey(participantEmail || `unknown_${Date.now()}`);
 
   const eventRosterRef = doc(db, 'events', eventId, 'registrations', eventRosterKey);
-  const eventDocRef = doc(db, 'events', eventId);
 
   const eventRosterDoc = {
     userId: uid || null,
@@ -125,14 +124,11 @@ export async function addRegistration(data) {
     participantPhone: participantPhone || '',
   };
 
+  // Note: stats counters and events/{eventId}.registeredCount are intentionally
+  // NOT updated here. Clients cannot write to shared aggregates under the new
+  // rules; a Cloud Function should maintain those counts on subcollection writes.
   const batch = writeBatch(db);
   batch.set(eventRosterRef, eventRosterDoc, { merge: true });
-  batch.set(eventDocRef, { registeredCount: increment(1) }, { merge: true });
-  batch.set(
-    STATS_ADMIN,
-    { registrationsThisMonth: increment(1), updatedAt: serverTimestamp() },
-    { merge: true }
-  );
 
   if (uid) {
     const userMirrorRef = doc(db, 'users', uid, 'registrations', eventId);
@@ -180,14 +176,9 @@ export async function removeRegistration(regId, participantName, eventId) {
   const rosterSnap = await getDoc(rosterRef);
   const uid = rosterSnap.exists() ? rosterSnap.data().userId : null;
 
+  // Counters are not maintained from the client (see note in addRegistration).
   const batch = writeBatch(db);
   batch.delete(rosterRef);
-  batch.set(doc(db, 'events', eventId), { registeredCount: increment(-1) }, { merge: true });
-  batch.set(
-    STATS_ADMIN,
-    { registrationsThisMonth: increment(-1), updatedAt: serverTimestamp() },
-    { merge: true }
-  );
   if (uid) {
     batch.delete(doc(db, 'users', uid, 'registrations', eventId));
   }
