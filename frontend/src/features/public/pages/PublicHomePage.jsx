@@ -14,6 +14,7 @@ import JoinCommunityModal from '../components/JoinCommunityModal';
 import EmptyState from '../components/EmptyState';
 import ErrorState from '../components/ErrorState';
 import useRevealOnScroll from '../hooks/useRevealOnScroll';
+import usePublicHomeScrollReset from '../hooks/usePublicHomeScrollReset';
 import { getFallbackPublicHomepageContent, getPublicHomepageContent } from '../services/publicContentService';
 import '../styles/PublicHomePage.css';
 
@@ -43,6 +44,7 @@ export default function PublicHomePage() {
   );
 
   useRevealOnScroll(pageRef, revealRefreshKey);
+  usePublicHomeScrollReset(pageRef, { resetAfterLoad: true, isLoading: loading });
 
   useEffect(() => {
     let isMounted = true;

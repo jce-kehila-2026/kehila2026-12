@@ -106,10 +106,6 @@
     padding-block: 82px 92px;
   }
 
-  .public-section--about {
-    grid-template-columns: 1fr;
-  }
-
   .public-section__header {
     max-width: 100%;
   }
@@ -214,7 +210,6 @@
     margin-block-start: 34px;
   }
 
-  .public-about__card,
   .public-statistics__card,
   .public-team-card,
   .public-contact__item {
@@ -318,12 +313,6 @@
 
   .public-section__text {
     font-size: 1rem;
-  }
-
-  .public-about__icon {
-    width: 64px;
-    height: 64px;
-    font-size: 1.8rem;
   }
 
   .public-support__icon {

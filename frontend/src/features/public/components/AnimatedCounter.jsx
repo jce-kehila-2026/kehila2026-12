@@ -1,5 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 
+const COUNTER_DURATION_MS = 1200;
+
 function parseCounterValue(value) {
   const text = String(value ?? '');
   const match = text.match(/\d[\d,]*/);
@@ -27,47 +29,90 @@ function formatCounterValue(value, parsedValue) {
   return `${parsedValue.prefix}${new Intl.NumberFormat('en-US').format(value)}${parsedValue.suffix}`;
 }
 
-export default function AnimatedCounter({ value }) {
+function formatNumberOnly(value) {
+  return new Intl.NumberFormat('en-US').format(value);
+}
+
+function easeOutCubic(progress) {
+  return 1 - (1 - progress) ** 3;
+}
+
+function renderAffix(text) {
+  if (!text) return null;
+
+  if (text.includes('+')) {
+    return text.split(/(\+)/g).filter(Boolean).map((part, index) =>
+      part === '+' ? (
+        <span key={`accent-${index}`} className="public-statistics__value-accent">
+          {part}
+        </span>
+      ) : (
+        <span key={`text-${index}`}>{part}</span>
+      ),
+    );
+  }
+
+  return text;
+}
+
+export default function AnimatedCounter({
+  value,
+  structured = false,
+  className = '',
+  startAnimation = false,
+}) {
   const elementRef = useRef(null);
   const hasAnimatedRef = useRef(false);
   const parsedValue = useMemo(() => parseCounterValue(value), [value]);
-  const [displayValue, setDisplayValue] = useState(() => String(value ?? ''));
+  const [displayValue, setDisplayValue] = useState(() => {
+    if (!parsedValue) return String(value ?? '');
+    return formatCounterValue(0, parsedValue);
+  });
+  const [displayNumber, setDisplayNumber] = useState(() => {
+    if (!parsedValue) return String(value ?? '');
+    return formatNumberOnly(0);
+  });
 
   useEffect(() => {
-    setDisplayValue(String(value ?? ''));
     hasAnimatedRef.current = false;
-  }, [value]);
+    if (!parsedValue) {
+      setDisplayValue(String(value ?? ''));
+      setDisplayNumber(String(value ?? ''));
+      return;
+    }
+
+    setDisplayValue(formatCounterValue(0, parsedValue));
+    setDisplayNumber(formatNumberOnly(0));
+  }, [parsedValue, value]);
 
   useEffect(() => {
-    const element = elementRef.current;
-
-    if (!element || !parsedValue) return undefined;
+    if (!startAnimation || !parsedValue || hasAnimatedRef.current) return undefined;
 
     const prefersReducedMotion =
       typeof window.matchMedia === 'function' &&
       window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    if (prefersReducedMotion || typeof IntersectionObserver === 'undefined') {
-      setDisplayValue(formatCounterValue(parsedValue.finalNumber, parsedValue));
+    if (prefersReducedMotion) {
       hasAnimatedRef.current = true;
+      setDisplayValue(formatCounterValue(parsedValue.finalNumber, parsedValue));
+      setDisplayNumber(formatNumberOnly(parsedValue.finalNumber));
       return undefined;
     }
 
     let animationFrameId = 0;
+    hasAnimatedRef.current = true;
 
     const runCounter = () => {
-      if (hasAnimatedRef.current) return;
-
-      hasAnimatedRef.current = true;
-      const duration = 1350;
       const startTime = performance.now();
 
       const tick = (currentTime) => {
-        const progress = Math.min((currentTime - startTime) / duration, 1);
-        const easedProgress = 1 - Math.pow(1 - progress, 3);
-        const currentValue = Math.round(parsedValue.finalNumber * easedProgress);
+        const progress = Math.min((currentTime - startTime) / COUNTER_DURATION_MS, 1);
+        const easedProgress = easeOutCubic(progress);
+        const currentValue =
+          progress >= 1 ? parsedValue.finalNumber : Math.round(parsedValue.finalNumber * easedProgress);
 
         setDisplayValue(formatCounterValue(currentValue, parsedValue));
+        setDisplayNumber(formatNumberOnly(currentValue));
 
         if (progress < 1) {
           animationFrameId = requestAnimationFrame(tick);
@@ -75,31 +120,32 @@ export default function AnimatedCounter({ value }) {
       };
 
       setDisplayValue(formatCounterValue(0, parsedValue));
+      setDisplayNumber(formatNumberOnly(0));
       animationFrameId = requestAnimationFrame(tick);
     };
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (!entry.isIntersecting) return;
+    runCounter();
 
-          runCounter();
-          observer.unobserve(entry.target);
-        });
-      },
-      {
-        threshold: 0.42,
-        rootMargin: '0px 0px -8% 0px',
-      },
+    return () => cancelAnimationFrame(animationFrameId);
+  }, [parsedValue, startAnimation]);
+
+  if (!structured || !parsedValue) {
+    return (
+      <strong ref={elementRef} className={className}>
+        {displayValue}
+      </strong>
     );
+  }
 
-    observer.observe(element);
-
-    return () => {
-      observer.disconnect();
-      cancelAnimationFrame(animationFrameId);
-    };
-  }, [parsedValue, value]);
-
-  return <strong ref={elementRef}>{displayValue}</strong>;
+  return (
+    <span className={`public-statistics__value ${className}`.trim()} ref={elementRef}>
+      {parsedValue.prefix ? (
+        <span className="public-statistics__value-affix">{renderAffix(parsedValue.prefix)}</span>
+      ) : null}
+      <strong className="public-statistics__value-number">{displayNumber}</strong>
+      {parsedValue.suffix ? (
+        <span className="public-statistics__value-affix">{renderAffix(parsedValue.suffix)}</span>
+      ) : null}
+    </span>
+  );
 }
