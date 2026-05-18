@@ -2,38 +2,29 @@ import FavoriteBorderRoundedIcon from '@mui/icons-material/FavoriteBorderRounded
 import GroupsOutlinedIcon from '@mui/icons-material/GroupsOutlined';
 import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
 import EventAvailableOutlinedIcon from '@mui/icons-material/EventAvailableOutlined';
-import WestRoundedIcon from '@mui/icons-material/WestRounded';
 
 const ABOUT_CARDS = [
   {
     title: 'תמיכה רגשית',
     description: 'ליווי אישי וקבוצתי במסע שלך עם הבנה ואמפתיה.',
-    buttonLabel: 'קראי עוד',
-    href: '#contact',
     Icon: FavoriteBorderRoundedIcon,
     iconStroke: true,
   },
   {
     title: 'קהילה בטוחה',
     description: 'מרחב תומך ומכיל לכל אישה בכל שלב במסע.',
-    buttonLabel: 'להצטרפות',
-    href: '/login',
     Icon: GroupsOutlinedIcon,
     iconStroke: true,
   },
   {
     title: 'ליווי אישי',
     description: 'הדרכה מקצועית ואישית מותאמת לצרכים שלך.',
-    buttonLabel: 'פרטים נוספים',
-    href: '#contact',
     Icon: AutoAwesomeOutlinedIcon,
     iconStroke: true,
   },
   {
     title: 'סדנאות ואירועים',
     description: 'פעילויות העשרה ומפגשים מעצימים לנפש ולגוף.',
-    buttonLabel: 'לגלות עוד',
-    href: '#events',
     Icon: EventAvailableOutlinedIcon,
     iconStroke: true,
   },
@@ -103,10 +94,6 @@ export default function AboutSection({ about = {}, supportAreas = [] }) {
                     <span className="public-about__card-divider-line" />
                   </div>
                   <p className="public-about__card-text">{description}</p>
-                  <a className="public-about__card-btn" href={card.href}>
-                    <span>{card.buttonLabel}</span>
-                    <WestRoundedIcon fontSize="inherit" aria-hidden="true" />
-                  </a>
                 </article>
               );
             })}

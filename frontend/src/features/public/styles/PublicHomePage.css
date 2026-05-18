@@ -2,6 +2,7 @@
 @import "./public-sections.css";
 @import "./public-cards.css";
 @import "./public-about-section.css";
+@import "./public-statistics-section.css";
 @import "./public-responsive.css";
 
 .public-homepage :where(.public-hero h1) {
@@ -13,7 +14,7 @@
   font-weight: 900;
 }
 
-.public-homepage :where(.public-button, .public-navbar__cta, .public-eyebrow, .public-statistics__card span) {
+.public-homepage :where(.public-button, .public-navbar__cta, .public-eyebrow, .public-statistics__card h3) {
   font-weight: 900;
 }
 
