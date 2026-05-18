@@ -6,7 +6,6 @@
 
   .public-support__grid,
   .public-team-grid,
-  .public-journey__timeline,
   .public-articles-grid,
   .public-events-grid,
   .public-contact__details {
@@ -169,7 +168,6 @@
 
   .public-section__header--centered,
   .public-section__header--team,
-  .public-section__header--journey,
   .public-section__header--articles,
   .public-section__header--events,
   .public-section__header--contact {
@@ -186,7 +184,6 @@
   .public-support__grid,
   .public-statistics__grid,
   .public-team-grid,
-  .public-journey__timeline,
   .public-articles-grid,
   .public-events-grid,
   .public-contact__details,
@@ -198,7 +195,6 @@
   .public-support__grid,
   .public-statistics__grid,
   .public-team-grid,
-  .public-journey__timeline,
   .public-articles-grid,
   .public-events-grid,
   .public-contact__details {
@@ -209,7 +205,6 @@
   .public-about__card,
   .public-statistics__card,
   .public-team-card,
-  .public-journey__card,
   .public-contact__item {
     min-height: auto;
   }
@@ -217,7 +212,6 @@
   .public-support__body,
   .public-about__card,
   .public-team-card,
-  .public-journey__card,
   .public-article-card__body,
   .public-event-card__body,
   .public-contact__item {

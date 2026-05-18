@@ -235,11 +235,6 @@
   font-weight: 900;
 }
 
-.public-section--journey {
-  background: linear-gradient(180deg, #fff9fd 0%, #ffffff 100%);
-}
-
-.public-section__header--journey,
 .public-section__header--articles,
 .public-section__header--events,
 .public-section__header--contact {
@@ -248,7 +243,6 @@
   text-align: center;
 }
 
-.public-journey__timeline,
 .public-articles-grid,
 .public-events-grid,
 .public-contact__details {
@@ -257,13 +251,11 @@
   margin-block-start: 58px;
 }
 
-.public-journey__timeline,
 .public-articles-grid,
 .public-events-grid {
   grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
-.public-journey__card,
 .public-article-card,
 .public-event-card,
 .public-contact__item {
@@ -274,7 +266,6 @@
   transition: transform 320ms ease, box-shadow 320ms ease, border-color 320ms ease;
 }
 
-.public-journey__card:hover,
 .public-article-card:hover,
 .public-event-card:hover,
 .public-contact__item:hover {
@@ -283,36 +274,6 @@
   transform: translateY(-5px);
 }
 
-.public-journey__card {
-  display: grid;
-  align-content: start;
-  gap: 14px;
-  min-height: 300px;
-  padding-block: 34px;
-  padding-inline: 30px;
-}
-
-.public-journey__step {
-  display: inline-grid;
-  width: 64px;
-  height: 64px;
-  place-items: center;
-  color: #ffffff;
-  background: linear-gradient(135deg, var(--public-purple-2), var(--public-pink));
-  border-radius: 20px;
-  box-shadow: 0 14px 30px rgba(127, 34, 217, 0.22);
-  font-size: 1.55rem;
-  font-weight: 900;
-}
-
-.public-journey__label {
-  margin: 8px 0 0;
-  color: var(--public-pink);
-  font-size: 0.98rem;
-  font-weight: 900;
-}
-
-.public-journey__card h3,
 .public-article-card h3,
 .public-event-card h3,
 .public-contact__item span {
@@ -320,7 +281,6 @@
   color: var(--public-ink);
 }
 
-.public-journey__card h3,
 .public-article-card h3,
 .public-event-card h3 {
   font-size: clamp(1.35rem, 1.9vw, 1.65rem);
@@ -328,7 +288,6 @@
   line-height: 1.25;
 }
 
-.public-journey__card p,
 .public-article-card p,
 .public-event-card p,
 .public-event-card dd,
@@ -461,10 +420,6 @@
   color: var(--public-pink);
   font-size: 0.98rem;
   font-weight: 900;
-}
-
-.public-journey__card .public-journey__label {
-  color: var(--public-pink);
 }
 
 .public-contact__item a {
