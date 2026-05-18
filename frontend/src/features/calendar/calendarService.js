@@ -1,4 +1,12 @@
-import { addDoc, collection, getDocs, query, serverTimestamp, where } from 'firebase/firestore';
+// Phase 2: Calendar data now reads from per-user subcollections instead of
+// scanning top-level collections by userId/email.
+//   - Notes:        users/{uid}/calendar_notes/{noteId}
+//   - Registrations: users/{uid}/registrations/{eventId}
+//   - Appointments: users/{uid}/appointments/{apptId}   (mirror of /appointments)
+// The top-level /events collection is still used for display details — joined
+// in-memory by event id from the user's registration mirror.
+
+import { addDoc, collection, doc, getDoc, getDocs, query, limit, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../firebase';
 
 function toDate(value) {
@@ -53,7 +61,7 @@ function addMinutes(time, minutesToAdd) {
   return toTimeKey(date);
 }
 
-function normalizeEvent(docData, registeredEventIds) {
+function normalizeEvent(docData) {
   const date = toDate(docData.date || docData.startAt || docData.startDate || docData.startTime);
   const startTime = normalizeTime(docData.startTime || docData.time || date, '10:00');
   const endTime = normalizeTime(docData.endTime || docData.endAt, addMinutes(startTime, 60));
@@ -61,13 +69,13 @@ function normalizeEvent(docData, registeredEventIds) {
   return {
     id: docData.id,
     title: docData.title || 'She-Na Event',
-    type: registeredEventIds.has(docData.id) ? 'registration' : 'event',
+    type: 'registration',
     date: docData.dateKey || toDateKey(date),
     startTime,
     endTime,
     location: docData.location || '',
     description: docData.description || '',
-    registered: registeredEventIds.has(docData.id),
+    registered: true,
   };
 }
 
@@ -85,7 +93,7 @@ function normalizeAppointment(docData) {
     startTime,
     endTime,
     location: docData.location || docData.room || '',
-    description: docData.description || docData.notes || `${docData.providerName || 'Provider'} appointment.`,
+    description: docData.description || docData.notes || `${docData.providerName || docData.therapistName || 'Provider'} appointment.`,
     registered: true,
   };
 }
@@ -106,50 +114,58 @@ function normalizeNote(docData) {
   };
 }
 
-async function getCollection(name, constraints = []) {
-  const ref = constraints.length > 0 ? query(collection(db, name), ...constraints) : collection(db, name);
-  const snap = await getDocs(ref);
-  return snap.docs.map((document) => ({ id: document.id, ...document.data() }));
-}
-
-async function getUserCollection(name, user) {
-  if (!user?.uid) return [];
-
-  return getCollection(name, [where('userId', '==', user.uid)]);
-}
-
-async function getUserCollectionByEmail(name, user, emailField = 'participantEmail') {
-  if (!user?.email) return [];
-
-  return getCollection(name, [where(emailField, '==', user.email)]);
+async function getUserSubcollection(uid, name) {
+  if (!uid) return [];
+  const snap = await getDocs(
+    query(collection(db, 'users', uid, name), limit(100))
+  );
+  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 }
 
 export async function getCalendarData(user) {
-  const [events, registrations, appointments, notes] = await Promise.all([
-    getCollection('events'),
-    getUserCollectionByEmail('event_registrations', user),
-    getUserCollectionByEmail('appointments', user),
-    getUserCollection('calendar_notes', user),
+  const uid = user?.uid;
+  if (!uid) {
+    return { events: [], appointments: [], notes: [] };
+  }
+
+  const [registrations, appointments, notes] = await Promise.all([
+    getUserSubcollection(uid, 'registrations'),
+    getUserSubcollection(uid, 'appointments'),
+    getUserSubcollection(uid, 'calendar_notes'),
   ]);
 
-  const registeredEventIds = new Set(
-    registrations
-      .map((registration) => registration.eventId || registration.eventID || registration.eventRef?.id)
-      .filter(Boolean),
+  // Hydrate registration mirrors with the latest event doc (in case denorm is stale).
+  const eventsFromRegs = await Promise.all(
+    registrations.map(async (reg) => {
+      try {
+        const eventSnap = await getDoc(doc(db, 'events', reg.eventId || reg.id));
+        if (eventSnap.exists()) {
+          return { id: eventSnap.id, ...eventSnap.data() };
+        }
+      } catch (_) {}
+      // Fallback to embedded snapshot if the source event was deleted.
+      return {
+        id: reg.eventId || reg.id,
+        title: reg.eventTitle,
+        date: reg.eventDate,
+        location: reg.eventLocation,
+      };
+    })
   );
 
   return {
-    events: events
-      .filter((event) => !event.status || event.status === 'published')
-      .filter((event) => registeredEventIds.has(event.id))
-      .map((event) => normalizeEvent(event, registeredEventIds))
-      .filter((event) => event.date),
+    events: eventsFromRegs.map(normalizeEvent).filter((event) => event.date),
     appointments: appointments.map(normalizeAppointment).filter((appointment) => appointment.date),
     notes: notes.map(normalizeNote).filter((note) => note.date),
   };
 }
 
+/**
+ * Create a personal calendar note under the user's subcollection.
+ */
 export async function createCalendarNote(user, note) {
+  if (!user?.uid) throw new Error('Cannot save a note: not signed in.');
+
   const payload = {
     title: note.title,
     date: new Date(`${note.date}T${note.time}`),
@@ -157,14 +173,11 @@ export async function createCalendarNote(user, note) {
     startTime: note.time,
     endTime: addMinutes(note.time, 30),
     content: note.content,
-    userId: user?.uid || null,
-    uid: user?.uid || null,
-    userEmail: user?.email || null,
-    email: user?.email || null,
+    userId: user.uid,
     createdAt: serverTimestamp(),
   };
 
-  const ref = await addDoc(collection(db, 'calendar_notes'), payload);
+  const ref = await addDoc(collection(db, 'users', user.uid, 'calendar_notes'), payload);
 
   return normalizeNote({ id: ref.id, ...payload });
 }

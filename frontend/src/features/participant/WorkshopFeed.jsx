@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { subscribeToPublishedEvents } from '../admin/services/eventService';
+import { getPublishedEvents } from '../admin/services/eventService';
 import {
   getRegistrationCounts,
   getUserRegisteredEventIds,
@@ -42,12 +42,20 @@ export default function WorkshopFeed() {
   }, [currentUser?.email]);
 
   useEffect(() => {
-    const unsubscribe = subscribeToPublishedEvents((data) => {
-      setEvents(data);
-      setLoading(false);
-      refreshRegistrationData(data);
-    });
-    return unsubscribe;
+    let cancelled = false;
+    getPublishedEvents()
+      .then((data) => {
+        if (cancelled) return;
+        setEvents(data);
+        setLoading(false);
+        refreshRegistrationData(data);
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        console.error('Failed to load published events:', err);
+        setLoading(false);
+      });
+    return () => { cancelled = true; };
   }, [refreshRegistrationData]);
 
   async function handleRegister(event) {
@@ -56,8 +64,12 @@ export default function WorkshopFeed() {
     try {
       const regId = await addRegistration({
         eventId: event.id,
+        uid: currentUser.uid,
         participantName: currentUser.displayName || currentUser.email.split('@')[0],
         participantEmail: currentUser.email,
+        eventTitle: event.title,
+        eventDate: event.startTime || event.date || null,
+        eventLocation: event.location || '',
       });
       setRegisteredMap((prev) => ({ ...prev, [event.id]: regId }));
       setCounts((prev) => ({ ...prev, [event.id]: (prev[event.id] ?? 0) + 1 }));
@@ -74,7 +86,7 @@ export default function WorkshopFeed() {
     if (!regId) return;
     setRegistering(event.id);
     try {
-      await removeRegistration(regId, currentUser.displayName || currentUser.email);
+      await removeRegistration(regId, currentUser.displayName || currentUser.email, event.id);
       setRegisteredMap((prev) => {
         const next = { ...prev };
         delete next[event.id];

@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { collection, addDoc, updateDoc, deleteDoc, doc, getDocs, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, updateDoc, deleteDoc, doc, getDocs, query, limit, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../../firebase';
 import { logAuditEvent } from '../services/auditService';
 import Box from '@mui/material/Box';
@@ -18,10 +18,11 @@ import NewspaperIcon from '@mui/icons-material/Newspaper';
 import GroupsIcon from '@mui/icons-material/Groups';
 import BusinessIcon from '@mui/icons-material/Business';
 
+// Phase 2: CMS now uses cms_* collection names.
 const TABS = [
-  { key: 'articles', label: 'Articles', icon: <NewspaperIcon /> },
-  { key: 'team_profiles', label: 'Team Profiles', icon: <GroupsIcon /> },
-  { key: 'org_info', label: 'Organization Info', icon: <BusinessIcon /> },
+  { key: 'cms_articles', label: 'Articles', icon: <NewspaperIcon /> },
+  { key: 'cms_team', label: 'Team Profiles', icon: <GroupsIcon /> },
+  { key: 'cms_org', label: 'Organization Info', icon: <BusinessIcon /> },
 ];
 
 export default function CMSPage() {
@@ -36,7 +37,7 @@ export default function CMSPage() {
   const fetchItems = useCallback(async () => {
     setLoading(true);
     try {
-      const snap = await getDocs(collection(db, activeTab));
+      const snap = await getDocs(query(collection(db, activeTab), limit(100)));
       setItems(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
     } catch (err) {
       console.error('CMS fetch failed:', err);
