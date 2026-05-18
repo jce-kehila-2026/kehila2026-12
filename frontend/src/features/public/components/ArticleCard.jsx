@@ -11,7 +11,7 @@ export default function ArticleCard({ article }) {
   const summary = description || content;
 
   return (
-    <article className="public-article-card">
+    <article className="public-article-card reveal">
       <div className="public-article-card__media">
         {imageUrl ? (
           <img src={imageUrl} alt={imageAlt || title} loading="lazy" />
@@ -25,7 +25,7 @@ export default function ArticleCard({ article }) {
         <h3>{title}</h3>
         <p>{summary}</p>
         <a className="public-button public-button--tertiary public-article-card__button" href={readMoreUrl}>
-          Read More
+          לקריאה נוספת
         </a>
       </div>
     </article>

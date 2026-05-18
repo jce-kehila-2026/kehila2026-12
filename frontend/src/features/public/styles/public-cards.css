@@ -235,6 +235,269 @@
   font-weight: 900;
 }
 
+.public-section--journey {
+  background: linear-gradient(180deg, #fff9fd 0%, #ffffff 100%);
+}
+
+.public-section__header--journey,
+.public-section__header--articles,
+.public-section__header--events,
+.public-section__header--contact {
+  max-width: 880px;
+  margin-inline: auto;
+  text-align: center;
+}
+
+.public-journey__timeline,
+.public-articles-grid,
+.public-events-grid,
+.public-contact__details {
+  display: grid;
+  gap: 28px;
+  margin-block-start: 58px;
+}
+
+.public-journey__timeline,
+.public-articles-grid,
+.public-events-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.public-journey__card,
+.public-article-card,
+.public-event-card,
+.public-contact__item {
+  background: var(--public-card);
+  border: 1px solid rgba(223, 50, 123, 0.12);
+  border-radius: 28px;
+  box-shadow: var(--public-shadow);
+  transition: transform 320ms ease, box-shadow 320ms ease, border-color 320ms ease;
+}
+
+.public-journey__card:hover,
+.public-article-card:hover,
+.public-event-card:hover,
+.public-contact__item:hover {
+  border-color: rgba(223, 50, 123, 0.22);
+  box-shadow: 0 24px 58px rgba(58, 27, 84, 0.16);
+  transform: translateY(-5px);
+}
+
+.public-journey__card {
+  display: grid;
+  align-content: start;
+  gap: 14px;
+  min-height: 300px;
+  padding-block: 34px;
+  padding-inline: 30px;
+}
+
+.public-journey__step {
+  display: inline-grid;
+  width: 64px;
+  height: 64px;
+  place-items: center;
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--public-purple-2), var(--public-pink));
+  border-radius: 20px;
+  box-shadow: 0 14px 30px rgba(127, 34, 217, 0.22);
+  font-size: 1.55rem;
+  font-weight: 900;
+}
+
+.public-journey__label {
+  margin: 8px 0 0;
+  color: var(--public-pink);
+  font-size: 0.98rem;
+  font-weight: 900;
+}
+
+.public-journey__card h3,
+.public-article-card h3,
+.public-event-card h3,
+.public-contact__item span {
+  margin: 0;
+  color: var(--public-ink);
+}
+
+.public-journey__card h3,
+.public-article-card h3,
+.public-event-card h3 {
+  font-size: clamp(1.35rem, 1.9vw, 1.65rem);
+  font-weight: 900;
+  line-height: 1.25;
+}
+
+.public-journey__card p,
+.public-article-card p,
+.public-event-card p,
+.public-event-card dd,
+.public-contact__item p,
+.public-contact__item a {
+  margin: 0;
+  color: var(--public-muted);
+  font-size: 1.05rem;
+  line-height: 1.75;
+}
+
+.public-article-card,
+.public-event-card {
+  display: grid;
+  overflow: hidden;
+}
+
+.public-article-card__media,
+.public-event-card__media {
+  position: relative;
+  aspect-ratio: 16 / 9.3;
+  overflow: hidden;
+  background: #eadcf4;
+}
+
+.public-article-card__media::after,
+.public-event-card__media::after {
+  position: absolute;
+  inset: 0;
+  content: "";
+  background: linear-gradient(180deg, rgba(75, 19, 107, 0.02), rgba(75, 19, 107, 0.32));
+}
+
+.public-article-card__media img,
+.public-event-card__media img,
+.public-article-card__placeholder,
+.public-event-card__placeholder {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.public-article-card__media img,
+.public-event-card__media img {
+  object-fit: cover;
+  transition: transform 520ms ease;
+}
+
+.public-article-card:hover .public-article-card__media img,
+.public-event-card:hover .public-event-card__media img {
+  transform: scale(1.06);
+}
+
+.public-article-card__placeholder,
+.public-event-card__placeholder {
+  background: linear-gradient(135deg, rgba(236, 22, 140, 0.16), rgba(127, 34, 217, 0.2));
+}
+
+.public-article-card__placeholder span,
+.public-event-card__placeholder span {
+  display: none;
+}
+
+.public-article-card__body,
+.public-event-card__body {
+  display: grid;
+  align-content: start;
+  gap: 18px;
+  padding-block: 28px;
+  padding-inline: 28px;
+}
+
+.public-event-card__content {
+  display: grid;
+  gap: 12px;
+}
+
+.public-event-card__details {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+}
+
+.public-event-card__details div {
+  display: grid;
+  gap: 3px;
+  padding-block-start: 12px;
+  border-top: 1px solid var(--public-line);
+}
+
+.public-event-card dt {
+  color: var(--public-pink);
+  font-size: 0.92rem;
+  font-weight: 900;
+}
+
+.public-event-card__button {
+  justify-self: start;
+  margin-block-start: 4px;
+}
+
+.public-article-card__button {
+  justify-self: start;
+  color: var(--public-purple-2);
+  font-weight: 900;
+}
+
+.public-article-card__button::before {
+  content: "← ";
+}
+
+.public-contact {
+  background: #ffffff;
+}
+
+.public-contact__details {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.public-contact__item {
+  display: grid;
+  align-content: start;
+  gap: 10px;
+  min-height: 180px;
+  padding-block: 30px;
+  padding-inline: 28px;
+}
+
+.public-contact__item span {
+  color: var(--public-pink);
+  font-size: 0.98rem;
+  font-weight: 900;
+}
+
+.public-journey__card .public-journey__label {
+  color: var(--public-pink);
+}
+
+.public-contact__item a {
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.public-contact__item a:hover,
+.public-contact__item a:focus-visible {
+  color: var(--public-pink);
+}
+
+.public-contact__social {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.public-contact__social a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding-block: 10px;
+  padding-inline: 14px;
+  color: var(--public-purple-2);
+  background: var(--public-soft);
+  border: 1px solid var(--public-line);
+  border-radius: 999px;
+  font-weight: 900;
+  line-height: 1;
+}
+
 .public-donation {
   position: relative;
   display: grid;

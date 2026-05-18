@@ -21,39 +21,39 @@ export default function ContactSection({ contact = {}, organization = {} }) {
 
   return (
     <section className="public-section public-contact" id="contact" aria-labelledby="public-contact-title">
-      <div className="public-section__header">
+      <div className="public-section__header public-section__header--contact reveal">
         <p className="public-eyebrow">{contactContent.eyebrow}</p>
         <h2 id="public-contact-title">{contactContent.title}</h2>
-        <p className="public-section__text">{contactContent.description}</p>
+        <p className="public-section__text reveal reveal-delay-1">{contactContent.description}</p>
       </div>
 
       {hasAnyContact ? (
-        <div className="public-contact__details">
+        <div className="public-contact__details stagger-children">
           {hasContactValue(contactContent.email) && (
-            <article className="public-contact__item">
-              <span>Email</span>
+            <article className="public-contact__item reveal">
+              <span>אימייל</span>
               <a href={`mailto:${contactContent.email}`}>{contactContent.email}</a>
             </article>
           )}
 
           {hasContactValue(contactContent.phone) && (
-            <article className="public-contact__item">
-              <span>Phone</span>
+            <article className="public-contact__item reveal">
+              <span>טלפון</span>
               <a href={`tel:${contactContent.phone}`}>{contactContent.phone}</a>
             </article>
           )}
 
           {hasContactValue(contactContent.address) && (
-            <article className="public-contact__item">
-              <span>Location</span>
+            <article className="public-contact__item reveal">
+              <span>מיקום</span>
               <p>{contactContent.address}</p>
             </article>
           )}
 
           {socialLinks.length > 0 && (
-            <article className="public-contact__item public-contact__item--social">
-              <span>Social</span>
-              <nav className="public-contact__social" aria-label="Contact social links">
+            <article className="public-contact__item public-contact__item--social reveal">
+              <span>רשתות חברתיות</span>
+              <nav className="public-contact__social" aria-label="קישורים לרשתות חברתיות">
                 {socialLinks.map((link) => (
                   <a href={link.href} key={link.id || link.label}>
                     {link.label}
@@ -65,7 +65,7 @@ export default function ContactSection({ contact = {}, organization = {} }) {
         </div>
       ) : (
         <div className="public-section__empty">
-          Contact information will be published here once it is available.
+          פרטי יצירת קשר יופיעו כאן כאשר יהיו זמינים.
         </div>
       )}
     </section>
