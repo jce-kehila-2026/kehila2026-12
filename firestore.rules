@@ -99,6 +99,12 @@ service cloud.firestore {
       allow read, update, delete: if isAdmin();
     }
 
+    // Public join requests from the website modal.
+    match /joinRequests/{requestId} {
+      allow create: if true;
+      allow read, update, delete: if isAdmin();
+    }
+
     // ── Appointments ──
     match /appointments/{appointmentId} {
       allow read: if isAdmin()

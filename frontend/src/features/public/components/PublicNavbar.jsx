@@ -10,7 +10,7 @@ const PUBLIC_LINKS = [
   { label: 'צרי קשר', href: '#contact' },
 ];
 
-export default function PublicNavbar({ organization }) {
+export default function PublicNavbar({ organization, onJoinClick }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const organizationName = organization?.name || 'SHE-NA';
@@ -39,6 +39,7 @@ export default function PublicNavbar({ organization }) {
   function handleJoinClick(event) {
     event.preventDefault();
     closeMenu();
+    onJoinClick?.();
   }
 
   return (
