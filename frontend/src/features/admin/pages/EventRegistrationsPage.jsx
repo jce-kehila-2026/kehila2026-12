@@ -69,7 +69,7 @@ export default function EventRegistrationsPage() {
   async function handleRemove(regId, name) {
     if (!window.confirm(`Remove "${name}" from this event?`)) return;
     try {
-      await removeRegistration(regId, name);
+      await removeRegistration(regId, name, eventId);
       fetchData();
     } catch (err) {
       console.error('Failed to remove registration:', err);

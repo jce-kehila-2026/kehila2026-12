@@ -29,3 +29,6 @@ backend/privateKey.json
 # Firebase
 .firebase/
 .firebaserc
+# Firebase Admin service account (do NOT commit)
+serviceAccount.json
+

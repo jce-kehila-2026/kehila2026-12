@@ -1,0 +1,11 @@
+{
+  "indexes": [],
+  "fieldOverrides": [
+    {
+      "collectionGroup": "audit_logs",
+      "fieldPath": "expiresAt",
+      "ttl": true,
+      "indexes": []
+    }
+  ]
+}
