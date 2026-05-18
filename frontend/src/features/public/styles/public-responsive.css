@@ -169,7 +169,7 @@
     display: none;
   }
 
-  .public-section {
+  .public-section:not(.public-section--statistics) {
     padding-block: 58px;
     padding-inline: 18px;
   }

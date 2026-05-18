@@ -5,7 +5,6 @@ import AboutSection from '../components/AboutSection';
 import StatisticsSection from '../components/StatisticsSection';
 import SupportAreasSection from '../components/SupportAreasSection';
 import TeamPreviewSection from '../components/TeamPreviewSection';
-import DonationSection from '../components/DonationSection';
 import ArticlesPreviewSection from '../components/ArticlesPreviewSection';
 import EventsPreviewSection from '../components/EventsPreviewSection';
 import ContactSection from '../components/ContactSection';
@@ -93,7 +92,6 @@ export default function PublicHomePage() {
         <TeamPreviewSection teamMembers={content.teamMembers} isLoading={loading} />
         <ArticlesPreviewSection articles={content.articles} isLoading={loading} hasError={error} />
         <EventsPreviewSection events={content.events} isLoading={loading} hasError={error} />
-        <DonationSection donation={content.donation} />
         <ContactSection contact={content.contact} organization={content.organization} />
       </main>
       <PublicFooter organization={content.organization} contact={content.contact} />

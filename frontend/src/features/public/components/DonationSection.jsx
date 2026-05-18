@@ -1,3 +1,5 @@
+import { resolvePublicDonationHref } from '../constants/publicDonationLink';
+
 export default function DonationSection({ donation = {} }) {
   return (
     <section className="public-donation reveal" id="donate" aria-labelledby="public-donation-title">
@@ -6,7 +8,10 @@ export default function DonationSection({ donation = {} }) {
         <h2 id="public-donation-title">{donation.title}</h2>
         <p>{donation.description}</p>
       </div>
-      <a className="public-button public-button--primary public-donation__button reveal reveal-delay-2" href={donation.href}>
+      <a
+        className="public-button public-button--primary public-donation__button reveal reveal-delay-2"
+        href={resolvePublicDonationHref(donation.href)}
+      >
         {donation.buttonLabel}
       </a>
     </section>

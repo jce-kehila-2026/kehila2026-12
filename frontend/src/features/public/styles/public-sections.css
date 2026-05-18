@@ -263,7 +263,7 @@
   }
 }
 
-.public-section {
+.public-section:not(.public-section--statistics) {
   padding-block: clamp(70px, 8vw, 118px);
   padding-inline: clamp(20px, 8vw, 120px);
 }

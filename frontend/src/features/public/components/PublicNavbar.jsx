@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import sheNaLogo from '../../../assets/she-na-logo.png';
+import { PUBLIC_DONATION_TARGET } from '../constants/publicDonationLink';
 
 const PUBLIC_LINKS = [
   { label: 'הבית', href: '#home' },
   { label: 'מי אנחנו', href: '#about' },
   { label: 'בואי נלמד ביחד', href: '#support' },
   { label: 'סיפורי השראה', href: '#stories' },
-  { label: 'תרומות', href: '#donate' },
+  { label: 'תרומות', href: PUBLIC_DONATION_TARGET },
   { label: 'צרי קשר', href: '#contact' },
 ];
 

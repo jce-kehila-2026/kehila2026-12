@@ -22,6 +22,7 @@
   text-align: start;
   font-family: "Assistant", "Rubik", "Segoe UI", Arial, sans-serif;
   scroll-behavior: smooth;
+  scroll-padding-top: calc(var(--public-navbar-offset) + 12px);
 }
 
 .public-homepage *,

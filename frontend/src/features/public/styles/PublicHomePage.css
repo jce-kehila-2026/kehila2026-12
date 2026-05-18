@@ -14,7 +14,7 @@
   font-weight: 900;
 }
 
-.public-homepage :where(.public-button, .public-navbar__cta, .public-eyebrow, .public-statistics__card h3) {
+.public-homepage :where(.public-button, .public-navbar__cta, .public-eyebrow) {
   font-weight: 900;
 }
 

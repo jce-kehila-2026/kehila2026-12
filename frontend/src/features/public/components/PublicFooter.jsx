@@ -1,4 +1,5 @@
 import footerLogo from '../../../assets/logo2.png';
+import { PUBLIC_DONATION_TARGET } from '../constants/publicDonationLink';
 import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
 import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined';
 import LinkedInIcon from '@mui/icons-material/LinkedIn';
@@ -34,7 +35,7 @@ export default function PublicFooter({ organization, contact = {} }) {
             <a href="#about">מי אנחנו</a>
             <a href="#support">בואי נלמד ביחד</a>
             <a href="#stories">סיפורי השראה</a>
-            <a href="#donate">תרומות</a>
+            <a href={PUBLIC_DONATION_TARGET}>תרומות</a>
           </nav>
         </div>
 

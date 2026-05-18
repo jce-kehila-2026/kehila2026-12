@@ -1,5 +1,5 @@
 import { useRef } from 'react';
-import { BookHeart, CalendarHeart, HeartHandshake, Sparkles, Users } from 'lucide-react';
+import { BookOpen, HandHeart, Megaphone, UsersRound } from 'lucide-react';
 import EmptyState from './EmptyState';
 import ErrorState from './ErrorState';
 import LoadingState from './LoadingState';
@@ -7,19 +7,30 @@ import AnimatedCounter from './AnimatedCounter';
 import useInViewOnce from '../hooks/useInViewOnce';
 
 const STATISTIC_ICON_PROPS = {
-  size: 42,
-  strokeWidth: 1.75,
+  className: 'public-statistics__icon-glyph',
+  strokeWidth: 1.5,
   absoluteStrokeWidth: true,
+  'aria-hidden': true,
 };
 
 const STATISTIC_ICONS = {
-  women: HeartHandshake,
-  events: CalendarHeart,
-  volunteers: Users,
-  stories: BookHeart,
+  women: HandHeart,
+  events: Megaphone,
+  volunteers: UsersRound,
+  stories: BookOpen,
 };
 
-const STATISTICS_ICON_GRADIENT_ID = 'public-statistics-icon-gradient';
+function StatisticsDivider({ modifier = '' }) {
+  const className = ['public-statistics__divider', modifier].filter(Boolean).join(' ');
+
+  return (
+    <div className={className} aria-hidden="true">
+      <span className="public-statistics__divider-line" />
+      <span className="public-statistics__divider-heart">♥</span>
+      <span className="public-statistics__divider-line" />
+    </div>
+  );
+}
 
 export default function StatisticsSection({ statistics = [], isLoading = false, hasError = false }) {
   const hasStatistics = statistics.length > 0;
@@ -33,29 +44,14 @@ export default function StatisticsSection({ statistics = [], isLoading = false, 
       id="statistics"
       aria-labelledby="public-statistics-title"
     >
-      <svg className="public-statistics__icon-defs" aria-hidden="true" focusable="false">
-        <defs>
-          <linearGradient id={STATISTICS_ICON_GRADIENT_ID} x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stopColor="#e11d8f" />
-            <stop offset="48%" stopColor="#a21caf" />
-            <stop offset="100%" stopColor="#5b1578" />
-          </linearGradient>
-        </defs>
-      </svg>
-
       <div className="public-statistics__decor" aria-hidden="true">
-        <span className="public-statistics__blob public-statistics__blob--lavender" />
-        <span className="public-statistics__blob public-statistics__blob--rose" />
-        <span className="public-statistics__blob public-statistics__blob--center" />
-        <span className="public-statistics__leaf public-statistics__leaf--start" />
-        <span className="public-statistics__leaf public-statistics__leaf--end" />
-        <span className="public-statistics__sparkle public-statistics__sparkle--1" />
-        <span className="public-statistics__sparkle public-statistics__sparkle--2" />
-        <span className="public-statistics__sparkle public-statistics__sparkle--3" />
-        <span className="public-statistics__sparkle public-statistics__sparkle--4" />
-        <span className="public-statistics__sparkle public-statistics__sparkle--5" />
+        <span className="public-statistics__orb public-statistics__orb--pink" />
+        <span className="public-statistics__orb public-statistics__orb--lavender" />
+        <span className="public-statistics__orb public-statistics__orb--purple" />
+        <span className="public-statistics__dots" />
+        <span className="public-statistics__butterfly public-statistics__butterfly--start" />
+        <span className="public-statistics__butterfly public-statistics__butterfly--end" />
       </div>
-      <span className="public-statistics__wave" aria-hidden="true" />
 
       <div className="public-statistics__inner">
         <header className="public-statistics__header reveal">
@@ -70,12 +66,13 @@ export default function StatisticsSection({ statistics = [], isLoading = false, 
             </span>
             <span className="public-statistics__eyebrow-line" aria-hidden="true" />
           </p>
-          <h2 id="public-statistics-title">השפעה שלנו</h2>
-          <div className="public-statistics__title-divider" aria-hidden="true">
-            <span className="public-statistics__title-divider-wing public-statistics__title-divider-wing--start" />
-            <span className="public-statistics__title-divider-heart">♥</span>
-            <span className="public-statistics__title-divider-wing public-statistics__title-divider-wing--end" />
-          </div>
+
+          <h2 id="public-statistics-title" className="public-statistics__title">
+            ההשפעה שלנו
+          </h2>
+
+          <StatisticsDivider modifier="public-statistics__divider--title" />
+
           <p className="public-statistics__subtitle reveal reveal-delay-1">
             ביחד אנחנו יוצרות קהילה חזקה ותומכת משנה חיים.
           </p>
@@ -87,38 +84,41 @@ export default function StatisticsSection({ statistics = [], isLoading = false, 
           <ErrorState message="לא ניתן לטעון את נתוני ההשפעה. מציגות תוכן זמין אחר." />
         ) : hasStatistics ? (
           <div className="public-statistics__cards-wrap">
-            <span className="public-statistics__grid-glow" aria-hidden="true" />
-            <div className="public-statistics__grid stagger-children" aria-label="נתוני השפעה">
-              {statistics.map((statistic) => {
-                const Icon = STATISTIC_ICONS[statistic.id] || Sparkles;
-
-                return (
-                  <article className="public-statistics__card" key={statistic.id || statistic.label}>
-                    <span className="public-statistics__card-shine" aria-hidden="true" />
-                    <span className="public-statistics__icon" aria-hidden="true">
-                      <Icon className="public-statistics__icon-glyph" {...STATISTIC_ICON_PROPS} />
-                    </span>
-                    <AnimatedCounter
-                      value={statistic.value}
-                      structured
-                      startAnimation={countersInView}
-                    />
-                    <div className="public-statistics__card-divider" aria-hidden="true">
-                      <span className="public-statistics__card-divider-line" />
-                      <span className="public-statistics__card-divider-heart">♥</span>
-                      <span className="public-statistics__card-divider-line" />
-                    </div>
-                    <h3>{statistic.label}</h3>
-                    {statistic.note ? <p className="public-statistics__card-text">{statistic.note}</p> : null}
-                  </article>
-                );
-              })}
-            </div>
+            <StatisticsGrid statistics={statistics} countersInView={countersInView} />
           </div>
         ) : (
           <EmptyState message="נתוני ההשפעה יופיעו כאן כאשר התוכן הציבורי יהיה זמין." />
         )}
       </div>
     </section>
+  );
+}
+
+function StatisticsGrid({ statistics, countersInView }) {
+  return (
+    <div
+      className={`public-statistics__grid${countersInView ? ' public-statistics__grid--in-view' : ''}`}
+      aria-label="נתוני השפעה"
+    >
+      {statistics.map((statistic, index) => {
+        const Icon = STATISTIC_ICONS[statistic.id] || BookOpen;
+        const tone = index % 2 === 0 ? 'pink' : 'purple';
+
+        return (
+          <article
+            className={`public-statistics__card public-statistics__card--${tone}`}
+            key={statistic.id || statistic.label}
+          >
+            <span className="public-statistics__icon" aria-hidden="true">
+              <Icon {...STATISTIC_ICON_PROPS} />
+            </span>
+            <AnimatedCounter value={statistic.value} structured startAnimation={countersInView} />
+            <StatisticsDivider modifier="public-statistics__divider--card" />
+            <h3>{statistic.label}</h3>
+            {statistic.note ? <p className="public-statistics__card-text">{statistic.note}</p> : null}
+          </article>
+        );
+      })}
+    </div>
   );
 }
