@@ -7,8 +7,7 @@
   .public-support__grid,
   .public-team-grid,
   .public-articles-grid,
-  .public-events-grid,
-  .public-contact__details {
+  .public-events-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -113,6 +112,19 @@
 
   .public-section__header {
     max-width: 100%;
+  }
+
+  .public-contact__shell {
+    gap: 28px;
+  }
+
+  .public-contact__details {
+    grid-template-columns: 1fr;
+  }
+
+  .public-contact__item + .public-contact__item {
+    border-block-start: 1px solid var(--public-line);
+    border-inline-start: 0;
   }
 }
 
@@ -235,6 +247,39 @@
 
   .public-donation__content {
     border-radius: 26px;
+  }
+
+  .public-contact {
+    padding-inline: 14px;
+  }
+
+  .public-contact::before,
+  .public-contact::after {
+    opacity: 0.6;
+  }
+
+  .public-contact__shell {
+    gap: 26px;
+  }
+
+  .public-contact__details {
+    margin-block-start: 34px;
+    border-radius: 24px;
+  }
+
+  .public-contact__item {
+    gap: 14px;
+    padding-block: 22px;
+    padding-inline: 20px;
+  }
+
+  .public-contact__icon {
+    width: 48px;
+    height: 48px;
+  }
+
+  .public-contact__social a {
+    flex: 1 1 132px;
   }
 
   .public-footer {
