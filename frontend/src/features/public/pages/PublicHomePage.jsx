@@ -7,7 +7,6 @@ import StatisticsSection from '../components/StatisticsSection';
 import SupportAreasSection from '../components/SupportAreasSection';
 import TeamPreviewSection from '../components/TeamPreviewSection';
 import DonationSection from '../components/DonationSection';
-import RecoveryJourneySection from '../components/RecoveryJourneySection';
 import ArticlesPreviewSection from '../components/ArticlesPreviewSection';
 import EventsPreviewSection from '../components/EventsPreviewSection';
 import ContactSection from '../components/ContactSection';
@@ -29,14 +28,12 @@ export default function PublicHomePage() {
       content.supportAreas?.length || 0,
       content.statistics?.length || 0,
       content.teamMembers?.length || 0,
-      content.recoveryJourney?.stages?.length || 0,
       content.articles?.length || 0,
       content.events?.length || 0,
     ].join(':'),
     [
       content.articles?.length,
       content.events?.length,
-      content.recoveryJourney?.stages?.length,
       content.statistics?.length,
       content.supportAreas?.length,
       content.teamMembers?.length,
@@ -93,7 +90,6 @@ export default function PublicHomePage() {
         <SupportAreasSection supportAreas={content.supportAreas} isLoading={loading} />
         <StatisticsSection statistics={content.statistics} isLoading={loading} />
         <TeamPreviewSection teamMembers={content.teamMembers} isLoading={loading} />
-        <RecoveryJourneySection journey={content.recoveryJourney} />
         <ArticlesPreviewSection articles={content.articles} isLoading={loading} hasError={error} />
         <EventsPreviewSection events={content.events} isLoading={loading} hasError={error} />
         <DonationSection donation={content.donation} />
