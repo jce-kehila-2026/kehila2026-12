@@ -78,20 +78,20 @@ const FALLBACK_STATISTICS = [
 ];
 
 const FALLBACK_CENTER = {
-  eyebrow: 'SHEna Center',
-  title: 'A calm recovery center for steady support',
+  eyebrow: 'מרכז SHE-NA',
+  title: 'מרחב החלמה שקט ותומך',
   description:
-    'The SHEna center is a respectful place for recovering women to find guidance, practical tools, and community connection at a pace that feels safe.',
+    'מרכז SHE-NA הוא מקום מכבד ובטוח לנשים בתהליך החלמה, עם ליווי, כלים מעשיים וחיבור לקהילה בקצב שמתאים לך.',
   activities: [
-    'Support circles and listening spaces',
-    'Workshops for daily routines and independence',
-    'Guidance toward health and emotional wellbeing resources',
+    'מעגלי תמיכה ומרחבי הקשבה',
+    'סדנאות לשגרה יומיומית, חוסן ועצמאות',
+    'הכוונה למשאבי בריאות ורווחה רגשית',
   ],
-  ctaLabel: 'Join / Get Support',
+  ctaLabel: 'להצטרפות וקבלת תמיכה',
   ctaHref: '#contact',
-  visualIcon: 'SH',
-  visualTitle: 'Recovery, dignity, and care',
-  visualText: 'Center text and imagery can later be managed from Firestore.',
+  visualIcon: 'ש',
+  visualTitle: 'החלמה, כבוד וליווי',
+  visualText: 'מרחב קהילתי חם שמעניק תמיכה וכלים לנשים לאורך הדרך.',
   isVisible: true,
   active: true,
 };
@@ -231,12 +231,12 @@ const FALLBACK_TEAM_MEMBERS = [
 const FALLBACK_EVENTS = [
   {
     id: 'fallback-event-1',
-    title: 'Community Support Circle',
+    title: 'מעגל תמיכה קהילתי',
     description:
-      'A welcoming group session for sharing, listening, and finding steady support in community.',
-    dateLabel: 'Schedule to be announced',
+      'מפגש קבוצתי חם לשיתוף, הקשבה וחיזוק תחושת התמיכה בקהילה.',
+    dateLabel: 'המועד יפורסם בקרוב',
     time: '',
-    location: 'Location to be announced',
+    location: 'המיקום יפורסם בקרוב',
     isPublic: true,
     isVisible: true,
     active: true,
@@ -244,12 +244,12 @@ const FALLBACK_EVENTS = [
   },
   {
     id: 'fallback-event-2',
-    title: 'Wellbeing Skills Workshop',
+    title: 'סדנת כלים לרווחה וחוסן',
     description:
-      'Practical tools for building calm routines, setting boundaries, and navigating difficult days.',
-    dateLabel: 'Schedule to be announced',
+      'כלים מעשיים לבניית שגרה רגועה, הצבת גבולות והתמודדות עם ימים מורכבים.',
+    dateLabel: 'המועד יפורסם בקרוב',
     time: '',
-    location: 'Location to be announced',
+    location: 'המיקום יפורסם בקרוב',
     isPublic: true,
     isVisible: true,
     active: true,
@@ -257,12 +257,12 @@ const FALLBACK_EVENTS = [
   },
   {
     id: 'fallback-event-3',
-    title: 'Resource Guidance Session',
+    title: 'מפגש הכוונה למשאבי תמיכה',
     description:
-      'A short introduction to available support services, community programs, and next steps.',
-    dateLabel: 'Schedule to be announced',
+      'היכרות קצרה עם שירותי תמיכה, תוכניות קהילה וצעדים אפשריים להמשך.',
+    dateLabel: 'המועד יפורסם בקרוב',
     time: '',
-    location: 'Location to be announced',
+    location: 'המיקום יפורסם בקרוב',
     isPublic: true,
     isVisible: true,
     active: true,
@@ -271,33 +271,33 @@ const FALLBACK_EVENTS = [
 ];
 
 const FALLBACK_RECOVERY_JOURNEY = {
-  eyebrow: 'Recovery Journey',
-  title: 'A steady path of support',
+  eyebrow: 'מסע ההחלמה',
+  title: 'דרך יציבה של תמיכה וליווי',
   description:
-    'Every person moves through change differently. She-Na offers a calm, respectful space for each part of the journey.',
+    'כל אישה עוברת שינוי בקצב אחר. SHE-NA מציעה מרחב רגוע, מכבד ותומך לכל שלב במסע.',
   stages: [
     {
       id: 'before',
-      label: 'Before',
-      title: 'What was',
+      label: 'לפני',
+      title: 'מה היה',
       description:
-        'A gentle look at the needs, questions, and experiences that may bring someone to seek support.',
+        'התבוננות עדינה בצרכים, בשאלות ובחוויות שמובילות אישה לחפש תמיכה.',
       isVisible: true,
     },
     {
       id: 'during',
-      label: 'During',
-      title: 'What is happening',
+      label: 'במהלך',
+      title: 'מה קורה עכשיו',
       description:
-        'Support is offered step by step through listening, guidance, community programs, and steady care.',
+        'תמיכה הניתנת צעד אחר צעד דרך הקשבה, הכוונה, תוכניות קהילה וליווי רציף.',
       isVisible: true,
     },
     {
       id: 'after',
-      label: 'After',
-      title: 'What will happen',
+      label: 'אחרי',
+      title: 'מה יקרה בהמשך',
       description:
-        'The journey continues with practical tools, connection, and space to move forward at a personal pace.',
+        'המסע ממשיך עם כלים מעשיים, חיבור לקהילה ומרחב להתקדם בקצב אישי.',
       isVisible: true,
     },
   ],
@@ -502,7 +502,7 @@ function toTimeKey(date, fallback = '') {
 function formatDateLabel(date) {
   if (!date) return '';
 
-  return new Intl.DateTimeFormat('en', {
+  return new Intl.DateTimeFormat('he-IL', {
     month: 'long',
     day: 'numeric',
     year: 'numeric',
@@ -791,7 +791,7 @@ function normalizeJourneyStage(stage, index) {
 
   return {
     id: stage.id || normalizedKey(title) || `stage-${index + 1}`,
-    label: firstTextValue(stage.label, stage.eyebrow, `Step ${index + 1}`),
+    label: firstTextValue(stage.label, stage.eyebrow, `שלב ${index + 1}`),
     title,
     description,
     isVisible: stage.isVisible !== false && stage.visible !== false && stage.hidden !== true,
@@ -1043,7 +1043,7 @@ function normalizeSocialLink(link, index) {
 
   return {
     id: link.id || `social-${index}`,
-    label: label || 'Social link',
+    label: label || 'קישור חברתי',
     href: href || '#contact',
     isVisible: link.isVisible !== false && link.visible !== false && link.hidden !== true,
     active: link.active !== false && link.status !== 'inactive',

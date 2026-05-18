@@ -6,6 +6,10 @@ import StatisticsSection from '../components/StatisticsSection';
 import SupportAreasSection from '../components/SupportAreasSection';
 import TeamPreviewSection from '../components/TeamPreviewSection';
 import DonationSection from '../components/DonationSection';
+import RecoveryJourneySection from '../components/RecoveryJourneySection';
+import ArticlesPreviewSection from '../components/ArticlesPreviewSection';
+import EventsPreviewSection from '../components/EventsPreviewSection';
+import ContactSection from '../components/ContactSection';
 import PublicFooter from '../components/PublicFooter';
 import EmptyState from '../components/EmptyState';
 import ErrorState from '../components/ErrorState';
@@ -24,8 +28,19 @@ export default function PublicHomePage() {
       content.supportAreas?.length || 0,
       content.statistics?.length || 0,
       content.teamMembers?.length || 0,
+      content.recoveryJourney?.stages?.length || 0,
+      content.articles?.length || 0,
+      content.events?.length || 0,
     ].join(':'),
-    [content.statistics?.length, content.supportAreas?.length, content.teamMembers?.length, loading],
+    [
+      content.articles?.length,
+      content.events?.length,
+      content.recoveryJourney?.stages?.length,
+      content.statistics?.length,
+      content.supportAreas?.length,
+      content.teamMembers?.length,
+      loading,
+    ],
   );
 
   useRevealOnScroll(pageRef, revealRefreshKey);
@@ -67,17 +82,21 @@ export default function PublicHomePage() {
       <PublicNavbar organization={content.organization} />
       <main id="public-main">
         {error ? (
-          <ErrorState message="Some public content could not be loaded. Showing available information." />
+          <ErrorState message="חלק מהתוכן הציבורי לא נטען. מציגות את המידע הזמין." />
         ) : null}
         {!loading && !content ? (
-          <EmptyState message="Public homepage content is not available yet." />
+          <EmptyState message="תוכן דף הבית הציבורי עדיין לא זמין." />
         ) : null}
         <HeroSection hero={content.hero} loading={loading} />
         <AboutSection about={content.about} supportAreas={content.supportAreas} />
         <SupportAreasSection supportAreas={content.supportAreas} isLoading={loading} />
         <StatisticsSection statistics={content.statistics} isLoading={loading} />
         <TeamPreviewSection teamMembers={content.teamMembers} isLoading={loading} />
+        <RecoveryJourneySection journey={content.recoveryJourney} />
+        <ArticlesPreviewSection articles={content.articles} isLoading={loading} hasError={error} />
+        <EventsPreviewSection events={content.events} isLoading={loading} hasError={error} />
         <DonationSection donation={content.donation} />
+        <ContactSection contact={content.contact} organization={content.organization} />
       </main>
       <PublicFooter organization={content.organization} contact={content.contact} />
     </div>

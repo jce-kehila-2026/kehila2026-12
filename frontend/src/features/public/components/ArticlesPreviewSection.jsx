@@ -29,26 +29,26 @@ export default function ArticlesPreviewSection({
 
   return (
     <section className="public-section public-section--articles public-section--muted" id="articles" aria-labelledby="public-articles-title">
-      <div className="public-section__header public-section__header--articles">
-        <p className="public-eyebrow">Articles</p>
-        <h2 id="public-articles-title">Knowledge &amp; Support</h2>
-        <p className="public-section__text">
-          Helpful articles, practical resources, and supportive guidance for women and families.
+      <div className="public-section__header public-section__header--articles reveal">
+        <p className="public-eyebrow">מאמרים</p>
+        <h2 id="public-articles-title">ידע ותמיכה</h2>
+        <p className="public-section__text reveal reveal-delay-1">
+          מאמרים מועילים, כלים מעשיים ותוכן תומך לנשים ולמשפחות.
         </p>
       </div>
 
       {isLoading ? (
-        <LoadingState message="Loading articles..." />
+        <LoadingState message="טוענות מאמרים..." />
       ) : hasError ? (
-        <ErrorState message="Could not load articles. Showing other available content." />
+        <ErrorState message="לא ניתן לטעון את המאמרים. מציגות תוכן זמין אחר." />
       ) : visibleArticles.length ? (
-        <div className="public-articles-grid">
+        <div className="public-articles-grid stagger-children">
           {visibleArticles.map((article) => (
             <ArticleCard article={article} key={article.id || article.title} />
           ))}
         </div>
       ) : (
-        <EmptyState />
+        <EmptyState message="מאמרים יופיעו כאן כאשר התוכן הציבורי יהיה זמין." />
       )}
     </section>
   );

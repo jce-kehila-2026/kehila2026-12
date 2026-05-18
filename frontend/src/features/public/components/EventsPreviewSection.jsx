@@ -50,26 +50,26 @@ export default function EventsPreviewSection({
 
   return (
     <section className="public-section public-section--events public-section--muted" id="events" aria-labelledby="public-events-title">
-      <div className="public-section__header public-section__header--events">
-        <p className="public-eyebrow">Events</p>
-        <h2 id="public-events-title">Upcoming Activities</h2>
-        <p className="public-section__text">
-          Discover upcoming support activities, workshops, and community gatherings open to visitors.
+      <div className="public-section__header public-section__header--events reveal">
+        <p className="public-eyebrow">אירועים</p>
+        <h2 id="public-events-title">פעילויות קרובות</h2>
+        <p className="public-section__text reveal reveal-delay-1">
+          פעילויות תמיכה, סדנאות ומפגשי קהילה קרובים הפתוחים למשתתפות.
         </p>
       </div>
 
       {isLoading ? (
-        <LoadingState message="Loading activities..." />
+        <LoadingState message="טוענות פעילויות..." />
       ) : hasError ? (
-        <ErrorState message="Could not load the activities. Please try again later." />
+        <ErrorState message="לא ניתן לטעון את הפעילויות. נסי שוב מאוחר יותר." />
       ) : publicUpcomingEvents.length ? (
-        <div className="public-events-grid">
+        <div className="public-events-grid stagger-children">
           {publicUpcomingEvents.map((event) => (
             <EventPreviewCard event={event} key={event.id || event.title} />
           ))}
         </div>
       ) : (
-        <EmptyState message="No public activities are available at the moment." />
+        <EmptyState message="אין פעילויות ציבוריות זמינות כרגע." />
       )}
     </section>
   );

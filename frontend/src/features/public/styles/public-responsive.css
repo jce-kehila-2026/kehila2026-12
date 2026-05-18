@@ -5,7 +5,11 @@
   }
 
   .public-support__grid,
-  .public-team-grid {
+  .public-team-grid,
+  .public-journey__timeline,
+  .public-articles-grid,
+  .public-events-grid,
+  .public-contact__details {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -164,7 +168,11 @@
   }
 
   .public-section__header--centered,
-  .public-section__header--team {
+  .public-section__header--team,
+  .public-section__header--journey,
+  .public-section__header--articles,
+  .public-section__header--events,
+  .public-section__header--contact {
     text-align: start;
   }
 
@@ -178,6 +186,10 @@
   .public-support__grid,
   .public-statistics__grid,
   .public-team-grid,
+  .public-journey__timeline,
+  .public-articles-grid,
+  .public-events-grid,
+  .public-contact__details,
   .public-footer__main {
     grid-template-columns: 1fr;
   }
@@ -185,21 +197,41 @@
   .public-about__cards,
   .public-support__grid,
   .public-statistics__grid,
-  .public-team-grid {
+  .public-team-grid,
+  .public-journey__timeline,
+  .public-articles-grid,
+  .public-events-grid,
+  .public-contact__details {
     gap: 18px;
     margin-block-start: 34px;
   }
 
   .public-about__card,
   .public-statistics__card,
-  .public-team-card {
+  .public-team-card,
+  .public-journey__card,
+  .public-contact__item {
     min-height: auto;
   }
 
   .public-support__body,
   .public-about__card,
-  .public-team-card {
+  .public-team-card,
+  .public-journey__card,
+  .public-article-card__body,
+  .public-event-card__body,
+  .public-contact__item {
     padding-inline: 22px;
+  }
+
+  .public-event-card__button,
+  .public-article-card__button {
+    justify-self: stretch;
+    width: 100%;
+  }
+
+  .public-article-card__button {
+    justify-content: flex-start;
   }
 
   .public-donation {
