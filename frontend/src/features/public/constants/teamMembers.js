@@ -1,0 +1,51 @@
+export const TEAM_MEMBERS = [
+  {
+    id: 'sarah',
+    name: 'ד"ר שרה כהן',
+    role: 'מנהלת רפואית ומייסדת',
+    image: '/images/team/sarah.jpg',
+    description: 'רופאה מומחית באונקולוגיה עם ניסיון של 15 שנה בליווי נשים.',
+  },
+  {
+    id: 'rachel',
+    name: 'רחל לוי',
+    role: 'מנהלת תמיכה רגשית',
+    image: '/images/team/rachel.jpg',
+    description: 'פסיכולוגית קלינית המתמחה בטיפול בטראומה וליווי נשים.',
+  },
+  {
+    id: 'michal',
+    name: 'מיכל אברהם',
+    role: 'רכזת קהילה ופעילויות',
+    image: '/images/team/michal.jpg',
+    description: 'עובדת סוציאלית ומנחת קבוצות תמיכה וחוויות משמעותיות.',
+  },
+  {
+    id: 'naomi',
+    name: 'נעמי דוד',
+    role: 'יועצת תזונה ואורח חיים',
+    image: '/images/team/naomi.jpg',
+    description: 'תזונאית קלינית שמלווה נשים ביצירת הרגלי חיים בריאים.',
+  },
+  {
+    id: 'tamar',
+    name: 'תמר גרין',
+    role: 'מדריכת מיינדפולנס ומדיטציה',
+    image: '/images/team/tamar.jpg',
+    description: 'מורה ליוגה ומדיטציה, מעניקה כלים לרוגע וחיבור פנימי.',
+  },
+  {
+    id: 'ester',
+    name: 'אסתר מזרחי',
+    role: 'רכזת סדנאות והעשרה',
+    image: '/images/team/ester.jpg',
+    description: 'אמנית ויוצרת, מובילה סדנאות אומנות טיפולית והעצמה אישית.',
+  },
+  {
+    id: 'yael',
+    name: 'יעל בן דוד',
+    role: 'מנהלת תקשורת ושיווק',
+    image: '/images/team/yael.jpg',
+    description: 'מומחית דיגיטל ותקשורת, מפיצה את מסר התקווה והתמיכה.',
+  },
+];

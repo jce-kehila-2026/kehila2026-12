@@ -2,7 +2,6 @@ import EmptyState from './EmptyState';
 import ErrorState from './ErrorState';
 import EventPreviewCard from './EventPreviewCard';
 import LoadingState from './LoadingState';
-
 function isUpcomingEvent(event) {
   if (event.status === 'past' || event.status === 'completed') {
     return false;

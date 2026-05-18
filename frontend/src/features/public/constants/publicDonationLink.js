@@ -1,5 +1,5 @@
-/** Scroll target until a dedicated public donation page exists. */
-export const PUBLIC_DONATION_TARGET = '#contact';
+/** In-page donation/support section anchor. */
+export const PUBLIC_DONATION_TARGET = '#donate';
 
 const LEGACY_DONATION_HREFS = new Set(['#donate', '/donate', '/public/donate']);
 

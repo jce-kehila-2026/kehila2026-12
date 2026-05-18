@@ -304,6 +304,10 @@
   transition-delay: 180ms;
 }
 
+.reveal-delay-3 {
+  transition-delay: 270ms;
+}
+
 .stagger-children > .reveal:nth-child(2) {
   transition-delay: 90ms;
 }
