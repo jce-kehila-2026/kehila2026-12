@@ -18,10 +18,11 @@ import NewspaperIcon from '@mui/icons-material/Newspaper';
 import GroupsIcon from '@mui/icons-material/Groups';
 import BusinessIcon from '@mui/icons-material/Business';
 
+// Phase 2: CMS now uses cms_* collection names.
 const TABS = [
-  { key: 'articles', label: 'Articles', icon: <NewspaperIcon /> },
-  { key: 'team_profiles', label: 'Team Profiles', icon: <GroupsIcon /> },
-  { key: 'org_info', label: 'Organization Info', icon: <BusinessIcon /> },
+  { key: 'cms_articles', label: 'Articles', icon: <NewspaperIcon /> },
+  { key: 'cms_team', label: 'Team Profiles', icon: <GroupsIcon /> },
+  { key: 'cms_org', label: 'Organization Info', icon: <BusinessIcon /> },
 ];
 
 export default function CMSPage() {

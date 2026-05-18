@@ -433,7 +433,7 @@ export default function EventsPage() {
 
     try {
       if (registrationId) {
-        await removeRegistration(registrationId, currentUser.displayName || currentUser.email);
+        await removeRegistration(registrationId, currentUser.displayName || currentUser.email, eventId);
         setRegisteredMap((current) => {
           const next = { ...current };
           delete next[eventId];
@@ -443,8 +443,12 @@ export default function EventsPage() {
       } else {
         const newRegistrationId = await addRegistration({
           eventId,
+          uid: currentUser.uid,
           participantName: currentUser.displayName || currentUser.email.split('@')[0],
           participantEmail: currentUser.email,
+          eventTitle: event.title,
+          eventDate: event.startTime || event.date || null,
+          eventLocation: event.location || '',
         });
         setRegisteredMap((current) => ({ ...current, [eventId]: newRegistrationId }));
         setCounts((current) => ({ ...current, [eventId]: (current[eventId] ?? 0) + 1 }));

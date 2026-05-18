@@ -64,8 +64,12 @@ export default function WorkshopFeed() {
     try {
       const regId = await addRegistration({
         eventId: event.id,
+        uid: currentUser.uid,
         participantName: currentUser.displayName || currentUser.email.split('@')[0],
         participantEmail: currentUser.email,
+        eventTitle: event.title,
+        eventDate: event.startTime || event.date || null,
+        eventLocation: event.location || '',
       });
       setRegisteredMap((prev) => ({ ...prev, [event.id]: regId }));
       setCounts((prev) => ({ ...prev, [event.id]: (prev[event.id] ?? 0) + 1 }));
@@ -82,7 +86,7 @@ export default function WorkshopFeed() {
     if (!regId) return;
     setRegistering(event.id);
     try {
-      await removeRegistration(regId, currentUser.displayName || currentUser.email);
+      await removeRegistration(regId, currentUser.displayName || currentUser.email, event.id);
       setRegisteredMap((prev) => {
         const next = { ...prev };
         delete next[event.id];

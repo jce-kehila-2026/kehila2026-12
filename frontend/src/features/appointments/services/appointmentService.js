@@ -1,3 +1,6 @@
+// Phase 2: Participant bookings now also write to users/{uid}/appointments/{apptId}
+// so the calendar/dashboard can read the user's appointments without a top-level scan.
+// Stats: bumps stats/admin_summary.upcomingAppointmentsCount.
 import {
   collection,
   doc,
@@ -7,13 +10,17 @@ import {
   setDoc,
   updateDoc,
   where,
+  limit,
+  writeBatch,
   serverTimestamp,
+  increment,
 } from "firebase/firestore";
 
 import { auth, db } from "../../../firebase";
 
 const APPOINTMENTS_COLLECTION = "appointments";
 const PARTICIPANTS_COLLECTION = "participants";
+const STATS_ADMIN = doc(db, "stats", "admin_summary");
 
 function buildParticipantNameFromProfileData(data) {
   if (!data || typeof data !== "object") return "";
@@ -87,29 +94,37 @@ export async function createAppointment(appointmentData = {}) {
     ...rest,
     appointmentId: ref.id,
     participantId,
+    userId: participantId,
     participantName,
+    participantEmail: user.email || "",
     createdAt: serverTimestamp(),
     /** Participant bookings require admin approval before they are confirmed. */
     status: "pending",
   };
 
-  await setDoc(ref, payload);
+  const batch = writeBatch(db);
+  batch.set(ref, payload);
+  batch.set(doc(db, "users", participantId, "appointments", ref.id), payload);
+  batch.set(
+    STATS_ADMIN,
+    { upcomingAppointmentsCount: increment(1), updatedAt: serverTimestamp() },
+    { merge: true }
+  );
+  await batch.commit();
 
   return ref.id;
 }
 
-/** Returns this participant’s appointments, newest first (by `createdAt`). */
+/** Returns this participant's appointments, newest first (by `createdAt`).
+ *  Reads from the user mirror subcollection — one targeted read, no global scan. */
 export async function getParticipantAppointments(participantId) {
   if (!participantId) {
     return [];
   }
 
-  const q = query(
-    collection(db, APPOINTMENTS_COLLECTION),
-    where("participantId", "==", participantId)
+  const snap = await getDocs(
+    query(collection(db, "users", participantId, "appointments"), limit(50))
   );
-
-  const snap = await getDocs(q);
   const rows = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 
   rows.sort((a, b) => {
@@ -127,14 +142,34 @@ export async function getParticipantAppointments(participantId) {
   return rows;
 }
 
-/** Sets `status` to `"cancelled"` (document is not deleted). */
+/** Sets `status` to `"cancelled"` on both the flat doc and the user mirror. */
 export async function cancelAppointment(appointmentId) {
   if (!appointmentId) {
     throw new Error("Missing appointment id");
   }
 
-  const ref = doc(db, APPOINTMENTS_COLLECTION, appointmentId);
-  await updateDoc(ref, { status: "cancelled" });
+  const flatRef = doc(db, APPOINTMENTS_COLLECTION, appointmentId);
+  const existing = await getDoc(flatRef);
+  const uid = existing.exists() ? (existing.data().userId || existing.data().participantId) : null;
+  const wasActive = existing.exists() && existing.data().status !== "cancelled";
+
+  const batch = writeBatch(db);
+  batch.update(flatRef, { status: "cancelled" });
+  if (uid) {
+    batch.set(
+      doc(db, "users", uid, "appointments", appointmentId),
+      { status: "cancelled" },
+      { merge: true }
+    );
+  }
+  if (wasActive) {
+    batch.set(
+      STATS_ADMIN,
+      { upcomingAppointmentsCount: increment(-1), updatedAt: serverTimestamp() },
+      { merge: true }
+    );
+  }
+  await batch.commit();
 }
 
 /** True if a non-cancelled appointment exists for the same date, time, and therapist. */
