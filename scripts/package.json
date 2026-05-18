@@ -1,0 +1,11 @@
+{
+  "name": "shena-scripts",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "migrate": "node migrateFirestore.js"
+  },
+  "dependencies": {
+    "firebase-admin": "^12.0.0"
+  }
+}

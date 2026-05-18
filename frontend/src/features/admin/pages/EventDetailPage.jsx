@@ -125,7 +125,7 @@ export default function EventDetailPage() {
   async function handleRemove(regId, name) {
     if (!window.confirm(`Remove "${name}" from this event?`)) return;
     try {
-      await removeRegistration(regId, name);
+      await removeRegistration(regId, name, eventId);
       setRegistrations((prev) => prev.filter((r) => r.id !== regId));
     } catch (err) {
       console.error('Remove failed:', err);
@@ -134,7 +134,7 @@ export default function EventDetailPage() {
 
   async function handleCheckIn(regId) {
     try {
-      await checkInRegistration(regId);
+      await checkInRegistration(regId, eventId);
       setRegistrations((prev) =>
         prev.map((r) => (r.id === regId ? { ...r, checkedIn: true } : r))
       );

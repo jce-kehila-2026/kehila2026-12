@@ -1,4 +1,5 @@
-import { collection, getDocs, getDoc, addDoc, updateDoc, deleteDoc, doc, query, orderBy, onSnapshot, serverTimestamp } from 'firebase/firestore';
+// Phase 1 changes: added limit() to bounded list queries.
+import { collection, getDocs, getDoc, addDoc, updateDoc, deleteDoc, doc, query, orderBy, limit, onSnapshot, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../../firebase';
 import { logAuditEvent } from './auditService';
 
@@ -16,9 +17,21 @@ export async function getEventById(id) {
  * Fetch all events ordered by creation time (newest first).
  */
 export async function getAllEvents() {
-  const q = query(collection(db, 'events'), orderBy('createdAt', 'desc'));
+  const q = query(collection(db, 'events'), orderBy('createdAt', 'desc'), limit(100));
   const snap = await getDocs(q);
   return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+}
+
+/**
+ * One-shot fetch of published events.
+ * Prefer this over subscribeToPublishedEvents() when the screen doesn't need live updates.
+ */
+export async function getPublishedEvents() {
+  const q = query(collection(db, 'events'), orderBy('createdAt', 'desc'), limit(50));
+  const snap = await getDocs(q);
+  return snap.docs
+    .map((d) => ({ id: d.id, ...d.data() }))
+    .filter((event) => event.status === 'published');
 }
 
 /**
@@ -30,7 +43,8 @@ export async function getAllEvents() {
 export function subscribeToPublishedEvents(callback, onError) {
   const q = query(
     collection(db, 'events'),
-    orderBy('createdAt', 'desc')
+    orderBy('createdAt', 'desc'),
+    limit(50)
   );
   return onSnapshot(q, (snap) => {
     callback(

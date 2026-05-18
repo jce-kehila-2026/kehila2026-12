@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import PublicNavbar from '../components/PublicNavbar';
 import HeroSection from '../components/HeroSection';
 import AboutSection from '../components/AboutSection';
+import TeamSection from '../components/TeamSection';
 import StatisticsSection from '../components/StatisticsSection';
 import SupportAreasSection from '../components/SupportAreasSection';
 import TeamPreviewSection from '../components/TeamPreviewSection';
@@ -96,6 +97,7 @@ export default function PublicHomePage() {
         <ArticlesPreviewSection articles={content.articles} isLoading={loading} hasError={error} />
         <EventsPreviewSection events={content.events} isLoading={loading} hasError={error} />
         <DonationSection donation={content.donation} />
+        <TeamSection />
         <ContactSection contact={content.contact} organization={content.organization} />
       </main>
       <PublicFooter organization={content.organization} contact={content.contact} />

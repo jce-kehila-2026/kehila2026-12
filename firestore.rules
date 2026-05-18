@@ -2,76 +2,118 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ── Helper Functions ──
+    // ── Helpers ─────────────────────────────────────────────
     function getUserRole() {
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role;
     }
-
     function isAdmin() {
       return request.auth != null && getUserRole() == 'admin';
     }
-
-    // ── Users Collection ──
-    match /users/{userId} {
-      allow read: if request.auth != null;
-      allow create: if request.auth != null && request.auth.uid == userId;
-      allow update: if isAdmin();
-      allow delete: if false; // Never allow user deletion from client
+    function isSelf(uid) {
+      return request.auth != null && request.auth.uid == uid;
     }
 
-    // Admin lookup records used during role resolution.
+    // ── Users (top-level) ───────────────────────────────────
+    // Anyone signed in can read user docs (needed for name resolution).
+    // A user can write their own doc; admins can write any user doc.
+    match /users/{uid} {
+      allow read: if request.auth != null;
+      allow create: if isSelf(uid);
+      allow update, delete: if isSelf(uid) || isAdmin();
+
+      // Per-user subcollections — the owner has full access. Admins also have access.
+      match /registrations/{eventId} {
+        allow read, write: if isSelf(uid) || isAdmin();
+      }
+      match /appointments/{apptId} {
+        allow read, write: if isSelf(uid) || isAdmin();
+      }
+      match /calendar_notes/{noteId} {
+        allow read, write: if isSelf(uid) || isAdmin();
+      }
+    }
+
+    // Admin lookup table (legacy, kept for role resolution).
     match /admins/{adminId} {
       allow read: if request.auth != null;
       allow create, update, delete: if isAdmin();
     }
 
-    // ── Audit Logs — APPEND ONLY (Immutable) ──
+    // ── Audit Logs — APPEND ONLY ────────────────────────────
     match /audit_logs/{logId} {
       allow read, create: if isAdmin();
-      allow update, delete: if false; // NO user can modify or delete logs
+      allow update, delete: if false;
     }
 
-    // ── Events ──
+    // ── Events ──────────────────────────────────────────────
     match /events/{eventId} {
       allow read: if request.auth != null;
       allow create, update, delete: if isAdmin();
+
+      // Event roster — admin can write; authenticated users can create their own
+      // entry (the doc id equals their uid) so participants can self-register.
+      match /registrations/{rosterKey} {
+        allow read: if request.auth != null;
+        allow create: if isAdmin() ||
+          (request.auth != null && rosterKey == request.auth.uid);
+        allow update: if isAdmin();
+        allow delete: if isAdmin() ||
+          (request.auth != null && rosterKey == request.auth.uid);
+      }
     }
 
-    // ── Event Registrations ──
-    match /event_registrations/{regId} {
-      allow read: if request.auth != null;
-      // Admins can do anything; participants can create/cancel only their own registration
-      allow create: if isAdmin() ||
-        (request.auth != null &&
-         request.resource.data.participantEmail == request.auth.token.email);
-      allow delete: if isAdmin() ||
-        (request.auth != null &&
-         resource.data.participantEmail == request.auth.token.email);
-      allow update: if false; // Registrations are immutable once created
-    }
-
-    // ── Registrations ──
-    match /registrations/{regId} {
+    // ── Appointments (flat, used by admin queries) ──────────
+    match /appointments/{appointmentId} {
+      // Admins see everything. Participants see appointments where they are
+      // the user (userId field or legacy participantId).
       allow read: if isAdmin()
-        || (request.auth != null && resource.data.userId == request.auth.uid);
-
-      allow create, delete: if isAdmin();
-      allow update: if false;
+        || (request.auth != null && (
+              resource.data.userId == request.auth.uid
+              || resource.data.participantId == request.auth.uid
+              || resource.data.participantEmail == request.auth.token.email
+           ));
+      // Participants can create their own; admin can create anything.
+      allow create: if isAdmin()
+        || (request.auth != null && request.resource.data.participantId == request.auth.uid);
+      allow update: if isAdmin()
+        || (request.auth != null && resource.data.participantId == request.auth.uid);
+      allow delete: if isAdmin();
     }
 
-    // ── Articles (CMS) ──
-    match /articles/{articleId} {
-      allow read: if true;       // Public content
+    // ── Appointment Settings ────────────────────────────────
+    match /appt_settings/{docId} {
+      allow read, write: if isAdmin();
+    }
+
+    // ── Therapists (reference data) ─────────────────────────
+    match /therapists/{therapistId} {
+      allow read: if request.auth != null;
       allow create, update, delete: if isAdmin();
     }
 
-    // ── Team Profiles (CMS) ──
-    match /team_profiles/{profileId} {
+    // ── CMS (public read, admin write) ──────────────────────
+    match /cms_articles/{articleId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+    match /cms_team/{memberId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+    match /cms_org/{docId} {
       allow read: if true;
       allow create, update, delete: if isAdmin();
     }
 
-    // ── Organization Info (CMS) ──
+    // Backward-compat: legacy CMS collections still readable until migration completes.
+    match /articles/{articleId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+    match /team_profiles/{profileId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
     match /org_info/{docId} {
       allow read: if true;
       allow create, update, delete: if isAdmin();
@@ -82,18 +124,16 @@ service cloud.firestore {
       allow read: if true;
       allow create, update, delete: if isAdmin();
     }
-
     match /support_areas/{docId} {
       allow read: if true;
       allow create, update, delete: if isAdmin();
     }
-
     match /homepage_content/{docId} {
       allow read: if true;
       allow create, update, delete: if isAdmin();
     }
 
-    // Participant workshop suggestions
+    // ── Workshop Suggestions ────────────────────────────────
     match /workshop_suggestions/{suggestionId} {
       allow create: if request.auth != null;
       allow read, update, delete: if isAdmin();
@@ -105,25 +145,34 @@ service cloud.firestore {
       allow read, update, delete: if isAdmin();
     }
 
-    // ── Appointments ──
-    match /appointments/{appointmentId} {
-      allow read: if isAdmin()
-        || (request.auth != null && resource.data.userId == request.auth.uid)
-        || (request.auth != null && resource.data.participantEmail == request.auth.token.email);
-
-      allow create, update, delete: if isAdmin();
+    // ── Stats Summary Docs ──────────────────────────────────
+    // public_summary is world-readable for the homepage; admin_summary is admin-only.
+    // Writes are admin-only (clients bump them via batched writes alongside admin ops).
+    match /stats/{docId} {
+      allow read: if docId == 'public_summary' || isAdmin();
+      allow write: if isAdmin();
     }
 
-    // ── Calendar Notes ──
+    // ── Legacy collections (read-only during migration window) ───
+    // event_registrations, registrations, participants, calendar_notes (top-level)
+    // remain readable so the migration script can ingest them. Direct writes
+    // are denied — all new writes go through subcollections.
+    match /event_registrations/{regId} {
+      allow read: if request.auth != null;
+      allow create, update, delete: if isAdmin();
+    }
+    match /registrations/{regId} {
+      allow read: if request.auth != null;
+      allow create, update, delete: if isAdmin();
+    }
+    match /participants/{participantId} {
+      allow read, write: if request.auth != null
+        && request.auth.uid == participantId;
+    }
     match /calendar_notes/{noteId} {
       allow read: if isAdmin()
         || (request.auth != null && resource.data.userId == request.auth.uid);
-
-      allow create: if request.auth != null
-        && request.resource.data.userId == request.auth.uid;
-
-      allow update, delete: if request.auth != null
-        && resource.data.userId == request.auth.uid;
+      allow write: if isAdmin();
     }
 
   }
