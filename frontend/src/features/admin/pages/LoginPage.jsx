@@ -187,7 +187,7 @@ export default function LoginPage() {
         </Box>
 
         <Box sx={{ maxWidth: 720, position: 'relative', zIndex: 1 }}>
-          <Typography variant="h1" sx={{ fontSize: { md: '3.5rem', lg: '4.6rem' }, lineHeight: 1.05, mb: 3 }}>
+          <Typography variant="h1" sx={{ color: '#fff', fontSize: { md: '3.5rem', lg: '4.6rem' }, lineHeight: 1.05, mb: 3 }}>
             Heal Gently. Connect Safely. Grow Together.
           </Typography>
           <Typography sx={{ maxWidth: 620, color: 'rgba(255,255,255,0.78)', fontSize: '1.15rem', lineHeight: 1.7 }}>
