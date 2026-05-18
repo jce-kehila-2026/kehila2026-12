@@ -139,6 +139,12 @@ service cloud.firestore {
       allow read, update, delete: if isAdmin();
     }
 
+    // Public join requests from the website modal.
+    match /joinRequests/{requestId} {
+      allow create: if true;
+      allow read, update, delete: if isAdmin();
+    }
+
     // ── Stats Summary Docs ──────────────────────────────────
     // public_summary is world-readable for the homepage; admin_summary is admin-only.
     // Writes are admin-only (clients bump them via batched writes alongside admin ops).
