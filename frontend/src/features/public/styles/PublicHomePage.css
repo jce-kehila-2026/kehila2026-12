@@ -1,6 +1,7 @@
 @import "./public-layout.css";
 @import "./public-sections.css";
 @import "./public-cards.css";
+@import "./public-about-section.css";
 @import "./public-responsive.css";
 
 .public-homepage :where(.public-hero h1) {

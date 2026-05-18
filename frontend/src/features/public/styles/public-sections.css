@@ -307,89 +307,6 @@
   margin-block-start: 18px;
 }
 
-.public-section--about {
-  display: grid;
-  justify-items: center;
-  gap: clamp(34px, 5vw, 56px);
-  background: #ffffff;
-  text-align: center;
-}
-
-.public-section--about .public-section__header {
-  display: grid;
-  justify-items: center;
-  max-width: 900px;
-  margin-inline: auto;
-}
-
-.public-section--about h2 {
-  color: var(--public-purple);
-  font-size: clamp(2.7rem, 5vw, 4.2rem);
-  font-weight: 900;
-  line-height: 1.08;
-}
-
-.public-section--about .public-section__text {
-  max-width: 900px;
-  margin-block-start: 18px;
-  color: var(--public-muted);
-  font-size: clamp(1.12rem, 1.6vw, 1.35rem);
-  font-weight: 400;
-  line-height: 1.9;
-  text-align: center;
-}
-
-.public-about__content {
-  display: grid;
-  width: 100%;
-  max-width: 1280px;
-  justify-items: center;
-}
-
-.public-about__cards {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  width: 100%;
-  gap: 24px;
-  margin-block-start: 0;
-}
-
-.public-about__card {
-  display: grid;
-  width: 100%;
-  min-height: 270px;
-  justify-items: center;
-  align-content: center;
-  gap: 16px;
-  padding-block: 34px;
-  padding-inline: 24px;
-  background: linear-gradient(180deg, #fff9fe 0%, #fff5fb 100%);
-  border: 1px solid rgba(223, 50, 123, 0.12);
-  border-radius: 28px;
-  box-shadow: var(--public-shadow);
-  text-align: center;
-  transition: transform 320ms ease, box-shadow 320ms ease, border-color 320ms ease;
-}
-
-.public-about__card:hover {
-  border-color: rgba(223, 50, 123, 0.22);
-  box-shadow: 0 24px 58px rgba(58, 27, 84, 0.16);
-  transform: translateY(-5px);
-}
-
-.public-about__icon {
-  display: inline-grid;
-  width: 76px;
-  height: 76px;
-  place-items: center;
-  color: #ffffff;
-  background: linear-gradient(135deg, var(--public-purple-2), var(--public-pink));
-  border-radius: 20px;
-  font-size: 2.1rem;
-  box-shadow: 0 14px 30px rgba(127, 34, 217, 0.22);
-  transition: transform 320ms ease, box-shadow 320ms ease;
-}
-
 .public-support__icon {
   display: inline-grid;
   width: 76px;
@@ -401,26 +318,6 @@
   font-size: 2.1rem;
   box-shadow: 0 14px 30px rgba(127, 34, 217, 0.22);
   transition: transform 300ms ease, box-shadow 300ms ease;
-}
-
-.public-about__card:hover .public-about__icon {
-  box-shadow: 0 16px 34px rgba(236, 22, 140, 0.28);
-  transform: translateY(-3px) scale(1.03);
-}
-
-.public-about__card h3 {
-  margin: 0;
-  color: var(--public-ink);
-  font-size: clamp(1.35rem, 1.9vw, 1.65rem);
-  font-weight: 900;
-  line-height: 1.25;
-}
-
-.public-about__card p {
-  margin: 0;
-  color: var(--public-muted);
-  font-size: 1.05rem;
-  line-height: 1.75;
 }
 
 .public-section--statistics {
