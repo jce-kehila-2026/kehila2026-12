@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { collection, getDocs, query, orderBy } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy, limit } from 'firebase/firestore';
 import { db } from '../../../firebase';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -19,7 +19,7 @@ export default function AuditLogPage() {
   const fetchLogs = useCallback(async () => {
     setLoading(true);
     try {
-      const q = query(collection(db, 'audit_logs'), orderBy('timestamp', 'desc'));
+      const q = query(collection(db, 'audit_logs'), orderBy('timestamp', 'desc'), limit(200));
       const snap = await getDocs(q);
       let results = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 

@@ -1,6 +1,7 @@
+// Phase 1 changes: added limit() to bounded list queries.
 import {
   collection, getDocs, addDoc, updateDoc, deleteDoc,
-  doc, query, orderBy, where, getDoc, setDoc, serverTimestamp,
+  doc, query, orderBy, where, limit, getDoc, setDoc, serverTimestamp,
 } from 'firebase/firestore';
 import { db } from '../../../firebase';
 import { logAuditEvent } from './auditService';
@@ -8,13 +9,17 @@ import { logAuditEvent } from './auditService';
 // ─── Appointments ─────────────────────────────────────────────
 
 export async function getAllAppointments() {
-  const q = query(collection(db, 'appointments'), orderBy('date', 'asc'));
+  const q = query(collection(db, 'appointments'), orderBy('date', 'asc'), limit(100));
   const snap = await getDocs(q);
   return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
 }
 
 export async function getAppointmentsByEmail(email) {
-  const q = query(collection(db, 'appointments'), where('participantEmail', '==', email));
+  const q = query(
+    collection(db, 'appointments'),
+    where('participantEmail', '==', email),
+    limit(20)
+  );
   const snap = await getDocs(q);
   const docs = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
   return docs.sort((a, b) => (a.date > b.date ? 1 : a.date < b.date ? -1 : 0));

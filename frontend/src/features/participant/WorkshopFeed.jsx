@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { subscribeToPublishedEvents } from '../admin/services/eventService';
+import { getPublishedEvents } from '../admin/services/eventService';
 import {
   getRegistrationCounts,
   getUserRegisteredEventIds,
@@ -42,12 +42,20 @@ export default function WorkshopFeed() {
   }, [currentUser?.email]);
 
   useEffect(() => {
-    const unsubscribe = subscribeToPublishedEvents((data) => {
-      setEvents(data);
-      setLoading(false);
-      refreshRegistrationData(data);
-    });
-    return unsubscribe;
+    let cancelled = false;
+    getPublishedEvents()
+      .then((data) => {
+        if (cancelled) return;
+        setEvents(data);
+        setLoading(false);
+        refreshRegistrationData(data);
+      })
+      .catch((err) => {
+        if (cancelled) return;
+        console.error('Failed to load published events:', err);
+        setLoading(false);
+      });
+    return () => { cancelled = true; };
   }, [refreshRegistrationData]);
 
   async function handleRegister(event) {

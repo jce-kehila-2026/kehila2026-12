@@ -1,4 +1,5 @@
-import { addDoc, collection, getDocs, query, serverTimestamp, where } from 'firebase/firestore';
+// Phase 1 changes: added per-collection limits to bound the calendar fetch.
+import { addDoc, collection, getDocs, query, limit, serverTimestamp, where } from 'firebase/firestore';
 import { db } from '../../firebase';
 
 function toDate(value) {
@@ -107,7 +108,7 @@ function normalizeNote(docData) {
 }
 
 async function getCollection(name, constraints = []) {
-  const ref = constraints.length > 0 ? query(collection(db, name), ...constraints) : collection(db, name);
+  const ref = query(collection(db, name), ...constraints, limit(100));
   const snap = await getDocs(ref);
   return snap.docs.map((document) => ({ id: document.id, ...document.data() }));
 }

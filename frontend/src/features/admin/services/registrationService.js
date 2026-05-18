@@ -1,3 +1,4 @@
+// Phase 1 changes: added limit() to bounded list queries.
 import {
   collection,
   getDocs,
@@ -7,6 +8,7 @@ import {
   doc,
   query,
   where,
+  limit,
   serverTimestamp,
 } from 'firebase/firestore';
 import { db } from '../../../firebase';
@@ -19,7 +21,8 @@ import { logAuditEvent } from './auditService';
 export async function getRegistrationsByEvent(eventId) {
   const q = query(
     collection(db, 'event_registrations'),
-    where('eventId', '==', eventId)
+    where('eventId', '==', eventId),
+    limit(200)
   );
   const snap = await getDocs(q);
   const docs = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
@@ -114,7 +117,8 @@ export async function checkInRegistration(regId) {
 export async function getUserRegisteredEventIds(email) {
   const q = query(
     collection(db, 'event_registrations'),
-    where('participantEmail', '==', email)
+    where('participantEmail', '==', email),
+    limit(50)
   );
   const snap = await getDocs(q);
   const map = {};

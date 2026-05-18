@@ -28,7 +28,7 @@ import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivismOutlined
 import { useNavigate } from 'react-router-dom';
 import appointmentsHero from '../../assets/appointments-hero.png';
 import { useAdmin } from '../admin/context/AdminContext';
-import { subscribeToPublishedEvents } from '../admin/services/eventService';
+import { getPublishedEvents } from '../admin/services/eventService';
 import {
   addRegistration,
   getRegistrationCounts,
@@ -355,23 +355,25 @@ export default function EventsPage() {
   }, [currentUser?.email]);
 
   useEffect(() => {
+    let cancelled = false;
     setLoadingEvents(true);
     setEventsError('');
 
-    const unsubscribe = subscribeToPublishedEvents(
-      (data) => {
+    getPublishedEvents()
+      .then((data) => {
+        if (cancelled) return;
         setEvents(data);
         setLoadingEvents(false);
         refreshRegistrationData(data);
-      },
-      (error) => {
-        console.error('Failed to subscribe to published events:', error);
+      })
+      .catch((error) => {
+        if (cancelled) return;
+        console.error('Failed to load published events:', error);
         setEventsError('Could not load events from Firestore. Please check your connection and permissions.');
         setLoadingEvents(false);
-      },
-    );
+      });
 
-    return unsubscribe;
+    return () => { cancelled = true; };
   }, [refreshRegistrationData]);
 
   const categories = useMemo(() => {

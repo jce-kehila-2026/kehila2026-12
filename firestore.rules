@@ -13,17 +13,20 @@ service cloud.firestore {
 
     // ── Users Collection ──
     match /users/{userId} {
-      allow read: if request.auth != null;
-      allow create: if request.auth != null && request.auth.uid == userId;
-      allow update: if isAdmin();
-      allow delete: if false; // Never allow user deletion from client
+  allow read, write: if request.auth != null;
+}
+// ── Admins Collection ──
+match /admins/{adminId} {
+  allow read: if request.auth != null;
+  allow create, update, delete: if isAdmin();
+}
+
+     // ── Participants ──
+    match /participants/{participantId} {
+      allow read, write: if request.auth != null
+        && request.auth.uid == participantId;
     }
 
-    // Admin lookup records used during role resolution.
-    match /admins/{adminId} {
-      allow read: if request.auth != null;
-      allow create, update, delete: if isAdmin();
-    }
 
     // ── Audit Logs — APPEND ONLY (Immutable) ──
     match /audit_logs/{logId} {
@@ -47,7 +50,7 @@ service cloud.firestore {
       allow delete: if isAdmin() ||
         (request.auth != null &&
          resource.data.participantEmail == request.auth.token.email);
-      allow update: if false; // Registrations are immutable once created
+      allow update: if isAdmin(); // Admins can update checkedIn for check-in feature
     }
 
     // ── Registrations ──
@@ -77,48 +80,55 @@ service cloud.firestore {
       allow create, update, delete: if isAdmin();
     }
 
-    // Public homepage sections
-    match /homepage_statistics/{docId} {
-      allow read: if true;
-      allow create, update, delete: if isAdmin();
-    }
 
-    match /support_areas/{docId} {
-      allow read: if true;
-      allow create, update, delete: if isAdmin();
-    }
+// ── Appointments ──
+match /appointments/{appointmentId} {
 
-    match /homepage_content/{docId} {
-      allow read: if true;
-      allow create, update, delete: if isAdmin();
-    }
+  allow read: if request.auth != null;
 
-    // Participant workshop suggestions
-    match /workshop_suggestions/{suggestionId} {
-      allow create: if request.auth != null;
-      allow read, update, delete: if isAdmin();
-    }
+  allow create: if request.auth != null
+    && request.resource.data.participantId == request.auth.uid;
 
-    // ── Appointments ──
-    match /appointments/{appointmentId} {
-      allow read: if isAdmin()
-        || (request.auth != null && resource.data.userId == request.auth.uid)
-        || (request.auth != null && resource.data.participantEmail == request.auth.token.email);
+  allow update: if request.auth != null
+    && resource.data.participantId == request.auth.uid;
 
-      allow create, update, delete: if isAdmin();
+  allow delete: if isAdmin();
+}
+
+    // ── Appointment Settings ──
+    match /appt_settings/{docId} {
+      allow read, write: if isAdmin();
     }
 
     // ── Calendar Notes ──
-    match /calendar_notes/{noteId} {
-      allow read: if isAdmin()
-        || (request.auth != null && resource.data.userId == request.auth.uid);
+match /calendar_notes/{noteId} {
+  allow read: if isAdmin()
+    || (request.auth != null && resource.data.userId == request.auth.uid);
 
-      allow create: if request.auth != null
-        && request.resource.data.userId == request.auth.uid;
+  allow create: if request.auth != null
+    && request.resource.data.userId == request.auth.uid;
 
-      allow update, delete: if request.auth != null
-        && resource.data.userId == request.auth.uid;
-    }
+  allow update, delete: if request.auth != null
+    && resource.data.userId == request.auth.uid;
+}
+// ── Therapists ──
+match /therapists/{therapistId} {
+  allow read: if request.auth != null;
+  allow create, update, delete: if isAdmin();
+}
+//Suggestions workshop
+match /workshop_suggestions/{suggestionId} {
+  allow create: if request.auth != null;
+  allow read, update, delete: if isAdmin();
+}
+
+// ── Summary stats documents ──
+// public_summary is readable by anyone (homepage counts).
+// admin_summary is admin-only. Writes are admin-only for both.
+match /stats/{docId} {
+  allow read: if docId == 'public_summary' || isAdmin();
+  allow write: if isAdmin();
+}
 
   }
 }

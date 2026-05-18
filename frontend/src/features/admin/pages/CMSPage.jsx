@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { collection, addDoc, updateDoc, deleteDoc, doc, getDocs, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, updateDoc, deleteDoc, doc, getDocs, query, limit, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../../firebase';
 import { logAuditEvent } from '../services/auditService';
 import Box from '@mui/material/Box';
@@ -36,7 +36,7 @@ export default function CMSPage() {
   const fetchItems = useCallback(async () => {
     setLoading(true);
     try {
-      const snap = await getDocs(collection(db, activeTab));
+      const snap = await getDocs(query(collection(db, activeTab), limit(100)));
       setItems(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
     } catch (err) {
       console.error('CMS fetch failed:', err);
