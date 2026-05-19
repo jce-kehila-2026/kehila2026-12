@@ -23,6 +23,10 @@
   box-shadow: 0 24px 56px rgba(31, 12, 42, 0.22);
 }
 
+.join-modal__card--compact {
+  width: min(100%, 640px);
+}
+
 .join-modal__close {
   position: absolute;
   inset-block-start: 16px;
@@ -236,6 +240,10 @@
   gap: 12px;
 }
 
+.join-modal__grid--volunteer {
+  grid-template-columns: 1fr;
+}
+
 .join-modal__field {
   display: grid;
   align-content: start;
@@ -244,6 +252,10 @@
 
 .join-modal__field--compact {
   max-width: 260px;
+}
+
+.join-modal__field--wide {
+  grid-column: 1 / -1;
 }
 
 .join-modal__field label,
