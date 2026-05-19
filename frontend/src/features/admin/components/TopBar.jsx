@@ -26,9 +26,7 @@ export default function TopBar({ title, drawerWidth = 260 }) {
       position="fixed"
       sx={{
         width: { xs: 'calc(100% - 84px)', md: `calc(100% - ${drawerWidth}px)` },
-        ...(direction === 'rtl'
-          ? { mr: { xs: '84px', md: `${drawerWidth}px` } }
-          : { ml: { xs: '84px', md: `${drawerWidth}px` } }),
+        mr: { xs: '84px', md: `${drawerWidth}px` },
         bgcolor: 'rgba(255, 255, 255, 0.92)',
         color: 'text.primary',
         borderBottom: '1px solid rgba(109, 60, 207, 0.12)',

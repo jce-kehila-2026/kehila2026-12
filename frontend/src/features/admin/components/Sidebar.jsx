@@ -32,6 +32,7 @@ export default function Sidebar({ drawerWidth = 260 }) {
 
   return (
     <Drawer
+      anchor="right"
       variant="permanent"
       sx={{
         width: { xs: 84, md: drawerWidth },
@@ -39,15 +40,15 @@ export default function Sidebar({ drawerWidth = 260 }) {
         '& .MuiDrawer-paper': {
           width: { xs: 84, md: drawerWidth },
           boxSizing: 'border-box',
-          borderRight: '1px solid rgba(109, 60, 207, 0.12)',
+          borderLeft: '1px solid rgba(109, 60, 207, 0.12)',
           background:
             'linear-gradient(180deg, rgba(248, 243, 255, 0.96) 0%, rgba(255, 255, 255, 0.96) 100%)',
-          boxShadow: '12px 0 35px rgba(51, 29, 95, 0.06)',
+          boxShadow: '-12px 0 35px rgba(51, 29, 95, 0.06)',
         },
       }}
     >
       {/* Brand */}
-      <Box sx={{ p: { xs: 1.5, md: 2.5 }, display: 'flex', alignItems: 'center', justifyContent: { xs: 'center', md: 'flex-start' }, gap: 1.5 }}>
+      <Box sx={{ p: { xs: 1.5, md: 2.5 }, display: 'flex', flexDirection: { xs: 'row', md: 'row-reverse' }, alignItems: 'center', justifyContent: { xs: 'center', md: 'flex-start' }, gap: 1.5, textAlign: 'right' }}>
         <Box
           sx={{
             width: 40,
@@ -79,7 +80,7 @@ export default function Sidebar({ drawerWidth = 260 }) {
 
       {/* Main Navigation */}
       <Box sx={{ px: { xs: 1, md: 1.5 }, pt: 2 }}>
-        <Typography variant="subtitle2" sx={{ px: 1, mb: 1, display: { xs: 'none', md: 'block' }, textTransform: 'uppercase', letterSpacing: 0, color: 'text.secondary' }}>
+        <Typography variant="subtitle2" sx={{ px: 1, mb: 1, display: { xs: 'none', md: 'block' }, textTransform: 'uppercase', letterSpacing: 0, color: 'text.secondary', textAlign: 'right' }}>
           Main
         </Typography>
         <List disablePadding>
@@ -91,7 +92,9 @@ export default function Sidebar({ drawerWidth = 260 }) {
             sx={{
               borderRadius: 2,
               mb: 0.75,
+              flexDirection: { xs: 'row', md: 'row-reverse' },
               justifyContent: { xs: 'center', md: 'flex-start' },
+              textAlign: 'right',
               '&.Mui-selected': { bgcolor: 'rgba(109, 60, 207, 0.1)', color: '#6D3CCF' },
             }}
           >
@@ -111,7 +114,9 @@ export default function Sidebar({ drawerWidth = 260 }) {
             sx={{
               borderRadius: 2,
               mb: 0.75,
+              flexDirection: { xs: 'row', md: 'row-reverse' },
               justifyContent: { xs: 'center', md: 'flex-start' },
+              textAlign: 'right',
               '&.Mui-selected': {
                 bgcolor: 'rgba(233, 75, 147, 0.12)',
                 color: '#E94B93',
@@ -124,22 +129,24 @@ export default function Sidebar({ drawerWidth = 260 }) {
               primaryTypographyProps={{ fontSize: '0.875rem', fontWeight: 700 }}
               sx={{ display: { xs: 'none', md: 'block' } }}
             />
-            <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+            <Box sx={{ display: { xs: 'none', md: 'block' }, mr: 'auto' }}>
               {eventsActive ? <ExpandLessIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />}
             </Box>
           </ListItemButton>
 
           <Collapse in={eventsActive} timeout="auto" unmountOnExit>
-            <List disablePadding sx={{ display: { xs: 'none', md: 'block' }, mb: 1, pl: 1 }}>
+            <List disablePadding sx={{ display: { xs: 'none', md: 'block' }, mb: 1, pr: 1 }}>
               <ListItemButton
                 component={NavLink}
                 to="/admin/events?type=workshops"
                 selected={location.pathname.startsWith('/admin/events') && activeEventType !== 'appointments'}
                 id="nav-workshops"
                 sx={{
-                  borderLeft: '2px solid rgba(109, 60, 207, 0.18)',
+                  borderRight: '2px solid rgba(109, 60, 207, 0.18)',
                   borderRadius: 2,
-                  pl: 2,
+                  pr: 2,
+                  flexDirection: 'row-reverse',
+                  textAlign: 'right',
                   '&.Mui-selected': { bgcolor: 'rgba(233, 75, 147, 0.08)', color: '#2f2851' },
                 }}
               >
@@ -152,9 +159,11 @@ export default function Sidebar({ drawerWidth = 260 }) {
                 selected={location.pathname.startsWith('/admin/events') && activeEventType === 'appointments'}
                 id="nav-appointments"
                 sx={{
-                  borderLeft: '2px solid rgba(109, 60, 207, 0.18)',
+                  borderRight: '2px solid rgba(109, 60, 207, 0.18)',
                   borderRadius: 2,
-                  pl: 2,
+                  pr: 2,
+                  flexDirection: 'row-reverse',
+                  textAlign: 'right',
                 }}
               >
                 <ListItemIcon sx={{ minWidth: 34, color: 'inherit' }}><CalendarTodayIcon fontSize="small" /></ListItemIcon>
@@ -173,7 +182,9 @@ export default function Sidebar({ drawerWidth = 260 }) {
               sx={{
                 borderRadius: 2,
                 mb: 0.75,
+                flexDirection: { xs: 'row', md: 'row-reverse' },
                 justifyContent: { xs: 'center', md: 'flex-start' },
+                textAlign: 'right',
                 '&.Mui-selected': { bgcolor: 'rgba(109, 60, 207, 0.1)', color: '#6D3CCF' },
               }}
             >
