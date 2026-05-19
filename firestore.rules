@@ -133,6 +133,14 @@ service cloud.firestore {
       allow create, update, delete: if isAdmin();
     }
 
+    // ── Public Pages (public read, admin write) ─────────────
+    // Single collection for the public site. Each document is one page
+    // (e.g. `home`) with nested field groups per section.
+    match /public_pages/{pageId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
     // ── Workshop Suggestions ────────────────────────────────
     match /workshop_suggestions/{suggestionId} {
       allow create: if request.auth != null;

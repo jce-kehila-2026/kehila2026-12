@@ -20,11 +20,13 @@ import ErrorState from '../components/ErrorState';
 import useRevealOnScroll from '../hooks/useRevealOnScroll';
 import usePublicHomeScrollReset from '../hooks/usePublicHomeScrollReset';
 import { getFallbackPublicHomepageContent, getPublicHomepageContent } from '../services/publicContentService';
+import { getPublicHomeDoc, getDefaultPublicHomeDoc } from '../services/publicPagesService';
 import '../styles/PublicHomePage.css';
 
 export default function PublicHomePage() {
   const pageRef = useRef(null);
   const [content, setContent] = useState(() => getFallbackPublicHomepageContent());
+  const [publicHomeDoc, setPublicHomeDoc] = useState(() => getDefaultPublicHomeDoc());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
@@ -57,14 +59,19 @@ export default function PublicHomePage() {
 
     async function loadContent() {
       try {
-        const homepageContent = await getPublicHomepageContent();
+        const [homepageContent, homeDoc] = await Promise.all([
+          getPublicHomepageContent(),
+          getPublicHomeDoc(),
+        ]);
         if (isMounted) {
           setContent(homepageContent);
+          setPublicHomeDoc(homeDoc);
           setError(null);
         }
       } catch (loadError) {
         if (isMounted) {
           setContent(getFallbackPublicHomepageContent());
+          setPublicHomeDoc(getDefaultPublicHomeDoc());
           setError(loadError);
         }
       } finally {
@@ -98,7 +105,7 @@ export default function PublicHomePage() {
         {!loading && !content ? (
           <EmptyState message="תוכן דף הבית הציבורי עדיין לא זמין." />
         ) : null}
-        <HeroSection hero={content.hero} loading={loading} onJoinClick={() => setIsJoinModalOpen(true)} />
+        <HeroSection hero={publicHomeDoc.hero} loading={loading} onJoinClick={() => setIsJoinModalOpen(true)} />
         <AboutSection about={content.about} supportAreas={content.supportAreas} />
         <SupportAreasSection supportAreas={content.supportAreas} isLoading={loading} />
         <StatisticsSection statistics={content.statistics} isLoading={loading} />

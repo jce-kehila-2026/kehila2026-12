@@ -9,42 +9,47 @@ import Typography from '@mui/material/Typography';
 import Divider from '@mui/material/Divider';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import EventIcon from '@mui/icons-material/Event';
-import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import ArticleIcon from '@mui/icons-material/Article';
 import PeopleIcon from '@mui/icons-material/People';
 import ShieldIcon from '@mui/icons-material/Shield';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 
 const NAV_ITEMS = [
-  { label: 'Dashboard', path: '/admin/dashboard', icon: <DashboardIcon /> },
-  { label: 'Events', path: '/admin/events', icon: <EventIcon /> },
-  { label: 'Appointments', path: '/admin/appointments', icon: <CalendarTodayIcon /> },
-  { label: 'CMS', path: '/admin/cms', icon: <ArticleIcon /> },
   { label: 'Users', path: '/admin/users', icon: <PeopleIcon /> },
   { label: 'Role Management', path: '/admin/roles', icon: <ShieldIcon /> },
+  { label: 'Public Home-page', path: '/admin/cms', icon: <ArticleIcon /> },
   { label: 'Audit Log', path: '/admin/audit-log', icon: <ReceiptLongIcon /> },
 ];
 
 export default function Sidebar({ drawerWidth = 260 }) {
   const location = useLocation();
+  const eventsActive = location.pathname.startsWith('/admin/events');
 
   return (
     <Drawer
+      anchor="right"
       variant="permanent"
       sx={{
-        width: drawerWidth,
+        width: { xs: 84, md: drawerWidth },
         flexShrink: 0,
-        '& .MuiDrawer-paper': { width: drawerWidth, boxSizing: 'border-box' },
+        '& .MuiDrawer-paper': {
+          width: { xs: 84, md: drawerWidth },
+          boxSizing: 'border-box',
+          borderLeft: '1px solid rgba(109, 60, 207, 0.12)',
+          background:
+            'linear-gradient(180deg, rgba(248, 243, 255, 0.96) 0%, rgba(255, 255, 255, 0.96) 100%)',
+          boxShadow: '-12px 0 35px rgba(51, 29, 95, 0.06)',
+        },
       }}
     >
       {/* Brand */}
-      <Box sx={{ p: 2.5, display: 'flex', alignItems: 'center', gap: 1.5 }}>
+      <Box sx={{ p: { xs: 1.5, md: 2.5 }, display: 'flex', flexDirection: { xs: 'row', md: 'row-reverse' }, alignItems: 'center', justifyContent: { xs: 'center', md: 'flex-start' }, gap: 1.5, textAlign: 'right' }}>
         <Box
           sx={{
             width: 40,
             height: 40,
             borderRadius: 2,
-            background: 'linear-gradient(135deg, #DF327B, #E85B95)',
+            background: 'linear-gradient(135deg, #6D3CCF, #E94B93)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
@@ -56,7 +61,7 @@ export default function Sidebar({ drawerWidth = 260 }) {
         >
           S
         </Box>
-        <Box>
+        <Box sx={{ display: { xs: 'none', md: 'block' } }}>
           <Typography variant="h6" sx={{ fontSize: '1.1rem', lineHeight: 1.2 }}>
             She-Na
           </Typography>
@@ -69,11 +74,58 @@ export default function Sidebar({ drawerWidth = 260 }) {
       <Divider />
 
       {/* Main Navigation */}
-      <Box sx={{ px: 1.5, pt: 2 }}>
-        <Typography variant="subtitle2" sx={{ px: 1, mb: 1 }}>
+      <Box sx={{ px: { xs: 1, md: 1.5 }, pt: 2 }}>
+        <Typography variant="subtitle2" sx={{ px: 1, mb: 1, display: { xs: 'none', md: 'block' }, textTransform: 'uppercase', letterSpacing: 0, color: 'text.secondary', textAlign: 'right' }}>
           Main
         </Typography>
         <List disablePadding>
+          <ListItemButton
+            component={NavLink}
+            to="/admin/dashboard"
+            selected={location.pathname.startsWith('/admin/dashboard')}
+            id="nav-dashboard"
+            sx={{
+              borderRadius: 2,
+              mb: 0.75,
+              flexDirection: { xs: 'row', md: 'row-reverse' },
+              justifyContent: { xs: 'center', md: 'flex-start' },
+              textAlign: 'right',
+              '&.Mui-selected': { bgcolor: 'rgba(109, 60, 207, 0.1)', color: '#6D3CCF' },
+            }}
+          >
+            <ListItemIcon sx={{ minWidth: { xs: 0, md: 36 }, color: 'inherit' }}><DashboardIcon /></ListItemIcon>
+            <ListItemText
+              primary="Dashboard"
+              primaryTypographyProps={{ fontSize: '0.875rem', fontWeight: 600 }}
+              sx={{ display: { xs: 'none', md: 'block' } }}
+            />
+          </ListItemButton>
+
+          <ListItemButton
+            component={NavLink}
+            to="/admin/events"
+            selected={eventsActive}
+            id="nav-events"
+            sx={{
+              borderRadius: 2,
+              mb: 0.75,
+              flexDirection: { xs: 'row', md: 'row-reverse' },
+              justifyContent: { xs: 'center', md: 'flex-start' },
+              textAlign: 'right',
+              '&.Mui-selected': {
+                bgcolor: 'rgba(233, 75, 147, 0.12)',
+                color: '#E94B93',
+              },
+            }}
+          >
+            <ListItemIcon sx={{ minWidth: { xs: 0, md: 36 }, color: 'inherit' }}><EventIcon /></ListItemIcon>
+            <ListItemText
+              primary="Events"
+              primaryTypographyProps={{ fontSize: '0.875rem', fontWeight: 700 }}
+              sx={{ display: { xs: 'none', md: 'block' } }}
+            />
+          </ListItemButton>
+
           {NAV_ITEMS.map((item) => (
             <ListItemButton
               key={item.path}
@@ -81,11 +133,20 @@ export default function Sidebar({ drawerWidth = 260 }) {
               to={item.path}
               selected={location.pathname.startsWith(item.path)}
               id={`nav-${item.label.toLowerCase().replace(/\s/g, '-')}`}
+              sx={{
+                borderRadius: 2,
+                mb: 0.75,
+                flexDirection: { xs: 'row', md: 'row-reverse' },
+                justifyContent: { xs: 'center', md: 'flex-start' },
+                textAlign: 'right',
+                '&.Mui-selected': { bgcolor: 'rgba(109, 60, 207, 0.1)', color: '#6D3CCF' },
+              }}
             >
-              <ListItemIcon sx={{ minWidth: 36 }}>{item.icon}</ListItemIcon>
+              <ListItemIcon sx={{ minWidth: { xs: 0, md: 36 }, color: 'inherit' }}>{item.icon}</ListItemIcon>
               <ListItemText
                 primary={item.label}
                 primaryTypographyProps={{ fontSize: '0.875rem', fontWeight: 500 }}
+                sx={{ display: { xs: 'none', md: 'block' } }}
               />
             </ListItemButton>
           ))}

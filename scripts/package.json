@@ -3,7 +3,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "migrate": "node migrateFirestore.js"
+    "migrate": "node migrateFirestore.js",
+    "seed:public-home": "node seedPublicHome.js",
+    "cleanup:public-home-cta": "node cleanupPublicHomeCta.js"
   },
   "dependencies": {
     "firebase-admin": "^12.0.0"
