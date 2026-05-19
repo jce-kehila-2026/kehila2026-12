@@ -1,9 +1,12 @@
+import { useState } from 'react';
 import FavoriteBorderRoundedIcon from '@mui/icons-material/FavoriteBorderRounded';
 import GroupsRoundedIcon from '@mui/icons-material/GroupsRounded';
 import AutoAwesomeRoundedIcon from '@mui/icons-material/AutoAwesomeRounded';
 import ChatBubbleOutlineRoundedIcon from '@mui/icons-material/ChatBubbleOutlineRounded';
 import VolunteerActivismRoundedIcon from '@mui/icons-material/VolunteerActivismRounded';
 import EventAvailableRoundedIcon from '@mui/icons-material/EventAvailableRounded';
+import { enrichSupportAreaForModal } from '../constants/supportAreaModalContent';
+import SupportAreaModal from './SupportAreaModal';
 import EmptyState from './EmptyState';
 import ErrorState from './ErrorState';
 import LoadingState from './LoadingState';
@@ -18,18 +21,29 @@ const ICONS = {
 };
 
 export default function SupportAreasSection({ supportAreas = [], isLoading = false, hasError = false }) {
+  const [selectedArea, setSelectedArea] = useState(null);
   const visibleSupportAreas = Array.isArray(supportAreas) ? supportAreas.filter(Boolean) : [];
+  const selectedAreaDetails = selectedArea ? enrichSupportAreaForModal(selectedArea) : null;
 
-  function handleReadMoreClick(event) {
-    event.preventDefault();
+  function handleReadMoreClick(area) {
+    return function onClick(event) {
+      event.preventDefault();
+      setSelectedArea(area);
+    };
+  }
+
+  function handleCloseModal() {
+    setSelectedArea(null);
   }
 
   return (
     <section className="public-section public-section--support" id="support" aria-labelledby="public-support-title">
       <div className="public-section__header public-section__header--centered reveal">
-        <p className="public-eyebrow">שירותים וכלים</p>
-        <h2 id="public-support-title">בואי נלמד ביחד</h2>
-        <p className="public-section__text reveal reveal-delay-1">מגוון שירותים ופעילויות המעניקים תמיכה, כלים וקהילה.</p>
+        <p className="public-eyebrow">מרחב של תמיכה והשראה</p>
+        <h2 id="public-support-title">מקום של תמיכה, תקווה וקהילה</h2>
+        <p className="public-section__text reveal reveal-delay-1">
+          כאן תמצאי מרחבים רכים של ליווי, חיבור וחיזוק — בדיוק במקום שבו את נמצאת בדרך.
+        </p>
       </div>
 
       {isLoading ? (
@@ -56,9 +70,9 @@ export default function SupportAreasSection({ supportAreas = [], isLoading = fal
               <div className="public-support__body">
                 <h3>{area.title}</h3>
                 <p>{area.description || area.text}</p>
-                <a href="#read-more" onClick={handleReadMoreClick}>
+                <button type="button" className="public-support__more" onClick={handleReadMoreClick(area)}>
                   למידע נוסף
-                </a>
+                </button>
               </div>
             </article>
           ))}
@@ -66,6 +80,8 @@ export default function SupportAreasSection({ supportAreas = [], isLoading = fal
       ) : (
         <EmptyState message="תחומי התמיכה יופיעו כאן כאשר התוכן הציבורי יהיה זמין." />
       )}
+
+      <SupportAreaModal area={selectedAreaDetails} isOpen={Boolean(selectedAreaDetails)} onClose={handleCloseModal} />
     </section>
   );
 }

@@ -35,7 +35,7 @@
   position: absolute;
   inset: 0;
   content: "";
-  background: linear-gradient(180deg, rgba(75, 19, 107, 0.08), rgba(75, 19, 107, 0.54));
+  background: linear-gradient(180deg, rgba(123, 44, 191, 0.04), rgba(123, 44, 191, 0.32));
 }
 
 .public-support__media img,
@@ -100,20 +100,26 @@
   line-height: 1.75;
 }
 
-.public-support__body a {
+.public-support__more {
   justify-self: start;
+  padding: 0;
   color: var(--public-purple-2);
+  background: transparent;
+  border: 0;
+  font-family: inherit;
   font-size: 1.04rem;
   font-weight: 900;
+  line-height: 1.4;
   text-decoration: none;
+  cursor: pointer;
 }
 
-.public-support__body a::before {
+.public-support__more::before {
   content: "← ";
 }
 
-.public-support__body a:hover,
-.public-support__body a:focus-visible {
+.public-support__more:hover,
+.public-support__more:focus-visible {
   color: var(--public-pink);
 }
 

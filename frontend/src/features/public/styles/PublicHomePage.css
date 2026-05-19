@@ -1,7 +1,9 @@
 @import "./public-layout.css";
+@import "./public-hero-section.css";
 @import "./public-sections.css";
 @import "./public-cards.css";
 @import "./join-modal.css";
+@import "./support-area-modal.css";
 @import "./public-about-section.css";
 @import "./public-statistics-section.css";
 @import "./public-support-cta.css";
