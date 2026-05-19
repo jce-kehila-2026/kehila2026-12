@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import Drawer from '@mui/material/Drawer';
 import Box from '@mui/material/Box';
@@ -29,6 +30,13 @@ export default function Sidebar({ drawerWidth = 260 }) {
   const location = useLocation();
   const eventsActive = location.pathname.startsWith('/admin/events') || location.pathname.startsWith('/admin/appointments');
   const activeEventType = new URLSearchParams(location.search).get('type');
+  const [eventsOpen, setEventsOpen] = useState(eventsActive);
+
+  useEffect(() => {
+    if (eventsActive) {
+      setEventsOpen(true);
+    }
+  }, [eventsActive]);
 
   return (
     <Drawer
@@ -107,10 +115,9 @@ export default function Sidebar({ drawerWidth = 260 }) {
           </ListItemButton>
 
           <ListItemButton
-            component={NavLink}
-            to="/admin/events"
             selected={eventsActive}
             id="nav-events"
+            onClick={() => setEventsOpen((current) => !current)}
             sx={{
               borderRadius: 2,
               mb: 0.75,
@@ -130,11 +137,11 @@ export default function Sidebar({ drawerWidth = 260 }) {
               sx={{ display: { xs: 'none', md: 'block' } }}
             />
             <Box sx={{ display: { xs: 'none', md: 'block' }, mr: 'auto' }}>
-              {eventsActive ? <ExpandLessIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />}
+              {eventsOpen ? <ExpandLessIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />}
             </Box>
           </ListItemButton>
 
-          <Collapse in={eventsActive} timeout="auto" unmountOnExit>
+          <Collapse in={eventsOpen} timeout="auto" unmountOnExit>
             <List disablePadding sx={{ display: { xs: 'none', md: 'block' }, mb: 1, pr: 1 }}>
               <ListItemButton
                 component={NavLink}
