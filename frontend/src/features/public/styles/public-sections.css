@@ -71,7 +71,7 @@
   box-shadow: 0 22px 40px rgba(31, 12, 42, 0.24);
 }
 
-.public-section:not(.public-section--statistics):not(.public-section--donation-cta):not(.public-section--team-section):not(.public-section--about):not(.public-contact) {
+.public-section:not(.public-section--statistics):not(.public-section--donation-cta):not(.public-section--team-section):not(.public-section--about):not(.public-section--support):not(.public-section--medical-partners):not(.public-section--press-articles):not(.public-contact) {
   padding-block: clamp(70px, 8vw, 118px);
   padding-inline: clamp(20px, 8vw, 120px);
 }
@@ -93,8 +93,7 @@
 }
 
 .public-section__header h2,
-.public-donation h2,
-.public-section--support h2 {
+.public-donation h2 {
   margin: 0;
   color: var(--public-purple);
   font-size: clamp(2.7rem, 5vw, 4.2rem);
@@ -113,19 +112,6 @@
 .public-section__header--centered .public-section__text,
 .public-section__header--team .public-section__text {
   margin-block-start: 18px;
-}
-
-.public-support__icon {
-  display: inline-grid;
-  width: 76px;
-  height: 76px;
-  place-items: center;
-  color: #ffffff;
-  background: linear-gradient(135deg, var(--public-purple-2), var(--public-pink));
-  border-radius: 20px;
-  font-size: 2.1rem;
-  box-shadow: 0 14px 30px rgba(127, 34, 217, 0.22);
-  transition: transform 300ms ease, box-shadow 300ms ease;
 }
 
 .public-section__empty,

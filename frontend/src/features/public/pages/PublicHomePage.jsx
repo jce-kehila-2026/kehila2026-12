@@ -9,6 +9,7 @@ import ArticlesPreviewSection from '../components/ArticlesPreviewSection';
 import EventsPreviewSection from '../components/EventsPreviewSection';
 import CommunitySupportCta from '../components/CommunitySupportCta';
 import TeamSection from '../components/TeamSection';
+import MedicalPartnersSection from '../components/MedicalPartnersSection';
 import ContactSection from '../components/ContactSection';
 import PublicFooter from '../components/PublicFooter';
 import JoinCommunityModal from '../components/JoinCommunityModal';
@@ -113,6 +114,7 @@ export default function PublicHomePage() {
         <EventsPreviewSection events={content.events} isLoading={loading} hasError={error} />
         <CommunitySupportCta onDonationClick={() => setIsDonationModalOpen(true)} />
         <TeamSection />
+        <MedicalPartnersSection />
         <ContactSection contact={content.contact} organization={content.organization} />
       </main>
       <PublicFooter organization={content.organization} contact={content.contact} />
