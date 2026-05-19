@@ -8,16 +8,18 @@
 @import "./public-statistics-section.css";
 @import "./public-support-cta.css";
 @import "./public-team-section.css";
+@import "./medical-partner-modal.css";
 @import "./public-contact-section.css";
 @import "./public-responsive.css";
 @import "./public-support-section.css";
+@import "./public-medical-partners-section.css";
 
 .public-homepage :where(.public-hero h1) {
   font-weight: 900;
   color: #ffffff;
 }
 
-.public-homepage :where(.public-section__header h2, .public-donation h2, .public-support-cta__title, .public-team-section__title, .public-about__title, .public-contact__title, .public-card h3, .public-footer h2) {
+.public-homepage :where(.public-section__header h2, .public-donation h2, .public-support-cta__title, .public-team-section__title, .public-about__title, .public-contact__title, .medical-partners__heading, .public-card h3, .public-footer h2) {
   font-weight: 900;
 }
 
