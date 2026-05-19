@@ -11,7 +11,7 @@ const PUBLIC_LINKS = [
   { label: 'צרי קשר', href: '#contact' },
 ];
 
-export default function PublicNavbar({ organization, onJoinClick }) {
+export default function PublicNavbar({ organization, onJoinClick, onVolunteerClick }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState('');
@@ -55,6 +55,7 @@ export default function PublicNavbar({ organization, onJoinClick }) {
   function handleVolunteerClick(event) {
     event.preventDefault();
     closeMenu();
+    onVolunteerClick?.();
   }
 
   function handleJoinClick(event) {
@@ -112,7 +113,7 @@ export default function PublicNavbar({ organization, onJoinClick }) {
             <a className="public-navbar__cta public-navbar__cta--highlight" href="/home" onClick={closeMenu}>
               איזור אישי
             </a>
-            <a className="public-navbar__cta public-navbar__cta--secondary" href="#volunteer" onClick={handleVolunteerClick}>
+            <a className="public-navbar__cta public-navbar__cta--primary" href="#volunteer" onClick={handleVolunteerClick}>
               להתנדב
             </a>
           </div>
