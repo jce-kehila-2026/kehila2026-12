@@ -30,7 +30,12 @@ const SUPPORT_FEATURES = [
   },
 ];
 
-export default function CommunitySupportCta() {
+export default function CommunitySupportCta({ onDonationClick }) {
+  function handleDonationClick(event) {
+    event.preventDefault();
+    onDonationClick?.();
+  }
+
   return (
     <section
       className="public-section public-section--donation-cta public-support-cta"
@@ -111,7 +116,7 @@ export default function CommunitySupportCta() {
             })}
           </ul>
 
-          <a className="public-support-cta__button reveal reveal-delay-3" href={PUBLIC_DONATION_TARGET}>
+          <a className="public-support-cta__button reveal reveal-delay-3" href={PUBLIC_DONATION_TARGET} onClick={handleDonationClick}>
             <Heart className="public-support-cta__button-icon" strokeWidth={2} fill="currentColor" aria-hidden="true" />
             לתרומה
           </a>
