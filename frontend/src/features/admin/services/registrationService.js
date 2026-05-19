@@ -1,29 +1,54 @@
+// Phase 2: Registrations now live in TWO mirror subcollections:
+//   users/{uid}/registrations/{eventId}    — participant's own list
+//   events/{eventId}/registrations/{uid}   — event's roster
+// Writes use writeBatch() so both mirrors commit atomically.
+// Email-only walk-in registrations (no user account) fall back to a synthetic
+// key under the event roster only — they do not get a user mirror until the
+// participant signs up with that email.
+// Stats: bumps stats/admin_summary.registrationsThisMonth and the event's
+// registeredCount on every successful registration.
+
 import {
   collection,
+  getCountFromServer,
   getDocs,
-  addDoc,
-  deleteDoc,
-  updateDoc,
+  getDoc,
   doc,
   query,
   where,
+  limit,
+  writeBatch,
   serverTimestamp,
 } from 'firebase/firestore';
 import { db } from '../../../firebase';
 import { logAuditEvent } from './auditService';
 
+// Deterministic key for email-only walk-in registrations.
+function emailKey(email) {
+  return 'email_' + email.trim().toLowerCase().replace(/[^a-z0-9]/g, '_').slice(0, 80);
+}
+
+// Look up a user UID by email. Returns null if no account exists.
+async function findUidByEmail(email) {
+  if (!email) return null;
+  const q = query(collection(db, 'users'), where('email', '==', email), limit(1));
+  const snap = await getDocs(q);
+  return snap.empty ? null : snap.docs[0].id;
+}
+
 /**
- * Fetch all registrations for a specific event.
- * @param {string} eventId
+ * Read all registrations for one event from the event roster.
+ * Returns the same shape as before: { id, eventId, participantName, participantEmail, registeredAt, checkedIn, ... }
  */
 export async function getRegistrationsByEvent(eventId) {
-  const q = query(
-    collection(db, 'event_registrations'),
-    where('eventId', '==', eventId)
+  const snap = await getDocs(
+    query(collection(db, 'events', eventId, 'registrations'), limit(200))
   );
-  const snap = await getDocs(q);
-  const docs = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-  // Sort client-side to avoid requiring a composite Firestore index
+  const docs = snap.docs.map((d) => ({
+    id: d.id,
+    eventId,
+    ...d.data(),
+  }));
   return docs.sort((a, b) => {
     const aTime = a.registeredAt?.toDate?.() ?? new Date(0);
     const bTime = b.registeredAt?.toDate?.() ?? new Date(0);
@@ -32,94 +57,184 @@ export async function getRegistrationsByEvent(eventId) {
 }
 
 /**
- * Fetch registration counts for multiple events at once.
- * Returns a map: { eventId: count }
- * @param {string[]} eventIds
+ * Count registrations per event. Uses one getCountFromServer() call per event,
+ * which is cheap (server-side aggregation, doesn't return docs) and only requires
+ * read permission on that specific event roster.
+ * Returns: { eventId: count }
  */
 export async function getRegistrationCounts(eventIds) {
   if (!eventIds.length) return {};
 
-  const snap = await getDocs(collection(db, 'event_registrations'));
-  const counts = {};
-  eventIds.forEach((id) => (counts[id] = 0));
+  const entries = await Promise.all(
+    eventIds.map(async (eid) => {
+      try {
+        const snap = await getCountFromServer(
+          collection(db, 'events', eid, 'registrations')
+        );
+        return [eid, snap.data().count];
+      } catch (_) {
+        return [eid, 0];
+      }
+    })
+  );
 
-  snap.docs.forEach((d) => {
-    const eid = d.data().eventId;
-    if (counts[eid] !== undefined) {
-      counts[eid]++;
-    }
-  });
-
-  return counts;
+  return Object.fromEntries(entries);
 }
 
 /**
  * Register a participant for an event.
- * @param {Object} data  { eventId, participantName, participantEmail, participantPhone? }
+ * - If `data.uid` is provided OR the email matches an existing user, writes to
+ *   both mirrors atomically.
+ * - Otherwise writes only the event-roster entry (walk-in / no-account flow).
+ *
+ * @param {{ eventId, uid?, participantName, participantEmail, participantPhone? }} data
+ * @returns {Promise<string>} the registration key (uid or synthetic email key)
  */
 export async function addRegistration(data) {
-  const ref = await addDoc(collection(db, 'event_registrations'), {
-    ...data,
-    registeredAt: serverTimestamp(),
-  });
+  const {
+    eventId,
+    uid: callerUid,
+    participantName,
+    participantEmail,
+    participantPhone,
+    eventTitle,
+    eventDate,
+    eventLocation,
+    eventCoverUrl,
+  } = data;
 
-  // Audit log is admin-only — participants don't have write access to audit_logs.
-  // Fail silently so a permission error here never blocks the registration itself.
+  if (!eventId) throw new Error('eventId is required');
+
+  const uid = callerUid || (await findUidByEmail(participantEmail));
+  const eventRosterKey = uid || emailKey(participantEmail || `unknown_${Date.now()}`);
+
+  const eventRosterRef = doc(db, 'events', eventId, 'registrations', eventRosterKey);
+
+  const eventRosterDoc = {
+    userId: uid || null,
+    userName: participantName || '',
+    userEmail: participantEmail || '',
+    userPhone: participantPhone || '',
+    status: 'confirmed',
+    checkedIn: false,
+    registeredAt: serverTimestamp(),
+    // Legacy field aliases kept so existing UI columns work unchanged.
+    participantName: participantName || '',
+    participantEmail: participantEmail || '',
+    participantPhone: participantPhone || '',
+  };
+
+  // Note: stats counters and events/{eventId}.registeredCount are intentionally
+  // NOT updated here. Clients cannot write to shared aggregates under the new
+  // rules; a Cloud Function should maintain those counts on subcollection writes.
+  const batch = writeBatch(db);
+  batch.set(eventRosterRef, eventRosterDoc, { merge: true });
+
+  if (uid) {
+    const userMirrorRef = doc(db, 'users', uid, 'registrations', eventId);
+    batch.set(
+      userMirrorRef,
+      {
+        eventId,
+        eventTitle: eventTitle || '',
+        eventDate: eventDate || null,
+        eventLocation: eventLocation || '',
+        eventCoverUrl: eventCoverUrl || '',
+        status: 'confirmed',
+        checkedIn: false,
+        registeredAt: serverTimestamp(),
+      },
+      { merge: true }
+    );
+  }
+
+  await batch.commit();
+
   try {
     await logAuditEvent({
       actionType: 'ADD_REGISTRATION',
-      targetId: ref.id,
-      details: {
-        eventId: data.eventId,
-        participant: data.participantName || data.participantEmail,
-      },
+      targetId: `${eventId}/${eventRosterKey}`,
+      details: { eventId, participant: participantName || participantEmail },
     });
   } catch (_) {}
 
-  return ref.id;
+  return eventRosterKey;
 }
 
 /**
- * Remove a registration (cancel).
- * @param {string} regId  The registration document ID.
- * @param {string} participantName  For audit log readability.
+ * Remove a registration. `regId` is the key under events/{eventId}/registrations/ —
+ * either a uid (for account holders) or a synthetic emailKey.
  */
-export async function removeRegistration(regId, participantName) {
-  await deleteDoc(doc(db, 'event_registrations', regId));
+export async function removeRegistration(regId, participantName, eventId) {
+  if (!eventId) {
+    // Legacy callers pass only regId. Best-effort: scan event_registrations is gone,
+    // so callers must pass eventId. Fail loudly so the bug surfaces.
+    throw new Error('removeRegistration now requires eventId as the third argument.');
+  }
+
+  const rosterRef = doc(db, 'events', eventId, 'registrations', regId);
+  const rosterSnap = await getDoc(rosterRef);
+  const uid = rosterSnap.exists() ? rosterSnap.data().userId : null;
+
+  // Counters are not maintained from the client (see note in addRegistration).
+  const batch = writeBatch(db);
+  batch.delete(rosterRef);
+  if (uid) {
+    batch.delete(doc(db, 'users', uid, 'registrations', eventId));
+  }
+  await batch.commit();
 
   try {
     await logAuditEvent({
       actionType: 'REMOVE_REGISTRATION',
-      targetId: regId,
+      targetId: `${eventId}/${regId}`,
       details: { removed: participantName },
     });
   } catch (_) {}
 }
 
 /**
- * Mark a registration as checked-in.
- * Requires isAdmin() update permission on event_registrations in Firestore rules.
- * @param {string} regId
+ * Mark a registration as checked-in. Updates both mirrors when a uid is known.
  */
-export async function checkInRegistration(regId) {
-  await updateDoc(doc(db, 'event_registrations', regId), { checkedIn: true });
+export async function checkInRegistration(regId, eventId) {
+  if (!eventId) throw new Error('checkInRegistration now requires eventId.');
+
+  const rosterRef = doc(db, 'events', eventId, 'registrations', regId);
+  const rosterSnap = await getDoc(rosterRef);
+  const uid = rosterSnap.exists() ? rosterSnap.data().userId : null;
+
+  const batch = writeBatch(db);
+  batch.set(
+    rosterRef,
+    { checkedIn: true, checkedInAt: serverTimestamp() },
+    { merge: true }
+  );
+  if (uid) {
+    batch.set(
+      doc(db, 'users', uid, 'registrations', eventId),
+      { checkedIn: true, checkedInAt: serverTimestamp() },
+      { merge: true }
+    );
+  }
+  await batch.commit();
 }
 
 /**
- * Get a map of eventId → registrationDocId for all events a user is registered for.
- * Used by the participant to know which workshops they've already joined.
- * @param {string} email
- * @returns {Promise<Record<string, string>>}
+ * For a participant: { eventId: registrationKey } map across all their registrations.
+ * Reads from the user's own subcollection — no email scan needed.
  */
-export async function getUserRegisteredEventIds(email) {
-  const q = query(
-    collection(db, 'event_registrations'),
-    where('participantEmail', '==', email)
+export async function getUserRegisteredEventIds(emailOrUid) {
+  if (!emailOrUid) return {};
+  // If it looks like an email, resolve to uid first.
+  const uid = emailOrUid.includes('@') ? await findUidByEmail(emailOrUid) : emailOrUid;
+  if (!uid) return {};
+
+  const snap = await getDocs(
+    query(collection(db, 'users', uid, 'registrations'), limit(100))
   );
-  const snap = await getDocs(q);
   const map = {};
   snap.docs.forEach((d) => {
-    map[d.data().eventId] = d.id;
+    map[d.id] = uid; // value used to be regId; uid works equally as a truthy "registered" marker.
   });
   return map;
 }

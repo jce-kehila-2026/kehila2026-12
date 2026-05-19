@@ -1,11 +1,12 @@
 import { resolvePublicDonationHref } from '../constants/publicDonationLink';
 
-export default function HeroSection({ hero = {}, loading }) {
+export default function HeroSection({ hero = {}, loading, onJoinClick }) {
   const { primaryAction = {}, secondaryAction = {} } = hero;
   const backgroundStyle = hero.imageUrl ? { '--public-hero-image': `url("${hero.imageUrl}")` } : undefined;
 
   function handleJoinClick(event) {
     event.preventDefault();
+    onJoinClick?.();
   }
 
   return (

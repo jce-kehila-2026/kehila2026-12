@@ -1254,7 +1254,7 @@ function normalizeOrgInfoContent(docs) {
 
 export async function getOrgInfoContent() {
   try {
-    const docs = await getConfirmedPublicDocs('org_info');
+    const docs = await getConfirmedPublicDocs('cms_org');
     const orgInfoContent = normalizeOrgInfoContent(docs);
     const hasMatchingData = Boolean(orgInfoContent.organization || orgInfoContent.about || orgInfoContent.contact);
 
@@ -1316,7 +1316,7 @@ export async function getSupportAreas() {
 
 export async function getPublishedArticles(maxItems = 3) {
   try {
-    const docs = await getConfirmedPublicDocs('articles');
+    const docs = await getConfirmedPublicDocs('cms_articles');
     const articles = docs
       .map((articleDoc, index) => normalizeArticle(articleDoc, FALLBACK_ARTICLES[index]))
       .filter(Boolean)
@@ -1341,7 +1341,7 @@ export async function getPublishedArticles(maxItems = 3) {
 
 export async function getVisibleTeamMembers(maxItems = 4) {
   try {
-    const docs = await getConfirmedPublicDocs('team_profiles');
+    const docs = await getConfirmedPublicDocs('cms_team');
     const teamMembers = docs
       .map((teamMemberDoc) => normalizeTeamMember(teamMemberDoc))
       .filter(Boolean)

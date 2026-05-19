@@ -1,7 +1,10 @@
+// Phase 2: stat counts now read from stats/admin_summary (one doc read) instead
+// of getCountFromServer() on each collection.
 import { useEffect, useState } from 'react';
-import { collection, getCountFromServer, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
+import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
 import { db } from '../../../firebase';
 import { useAdmin } from '../context/AdminContext';
+import { getAdminSummary } from '../services/statsService';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Card from '@mui/material/Card';
@@ -36,13 +39,13 @@ export default function DashboardPage() {
   useEffect(() => {
     async function fetchStats() {
       try {
-        const counts = await Promise.all([
-          getCountFromServer(query(collection(db, 'events'), where('status', '==', 'published'))).then((s) => s.data().count).catch(() => 0),
-          getCountFromServer(collection(db, 'users')).then((s) => s.data().count).catch(() => 0),
-          getCountFromServer(collection(db, 'articles')).then((s) => s.data().count).catch(() => 0),
-          getCountFromServer(collection(db, 'audit_logs')).then((s) => s.data().count).catch(() => 0),
-        ]);
-        setStats({ events: counts[0], users: counts[1], articles: counts[2], logs: counts[3] });
+        const summary = await getAdminSummary();
+        setStats({
+          events: summary.publishedEvents ?? 0,
+          users: summary.totalUsers ?? 0,
+          articles: summary.publishedArticles ?? 0,
+          logs: summary.auditLogEntries ?? 0,
+        });
 
         const q = query(collection(db, 'audit_logs'), orderBy('timestamp', 'desc'), limit(5));
         const snap = await getDocs(q);

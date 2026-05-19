@@ -28,7 +28,7 @@ import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivismOutlined
 import { useNavigate } from 'react-router-dom';
 import appointmentsHero from '../../assets/appointments-hero.png';
 import { useAdmin } from '../admin/context/AdminContext';
-import { subscribeToPublishedEvents } from '../admin/services/eventService';
+import { getPublishedEvents } from '../admin/services/eventService';
 import {
   addRegistration,
   getRegistrationCounts,
@@ -355,23 +355,25 @@ export default function EventsPage() {
   }, [currentUser?.email]);
 
   useEffect(() => {
+    let cancelled = false;
     setLoadingEvents(true);
     setEventsError('');
 
-    const unsubscribe = subscribeToPublishedEvents(
-      (data) => {
+    getPublishedEvents()
+      .then((data) => {
+        if (cancelled) return;
         setEvents(data);
         setLoadingEvents(false);
         refreshRegistrationData(data);
-      },
-      (error) => {
-        console.error('Failed to subscribe to published events:', error);
+      })
+      .catch((error) => {
+        if (cancelled) return;
+        console.error('Failed to load published events:', error);
         setEventsError('Could not load events from Firestore. Please check your connection and permissions.');
         setLoadingEvents(false);
-      },
-    );
+      });
 
-    return unsubscribe;
+    return () => { cancelled = true; };
   }, [refreshRegistrationData]);
 
   const categories = useMemo(() => {
@@ -431,7 +433,7 @@ export default function EventsPage() {
 
     try {
       if (registrationId) {
-        await removeRegistration(registrationId, currentUser.displayName || currentUser.email);
+        await removeRegistration(registrationId, currentUser.displayName || currentUser.email, eventId);
         setRegisteredMap((current) => {
           const next = { ...current };
           delete next[eventId];
@@ -441,8 +443,12 @@ export default function EventsPage() {
       } else {
         const newRegistrationId = await addRegistration({
           eventId,
+          uid: currentUser.uid,
           participantName: currentUser.displayName || currentUser.email.split('@')[0],
           participantEmail: currentUser.email,
+          eventTitle: event.title,
+          eventDate: event.startTime || event.date || null,
+          eventLocation: event.location || '',
         });
         setRegisteredMap((current) => ({ ...current, [eventId]: newRegistrationId }));
         setCounts((current) => ({ ...current, [eventId]: (current[eventId] ?? 0) + 1 }));

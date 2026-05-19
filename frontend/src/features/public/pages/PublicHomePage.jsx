@@ -11,6 +11,7 @@ import CommunitySupportCta from '../components/CommunitySupportCta';
 import TeamSection from '../components/TeamSection';
 import ContactSection from '../components/ContactSection';
 import PublicFooter from '../components/PublicFooter';
+import JoinCommunityModal from '../components/JoinCommunityModal';
 import EmptyState from '../components/EmptyState';
 import ErrorState from '../components/ErrorState';
 import useRevealOnScroll from '../hooks/useRevealOnScroll';
@@ -23,6 +24,7 @@ export default function PublicHomePage() {
   const [content, setContent] = useState(() => getFallbackPublicHomepageContent());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
   const revealRefreshKey = useMemo(
     () => [
       loading ? 'loading' : 'ready',
@@ -79,7 +81,7 @@ export default function PublicHomePage() {
       <a className="public-skip-link" href="#public-main">
         דילוג לתוכן המרכזי
       </a>
-      <PublicNavbar organization={content.organization} />
+      <PublicNavbar organization={content.organization} onJoinClick={() => setIsJoinModalOpen(true)} />
       <main id="public-main">
         {error ? (
           <ErrorState message="חלק מהתוכן הציבורי לא נטען. מציגות את המידע הזמין." />
@@ -87,7 +89,7 @@ export default function PublicHomePage() {
         {!loading && !content ? (
           <EmptyState message="תוכן דף הבית הציבורי עדיין לא זמין." />
         ) : null}
-        <HeroSection hero={content.hero} loading={loading} />
+        <HeroSection hero={content.hero} loading={loading} onJoinClick={() => setIsJoinModalOpen(true)} />
         <AboutSection about={content.about} supportAreas={content.supportAreas} />
         <SupportAreasSection supportAreas={content.supportAreas} isLoading={loading} />
         <StatisticsSection statistics={content.statistics} isLoading={loading} />
@@ -99,6 +101,7 @@ export default function PublicHomePage() {
         <ContactSection contact={content.contact} organization={content.organization} />
       </main>
       <PublicFooter organization={content.organization} contact={content.contact} />
+      <JoinCommunityModal isOpen={isJoinModalOpen} onClose={() => setIsJoinModalOpen(false)} />
     </div>
   );
 }

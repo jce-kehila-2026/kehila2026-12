@@ -1,4 +1,5 @@
-import { collection, getDocs } from "firebase/firestore";
+// Phase 1 changes: added limit() to bounded list query.
+import { collection, getDocs, query, limit } from "firebase/firestore";
 
 import { db } from "../../../firebase";
 
@@ -80,7 +81,7 @@ function mapTherapistDoc(docSnap) {
  * `status` equal to `"available"` (case-insensitive).
  */
 export async function getAvailableTherapists() {
-  const snap = await getDocs(collection(db, THERAPISTS_COLLECTION));
+  const snap = await getDocs(query(collection(db, THERAPISTS_COLLECTION), limit(50)));
   return snap.docs
     .map(mapTherapistDoc)
     .filter((t) => isAvailableStatus(t.status));
