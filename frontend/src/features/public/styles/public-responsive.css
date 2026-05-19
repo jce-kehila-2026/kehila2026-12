@@ -4,7 +4,6 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .public-support__grid,
   .public-team-grid,
   .public-articles-grid,
   .public-events-grid {
@@ -130,7 +129,7 @@
     min-height: 58px;
   }
 
-  .public-section:not(.public-section--statistics):not(.public-section--donation-cta):not(.public-section--team-section):not(.public-section--about) {
+  .public-section:not(.public-section--statistics):not(.public-section--donation-cta):not(.public-section--team-section):not(.public-section--about):not(.public-section--support) {
     padding-block: 58px;
     padding-inline: 18px;
   }
@@ -144,13 +143,11 @@
   }
 
   .public-section__header h2,
-  .public-donation h2,
-  .public-section--support h2 {
+  .public-donation h2 {
     font-size: clamp(2.2rem, 11vw, 3rem);
   }
 
   .public-about__cards,
-  .public-support__grid,
   .public-statistics__grid,
   .public-team-grid,
   .public-articles-grid,
@@ -160,7 +157,6 @@
   }
 
   .public-about__cards,
-  .public-support__grid,
   .public-statistics__grid,
   .public-team-grid,
   .public-articles-grid,
@@ -174,7 +170,6 @@
     min-height: auto;
   }
 
-  .public-support__body,
   .public-about__card,
   .public-team-card,
   .public-article-card__body,
@@ -221,8 +216,4 @@
     font-size: 1rem;
   }
 
-  .public-support__icon {
-    width: 54px;
-    height: 54px;
-  }
 }

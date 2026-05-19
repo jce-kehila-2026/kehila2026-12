@@ -10,6 +10,7 @@
 @import "./public-team-section.css";
 @import "./public-contact-section.css";
 @import "./public-responsive.css";
+@import "./public-support-section.css";
 
 .public-homepage :where(.public-hero h1) {
   font-weight: 900;
