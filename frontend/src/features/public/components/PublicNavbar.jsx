@@ -14,6 +14,7 @@ const PUBLIC_LINKS = [
 export default function PublicNavbar({ organization }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [activeSection, setActiveSection] = useState('');
   const organizationName = organization?.name || 'SHE-NA';
   const menuButtonLabel = isMenuOpen ? 'סגירת תפריט ניווט' : 'פתיחת תפריט ניווט';
 
@@ -26,6 +27,25 @@ export default function PublicNavbar({ organization }) {
     window.addEventListener('scroll', handleScroll, { passive: true });
 
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const contactSection = document.getElementById('contact');
+
+    if (!contactSection || typeof IntersectionObserver === 'undefined') {
+      return undefined;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setActiveSection(entry.isIntersecting ? 'contact' : '');
+      },
+      { threshold: 0.35, rootMargin: '-20% 0px -45% 0px' },
+    );
+
+    observer.observe(contactSection);
+
+    return () => observer.disconnect();
   }, []);
 
   function closeMenu() {
@@ -66,11 +86,22 @@ export default function PublicNavbar({ organization }) {
 
         <div className={`public-navbar__menu${isMenuOpen ? ' public-navbar__menu--open' : ''}`} id="public-navigation">
           <nav className="public-navbar__links" aria-label="ניווט ציבורי">
-            {PUBLIC_LINKS.map((link) => (
-              <a key={link.href} href={link.href} onClick={closeMenu}>
-                {link.label}
-              </a>
-            ))}
+            {PUBLIC_LINKS.map((link) => {
+              const isContactLink = link.href === '#contact';
+              const isActive = isContactLink && activeSection === 'contact';
+
+              return (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  className={isActive ? 'public-navbar__link--active' : undefined}
+                  aria-current={isActive ? 'page' : undefined}
+                  onClick={closeMenu}
+                >
+                  {link.label}
+                </a>
+              );
+            })}
           </nav>
 
           <div className="public-navbar__actions" aria-label="פעולות מהירות">

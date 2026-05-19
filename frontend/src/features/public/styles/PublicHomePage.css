@@ -5,6 +5,7 @@
 @import "./public-statistics-section.css";
 @import "./public-support-cta.css";
 @import "./public-team-section.css";
+@import "./public-contact-section.css";
 @import "./public-responsive.css";
 
 .public-homepage :where(.public-hero h1) {
@@ -12,7 +13,7 @@
   color: #ffffff;
 }
 
-.public-homepage :where(.public-section__header h2, .public-donation h2, .public-support-cta__title, .public-team-section__title, .public-card h3, .public-footer h2) {
+.public-homepage :where(.public-section__header h2, .public-donation h2, .public-support-cta__title, .public-team-section__title, .public-about__title, .public-contact__title, .public-card h3, .public-footer h2) {
   font-weight: 900;
 }
 
@@ -20,7 +21,7 @@
   font-weight: 900;
 }
 
-.public-homepage :where(.public-navbar__links a, .public-contact__item span) {
+.public-homepage :where(.public-navbar__links a, .public-contact__label) {
   font-weight: 800;
 }
 

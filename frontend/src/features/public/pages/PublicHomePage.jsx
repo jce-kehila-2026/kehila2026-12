@@ -95,7 +95,7 @@ export default function PublicHomePage() {
         <ArticlesPreviewSection articles={content.articles} isLoading={loading} hasError={error} />
         <EventsPreviewSection events={content.events} isLoading={loading} hasError={error} />
         <CommunitySupportCta />
-        <TeamSection contactEmail={content.contact?.email || content.organization?.email} />
+        <TeamSection />
         <ContactSection contact={content.contact} organization={content.organization} />
       </main>
       <PublicFooter organization={content.organization} contact={content.contact} />
