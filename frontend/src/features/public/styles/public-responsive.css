@@ -129,7 +129,7 @@
     min-height: 58px;
   }
 
-  .public-section:not(.public-section--statistics):not(.public-section--donation-cta):not(.public-section--team-section):not(.public-section--about):not(.public-section--support):not(.public-section--medical-partners) {
+  .public-section:not(.public-section--statistics):not(.public-section--donation-cta):not(.public-section--team-section):not(.public-section--about):not(.public-section--support):not(.public-section--medical-partners):not(.public-section--press-articles) {
     padding-block: 58px;
     padding-inline: 18px;
   }

@@ -64,16 +64,20 @@ export default function useRevealOnScroll(containerRef, refreshKey) {
       observer.observe(element);
     });
 
-    const rafId = window.requestAnimationFrame(() => {
+    const rescanReveals = () => {
       revealElements.forEach((element) => {
         if (!element.classList.contains('reveal-visible') && revealIfInViewport(element)) {
           observer.unobserve(element);
         }
       });
-    });
+    };
+
+    const rafId = window.requestAnimationFrame(rescanReveals);
+    const timeoutId = window.setTimeout(rescanReveals, 150);
 
     return () => {
       window.cancelAnimationFrame(rafId);
+      window.clearTimeout(timeoutId);
       observer.disconnect();
     };
   }, [containerRef, refreshKey]);

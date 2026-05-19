@@ -10,6 +10,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '../../../firebase';
 import { PUBLIC_DONATION_TARGET, resolvePublicDonationHref } from '../constants/publicDonationLink';
+import { FALLBACK_PRESS_ARTICLES } from '../constants/pressArticleImages';
 
 // Public homepage content service.
 //
@@ -160,41 +161,7 @@ const FALLBACK_SUPPORT_AREAS = [
   },
 ];
 
-const FALLBACK_ARTICLES = [
-  {
-    id: 'fallback-article-1',
-    title: 'סיפורי השראה',
-    description:
-      'סיפורים אמיתיים של נשים אמיצות שעוברות את המסע עם תקווה וחוזק.',
-    imageUrl: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=1000&q=78',
-    readMoreUrl: '#stories',
-    isPublished: true,
-    isVisible: true,
-    active: true,
-  },
-  {
-    id: 'fallback-article-2',
-    title: 'הרצאות וסדנאות',
-    description:
-      'סדנאות העשרה, הרצאות מעוררות השראה וכלים מעשיים להתמודדות.',
-    imageUrl: 'https://images.unsplash.com/photo-1573497491208-6b1acb260507?auto=format&fit=crop&w=1000&q=78',
-    readMoreUrl: '#support',
-    isPublished: true,
-    isVisible: true,
-    active: true,
-  },
-  {
-    id: 'fallback-article-3',
-    title: 'קבוצות תמיכה',
-    description:
-      'מפגשי תמיכה קבוצתיים עם הקשבה, הכלה וחיבור לנשים במסע דומה.',
-    imageUrl: 'https://images.unsplash.com/photo-1543269865-cbf427effbad?auto=format&fit=crop&w=1000&q=78',
-    readMoreUrl: '#contact',
-    isPublished: true,
-    isVisible: true,
-    active: true,
-  },
-];
+const FALLBACK_ARTICLES = FALLBACK_PRESS_ARTICLES;
 
 const FALLBACK_TEAM_MEMBERS = [
   {
@@ -896,7 +863,7 @@ function normalizeArticle(docData, fallbackArticle = {}) {
     title,
     description,
     content,
-    imageUrl,
+    imageUrl: imageUrl || fallbackArticle.imageUrl,
     imageAlt: firstImageAlt(title, docData.imageAlt, docData.altText, docData.image, docData.thumbnail, docData.coverImage, docData.heroImage),
     readMoreUrl: firstTextValue(docData.readMoreUrl, docData.url, docData.link, fallbackArticle.readMoreUrl) || '#articles',
     publishedAt: publishedDate ? publishedDate.toISOString() : docData.publishedAt || docData.createdAt || '',
@@ -1315,7 +1282,7 @@ export async function getSupportAreas() {
   }
 }
 
-export async function getPublishedArticles(maxItems = 3) {
+export async function getPublishedArticles(maxItems = 4) {
   try {
     const docs = await getConfirmedPublicDocs('cms_articles');
     const articles = docs
