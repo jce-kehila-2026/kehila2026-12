@@ -19,6 +19,7 @@ import Stack from '@mui/material/Stack';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 import HomeIcon from '@mui/icons-material/Home';
+import PreviewIcon from '@mui/icons-material/Preview';
 import CircularProgress from '@mui/material/CircularProgress';
 
 const LIMITS = {
@@ -204,11 +205,11 @@ export default function CMSPage() {
       setPristine(form);
       setTouched({});
       setSubmitted(false);
-      setDocMeta((prev) => ({
+      setDocMeta({
         updatedAt: new Date(),
         updatedBy,
         exists: true,
-      }));
+      });
       setToast({ open: true, severity: 'success', message: 'Home page updated.' });
     } catch (err) {
       console.error('Failed to save home page content:', err);
@@ -236,17 +237,30 @@ export default function CMSPage() {
 
   return (
     <Box sx={{ pb: 12 }}>
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h4">Public Home-page</Typography>
-        <Typography variant="subtitle1" sx={{ mt: 0.5 }}>
-          Edit the public home page content. Changes are visible to all visitors after save.
-        </Typography>
-        {lastUpdatedLabel || docMeta.updatedBy ? (
-          <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
-            Last updated: {lastUpdatedLabel || '—'}
-            {docMeta.updatedBy ? ` by ${docMeta.updatedBy}` : ''}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3, gap: 2 }}>
+        <Box>
+          <Typography variant="h4">Public Home-page</Typography>
+          <Typography variant="subtitle1" sx={{ mt: 0.5 }}>
+            Edit the public home page content. Changes are visible to all visitors after save.
           </Typography>
-        ) : null}
+          {lastUpdatedLabel || docMeta.updatedBy ? (
+            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+              Last updated: {lastUpdatedLabel || '—'}
+              {docMeta.updatedBy ? ` by ${docMeta.updatedBy}` : ''}
+            </Typography>
+          ) : null}
+        </Box>
+        <Button
+          variant="outlined"
+          startIcon={<PreviewIcon />}
+          component="a"
+          href="/public"
+          target="_blank"
+          rel="noopener noreferrer"
+          sx={{ flexShrink: 0 }}
+        >
+          Preview Home-page
+        </Button>
       </Box>
 
       <Tabs value={0} sx={{ mb: 3, borderBottom: 1, borderColor: 'divider' }}>

@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import sheNaLogo from '../../../assets/she-na-logo.png';
 import { PUBLIC_DONATION_TARGET } from '../constants/publicDonationLink';
+import { useAdmin } from '../../admin/context/AdminContext';
+import { getPostLoginPath } from '../../admin/services/authRoleService';
 
 const PUBLIC_LINKS = [
   { label: 'הבית', href: '#home' },
@@ -15,8 +17,10 @@ export default function PublicNavbar({ organization, onJoinClick, onVolunteerCli
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState('');
+  const { currentUser, userRole } = useAdmin();
   const organizationName = organization?.name || 'SHE-NA';
   const menuButtonLabel = isMenuOpen ? 'סגירת תפריט ניווט' : 'פתיחת תפריט ניווט';
+  const personalAreaHref = currentUser ? getPostLoginPath(userRole) : '/home';
 
   useEffect(() => {
     function handleScroll() {
@@ -110,7 +114,7 @@ export default function PublicNavbar({ organization, onJoinClick, onVolunteerCli
             <a className="public-navbar__cta public-navbar__cta--primary" href="#join" onClick={handleJoinClick}>
               להצטרף
             </a>
-            <a className="public-navbar__cta public-navbar__cta--highlight" href="/home" onClick={closeMenu}>
+            <a className="public-navbar__cta public-navbar__cta--highlight" href={personalAreaHref} onClick={closeMenu}>
               איזור אישי
             </a>
             <a className="public-navbar__cta public-navbar__cta--primary" href="#volunteer" onClick={handleVolunteerClick}>
