@@ -25,10 +25,13 @@ export default function TopBar({ title, drawerWidth = 260 }) {
     <AppBar
       position="fixed"
       sx={{
-        width: `calc(100% - ${drawerWidth}px)`,
-        ...(direction === 'rtl'
-          ? { mr: `${drawerWidth}px` }
-          : { ml: `${drawerWidth}px` }),
+        width: { xs: 'calc(100% - 84px)', md: `calc(100% - ${drawerWidth}px)` },
+        mr: { xs: '84px', md: `${drawerWidth}px` },
+        bgcolor: 'rgba(255, 255, 255, 0.92)',
+        color: 'text.primary',
+        borderBottom: '1px solid rgba(109, 60, 207, 0.12)',
+        boxShadow: '0 10px 35px rgba(51, 29, 95, 0.06)',
+        backdropFilter: 'blur(16px)',
       }}
     >
       <Toolbar sx={{ justifyContent: 'space-between' }}>

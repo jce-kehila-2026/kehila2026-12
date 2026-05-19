@@ -24,7 +24,7 @@ export default function AdminLayout() {
   return (
     <>
       <ImpersonationBanner />
-      <Box sx={{ display: 'flex', minHeight: '100vh' }}>
+      <Box sx={{ display: 'flex', flexDirection: 'row-reverse', minHeight: '100vh' }}>
         <Sidebar drawerWidth={DRAWER_WIDTH} />
         <Box sx={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
           <TopBar title={title} drawerWidth={DRAWER_WIDTH} />
