@@ -17,7 +17,7 @@ import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 const NAV_ITEMS = [
   { label: 'Users', path: '/admin/users', icon: <PeopleIcon /> },
   { label: 'Role Management', path: '/admin/roles', icon: <ShieldIcon /> },
-  { label: 'CMS', path: '/admin/cms', icon: <ArticleIcon /> },
+  { label: 'Public Home-page', path: '/admin/cms', icon: <ArticleIcon /> },
   { label: 'Audit Log', path: '/admin/audit-log', icon: <ReceiptLongIcon /> },
 ];
 

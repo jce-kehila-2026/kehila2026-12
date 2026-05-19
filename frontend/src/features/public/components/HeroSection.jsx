@@ -2,7 +2,7 @@ import heroWomenSupport from '../../../assets/images/hero-women-support.png';
 import { resolvePublicDonationHref } from '../constants/publicDonationLink';
 
 export default function HeroSection({ hero = {}, onJoinClick }) {
-  const { primaryAction = {}, secondaryAction = {} } = hero;
+  const backgroundImageUrl = hero.backgroundImageUrl || heroWomenSupport;
 
   function handleJoinClick(event) {
     event.preventDefault();
@@ -14,7 +14,7 @@ export default function HeroSection({ hero = {}, onJoinClick }) {
       className="public-hero"
       id="home"
       aria-labelledby="public-hero-title"
-      style={{ '--public-hero-bg-image': `url(${heroWomenSupport})` }}
+      style={{ '--public-hero-bg-image': `url(${backgroundImageUrl})` }}
     >
       <div className="public-hero__background" aria-hidden="true" />
       <div className="public-hero__overlay public-hero__overlay--tint" aria-hidden="true" />
@@ -23,17 +23,17 @@ export default function HeroSection({ hero = {}, onJoinClick }) {
 
       <div className="public-hero__content">
         <h1 id="public-hero-title">{hero.title}</h1>
-        {hero.message ? <p className="public-hero__lead">{hero.message}</p> : null}
-        {hero.supportText ? <p className="public-hero__support">{hero.supportText}</p> : null}
+        {hero.subtitle ? <p className="public-hero__lead">{hero.subtitle}</p> : null}
+        {hero.description ? <p className="public-hero__support">{hero.description}</p> : null}
         <div className="public-hero__actions">
           <a className="public-hero__btn public-hero__btn--primary" href="#join" onClick={handleJoinClick}>
-            {primaryAction.label || 'להצטרף לקהילה'}
+            להצטרף לקהילה
           </a>
           <a
             className="public-hero__btn public-hero__btn--secondary"
-            href={resolvePublicDonationHref(secondaryAction.href)}
+            href={resolvePublicDonationHref()}
           >
-            {secondaryAction.label || 'לתרומה'}
+            לתרומה
           </a>
         </div>
       </div>
