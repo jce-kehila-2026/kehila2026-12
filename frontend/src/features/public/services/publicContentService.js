@@ -9,6 +9,7 @@ import {
   getDoc,
 } from 'firebase/firestore';
 import { db } from '../../../firebase';
+import { PUBLIC_DONATION_TARGET, resolvePublicDonationHref } from '../constants/publicDonationLink';
 
 // Public homepage content service.
 //
@@ -26,8 +27,8 @@ const FALLBACK_HERO = {
     href: '#contact',
   },
   secondaryAction: {
-    label: 'לתרום עכשיו',
-    href: '#donate',
+    label: 'לתרומה',
+    href: PUBLIC_DONATION_TARGET,
   },
   imageUrl: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1800&q=82',
   imageAlt: 'נשים בקהילה תומכת',
@@ -143,7 +144,7 @@ const FALLBACK_SUPPORT_AREAS = [
     title: 'תרומות לקהילה',
     description: 'תרומות שמאפשרות להרחיב פעילות, להנגיש ליווי ולתמוך בנשים נוספות.',
     imageUrl: 'https://images.unsplash.com/photo-1532629345422-7515f3d16bb6?auto=format&fit=crop&w=1000&q=78',
-    readMoreUrl: '#donate',
+    readMoreUrl: PUBLIC_DONATION_TARGET,
     isVisible: true,
     active: true,
   },
@@ -311,7 +312,7 @@ const FALLBACK_DONATION = {
   description:
     'ביחד נוכל ליצור שינוי אמיתי ולהגיע לנשים נוספות שזקוקות לקהילה חמה ובטוחה.',
   buttonLabel: 'לתרומה',
-  href: '#donate',
+  href: PUBLIC_DONATION_TARGET,
   isVisible: true,
   active: true,
 };
@@ -721,7 +722,9 @@ function normalizeSupportArea(docData, fallbackArea = {}) {
       fallbackArea.imageUrl,
     ),
     imageAlt: firstImageAlt(title, docData.imageAlt, docData.altText, docData.image, docData.thumbnail, docData.coverImage),
-    readMoreUrl: firstTextValue(docData.readMoreUrl, docData.url, docData.link, docData.href, fallbackArea.readMoreUrl) || '#support',
+    readMoreUrl: resolvePublicDonationHref(
+      firstTextValue(docData.readMoreUrl, docData.url, docData.link, docData.href, fallbackArea.readMoreUrl) || '#support',
+    ),
     isPublic: docData.isPublic !== false && docData.public !== false,
     isVisible: docData.isVisible !== false && docData.visible !== false && docData.hidden !== true,
     isPublished: docData.isPublished !== false && docData.published !== false,
@@ -767,7 +770,9 @@ function normalizeHeroContent(docData = {}, fallbackHero = FALLBACK_HERO) {
       ...fallbackHero.secondaryAction,
       ...(docData.secondaryAction || {}),
       label: firstTextValue(docData.secondaryAction?.label, docData.secondaryCtaLabel, fallbackHero.secondaryAction.label),
-      href: firstTextValue(docData.secondaryAction?.href, docData.secondaryCtaHref, fallbackHero.secondaryAction.href),
+      href: resolvePublicDonationHref(
+        firstTextValue(docData.secondaryAction?.href, docData.secondaryCtaHref, fallbackHero.secondaryAction.href),
+      ),
     },
     isPublic: docData.isPublic !== false && docData.public !== false,
     isVisible: docData.isVisible !== false && docData.visible !== false && docData.hidden !== true,
@@ -830,7 +835,9 @@ function normalizeDonationSettings(docData = {}, fallbackDonation = FALLBACK_DON
     title: firstTextValue(docData.title, docData.heading, fallbackDonation.title),
     description: firstTextValue(docData.description, docData.summary, docData.content, fallbackDonation.description),
     buttonLabel: firstTextValue(docData.buttonLabel, docData.ctaLabel, docData.label, fallbackDonation.buttonLabel),
-    href: firstTextValue(docData.href, docData.url, docData.link, docData.donationUrl, fallbackDonation.href),
+    href: resolvePublicDonationHref(
+      firstTextValue(docData.href, docData.url, docData.link, docData.donationUrl, fallbackDonation.href),
+    ),
     isPublic: docData.isPublic !== false && docData.public !== false,
     isVisible: docData.isVisible !== false && docData.visible !== false && docData.hidden !== true,
     isPublished: docData.isPublished !== false && docData.published !== false,

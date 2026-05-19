@@ -263,7 +263,7 @@
   }
 }
 
-.public-section {
+.public-section:not(.public-section--statistics):not(.public-section--donation-cta):not(.public-section--team-section):not(.public-section--about):not(.public-contact) {
   padding-block: clamp(70px, 8vw, 118px);
   padding-inline: clamp(20px, 8vw, 120px);
 }

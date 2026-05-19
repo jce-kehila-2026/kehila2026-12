@@ -2,13 +2,13 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import PublicNavbar from '../components/PublicNavbar';
 import HeroSection from '../components/HeroSection';
 import AboutSection from '../components/AboutSection';
-import TeamSection from '../components/TeamSection';
 import StatisticsSection from '../components/StatisticsSection';
 import SupportAreasSection from '../components/SupportAreasSection';
 import TeamPreviewSection from '../components/TeamPreviewSection';
-import DonationSection from '../components/DonationSection';
 import ArticlesPreviewSection from '../components/ArticlesPreviewSection';
 import EventsPreviewSection from '../components/EventsPreviewSection';
+import CommunitySupportCta from '../components/CommunitySupportCta';
+import TeamSection from '../components/TeamSection';
 import ContactSection from '../components/ContactSection';
 import PublicFooter from '../components/PublicFooter';
 import JoinCommunityModal from '../components/JoinCommunityModal';
@@ -96,7 +96,7 @@ export default function PublicHomePage() {
         <TeamPreviewSection teamMembers={content.teamMembers} isLoading={loading} />
         <ArticlesPreviewSection articles={content.articles} isLoading={loading} hasError={error} />
         <EventsPreviewSection events={content.events} isLoading={loading} hasError={error} />
-        <DonationSection donation={content.donation} />
+        <CommunitySupportCta />
         <TeamSection />
         <ContactSection contact={content.contact} organization={content.organization} />
       </main>

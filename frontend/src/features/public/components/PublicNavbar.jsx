@@ -1,18 +1,20 @@
 import { useEffect, useState } from 'react';
 import sheNaLogo from '../../../assets/she-na-logo.png';
+import { PUBLIC_DONATION_TARGET } from '../constants/publicDonationLink';
 
 const PUBLIC_LINKS = [
   { label: 'הבית', href: '#home' },
   { label: 'מי אנחנו', href: '#about' },
   { label: 'בואי נלמד ביחד', href: '#support' },
   { label: 'סיפורי השראה', href: '#stories' },
-  { label: 'תרומות', href: '#donate' },
+  { label: 'תרומות', href: PUBLIC_DONATION_TARGET },
   { label: 'צרי קשר', href: '#contact' },
 ];
 
 export default function PublicNavbar({ organization, onJoinClick }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [activeSection, setActiveSection] = useState('');
   const organizationName = organization?.name || 'SHE-NA';
   const menuButtonLabel = isMenuOpen ? 'סגירת תפריט ניווט' : 'פתיחת תפריט ניווט';
 
@@ -25,6 +27,25 @@ export default function PublicNavbar({ organization, onJoinClick }) {
     window.addEventListener('scroll', handleScroll, { passive: true });
 
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const contactSection = document.getElementById('contact');
+
+    if (!contactSection || typeof IntersectionObserver === 'undefined') {
+      return undefined;
+    }
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setActiveSection(entry.isIntersecting ? 'contact' : '');
+      },
+      { threshold: 0.35, rootMargin: '-20% 0px -45% 0px' },
+    );
+
+    observer.observe(contactSection);
+
+    return () => observer.disconnect();
   }, []);
 
   function closeMenu() {
@@ -66,11 +87,22 @@ export default function PublicNavbar({ organization, onJoinClick }) {
 
         <div className={`public-navbar__menu${isMenuOpen ? ' public-navbar__menu--open' : ''}`} id="public-navigation">
           <nav className="public-navbar__links" aria-label="ניווט ציבורי">
-            {PUBLIC_LINKS.map((link) => (
-              <a key={link.href} href={link.href} onClick={closeMenu}>
-                {link.label}
-              </a>
-            ))}
+            {PUBLIC_LINKS.map((link) => {
+              const isContactLink = link.href === '#contact';
+              const isActive = isContactLink && activeSection === 'contact';
+
+              return (
+                <a
+                  key={link.href}
+                  href={link.href}
+                  className={isActive ? 'public-navbar__link--active' : undefined}
+                  aria-current={isActive ? 'page' : undefined}
+                  onClick={closeMenu}
+                >
+                  {link.label}
+                </a>
+              );
+            })}
           </nav>
 
           <div className="public-navbar__actions" aria-label="פעולות מהירות">

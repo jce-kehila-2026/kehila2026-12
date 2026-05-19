@@ -1,3 +1,5 @@
+import { resolvePublicDonationHref } from '../constants/publicDonationLink';
+
 export default function HeroSection({ hero = {}, loading, onJoinClick }) {
   const { primaryAction = {}, secondaryAction = {} } = hero;
   const backgroundStyle = hero.imageUrl ? { '--public-hero-image': `url("${hero.imageUrl}")` } : undefined;
@@ -19,8 +21,8 @@ export default function HeroSection({ hero = {}, loading, onJoinClick }) {
           <a className="public-button public-button--primary" href="#join" onClick={handleJoinClick}>
             {primaryAction.label}
           </a>
-          <a className="public-button public-button--secondary" href="#donate">
-            {secondaryAction.label}
+          <a className="public-button public-button--secondary" href={resolvePublicDonationHref(secondaryAction.href)}>
+            {secondaryAction.label || 'לתרומה'}
           </a>
         </div>
       </div>

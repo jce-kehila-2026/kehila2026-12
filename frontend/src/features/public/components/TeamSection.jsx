@@ -1,39 +1,58 @@
-import TeamSectionCard from './TeamSectionCard';
-import { teamMembers } from '../data/teamSectionData';
+import { useRef } from 'react';
+import { TEAM_MEMBERS } from '../constants/teamMembers';
+import TeamSectionMemberCard from './TeamSectionMemberCard';
+import useInViewOnce from '../hooks/useInViewOnce';
 
-const PRIMARY_ROW = teamMembers.slice(0, 4);
-const SECONDARY_ROW = teamMembers.slice(4);
+const PRIMARY_ROW_COUNT = 4;
+const TEAM_CARD_STAGGER_MS = 100;
 
 export default function TeamSection() {
-  if (!teamMembers.length) {
-    return null;
-  }
+  const rowsRef = useRef(null);
+  const cardsInView = useInViewOnce(rowsRef, { threshold: 0.12, rootMargin: '0px 0px -4% 0px' });
+  const primaryRow = TEAM_MEMBERS.slice(0, PRIMARY_ROW_COUNT);
+  const secondaryRow = TEAM_MEMBERS.slice(PRIMARY_ROW_COUNT);
 
   return (
     <section
-      className="public-section public-section--team"
+      className="public-section public-section--team-section"
       id="team"
       aria-labelledby="public-team-section-title"
     >
-      <header className="public-section__header public-section__header--team reveal">
-        <p className="public-team-section__pill">הכוח שמאחורי הקהילה</p>
-        <h2 id="public-team-section-title">הכירו את הצוות שלנו</h2>
-        <p className="public-section__text reveal reveal-delay-1">
-          צוות מקצועי ומסור שמלווה נשים בדרך לצמיחה, תמיכה והחלמה.
-        </p>
-      </header>
+      <div className="public-team-section__inner">
+        <header className="public-team-section__header">
+          <p className="public-team-section__pill reveal">הכוח שמאחורי הקהילה</p>
+          <h2 id="public-team-section-title" className="public-team-section__title reveal reveal-delay-1">
+            הכירו את הצוות שלנו
+          </h2>
+          <p className="public-team-section__subtitle reveal reveal-delay-2">
+            צוות מקצועי ומסור שמלווה נשים בדרך לצמיחה, תמיכה והחלמה.
+          </p>
+        </header>
 
-      <div className="public-team-section__grid">
-        <div className="public-team-section__row public-team-section__row--primary">
-          {PRIMARY_ROW.map((member, index) => (
-            <TeamSectionCard member={member} index={index} key={member.name} />
-          ))}
-        </div>
+        <div className="public-team-section__rows" ref={rowsRef}>
+          <div className="public-team-section__row public-team-section__row--primary">
+            {primaryRow.map((member, index) => (
+              <TeamSectionMemberCard
+                member={member}
+                key={member.id}
+                revealIndex={index}
+                revealVisible={cardsInView}
+                staggerMs={TEAM_CARD_STAGGER_MS}
+              />
+            ))}
+          </div>
 
-        <div className="public-team-section__row public-team-section__row--secondary">
-          {SECONDARY_ROW.map((member, index) => (
-            <TeamSectionCard member={member} index={index + 4} key={member.name} />
-          ))}
+          <div className="public-team-section__row public-team-section__row--secondary">
+            {secondaryRow.map((member, index) => (
+              <TeamSectionMemberCard
+                member={member}
+                key={member.id}
+                revealIndex={index + PRIMARY_ROW_COUNT}
+                revealVisible={cardsInView}
+                staggerMs={TEAM_CARD_STAGGER_MS}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </section>
