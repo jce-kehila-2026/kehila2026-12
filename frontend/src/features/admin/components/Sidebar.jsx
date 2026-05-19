@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import Drawer from '@mui/material/Drawer';
 import Box from '@mui/material/Box';
@@ -8,16 +7,12 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Typography from '@mui/material/Typography';
 import Divider from '@mui/material/Divider';
-import Collapse from '@mui/material/Collapse';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import EventIcon from '@mui/icons-material/Event';
-import CalendarTodayIcon from '@mui/icons-material/CalendarToday';
 import ArticleIcon from '@mui/icons-material/Article';
 import PeopleIcon from '@mui/icons-material/People';
 import ShieldIcon from '@mui/icons-material/Shield';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
-import ExpandLessIcon from '@mui/icons-material/ExpandLess';
-import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 
 const NAV_ITEMS = [
   { label: 'Users', path: '/admin/users', icon: <PeopleIcon /> },
@@ -28,15 +23,7 @@ const NAV_ITEMS = [
 
 export default function Sidebar({ drawerWidth = 260 }) {
   const location = useLocation();
-  const eventsActive = location.pathname.startsWith('/admin/events') || location.pathname.startsWith('/admin/appointments');
-  const activeEventType = new URLSearchParams(location.search).get('type');
-  const [eventsOpen, setEventsOpen] = useState(eventsActive);
-
-  useEffect(() => {
-    if (eventsActive) {
-      setEventsOpen(true);
-    }
-  }, [eventsActive]);
+  const eventsActive = location.pathname.startsWith('/admin/events');
 
   return (
     <Drawer
@@ -115,9 +102,10 @@ export default function Sidebar({ drawerWidth = 260 }) {
           </ListItemButton>
 
           <ListItemButton
+            component={NavLink}
+            to="/admin/events"
             selected={eventsActive}
             id="nav-events"
-            onClick={() => setEventsOpen((current) => !current)}
             sx={{
               borderRadius: 2,
               mb: 0.75,
@@ -136,48 +124,7 @@ export default function Sidebar({ drawerWidth = 260 }) {
               primaryTypographyProps={{ fontSize: '0.875rem', fontWeight: 700 }}
               sx={{ display: { xs: 'none', md: 'block' } }}
             />
-            <Box sx={{ display: { xs: 'none', md: 'block' }, mr: 'auto' }}>
-              {eventsOpen ? <ExpandLessIcon fontSize="small" /> : <ExpandMoreIcon fontSize="small" />}
-            </Box>
           </ListItemButton>
-
-          <Collapse in={eventsOpen} timeout="auto" unmountOnExit>
-            <List disablePadding sx={{ display: { xs: 'none', md: 'block' }, mb: 1, pr: 1 }}>
-              <ListItemButton
-                component={NavLink}
-                to="/admin/events?type=workshops"
-                selected={location.pathname.startsWith('/admin/events') && activeEventType !== 'appointments'}
-                id="nav-workshops"
-                sx={{
-                  borderRight: '2px solid rgba(109, 60, 207, 0.18)',
-                  borderRadius: 2,
-                  pr: 2,
-                  flexDirection: 'row-reverse',
-                  textAlign: 'right',
-                  '&.Mui-selected': { bgcolor: 'rgba(233, 75, 147, 0.08)', color: '#2f2851' },
-                }}
-              >
-                <ListItemIcon sx={{ minWidth: 34, color: 'inherit' }}><PeopleIcon fontSize="small" /></ListItemIcon>
-                <ListItemText primary="Workshops" primaryTypographyProps={{ fontSize: '0.875rem', fontWeight: 600 }} />
-              </ListItemButton>
-              <ListItemButton
-                component={NavLink}
-                to="/admin/events?type=appointments"
-                selected={location.pathname.startsWith('/admin/events') && activeEventType === 'appointments'}
-                id="nav-appointments"
-                sx={{
-                  borderRight: '2px solid rgba(109, 60, 207, 0.18)',
-                  borderRadius: 2,
-                  pr: 2,
-                  flexDirection: 'row-reverse',
-                  textAlign: 'right',
-                }}
-              >
-                <ListItemIcon sx={{ minWidth: 34, color: 'inherit' }}><CalendarTodayIcon fontSize="small" /></ListItemIcon>
-                <ListItemText primary="Appointments" primaryTypographyProps={{ fontSize: '0.875rem', fontWeight: 600 }} />
-              </ListItemButton>
-            </List>
-          </Collapse>
 
           {NAV_ITEMS.map((item) => (
             <ListItemButton

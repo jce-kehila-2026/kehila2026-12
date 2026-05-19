@@ -482,49 +482,55 @@ export default function EventsPage() {
               <h1>Events Management</h1>
               <p>Create, update, and manage platform events.</p>
             </div>
-            <button className="admin-events-primary-btn" type="button" onClick={openCreate} id="btn-create-event">
-              <span>+</span>
-              Add New Event
-            </button>
           </header>
-
-          <div className="admin-events-tabs" aria-label="Event type tabs">
-            <button
-              className={activeTab === 'workshop' ? 'is-active' : ''}
-              type="button"
-              onClick={() => changeTab('workshop')}
-            >
-              <Groups fontSize="small" />
-              Workshops
-            </button>
-            <button
-              className={activeTab === 'appointment' ? 'is-active' : ''}
-              type="button"
-              onClick={() => changeTab('appointment')}
-            >
-              <CalendarMonth fontSize="small" />
-              Appointments
-            </button>
-          </div>
 
           <section className="admin-events-stats" aria-label="Event summary">
             <article className="admin-events-stat admin-events-stat--pink">
-              <span className="admin-events-stat__icon"><Groups /></span>
-              <div>
-                <p>Workshops</p>
-                <strong>{workshopsCount}</strong>
-                <small>{typedEvents.length ? Math.round((workshopsCount / typedEvents.length) * 100) : 0}% of total events</small>
-              </div>
+              <header>
+                <span className="admin-events-stat__icon"><Groups /></span>
+                <span className="admin-events-stat__menu">...</span>
+              </header>
+              <p>Workshops</p>
+              <strong>{workshopsCount}</strong>
+              <span className="admin-events-stat__bar"><i style={{ width: `${typedEvents.length ? (workshopsCount / typedEvents.length) * 100 : 0}%` }} /></span>
+              <small>{workshopsCount} {workshopsCount === 1 ? 'event' : 'events'}</small>
             </article>
             <article className="admin-events-stat admin-events-stat--purple">
-              <span className="admin-events-stat__icon"><EventAvailable /></span>
-              <div>
-                <p>Appointments</p>
-                <strong>{appointmentsCount}</strong>
-                <small>{typedEvents.length ? Math.round((appointmentsCount / typedEvents.length) * 100) : 0}% of total events</small>
-              </div>
+              <header>
+                <span className="admin-events-stat__icon"><EventAvailable /></span>
+                <span className="admin-events-stat__menu">...</span>
+              </header>
+              <p>Appointments</p>
+              <strong>{appointmentsCount}</strong>
+              <span className="admin-events-stat__bar"><i style={{ width: `${typedEvents.length ? (appointmentsCount / typedEvents.length) * 100 : 0}%` }} /></span>
+              <small>{appointmentsCount} {appointmentsCount === 1 ? 'event' : 'events'}</small>
             </article>
           </section>
+
+          <div className="admin-events-tabs-row">
+            <div className="admin-events-tabs" aria-label="Event type tabs">
+              <button
+                className={activeTab === 'workshop' ? 'is-active' : ''}
+                type="button"
+                onClick={() => changeTab('workshop')}
+              >
+                <span><Groups fontSize="small" /></span>
+                Workshops
+              </button>
+              <button
+                className={activeTab === 'appointment' ? 'is-active' : ''}
+                type="button"
+                onClick={() => changeTab('appointment')}
+              >
+                <span><CalendarMonth fontSize="small" /></span>
+                Appointments
+              </button>
+            </div>
+            <button className="admin-events-primary-btn" type="button" onClick={openCreate} id="btn-create-event">
+              <span className="admin-events-primary-btn__label">Add New Event</span>
+              <span className="admin-events-primary-btn__plus">+</span>
+            </button>
+          </div>
 
           <section className="admin-events-filterbar" aria-label="Search and filter events">
             <label className="admin-events-search">
