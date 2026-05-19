@@ -78,13 +78,13 @@ export default function SupportAreasSection({ supportAreas = [], isLoading = fal
       </div>
 
       <div className="public-support__inner">
-        <header className="public-support__header">
+        <header className="public-support__header reveal">
           <p className="public-support__eyebrow">מרחב של תמיכה והשראה</p>
           <h2 id="public-support-title" className="public-support__heading">
             השירותים והפעילויות שלנו
           </h2>
           <SupportTitleAccent />
-          <p className="public-support__subtitle">
+          <p className="public-support__subtitle reveal reveal-delay-1">
             כאן תמצאי מרחבים רכים של ליווי, חיבור וחיזוק — בדיוק במקום שבו את נמצאת בדרך.
           </p>
         </header>
@@ -94,9 +94,9 @@ export default function SupportAreasSection({ supportAreas = [], isLoading = fal
         ) : hasError ? (
           <ErrorState message="לא ניתן לטעון את תחומי התמיכה. מציגות תוכן זמין אחר." />
         ) : visibleSupportAreas.length ? (
-          <div className="public-support__grid">
+          <div className="public-support__grid stagger-children">
             {visibleSupportAreas.map((area) => (
-              <article className="public-support__card" key={area.id || area.title}>
+              <article className="public-support__card reveal" key={area.id || area.title}>
                 <div className="public-support__media">
                   <SupportAreaCardImage
                     src={area.imageUrl}
