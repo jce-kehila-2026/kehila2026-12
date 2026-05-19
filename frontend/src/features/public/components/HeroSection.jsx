@@ -1,8 +1,8 @@
+import heroWomenSupport from '../../../assets/images/hero-women-support.png';
 import { resolvePublicDonationHref } from '../constants/publicDonationLink';
 
-export default function HeroSection({ hero = {}, loading, onJoinClick }) {
+export default function HeroSection({ hero = {}, onJoinClick }) {
   const { primaryAction = {}, secondaryAction = {} } = hero;
-  const backgroundStyle = hero.imageUrl ? { '--public-hero-image': `url("${hero.imageUrl}")` } : undefined;
 
   function handleJoinClick(event) {
     event.preventDefault();
@@ -10,23 +10,33 @@ export default function HeroSection({ hero = {}, loading, onJoinClick }) {
   }
 
   return (
-    <section className="public-hero" id="home" aria-labelledby="public-hero-title" style={backgroundStyle}>
-      {hero.imageUrl ? <img className="public-hero__image" src={hero.imageUrl} alt={hero.imageAlt || ''} /> : null}
-      <div className="public-hero__overlay" aria-hidden="true" />
+    <section
+      className="public-hero"
+      id="home"
+      aria-labelledby="public-hero-title"
+      style={{ '--public-hero-bg-image': `url(${heroWomenSupport})` }}
+    >
+      <div className="public-hero__background" aria-hidden="true" />
+      <div className="public-hero__overlay public-hero__overlay--tint" aria-hidden="true" />
+      <div className="public-hero__overlay public-hero__overlay--readability" aria-hidden="true" />
+      <div className="public-hero__overlay public-hero__overlay--navbar-fade" aria-hidden="true" />
+
       <div className="public-hero__content">
-        <p className="public-eyebrow">{loading ? 'טוענות את התוכן' : hero.eyebrow}</p>
         <h1 id="public-hero-title">{hero.title}</h1>
-        <p className="public-hero__description">{hero.message}</p>
+        {hero.message ? <p className="public-hero__lead">{hero.message}</p> : null}
+        {hero.supportText ? <p className="public-hero__support">{hero.supportText}</p> : null}
         <div className="public-hero__actions">
-          <a className="public-button public-button--primary" href="#join" onClick={handleJoinClick}>
-            {primaryAction.label}
+          <a className="public-hero__btn public-hero__btn--primary" href="#join" onClick={handleJoinClick}>
+            {primaryAction.label || 'להצטרף לקהילה'}
           </a>
-          <a className="public-button public-button--secondary" href={resolvePublicDonationHref(secondaryAction.href)}>
+          <a
+            className="public-hero__btn public-hero__btn--secondary"
+            href={resolvePublicDonationHref(secondaryAction.href)}
+          >
             {secondaryAction.label || 'לתרומה'}
           </a>
         </div>
       </div>
-      <span className="public-hero__scroll" aria-hidden="true" />
     </section>
   );
 }

@@ -12,6 +12,7 @@ import TeamSection from '../components/TeamSection';
 import ContactSection from '../components/ContactSection';
 import PublicFooter from '../components/PublicFooter';
 import JoinCommunityModal from '../components/JoinCommunityModal';
+import VolunteerModal from '../components/VolunteerModal';
 import EmptyState from '../components/EmptyState';
 import ErrorState from '../components/ErrorState';
 import useRevealOnScroll from '../hooks/useRevealOnScroll';
@@ -25,6 +26,7 @@ export default function PublicHomePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
+  const [isVolunteerModalOpen, setIsVolunteerModalOpen] = useState(false);
   const revealRefreshKey = useMemo(
     () => [
       loading ? 'loading' : 'ready',
@@ -81,7 +83,11 @@ export default function PublicHomePage() {
       <a className="public-skip-link" href="#public-main">
         דילוג לתוכן המרכזי
       </a>
-      <PublicNavbar organization={content.organization} onJoinClick={() => setIsJoinModalOpen(true)} />
+      <PublicNavbar
+        organization={content.organization}
+        onJoinClick={() => setIsJoinModalOpen(true)}
+        onVolunteerClick={() => setIsVolunteerModalOpen(true)}
+      />
       <main id="public-main">
         {error ? (
           <ErrorState message="חלק מהתוכן הציבורי לא נטען. מציגות את המידע הזמין." />
@@ -102,6 +108,7 @@ export default function PublicHomePage() {
       </main>
       <PublicFooter organization={content.organization} contact={content.contact} />
       <JoinCommunityModal isOpen={isJoinModalOpen} onClose={() => setIsJoinModalOpen(false)} />
+      <VolunteerModal isOpen={isVolunteerModalOpen} onClose={() => setIsVolunteerModalOpen(false)} />
     </div>
   );
 }
