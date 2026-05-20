@@ -15,7 +15,7 @@ import {
   DEFAULT_ABOUT_US_ICON_KEY,
   getAboutUsIconEntry,
   isKnownAboutUsIconKey,
-} from '../../public/components/aboutUsIcons';
+} from '../../public/components/cmsIcons';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';

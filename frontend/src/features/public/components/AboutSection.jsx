@@ -1,7 +1,7 @@
 import { useRef } from 'react';
 import useInViewOnce from '../hooks/useInViewOnce';
 import { DEFAULT_ABOUT_US, ABOUT_US_CARD_COUNT } from '../services/publicPagesService';
-import { getAboutUsIconComponent } from './aboutUsIcons';
+import { getAboutUsIconComponent } from './cmsIcons';
 
 const ABOUT_ICON_PROPS = {
   className: 'public-about__icon-glyph',
