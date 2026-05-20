@@ -106,7 +106,7 @@ export default function PublicHomePage() {
           <EmptyState message="תוכן דף הבית הציבורי עדיין לא זמין." />
         ) : null}
         <HeroSection hero={publicHomeDoc.hero} loading={loading} onJoinClick={() => setIsJoinModalOpen(true)} />
-        <AboutSection about={content.about} supportAreas={content.supportAreas} />
+        <AboutSection aboutUs={publicHomeDoc.aboutUs} />
         <SupportAreasSection supportAreas={content.supportAreas} isLoading={loading} />
         <StatisticsSection statistics={content.statistics} isLoading={loading} />
         <TeamPreviewSection teamMembers={content.teamMembers} isLoading={loading} />
