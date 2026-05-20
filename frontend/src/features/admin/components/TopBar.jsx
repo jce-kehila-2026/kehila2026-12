@@ -6,6 +6,8 @@ import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import IconButton from '@mui/material/IconButton';
 import Tooltip from '@mui/material/Tooltip';
+import Badge from '@mui/material/Badge';
+import NotificationsNoneIcon from '@mui/icons-material/NotificationsNone';
 import LogoutIcon from '@mui/icons-material/Logout';
 import SwapHorizIcon from '@mui/icons-material/SwapHoriz';
 import { useAdmin } from '../context/AdminContext';
@@ -47,6 +49,14 @@ export default function TopBar({ title, drawerWidth = 260 }) {
             </IconButton>
           </Tooltip>
 
+          <Tooltip title="Notifications">
+            <IconButton size="small" color="inherit" id="btn-notifications">
+              <Badge color="primary" variant="dot">
+                <NotificationsNoneIcon fontSize="small" />
+              </Badge>
+            </IconButton>
+          </Tooltip>
+
           {/* User Info */}
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
             <Avatar
@@ -61,11 +71,11 @@ export default function TopBar({ title, drawerWidth = 260 }) {
               {initials}
             </Avatar>
             <Box sx={{ display: { xs: 'none', sm: 'flex' }, flexDirection: 'column' }}>
-              <Typography variant="body2" sx={{ fontWeight: 600, lineHeight: 1.2 }}>
-                {currentUser?.email || 'User'}
+              <Typography variant="body2" sx={{ fontWeight: 700, lineHeight: 1.2 }}>
+                Welcome back
               </Typography>
               <Typography variant="caption" color="text.disabled" sx={{ textTransform: 'capitalize' }}>
-                {displayRole}
+                {currentUser?.email || displayRole}
               </Typography>
             </Box>
           </Box>

@@ -11,12 +11,10 @@ import DashboardIcon from '@mui/icons-material/Dashboard';
 import EventIcon from '@mui/icons-material/Event';
 import ArticleIcon from '@mui/icons-material/Article';
 import PeopleIcon from '@mui/icons-material/People';
-import ShieldIcon from '@mui/icons-material/Shield';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 
 const NAV_ITEMS = [
   { label: 'Users', path: '/admin/users', icon: <PeopleIcon /> },
-  { label: 'Role Management', path: '/admin/roles', icon: <ShieldIcon /> },
   { label: 'Public Home-page', path: '/admin/cms', icon: <ArticleIcon /> },
   { label: 'Audit Log', path: '/admin/audit-log', icon: <ReceiptLongIcon /> },
 ];
@@ -35,10 +33,12 @@ export default function Sidebar({ drawerWidth = 260 }) {
         '& .MuiDrawer-paper': {
           width: { xs: 84, md: drawerWidth },
           boxSizing: 'border-box',
-          borderLeft: '1px solid rgba(109, 60, 207, 0.12)',
+          borderLeft: '1px solid rgba(109, 60, 207, 0.10)',
           background:
-            'linear-gradient(180deg, rgba(248, 243, 255, 0.96) 0%, rgba(255, 255, 255, 0.96) 100%)',
-          boxShadow: '-12px 0 35px rgba(51, 29, 95, 0.06)',
+            'linear-gradient(180deg, rgba(255, 251, 255, 0.92) 0%, rgba(246, 240, 255, 0.88) 100%)',
+          boxShadow: '-18px 0 48px rgba(51, 29, 95, 0.08)',
+          backdropFilter: 'blur(22px)',
+          p: { xs: 0.5, md: 1.25 },
         },
       }}
     >
@@ -90,7 +90,11 @@ export default function Sidebar({ drawerWidth = 260 }) {
               flexDirection: { xs: 'row', md: 'row-reverse' },
               justifyContent: { xs: 'center', md: 'flex-start' },
               textAlign: 'right',
-              '&.Mui-selected': { bgcolor: 'rgba(109, 60, 207, 0.1)', color: '#6D3CCF' },
+              '&.Mui-selected': {
+                bgcolor: 'rgba(109, 60, 207, 0.12)',
+                color: '#6D3CCF',
+                boxShadow: '0 12px 28px rgba(109, 60, 207, 0.14)',
+              },
             }}
           >
             <ListItemIcon sx={{ minWidth: { xs: 0, md: 36 }, color: 'inherit' }}><DashboardIcon /></ListItemIcon>
@@ -115,6 +119,7 @@ export default function Sidebar({ drawerWidth = 260 }) {
               '&.Mui-selected': {
                 bgcolor: 'rgba(233, 75, 147, 0.12)',
                 color: '#E94B93',
+                boxShadow: '0 12px 28px rgba(233, 75, 147, 0.14)',
               },
             }}
           >
@@ -139,7 +144,11 @@ export default function Sidebar({ drawerWidth = 260 }) {
                 flexDirection: { xs: 'row', md: 'row-reverse' },
                 justifyContent: { xs: 'center', md: 'flex-start' },
                 textAlign: 'right',
-                '&.Mui-selected': { bgcolor: 'rgba(109, 60, 207, 0.1)', color: '#6D3CCF' },
+                '&.Mui-selected': {
+                  bgcolor: 'rgba(109, 60, 207, 0.12)',
+                  color: '#6D3CCF',
+                  boxShadow: '0 12px 28px rgba(109, 60, 207, 0.14)',
+                },
               }}
             >
               <ListItemIcon sx={{ minWidth: { xs: 0, md: 36 }, color: 'inherit' }}>{item.icon}</ListItemIcon>
