@@ -9,6 +9,34 @@
   margin-block-start: 56px;
 }
 
+.public-learn-together__scroller {
+  position: relative;
+  margin-block-start: 56px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+}
+
+.public-learn-together__scroller::-webkit-scrollbar {
+  display: none;
+  height: 0;
+  width: 0;
+}
+
+.public-learn-together__row {
+  display: inline-flex;
+  gap: 28px;
+  margin: 0;
+  padding: 0;
+}
+
+.public-learn-together__card {
+  flex: 0 0 clamp(280px, 32vw, 380px);
+}
+
 .public-support__card {
   overflow: hidden;
   background: var(--public-card);

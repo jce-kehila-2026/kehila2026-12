@@ -1,7 +1,12 @@
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../../firebase';
 import heroWomenSupport from '../../../assets/images/hero-women-support.png';
-import { isKnownAboutUsIconKey, DEFAULT_ABOUT_US_ICON_KEY } from '../components/aboutUsIcons';
+import {
+  isKnownAboutUsIconKey,
+  DEFAULT_ABOUT_US_ICON_KEY,
+  isKnownCmsIconKey,
+  DEFAULT_CMS_ICON_KEY,
+} from '../components/cmsIcons';
 
 // Single source of truth for the public home page document.
 //   collection: public_pages
@@ -48,6 +53,276 @@ export const DEFAULT_ABOUT_US = {
   ],
 };
 
+export const DEFAULT_LEARN_TOGETHER = {
+  eyebrow: 'מרחב של תמיכה והשראה',
+  title: 'מקום של תמיכה, תקווה וקהילה',
+  paragraph:
+    'כאן תמצאי מרחבים רכים של ליווי, חיבור וחיזוק — בדיוק במקום שבו את נמצאת בדרך.',
+  cards: [
+    {
+      id: 'seed-support-groups',
+      imageUrl: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1000&q=80',
+      iconKey: 'users-round',
+      title: 'קבוצות תמיכה',
+      description: 'מפגשי תמיכה קבוצתיים במרחב בטוח ותומך עם נשים שעוברות חוויות דומות.',
+      order: 0,
+      popup: {
+        title: 'קבוצות תמיכה',
+        paragraph:
+          'קבוצות תמיכה הן לב השי-נא — מרחב בטוח שבו נשים פוגשות נשים, משתפות, מקשיבות ומרגישות שיש מי שמבינה. בלי שיפוטיות, בקצב אנושי וחם.',
+        sections: [
+          {
+            label: 'למי זה מתאים',
+            text: 'לנשים ולמתמודדות עם סרטן שמחפשות קהילה, הקשבה וחיבור אמיתי עם נשים שחוות מסע דומה.',
+          },
+          {
+            label: 'מה מקבלות',
+            text: 'מפגשים קבוצתיים מונחים, שיח פתוח, כלים רגשיים ותחושת שייכות שמלווה לאורך הדרך.',
+          },
+          {
+            label: 'איך מצטרפות',
+            text: 'משאירות פרטים בטופס ההצטרפות או יוצרות קשר — נחזור אלייך בחום ונתאים קבוצה מתאימה.',
+          },
+        ],
+        sideImageUrl: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1000&q=80',
+      },
+    },
+    {
+      id: 'seed-lectures-workshops',
+      imageUrl: 'https://images.unsplash.com/photo-1573496359142-bf2b0c2303f2?auto=format&fit=crop&w=1000&q=80',
+      iconKey: 'sparkles',
+      title: 'הרצאות וסדנאות',
+      description: 'ידע מעשי, כלים רגשיים וסדנאות העצמה שמחזקות את ההתמודדות היומיומית.',
+      order: 1,
+      popup: {
+        title: 'הרצאות וסדנאות',
+        paragraph:
+          'הרצאות וסדנאות שנבנות מתוך הקשבה לנשים בקהילה — ידע מקצועי, כלים מעשיים והעצמה רגשית במרחב נשי, רך ומחבק.',
+        sections: [
+          {
+            label: 'למי זה מתאים',
+            text: 'לנשים שרוצות להעמיק, ללמוד, לחזק את הביטחון ולקבל כלים להתמודדות היומיומית.',
+          },
+          {
+            label: 'מה מקבלות',
+            text: 'מפגשי תוכן, סדנאות חווייתיות, טיפים מקצועיים ומרחב לשאלות, שיתוף והשראה.',
+          },
+          {
+            label: 'איך מצטרפות',
+            text: 'ההרשמה נפתחת לפי אירועים קרובים — ניתן להירשם דרך דף האירועים או ליצור איתנו קשר.',
+          },
+        ],
+        sideImageUrl: 'https://images.unsplash.com/photo-1573496359142-bf2b0c2303f2?auto=format&fit=crop&w=1000&q=80',
+      },
+    },
+    {
+      id: 'seed-inspiration-stories',
+      imageUrl: 'https://images.unsplash.com/photo-1488520997922-dddff85973fb?auto=format&fit=crop&w=1000&q=80',
+      iconKey: 'heart',
+      title: 'סיפורי השראה',
+      description: 'סיפורים אמיתיים של נשים שמצאו תקווה, כוח ומשמעות בתוך המסע.',
+      order: 2,
+      popup: {
+        title: 'סיפורי השראה',
+        paragraph:
+          'סיפורי השראה אמיתיים של נשים מהקהילה — רגעים של תקווה, כוח, חברות וצמיחה שמזכירות לנו שאפשר לעבור את הדרך גם ברוך.',
+        sections: [
+          {
+            label: 'למי זה מתאים',
+            text: 'לכל מי שמחפשת עידוד, זיהוי, תקווה ודוגמאות חיות של נשים שממשיכות קדימה.',
+          },
+          {
+            label: 'מה מקבלות',
+            text: 'סיפורים אישיים, מסרים מעוררי השראה ותחושה שאת לא לבד במסע.',
+          },
+          {
+            label: 'איך מצטרפות',
+            text: 'אפשר לקרוא סיפורים באתר, לשתף סיפור משלך או לפנות אלינו — נשמח ללוות.',
+          },
+        ],
+        sideImageUrl: 'https://images.unsplash.com/photo-1488520997922-dddff85973fb?auto=format&fit=crop&w=1000&q=80',
+      },
+    },
+    {
+      id: 'seed-chat-support',
+      imageUrl: 'https://images.unsplash.com/photo-1529333166432-856ffee0e6b8?auto=format&fit=crop&w=1000&q=80',
+      iconKey: 'message-circle-heart',
+      title: "צ'אט ותמיכה",
+      description: 'ערוץ תמיכה נגיש לשיחה, שיתוף וליווי ברגעים שבהם צריך מענה קרוב.',
+      order: 3,
+      popup: {
+        title: "צ'אט ותמיכה",
+        paragraph:
+          'ערוץ תמיכה נגיש וקרוב — מקום לשאלה, לשיתוף או למילה חמה ברגעים שבהם צריך מישהי שמבינה מעבר למילים.',
+        sections: [
+          {
+            label: 'למי זה מתאים',
+            text: 'לנשים שמעדיפות מענה קרוב, דיסקרטי ונגיש בין מפגשים או בשעות שקטות.',
+          },
+          {
+            label: 'מה מקבלות',
+            text: 'ליווי בשיח, הכוונה לפעילויות מתאימות ותחושת נוכחות של קהילה שדואגת.',
+          },
+          {
+            label: 'איך מצטרפות',
+            text: 'ניתן לפנות דרך טופס יצירת קשר או בערוצי הקהילה הפתוחים למצטרפות.',
+          },
+        ],
+        sideImageUrl: 'https://images.unsplash.com/photo-1529333166432-856ffee0e6b8?auto=format&fit=crop&w=1000&q=80',
+      },
+    },
+    {
+      id: 'seed-donations-community',
+      imageUrl: 'https://images.unsplash.com/photo-1487412727787-6dfaa1abf0f2?auto=format&fit=crop&w=1000&q=80',
+      iconKey: 'gift',
+      title: 'תרומות לקהילה',
+      description: 'תרומות שמאפשרות להרחיב פעילות, להנגיש ליווי ולתמוך בנשים נוספות.',
+      order: 4,
+      popup: {
+        title: 'תרומות לקהילה',
+        paragraph:
+          'כל תרומה מחזקת את הלב של הקהילה — מאפשרת לנו להרחיב תמיכה, ליווי ופעילות לנשים נוספות שזקוקות למרחב בטוח.',
+        sections: [
+          {
+            label: 'למי זה מתאים',
+            text: 'לכל מי שרוצה לקחת חלק בהשפעה, לתמוך בנשים בקהילה ולהרחיב את מעגל התמיכה.',
+          },
+          {
+            label: 'מה מקבלות',
+            text: 'תרומה ישירה לפעילות, ליווי ותמיכה רגשית וקהילתית לנשים במסע המשמעותי הזה.',
+          },
+          {
+            label: 'איך מצטרפות',
+            text: 'ניתן לתרום בקלות דרך עמוד התרומה — כל סכום, קטן כגדול, יוצר שינוי אמיתי.',
+          },
+        ],
+        sideImageUrl: 'https://images.unsplash.com/photo-1487412727787-6dfaa1abf0f2?auto=format&fit=crop&w=1000&q=80',
+      },
+    },
+    {
+      id: 'seed-women-events',
+      imageUrl: 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&w=1000&q=80',
+      iconKey: 'calendar-heart',
+      title: 'אירועים לנשים',
+      description: 'ערבי העצמה, מפגשי רווחה וחגיגות קהילתיות שמחברות ומחזקות.',
+      order: 5,
+      popup: {
+        title: 'אירועים לנשים',
+        paragraph:
+          'אירועים לנשים שמחברים בין לב ללב — ערבי העצמה, מפגשי רווחה וחגיגות קהילתיות במרחב חם, צבעוני ומלא אהבה.',
+        sections: [
+          {
+            label: 'למי זה מתאים',
+            text: 'לנשים מהקהילה ולמי שמעוניינות להכיר, להתחבר ולחוות יחד רגעים של חיזוק.',
+          },
+          {
+            label: 'מה מקבלות',
+            text: 'מפגשים מעוררי השראה, חוויות משותפות, חברות ותחושת שייכות אמיתית.',
+          },
+          {
+            label: 'איך מצטרפות',
+            text: 'ההרשמה מתבצעת לפי אירוע — עקבי אחרי האירועים הקרובים באתר או פני אלינו.',
+          },
+        ],
+        sideImageUrl: 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&w=1000&q=80',
+      },
+    },
+  ],
+};
+
+export const LEARN_TOGETHER_MAX_SECTIONS = 3;
+
+export function emptyLearnTogetherPopup() {
+  return {
+    title: '',
+    paragraph: '',
+    sections: [],
+    sideImageUrl: '',
+  };
+}
+
+function safeString(value) {
+  return typeof value === 'string' ? value : '';
+}
+
+function normalizeSection(section) {
+  if (!section || typeof section !== 'object') return null;
+  const label = safeString(section.label).trim();
+  const text = safeString(section.text).trim();
+  if (!label || !text) return null;
+  return { label, text };
+}
+
+function legacySectionsFromPopup(popup) {
+  const out = [];
+  for (let i = 1; i <= LEARN_TOGETHER_MAX_SECTIONS; i += 1) {
+    const label = safeString(popup?.[`section${i}Label`]).trim();
+    const text = safeString(popup?.[`section${i}Text`]).trim();
+    if (label && text) out.push({ label, text });
+  }
+  return out;
+}
+
+function mergeLearnTogetherPopup(popup) {
+  const safe = popup && typeof popup === 'object' ? popup : {};
+  const incoming = Array.isArray(safe.sections) ? safe.sections : null;
+  const sectionsSource = incoming && incoming.length ? incoming : legacySectionsFromPopup(safe);
+  const sections = sectionsSource
+    .map(normalizeSection)
+    .filter(Boolean)
+    .slice(0, LEARN_TOGETHER_MAX_SECTIONS);
+  return {
+    title: safeString(safe.title),
+    paragraph: safeString(safe.paragraph),
+    sections,
+    sideImageUrl: safeString(safe.sideImageUrl),
+  };
+}
+
+export function popupHasLegacyFields(popup) {
+  if (!popup || typeof popup !== 'object') return false;
+  if ('ctaText' in popup || 'ctaUrl' in popup) return true;
+  for (let i = 1; i <= LEARN_TOGETHER_MAX_SECTIONS; i += 1) {
+    if (`section${i}Label` in popup || `section${i}Text` in popup) return true;
+  }
+  return false;
+}
+
+function mergeLearnTogetherCard(card, index) {
+  const safe = card && typeof card === 'object' ? card : {};
+  const iconKey = isKnownCmsIconKey(safe.iconKey) ? safe.iconKey : DEFAULT_CMS_ICON_KEY;
+  const order = Number.isFinite(safe.order) ? safe.order : index;
+  return {
+    id: safeString(safe.id) || `card-${index}`,
+    imageUrl: safeString(safe.imageUrl),
+    iconKey,
+    title: safeString(safe.title),
+    description: safeString(safe.description),
+    order,
+    createdAt: safe.createdAt || null,
+    popup: mergeLearnTogetherPopup(safe.popup),
+  };
+}
+
+export function mergeLearnTogether(learnTogether) {
+  const safe = learnTogether && typeof learnTogether === 'object' ? learnTogether : {};
+  const incomingCards = Array.isArray(safe.cards) ? safe.cards : null;
+  const cards = (incomingCards && incomingCards.length
+    ? incomingCards
+    : DEFAULT_LEARN_TOGETHER.cards
+  )
+    .map((card, index) => mergeLearnTogetherCard(card, index))
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+  return {
+    eyebrow:
+      safeString(safe.eyebrow).trim() || DEFAULT_LEARN_TOGETHER.eyebrow,
+    title: safeString(safe.title).trim() || DEFAULT_LEARN_TOGETHER.title,
+    paragraph:
+      safeString(safe.paragraph).trim() || DEFAULT_LEARN_TOGETHER.paragraph,
+    cards,
+  };
+}
+
 export function mergeHero(hero) {
   const safeHero = hero && typeof hero === 'object' ? hero : {};
   return {
@@ -92,6 +367,15 @@ export function getDefaultPublicHomeDoc() {
       paragraph: DEFAULT_ABOUT_US.paragraph,
       cards: DEFAULT_ABOUT_US.cards.map((card) => ({ ...card })),
     },
+    learnTogether: {
+      eyebrow: DEFAULT_LEARN_TOGETHER.eyebrow,
+      title: DEFAULT_LEARN_TOGETHER.title,
+      paragraph: DEFAULT_LEARN_TOGETHER.paragraph,
+      cards: DEFAULT_LEARN_TOGETHER.cards.map((card) => ({
+        ...card,
+        popup: { ...card.popup },
+      })),
+    },
     updatedAt: null,
     updatedBy: '',
   };
@@ -108,6 +392,7 @@ export async function getPublicHomeDoc() {
       ...data,
       hero: mergeHero(data.hero),
       aboutUs: mergeAboutUs(data.aboutUs),
+      learnTogether: mergeLearnTogether(data.learnTogether),
     };
   } catch (error) {
     console.warn('[publicPagesService] Failed to load public_pages/home, using defaults.', error);
