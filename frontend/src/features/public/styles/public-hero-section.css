@@ -245,6 +245,54 @@
   }
 }
 
+/* Ensure hero copy stays visible if entrance animations are blocked */
+.public-hero__eyebrow,
+.public-hero h1,
+.public-hero__lead,
+.public-hero__support,
+.public-hero__actions {
+  animation-fill-mode: forwards;
+}
+
+@keyframes publicHeroEnsureVisible {
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .public-hero__eyebrow {
+    animation:
+      publicHeroFadeUp 760ms ease forwards 120ms,
+      publicHeroEnsureVisible 0.01s linear 1.1s forwards;
+  }
+
+  .public-hero h1 {
+    animation:
+      publicHeroFadeUp 820ms ease forwards 260ms,
+      publicHeroEnsureVisible 0.01s linear 1.3s forwards;
+  }
+
+  .public-hero__lead {
+    animation:
+      publicHeroFadeUp 760ms ease forwards 420ms,
+      publicHeroEnsureVisible 0.01s linear 1.4s forwards;
+  }
+
+  .public-hero__support {
+    animation:
+      publicHeroFadeUp 720ms ease forwards 540ms,
+      publicHeroEnsureVisible 0.01s linear 1.5s forwards;
+  }
+
+  .public-hero__actions {
+    animation:
+      publicHeroFadeUp 760ms ease forwards 680ms,
+      publicHeroEnsureVisible 0.01s linear 1.6s forwards;
+  }
+}
+
 @media (max-width: 940px) {
   .public-hero {
     min-height: 92vh;

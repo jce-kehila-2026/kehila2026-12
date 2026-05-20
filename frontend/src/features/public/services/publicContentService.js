@@ -10,6 +10,7 @@ import {
 } from 'firebase/firestore';
 import { db } from '../../../firebase';
 import { PUBLIC_DONATION_TARGET, resolvePublicDonationHref } from '../constants/publicDonationLink';
+import { FALLBACK_PRESS_ARTICLES } from '../constants/pressArticleImages';
 
 // Public homepage content service.
 //
@@ -103,7 +104,7 @@ const FALLBACK_SUPPORT_AREAS = [
     icon: 'groups',
     title: 'קבוצות תמיכה',
     description: 'מפגשי תמיכה קבוצתיים במרחב בטוח ותומך עם נשים שעוברות חוויות דומות.',
-    imageUrl: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1000&q=80',
+    imageUrl: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1200&q=80',
     readMoreUrl: '#contact',
     isVisible: true,
     active: true,
@@ -113,7 +114,7 @@ const FALLBACK_SUPPORT_AREAS = [
     icon: 'workshop',
     title: 'הרצאות וסדנאות',
     description: 'ידע מעשי, כלים רגשיים וסדנאות העצמה שמחזקות את ההתמודדות היומיומית.',
-    imageUrl: 'https://images.unsplash.com/photo-1573496359142-bf2b0c2303f2?auto=format&fit=crop&w=1000&q=80',
+    imageUrl: 'https://images.unsplash.com/photo-1573497016545-246addeb40b1?auto=format&fit=crop&w=1200&q=80',
     readMoreUrl: '#articles',
     isVisible: true,
     active: true,
@@ -123,7 +124,7 @@ const FALLBACK_SUPPORT_AREAS = [
     icon: 'heart',
     title: 'סיפורי השראה',
     description: 'סיפורים אמיתיים של נשים שמצאו תקווה, כוח ומשמעות בתוך המסע.',
-    imageUrl: 'https://images.unsplash.com/photo-1488520997922-dddff85973fb?auto=format&fit=crop&w=1000&q=80',
+    imageUrl: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=1200&q=80',
     readMoreUrl: '#stories',
     isVisible: true,
     active: true,
@@ -133,7 +134,7 @@ const FALLBACK_SUPPORT_AREAS = [
     icon: 'chat',
     title: "צ'אט ותמיכה",
     description: 'ערוץ תמיכה נגיש לשיחה, שיתוף וליווי ברגעים שבהם צריך מענה קרוב.',
-    imageUrl: 'https://images.unsplash.com/photo-1529333166432-856ffee0e6b8?auto=format&fit=crop&w=1000&q=80',
+    imageUrl: 'https://images.unsplash.com/photo-1573497019236-f5c4bbfbaa8e?auto=format&fit=crop&w=1000&q=80',
     readMoreUrl: '#contact',
     isVisible: true,
     active: true,
@@ -143,7 +144,7 @@ const FALLBACK_SUPPORT_AREAS = [
     icon: 'gift',
     title: 'תרומות לקהילה',
     description: 'תרומות שמאפשרות להרחיב פעילות, להנגיש ליווי ולתמוך בנשים נוספות.',
-    imageUrl: 'https://images.unsplash.com/photo-1487412727787-6dfaa1abf0f2?auto=format&fit=crop&w=1000&q=80',
+    imageUrl: 'https://images.unsplash.com/photo-1469574916224-7f2314531620?auto=format&fit=crop&w=1000&q=80',
     readMoreUrl: PUBLIC_DONATION_TARGET,
     isVisible: true,
     active: true,
@@ -160,41 +161,7 @@ const FALLBACK_SUPPORT_AREAS = [
   },
 ];
 
-const FALLBACK_ARTICLES = [
-  {
-    id: 'fallback-article-1',
-    title: 'סיפורי השראה',
-    description:
-      'סיפורים אמיתיים של נשים אמיצות שעוברות את המסע עם תקווה וחוזק.',
-    imageUrl: 'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?auto=format&fit=crop&w=1000&q=78',
-    readMoreUrl: '#stories',
-    isPublished: true,
-    isVisible: true,
-    active: true,
-  },
-  {
-    id: 'fallback-article-2',
-    title: 'הרצאות וסדנאות',
-    description:
-      'סדנאות העשרה, הרצאות מעוררות השראה וכלים מעשיים להתמודדות.',
-    imageUrl: 'https://images.unsplash.com/photo-1573497491208-6b1acb260507?auto=format&fit=crop&w=1000&q=78',
-    readMoreUrl: '#support',
-    isPublished: true,
-    isVisible: true,
-    active: true,
-  },
-  {
-    id: 'fallback-article-3',
-    title: 'קבוצות תמיכה',
-    description:
-      'מפגשי תמיכה קבוצתיים עם הקשבה, הכלה וחיבור לנשים במסע דומה.',
-    imageUrl: 'https://images.unsplash.com/photo-1543269865-cbf427effbad?auto=format&fit=crop&w=1000&q=78',
-    readMoreUrl: '#contact',
-    isPublished: true,
-    isVisible: true,
-    active: true,
-  },
-];
+const FALLBACK_ARTICLES = FALLBACK_PRESS_ARTICLES;
 
 const FALLBACK_TEAM_MEMBERS = [
   {
@@ -710,17 +677,18 @@ function normalizeSupportArea(docData, fallbackArea = {}) {
     icon: firstTextValue(docData.icon, docData.initial, fallbackArea.icon) || title.charAt(0),
     title,
     description,
-    imageUrl: firstImageUrl(
-      docData.imageUrl,
-      docData.imageURL,
-      docData.thumbnailUrl,
-      docData.coverImageUrl,
-      docData.heroImageUrl,
-      docData.image,
-      docData.thumbnail,
-      docData.coverImage,
-      fallbackArea.imageUrl,
-    ),
+    imageUrl:
+      firstImageUrl(
+        docData.imageUrl,
+        docData.imageURL,
+        docData.thumbnailUrl,
+        docData.coverImageUrl,
+        docData.heroImageUrl,
+        docData.image,
+        docData.thumbnail,
+        docData.coverImage,
+        fallbackArea.imageUrl,
+      ) || fallbackArea.imageUrl,
     imageAlt: firstImageAlt(title, docData.imageAlt, docData.altText, docData.image, docData.thumbnail, docData.coverImage),
     readMoreUrl: resolvePublicDonationHref(
       firstTextValue(docData.readMoreUrl, docData.url, docData.link, docData.href, fallbackArea.readMoreUrl) || '#support',
@@ -895,7 +863,7 @@ function normalizeArticle(docData, fallbackArticle = {}) {
     title,
     description,
     content,
-    imageUrl,
+    imageUrl: imageUrl || fallbackArticle.imageUrl,
     imageAlt: firstImageAlt(title, docData.imageAlt, docData.altText, docData.image, docData.thumbnail, docData.coverImage, docData.heroImage),
     readMoreUrl: firstTextValue(docData.readMoreUrl, docData.url, docData.link, fallbackArticle.readMoreUrl) || '#articles',
     publishedAt: publishedDate ? publishedDate.toISOString() : docData.publishedAt || docData.createdAt || '',
@@ -1314,7 +1282,7 @@ export async function getSupportAreas() {
   }
 }
 
-export async function getPublishedArticles(maxItems = 3) {
+export async function getPublishedArticles(maxItems = 4) {
   try {
     const docs = await getConfirmedPublicDocs('cms_articles');
     const articles = docs
