@@ -88,6 +88,10 @@
   text-align: left;
 }
 
+.public-homepage[dir='ltr'] .public-hero h1 {
+  letter-spacing: -0.02em;
+}
+
 .public-hero__content::before {
   position: absolute;
   inset: -28px -24px -28px -16px;
@@ -112,7 +116,7 @@
   padding-inline: 18px;
   color: #ffffff;
   font-size: clamp(0.9rem, 1.1vw, 1rem);
-  font-weight: 800;
+  font-weight: 600;
   line-height: 1.3;
   background: rgba(255, 255, 255, 0.14);
   border: 1px solid rgba(255, 255, 255, 0.28);
@@ -129,9 +133,9 @@
   margin: 0;
   color: #ffffff;
   font-size: clamp(2.45rem, 4.8vw, 4.35rem);
-  font-weight: 900;
-  line-height: 1.06;
-  letter-spacing: -0.02em;
+  font-weight: 700;
+  line-height: 1.12;
+  letter-spacing: 0;
   text-wrap: balance;
   text-shadow:
     0 2px 20px rgba(58, 27, 84, 0.38),
@@ -146,7 +150,7 @@
   max-width: 30ch;
   color: rgba(255, 255, 255, 0.96);
   font-size: clamp(1.2rem, 2.1vw, 1.75rem);
-  font-weight: 800;
+  font-weight: 600;
   line-height: 1.45;
   text-shadow: 0 2px 18px rgba(58, 27, 84, 0.35);
   animation: publicHeroFadeUp 760ms ease forwards 420ms;
@@ -188,7 +192,7 @@
   border: 2px solid transparent;
   border-radius: 999px;
   font-size: clamp(1rem, 1.2vw, 1.08rem);
-  font-weight: 900;
+  font-weight: 700;
   line-height: 1;
   text-align: center;
   text-decoration: none;

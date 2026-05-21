@@ -1,3 +1,5 @@
+@import url("https://fonts.googleapis.com/css2?family=Assistant:wght@400;500;600;700;800&display=swap");
+
 .public-homepage {
   --public-purple: #4b136b;
   --public-purple-2: #7f22d9;
@@ -20,9 +22,17 @@
   background: #ffffff;
   direction: rtl;
   text-align: start;
-  font-family: "Assistant", "Rubik", "Segoe UI", Arial, sans-serif;
+  font-family: "Assistant", "Segoe UI", Arial, sans-serif;
   scroll-behavior: smooth;
   scroll-padding-top: calc(var(--public-navbar-offset) + 12px);
+}
+
+.public-homepage[lang="he"] {
+  font-family: "Assistant", "Segoe UI", Arial, sans-serif;
+}
+
+.public-homepage[lang="en"] {
+  font-family: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
 }
 
 .public-homepage[dir='ltr'] {
