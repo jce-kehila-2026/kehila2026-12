@@ -19,6 +19,10 @@ const communityPosts = [
     comments: 7,
     support: 12,
     tone: 'pink',
+    previewComments: [
+      { author: 'Rina', initials: 'RI', time: '1h', text: 'Thank you for sharing this. I needed that reminder today.' },
+      { author: 'Dana', initials: 'DA', time: '45m', text: 'Five quiet minutes sounds like something I can try too.' },
+    ],
   },
   {
     author: 'Anonymous Participant',
@@ -31,6 +35,10 @@ const communityPosts = [
     comments: 4,
     support: 18,
     tone: 'lavender',
+    previewComments: [
+      { author: 'Maya', initials: 'MA', time: '30m', text: 'Listening quietly is still showing up. That matters.' },
+      { author: 'Leah', initials: 'LE', time: '18m', text: 'I relate to this so much. Thank you for naming it.' },
+    ],
   },
   {
     author: 'Leah',
@@ -43,6 +51,10 @@ const communityPosts = [
     comments: 5,
     support: 8,
     tone: 'violet',
+    previewComments: [
+      { author: 'Noa', initials: 'NO', time: 'Yesterday', text: 'This is such a practical idea. I am going to write mine down tonight.' },
+      { author: 'Shira', initials: 'SH', time: 'Yesterday', text: 'Simple notes make a big difference for me too.' },
+    ],
   },
   {
     author: 'Noa',
@@ -55,6 +67,10 @@ const communityPosts = [
     comments: 9,
     support: 15,
     tone: 'rose',
+    previewComments: [
+      { author: 'Anonymous Participant', initials: 'AP', time: 'Mon', text: 'Asking early is hard. I am proud of you for doing that.' },
+      { author: 'Rina', initials: 'RI', time: 'Mon', text: 'That is a real win.' },
+    ],
   },
 ];
 
@@ -100,6 +116,34 @@ function CreatePostCard() {
   );
 }
 
+function CommentsPreview({ comments = [] }) {
+  const visibleComments = comments.slice(0, 2);
+
+  if (visibleComments.length === 0) return null;
+
+  return (
+    <section className="comments-preview" aria-label="Comments preview">
+      <div className="comments-preview__list">
+        {visibleComments.map((comment) => (
+          <article className="comments-preview__item" key={`${comment.author}-${comment.text}`}>
+            <span className="comments-preview__avatar">{comment.initials}</span>
+            <div>
+              <header>
+                <strong>{comment.author}</strong>
+                {comment.time && <small>{comment.time}</small>}
+              </header>
+              <p>{comment.text}</p>
+            </div>
+          </article>
+        ))}
+      </div>
+      <button className="comments-preview__view-all" type="button">
+        View all comments
+      </button>
+    </section>
+  );
+}
+
 function CommunityPostCard({ post }) {
   return (
     <article className={`community-page-post community-page-post--${post.tone}`}>
@@ -132,6 +176,7 @@ function CommunityPostCard({ post }) {
           <span>{post.support}</span>
         </button>
       </footer>
+      <CommentsPreview comments={post.previewComments} />
     </article>
   );
 }

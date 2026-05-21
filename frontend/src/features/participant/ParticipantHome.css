@@ -1576,6 +1576,83 @@
   font-size: 0.78rem;
 }
 
+.comments-preview {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+  border-top: 1px solid rgba(123, 63, 161, 0.1);
+  padding-top: 16px;
+}
+
+.comments-preview__list {
+  display: grid;
+  gap: 10px;
+}
+
+.comments-preview__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.comments-preview__avatar {
+  flex: 0 0 auto;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #eadffd, #ffe1f0);
+  color: #7b3fa1;
+  font-size: 0.68rem;
+  font-weight: 800;
+}
+
+.comments-preview__item > div {
+  min-width: 0;
+  flex: 1;
+  border-radius: 16px;
+  background: rgba(255, 248, 252, 0.78);
+  padding: 10px 12px;
+}
+
+.comments-preview__item header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.comments-preview__item strong {
+  color: #241332;
+  font-size: 0.8rem;
+}
+
+.comments-preview__item small {
+  color: rgba(75, 19, 107, 0.5);
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.comments-preview__item p {
+  margin: 0;
+  color: rgba(32, 16, 51, 0.64);
+  font-size: 0.82rem;
+  line-height: 1.45;
+}
+
+.comments-preview__view-all {
+  justify-self: start;
+  border: 0;
+  background: transparent;
+  color: #7b3fa1;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 800;
+  padding: 0;
+}
+
 .community-page-post--pink {
   background:
     radial-gradient(circle at 96% 8%, rgba(236, 22, 140, 0.12), transparent 9rem),
@@ -1713,6 +1790,27 @@
 
 .participant-home--dark .community-page-post footer button span {
   color: #94a3b8;
+}
+
+.participant-home--dark .comments-preview {
+  border-top-color: rgba(236, 72, 153, 0.18);
+}
+
+.participant-home--dark .comments-preview__item > div {
+  background: rgba(30, 41, 59, 0.78);
+}
+
+.participant-home--dark .comments-preview__item strong {
+  color: #f8fafc;
+}
+
+.participant-home--dark .comments-preview__item p,
+.participant-home--dark .comments-preview__item small {
+  color: #cbd5e1;
+}
+
+.participant-home--dark .comments-preview__view-all {
+  color: #fbcfe8;
 }
 
 .participant-home--dark .participant-brand strong {
