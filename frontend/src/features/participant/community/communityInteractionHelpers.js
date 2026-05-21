@@ -202,6 +202,8 @@ const normalizeStoredPost = (post, index) => {
     likes: likesCount,
     support: post?.support ?? 0,
     tone: post?.tone ?? 'pink',
+    category: post?.category,
+    type: post?.type,
     previewComments: Array.isArray(post?.previewComments) ? post.previewComments : [],
     commentsCount: comments.filter(isCommunityContentVisible).length,
     ...getModerationFields(post),
@@ -250,6 +252,8 @@ export const serializeCommunityPost = (post) => ({
   likes: post.likesCount ?? post.likes ?? 0,
   support: post.support ?? 0,
   tone: post.tone,
+  category: post.category,
+  type: post.type,
   previewComments: Array.isArray(post.previewComments) ? post.previewComments : [],
 });
 

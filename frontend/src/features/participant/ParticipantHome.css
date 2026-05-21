@@ -1705,6 +1705,85 @@
   box-shadow: 0 12px 24px rgba(123, 63, 161, 0.16);
 }
 
+.community-feed-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.community-feed-tabs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.community-feed-tabs button {
+  min-height: 36px;
+  border: 1px solid rgba(123, 63, 161, 0.1);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.78);
+  color: rgba(75, 19, 107, 0.7);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 800;
+  padding: 0 13px;
+  transition: background 180ms ease, border-color 180ms ease, color 180ms ease, box-shadow 180ms ease;
+}
+
+.community-feed-tabs button:hover,
+.community-feed-tabs button:focus-visible {
+  border-color: rgba(236, 22, 140, 0.24);
+  color: #ec168c;
+  outline: none;
+}
+
+.community-feed-tabs button.is-active {
+  border-color: rgba(236, 22, 140, 0.22);
+  background: linear-gradient(135deg, #fff2f9, #f5ecff);
+  color: #7b3fa1;
+  box-shadow: 0 10px 22px rgba(123, 63, 161, 0.1);
+}
+
+.community-feed-sort {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(75, 19, 107, 0.64);
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.community-feed-sort select {
+  min-height: 36px;
+  border: 1px solid rgba(123, 63, 161, 0.1);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.86);
+  color: #4b136b;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 800;
+  outline: none;
+  padding: 0 32px 0 12px;
+}
+
+.community-feed-sort select:focus {
+  border-color: rgba(236, 22, 140, 0.34);
+  box-shadow: 0 0 0 4px rgba(236, 22, 140, 0.08);
+}
+
+.community-post-list {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+}
+
 .community-page-card {
   padding: 22px;
 }
@@ -2765,6 +2844,23 @@
   color: #86efac;
 }
 
+.participant-home--dark .community-feed-tabs button,
+.participant-home--dark .community-feed-sort select {
+  border-color: rgba(236, 72, 153, 0.18);
+  background: rgba(30, 41, 59, 0.72);
+  color: #cbd5e1;
+}
+
+.participant-home--dark .community-feed-tabs button.is-active {
+  border-color: rgba(236, 72, 153, 0.34);
+  background: rgba(236, 72, 153, 0.16);
+  color: #fbcfe8;
+}
+
+.participant-home--dark .community-feed-sort {
+  color: #cbd5e1;
+}
+
 .participant-home--dark .community-page-post footer button {
   border-color: rgba(236, 72, 153, 0.22);
   background: rgba(30, 41, 59, 0.82);
@@ -3113,6 +3209,27 @@
 
   .create-post-card__footer button {
     width: 100%;
+  }
+
+  .community-feed-controls,
+  .community-feed-sort {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .community-feed-tabs,
+  .community-feed-sort,
+  .community-feed-sort select {
+    width: 100%;
+  }
+
+  .community-feed-tabs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .community-feed-tabs button {
+    justify-content: center;
   }
 
   .create-post-card__helper,

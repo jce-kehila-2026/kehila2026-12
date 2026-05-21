@@ -49,6 +49,104 @@ import CommunityPostCard from './components/CommunityPostCard';
 import CommunityStreakCard from './components/CommunityStreakCard';
 import CreatePostCard from './components/CreatePostCard';
 
+const FEED_TABS = [
+  { id: 'all', label: 'All Posts' },
+  { id: 'following', label: 'Following' },
+  { id: 'anonymous', label: 'Anonymous' },
+  { id: 'birthdays', label: 'Birthdays' },
+  { id: 'wins', label: 'Wins' },
+];
+
+const FEED_SORT_OPTIONS = [
+  { value: 'latest', label: 'Latest' },
+  { value: 'supported', label: 'Most supported' },
+];
+
+const normalizePostTaxonomy = (post = {}) => [
+  post.category,
+  post.type,
+  post.topic,
+  post.title,
+].filter(Boolean).join(' ').toLowerCase();
+
+const getPostCreatedAtTime = (post = {}) => {
+  const createdAt = post.createdAt instanceof Date
+    ? post.createdAt
+    : new Date(post.createdAt ?? 0);
+  const timestamp = createdAt.getTime();
+
+  return Number.isNaN(timestamp) ? 0 : timestamp;
+};
+
+const filterPostsByTab = (posts, activeTab) => posts.filter((post) => {
+  if (activeTab === 'all') return true;
+  if (activeTab === 'following') return false;
+  if (activeTab === 'anonymous') return post.isAnonymous === true;
+
+  const postTaxonomy = normalizePostTaxonomy(post);
+
+  if (activeTab === 'birthdays') {
+    return postTaxonomy.includes('birthday') || postTaxonomy.includes('birthdays');
+  }
+
+  if (activeTab === 'wins') {
+    return postTaxonomy.includes('win') || postTaxonomy.includes('wins');
+  }
+
+  return true;
+});
+
+const sortFeedPosts = (posts, sortBy) => posts
+  .map((post, index) => ({ post, index }))
+  .sort((firstPost, secondPost) => {
+    if (sortBy === 'supported') {
+      const firstLikes = firstPost.post.likesCount ?? firstPost.post.likes ?? 0;
+      const secondLikes = secondPost.post.likesCount ?? secondPost.post.likes ?? 0;
+      if (secondLikes !== firstLikes) return secondLikes - firstLikes;
+    } else {
+      const dateDifference = getPostCreatedAtTime(secondPost.post) - getPostCreatedAtTime(firstPost.post);
+      if (dateDifference !== 0) return dateDifference;
+    }
+
+    return firstPost.index - secondPost.index;
+  })
+  .map(({ post }) => post);
+
+const getEmptyFeedMessage = (activeTab) => {
+  if (activeTab === 'following') {
+    return {
+      title: 'Following feed will appear here.',
+      description: 'When following is available, posts from people you follow will show in this space.',
+    };
+  }
+
+  if (activeTab === 'anonymous') {
+    return {
+      title: 'No anonymous posts yet',
+      description: 'Anonymous shares will appear here when members choose that option.',
+    };
+  }
+
+  if (activeTab === 'birthdays') {
+    return {
+      title: 'No birthday posts yet',
+      description: 'Birthday posts and celebrations will appear here.',
+    };
+  }
+
+  if (activeTab === 'wins') {
+    return {
+      title: 'No wins yet',
+      description: 'Community wins and encouraging milestones will appear here.',
+    };
+  }
+
+  return {
+    title: 'No posts yet',
+    description: 'Be the first to share something with the community.',
+  };
+};
+
 const getExistingDisplayName = (personalDetails = {}) => (
   personalDetails.fullName
   || personalDetails.displayName
@@ -126,6 +224,8 @@ export default function CommunityPage({
   const [postError, setPostError] = useState('');
   const [postSuccessMessage, setPostSuccessMessage] = useState('');
   const [anonymousShortcutMessage, setAnonymousShortcutMessage] = useState('');
+  const [activeFeedTab, setActiveFeedTab] = useState('all');
+  const [feedSortBy, setFeedSortBy] = useState('latest');
   const [communityUserProfile, setCommunityUserProfile] = useState(getInitialCommunityUserProfile);
   const [communityPreferences, setCommunityPreferences] = useState(getInitialCommunityPreferences);
   const [profileSuccessMessage, setProfileSuccessMessage] = useState('');
@@ -252,6 +352,9 @@ export default function CommunityPage({
         ? post.comments.filter(isCommunityContentVisible)
         : [],
     }));
+  const filteredPosts = filterPostsByTab(visiblePosts, activeFeedTab);
+  const sortedVisiblePosts = sortFeedPosts(filteredPosts, feedSortBy);
+  const emptyFeedMessage = getEmptyFeedMessage(activeFeedTab);
 
   const handleBirthdayPreferenceSave = (showBirthday) => {
     setCommunityPreferences({
@@ -610,6 +713,38 @@ export default function CommunityPage({
                 </section>
               )}
 
+              <section className="community-feed-controls" aria-label="Community feed controls">
+                <div className="community-feed-tabs" role="tablist" aria-label="Community feed filters">
+                  {FEED_TABS.map((tab) => (
+                    <button
+                      aria-controls="community-feed-panel"
+                      aria-selected={activeFeedTab === tab.id}
+                      className={activeFeedTab === tab.id ? 'is-active' : undefined}
+                      id={`community-feed-tab-${tab.id}`}
+                      key={tab.id}
+                      onClick={() => setActiveFeedTab(tab.id)}
+                      role="tab"
+                      type="button"
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+
+                <label className="community-feed-sort">
+                  <span>Sort</span>
+                  <select
+                    aria-label="Sort community feed"
+                    value={feedSortBy}
+                    onChange={(event) => setFeedSortBy(event.target.value)}
+                  >
+                    {FEED_SORT_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>{option.label}</option>
+                    ))}
+                  </select>
+                </label>
+              </section>
+
               <section className="community-page-card community-page-card--intro">
                 <span className="community-page-card__icon">
                   <LocalFloristOutlinedIcon />
@@ -620,30 +755,42 @@ export default function CommunityPage({
                 </div>
               </section>
 
-              {visiblePosts.length === 0 ? (
-                <section className="community-empty-state" aria-label="Empty community feed">
-                  <h2>No posts yet</h2>
-                  <p>Be the first to share something with the community.</p>
+              {sortedVisiblePosts.length === 0 ? (
+                <section
+                  aria-labelledby={`community-feed-tab-${activeFeedTab}`}
+                  className="community-empty-state"
+                  id="community-feed-panel"
+                  role="tabpanel"
+                >
+                  <h2>{emptyFeedMessage.title}</h2>
+                  <p>{emptyFeedMessage.description}</p>
                 </section>
               ) : (
-                visiblePosts.map((post) => (
-                  <CommunityPostCard
-                    commentText={commentInputs[post.id] ?? ''}
-                    commentFeedback={commentFeedbackByPostId[post.id]}
-                    isCommentsExpanded={Boolean(expandedCommentPostIds[post.id])}
-                    isReportConfirming={confirmingReportPostId === post.id}
-                    onCommentTextChange={(value) => handleCommentInputChange(post.id, value)}
-                    onCancelReport={() => handleCancelReportPost(post.id)}
-                    onConfirmReport={() => handleConfirmReportPost(post.id)}
-                    onReportPost={() => handleReportPostRequest(post.id)}
-                    onSubmitComment={() => handleSubmitComment(post.id)}
-                    onToggleCommentsExpanded={() => handleToggleCommentsExpanded(post.id)}
-                    onToggleLike={handleToggleLike}
-                    post={post}
-                    key={post.id}
-                    reportFeedback={reportFeedbackByPostId[post.id]}
-                  />
-                ))
+                <section
+                  aria-labelledby={`community-feed-tab-${activeFeedTab}`}
+                  className="community-post-list"
+                  id="community-feed-panel"
+                  role="tabpanel"
+                >
+                  {sortedVisiblePosts.map((post) => (
+                    <CommunityPostCard
+                      commentText={commentInputs[post.id] ?? ''}
+                      commentFeedback={commentFeedbackByPostId[post.id]}
+                      isCommentsExpanded={Boolean(expandedCommentPostIds[post.id])}
+                      isReportConfirming={confirmingReportPostId === post.id}
+                      key={post.id}
+                      onCommentTextChange={(value) => handleCommentInputChange(post.id, value)}
+                      onCancelReport={() => handleCancelReportPost(post.id)}
+                      onConfirmReport={() => handleConfirmReportPost(post.id)}
+                      onReportPost={() => handleReportPostRequest(post.id)}
+                      onSubmitComment={() => handleSubmitComment(post.id)}
+                      onToggleCommentsExpanded={() => handleToggleCommentsExpanded(post.id)}
+                      onToggleLike={handleToggleLike}
+                      post={post}
+                      reportFeedback={reportFeedbackByPostId[post.id]}
+                    />
+                  ))}
+                </section>
               )}
             </>
           )}
