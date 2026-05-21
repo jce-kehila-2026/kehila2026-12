@@ -1,3 +1,9 @@
+import {
+  createCommunityCommentModel,
+  createCommunityPostModel,
+  createCommunityStreakModel,
+} from './communityModels';
+
 export const INITIAL_COMMUNITY_STREAK_COUNT = 0;
 export const INITIAL_LAST_ACTIVITY_DATE = null;
 export const COMMUNITY_POSTS_STORAGE_KEY = 'community.posts';
@@ -13,17 +19,19 @@ export const createCommunityId = (prefix, createdAt = new Date()) => (
 
 export const createPostModel = ({ author, content, isAnonymous }) => {
   const createdAt = new Date();
-
-  return {
+  const postModel = createCommunityPostModel({
     id: createCommunityId('community-post', createdAt),
-    author,
+    authorDisplayName: author,
+    isAnonymous,
     content,
     createdAt,
-    likesCount: 0,
+    updatedAt: createdAt,
+  });
+
+  return {
+    ...postModel,
+    author,
     isLiked: false,
-    isAnonymous,
-    comments: [],
-    commentsCount: 0,
     initials: isAnonymous ? 'AU' : 'CU',
     time: 'Just now',
     topic: 'Community share',
@@ -38,12 +46,17 @@ export const createPostModel = ({ author, content, isAnonymous }) => {
 
 export const createCommentModel = (content) => {
   const createdAt = new Date();
-
-  return {
+  const commentModel = createCommunityCommentModel({
     id: createCommunityId('community-comment', createdAt),
-    author: 'Current User',
+    authorDisplayName: 'Current User',
     content,
     createdAt,
+    updatedAt: createdAt,
+  });
+
+  return {
+    ...commentModel,
+    author: 'Current User',
     initials: 'CU',
     time: 'Just now',
     text: content,
@@ -215,12 +228,13 @@ export const getInitialStreakState = () => {
   const storedStreakCount = Number(storedStreak?.streakCount);
   const storedLastActivityDate = storedStreak?.lastActivityDate;
 
-  return {
+  return createCommunityStreakModel({
     streakCount: Number.isFinite(storedStreakCount) && storedStreakCount >= 0
       ? storedStreakCount
       : INITIAL_COMMUNITY_STREAK_COUNT,
     lastActivityDate: getDateKeyTimestamp(storedLastActivityDate) === null
       ? INITIAL_LAST_ACTIVITY_DATE
       : storedLastActivityDate,
-  };
+    updatedAt: storedStreak?.updatedAt ?? new Date(),
+  });
 };

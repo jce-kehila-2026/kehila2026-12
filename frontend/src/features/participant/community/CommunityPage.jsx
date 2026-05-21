@@ -59,6 +59,7 @@ export default function CommunityPage() {
     safeSaveToStorage(COMMUNITY_STREAK_STORAGE_KEY, {
       streakCount: communityStreakCount,
       lastActivityDate,
+      updatedAt: new Date(),
     });
   }, [communityStreakCount, lastActivityDate]);
 
