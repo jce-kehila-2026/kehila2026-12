@@ -1359,57 +1359,60 @@
 .community-page__header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 24px;
+  gap: 14px;
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.8);
-  border-radius: 30px;
+  width: min(100%, 1126px);
+  box-sizing: border-box;
+  margin: 0 auto;
+  border: 1px solid rgba(123, 63, 161, 0.08);
+  border-radius: 22px;
   background:
-    radial-gradient(circle at 84% 18%, rgba(255, 255, 255, 0.78), transparent 10rem),
-    radial-gradient(circle at 18% 80%, rgba(236, 22, 140, 0.14), transparent 12rem),
-    linear-gradient(135deg, #f4e7ff, #ffe8f5 56%, #fff8fc);
-  box-shadow: 0 22px 58px rgba(75, 19, 107, 0.1);
-  padding: 32px 36px;
+    radial-gradient(circle at 96% 10%, rgba(236, 22, 140, 0.08), transparent 9rem),
+    rgba(255, 255, 255, 0.74);
+  box-shadow: 0 14px 34px rgba(75, 19, 107, 0.06);
+  padding: 18px 22px;
 }
 
-.community-page__header span {
-  display: inline-flex;
+.community-page__header-copy {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  column-gap: 12px;
+  row-gap: 4px;
+  min-width: 0;
+}
+
+.community-page__header-icon {
+  grid-row: 1 / span 2;
+  flex: 0 0 auto;
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #fff2f9, #f4e7ff);
   color: #7b3fa1;
-  font-size: 0.78rem;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  box-shadow: inset 0 0 0 1px rgba(123, 63, 161, 0.08);
 }
 
 .community-page__header h1 {
-  margin: 8px 0 10px;
+  margin: 0;
   color: #201033;
-  font-size: clamp(2rem, 3.4vw, 3rem);
-  line-height: 1.05;
+  font-size: clamp(1.55rem, 2.1vw, 2rem);
+  line-height: 1.1;
 }
 
 .community-page__header p {
   max-width: 620px;
   margin: 0;
   color: rgba(32, 16, 51, 0.66);
-  font-size: 1rem;
-  line-height: 1.6;
-}
-
-.community-page__header-icon {
-  flex: 0 0 auto;
-  width: 96px;
-  height: 96px;
-  display: grid;
-  place-items: center;
-  border-radius: 28px;
-  background: rgba(255, 255, 255, 0.62);
-  box-shadow: inset 0 0 0 1px rgba(123, 63, 161, 0.1);
+  font-size: 0.95rem;
+  line-height: 1.45;
 }
 
 .community-page__header-icon svg {
   color: #ec168c;
-  font-size: 46px;
+  font-size: 22px;
 }
 
 .community-page-shell {
@@ -2726,10 +2729,10 @@
 }
 
 .participant-home--dark .community-page__header {
-  border-color: rgba(236, 72, 153, 0.22);
+  border-color: rgba(236, 72, 153, 0.2);
   background:
-    radial-gradient(circle at 82% 30%, rgba(236, 72, 153, 0.22), transparent 13rem),
-    linear-gradient(135deg, #1e293b, #312e81 55%, #1e1b4b);
+    radial-gradient(circle at 96% 10%, rgba(236, 72, 153, 0.14), transparent 9rem),
+    rgba(15, 23, 42, 0.9);
 }
 
 .participant-home--dark .dashboard-hero h1,
@@ -2880,8 +2883,8 @@
   }
 
   .community-page__header {
-    border-radius: 24px;
-    padding: 24px;
+    border-radius: 20px;
+    padding: 18px;
   }
 
   .community-guidelines-modal {
@@ -2897,9 +2900,9 @@
   }
 
   .community-page__header-icon {
-    width: 72px;
-    height: 72px;
-    border-radius: 22px;
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
   }
 
   .community-page-post header {
@@ -3028,7 +3031,7 @@
   }
 
   .community-page__header h1 {
-    font-size: clamp(1.8rem, 12vw, 2.35rem);
+    font-size: 1.55rem;
   }
 
   .community-page-post footer {

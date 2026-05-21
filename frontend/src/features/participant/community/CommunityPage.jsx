@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import Diversity3OutlinedIcon from '@mui/icons-material/Diversity3Outlined';
+import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined';
 import LocalFloristOutlinedIcon from '@mui/icons-material/LocalFloristOutlined';
 import MenuBookOutlinedIcon from '@mui/icons-material/MenuBookOutlined';
 import {
@@ -526,14 +527,13 @@ export default function CommunityPage({
       {showGuidelinesModal && <CommunityGuidelinesModal onContinue={handleGuidelinesContinue} />}
 
       <header className="community-page__header">
-        <div>
-          <span>Participant community</span>
+        <div className="community-page__header-copy">
+          <span className="community-page__header-icon" aria-hidden="true">
+            <FavoriteBorderOutlinedIcon />
+          </span>
           <h1 id="community-page-title">Community</h1>
           <p>Connect, share, and support each other in a safe space.</p>
         </div>
-        <span className="community-page__header-icon" aria-hidden="true">
-          <Diversity3OutlinedIcon />
-        </span>
       </header>
 
       <div className="community-page-shell">
