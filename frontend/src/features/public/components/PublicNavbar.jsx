@@ -1,26 +1,22 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import sheNaLogo from '../../../assets/she-na-logo.png';
 import { PUBLIC_DONATION_TARGET } from '../constants/publicDonationLink';
 import { useAdmin } from '../../admin/context/AdminContext';
 import { getPostLoginPath } from '../../admin/services/authRoleService';
-
-const PUBLIC_LINKS = [
-  { label: 'הבית', href: '#home' },
-  { label: 'מי אנחנו', href: '#about' },
-  { label: 'בואי נלמד ביחד', href: '#support' },
-  { label: 'סיפורי השראה', href: '#stories' },
-  { label: 'תרומות', href: PUBLIC_DONATION_TARGET },
-  { label: 'צרי קשר', href: '#contact' },
-];
+import { usePublicLocale } from '../context/PublicLocaleContext';
+import { getPublicNavLinks } from '../i18n/publicHomeTranslations';
+import PublicLanguageSwitcher from './PublicLanguageSwitcher';
 
 export default function PublicNavbar({ organization, onJoinClick, onVolunteerClick }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState('');
   const { currentUser, userRole } = useAdmin();
+  const { t } = usePublicLocale();
   const organizationName = organization?.name || 'SHE-NA';
-  const menuButtonLabel = isMenuOpen ? 'סגירת תפריט ניווט' : 'פתיחת תפריט ניווט';
+  const menuButtonLabel = isMenuOpen ? t('closeMenu') : t('openMenu');
   const personalAreaHref = currentUser ? getPostLoginPath(userRole) : '/home';
+  const publicLinks = useMemo(() => getPublicNavLinks(t, PUBLIC_DONATION_TARGET), [t]);
 
   useEffect(() => {
     function handleScroll() {
@@ -72,7 +68,12 @@ export default function PublicNavbar({ organization, onJoinClick, onVolunteerCli
     <header className={`public-navbar${isScrolled ? ' public-navbar--scrolled' : ''}`}>
       <div className="public-navbar__inner">
         <div className="public-navbar__bar">
-          <a className="public-navbar__brand" href="#home" aria-label={`${organizationName} הבית`} onClick={closeMenu}>
+          <a
+            className="public-navbar__brand"
+            href="#home"
+            aria-label={`${organizationName} ${t('brandHomeAria')}`}
+            onClick={closeMenu}
+          >
             <img className="public-navbar__brand-image" src={sheNaLogo} alt="She-Na logo" />
           </a>
 
@@ -91,8 +92,8 @@ export default function PublicNavbar({ organization, onJoinClick, onVolunteerCli
         </div>
 
         <div className={`public-navbar__menu${isMenuOpen ? ' public-navbar__menu--open' : ''}`} id="public-navigation">
-          <nav className="public-navbar__links" aria-label="ניווט ציבורי">
-            {PUBLIC_LINKS.map((link) => {
+          <nav className="public-navbar__links" aria-label={t('navAriaLabel')}>
+            {publicLinks.map((link) => {
               const isContactLink = link.href === '#contact';
               const isActive = isContactLink && activeSection === 'contact';
 
@@ -110,16 +111,19 @@ export default function PublicNavbar({ organization, onJoinClick, onVolunteerCli
             })}
           </nav>
 
-          <div className="public-navbar__actions" aria-label="פעולות מהירות">
+          <div className="public-navbar__actions" aria-label={t('actionsAriaLabel')}>
             <a className="public-navbar__cta public-navbar__cta--primary" href="#join" onClick={handleJoinClick}>
-              להצטרף
+              {t('navJoin')}
             </a>
             <a className="public-navbar__cta public-navbar__cta--highlight" href={personalAreaHref} onClick={closeMenu}>
-              איזור אישי
+              {t('navPersonalArea')}
             </a>
-            <a className="public-navbar__cta public-navbar__cta--primary" href="#volunteer" onClick={handleVolunteerClick}>
-              להתנדב
-            </a>
+            <div className="public-navbar__actions-end">
+              <PublicLanguageSwitcher />
+              <a className="public-navbar__cta public-navbar__cta--primary" href="#volunteer" onClick={handleVolunteerClick}>
+                {t('navVolunteer')}
+              </a>
+            </div>
           </div>
         </div>
       </div>
