@@ -87,6 +87,11 @@ export const birthdayMessages = [
   'Sending you love and warm wishes today 🎂',
 ];
 
+export const communityBirthdayUsers = [
+  { id: 'birthday-sara', name: 'Sara', birthday: '2000-05-21' },
+  { id: 'birthday-rina', name: 'Rina', birthday: '1994-11-12' },
+];
+
 export const communityGuidelines = [
   'Be kind and respectful',
   'Share with honesty and empathy',

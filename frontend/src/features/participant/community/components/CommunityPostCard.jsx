@@ -3,7 +3,26 @@ import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlin
 import VolunteerActivismOutlinedIcon from '@mui/icons-material/VolunteerActivismOutlined';
 import CommentsPreview from './CommentsPreview';
 
-export default function CommunityPostCard({ post }) {
+export default function CommunityPostCard({
+  commentFeedback,
+  commentText,
+  isCommentsExpanded,
+  onCommentTextChange,
+  onSubmitComment,
+  onToggleCommentsExpanded,
+  onToggleLike,
+  post,
+}) {
+  const likesCount = post.likesCount ?? post.likes ?? 0;
+  const comments = Array.isArray(post.comments) ? post.comments : post.previewComments ?? [];
+  const commentsCount = comments.length;
+  const postBody = post.content ?? post.body;
+  const commentFeedbackId = commentFeedback ? `comment-feedback-${post.id}` : undefined;
+  const handleCommentSubmit = (event) => {
+    event.preventDefault();
+    onSubmitComment();
+  };
+
   return (
     <article className={`community-page-post community-page-post--${post.tone}`}>
       <header>
@@ -16,18 +35,23 @@ export default function CommunityPostCard({ post }) {
       </header>
       <div className="community-page-post__content">
         <h3>{post.title}</h3>
-        <p>{post.body}</p>
+        <p>{postBody}</p>
       </div>
       <footer>
-        <button type="button">
+        <button
+          aria-pressed={post.isLiked}
+          className={post.isLiked ? 'is-liked' : undefined}
+          onClick={() => onToggleLike(post.id)}
+          type="button"
+        >
           <FavoriteBorderOutlinedIcon fontSize="small" />
           Like
-          <span>{post.likes}</span>
+          <span>{likesCount}</span>
         </button>
         <button type="button">
           <ChatBubbleOutlineOutlinedIcon fontSize="small" />
           Comment
-          <span>{post.comments}</span>
+          <span>{commentsCount}</span>
         </button>
         <button type="button">
           <VolunteerActivismOutlinedIcon fontSize="small" />
@@ -35,7 +59,31 @@ export default function CommunityPostCard({ post }) {
           <span>{post.support}</span>
         </button>
       </footer>
-      <CommentsPreview comments={post.previewComments} />
+      <CommentsPreview
+        comments={comments}
+        isExpanded={isCommentsExpanded}
+        onToggleExpanded={onToggleCommentsExpanded}
+      />
+      <form className="community-comment-form" onSubmit={handleCommentSubmit}>
+        <input
+          aria-describedby={commentFeedbackId}
+          aria-label={`Add a comment to ${post.author}'s post`}
+          aria-invalid={commentFeedback?.type === 'error'}
+          onChange={(event) => onCommentTextChange(event.target.value)}
+          placeholder="Write a comment..."
+          type="text"
+          value={commentText}
+        />
+        <button type="submit">Post</button>
+      </form>
+      {commentFeedback && (
+        <p
+          className={`community-comment-form__feedback community-comment-form__feedback--${commentFeedback.type}`}
+          id={commentFeedbackId}
+        >
+          {commentFeedback.message}
+        </p>
+      )}
     </article>
   );
 }

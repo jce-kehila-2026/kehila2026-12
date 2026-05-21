@@ -25,6 +25,7 @@ import CalendarPage from '../calendar/CalendarPage';
 import { getCalendarData } from '../calendar/calendarService';
 import AppointmentPage from '../appointments/pages/AppointmentPage';
 import ProfilePage from '../profile/pages/ProfilePage';
+import { getParticipantData } from '../profile/services/participantService';
 import CommunityPage from './community/CommunityPage';
 import WorkshopFeed from './WorkshopFeed';
 import { useAdmin } from '../admin/context/AdminContext';
@@ -392,6 +393,8 @@ export default function ParticipantHome({ initialView = 'home' }) {
   const [darkMode, setDarkMode] = useState(false);
   const [dashboardData, setDashboardData] = useState({ events: [], appointments: [], notes: [] });
   const [loadingDashboard, setLoadingDashboard] = useState(false);
+  const [participantProfile, setParticipantProfile] = useState(null);
+  const [loadingParticipantProfile, setLoadingParticipantProfile] = useState(false);
   const displayName = useMemo(() => {
     if (currentUser?.displayName) return currentUser.displayName.split(' ')[0];
     if (currentUser?.email) return currentUser.email.split('@')[0];
@@ -414,6 +417,34 @@ export default function ParticipantHome({ initialView = 'home' }) {
       }
     }
     loadDashboardData();
+    return () => {
+      ignore = true;
+    };
+  }, [currentUser, effectiveUID]);
+
+  useEffect(() => {
+    let ignore = false;
+
+    async function loadParticipantProfile() {
+      if (!currentUser) {
+        setParticipantProfile(null);
+        setLoadingParticipantProfile(false);
+        return;
+      }
+
+      setLoadingParticipantProfile(true);
+      try {
+        const profile = await getParticipantData(effectiveUID || currentUser.uid);
+        if (!ignore) setParticipantProfile(profile || {});
+      } catch {
+        if (!ignore) setParticipantProfile({});
+      } finally {
+        if (!ignore) setLoadingParticipantProfile(false);
+      }
+    }
+
+    loadParticipantProfile();
+
     return () => {
       ignore = true;
     };
@@ -602,7 +633,19 @@ export default function ParticipantHome({ initialView = 'home' }) {
 
           {activeView === 'resources' && <ResourceLibrary />}
 
-          {activeView === 'community' && <CommunityPage />}
+          {activeView === 'community' && (
+            <CommunityPage
+              personalDetails={{
+                id: effectiveUID || currentUser?.uid || '',
+                ...participantProfile,
+                displayName: currentUser?.displayName || '',
+                fullName: participantProfile?.fullName || currentUser?.displayName || '',
+                birthDate: participantProfile?.birthDate || participantProfile?.birthday || '',
+              }}
+              isPersonalDetailsLoading={loadingParticipantProfile}
+              onGoToSettings={() => setActiveView('profile')}
+            />
+          )}
 
           {activeView === 'profile' && (
             <section className="participant-content participant-content--single">

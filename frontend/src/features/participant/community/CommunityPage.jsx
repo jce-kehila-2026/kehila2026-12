@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Diversity3OutlinedIcon from '@mui/icons-material/Diversity3Outlined';
 import LocalFloristOutlinedIcon from '@mui/icons-material/LocalFloristOutlined';
 import MenuBookOutlinedIcon from '@mui/icons-material/MenuBookOutlined';
@@ -8,25 +8,356 @@ import {
   supportCircles,
 } from './communityMockData';
 import {
+  COMMUNITY_PREFERENCES_STORAGE_KEY,
+  COMMUNITY_POSTS_STORAGE_KEY,
+  COMMUNITY_STREAK_STORAGE_KEY,
+  getDayDifference,
+  getInitialCommunityPreferences,
+  getInitialPosts,
+  getInitialStreakState,
+  getTodayKey,
+  isStreakAtRiskForDate,
+  safeSaveToStorage,
+  serializeCommunityPreferences,
+  serializeCommunityPost,
+} from './communityInteractionHelpers';
+import {
+  addCommunityPostComment,
+  createCommunityPost,
+  getCommunityPosts,
+  toggleCommunityPostLike,
+} from './services/communityService';
+import {
   COMMUNITY_GUIDELINES_VERSION,
   getAcceptedGuidelinesVersion,
   saveAcceptedGuidelinesVersion,
 } from './communityGuidelinesStorage';
 import BirthdayCard from './components/BirthdayCard';
+import CommunityAccessPanel from './components/CommunityAccessPanel';
+import CommunityBirthdayPreferenceCard from './components/CommunityBirthdayPreferenceCard';
 import CommunityGuidelinesCard from './components/CommunityGuidelinesCard';
 import CommunityGuidelinesModal from './components/CommunityGuidelinesModal';
 import CommunityPostCard from './components/CommunityPostCard';
 import CommunityStreakCard from './components/CommunityStreakCard';
 import CreatePostCard from './components/CreatePostCard';
 
-export default function CommunityPage() {
+const getExistingDisplayName = (personalDetails = {}) => (
+  personalDetails.fullName
+  || personalDetails.displayName
+  || personalDetails.userName
+  || personalDetails.name
+  || [personalDetails.firstName, personalDetails.lastName].filter(Boolean).join(' ')
+  || ''
+).trim();
+
+const formatDateToDateKey = (date) => {
+  if (!(date instanceof Date) || Number.isNaN(date.getTime())) return '';
+
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+};
+
+const normalizeCommunityBirthday = (birthdayValue) => {
+  if (!birthdayValue) return '';
+
+  if (birthdayValue instanceof Date) {
+    return formatDateToDateKey(birthdayValue);
+  }
+
+  if (typeof birthdayValue === 'object' && typeof birthdayValue.seconds === 'number') {
+    return formatDateToDateKey(new Date(birthdayValue.seconds * 1000));
+  }
+
+  if (typeof birthdayValue !== 'string') return '';
+
+  const trimmed = birthdayValue.trim();
+  if (!trimmed) return '';
+
+  const dateParts = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (dateParts) {
+    const year = Number(dateParts[1]);
+    const month = Number(dateParts[2]);
+    const day = Number(dateParts[3]);
+    const parsedDate = new Date(year, month - 1, day);
+
+    if (
+      parsedDate.getFullYear() === year
+      && parsedDate.getMonth() === month - 1
+      && parsedDate.getDate() === day
+    ) {
+      return trimmed;
+    }
+  }
+
+  const parsedDate = new Date(trimmed);
+  return formatDateToDateKey(parsedDate);
+};
+
+const getCommunityBirthday = (personalDetails = {}) => normalizeCommunityBirthday(
+  personalDetails.birthDate
+  || personalDetails.birthday
+  || personalDetails.dateOfBirth,
+);
+
+const hasRequiredCommunityPersonalDetails = (personalDetails = {}) => Boolean(
+  getExistingDisplayName(personalDetails) && getCommunityBirthday(personalDetails),
+);
+
+export default function CommunityPage({
+  personalDetails = {},
+  isPersonalDetailsLoading = false,
+  onGoToSettings,
+}) {
+  const [initialStreakState] = useState(getInitialStreakState);
   const [showGuidelinesModal, setShowGuidelinesModal] = useState(
     () => getAcceptedGuidelinesVersion() !== COMMUNITY_GUIDELINES_VERSION,
   );
+  const [posts, setPosts] = useState(() => getInitialPosts(communityPosts));
+  const [newPostText, setNewPostText] = useState('');
+  const [postAnonymously, setPostAnonymously] = useState(false);
+  const [postError, setPostError] = useState('');
+  const [postSuccessMessage, setPostSuccessMessage] = useState('');
+  const [communityPreferences, setCommunityPreferences] = useState(getInitialCommunityPreferences);
+  const [profileSuccessMessage, setProfileSuccessMessage] = useState('');
+  const [commentInputs, setCommentInputs] = useState({});
+  const [commentFeedbackByPostId, setCommentFeedbackByPostId] = useState({});
+  const [expandedCommentPostIds, setExpandedCommentPostIds] = useState({});
+  const [communityStreakCount, setCommunityStreakCount] = useState(initialStreakState.streakCount);
+  const [lastActivityDate, setLastActivityDate] = useState(initialStreakState.lastActivityDate);
+  const [isCommunityStreakAtRisk, setIsCommunityStreakAtRisk] = useState(
+    () => isStreakAtRiskForDate(initialStreakState.lastActivityDate),
+  );
+
+  useEffect(() => {
+    let ignoreResult = false;
+
+    getCommunityPosts()
+      .then((loadedPosts) => {
+        if (!ignoreResult && Array.isArray(loadedPosts)) {
+          setPosts(loadedPosts);
+        }
+      })
+      .catch(() => {
+        // Keep the existing local fallback state if the placeholder service fails.
+      });
+
+    return () => {
+      ignoreResult = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    safeSaveToStorage(COMMUNITY_POSTS_STORAGE_KEY, posts.map(serializeCommunityPost));
+  }, [posts]);
+
+  useEffect(() => {
+    safeSaveToStorage(COMMUNITY_STREAK_STORAGE_KEY, {
+      streakCount: communityStreakCount,
+      lastActivityDate,
+      updatedAt: new Date(),
+    });
+  }, [communityStreakCount, lastActivityDate]);
+
+  useEffect(() => {
+    if (!communityPreferences.birthdayVisibilityCompleted) return;
+
+    safeSaveToStorage(
+      COMMUNITY_PREFERENCES_STORAGE_KEY,
+      serializeCommunityPreferences(communityPreferences),
+    );
+  }, [communityPreferences]);
+
+  const registerCommunityActivity = () => {
+    const todayKey = getTodayKey();
+    const dayDifference = getDayDifference(lastActivityDate, todayKey);
+
+    if (!lastActivityDate || dayDifference === null || dayDifference >= 3) {
+      setCommunityStreakCount(1);
+    } else if (dayDifference === 1 || dayDifference === 2) {
+      setCommunityStreakCount((currentCount) => currentCount + 1);
+    }
+
+    setLastActivityDate(todayKey);
+    setIsCommunityStreakAtRisk(false);
+  };
 
   const handleGuidelinesContinue = () => {
     saveAcceptedGuidelinesVersion();
     setShowGuidelinesModal(false);
+  };
+
+  const handlePostTextChange = (value) => {
+    setNewPostText(value);
+    if (postError) setPostError('');
+    if (postSuccessMessage) setPostSuccessMessage('');
+  };
+
+  const displayName = getExistingDisplayName(personalDetails);
+  const birthDate = getCommunityBirthday(personalDetails);
+  const hasRequiredPersonalDetails = hasRequiredCommunityPersonalDetails(personalDetails);
+  const canUseCommunity = hasRequiredPersonalDetails && communityPreferences.birthdayVisibilityCompleted;
+  const visibleBirthdayUsers = communityPreferences.showBirthday && birthDate
+    ? [{ id: personalDetails.id || 'current-user', name: displayName || 'Current User', birthday: birthDate }]
+    : [];
+
+  const handleBirthdayPreferenceSave = (showBirthday) => {
+    setCommunityPreferences({
+      birthdayVisibilityCompleted: true,
+      showBirthday,
+    });
+    setProfileSuccessMessage('Community preference saved.');
+  };
+
+  const handleGoToSettings = () => {
+    if (onGoToSettings) {
+      onGoToSettings();
+      return;
+    }
+
+    window.location.assign('/profile');
+  };
+
+  const handleCreatePost = async () => {
+    const content = newPostText.trim();
+
+    if (!content) {
+      setPostError('Please write something before sharing.');
+      setPostSuccessMessage('');
+      return;
+    }
+
+    const isAnonymous = postAnonymously;
+    const author = isAnonymous ? 'Anonymous User' : displayName || 'Current User';
+    let newPost;
+
+    try {
+      newPost = await createCommunityPost({
+        author,
+        content,
+        isAnonymous,
+      });
+    } catch {
+      setPostError('Unable to publish your post right now.');
+      setPostSuccessMessage('');
+      return;
+    }
+
+    setPosts((currentPosts) => [newPost, ...currentPosts]);
+    setNewPostText('');
+    setPostAnonymously(false);
+    setPostError('');
+    setPostSuccessMessage('Post published successfully.');
+    registerCommunityActivity();
+  };
+
+  const handleToggleLike = (postId) => {
+    const postToUpdate = posts.find((post) => post.id === postId);
+    const shouldIncreaseStreak = postToUpdate ? !postToUpdate.isLiked : false;
+
+    toggleCommunityPostLike(postId, 'current-user').catch(() => {
+      // Keep the optimistic local UI update; the placeholder service has no remote side effect yet.
+    });
+
+    setPosts((currentPosts) => currentPosts.map((post) => {
+      if (post.id !== postId) return post;
+
+      const wasLiked = post.isLiked;
+      const currentLikesCount = post.likesCount ?? post.likes ?? 0;
+      const nextLikesCount = wasLiked
+        ? Math.max(currentLikesCount - 1, 0)
+        : currentLikesCount + 1;
+
+      return {
+        ...post,
+        isLiked: !wasLiked,
+        likesCount: nextLikesCount,
+        likes: nextLikesCount,
+      };
+    }));
+
+    if (shouldIncreaseStreak) {
+      registerCommunityActivity();
+    }
+  };
+
+  const handleCommentInputChange = (postId, value) => {
+    setCommentInputs((currentInputs) => ({
+      ...currentInputs,
+      [postId]: value,
+    }));
+    setCommentFeedbackByPostId((currentFeedback) => {
+      if (!currentFeedback[postId]) return currentFeedback;
+
+      const nextFeedback = { ...currentFeedback };
+      delete nextFeedback[postId];
+      return nextFeedback;
+    });
+  };
+
+  const handleSubmitComment = async (postId) => {
+    const content = (commentInputs[postId] ?? '').trim();
+
+    if (!content) {
+      setCommentFeedbackByPostId((currentFeedback) => ({
+        ...currentFeedback,
+        [postId]: {
+          type: 'error',
+          message: 'Please write a comment before posting.',
+        },
+      }));
+      return;
+    }
+    if (!posts.some((post) => post.id === postId)) return;
+
+    let newComment;
+
+    try {
+      newComment = await addCommunityPostComment(postId, {
+        author: displayName || 'Current User',
+        authorDisplayName: displayName || 'Current User',
+        content,
+      });
+    } catch {
+      setCommentFeedbackByPostId((currentFeedback) => ({
+        ...currentFeedback,
+        [postId]: {
+          type: 'error',
+          message: 'Unable to add your comment right now.',
+        },
+      }));
+      return;
+    }
+
+    setPosts((currentPosts) => currentPosts.map((post) => {
+      if (post.id !== postId) return post;
+
+      const currentComments = Array.isArray(post.comments) ? post.comments : [];
+      const nextComments = [newComment, ...currentComments];
+
+      return {
+        ...post,
+        comments: nextComments,
+      };
+    }));
+
+    setCommentInputs((currentInputs) => ({
+      ...currentInputs,
+      [postId]: '',
+    }));
+    setCommentFeedbackByPostId((currentFeedback) => ({
+      ...currentFeedback,
+      [postId]: {
+        type: 'success',
+        message: 'Comment added successfully.',
+      },
+    }));
+    registerCommunityActivity();
+  };
+
+  const handleToggleCommentsExpanded = (postId) => {
+    setExpandedCommentPostIds((currentPostIds) => ({
+      ...currentPostIds,
+      [postId]: !currentPostIds[postId],
+    }));
   };
 
   return (
@@ -46,26 +377,81 @@ export default function CommunityPage() {
 
       <div className="community-page__layout">
         <main className="community-page__feed" aria-label="Community feed">
-          <CreatePostCard />
+          {isPersonalDetailsLoading && (
+            <section className="community-profile-setup" aria-label="Loading community profile">
+              <div className="community-profile-setup__heading">
+                <span className="community-profile-setup__icon" aria-hidden="true">
+                  <Diversity3OutlinedIcon />
+                </span>
+                <div>
+                  <span>Community access</span>
+                  <h2>Checking your personal details</h2>
+                  <p>Preparing your community profile...</p>
+                </div>
+              </div>
+            </section>
+          )}
+          {!isPersonalDetailsLoading && !hasRequiredPersonalDetails && (
+            <CommunityAccessPanel onGoToSettings={handleGoToSettings} />
+          )}
+          {!isPersonalDetailsLoading && hasRequiredPersonalDetails && !communityPreferences.birthdayVisibilityCompleted && (
+            <CommunityBirthdayPreferenceCard onSave={handleBirthdayPreferenceSave} />
+          )}
+          {profileSuccessMessage && canUseCommunity && (
+            <p className="community-profile-setup__success">{profileSuccessMessage}</p>
+          )}
+          {canUseCommunity && (
+            <>
+              <CreatePostCard
+                isAnonymous={postAnonymously}
+                error={postError}
+                onAnonymousChange={setPostAnonymously}
+                onPostTextChange={handlePostTextChange}
+                onSubmit={handleCreatePost}
+                postText={newPostText}
+                successMessage={postSuccessMessage}
+              />
 
-          <section className="community-page-card community-page-card--intro">
-            <span className="community-page-card__icon">
-              <LocalFloristOutlinedIcon />
-            </span>
-            <div>
-              <h2>Today in the community</h2>
-              <p>Stories, reflections, and encouragement from participants walking a similar path.</p>
-            </div>
-          </section>
+              <section className="community-page-card community-page-card--intro">
+                <span className="community-page-card__icon">
+                  <LocalFloristOutlinedIcon />
+                </span>
+                <div>
+                  <h2>Today in the community</h2>
+                  <p>Stories, reflections, and encouragement from participants walking a similar path.</p>
+                </div>
+              </section>
 
-          {communityPosts.map((post) => (
-            <CommunityPostCard post={post} key={`${post.author}-${post.title}`} />
-          ))}
+              {posts.length === 0 ? (
+                <section className="community-empty-state" aria-label="Empty community feed">
+                  <h2>No posts yet</h2>
+                  <p>Be the first to share something with the community.</p>
+                </section>
+              ) : (
+                posts.map((post) => (
+                  <CommunityPostCard
+                    commentText={commentInputs[post.id] ?? ''}
+                    commentFeedback={commentFeedbackByPostId[post.id]}
+                    isCommentsExpanded={Boolean(expandedCommentPostIds[post.id])}
+                    onCommentTextChange={(value) => handleCommentInputChange(post.id, value)}
+                    onSubmitComment={() => handleSubmitComment(post.id)}
+                    onToggleCommentsExpanded={() => handleToggleCommentsExpanded(post.id)}
+                    onToggleLike={handleToggleLike}
+                    post={post}
+                    key={post.id}
+                  />
+                ))
+              )}
+            </>
+          )}
         </main>
 
         <aside className="community-page__rail" aria-label="Community sidebar">
-          <BirthdayCard />
-          <CommunityStreakCard />
+          <BirthdayCard birthdayUsers={visibleBirthdayUsers} />
+          <CommunityStreakCard
+            isAtRisk={isCommunityStreakAtRisk || isStreakAtRiskForDate(lastActivityDate)}
+            streakCount={communityStreakCount}
+          />
           <CommunityGuidelinesCard />
 
           <section className="community-page-card">
