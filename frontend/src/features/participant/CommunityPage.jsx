@@ -17,6 +17,7 @@ const communityPosts = [
     body: 'I started the day with five quiet minutes and it helped me feel more present. Sending care to anyone who needs a softer start today.',
     likes: 28,
     comments: 7,
+    support: 12,
     tone: 'pink',
   },
   {
@@ -28,6 +29,7 @@ const communityPosts = [
     body: 'I was nervous to join a group session, but listening quietly still helped me feel less alone. Taking part can look different for each of us.',
     likes: 22,
     comments: 4,
+    support: 18,
     tone: 'lavender',
   },
   {
@@ -39,6 +41,7 @@ const communityPosts = [
     body: 'Writing down three questions before my appointment made the conversation feel calmer. I kept the note simple and brought it with me.',
     likes: 19,
     comments: 5,
+    support: 8,
     tone: 'violet',
   },
   {
@@ -50,6 +53,7 @@ const communityPosts = [
     body: 'Today my win was asking for help before I felt overwhelmed. It felt vulnerable, but also really grounding.',
     likes: 34,
     comments: 9,
+    support: 15,
     tone: 'rose',
   },
 ];
@@ -107,17 +111,26 @@ function CommunityPostCard({ post }) {
         </div>
         <span className="community-page-post__topic">{post.topic}</span>
       </header>
-      <h3>{post.title}</h3>
-      <p>{post.body}</p>
+      <div className="community-page-post__content">
+        <h3>{post.title}</h3>
+        <p>{post.body}</p>
+      </div>
       <footer>
-        <span>
+        <button type="button">
           <FavoriteBorderOutlinedIcon fontSize="small" />
-          {post.likes}
-        </span>
-        <span>
+          Like
+          <span>{post.likes}</span>
+        </button>
+        <button type="button">
           <ChatBubbleOutlineOutlinedIcon fontSize="small" />
-          {post.comments}
-        </span>
+          Comment
+          <span>{post.comments}</span>
+        </button>
+        <button type="button">
+          <VolunteerActivismOutlinedIcon fontSize="small" />
+          Support
+          <span>{post.support}</span>
+        </button>
       </footer>
     </article>
   );

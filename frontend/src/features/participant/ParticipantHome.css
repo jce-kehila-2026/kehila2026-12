@@ -1536,18 +1536,44 @@
   margin-top: 10px;
 }
 
-.community-page-post footer {
-  gap: 16px;
-  margin-top: 18px;
-  color: rgba(75, 19, 107, 0.62);
-  font-size: 0.82rem;
-  font-weight: 800;
+.community-page-post__content {
+  display: grid;
+  gap: 8px;
 }
 
-.community-page-post footer span {
+.community-page-post footer {
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.community-page-post footer button {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
+  min-height: 38px;
+  border: 1px solid rgba(123, 63, 161, 0.1);
+  border-radius: 999px;
+  background: #fff8fc;
+  color: rgba(75, 19, 107, 0.72);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 800;
+  padding: 0 13px;
+  transition: background 180ms ease, border-color 180ms ease, color 180ms ease, transform 180ms ease;
+}
+
+.community-page-post footer button:hover {
+  border-color: rgba(236, 22, 140, 0.22);
+  background: #fff2f9;
+  color: #ec168c;
+  transform: translateY(-1px);
+}
+
+.community-page-post footer button span {
+  color: rgba(75, 19, 107, 0.52);
+  font-size: 0.78rem;
 }
 
 .community-page-post--pink {
@@ -1677,6 +1703,16 @@
 .participant-home--dark .create-post-card__helper {
   background: rgba(236, 72, 153, 0.12);
   color: #cbd5e1;
+}
+
+.participant-home--dark .community-page-post footer button {
+  border-color: rgba(236, 72, 153, 0.22);
+  background: rgba(30, 41, 59, 0.82);
+  color: #cbd5e1;
+}
+
+.participant-home--dark .community-page-post footer button span {
+  color: #94a3b8;
 }
 
 .participant-home--dark .participant-brand strong {
