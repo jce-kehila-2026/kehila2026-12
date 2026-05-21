@@ -12,9 +12,9 @@
   display: grid;
   place-items: center;
   padding: clamp(12px, 2.5vw, 28px);
-  background: rgba(91, 30, 140, 0.22);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
+  background: rgba(253, 246, 251, 0.45);
+  backdrop-filter: blur(14px) saturate(1.15);
+  -webkit-backdrop-filter: blur(14px) saturate(1.15);
   font-family: "Assistant", "Rubik", "Segoe UI", Arial, sans-serif;
 }
 
@@ -29,12 +29,15 @@
   min-height: 0;
   overflow: hidden;
   direction: ltr;
-  background: #ffffff;
-  border: 1px solid var(--modal-pink-soft);
-  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(247, 214, 234, 0.95);
+  border-radius: 28px;
   box-shadow:
-    0 28px 64px rgba(91, 30, 140, 0.16),
-    0 8px 24px rgba(217, 70, 161, 0.1);
+    0 32px 72px rgba(91, 30, 140, 0.18),
+    0 12px 32px rgba(217, 70, 161, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 /* Image panel — visual left, full height */
@@ -103,11 +106,11 @@
 .support-area-modal__body {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 16px;
   min-height: 0;
   max-height: 100%;
-  padding-block: clamp(20px, 2.5vw, 28px);
-  padding-inline: clamp(22px, 3vw, 36px);
+  padding-block: clamp(24px, 3vw, 32px);
+  padding-inline: clamp(24px, 3.5vw, 40px);
   overflow-x: hidden;
   overflow-y: auto;
   direction: rtl;
@@ -126,34 +129,38 @@
 
 .support-area-modal__close {
   position: absolute;
-  top: 14px;
-  right: 14px;
+  top: 16px;
+  right: 16px;
   z-index: 10;
   display: inline-grid;
-  width: 32px;
-  height: 32px;
+  width: 40px;
+  height: 40px;
   place-items: center;
   padding: 0;
-  color: var(--modal-purple-mid);
-  font-size: 1rem;
+  color: var(--modal-purple);
+  font-size: 1.15rem;
   cursor: pointer;
-  background: rgba(255, 255, 255, 0.95);
-  border: 1px solid rgba(217, 70, 161, 0.22);
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(217, 70, 161, 0.2);
   border-radius: 50%;
-  box-shadow: 0 2px 10px rgba(91, 30, 140, 0.1);
+  box-shadow: 0 4px 16px rgba(91, 30, 140, 0.12);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   transition:
-    color 200ms ease,
-    border-color 200ms ease,
-    background 200ms ease,
-    transform 200ms ease;
+    color 220ms ease,
+    border-color 220ms ease,
+    background 220ms ease,
+    box-shadow 220ms ease,
+    transform 220ms ease;
 }
 
 .support-area-modal__close:hover,
 .support-area-modal__close:focus-visible {
-  color: var(--modal-pink);
-  background: #fff9fd;
-  border-color: rgba(217, 70, 161, 0.38);
-  transform: scale(1.05);
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--modal-pink) 0%, var(--modal-purple-mid) 100%);
+  border-color: transparent;
+  box-shadow: 0 8px 22px rgba(217, 70, 161, 0.35);
+  transform: scale(1.06);
 }
 
 .support-area-modal__header {
@@ -200,7 +207,7 @@
 .support-area-modal__points {
   display: grid;
   flex-shrink: 0;
-  gap: 8px;
+  gap: 12px;
   width: 100%;
   max-width: 26rem;
   margin-inline: auto;
@@ -211,12 +218,24 @@
 .support-area-modal__point {
   display: flex;
   align-items: flex-start;
-  gap: 10px;
-  padding-block: 10px;
-  padding-inline: 12px;
-  background: #fdf6fb;
-  border: 1px solid var(--modal-pink-soft);
-  border-radius: 14px;
+  gap: 12px;
+  padding-block: 14px;
+  padding-inline: 14px;
+  background: rgba(253, 246, 251, 0.92);
+  border: 1px solid rgba(247, 214, 234, 0.95);
+  border-radius: 16px;
+  transition:
+    border-color 240ms ease,
+    box-shadow 240ms ease,
+    transform 240ms ease,
+    background 240ms ease;
+}
+
+.support-area-modal__point:hover {
+  background: #ffffff;
+  border-color: rgba(217, 70, 161, 0.28);
+  box-shadow: 0 8px 22px rgba(91, 30, 140, 0.1);
+  transform: translateY(-2px);
 }
 
 .support-area-modal__point-content {
@@ -244,19 +263,20 @@
 .support-area-modal__point-icon {
   display: inline-grid;
   flex-shrink: 0;
-  width: 54px;
-  height: 54px;
+  width: 58px;
+  height: 58px;
   place-items: center;
-  color: var(--modal-pink);
-  font-size: 22px;
-  background: #ffffff;
-  border: 1px solid rgba(217, 70, 161, 0.16);
+  color: #ffffff;
+  font-size: 24px;
+  background: linear-gradient(145deg, var(--modal-pink) 0%, var(--modal-purple-mid) 55%, var(--modal-purple) 100%);
+  border: 2px solid rgba(255, 255, 255, 0.85);
   border-radius: 50%;
+  box-shadow: 0 6px 18px rgba(217, 70, 161, 0.22);
 }
 
 .support-area-modal__point-icon svg {
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
 }
 
 .support-area-modal__actions {

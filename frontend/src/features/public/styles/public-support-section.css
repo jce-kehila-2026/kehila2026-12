@@ -130,6 +130,10 @@
 .public-homepage .public-section--support h2.public-support__heading {
   display: block;
   visibility: visible;
+}
+
+.public-homepage .public-section--support:not(.public-section--learn-together) .public-support__header h2.public-support__heading,
+.public-homepage .public-section--support:not(.public-section--learn-together) h2.public-support__heading {
   color: var(--support-purple);
 }
 
@@ -181,7 +185,48 @@
   line-height: 1.8;
 }
 
-/* Horizontal scroll row — learn together services cards only */
+/* Horizontal scroll row — learn together community activities */
+.public-homepage .public-section--learn-together .public-support__carousel {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: clamp(8px, 1.5vw, 16px);
+  width: 100%;
+}
+
+.public-homepage .public-section--learn-together .public-support__scroll-btn {
+  z-index: 3;
+  display: inline-grid;
+  flex-shrink: 0;
+  width: 44px;
+  height: 44px;
+  place-items: center;
+  padding: 0;
+  color: var(--support-purple);
+  font-size: 1.45rem;
+  cursor: pointer;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1.5px solid var(--support-pink-soft);
+  border-radius: 50%;
+  box-shadow: 0 8px 22px rgba(91, 30, 140, 0.12);
+  transition:
+    color 260ms ease,
+    background 260ms ease,
+    border-color 260ms ease,
+    box-shadow 260ms ease,
+    transform 260ms ease;
+}
+
+.public-homepage .public-section--learn-together .public-support__scroll-btn:hover,
+.public-homepage .public-section--learn-together .public-support__scroll-btn:focus-visible {
+  color: #ffffff;
+  background: linear-gradient(135deg, var(--support-pink) 0%, var(--support-purple-mid) 100%);
+  border-color: transparent;
+  box-shadow: 0 12px 28px rgba(217, 70, 161, 0.32);
+  transform: translateY(-2px);
+}
+
 .public-homepage .public-section--learn-together .services-grid-wrapper {
   --services-scroll-gap: clamp(24px, 2.5vw, 32px);
 
@@ -192,29 +237,25 @@
   max-height: none;
   overflow-x: auto;
   overflow-y: hidden;
-  padding: 4px 12px 28px;
+  padding: 8px 12px 32px;
   scroll-behavior: smooth;
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(160, 70, 180, 0.35) transparent;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
   mask-image: linear-gradient(
     to right,
     transparent 0,
-    #000 36px,
-    #000 calc(100% - 36px),
+    #000 40px,
+    #000 calc(100% - 40px),
     transparent 100%
   );
 }
 
 .public-homepage .public-section--learn-together .services-grid-wrapper::-webkit-scrollbar {
-  height: 8px;
+  display: none;
+  height: 0;
   width: 0;
-}
-
-.public-homepage .public-section--learn-together .services-grid-wrapper::-webkit-scrollbar-thumb {
-  background: rgba(160, 70, 180, 0.35);
-  border-radius: 999px;
 }
 
 .public-homepage .public-section--learn-together .services-grid-wrapper .public-support__grid {
@@ -230,10 +271,256 @@
 
 .public-homepage .public-section--learn-together .services-grid-wrapper .public-support__card {
   flex: 0 0 auto;
-  width: clamp(260px, calc((100cqw - 2 * var(--services-scroll-gap)) / 3), 400px);
+  width: clamp(280px, calc((100cqw - 2 * var(--services-scroll-gap)) / 3), 400px);
   height: auto;
   min-height: 0;
+  border-radius: 30px;
   scroll-snap-align: start;
+}
+
+.public-homepage .public-section--learn-together .public-support__card:hover {
+  border-color: rgba(217, 70, 161, 0.5);
+  transform: translate3d(0, -12px, 0) scale(1.02);
+  box-shadow:
+    var(--support-card-shadow-hover),
+    0 0 0 1px rgba(217, 70, 161, 0.12),
+    0 0 40px rgba(217, 70, 161, 0.14);
+}
+
+/* Learn together — premium header */
+.public-homepage .public-section--learn-together .public-support__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-block-end: clamp(16px, 2.2vw, 22px);
+}
+
+.public-homepage .public-section--learn-together .public-support__eyebrow-line {
+  display: block;
+  width: clamp(36px, 5vw, 56px);
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, rgba(217, 70, 161, 0.55));
+}
+
+.public-homepage .public-section--learn-together .public-support__eyebrow-line:last-child {
+  background: linear-gradient(270deg, transparent, rgba(217, 70, 161, 0.55));
+}
+
+.public-homepage .public-section--learn-together .public-support__header h2.public-support__heading,
+.public-homepage .public-section--learn-together .public-support__heading {
+  background: linear-gradient(92deg, var(--support-pink) 0%, #e85aad 42%, var(--support-purple-mid) 72%, var(--support-purple) 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+.public-homepage .public-section--learn-together .public-support__title-accent {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-block: clamp(14px, 2vw, 20px) clamp(8px, 1.2vw, 12px);
+}
+
+.public-homepage .public-section--learn-together .public-support__title-line {
+  width: clamp(48px, 6vw, 72px);
+  height: 2px;
+  box-shadow: none;
+  background: linear-gradient(90deg, transparent, rgba(217, 70, 161, 0.45));
+}
+
+.public-homepage .public-section--learn-together .public-support__title-line:last-child {
+  background: linear-gradient(270deg, transparent, rgba(217, 70, 161, 0.45));
+}
+
+.public-homepage .public-section--learn-together .public-support__title-heart {
+  color: var(--support-pink);
+  font-size: 0.72rem;
+  line-height: 1;
+  filter: drop-shadow(0 2px 6px rgba(217, 70, 161, 0.35));
+}
+
+.public-homepage .public-section--learn-together .public-support__subtitle {
+  max-width: 36rem;
+  line-height: 1.85;
+}
+
+/* Organic leaf accents */
+.public-homepage .public-section--learn-together .public-support__leaf {
+  position: absolute;
+  width: clamp(80px, 10vw, 120px);
+  height: clamp(80px, 10vw, 120px);
+  opacity: 0.22;
+  pointer-events: none;
+}
+
+.public-homepage .public-section--learn-together .public-support__leaf--start {
+  inset-block-start: 14%;
+  inset-inline-start: 2%;
+  border-radius: 0 80% 0 80%;
+  background: radial-gradient(circle at 30% 30%, rgba(217, 70, 161, 0.35), transparent 68%);
+  transform: rotate(-18deg);
+}
+
+.public-homepage .public-section--learn-together .public-support__leaf--end {
+  inset-block-end: 10%;
+  inset-inline-end: 3%;
+  border-radius: 80% 0 80% 0;
+  background: radial-gradient(circle at 70% 30%, rgba(138, 45, 168, 0.28), transparent 68%);
+  transform: rotate(22deg);
+}
+
+/* Learn together card media + icon */
+.public-homepage .public-section--learn-together .public-support__media {
+  flex-basis: 252px;
+  height: 252px;
+  border-radius: 30px 30px 0 0;
+  background: #f3e8f8;
+}
+
+.public-homepage .public-section--learn-together .public-support__media-overlay {
+  background: linear-gradient(
+    180deg,
+    rgba(91, 30, 140, 0.06) 0%,
+    rgba(217, 70, 161, 0.2) 58%,
+    rgba(91, 30, 140, 0.34) 100%
+  );
+}
+
+.public-homepage .public-section--learn-together .public-support__card-icon {
+  inset-block-end: -28px;
+  inset-inline-end: auto;
+  left: 50%;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  border-width: 3px;
+  border-color: #ffffff;
+  transform: translateX(-50%);
+  box-shadow:
+    0 12px 32px rgba(91, 30, 140, 0.28),
+    0 0 20px rgba(217, 70, 161, 0.2);
+}
+
+.public-homepage .public-section--learn-together .public-support__card-icon svg {
+  width: 1.65rem;
+  height: 1.65rem;
+}
+
+.public-homepage .public-section--learn-together .public-support__card:hover .public-support__card-icon {
+  transform: translateX(-50%) translateY(-3px) scale(1.06);
+  box-shadow:
+    0 16px 38px rgba(91, 30, 140, 0.34),
+    0 0 28px rgba(217, 70, 161, 0.38);
+}
+
+.public-homepage .public-section--learn-together .public-support__body {
+  gap: 12px;
+  min-height: 0;
+  padding-block: 40px 32px;
+}
+
+.public-homepage .public-section--learn-together .public-support__body .public-support__title {
+  font-size: clamp(1.22rem, 1.35vw, 1.4rem);
+  line-height: 1.38;
+}
+
+.public-homepage .public-section--learn-together .public-support__card-divider {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
+  margin-block: 2px 4px;
+}
+
+.public-homepage .public-section--learn-together .public-support__card-divider-line {
+  display: block;
+  width: 36px;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, rgba(217, 70, 161, 0.5));
+}
+
+.public-homepage .public-section--learn-together .public-support__card-divider-line:last-child {
+  background: linear-gradient(270deg, transparent, rgba(217, 70, 161, 0.5));
+}
+
+.public-homepage .public-section--learn-together .public-support__card-divider-heart {
+  color: var(--support-pink);
+  font-size: 0.62rem;
+  line-height: 1;
+}
+
+.public-homepage .public-section--learn-together .public-support__excerpt {
+  max-width: 32ch;
+  font-size: 0.98rem;
+  line-height: 1.82;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+}
+
+.public-homepage .public-section--learn-together .public-support__more {
+  min-height: 46px;
+  padding-block: 12px;
+  padding-inline: 22px;
+  color: var(--support-purple);
+  font-size: 0.96rem;
+  font-weight: 800;
+  background: #ffffff;
+  border-color: rgba(217, 70, 161, 0.42);
+  box-shadow: 0 6px 18px rgba(91, 30, 140, 0.08);
+}
+
+.public-homepage .public-section--learn-together .public-support__more-icon {
+  width: 1.65rem;
+  height: 1.65rem;
+  color: var(--support-pink);
+  background: rgba(247, 214, 234, 0.55);
+  box-shadow: none;
+}
+
+.public-homepage .public-section--learn-together .public-support__more:hover,
+.public-homepage .public-section--learn-together .public-support__more:focus-visible {
+  transform: translateY(-3px);
+}
+
+.public-homepage .public-section--learn-together .public-support__more:hover .public-support__more-icon,
+.public-homepage .public-section--learn-together .public-support__more:focus-visible .public-support__more-icon {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.22);
+}
+
+@media (max-width: 900px) {
+  .public-homepage .public-section--learn-together .public-support__scroll-btn {
+    width: 38px;
+    height: 38px;
+    font-size: 1.25rem;
+  }
+}
+
+@media (max-width: 720px) {
+  .public-homepage .public-section--learn-together .public-support__carousel {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+
+  .public-homepage .public-section--learn-together .public-support__scroll-btn {
+    display: none;
+  }
+
+  .public-homepage .public-section--learn-together .services-grid-wrapper {
+    mask-image: linear-gradient(
+      to right,
+      transparent 0,
+      #000 20px,
+      #000 calc(100% - 20px),
+      transparent 100%
+    );
+  }
 }
 
 /* Card grid — default multi-row layout (other support sections) */
