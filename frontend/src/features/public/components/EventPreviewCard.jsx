@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { CalendarHeart, Heart, UsersRound } from 'lucide-react';
 import { getEventPreviewImageMeta } from '../constants/eventPreviewImages';
+import { usePublicLocale } from '../context/PublicLocaleContext';
 
 const EVENT_ICONS = [UsersRound, Heart, CalendarHeart];
 
@@ -23,6 +24,7 @@ function CardTitleDivider() {
 }
 
 export default function EventPreviewCard({ event, index = 0 }) {
+  const { t } = usePublicLocale();
   const title = event.title;
   const description = event.description || event.content;
   const imageMeta = useMemo(() => getEventPreviewImageMeta(event, index), [event, index]);
@@ -61,7 +63,7 @@ export default function EventPreviewCard({ event, index = 0 }) {
         </div>
 
         <a className="public-event-card__button" href="/login">
-          כניסה לפרטים
+          {t('eventDetails')}
         </a>
       </div>
     </article>

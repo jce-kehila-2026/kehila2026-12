@@ -8,20 +8,18 @@ import LoginRoundedIcon from '@mui/icons-material/LoginRounded';
 import SupportAreaCardImage from './SupportAreaCardImage';
 import { getCmsIconComponent } from './cmsIcons';
 import { getLearnTogetherCardImageMeta } from '../constants/supportAreaImages';
+import { usePublicLocale } from '../context/PublicLocaleContext';
 import '../styles/support-area-modal.css';
 
-const INFO_POINT_ICONS = {
-  'למי זה מתאים': PersonOutlineRoundedIcon,
-  'מה מקבלות': CardGiftcardRoundedIcon,
-  'איך מצטרפות': LoginRoundedIcon,
-};
+const INFO_POINT_ICONS = [PersonOutlineRoundedIcon, CardGiftcardRoundedIcon, LoginRoundedIcon];
 
-function getInfoPointIcon(label = '') {
-  return INFO_POINT_ICONS[label] || FavoriteBorderRoundedIcon;
+function getInfoPointIcon(index) {
+  return INFO_POINT_ICONS[index] || FavoriteBorderRoundedIcon;
 }
 
 export default function LearnTogetherCardModal({ card, isOpen, onClose }) {
   const titleId = useId();
+  const { direction, t } = usePublicLocale();
 
   useEffect(() => {
     if (!isOpen) {
@@ -75,7 +73,7 @@ export default function LearnTogetherCardModal({ card, isOpen, onClose }) {
           className="support-area-modal__close"
           type="button"
           onClick={onClose}
-          aria-label="סגירת חלון"
+          aria-label={t('closeModal')}
         >
           <CloseRoundedIcon fontSize="inherit" aria-hidden="true" />
         </button>
@@ -93,7 +91,7 @@ export default function LearnTogetherCardModal({ card, isOpen, onClose }) {
           </div>
         </div>
 
-        <div className="support-area-modal__body" dir="rtl">
+        <div className="support-area-modal__body" dir={direction}>
           <header className="support-area-modal__header">
             <span className="support-area-modal__title-icon" aria-hidden="true">
               <TitleIcon size={22} strokeWidth={1.5} />
@@ -106,11 +104,11 @@ export default function LearnTogetherCardModal({ card, isOpen, onClose }) {
 
           {sections.length ? (
             <ul className="support-area-modal__points">
-              {sections.map((section) => {
-                const PointIcon = getInfoPointIcon(section.label);
+              {sections.map((section, index) => {
+                const PointIcon = getInfoPointIcon(index);
 
                 return (
-                  <li className="support-area-modal__point" key={section.label}>
+                  <li className="support-area-modal__point" key={`${section.label}-${index}`}>
                     <span className="support-area-modal__point-icon" aria-hidden="true">
                       <PointIcon fontSize="inherit" />
                     </span>

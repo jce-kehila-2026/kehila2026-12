@@ -7,6 +7,8 @@ import LearnTogetherCardModal from './LearnTogetherCardModal';
 import PublicSectionHeading from './PublicSectionHeading';
 import SupportAreaCardImage from './SupportAreaCardImage';
 import { getLearnTogetherCardImageMeta } from '../constants/supportAreaImages';
+import { usePublicLocale } from '../context/PublicLocaleContext';
+import { localizeLearnTogether } from '../i18n/publicHomeContentLocalization';
 
 const CARD_ICONS = [UsersRound, Sparkles, CalendarHeart, MessageCircle, HandHeart, Heart];
 
@@ -79,17 +81,22 @@ function scrollCarouselByDirection(scroller, direction) {
 export default function LearnTogetherSection({ learnTogether }) {
   const scrollerRef = useRef(null);
   const [selectedCard, setSelectedCard] = useState(null);
-  const eyebrow = learnTogether?.eyebrow || 'מרחב של תמיכה והשראה';
-  const paragraph =
-    learnTogether?.paragraph ||
-    'כאן תמצאי מרחבים רכים של ליווי, חיבור וחיזוק — בדיוק במקום שבו את נמצאת בדרך.';
+  const { locale, t } = usePublicLocale();
+
+  const localizedLearnTogether = useMemo(
+    () => localizeLearnTogether(learnTogether, locale),
+    [learnTogether, locale],
+  );
+
+  const eyebrow = localizedLearnTogether?.eyebrow || t('learnTogetherTitle');
+  const paragraph = localizedLearnTogether?.paragraph || '';
   const cards = useMemo(
     () =>
-      (Array.isArray(learnTogether?.cards) ? learnTogether.cards : [])
+      (Array.isArray(localizedLearnTogether?.cards) ? localizedLearnTogether.cards : [])
         .slice()
         .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
         .map((card, index) => prepareLearnTogetherCard(card, index)),
-    [learnTogether?.cards],
+    [localizedLearnTogether?.cards],
   );
 
   const scrollCarousel = useCallback((direction) => {
@@ -128,7 +135,7 @@ export default function LearnTogetherSection({ learnTogether }) {
         <PublicSectionHeading
           className="public-support__heading-wrap"
           eyebrow={eyebrow}
-          title="השירותים והפעילויות שלנו"
+          title={localizedLearnTogether?.title || t('learnTogetherTitle')}
           titleId="public-support-title"
           subtitle={paragraph}
         />
@@ -138,7 +145,7 @@ export default function LearnTogetherSection({ learnTogether }) {
             <button
               type="button"
               className="public-support__scroll-btn public-support__scroll-btn--prev"
-              aria-label="גלילה לפעילות הבאה"
+              aria-label={t('scrollPrevActivity')}
               onClick={() => scrollCarousel('prev')}
             >
               <ChevronRightRoundedIcon fontSize="inherit" aria-hidden="true" />
@@ -176,7 +183,7 @@ export default function LearnTogetherSection({ learnTogether }) {
                             <span className="public-support__more-icon" aria-hidden="true">
                               <ArrowBackRoundedIcon fontSize="inherit" />
                             </span>
-                            <span className="public-support__more-label">למידע נוסף</span>
+                            <span className="public-support__more-label">{t('learnMore')}</span>
                           </button>
                         </div>
                       </div>
@@ -189,7 +196,7 @@ export default function LearnTogetherSection({ learnTogether }) {
             <button
               type="button"
               className="public-support__scroll-btn public-support__scroll-btn--next"
-              aria-label="גלילה לפעילות הקודמת"
+              aria-label={t('scrollNextActivity')}
               onClick={() => scrollCarousel('next')}
             >
               <ChevronLeftRoundedIcon fontSize="inherit" aria-hidden="true" />

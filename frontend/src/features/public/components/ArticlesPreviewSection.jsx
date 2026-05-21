@@ -5,6 +5,8 @@ import LoadingState from './LoadingState';
 import PublicSectionHeading from './PublicSectionHeading';
 import { FALLBACK_PRESS_ARTICLES } from '../constants/pressArticleImages';
 import { resolvePressArticleHref } from '../constants/pressArticles';
+import { usePublicLocale } from '../context/PublicLocaleContext';
+import { localizeArticles } from '../i18n/publicHomeContentLocalization';
 import '../styles/public-articles-section.css';
 
 function getVisibleArticles(articles, maxItems) {
@@ -29,14 +31,12 @@ export default function ArticlesPreviewSection({
   isLoading = false,
   hasError = false,
 }) {
+  const { locale, t } = usePublicLocale();
   const visibleArticles = getVisibleArticles(articles, maxItems);
   const displayArticles = useMemo(() => {
-    if (visibleArticles.length) {
-      return visibleArticles;
-    }
-
-    return FALLBACK_PRESS_ARTICLES.slice(0, maxItems);
-  }, [maxItems, visibleArticles]);
+    const source = visibleArticles.length ? visibleArticles : FALLBACK_PRESS_ARTICLES.slice(0, maxItems);
+    return localizeArticles(source, locale);
+  }, [locale, maxItems, visibleArticles]);
 
   return (
     <section
@@ -47,21 +47,21 @@ export default function ArticlesPreviewSection({
       <div className="press-articles__inner">
         <PublicSectionHeading
           className="press-articles__heading-wrap"
-          eyebrow="בתקשורת"
-          title="בואי תראי מה כתבו עלינו"
+          eyebrow={t('articlesEyebrow')}
+          title={t('articlesTitle')}
           titleId="press-articles-title"
-          subtitle="כתבות, סיקורים וסיפורים מהתקשורת על הקהילה, התמיכה והעשייה שלנו."
+          subtitle={t('articlesSubtitle')}
         />
 
         {isLoading ? (
           <div className="press-articles__state">
-            <LoadingState message="טוענות כתבות..." />
+            <LoadingState message={t('loadingArticles')} />
           </div>
         ) : displayArticles.length ? (
           <>
             {hasError ? (
               <p className="press-articles__notice" role="status">
-                לא ניתן לטעון את כל הכתבות. מציגות תוכן זמין.
+                {t('errorArticlesPartial')}
               </p>
             ) : null}
             <div className="press-articles__grid" role="list">
@@ -77,7 +77,7 @@ export default function ArticlesPreviewSection({
           </>
         ) : (
           <div className="press-articles__state">
-            <EmptyState message="כתבות יופיעו כאן כאשר התוכן הציבורי יהיה זמין." />
+            <EmptyState message={t('emptyArticles')} />
           </div>
         )}
       </div>

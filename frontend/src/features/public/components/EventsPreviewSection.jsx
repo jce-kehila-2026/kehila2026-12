@@ -1,8 +1,11 @@
+import { useMemo } from 'react';
 import EmptyState from './EmptyState';
 import ErrorState from './ErrorState';
 import EventPreviewCard from './EventPreviewCard';
 import LoadingState from './LoadingState';
 import PublicSectionHeading from './PublicSectionHeading';
+import { usePublicLocale } from '../context/PublicLocaleContext';
+import { localizeEvents } from '../i18n/publicHomeContentLocalization';
 import '../styles/public-events-section.css';
 
 function isUpcomingEvent(event) {
@@ -48,7 +51,11 @@ export default function EventsPreviewSection({
   isLoading = false,
   hasError = false,
 }) {
-  const publicUpcomingEvents = getPublicUpcomingEvents(events, maxItems);
+  const { locale, t } = usePublicLocale();
+  const publicUpcomingEvents = useMemo(() => {
+    const upcoming = getPublicUpcomingEvents(events, maxItems);
+    return localizeEvents(upcoming, locale);
+  }, [events, locale, maxItems]);
 
   return (
     <section
@@ -68,19 +75,19 @@ export default function EventsPreviewSection({
       <div className="public-events__inner">
         <PublicSectionHeading
           className="public-events__heading-wrap"
-          eyebrow="אירועים"
-          title="פעילויות קרובות"
+          eyebrow={t('eventsEyebrow')}
+          title={t('eventsTitle')}
           titleId="public-events-title"
-          subtitle="פעילויות תמיכה, סדנאות ומפגשי קהילה קרובים הפתוחים למשתתפות."
+          subtitle={t('eventsSubtitle')}
         />
 
         {isLoading ? (
           <div className="public-events__state">
-            <LoadingState message="טוענות פעילויות..." />
+            <LoadingState message={t('loadingEvents')} />
           </div>
         ) : hasError ? (
           <div className="public-events__state">
-            <ErrorState message="לא ניתן לטעון את הפעילויות. נסי שוב מאוחר יותר." />
+            <ErrorState message={t('errorEvents')} />
           </div>
         ) : publicUpcomingEvents.length ? (
           <div className="public-events-grid stagger-children">
@@ -90,7 +97,7 @@ export default function EventsPreviewSection({
           </div>
         ) : (
           <div className="public-events__state">
-            <EmptyState message="אין פעילויות ציבוריות זמינות כרגע." />
+            <EmptyState message={t('emptyEvents')} />
           </div>
         )}
       </div>
