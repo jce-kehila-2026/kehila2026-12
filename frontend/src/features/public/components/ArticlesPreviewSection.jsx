@@ -2,6 +2,7 @@ import { useMemo } from 'react';
 import ArticleCard from './ArticleCard';
 import EmptyState from './EmptyState';
 import LoadingState from './LoadingState';
+import PublicSectionHeading from './PublicSectionHeading';
 import { FALLBACK_PRESS_ARTICLES } from '../constants/pressArticleImages';
 import { resolvePressArticleHref } from '../constants/pressArticles';
 import '../styles/public-articles-section.css';
@@ -44,15 +45,13 @@ export default function ArticlesPreviewSection({
       aria-labelledby="press-articles-title"
     >
       <div className="press-articles__inner">
-        <header className="press-articles__header reveal">
-          <p className="press-articles__eyebrow">בתקשורת</p>
-          <h2 id="press-articles-title" className="press-articles__heading">
-            בואי תראי מה כתבו עלינו
-          </h2>
-          <p className="press-articles__subtitle reveal reveal-delay-1">
-            כתבות, סיקורים וסיפורים מהתקשורת על הקהילה, התמיכה והעשייה שלנו.
-          </p>
-        </header>
+        <PublicSectionHeading
+          className="press-articles__heading-wrap"
+          eyebrow="בתקשורת"
+          title="בואי תראי מה כתבו עלינו"
+          titleId="press-articles-title"
+          subtitle="כתבות, סיקורים וסיפורים מהתקשורת על הקהילה, התמיכה והעשייה שלנו."
+        />
 
         {isLoading ? (
           <div className="press-articles__state">
