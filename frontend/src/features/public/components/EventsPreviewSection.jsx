@@ -2,17 +2,8 @@ import EmptyState from './EmptyState';
 import ErrorState from './ErrorState';
 import EventPreviewCard from './EventPreviewCard';
 import LoadingState from './LoadingState';
+import PublicSectionHeading from './PublicSectionHeading';
 import '../styles/public-events-section.css';
-
-function EventsTitleAccent() {
-  return (
-    <div className="public-events__title-accent" aria-hidden="true">
-      <span className="public-events__title-line" />
-      <span className="public-events__title-heart">♥</span>
-      <span className="public-events__title-line" />
-    </div>
-  );
-}
 
 function isUpcomingEvent(event) {
   if (event.status === 'past' || event.status === 'completed') {
@@ -75,16 +66,13 @@ export default function EventsPreviewSection({
       </div>
 
       <div className="public-events__inner">
-        <header className="public-events__header reveal">
-          <p className="public-events__eyebrow">אירועים</p>
-          <h2 id="public-events-title" className="public-events__heading">
-            פעילויות קרובות
-          </h2>
-          <EventsTitleAccent />
-          <p className="public-events__subtitle reveal reveal-delay-1">
-            פעילויות תמיכה, סדנאות ומפגשי קהילה קרובים הפתוחים למשתתפות.
-          </p>
-        </header>
+        <PublicSectionHeading
+          className="public-events__heading-wrap"
+          eyebrow="אירועים"
+          title="פעילויות קרובות"
+          titleId="public-events-title"
+          subtitle="פעילויות תמיכה, סדנאות ומפגשי קהילה קרובים הפתוחים למשתתפות."
+        />
 
         {isLoading ? (
           <div className="public-events__state">
