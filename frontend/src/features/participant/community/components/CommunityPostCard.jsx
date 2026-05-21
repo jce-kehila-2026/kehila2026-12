@@ -3,13 +3,23 @@ import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlin
 import VolunteerActivismOutlinedIcon from '@mui/icons-material/VolunteerActivismOutlined';
 import CommentsPreview from './CommentsPreview';
 
-export default function CommunityPostCard({ onToggleLike, post }) {
+export default function CommunityPostCard({
+  commentText,
+  onCommentTextChange,
+  onSubmitComment,
+  onToggleLike,
+  post,
+}) {
   const likesCount = post.likesCount ?? post.likes ?? 0;
-  const commentsCount = Array.isArray(post.comments)
-    ? post.comments.length
-    : post.comments ?? 0;
-  const previewComments = post.previewComments ?? (Array.isArray(post.comments) ? post.comments : []);
+  const commentsCount = post.commentsCount ?? (
+    Array.isArray(post.comments) ? post.comments.length : post.comments ?? 0
+  );
+  const previewComments = Array.isArray(post.comments) ? post.comments : post.previewComments ?? [];
   const postBody = post.content ?? post.body;
+  const handleCommentSubmit = (event) => {
+    event.preventDefault();
+    onSubmitComment();
+  };
 
   return (
     <article className={`community-page-post community-page-post--${post.tone}`}>
@@ -48,6 +58,16 @@ export default function CommunityPostCard({ onToggleLike, post }) {
         </button>
       </footer>
       <CommentsPreview comments={previewComments} />
+      <form className="community-comment-form" onSubmit={handleCommentSubmit}>
+        <input
+          aria-label={`Add a comment to ${post.author}'s post`}
+          onChange={(event) => onCommentTextChange(event.target.value)}
+          placeholder="Write a comment..."
+          type="text"
+          value={commentText}
+        />
+        <button type="submit">Post</button>
+      </form>
     </article>
   );
 }

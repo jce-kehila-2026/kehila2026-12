@@ -24,6 +24,10 @@ const normalizeCommunityPosts = (posts) => posts.map((post, index) => ({
   id: post.id ?? `demo-post-${index + 1}`,
   likesCount: post.likesCount ?? post.likes ?? 0,
   isLiked: post.isLiked ?? false,
+  comments: Array.isArray(post.comments) ? post.comments : post.previewComments ?? [],
+  commentsCount: post.commentsCount ?? (
+    Array.isArray(post.comments) ? post.comments.length : post.comments ?? post.previewComments?.length ?? 0
+  ),
 }));
 
 export default function CommunityPage() {
@@ -34,6 +38,7 @@ export default function CommunityPage() {
   const [newPostText, setNewPostText] = useState('');
   const [postAnonymously, setPostAnonymously] = useState(false);
   const [postError, setPostError] = useState('');
+  const [commentInputs, setCommentInputs] = useState({});
 
   const handleGuidelinesContinue = () => {
     saveAcceptedGuidelinesVersion();
@@ -67,6 +72,7 @@ export default function CommunityPage() {
       isLiked: false,
       isAnonymous,
       comments: [],
+      commentsCount: 0,
       initials: isAnonymous ? 'AU' : 'CU',
       time: 'Just now',
       topic: 'Community share',
@@ -100,6 +106,50 @@ export default function CommunityPage() {
         likesCount: nextLikesCount,
         likes: nextLikesCount,
       };
+    }));
+  };
+
+  const handleCommentInputChange = (postId, value) => {
+    setCommentInputs((currentInputs) => ({
+      ...currentInputs,
+      [postId]: value,
+    }));
+  };
+
+  const handleSubmitComment = (postId) => {
+    const content = (commentInputs[postId] ?? '').trim();
+
+    if (!content) return;
+
+    const createdAt = new Date();
+    const newComment = {
+      id: typeof crypto !== 'undefined' && crypto.randomUUID
+        ? crypto.randomUUID()
+        : `community-comment-${createdAt.getTime()}`,
+      author: 'Current User',
+      content,
+      createdAt,
+      initials: 'CU',
+      time: 'Just now',
+      text: content,
+    };
+
+    setPosts((currentPosts) => currentPosts.map((post) => {
+      if (post.id !== postId) return post;
+
+      const currentComments = Array.isArray(post.comments) ? post.comments : [];
+      const nextComments = [newComment, ...currentComments];
+
+      return {
+        ...post,
+        comments: nextComments,
+        commentsCount: (post.commentsCount ?? currentComments.length) + 1,
+      };
+    }));
+
+    setCommentInputs((currentInputs) => ({
+      ...currentInputs,
+      [postId]: '',
     }));
   };
 
@@ -141,6 +191,9 @@ export default function CommunityPage() {
 
           {posts.map((post) => (
             <CommunityPostCard
+              commentText={commentInputs[post.id] ?? ''}
+              onCommentTextChange={(value) => handleCommentInputChange(post.id, value)}
+              onSubmitComment={() => handleSubmitComment(post.id)}
               onToggleLike={handleToggleLike}
               post={post}
               key={post.id}
