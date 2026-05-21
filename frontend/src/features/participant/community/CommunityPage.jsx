@@ -25,9 +25,6 @@ const normalizeCommunityPosts = (posts) => posts.map((post, index) => ({
   likesCount: post.likesCount ?? post.likes ?? 0,
   isLiked: post.isLiked ?? false,
   comments: Array.isArray(post.comments) ? post.comments : post.previewComments ?? [],
-  commentsCount: post.commentsCount ?? (
-    Array.isArray(post.comments) ? post.comments.length : post.comments ?? post.previewComments?.length ?? 0
-  ),
 }));
 
 export default function CommunityPage() {
@@ -39,6 +36,7 @@ export default function CommunityPage() {
   const [postAnonymously, setPostAnonymously] = useState(false);
   const [postError, setPostError] = useState('');
   const [commentInputs, setCommentInputs] = useState({});
+  const [expandedCommentPostIds, setExpandedCommentPostIds] = useState({});
 
   const handleGuidelinesContinue = () => {
     saveAcceptedGuidelinesVersion();
@@ -143,13 +141,19 @@ export default function CommunityPage() {
       return {
         ...post,
         comments: nextComments,
-        commentsCount: (post.commentsCount ?? currentComments.length) + 1,
       };
     }));
 
     setCommentInputs((currentInputs) => ({
       ...currentInputs,
       [postId]: '',
+    }));
+  };
+
+  const handleToggleCommentsExpanded = (postId) => {
+    setExpandedCommentPostIds((currentPostIds) => ({
+      ...currentPostIds,
+      [postId]: !currentPostIds[postId],
     }));
   };
 
@@ -192,8 +196,10 @@ export default function CommunityPage() {
           {posts.map((post) => (
             <CommunityPostCard
               commentText={commentInputs[post.id] ?? ''}
+              isCommentsExpanded={Boolean(expandedCommentPostIds[post.id])}
               onCommentTextChange={(value) => handleCommentInputChange(post.id, value)}
               onSubmitComment={() => handleSubmitComment(post.id)}
+              onToggleCommentsExpanded={() => handleToggleCommentsExpanded(post.id)}
               onToggleLike={handleToggleLike}
               post={post}
               key={post.id}

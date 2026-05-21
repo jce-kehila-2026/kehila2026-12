@@ -5,16 +5,16 @@ import CommentsPreview from './CommentsPreview';
 
 export default function CommunityPostCard({
   commentText,
+  isCommentsExpanded,
   onCommentTextChange,
   onSubmitComment,
+  onToggleCommentsExpanded,
   onToggleLike,
   post,
 }) {
   const likesCount = post.likesCount ?? post.likes ?? 0;
-  const commentsCount = post.commentsCount ?? (
-    Array.isArray(post.comments) ? post.comments.length : post.comments ?? 0
-  );
-  const previewComments = Array.isArray(post.comments) ? post.comments : post.previewComments ?? [];
+  const comments = Array.isArray(post.comments) ? post.comments : post.previewComments ?? [];
+  const commentsCount = comments.length;
   const postBody = post.content ?? post.body;
   const handleCommentSubmit = (event) => {
     event.preventDefault();
@@ -57,7 +57,11 @@ export default function CommunityPostCard({
           <span>{post.support}</span>
         </button>
       </footer>
-      <CommentsPreview comments={previewComments} />
+      <CommentsPreview
+        comments={comments}
+        isExpanded={isCommentsExpanded}
+        onToggleExpanded={onToggleCommentsExpanded}
+      />
       <form className="community-comment-form" onSubmit={handleCommentSubmit}>
         <input
           aria-label={`Add a comment to ${post.author}'s post`}

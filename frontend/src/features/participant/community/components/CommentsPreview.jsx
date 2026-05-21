@@ -1,5 +1,12 @@
-export default function CommentsPreview({ comments = [] }) {
-  const visibleComments = comments.slice(0, 2);
+const COMMENTS_PREVIEW_LIMIT = 2;
+
+export default function CommentsPreview({
+  comments = [],
+  isExpanded = false,
+  onToggleExpanded,
+}) {
+  const hasMoreComments = comments.length > COMMENTS_PREVIEW_LIMIT;
+  const visibleComments = isExpanded ? comments : comments.slice(0, COMMENTS_PREVIEW_LIMIT);
 
   if (visibleComments.length === 0) return null;
 
@@ -19,9 +26,11 @@ export default function CommentsPreview({ comments = [] }) {
           </article>
         ))}
       </div>
-      <button className="comments-preview__view-all" type="button">
-        View all comments
-      </button>
+      {hasMoreComments && (
+        <button className="comments-preview__view-all" onClick={onToggleExpanded} type="button">
+          {isExpanded ? 'Show less' : 'Show more comments'}
+        </button>
+      )}
     </section>
   );
 }
