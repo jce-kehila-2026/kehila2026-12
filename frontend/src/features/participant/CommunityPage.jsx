@@ -54,6 +54,21 @@ const communityResources = [
   'Community notes collected by the She-Na team',
 ];
 
+function CreatePostCard() {
+  return (
+    <section className="create-post-card" aria-label="Create a community post">
+      <div className="create-post-card__body">
+        <span className="create-post-card__avatar">ME</span>
+        <textarea placeholder="What’s on your mind today?" rows="3" />
+      </div>
+      <div className="create-post-card__footer">
+        <span>Share a thought with the She-Na community.</span>
+        <button type="button">Share Post</button>
+      </div>
+    </section>
+  );
+}
+
 function CommunityPostCard({ post }) {
   return (
     <article className={`community-page-post community-page-post--${post.tone}`}>
@@ -97,6 +112,8 @@ export default function CommunityPage() {
 
       <div className="community-page__layout">
         <main className="community-page__feed" aria-label="Community feed">
+          <CreatePostCard />
+
           <section className="community-page-card community-page-card--intro">
             <span className="community-page-card__icon">
               <LocalFloristOutlinedIcon />
