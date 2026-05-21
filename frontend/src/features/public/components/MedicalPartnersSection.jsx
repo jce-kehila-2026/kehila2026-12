@@ -2,12 +2,15 @@ import { useState } from 'react';
 import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
 import { MEDICAL_PARTNERS } from '../constants/medicalPartners';
 import MedicalPartnerModal from './MedicalPartnerModal';
+import PublicSectionHeading from './PublicSectionHeading';
 import '../styles/public-medical-partners-section.css';
 
-function TitleAccent() {
+function CardDivider() {
   return (
-    <div className="medical-partners__title-accent" aria-hidden="true">
-      <span className="medical-partners__title-line" />
+    <div className="medical-partners__card-divider" aria-hidden="true">
+      <span className="medical-partners__card-divider-line" />
+      <span className="medical-partners__card-divider-heart">♥</span>
+      <span className="medical-partners__card-divider-line" />
     </div>
   );
 }
@@ -43,17 +46,13 @@ export default function MedicalPartnersSection() {
       </div>
 
       <div className="medical-partners__inner">
-        <header className="medical-partners__header reveal">
-          <p className="medical-partners__eyebrow">המרכזים הרפואיים המלווים אותנו</p>
-          <h2 id="medical-partners-title" className="medical-partners__heading">
-            השותפים שלנו
-          </h2>
-          <TitleAccent />
-          <p className="medical-partners__subtitle reveal reveal-delay-1">
-            אנחנו גאות לשתף פעולה עם בתי חולים מובילים שמעניקים ליווי רפואי מקצועי, חמלה ותמיכה אישית לנשים
-            ולמשפחות — בכל שלב בדרך.
-          </p>
-        </header>
+        <PublicSectionHeading
+          className="medical-partners__heading-wrap"
+          eyebrow="המרכזים הרפואיים המלווים אותנו"
+          title="השותפים שלנו"
+          titleId="medical-partners-title"
+          subtitle="אנחנו גאות לשתף פעולה עם בתי חולים מובילים שמעניקים ליווי רפואי מקצועי, חמלה ותמיכה אישית לנשים ולמשפחות — בכל שלב בדרך."
+        />
 
         <div className="medical-partners__grid stagger-children">
           {MEDICAL_PARTNERS.map((partner) => (
@@ -72,7 +71,7 @@ export default function MedicalPartnersSection() {
                 />
               </div>
               <h3 className="medical-partners__name">{partner.name}</h3>
-              <span className="medical-partners__card-accent" aria-hidden="true" />
+              <CardDivider />
               <p className="medical-partners__excerpt">{partner.shortDescription}</p>
               <button type="button" className="medical-partners__more" onClick={handleOpenModal(partner)}>
                 <span className="medical-partners__more-label">לפרטים נוספים</span>

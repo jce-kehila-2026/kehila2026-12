@@ -101,50 +101,9 @@
   margin-inline: auto;
 }
 
-.public-homepage .public-section--medical-partners .medical-partners__header {
-  display: grid;
-  justify-items: center;
-  max-width: 760px;
-  margin-inline: auto;
-  text-align: center;
-}
-
-.public-homepage .public-section--medical-partners .medical-partners__eyebrow {
-  margin: 0 0 12px;
-  color: var(--mp-pink);
-  font-size: 0.95rem;
-  font-weight: 800;
-}
-
-.public-homepage .public-section--medical-partners .medical-partners__heading {
-  margin: 0;
-  color: var(--mp-purple);
-  font-size: clamp(2.2rem, 4.5vw, 3.25rem);
-  font-weight: 900;
-  line-height: 1.1;
-}
-
-.public-homepage .public-section--medical-partners .medical-partners__title-accent {
-  display: flex;
-  justify-content: center;
-  width: 100%;
-  margin-block: clamp(14px, 2vw, 18px) clamp(8px, 1vw, 12px);
-}
-
-.public-homepage .public-section--medical-partners .medical-partners__title-line {
-  display: block;
-  width: 88px;
-  height: 5px;
-  border-radius: 999px;
-  background: linear-gradient(90deg, var(--mp-pink) 0%, var(--mp-purple-mid) 100%);
-  box-shadow: 0 4px 14px rgba(217, 70, 161, 0.35);
-}
-
-.public-homepage .public-section--medical-partners .medical-partners__subtitle {
-  margin: 0;
+.public-homepage .public-section--medical-partners .medical-partners__heading-wrap .public-section-heading__subtitle {
   max-width: 40rem;
   color: var(--mp-muted);
-  font-size: clamp(0.98rem, 1.15vw, 1.08rem);
   font-weight: 500;
   line-height: 1.8;
 }
@@ -190,13 +149,31 @@
   line-height: 1.35;
 }
 
-.public-homepage .public-section--medical-partners .medical-partners__card-accent {
-  display: block;
-  width: 48px;
-  height: 4px;
+.public-homepage .public-section--medical-partners .medical-partners__card-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: min(100%, 112px);
   margin-block: 12px;
+}
+
+.public-homepage .public-section--medical-partners .medical-partners__card-divider-line {
+  flex: 1;
+  height: 1px;
   border-radius: 999px;
-  background: linear-gradient(90deg, var(--mp-pink) 0%, var(--mp-purple-mid) 100%);
+  background: linear-gradient(90deg, transparent, rgba(236, 60, 151, 0.35));
+}
+
+.public-homepage .public-section--medical-partners .medical-partners__card-divider-line:last-child {
+  background: linear-gradient(270deg, transparent, rgba(236, 60, 151, 0.35));
+}
+
+.public-homepage .public-section--medical-partners .medical-partners__card-divider-heart {
+  flex-shrink: 0;
+  color: #ec3c97;
+  font-size: 0.45rem;
+  line-height: 1;
 }
 
 .public-homepage .public-section--medical-partners .medical-partners__excerpt {
