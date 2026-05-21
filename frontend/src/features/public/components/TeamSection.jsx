@@ -1,5 +1,6 @@
 import { useRef } from 'react';
 import { TEAM_MEMBERS } from '../constants/teamMembers';
+import PublicSectionHeading from './PublicSectionHeading';
 import TeamSectionMemberCard from './TeamSectionMemberCard';
 import useInViewOnce from '../hooks/useInViewOnce';
 
@@ -19,15 +20,13 @@ export default function TeamSection() {
       aria-labelledby="public-team-section-title"
     >
       <div className="public-team-section__inner">
-        <header className="public-team-section__header">
-          <p className="public-team-section__pill reveal">הכוח שמאחורי הקהילה</p>
-          <h2 id="public-team-section-title" className="public-team-section__title reveal reveal-delay-1">
-            הכירו את הצוות שלנו
-          </h2>
-          <p className="public-team-section__subtitle reveal reveal-delay-2">
-            צוות מקצועי ומסור שמלווה נשים בדרך לצמיחה, תמיכה והחלמה.
-          </p>
-        </header>
+        <PublicSectionHeading
+          className="public-team-section__heading"
+          eyebrow="הכוח שמאחורי הקהילה"
+          title="הכירו את הצוות שלנו"
+          titleId="public-team-section-title"
+          subtitle="צוות מקצועי ומסור שמלווה נשים בדרך לצמיחה, תמיכה והחלמה."
+        />
 
         <div className="public-team-section__rows" ref={rowsRef}>
           <div className="public-team-section__row public-team-section__row--primary">

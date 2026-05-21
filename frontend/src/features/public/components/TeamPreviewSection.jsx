@@ -1,6 +1,7 @@
 import EmptyState from './EmptyState';
 import ErrorState from './ErrorState';
 import LoadingState from './LoadingState';
+import PublicSectionHeading from './PublicSectionHeading';
 import TeamMemberCard from './TeamMemberCard';
 
 function getVisibleTeamMembers(teamMembers, maxItems) {
@@ -30,13 +31,12 @@ export default function TeamPreviewSection({
 
   return (
     <section className="public-section public-section--team-preview" id="stories" aria-labelledby="public-team-title">
-      <div className="public-section__header public-section__header--team reveal">
-        <p className="public-eyebrow">קולות מהקהילה</p>
-        <h2 id="public-team-title">סיפורי השראה</h2>
-        <p className="public-section__text reveal reveal-delay-1">
-          סיפורים אמיתיים של נשים שמצאו תמיכה, כוח ותקווה במסע שלהן.
-        </p>
-      </div>
+      <PublicSectionHeading
+        eyebrow="קולות מהקהילה"
+        title="סיפורי השראה"
+        titleId="public-team-title"
+        subtitle="סיפורים אמיתיים של נשים שמצאו תמיכה, כוח ותקווה במסע שלהן."
+      />
 
       {isLoading ? (
         <LoadingState message="טוענות סיפורי השראה..." />
