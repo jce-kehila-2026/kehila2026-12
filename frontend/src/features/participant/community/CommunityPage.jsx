@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Diversity3OutlinedIcon from '@mui/icons-material/Diversity3Outlined';
 import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined';
 import LocalFloristOutlinedIcon from '@mui/icons-material/LocalFloristOutlined';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import MenuBookOutlinedIcon from '@mui/icons-material/MenuBookOutlined';
 import {
   communityPosts,
@@ -114,6 +115,7 @@ export default function CommunityPage({
   isPersonalDetailsLoading = false,
   onGoToSettings,
 }) {
+  const postInputRef = useRef(null);
   const [initialStreakState] = useState(getInitialStreakState);
   const [showGuidelinesModal, setShowGuidelinesModal] = useState(
     () => getAcceptedGuidelinesVersion() !== COMMUNITY_GUIDELINES_VERSION,
@@ -123,6 +125,7 @@ export default function CommunityPage({
   const [postAnonymously, setPostAnonymously] = useState(false);
   const [postError, setPostError] = useState('');
   const [postSuccessMessage, setPostSuccessMessage] = useState('');
+  const [anonymousShortcutMessage, setAnonymousShortcutMessage] = useState('');
   const [communityUserProfile, setCommunityUserProfile] = useState(getInitialCommunityUserProfile);
   const [communityPreferences, setCommunityPreferences] = useState(getInitialCommunityPreferences);
   const [profileSuccessMessage, setProfileSuccessMessage] = useState('');
@@ -208,6 +211,13 @@ export default function CommunityPage({
     setNewPostText(value);
     if (postError) setPostError('');
     if (postSuccessMessage) setPostSuccessMessage('');
+    if (anonymousShortcutMessage) setAnonymousShortcutMessage('');
+  };
+
+  const handleWriteAnonymously = () => {
+    setPostAnonymously(true);
+    setAnonymousShortcutMessage('Anonymous mode enabled.');
+    postInputRef.current?.focus();
   };
 
   const displayName = getExistingDisplayName(personalDetails);
@@ -322,6 +332,7 @@ export default function CommunityPage({
     setPostAnonymously(false);
     setPostError('');
     setPostSuccessMessage('Post published successfully.');
+    setAnonymousShortcutMessage('');
     registerCommunityActivity();
   };
 
@@ -570,9 +581,34 @@ export default function CommunityPage({
                 onAnonymousChange={setPostAnonymously}
                 onPostTextChange={handlePostTextChange}
                 onSubmit={handleCreatePost}
+                postInputRef={postInputRef}
                 postText={newPostText}
                 successMessage={postSuccessMessage}
               />
+
+              {allowAnonymousPosting && (
+                <section className="community-anonymous-promo" aria-labelledby="community-anonymous-promo-title">
+                  <span className="community-anonymous-promo__icon" aria-hidden="true">
+                    <LockOutlinedIcon />
+                  </span>
+                  <div className="community-anonymous-promo__copy">
+                    <h2 id="community-anonymous-promo-title">Share anonymously</h2>
+                    <p>Share what’s on your mind without showing your name or profile.</p>
+                    {anonymousShortcutMessage && (
+                      <span className="community-anonymous-promo__feedback" aria-live="polite">
+                        {anonymousShortcutMessage}
+                      </span>
+                    )}
+                  </div>
+                  <button
+                    aria-label="Write anonymously in the community composer"
+                    type="button"
+                    onClick={handleWriteAnonymously}
+                  >
+                    Write Anonymously
+                  </button>
+                </section>
+              )}
 
               <section className="community-page-card community-page-card--intro">
                 <span className="community-page-card__icon">

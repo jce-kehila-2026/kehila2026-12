@@ -17,6 +17,7 @@ export default function CreatePostCard({
   onAnonymousChange,
   onPostTextChange,
   onSubmit,
+  postInputRef,
   postText,
   successMessage = '',
 }) {
@@ -33,6 +34,7 @@ export default function CreatePostCard({
             aria-invalid={Boolean(error)}
             onChange={(event) => onPostTextChange(event.target.value)}
             placeholder="What’s on your mind today?"
+            ref={postInputRef}
             rows="2"
             value={postText}
           />

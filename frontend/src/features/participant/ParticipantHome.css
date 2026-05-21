@@ -1437,6 +1437,7 @@
 .community-page-card,
 .community-page-post,
 .create-post-card,
+.community-anonymous-promo,
 .birthday-card,
 .guidelines-card,
 .community-streak-card {
@@ -1629,6 +1630,79 @@
   padding: 0 20px;
   box-shadow: 0 12px 24px rgba(236, 22, 140, 0.18);
   white-space: nowrap;
+}
+
+.community-anonymous-promo {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 92% 14%, rgba(255, 255, 255, 0.78), transparent 8rem),
+    linear-gradient(135deg, #fff2f9, #f5ecff 64%, #fff);
+  padding: 18px;
+}
+
+.community-anonymous-promo__icon {
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.76);
+  color: #7b3fa1;
+  box-shadow: inset 0 0 0 1px rgba(123, 63, 161, 0.09);
+}
+
+.community-anonymous-promo__icon svg {
+  color: #ec168c;
+  font-size: 24px;
+}
+
+.community-anonymous-promo__copy {
+  min-width: 0;
+}
+
+.community-anonymous-promo h2,
+.community-anonymous-promo p {
+  margin: 0;
+}
+
+.community-anonymous-promo h2 {
+  color: #201033;
+  font-size: 1rem;
+  line-height: 1.25;
+}
+
+.community-anonymous-promo p {
+  margin-top: 5px;
+  color: rgba(32, 16, 51, 0.64);
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+.community-anonymous-promo__feedback {
+  display: inline-flex;
+  margin-top: 8px;
+  color: #287a3e;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.community-anonymous-promo button {
+  min-height: 38px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #7b3fa1, #ec168c);
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 800;
+  padding: 0 16px;
+  white-space: nowrap;
+  box-shadow: 0 12px 24px rgba(123, 63, 161, 0.16);
 }
 
 .community-page-card {
@@ -2597,6 +2671,7 @@
 .participant-home--dark .community-page-card,
 .participant-home--dark .community-page-post,
 .participant-home--dark .create-post-card,
+.participant-home--dark .community-anonymous-promo,
 .participant-home--dark .birthday-card,
 .participant-home--dark .guidelines-card,
 .participant-home--dark .community-streak-card {
@@ -2616,6 +2691,7 @@
 .participant-home--dark .community-page-post h3,
 .participant-home--dark .community-page-post strong,
 .participant-home--dark .community-circle-item strong,
+.participant-home--dark .community-anonymous-promo h2,
 .participant-home--dark .birthday-card h2,
 .participant-home--dark .guidelines-card h2,
 .participant-home--dark .community-streak-card strong,
@@ -2632,6 +2708,7 @@
 .participant-home--dark .community-page__header p,
 .participant-home--dark .community-page-card p,
 .participant-home--dark .community-page-post p,
+.participant-home--dark .community-anonymous-promo p,
 .participant-home--dark .create-post-card__footer span,
 .participant-home--dark .birthday-card p,
 .participant-home--dark .community-resource-list li,
@@ -2671,6 +2748,21 @@
 .participant-home--dark .create-post-card__helper {
   background: rgba(236, 72, 153, 0.12);
   color: #cbd5e1;
+}
+
+.participant-home--dark .community-anonymous-promo {
+  background:
+    radial-gradient(circle at 92% 14%, rgba(236, 72, 153, 0.16), transparent 8rem),
+    rgba(15, 23, 42, 0.92);
+}
+
+.participant-home--dark .community-anonymous-promo__icon {
+  background: rgba(236, 72, 153, 0.12);
+  color: #fbcfe8;
+}
+
+.participant-home--dark .community-anonymous-promo__feedback {
+  color: #86efac;
 }
 
 .participant-home--dark .community-page-post footer button {
@@ -2983,6 +3075,7 @@
   .community-page-card,
   .community-page-post,
   .create-post-card,
+  .community-anonymous-promo,
   .birthday-card,
   .guidelines-card,
   .community-streak-card,
@@ -3036,14 +3129,20 @@
   }
 
   .community-profile-setup__actions,
+  .community-anonymous-promo,
   .community-page-post__report-confirmation,
   .community-page-post__report-confirmation div {
     align-items: stretch;
     flex-direction: column;
   }
 
+  .community-anonymous-promo {
+    grid-template-columns: 1fr;
+  }
+
   .community-profile-setup__actions button,
   .community-profile-setup__action,
+  .community-anonymous-promo button,
   .community-page-post__report-confirmation button {
     width: 100%;
   }
@@ -3101,6 +3200,7 @@
   .community-page-card,
   .community-page-post,
   .create-post-card,
+  .community-anonymous-promo,
   .birthday-card,
   .guidelines-card,
   .community-streak-card,
