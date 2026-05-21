@@ -1220,7 +1220,8 @@
 
 .community-page {
   display: grid;
-  gap: 22px;
+  gap: 24px;
+  min-width: 0;
 }
 
 .community-guidelines-modal {
@@ -1354,16 +1355,16 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 20px;
+  gap: 24px;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.8);
-  border-radius: 28px;
+  border-radius: 30px;
   background:
     radial-gradient(circle at 84% 18%, rgba(255, 255, 255, 0.78), transparent 10rem),
     radial-gradient(circle at 18% 80%, rgba(236, 22, 140, 0.14), transparent 12rem),
     linear-gradient(135deg, #f4e7ff, #ffe8f5 56%, #fff8fc);
-  box-shadow: 0 24px 70px rgba(75, 19, 107, 0.1);
-  padding: 30px 34px;
+  box-shadow: 0 22px 58px rgba(75, 19, 107, 0.1);
+  padding: 32px 36px;
 }
 
 .community-page__header span {
@@ -1408,9 +1409,10 @@
 
 .community-page__layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(300px, 360px);
-  gap: 22px;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 340px);
+  gap: 24px;
   align-items: start;
+  min-width: 0;
 }
 
 .community-page__feed,
@@ -1418,7 +1420,8 @@
 .community-circle-list,
 .community-resource-list {
   display: grid;
-  gap: 16px;
+  gap: 18px;
+  min-width: 0;
 }
 
 .community-page-card,
@@ -1430,14 +1433,15 @@
   border: 1px solid rgba(123, 63, 161, 0.1);
   border-radius: 24px;
   background: rgba(255, 255, 255, 0.88);
-  box-shadow: 0 18px 48px rgba(75, 19, 107, 0.08);
+  box-shadow: 0 16px 42px rgba(75, 19, 107, 0.075);
   backdrop-filter: blur(18px);
+  min-width: 0;
 }
 
 .create-post-card {
   display: grid;
   gap: 16px;
-  padding: 20px;
+  padding: 22px;
 }
 
 .create-post-card__body {
@@ -1461,6 +1465,7 @@
 
 .create-post-card textarea {
   width: 100%;
+  box-sizing: border-box;
   min-height: 96px;
   resize: vertical;
   border: 1px solid rgba(123, 63, 161, 0.12);
@@ -1548,8 +1553,8 @@
 
 .guidelines-card {
   display: grid;
-  gap: 16px;
-  padding: 22px;
+  gap: 15px;
+  padding: 20px;
 }
 
 .guidelines-card__heading {
@@ -1593,7 +1598,7 @@
   border-radius: 14px;
   background: #fff8fc;
   color: rgba(32, 16, 51, 0.68);
-  font-size: 0.86rem;
+  font-size: 0.84rem;
   font-weight: 700;
   line-height: 1.4;
   padding: 10px 12px 10px 34px;
@@ -1630,7 +1635,7 @@
   background:
     radial-gradient(circle at 92% 16%, rgba(255, 255, 255, 0.88), transparent 7rem),
     linear-gradient(135deg, #fff6df, #fff8fc);
-  padding: 18px;
+  padding: 18px 20px;
 }
 
 .community-streak-card__icon {
@@ -1675,13 +1680,13 @@
 
 .birthday-card {
   display: grid;
-  gap: 16px;
+  gap: 15px;
   overflow: hidden;
   background:
     radial-gradient(circle at 94% 10%, rgba(255, 255, 255, 0.9), transparent 8rem),
     radial-gradient(circle at 8% 100%, rgba(236, 22, 140, 0.14), transparent 9rem),
     linear-gradient(135deg, #fff6df, #fff2f9 62%, #f4e7ff);
-  padding: 22px;
+  padding: 20px;
 }
 
 .birthday-card__header {
@@ -1770,6 +1775,7 @@
 
 .birthday-card__textarea {
   width: 100%;
+  box-sizing: border-box;
   min-height: 86px;
   resize: vertical;
   border: 1px solid rgba(123, 63, 161, 0.12);
@@ -1869,6 +1875,7 @@
   color: #201033;
   font-size: 1.05rem;
   line-height: 1.3;
+  overflow-wrap: anywhere;
 }
 
 .community-page-card p,
@@ -1877,10 +1884,11 @@
   color: rgba(32, 16, 51, 0.64);
   font-size: 0.92rem;
   line-height: 1.6;
+  overflow-wrap: anywhere;
 }
 
 .community-page-post {
-  padding: 22px;
+  padding: 22px 24px;
 }
 
 .community-page-post header,
@@ -1892,10 +1900,12 @@
 
 .community-page-post header {
   gap: 12px;
-  margin-bottom: 16px;
+  margin-bottom: 14px;
+  min-width: 0;
 }
 
 .community-page-post__avatar {
+  flex: 0 0 auto;
   width: 48px;
   height: 48px;
   display: grid;
@@ -1963,6 +1973,7 @@
   font-size: 0.82rem;
   font-weight: 800;
   padding: 0 13px;
+  max-width: 100%;
   transition: background 180ms ease, border-color 180ms ease, color 180ms ease, transform 180ms ease;
 }
 
@@ -1981,7 +1992,7 @@
 .comments-preview {
   display: grid;
   gap: 12px;
-  margin-top: 16px;
+  margin-top: 18px;
   border-top: 1px solid rgba(123, 63, 161, 0.1);
   padding-top: 16px;
 }
@@ -2041,6 +2052,7 @@
   color: rgba(32, 16, 51, 0.64);
   font-size: 0.82rem;
   line-height: 1.45;
+  overflow-wrap: anywhere;
 }
 
 .comments-preview__view-all {
@@ -2105,6 +2117,7 @@
   font-size: 0.88rem;
   line-height: 1.45;
   padding: 13px 14px 13px 36px;
+  overflow-wrap: anywhere;
 }
 
 .community-resource-list li::before {
@@ -2377,6 +2390,7 @@
 
   .community-page__rail {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: start;
   }
 }
 
@@ -2427,7 +2441,7 @@
   }
 
   .participant-main {
-    padding: 18px;
+    padding: 18px 14px 28px;
   }
 
   .participant-topbar {
@@ -2457,8 +2471,19 @@
     flex-direction: column;
   }
 
+  .community-page {
+    gap: 18px;
+  }
+
+  .community-page__layout,
+  .community-page__feed,
+  .community-page__rail {
+    gap: 14px;
+  }
+
   .community-page__header {
-    padding: 26px;
+    border-radius: 24px;
+    padding: 24px;
   }
 
   .community-page__header-icon {
@@ -2476,6 +2501,15 @@
     margin-left: 0;
   }
 
+  .community-page-card,
+  .community-page-post,
+  .create-post-card,
+  .birthday-card,
+  .guidelines-card {
+    border-radius: 20px;
+    padding: 18px;
+  }
+
   .create-post-card__body,
   .create-post-card__footer {
     align-items: stretch;
@@ -2488,6 +2522,26 @@
 
   .create-post-card__helper {
     margin-left: 0;
+  }
+
+  .birthday-card__messages button,
+  .birthday-card__custom,
+  .birthday-card__send {
+    width: 100%;
+  }
+
+  .community-page-post footer {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .community-page-post footer button {
+    justify-content: center;
+    width: 100%;
+  }
+
+  .comments-preview__item {
+    gap: 8px;
   }
 
   .schedule-item {

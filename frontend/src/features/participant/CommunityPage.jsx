@@ -417,6 +417,10 @@ export default function CommunityPage() {
         <aside className="community-page__rail" aria-label="Community sidebar">
           <BirthdayCelebrationCard />
 
+          <CommunityStreakCard />
+
+          <CommunityGuidelinesCard />
+
           <section className="community-page-card">
             <div className="community-page-card__heading">
               <span className="community-page-card__icon">
@@ -444,10 +448,6 @@ export default function CommunityPage() {
               })}
             </div>
           </section>
-
-          <CommunityGuidelinesCard />
-
-          <CommunityStreakCard />
 
           <section className="community-page-card community-page-card--soft">
             <div className="community-page-card__heading">
