@@ -3,7 +3,7 @@ import PublicNavbar from '../components/PublicNavbar';
 import HeroSection from '../components/HeroSection';
 import AboutSection from '../components/AboutSection';
 import StatisticsSection from '../components/StatisticsSection';
-import SupportAreasSection from '../components/SupportAreasSection';
+import LearnTogetherSection from '../components/LearnTogetherSection';
 import TeamPreviewSection from '../components/TeamPreviewSection';
 import ArticlesPreviewSection from '../components/ArticlesPreviewSection';
 import EventsPreviewSection from '../components/EventsPreviewSection';
@@ -106,8 +106,8 @@ export default function PublicHomePage() {
           <EmptyState message="תוכן דף הבית הציבורי עדיין לא זמין." />
         ) : null}
         <HeroSection hero={publicHomeDoc.hero} loading={loading} onJoinClick={() => setIsJoinModalOpen(true)} />
-        <AboutSection about={content.about} supportAreas={content.supportAreas} />
-        <SupportAreasSection supportAreas={content.supportAreas} isLoading={loading} />
+        <AboutSection aboutUs={publicHomeDoc.aboutUs} />
+        <LearnTogetherSection learnTogether={publicHomeDoc.learnTogether} />
         <StatisticsSection statistics={content.statistics} isLoading={loading} />
         <TeamPreviewSection teamMembers={content.teamMembers} isLoading={loading} />
         <ArticlesPreviewSection articles={content.articles} isLoading={loading} hasError={error} />

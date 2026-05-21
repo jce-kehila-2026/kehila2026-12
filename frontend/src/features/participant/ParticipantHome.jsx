@@ -25,6 +25,7 @@ import CalendarPage from '../calendar/CalendarPage';
 import { getCalendarData } from '../calendar/calendarService';
 import AppointmentPage from '../appointments/pages/AppointmentPage';
 import ProfilePage from '../profile/pages/ProfilePage';
+import CommunityPage from './community/CommunityPage';
 import WorkshopFeed from './WorkshopFeed';
 import { useAdmin } from '../admin/context/AdminContext';
 import { communityHighlights, moodOptions, recommendations, resourceGuides } from './dashboardMockData';
@@ -601,6 +602,8 @@ export default function ParticipantHome({ initialView = 'home' }) {
 
           {activeView === 'resources' && <ResourceLibrary />}
 
+          {activeView === 'community' && <CommunityPage />}
+
           {activeView === 'profile' && (
             <section className="participant-content participant-content--single">
               <div className="participant-panel participant-panel--wide">
@@ -609,7 +612,7 @@ export default function ParticipantHome({ initialView = 'home' }) {
             </section>
           )}
 
-          {!['home', 'calendar', 'workshops', 'appointments', 'resources', 'profile'].includes(activeView) && (
+          {!['home', 'calendar', 'workshops', 'appointments', 'resources', 'community', 'profile'].includes(activeView) && (
             <section className="participant-content participant-content--single">
               <div className="participant-panel participant-panel--wide participant-placeholder-view">
                 <MoodOutlinedIcon />

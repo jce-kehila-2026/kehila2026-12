@@ -1,6 +1,7 @@
 import { useRef } from 'react';
-import { CalendarHeart, Heart, MessageCircleHeart, UsersRound } from 'lucide-react';
 import useInViewOnce from '../hooks/useInViewOnce';
+import { DEFAULT_ABOUT_US, ABOUT_US_CARD_COUNT } from '../services/publicPagesService';
+import { getAboutUsIconComponent } from './cmsIcons';
 
 const ABOUT_ICON_PROPS = {
   className: 'public-about__icon-glyph',
@@ -8,33 +9,6 @@ const ABOUT_ICON_PROPS = {
   absoluteStrokeWidth: true,
   'aria-hidden': true,
 };
-
-const ABOUT_CARDS = [
-  {
-    id: 'emotional-support',
-    title: 'תמיכה רגשית',
-    description: 'ליווי אישי וקבוצתי במסע שלך עם הבנה ואמפתיה.',
-    Icon: Heart,
-  },
-  {
-    id: 'safe-community',
-    title: 'קהילה בטוחה',
-    description: 'מרחב תומך ומכיל לכל אישה בכל שלב במסע.',
-    Icon: UsersRound,
-  },
-  {
-    id: 'community-care',
-    title: 'תמיכה קהילתית',
-    description: 'חיבור בין נשים, אכפתיות וליווי חם במעגל תומך.',
-    Icon: MessageCircleHeart,
-  },
-  {
-    id: 'workshops',
-    title: 'סדנאות ואירועים',
-    description: 'פעילויות העשרה ומפגשים מעצימים לנפש ולגוף.',
-    Icon: CalendarHeart,
-  },
-];
 
 const CARD_STAGGER_MS = 90;
 
@@ -55,15 +29,26 @@ function AboutTitleDivider() {
   );
 }
 
-export default function AboutSection({ about = {}, supportAreas = [] }) {
+export default function AboutSection({ aboutUs }) {
   const cardsRef = useRef(null);
   const cardsInView = useInViewOnce(cardsRef, { threshold: 0.1, rootMargin: '0px 0px -5% 0px' });
-  const visibleSupportAreas = Array.isArray(supportAreas) ? supportAreas.filter(Boolean).slice(0, ABOUT_CARDS.length) : [];
-  const aboutTitle = about.title || 'מי אנחנו?';
-  const aboutText =
-    about.description ||
-    [about.intro, about.body].filter(Boolean).join(' ') ||
-    'שה-נא היא קהילה מקצועית וחמה לנשים המתמודדות עם אתגרי החיים. אנחנו מאמינות בכוחה של כל אישה לצמוח, להתחזק ולמצוא תקווה חדשה.';
+
+  const safeAboutUs = aboutUs && typeof aboutUs === 'object' ? aboutUs : DEFAULT_ABOUT_US;
+  const paragraph = safeAboutUs.paragraph || DEFAULT_ABOUT_US.paragraph;
+  const incomingCards = Array.isArray(safeAboutUs.cards) ? safeAboutUs.cards : [];
+  // Storage order in Firestore is the admin's natural left-to-right reading order
+  // (Card 1 first). The grid uses CSS direction: rtl from the layout, so we
+  // render in reverse to preserve the original right-to-left visual placement.
+  const cards = Array.from({ length: ABOUT_US_CARD_COUNT }, (_, displayIndex) => {
+    const storageIndex = ABOUT_US_CARD_COUNT - 1 - displayIndex;
+    const fallback = DEFAULT_ABOUT_US.cards[storageIndex];
+    const card = incomingCards[storageIndex] || {};
+    return {
+      iconKey: card.iconKey || fallback.iconKey,
+      title: card.title || fallback.title,
+      description: card.description || fallback.description,
+    };
+  });
 
   return (
     <section className="public-section public-section--about" id="about" aria-labelledby="public-about-title">
@@ -92,23 +77,19 @@ export default function AboutSection({ about = {}, supportAreas = [] }) {
       <div className="public-about__inner">
         <header className="public-about__header">
           <h2 id="public-about-title" className="public-about__title reveal">
-            {aboutTitle}
+            מי אנחנו
           </h2>
           <AboutTitleDivider />
-          <p className="public-about__subtitle reveal reveal-delay-1">{aboutText}</p>
+          <p className="public-about__subtitle reveal reveal-delay-1">{paragraph}</p>
         </header>
 
         <div className="public-about__cards" ref={cardsRef} aria-label="ערכי התמיכה המרכזיים">
-          {ABOUT_CARDS.map((card, index) => {
-            const matchingArea = visibleSupportAreas[index];
-            const Icon = card.Icon;
-            const title = matchingArea?.aboutTitle || card.title;
-            const description = matchingArea?.aboutDescription || card.description;
-
+          {cards.map((card, index) => {
+            const Icon = getAboutUsIconComponent(card.iconKey);
             return (
               <article
                 className={['public-about__card', 'reveal', cardsInView ? 'reveal-visible' : ''].filter(Boolean).join(' ')}
-                key={card.id}
+                key={`about-card-${index}`}
                 style={{ '--about-card-stagger': `${index * CARD_STAGGER_MS}ms` }}
               >
                 <span className="public-about__card-blob public-about__card-blob--start" aria-hidden="true" />
@@ -116,8 +97,8 @@ export default function AboutSection({ about = {}, supportAreas = [] }) {
                 <span className="public-about__icon" aria-hidden="true">
                   <Icon {...ABOUT_ICON_PROPS} />
                 </span>
-                <h3>{title}</h3>
-                <p className="public-about__card-text">{description}</p>
+                <h3>{card.title}</h3>
+                <p className="public-about__card-text">{card.description}</p>
               </article>
             );
           })}
