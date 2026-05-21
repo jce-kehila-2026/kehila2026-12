@@ -536,8 +536,8 @@ export default function CommunityPage({
         </span>
       </header>
 
-      <div className="community-page__layout">
-        <main className="community-page__feed" aria-label="Community feed">
+      <div className="community-page-shell">
+        <main className="community-main-feed" aria-label="Community feed">
           {isPersonalDetailsLoading && (
             <section className="community-profile-setup" aria-label="Loading community profile">
               <div className="community-profile-setup__heading">
@@ -613,7 +613,7 @@ export default function CommunityPage({
           )}
         </main>
 
-        <aside className="community-page__rail" aria-label="Community sidebar">
+        <aside className="community-right-sidebar" aria-label="Community sidebar">
           <BirthdayCard birthdayUsers={visibleBirthdayUsers} />
           {canUseCommunity && (
             <section className="community-page-card community-privacy-card">
