@@ -25,6 +25,7 @@ export default function CommunityPage() {
   );
   const [posts, setPosts] = useState(communityPosts);
   const [newPostText, setNewPostText] = useState('');
+  const [postAnonymously, setPostAnonymously] = useState(false);
   const [postError, setPostError] = useState('');
 
   const handleGuidelinesContinue = () => {
@@ -46,17 +47,20 @@ export default function CommunityPage() {
     }
 
     const createdAt = new Date();
+    const isAnonymous = postAnonymously;
+    const author = isAnonymous ? 'Anonymous User' : 'Current User';
     const newPost = {
       id: typeof crypto !== 'undefined' && crypto.randomUUID
         ? crypto.randomUUID()
         : `community-post-${createdAt.getTime()}`,
-      author: 'Current User',
+      author,
       content,
       createdAt,
       likesCount: 0,
       isLiked: false,
+      isAnonymous,
       comments: [],
-      initials: 'CU',
+      initials: isAnonymous ? 'AU' : 'CU',
       time: 'Just now',
       topic: 'Community share',
       title: 'New community post',
@@ -69,6 +73,7 @@ export default function CommunityPage() {
 
     setPosts((currentPosts) => [newPost, ...currentPosts]);
     setNewPostText('');
+    setPostAnonymously(false);
     setPostError('');
   };
 
@@ -90,7 +95,9 @@ export default function CommunityPage() {
       <div className="community-page__layout">
         <main className="community-page__feed" aria-label="Community feed">
           <CreatePostCard
+            isAnonymous={postAnonymously}
             error={postError}
+            onAnonymousChange={setPostAnonymously}
             onPostTextChange={handlePostTextChange}
             onSubmit={handleCreatePost}
             postText={newPostText}

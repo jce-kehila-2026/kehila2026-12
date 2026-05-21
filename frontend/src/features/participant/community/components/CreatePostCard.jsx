@@ -1,13 +1,11 @@
-import { useState } from 'react';
-
 export default function CreatePostCard({
   error = '',
+  isAnonymous,
+  onAnonymousChange,
   onPostTextChange,
   onSubmit,
   postText,
 }) {
-  const [postAnonymously, setPostAnonymously] = useState(false);
-
   return (
     <section className="create-post-card" aria-label="Create a community post">
       <div className="create-post-card__body">
@@ -29,12 +27,12 @@ export default function CreatePostCard({
       <label className="create-post-card__anonymous">
         <input
           type="checkbox"
-          checked={postAnonymously}
-          onChange={(event) => setPostAnonymously(event.target.checked)}
+          checked={isAnonymous}
+          onChange={(event) => onAnonymousChange(event.target.checked)}
         />
         <span>Post anonymously</span>
       </label>
-      {postAnonymously && (
+      {isAnonymous && (
         <p className="create-post-card__helper">
           Your post will appear as Anonymous Participant to other members.
         </p>
