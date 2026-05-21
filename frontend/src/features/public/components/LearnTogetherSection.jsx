@@ -4,6 +4,7 @@ import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded';
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
 import { CalendarHeart, HandHeart, Heart, MessageCircle, Sparkles, UsersRound } from 'lucide-react';
 import LearnTogetherCardModal from './LearnTogetherCardModal';
+import PublicSectionHeading from './PublicSectionHeading';
 import SupportAreaCardImage from './SupportAreaCardImage';
 import { getLearnTogetherCardImageMeta } from '../constants/supportAreaImages';
 
@@ -15,16 +16,6 @@ const ICON_PROPS = {
   absoluteStrokeWidth: true,
   'aria-hidden': true,
 };
-
-function SupportTitleAccent() {
-  return (
-    <div className="public-support__title-accent" aria-hidden="true">
-      <span className="public-support__title-line" />
-      <span className="public-support__title-heart">♥</span>
-      <span className="public-support__title-line" />
-    </div>
-  );
-}
 
 function CardTitleDivider() {
   return (
@@ -134,18 +125,13 @@ export default function LearnTogetherSection({ learnTogether }) {
       </div>
 
       <div className="public-support__inner">
-        <header className="public-support__header reveal">
-          <p className="public-support__eyebrow">
-            <span className="public-support__eyebrow-line" aria-hidden="true" />
-            <span>{eyebrow}</span>
-            <span className="public-support__eyebrow-line" aria-hidden="true" />
-          </p>
-          <h2 id="public-support-title" className="public-support__heading">
-            השירותים והפעילויות שלנו
-          </h2>
-          <SupportTitleAccent />
-          <p className="public-support__subtitle reveal reveal-delay-1">{paragraph}</p>
-        </header>
+        <PublicSectionHeading
+          className="public-support__heading-wrap"
+          eyebrow={eyebrow}
+          title="השירותים והפעילויות שלנו"
+          titleId="public-support-title"
+          subtitle={paragraph}
+        />
 
         {cards.length ? (
           <div className="public-support__carousel">

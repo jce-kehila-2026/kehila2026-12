@@ -151,7 +151,7 @@
   letter-spacing: 0.02em;
 }
 
-.public-homepage .public-section--support .public-support__heading {
+.public-homepage .public-section--support:not(.public-section--learn-together) .public-support__heading {
   margin: 0;
   color: var(--support-purple);
   font-size: clamp(2.35rem, 4.8vw, 3.5rem);
@@ -287,65 +287,11 @@
     0 0 40px rgba(217, 70, 161, 0.14);
 }
 
-/* Learn together — premium header */
-.public-homepage .public-section--learn-together .public-support__eyebrow {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 14px;
-  margin-block-end: clamp(16px, 2.2vw, 22px);
-}
-
-.public-homepage .public-section--learn-together .public-support__eyebrow-line {
-  display: block;
-  width: clamp(36px, 5vw, 56px);
-  height: 2px;
-  border-radius: 999px;
-  background: linear-gradient(90deg, transparent, rgba(217, 70, 161, 0.55));
-}
-
-.public-homepage .public-section--learn-together .public-support__eyebrow-line:last-child {
-  background: linear-gradient(270deg, transparent, rgba(217, 70, 161, 0.55));
-}
-
-.public-homepage .public-section--learn-together .public-support__header h2.public-support__heading,
-.public-homepage .public-section--learn-together .public-support__heading {
-  background: linear-gradient(92deg, var(--support-pink) 0%, #e85aad 42%, var(--support-purple-mid) 72%, var(--support-purple) 100%);
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
-  -webkit-text-fill-color: transparent;
-}
-
-.public-homepage .public-section--learn-together .public-support__title-accent {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  margin-block: clamp(14px, 2vw, 20px) clamp(8px, 1.2vw, 12px);
-}
-
-.public-homepage .public-section--learn-together .public-support__title-line {
-  width: clamp(48px, 6vw, 72px);
-  height: 2px;
-  box-shadow: none;
-  background: linear-gradient(90deg, transparent, rgba(217, 70, 161, 0.45));
-}
-
-.public-homepage .public-section--learn-together .public-support__title-line:last-child {
-  background: linear-gradient(270deg, transparent, rgba(217, 70, 161, 0.45));
-}
-
-.public-homepage .public-section--learn-together .public-support__title-heart {
-  color: var(--support-pink);
-  font-size: 0.72rem;
-  line-height: 1;
-  filter: drop-shadow(0 2px 6px rgba(217, 70, 161, 0.35));
-}
-
-.public-homepage .public-section--learn-together .public-support__subtitle {
-  max-width: 36rem;
-  line-height: 1.85;
+/* Learn together — shared premium heading */
+.public-homepage .public-section--learn-together .public-support__heading-wrap .public-section-heading__subtitle {
+  color: var(--support-muted);
+  font-weight: 500;
+  line-height: 1.8;
 }
 
 /* Organic leaf accents */
