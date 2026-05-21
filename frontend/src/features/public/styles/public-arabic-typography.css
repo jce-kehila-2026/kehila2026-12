@@ -71,7 +71,16 @@
   padding-block-start: 0.1em;
   line-height: 1.28;
   letter-spacing: 0;
+  font-weight: 700;
   overflow: visible;
+}
+
+.public-homepage[lang="ar"] .public-hero__lead {
+  font-weight: 600;
+}
+
+.public-homepage[lang="ar"] .public-hero__btn {
+  font-weight: 700;
 }
 
 .public-homepage[lang="ar"] .public-support-cta__heading .public-section-heading__title {

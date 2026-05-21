@@ -20,7 +20,7 @@
 @import "./public-arabic-typography.css";
 
 .public-homepage :where(.public-hero h1) {
-  font-weight: 900;
+  font-weight: 700;
   color: #ffffff;
 }
 
