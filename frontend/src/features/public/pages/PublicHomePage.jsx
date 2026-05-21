@@ -21,10 +21,12 @@ import useRevealOnScroll from '../hooks/useRevealOnScroll';
 import usePublicHomeScrollReset from '../hooks/usePublicHomeScrollReset';
 import { getFallbackPublicHomepageContent, getPublicHomepageContent } from '../services/publicContentService';
 import { getPublicHomeDoc, getDefaultPublicHomeDoc } from '../services/publicPagesService';
+import { PublicLocaleProvider, usePublicLocale } from '../context/PublicLocaleContext';
 import '../styles/PublicHomePage.css';
 
-export default function PublicHomePage() {
+function PublicHomePageContent() {
   const pageRef = useRef(null);
+  const { direction, lang, t } = usePublicLocale();
   const [content, setContent] = useState(() => getFallbackPublicHomepageContent());
   const [publicHomeDoc, setPublicHomeDoc] = useState(() => getDefaultPublicHomeDoc());
   const [loading, setLoading] = useState(true);
@@ -40,6 +42,7 @@ export default function PublicHomePage() {
       content.teamMembers?.length || 0,
       content.articles?.length || 0,
       content.events?.length || 0,
+      publicHomeDoc.learnTogether?.cards?.length || 0,
     ].join(':'),
     [
       content.articles?.length,
@@ -48,6 +51,7 @@ export default function PublicHomePage() {
       content.supportAreas?.length,
       content.teamMembers?.length,
       loading,
+      publicHomeDoc.learnTogether?.cards?.length,
     ],
   );
 
@@ -89,9 +93,9 @@ export default function PublicHomePage() {
   }, []);
 
   return (
-    <div className="public-homepage" ref={pageRef}>
+    <div className="public-homepage" ref={pageRef} dir={direction} lang={lang}>
       <a className="public-skip-link" href="#public-main">
-        דילוג לתוכן המרכזי
+        {t('skipToContent')}
       </a>
       <PublicNavbar
         organization={content.organization}
@@ -100,10 +104,10 @@ export default function PublicHomePage() {
       />
       <main id="public-main">
         {error ? (
-          <ErrorState message="חלק מהתוכן הציבורי לא נטען. מציגות את המידע הזמין." />
+          <ErrorState message={t('errorPartialContent')} />
         ) : null}
         {!loading && !content ? (
-          <EmptyState message="תוכן דף הבית הציבורי עדיין לא זמין." />
+          <EmptyState message={t('emptyHomepage')} />
         ) : null}
         <HeroSection hero={publicHomeDoc.hero} loading={loading} onJoinClick={() => setIsJoinModalOpen(true)} />
         <AboutSection aboutUs={publicHomeDoc.aboutUs} />
@@ -122,5 +126,13 @@ export default function PublicHomePage() {
       <VolunteerModal isOpen={isVolunteerModalOpen} onClose={() => setIsVolunteerModalOpen(false)} />
       <DonationModal isOpen={isDonationModalOpen} onClose={() => setIsDonationModalOpen(false)} />
     </div>
+  );
+}
+
+export default function PublicHomePage() {
+  return (
+    <PublicLocaleProvider>
+      <PublicHomePageContent />
+    </PublicLocaleProvider>
   );
 }

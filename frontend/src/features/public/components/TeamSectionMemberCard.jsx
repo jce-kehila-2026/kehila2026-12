@@ -1,5 +1,6 @@
 import { useEffect, useId, useRef, useState } from 'react';
 import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
+import { usePublicLocale } from '../context/PublicLocaleContext';
 
 function getPhotoSrc(member, useFallback) {
   if (useFallback && member.fallbackPhoto) {
@@ -16,6 +17,7 @@ export default function TeamSectionMemberCard({
   staggerMs = 100,
 }) {
   const popoverId = useId();
+  const { t } = usePublicLocale();
   const emailControlRef = useRef(null);
   const copyResetRef = useRef(null);
   const [photoSrc, setPhotoSrc] = useState(() => getPhotoSrc(member, false));
@@ -128,7 +130,7 @@ export default function TeamSectionMemberCard({
         <button
           type="button"
           className="public-team-section__email-trigger"
-          aria-label={`הצגת כתובת אימייל של ${member.name}`}
+          aria-label={`${t('showEmailFor')} ${member.name}`}
           aria-expanded={emailOpen}
           aria-controls={popoverId}
           onClick={toggleEmailPopover}
@@ -139,7 +141,7 @@ export default function TeamSectionMemberCard({
         <div
           id={popoverId}
           role="dialog"
-          aria-label={`אימייל של ${member.name}`}
+          aria-label={`${t('emailOf')} ${member.name}`}
           aria-hidden={!emailOpen}
           className={[
             'public-team-section__email-popover',
@@ -149,9 +151,6 @@ export default function TeamSectionMemberCard({
             .join(' ')}
         >
           <div className="public-team-section__email-popover-inner">
-            <a className="public-team-section__email-value" href={`mailto:${member.email}`} title={member.email}>
-              {member.email}
-            </a>
             <button
               type="button"
               className={[
@@ -162,8 +161,13 @@ export default function TeamSectionMemberCard({
                 .join(' ')}
               onClick={handleCopyEmail}
             >
-              {copied ? 'הועתק!' : 'העתקת אימייל'}
+              {copied ? t('copiedEmail') : t('copyEmail')}
             </button>
+            <div className="public-team-section__email-field">
+              <a className="public-team-section__email-value" href={`mailto:${member.email}`} title={member.email}>
+                {member.email}
+              </a>
+            </div>
           </div>
         </div>
       </div>

@@ -25,6 +25,14 @@
   scroll-padding-top: calc(var(--public-navbar-offset) + 12px);
 }
 
+.public-homepage[dir='ltr'] {
+  direction: ltr;
+}
+
+.public-homepage[dir='rtl'] {
+  direction: rtl;
+}
+
 .public-homepage *,
 .public-homepage *::before,
 .public-homepage *::after {
@@ -225,6 +233,17 @@
   justify-content: flex-start;
   gap: 10px;
   white-space: nowrap;
+}
+
+.public-navbar__actions-end {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+.public-homepage[dir='rtl'] .public-navbar__actions-end {
+  flex-direction: row-reverse;
 }
 
 .public-navbar__cta {

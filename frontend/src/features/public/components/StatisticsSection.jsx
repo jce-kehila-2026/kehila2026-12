@@ -5,6 +5,8 @@ import ErrorState from './ErrorState';
 import LoadingState from './LoadingState';
 import AnimatedCounter from './AnimatedCounter';
 import useInViewOnce from '../hooks/useInViewOnce';
+import { usePublicLocale } from '../context/PublicLocaleContext';
+import { localizeStatistics } from '../i18n/publicHomeContentLocalization';
 
 const STATISTIC_ICON_PROPS = {
   className: 'public-statistics__icon-glyph',
@@ -33,7 +35,9 @@ function StatisticsDivider({ modifier = '' }) {
 }
 
 export default function StatisticsSection({ statistics = [], isLoading = false, hasError = false }) {
-  const hasStatistics = statistics.length > 0;
+  const { locale, t } = usePublicLocale();
+  const localizedStatistics = localizeStatistics(statistics, locale);
+  const hasStatistics = localizedStatistics.length > 0;
   const sectionRef = useRef(null);
   const countersInView = useInViewOnce(sectionRef);
 
@@ -60,7 +64,7 @@ export default function StatisticsSection({ statistics = [], isLoading = false, 
             <span className="public-statistics__eyebrow-heart" aria-hidden="true">
               ♥
             </span>
-            יחד יוצרות שינוי
+            <span className="public-statistics__eyebrow-text">{t('statsEyebrow')}</span>
             <span className="public-statistics__eyebrow-heart" aria-hidden="true">
               ♥
             </span>
@@ -68,37 +72,35 @@ export default function StatisticsSection({ statistics = [], isLoading = false, 
           </p>
 
           <h2 id="public-statistics-title" className="public-statistics__title">
-            ההשפעה שלנו
+            {t('statsTitle')}
           </h2>
 
           <StatisticsDivider modifier="public-statistics__divider--title" />
 
-          <p className="public-statistics__subtitle reveal reveal-delay-1">
-            ביחד אנחנו יוצרות קהילה חזקה ותומכת משנה חיים.
-          </p>
+          <p className="public-statistics__subtitle reveal reveal-delay-1">{t('statsSubtitle')}</p>
         </header>
 
         {isLoading ? (
-          <LoadingState message="טוענות נתוני השפעה..." />
+          <LoadingState message={t('loadingStats')} />
         ) : hasError ? (
-          <ErrorState message="לא ניתן לטעון את נתוני ההשפעה. מציגות תוכן זמין אחר." />
+          <ErrorState message={t('errorStats')} />
         ) : hasStatistics ? (
           <div className="public-statistics__cards-wrap">
-            <StatisticsGrid statistics={statistics} countersInView={countersInView} />
+            <StatisticsGrid statistics={localizedStatistics} countersInView={countersInView} ariaLabel={t('statsAriaLabel')} />
           </div>
         ) : (
-          <EmptyState message="נתוני ההשפעה יופיעו כאן כאשר התוכן הציבורי יהיה זמין." />
+          <EmptyState message={t('emptyStats')} />
         )}
       </div>
     </section>
   );
 }
 
-function StatisticsGrid({ statistics, countersInView }) {
+function StatisticsGrid({ statistics, countersInView, ariaLabel }) {
   return (
     <div
       className={`public-statistics__grid${countersInView ? ' public-statistics__grid--in-view' : ''}`}
-      aria-label="נתוני השפעה"
+      aria-label={ariaLabel}
     >
       {statistics.map((statistic, index) => {
         const Icon = STATISTIC_ICONS[statistic.id] || BookOpen;

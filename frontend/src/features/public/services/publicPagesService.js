@@ -55,7 +55,7 @@ export const DEFAULT_ABOUT_US = {
 
 export const DEFAULT_LEARN_TOGETHER = {
   eyebrow: 'מרחב של תמיכה והשראה',
-  title: 'מקום של תמיכה, תקווה וקהילה',
+  title: 'השירותים והפעילויות שלנו',
   paragraph:
     'כאן תמצאי מרחבים רכים של ליווי, חיבור וחיזוק — בדיוק במקום שבו את נמצאת בדרך.',
   cards: [

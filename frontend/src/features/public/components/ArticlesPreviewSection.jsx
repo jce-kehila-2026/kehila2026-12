@@ -2,8 +2,11 @@ import { useMemo } from 'react';
 import ArticleCard from './ArticleCard';
 import EmptyState from './EmptyState';
 import LoadingState from './LoadingState';
+import PublicSectionHeading from './PublicSectionHeading';
 import { FALLBACK_PRESS_ARTICLES } from '../constants/pressArticleImages';
 import { resolvePressArticleHref } from '../constants/pressArticles';
+import { usePublicLocale } from '../context/PublicLocaleContext';
+import { localizeArticles } from '../i18n/publicHomeContentLocalization';
 import '../styles/public-articles-section.css';
 
 function getVisibleArticles(articles, maxItems) {
@@ -28,14 +31,12 @@ export default function ArticlesPreviewSection({
   isLoading = false,
   hasError = false,
 }) {
+  const { locale, t } = usePublicLocale();
   const visibleArticles = getVisibleArticles(articles, maxItems);
   const displayArticles = useMemo(() => {
-    if (visibleArticles.length) {
-      return visibleArticles;
-    }
-
-    return FALLBACK_PRESS_ARTICLES.slice(0, maxItems);
-  }, [maxItems, visibleArticles]);
+    const source = visibleArticles.length ? visibleArticles : FALLBACK_PRESS_ARTICLES.slice(0, maxItems);
+    return localizeArticles(source, locale);
+  }, [locale, maxItems, visibleArticles]);
 
   return (
     <section
@@ -44,25 +45,23 @@ export default function ArticlesPreviewSection({
       aria-labelledby="press-articles-title"
     >
       <div className="press-articles__inner">
-        <header className="press-articles__header reveal">
-          <p className="press-articles__eyebrow">בתקשורת</p>
-          <h2 id="press-articles-title" className="press-articles__heading">
-            בואי תראי מה כתבו עלינו
-          </h2>
-          <p className="press-articles__subtitle reveal reveal-delay-1">
-            כתבות, סיקורים וסיפורים מהתקשורת על הקהילה, התמיכה והעשייה שלנו.
-          </p>
-        </header>
+        <PublicSectionHeading
+          className="press-articles__heading-wrap"
+          eyebrow={t('articlesEyebrow')}
+          title={t('articlesTitle')}
+          titleId="press-articles-title"
+          subtitle={t('articlesSubtitle')}
+        />
 
         {isLoading ? (
           <div className="press-articles__state">
-            <LoadingState message="טוענות כתבות..." />
+            <LoadingState message={t('loadingArticles')} />
           </div>
         ) : displayArticles.length ? (
           <>
             {hasError ? (
               <p className="press-articles__notice" role="status">
-                לא ניתן לטעון את כל הכתבות. מציגות תוכן זמין.
+                {t('errorArticlesPartial')}
               </p>
             ) : null}
             <div className="press-articles__grid" role="list">
@@ -78,7 +77,7 @@ export default function ArticlesPreviewSection({
           </>
         ) : (
           <div className="press-articles__state">
-            <EmptyState message="כתבות יופיעו כאן כאשר התוכן הציבורי יהיה זמין." />
+            <EmptyState message={t('emptyArticles')} />
           </div>
         )}
       </div>

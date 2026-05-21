@@ -11,10 +11,9 @@ import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
 import ScheduleOutlinedIcon from '@mui/icons-material/ScheduleOutlined';
 import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined';
 import FavoriteBorderRoundedIcon from '@mui/icons-material/FavoriteBorderRounded';
+import { usePublicLocale } from '../context/PublicLocaleContext';
 import '../styles/medical-partner-logo.css';
 import '../styles/medical-partner-modal.css';
-
-const DEFAULT_HERO_QUOTE = 'שותפות רפואית שמלווה בחמלה, במקצועיות ובביטחון.';
 
 const SERVICE_ICONS = {
   medical: LocalHospitalOutlinedIcon,
@@ -26,6 +25,7 @@ const SERVICE_ICONS = {
 
 export default function MedicalPartnerModal({ partner, isOpen, onClose }) {
   const titleId = useId();
+  const { direction, t } = usePublicLocale();
 
   useEffect(() => {
     if (!isOpen) {
@@ -68,7 +68,7 @@ export default function MedicalPartnerModal({ partner, isOpen, onClose }) {
         aria-labelledby={titleId}
         onMouseDown={(event) => event.stopPropagation()}
       >
-        <button className="medical-partner-modal__close" type="button" onClick={onClose} aria-label="סגירת חלון">
+        <button className="medical-partner-modal__close" type="button" onClick={onClose} aria-label={t('closeModal')}>
           <CloseRoundedIcon fontSize="inherit" aria-hidden="true" />
         </button>
 
@@ -77,24 +77,24 @@ export default function MedicalPartnerModal({ partner, isOpen, onClose }) {
             <img
               className="medical-partner-modal__hero"
               src={partner.heroImage}
-              alt={partner.heroAlt || `סביבה רפואית מזמינה — ${partner.name}`}
+              alt={partner.heroAlt || `${t('medicalHeroAlt')} — ${partner.name}`}
               loading="lazy"
               decoding="async"
             />
           </div>
           <div className="medical-partner-modal__media-overlay" aria-hidden="true">
-            <p className="medical-partner-modal__quote">{partner.heroQuote || DEFAULT_HERO_QUOTE}</p>
+            <p className="medical-partner-modal__quote">{partner.heroQuote || t('defaultMedicalQuote')}</p>
             <FavoriteBorderRoundedIcon className="medical-partner-modal__quote-icon" fontSize="small" />
           </div>
         </div>
 
-        <div className="medical-partner-modal__body" dir="rtl">
+        <div className="medical-partner-modal__body" dir={direction}>
           <header className="medical-partner-modal__header">
             <div className="medical-partner-logo-wrap medical-partner-logo-wrap--modal">
               <img
                 className="medical-partner-logo"
                 src={partner.logoSrc}
-                alt={`לוגו ${partner.name}`}
+                alt={`${t('medicalLogoAlt')} ${partner.name}`}
                 loading="lazy"
                 decoding="async"
               />
@@ -104,7 +104,7 @@ export default function MedicalPartnerModal({ partner, isOpen, onClose }) {
           </header>
 
           {partner.services?.length ? (
-            <ul className="medical-partner-modal__services" aria-label="שירותי תמיכה">
+            <ul className="medical-partner-modal__services" aria-label={t('medicalServicesAria')}>
               {partner.services.map((service) => {
                 const Icon = SERVICE_ICONS[service.icon] || LocalHospitalOutlinedIcon;
 

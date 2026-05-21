@@ -1,5 +1,6 @@
 @import "./public-layout.css";
 @import "./public-hero-section.css";
+@import "./public-section-heading.css";
 @import "./public-sections.css";
 @import "./public-cards.css";
 @import "./join-modal.css";
@@ -8,20 +9,31 @@
 @import "./public-statistics-section.css";
 @import "./public-support-cta.css";
 @import "./public-team-section.css";
+@import "./public-language-switcher.css";
 @import "./medical-partner-modal.css";
 @import "./public-contact-section.css";
 @import "./public-responsive.css";
 @import "./public-support-section.css";
 @import "./public-medical-partners-section.css";
 @import "./public-articles-section.css";
+@import "./public-events-section.css";
+@import "./public-arabic-typography.css";
 
 .public-homepage :where(.public-hero h1) {
   font-weight: 900;
   color: #ffffff;
 }
 
-.public-homepage :where(.public-section__header h2, .public-donation h2, .public-support-cta__title, .public-team-section__title, .public-about__title, .public-contact__title, .medical-partners__heading, .press-articles__heading, .public-card h3, .public-footer h2) {
+.public-homepage :where(.public-section__header h2, .public-donation h2, .press-articles__heading, .public-card h3, .public-footer h2) {
   font-weight: 900;
+}
+
+/* Unified premium section titles — same typography as eyebrow labels */
+.public-homepage .public-section--about .public-about__title,
+.public-homepage .public-section-heading__title {
+  font-family: inherit;
+  font-weight: 600;
+  letter-spacing: 0.03em;
 }
 
 .public-homepage :where(.public-button, .public-navbar__cta, .public-eyebrow) {
@@ -38,4 +50,111 @@
 
 .public-homepage :where(small, time, .public-article-card__meta) {
   font-weight: 300;
+}
+
+/* —— Shared homepage card grids (responsive) —— */
+.public-homepage {
+  --public-grid-gap: clamp(20px, 2.4vw, 28px);
+  --public-grid-max: 1280px;
+  --public-grid-min: 280px;
+}
+
+.public-homepage :is(
+  .public-about__cards,
+  .public-statistics__grid,
+  .medical-partners__grid,
+  .press-articles__grid,
+  .public-team-grid,
+  .public-articles-grid,
+  .public-events-grid,
+  .public-section--events .public-events-grid,
+  .public-section--support .public-support__grid
+) {
+  display: grid;
+  gap: var(--public-grid-gap);
+  width: min(100%, var(--public-grid-max));
+  max-width: 100%;
+  margin-inline: auto;
+  justify-items: stretch;
+  align-items: stretch;
+}
+
+.public-homepage :is(
+  .public-about__cards,
+  .public-statistics__grid,
+  .medical-partners__grid,
+  .press-articles__grid
+) {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.public-homepage :is(
+  .public-team-grid,
+  .public-articles-grid,
+  .public-events-grid,
+  .public-section--events .public-events-grid,
+  .public-section--support .public-support__grid
+) {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.public-homepage :is(
+  .public-about__card,
+  .public-statistics__card,
+  .medical-partners__card,
+  .press-article-card,
+  .public-team-section__card,
+  .public-team-card,
+  .public-article-card,
+  .public-event-card,
+  .public-section--support .public-support__card
+) {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.public-homepage :is(
+  .public-article-card__media img,
+  .public-event-card__media img,
+  .public-section--events .public-event-card__image,
+  .press-article-card__media img,
+  .public-support__media img,
+  .public-team-card__media img
+) {
+  display: block;
+  width: 100%;
+  object-fit: cover;
+}
+
+@media (max-width: 1024px) {
+  .public-homepage :is(
+    .public-about__cards,
+    .public-statistics__grid,
+    .medical-partners__grid,
+    .press-articles__grid,
+    .public-team-grid,
+    .public-articles-grid,
+    .public-events-grid,
+    .public-section--events .public-events-grid,
+    .public-section--support .public-support__grid
+  ) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .public-homepage :is(
+    .public-about__cards,
+    .public-statistics__grid,
+    .medical-partners__grid,
+    .press-articles__grid,
+    .public-team-grid,
+    .public-articles-grid,
+    .public-events-grid,
+    .public-section--events .public-events-grid,
+    .public-section--support .public-support__grid
+  ) {
+    grid-template-columns: minmax(0, 1fr);
+    gap: clamp(18px, 4vw, 22px);
+  }
 }

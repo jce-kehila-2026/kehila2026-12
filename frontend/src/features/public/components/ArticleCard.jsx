@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { getPressArticleImageSources } from '../constants/pressArticleImages';
+import { usePublicLocale } from '../context/PublicLocaleContext';
 
 function toImageSrc(value) {
   if (typeof value === 'string' && value.trim()) {
@@ -14,6 +15,7 @@ function toImageSrc(value) {
 }
 
 export default function ArticleCard({ article, readMoreUrl, imageIndex = 0 }) {
+  const { t } = usePublicLocale();
   const { title, description, content, imageAlt } = article || {};
   const summary = description || content;
   const href = readMoreUrl || '#';
@@ -53,7 +55,7 @@ export default function ArticleCard({ article, readMoreUrl, imageIndex = 0 }) {
           target="_blank"
           rel="noopener noreferrer"
         >
-          לקריאה נוספת
+          {t('readMore')}
         </a>
       </div>
     </article>

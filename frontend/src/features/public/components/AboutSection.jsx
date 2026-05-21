@@ -1,5 +1,7 @@
-import { useRef } from 'react';
+import { useMemo, useRef } from 'react';
 import useInViewOnce from '../hooks/useInViewOnce';
+import { usePublicLocale } from '../context/PublicLocaleContext';
+import { localizeAboutUs } from '../i18n/publicHomeContentLocalization';
 import { DEFAULT_ABOUT_US, ABOUT_US_CARD_COUNT } from '../services/publicPagesService';
 import { getAboutUsIconComponent } from './cmsIcons';
 
@@ -12,19 +14,12 @@ const ABOUT_ICON_PROPS = {
 
 const CARD_STAGGER_MS = 90;
 
-function AboutTitleDivider() {
+function AboutHeaderDivider() {
   return (
-    <div className="public-about__title-divider" aria-hidden="true">
-      <span className="public-about__title-divider-line" />
-      <span className="public-about__title-divider-heart">
-        <svg viewBox="0 0 24 24" width="16" height="16" focusable="false">
-          <path
-            d="M12 20.25s-7.5-4.35-7.5-10.5C4.5 7.5 7.5 4.5 12 7.5c4.5-3 7.5 0 7.5 2.25 0 6.15-7.5 10.5-7.5 10.5z"
-            fill="currentColor"
-          />
-        </svg>
-      </span>
-      <span className="public-about__title-divider-line public-about__title-divider-line--end" />
+    <div className="public-about__divider public-about__divider--title" aria-hidden="true">
+      <span className="public-about__divider-line" />
+      <span className="public-about__divider-heart">♥</span>
+      <span className="public-about__divider-line" />
     </div>
   );
 }
@@ -32,13 +27,15 @@ function AboutTitleDivider() {
 export default function AboutSection({ aboutUs }) {
   const cardsRef = useRef(null);
   const cardsInView = useInViewOnce(cardsRef, { threshold: 0.1, rootMargin: '0px 0px -5% 0px' });
+  const { locale, t } = usePublicLocale();
 
-  const safeAboutUs = aboutUs && typeof aboutUs === 'object' ? aboutUs : DEFAULT_ABOUT_US;
+  const safeAboutUs = useMemo(() => {
+    const source = aboutUs && typeof aboutUs === 'object' ? aboutUs : DEFAULT_ABOUT_US;
+    return localizeAboutUs(source, locale);
+  }, [aboutUs, locale]);
+
   const paragraph = safeAboutUs.paragraph || DEFAULT_ABOUT_US.paragraph;
   const incomingCards = Array.isArray(safeAboutUs.cards) ? safeAboutUs.cards : [];
-  // Storage order in Firestore is the admin's natural left-to-right reading order
-  // (Card 1 first). The grid uses CSS direction: rtl from the layout, so we
-  // render in reverse to preserve the original right-to-left visual placement.
   const cards = Array.from({ length: ABOUT_US_CARD_COUNT }, (_, displayIndex) => {
     const storageIndex = ABOUT_US_CARD_COUNT - 1 - displayIndex;
     const fallback = DEFAULT_ABOUT_US.cards[storageIndex];
@@ -75,15 +72,29 @@ export default function AboutSection({ aboutUs }) {
       </div>
 
       <div className="public-about__inner">
-        <header className="public-about__header">
-          <h2 id="public-about-title" className="public-about__title reveal">
-            מי אנחנו
+        <header className="public-about__header reveal">
+          <p className="public-about__eyebrow">
+            <span className="public-about__eyebrow-line" aria-hidden="true" />
+            <span className="public-about__eyebrow-heart" aria-hidden="true">
+              ♥
+            </span>
+            <span className="public-about__eyebrow-text">{t('aboutEyebrow')}</span>
+            <span className="public-about__eyebrow-heart" aria-hidden="true">
+              ♥
+            </span>
+            <span className="public-about__eyebrow-line" aria-hidden="true" />
+          </p>
+
+          <h2 id="public-about-title" className="public-about__title">
+            {t('aboutTitle')}
           </h2>
-          <AboutTitleDivider />
+
+          <AboutHeaderDivider />
+
           <p className="public-about__subtitle reveal reveal-delay-1">{paragraph}</p>
         </header>
 
-        <div className="public-about__cards" ref={cardsRef} aria-label="ערכי התמיכה המרכזיים">
+        <div className="public-about__cards" ref={cardsRef} aria-label={t('aboutCardsAriaLabel')}>
           {cards.map((card, index) => {
             const Icon = getAboutUsIconComponent(card.iconKey);
             return (

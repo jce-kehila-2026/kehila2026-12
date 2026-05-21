@@ -1,19 +1,4 @@
-@media (max-width: 1180px) {
-  .public-about__cards,
-  .public-statistics__grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .public-team-grid,
-  .public-articles-grid,
-  .public-events-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .public-footer__main {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
+/* Global homepage responsive — card grids unified in PublicHomePage.css */
 
 @media (max-width: 1120px) {
   .public-homepage {
@@ -87,9 +72,25 @@
 
   .public-navbar__actions {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
     gap: 10px;
     width: 100%;
+    align-items: center;
+  }
+
+  .public-navbar__actions-end {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    width: auto;
+    min-width: 0;
+  }
+
+  .public-navbar__actions-end .public-navbar__cta {
+    width: auto;
+    min-width: 108px;
+    flex: 1 1 auto;
   }
 
   .public-navbar__cta {
@@ -103,7 +104,6 @@
   .public-section__header {
     max-width: 100%;
   }
-
 }
 
 @media (max-width: 720px) {
@@ -119,6 +119,19 @@
     grid-template-columns: 1fr;
   }
 
+  .public-navbar__actions-end {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .public-navbar__actions-end .public-navbar__cta {
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 0;
+  }
+
   .public-navbar__links a {
     justify-content: center;
     white-space: normal;
@@ -129,7 +142,7 @@
     min-height: 58px;
   }
 
-  .public-section:not(.public-section--statistics):not(.public-section--donation-cta):not(.public-section--team-section):not(.public-section--about):not(.public-section--support):not(.public-section--medical-partners):not(.public-section--press-articles) {
+  .public-section:not(.public-section--statistics):not(.public-section--donation-cta):not(.public-section--team-section):not(.public-section--about):not(.public-section--support):not(.public-section--medical-partners):not(.public-section--press-articles):not(.public-section--events):not(.public-contact) {
     padding-block: 58px;
     padding-inline: 18px;
   }
@@ -145,24 +158,6 @@
   .public-section__header h2,
   .public-donation h2 {
     font-size: clamp(2.2rem, 11vw, 3rem);
-  }
-
-  .public-about__cards,
-  .public-statistics__grid,
-  .public-team-grid,
-  .public-articles-grid,
-  .public-events-grid,
-  .public-footer__main {
-    grid-template-columns: 1fr;
-  }
-
-  .public-about__cards,
-  .public-statistics__grid,
-  .public-team-grid,
-  .public-articles-grid,
-  .public-events-grid {
-    gap: 18px;
-    margin-block-start: 34px;
   }
 
   .public-statistics__card,
@@ -201,6 +196,10 @@
     padding-inline: 18px;
   }
 
+  .public-footer__main {
+    grid-template-columns: 1fr;
+  }
+
   .public-footer__bottom {
     align-items: flex-start;
     flex-direction: column;
@@ -215,5 +214,4 @@
   .public-section__text {
     font-size: 1rem;
   }
-
 }

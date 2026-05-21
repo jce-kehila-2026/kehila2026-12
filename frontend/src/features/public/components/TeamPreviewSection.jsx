@@ -1,7 +1,11 @@
+import { useMemo } from 'react';
 import EmptyState from './EmptyState';
 import ErrorState from './ErrorState';
 import LoadingState from './LoadingState';
+import PublicSectionHeading from './PublicSectionHeading';
 import TeamMemberCard from './TeamMemberCard';
+import { usePublicLocale } from '../context/PublicLocaleContext';
+import { localizeTeamStories } from '../i18n/publicHomeContentLocalization';
 
 function getVisibleTeamMembers(teamMembers, maxItems) {
   return (Array.isArray(teamMembers) ? teamMembers : [])
@@ -26,22 +30,25 @@ export default function TeamPreviewSection({
   isLoading = false,
   hasError = false,
 }) {
-  const visibleTeamMembers = getVisibleTeamMembers(teamMembers, maxItems);
+  const { locale, t } = usePublicLocale();
+  const visibleTeamMembers = useMemo(() => {
+    const visible = getVisibleTeamMembers(teamMembers, maxItems);
+    return localizeTeamStories(visible, locale);
+  }, [locale, maxItems, teamMembers]);
 
   return (
     <section className="public-section public-section--team-preview" id="stories" aria-labelledby="public-team-title">
-      <div className="public-section__header public-section__header--team reveal">
-        <p className="public-eyebrow">קולות מהקהילה</p>
-        <h2 id="public-team-title">סיפורי השראה</h2>
-        <p className="public-section__text reveal reveal-delay-1">
-          סיפורים אמיתיים של נשים שמצאו תמיכה, כוח ותקווה במסע שלהן.
-        </p>
-      </div>
+      <PublicSectionHeading
+        eyebrow={t('storiesEyebrow')}
+        title={t('storiesTitle')}
+        titleId="public-team-title"
+        subtitle={t('storiesSubtitle')}
+      />
 
       {isLoading ? (
-        <LoadingState message="טוענות סיפורי השראה..." />
+        <LoadingState message={t('loadingStories')} />
       ) : hasError ? (
-        <ErrorState message="לא ניתן לטעון את סיפורי ההשראה. נסי שוב מאוחר יותר." />
+        <ErrorState message={t('errorStories')} />
       ) : visibleTeamMembers.length ? (
         <div className="public-team-grid stagger-children">
           {visibleTeamMembers.map((member) => (
@@ -49,7 +56,7 @@ export default function TeamPreviewSection({
           ))}
         </div>
       ) : (
-        <EmptyState message="סיפורי ההשראה יופיעו כאן כאשר התוכן הציבורי יהיה זמין." />
+        <EmptyState message={t('emptyStories')} />
       )}
     </section>
   );

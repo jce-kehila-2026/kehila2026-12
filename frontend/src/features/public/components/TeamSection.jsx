@@ -1,7 +1,10 @@
-import { useRef } from 'react';
+import { useMemo, useRef } from 'react';
 import { TEAM_MEMBERS } from '../constants/teamMembers';
+import PublicSectionHeading from './PublicSectionHeading';
 import TeamSectionMemberCard from './TeamSectionMemberCard';
 import useInViewOnce from '../hooks/useInViewOnce';
+import { usePublicLocale } from '../context/PublicLocaleContext';
+import { localizeTeamStaff } from '../i18n/publicHomeContentLocalization';
 
 const PRIMARY_ROW_COUNT = 4;
 const TEAM_CARD_STAGGER_MS = 100;
@@ -9,8 +12,10 @@ const TEAM_CARD_STAGGER_MS = 100;
 export default function TeamSection() {
   const rowsRef = useRef(null);
   const cardsInView = useInViewOnce(rowsRef, { threshold: 0.12, rootMargin: '0px 0px -4% 0px' });
-  const primaryRow = TEAM_MEMBERS.slice(0, PRIMARY_ROW_COUNT);
-  const secondaryRow = TEAM_MEMBERS.slice(PRIMARY_ROW_COUNT);
+  const { locale, t } = usePublicLocale();
+  const localizedMembers = useMemo(() => localizeTeamStaff(TEAM_MEMBERS, locale), [locale]);
+  const primaryRow = localizedMembers.slice(0, PRIMARY_ROW_COUNT);
+  const secondaryRow = localizedMembers.slice(PRIMARY_ROW_COUNT);
 
   return (
     <section
@@ -19,15 +24,13 @@ export default function TeamSection() {
       aria-labelledby="public-team-section-title"
     >
       <div className="public-team-section__inner">
-        <header className="public-team-section__header">
-          <p className="public-team-section__pill reveal">הכוח שמאחורי הקהילה</p>
-          <h2 id="public-team-section-title" className="public-team-section__title reveal reveal-delay-1">
-            הכירו את הצוות שלנו
-          </h2>
-          <p className="public-team-section__subtitle reveal reveal-delay-2">
-            צוות מקצועי ומסור שמלווה נשים בדרך לצמיחה, תמיכה והחלמה.
-          </p>
-        </header>
+        <PublicSectionHeading
+          className="public-team-section__heading"
+          eyebrow={t('teamEyebrow')}
+          title={t('teamTitle')}
+          titleId="public-team-section-title"
+          subtitle={t('teamSubtitle')}
+        />
 
         <div className="public-team-section__rows" ref={rowsRef}>
           <div className="public-team-section__row public-team-section__row--primary">

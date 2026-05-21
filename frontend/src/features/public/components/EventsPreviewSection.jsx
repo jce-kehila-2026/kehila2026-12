@@ -1,7 +1,13 @@
+import { useMemo } from 'react';
 import EmptyState from './EmptyState';
 import ErrorState from './ErrorState';
 import EventPreviewCard from './EventPreviewCard';
 import LoadingState from './LoadingState';
+import PublicSectionHeading from './PublicSectionHeading';
+import { usePublicLocale } from '../context/PublicLocaleContext';
+import { localizeEvents } from '../i18n/publicHomeContentLocalization';
+import '../styles/public-events-section.css';
+
 function isUpcomingEvent(event) {
   if (event.status === 'past' || event.status === 'completed') {
     return false;
@@ -45,31 +51,56 @@ export default function EventsPreviewSection({
   isLoading = false,
   hasError = false,
 }) {
-  const publicUpcomingEvents = getPublicUpcomingEvents(events, maxItems);
+  const { locale, t } = usePublicLocale();
+  const publicUpcomingEvents = useMemo(() => {
+    const upcoming = getPublicUpcomingEvents(events, maxItems);
+    return localizeEvents(upcoming, locale);
+  }, [events, locale, maxItems]);
 
   return (
-    <section className="public-section public-section--events public-section--muted" id="events" aria-labelledby="public-events-title">
-      <div className="public-section__header public-section__header--events reveal">
-        <p className="public-eyebrow">אירועים</p>
-        <h2 id="public-events-title">פעילויות קרובות</h2>
-        <p className="public-section__text reveal reveal-delay-1">
-          פעילויות תמיכה, סדנאות ומפגשי קהילה קרובים הפתוחים למשתתפות.
-        </p>
+    <section
+      className="public-section public-section--events"
+      id="events"
+      aria-labelledby="public-events-title"
+    >
+      <div className="public-events__decor" aria-hidden="true">
+        <span className="public-events__dots public-events__dots--mesh" />
+        <span className="public-events__blob public-events__blob--pink" />
+        <span className="public-events__blob public-events__blob--lavender" />
+        <span className="public-events__blob public-events__blob--purple" />
+        <span className="public-events__dots public-events__dots--one" />
+        <span className="public-events__dots public-events__dots--two" />
       </div>
 
-      {isLoading ? (
-        <LoadingState message="טוענות פעילויות..." />
-      ) : hasError ? (
-        <ErrorState message="לא ניתן לטעון את הפעילויות. נסי שוב מאוחר יותר." />
-      ) : publicUpcomingEvents.length ? (
-        <div className="public-events-grid stagger-children">
-          {publicUpcomingEvents.map((event) => (
-            <EventPreviewCard event={event} key={event.id || event.title} />
-          ))}
-        </div>
-      ) : (
-        <EmptyState message="אין פעילויות ציבוריות זמינות כרגע." />
-      )}
+      <div className="public-events__inner">
+        <PublicSectionHeading
+          className="public-events__heading-wrap"
+          eyebrow={t('eventsEyebrow')}
+          title={t('eventsTitle')}
+          titleId="public-events-title"
+          subtitle={t('eventsSubtitle')}
+        />
+
+        {isLoading ? (
+          <div className="public-events__state">
+            <LoadingState message={t('loadingEvents')} />
+          </div>
+        ) : hasError ? (
+          <div className="public-events__state">
+            <ErrorState message={t('errorEvents')} />
+          </div>
+        ) : publicUpcomingEvents.length ? (
+          <div className="public-events-grid stagger-children">
+            {publicUpcomingEvents.map((event, index) => (
+              <EventPreviewCard event={event} index={index} key={event.id || event.title} />
+            ))}
+          </div>
+        ) : (
+          <div className="public-events__state">
+            <EmptyState message={t('emptyEvents')} />
+          </div>
+        )}
+      </div>
     </section>
   );
 }

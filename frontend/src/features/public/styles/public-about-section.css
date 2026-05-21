@@ -148,74 +148,107 @@
   margin-inline: auto;
 }
 
-/* Header */
+/* Header — matches "השפעה שלנו" premium heading system */
 .public-about__header {
+  --about-heading-pink: #ec3c97;
+  --about-heading-purple: #5b1e8c;
+
   display: grid;
   justify-items: center;
-  max-width: 820px;
+  max-width: 780px;
   margin-inline: auto;
-  gap: 0;
+  padding-inline: 16px;
 }
 
-.public-about__title {
-  margin: 0;
-  background: linear-gradient(95deg, var(--about-pink) 0%, #d04da8 42%, var(--about-purple) 100%);
+.public-about__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 clamp(16px, 2.2vw, 24px);
+  font-size: clamp(0.9rem, 1.08vw, 1rem);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+.public-about__eyebrow-text {
+  background: linear-gradient(92deg, var(--about-heading-pink) 0%, #d04da8 38%, var(--about-heading-purple) 100%);
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
   -webkit-text-fill-color: transparent;
-  font-size: clamp(2.4rem, 4.8vw, 3.65rem);
-  font-weight: 900;
-  line-height: 1.1;
-  letter-spacing: -0.02em;
 }
 
-.public-about__title-divider {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: clamp(10px, 1.3vw, 14px);
-  width: min(100%, 300px);
-  margin-block: clamp(12px, 1.6vw, 18px) 0;
-}
-
-.public-about__title-divider-line {
-  flex: 0 1 72px;
-  width: 72px;
+.public-about__eyebrow-line {
+  width: clamp(36px, 5vw, 56px);
   height: 1px;
-  opacity: 0.4;
-  background: linear-gradient(90deg, transparent 0%, rgba(233, 30, 143, 0.65) 100%);
+  background: linear-gradient(90deg, transparent, rgba(236, 60, 151, 0.45));
   border-radius: 999px;
 }
 
-.public-about__title-divider-line--end {
-  background: linear-gradient(270deg, transparent 0%, rgba(75, 19, 111, 0.65) 100%);
+.public-about__eyebrow-line:last-of-type {
+  background: linear-gradient(270deg, transparent, rgba(236, 60, 151, 0.45));
 }
 
-.public-about__title-divider-heart {
-  display: inline-flex;
-  flex-shrink: 0;
+.public-about__eyebrow-heart {
+  font-size: 0.5rem;
+  line-height: 1;
+  color: var(--about-heading-pink);
+  opacity: 0.9;
+}
+
+.public-about__title,
+.public-section--about .public-about__title {
+  margin: 0;
+  background: linear-gradient(92deg, var(--about-heading-pink) 0%, #d04da8 38%, var(--about-heading-purple) 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  font-family: inherit;
+  font-size: clamp(2.35rem, 4.5vw, 3.25rem);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: 0.03em;
+}
+
+.public-about__divider {
+  display: flex;
   align-items: center;
   justify-content: center;
-  width: 16px;
-  height: 16px;
-  color: #e91e8f;
-  opacity: 0.92;
-  line-height: 0;
+  gap: 12px;
 }
 
-.public-about__title-divider-heart svg {
-  display: block;
+.public-about__divider--title {
+  width: min(100%, 300px);
+  margin-block: clamp(16px, 2.2vw, 24px) 0;
+}
+
+.public-about__divider-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(236, 60, 151, 0.35));
+  border-radius: 999px;
+}
+
+.public-about__divider-line:last-child {
+  background: linear-gradient(270deg, transparent, rgba(236, 60, 151, 0.35));
+}
+
+.public-about__divider-heart {
+  flex-shrink: 0;
+  color: var(--about-heading-pink);
+  font-size: 0.55rem;
+  line-height: 1;
 }
 
 .public-about__subtitle {
-  max-width: 42rem;
-  margin: clamp(16px, 2vw, 22px) 0 0;
+  max-width: 600px;
+  margin: clamp(20px, 2.6vw, 30px) 0 0;
   padding-inline: clamp(8px, 2vw, 16px);
   color: var(--about-muted);
-  font-size: clamp(1.02rem, 1.28vw, 1.18rem);
+  font-size: clamp(0.98rem, 1.2vw, 1.08rem);
   font-weight: 400;
-  line-height: 1.85;
+  line-height: 1.62;
 }
 
 /* Cards grid */
