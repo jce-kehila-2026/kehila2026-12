@@ -56,6 +56,26 @@ export const SUPPORT_AREA_IMAGE_ORDER = [
   'women-events',
 ];
 
+/** Maps Learn Together CMS card ids to bundled local image keys. */
+export const LEARN_TOGETHER_CARD_AREA_IDS = {
+  'seed-support-groups': 'support-groups',
+  'seed-lectures-workshops': 'lectures-workshops',
+  'seed-inspiration-stories': 'inspiration-stories',
+  'seed-chat-support': 'chat-support',
+  'seed-donations-community': 'donations-community',
+  'seed-women-events': 'women-events',
+};
+
+export function getLearnTogetherCardImageMeta(card = {}, index = 0) {
+  const areaId = LEARN_TOGETHER_CARD_AREA_IDS[card.id] || SUPPORT_AREA_IMAGE_ORDER[index % SUPPORT_AREA_IMAGE_ORDER.length];
+  const meta = getSupportAreaImageMeta({ id: areaId }, index);
+
+  return {
+    ...meta,
+    id: areaId,
+  };
+}
+
 const CURATED_IMAGE_SRCS = new Set(
   [...Object.values(SUPPORT_AREA_IMAGE_META).map((meta) => meta.bundledSrc), DEFAULT_SUPPORT_AREA_IMAGE].filter(Boolean),
 );
