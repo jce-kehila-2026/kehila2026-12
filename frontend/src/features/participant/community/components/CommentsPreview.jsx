@@ -9,7 +9,11 @@ export default function CommentsPreview({
   const visibleComments = isExpanded ? comments : comments.slice(0, COMMENTS_PREVIEW_LIMIT);
 
   if (visibleComments.length === 0) {
-    return <p className="comments-preview__empty">Be the first to comment.</p>;
+    return (
+      <section className="comments-preview comments-preview--empty" aria-label="Comments preview">
+        <p className="comments-preview__empty">Be the first to comment.</p>
+      </section>
+    );
   }
 
   return (
@@ -18,8 +22,8 @@ export default function CommentsPreview({
         {visibleComments.map((comment) => (
           <article className="comments-preview__item" key={comment.id ?? `${comment.author}-${comment.text}`}>
             <span className="comments-preview__avatar">{comment.initials}</span>
-            <div>
-              <header>
+            <div className="comments-preview__bubble">
+              <header className="comments-preview__header">
                 <strong>{comment.author}</strong>
                 {comment.time && <small>{comment.time}</small>}
               </header>
@@ -30,7 +34,7 @@ export default function CommentsPreview({
       </div>
       {hasMoreComments && (
         <button className="comments-preview__view-all" onClick={onToggleExpanded} type="button">
-          {isExpanded ? 'Show less' : 'Show more comments'}
+          {isExpanded ? 'Show less' : `Show ${comments.length - COMMENTS_PREVIEW_LIMIT} more comments`}
         </button>
       )}
     </section>

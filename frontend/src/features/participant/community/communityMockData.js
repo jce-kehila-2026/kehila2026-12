@@ -75,6 +75,20 @@ export const supportCircles = [
   { title: 'Care Partners', meta: 'Shared encouragement', icon: VolunteerActivismOutlinedIcon },
 ];
 
+export const communityActiveMembers = [
+  { id: 'active-maya', name: 'Maya', initials: 'MA', status: 'Active now' },
+  { id: 'active-rina', name: 'Rina', initials: 'RI', status: 'Recently active' },
+  { id: 'active-leah', name: 'Leah', initials: 'LE', status: 'Recently active' },
+  { id: 'active-noa', name: 'Noa', initials: 'NO', status: 'Active now' },
+];
+
+export const communitySupportSpaces = [
+  { title: 'New Members Circle', meta: '12 members', icon: Diversity3OutlinedIcon },
+  { title: 'Mindful Mornings', meta: 'Weekly reflection', icon: SelfImprovementOutlinedIcon },
+  { title: 'Daily Encouragement', meta: 'Open check-ins', icon: VolunteerActivismOutlinedIcon },
+  { title: 'Care Partners', meta: 'Shared encouragement', icon: VolunteerActivismOutlinedIcon },
+];
+
 export const communityResources = [
   'Conversation starters for asking for support',
   'Gentle grounding practices from recent workshops',

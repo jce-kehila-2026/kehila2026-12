@@ -1,32 +1,41 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Diversity3OutlinedIcon from '@mui/icons-material/Diversity3Outlined';
+import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined';
 import LocalFloristOutlinedIcon from '@mui/icons-material/LocalFloristOutlined';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import MenuBookOutlinedIcon from '@mui/icons-material/MenuBookOutlined';
 import {
+  communityActiveMembers,
   communityPosts,
   communityResources,
-  supportCircles,
+  communitySupportSpaces,
 } from './communityMockData';
 import {
   COMMUNITY_PREFERENCES_STORAGE_KEY,
   COMMUNITY_POSTS_STORAGE_KEY,
   COMMUNITY_STREAK_STORAGE_KEY,
+  COMMUNITY_USER_PROFILE_STORAGE_KEY,
   getDayDifference,
   getInitialCommunityPreferences,
+  getInitialCommunityUserProfile,
   getInitialPosts,
   getInitialStreakState,
   getTodayKey,
+  isCommunityContentVisible,
   isStreakAtRiskForDate,
   safeSaveToStorage,
   serializeCommunityPreferences,
   serializeCommunityPost,
+  serializeCommunityUserProfile,
 } from './communityInteractionHelpers';
 import {
   addCommunityPostComment,
   createCommunityPost,
   getCommunityPosts,
+  reportCommunityPost,
   toggleCommunityPostLike,
 } from './services/communityService';
+import { COMMUNITY_POST_STATUS } from './communityModels';
 import {
   COMMUNITY_GUIDELINES_VERSION,
   getAcceptedGuidelinesVersion,
@@ -40,6 +49,104 @@ import CommunityGuidelinesModal from './components/CommunityGuidelinesModal';
 import CommunityPostCard from './components/CommunityPostCard';
 import CommunityStreakCard from './components/CommunityStreakCard';
 import CreatePostCard from './components/CreatePostCard';
+
+const FEED_TABS = [
+  { id: 'all', label: 'All Posts' },
+  { id: 'following', label: 'Following' },
+  { id: 'anonymous', label: 'Anonymous' },
+  { id: 'birthdays', label: 'Birthdays' },
+  { id: 'wins', label: 'Wins' },
+];
+
+const FEED_SORT_OPTIONS = [
+  { value: 'latest', label: 'Latest' },
+  { value: 'supported', label: 'Most supported' },
+];
+
+const normalizePostTaxonomy = (post = {}) => [
+  post.category,
+  post.type,
+  post.topic,
+  post.title,
+].filter(Boolean).join(' ').toLowerCase();
+
+const getPostCreatedAtTime = (post = {}) => {
+  const createdAt = post.createdAt instanceof Date
+    ? post.createdAt
+    : new Date(post.createdAt ?? 0);
+  const timestamp = createdAt.getTime();
+
+  return Number.isNaN(timestamp) ? 0 : timestamp;
+};
+
+const filterPostsByTab = (posts, activeTab) => posts.filter((post) => {
+  if (activeTab === 'all') return true;
+  if (activeTab === 'following') return false;
+  if (activeTab === 'anonymous') return post.isAnonymous === true;
+
+  const postTaxonomy = normalizePostTaxonomy(post);
+
+  if (activeTab === 'birthdays') {
+    return postTaxonomy.includes('birthday') || postTaxonomy.includes('birthdays');
+  }
+
+  if (activeTab === 'wins') {
+    return postTaxonomy.includes('win') || postTaxonomy.includes('wins');
+  }
+
+  return true;
+});
+
+const sortFeedPosts = (posts, sortBy) => posts
+  .map((post, index) => ({ post, index }))
+  .sort((firstPost, secondPost) => {
+    if (sortBy === 'supported') {
+      const firstLikes = firstPost.post.likesCount ?? firstPost.post.likes ?? 0;
+      const secondLikes = secondPost.post.likesCount ?? secondPost.post.likes ?? 0;
+      if (secondLikes !== firstLikes) return secondLikes - firstLikes;
+    } else {
+      const dateDifference = getPostCreatedAtTime(secondPost.post) - getPostCreatedAtTime(firstPost.post);
+      if (dateDifference !== 0) return dateDifference;
+    }
+
+    return firstPost.index - secondPost.index;
+  })
+  .map(({ post }) => post);
+
+const getEmptyFeedMessage = (activeTab) => {
+  if (activeTab === 'following') {
+    return {
+      title: 'Following feed will appear here.',
+      description: 'When following is available, posts from people you follow will show in this space.',
+    };
+  }
+
+  if (activeTab === 'anonymous') {
+    return {
+      title: 'No anonymous posts yet',
+      description: 'Anonymous shares will appear here when members choose that option.',
+    };
+  }
+
+  if (activeTab === 'birthdays') {
+    return {
+      title: 'No birthday posts yet',
+      description: 'Birthday posts and celebrations will appear here.',
+    };
+  }
+
+  if (activeTab === 'wins') {
+    return {
+      title: 'No wins yet',
+      description: 'Community wins and encouraging milestones will appear here.',
+    };
+  }
+
+  return {
+    title: 'No posts yet',
+    description: 'Be the first to share something with the community.',
+  };
+};
 
 const getExistingDisplayName = (personalDetails = {}) => (
   personalDetails.fullName
@@ -107,6 +214,7 @@ export default function CommunityPage({
   isPersonalDetailsLoading = false,
   onGoToSettings,
 }) {
+  const postInputRef = useRef(null);
   const [initialStreakState] = useState(getInitialStreakState);
   const [showGuidelinesModal, setShowGuidelinesModal] = useState(
     () => getAcceptedGuidelinesVersion() !== COMMUNITY_GUIDELINES_VERSION,
@@ -116,10 +224,17 @@ export default function CommunityPage({
   const [postAnonymously, setPostAnonymously] = useState(false);
   const [postError, setPostError] = useState('');
   const [postSuccessMessage, setPostSuccessMessage] = useState('');
+  const [anonymousShortcutMessage, setAnonymousShortcutMessage] = useState('');
+  const [activeFeedTab, setActiveFeedTab] = useState('all');
+  const [feedSortBy, setFeedSortBy] = useState('latest');
+  const [supportSpaceFeedback, setSupportSpaceFeedback] = useState('');
+  const [communityUserProfile, setCommunityUserProfile] = useState(getInitialCommunityUserProfile);
   const [communityPreferences, setCommunityPreferences] = useState(getInitialCommunityPreferences);
   const [profileSuccessMessage, setProfileSuccessMessage] = useState('');
   const [commentInputs, setCommentInputs] = useState({});
   const [commentFeedbackByPostId, setCommentFeedbackByPostId] = useState({});
+  const [reportFeedbackByPostId, setReportFeedbackByPostId] = useState({});
+  const [confirmingReportPostId, setConfirmingReportPostId] = useState(null);
   const [expandedCommentPostIds, setExpandedCommentPostIds] = useState({});
   const [communityStreakCount, setCommunityStreakCount] = useState(initialStreakState.streakCount);
   const [lastActivityDate, setLastActivityDate] = useState(initialStreakState.lastActivityDate);
@@ -166,6 +281,15 @@ export default function CommunityPage({
     );
   }, [communityPreferences]);
 
+  useEffect(() => {
+    if (!communityUserProfile.profileCompleted) return;
+
+    safeSaveToStorage(
+      COMMUNITY_USER_PROFILE_STORAGE_KEY,
+      serializeCommunityUserProfile(communityUserProfile),
+    );
+  }, [communityUserProfile]);
+
   const registerCommunityActivity = () => {
     const todayKey = getTodayKey();
     const dayDifference = getDayDifference(lastActivityDate, todayKey);
@@ -189,23 +313,94 @@ export default function CommunityPage({
     setNewPostText(value);
     if (postError) setPostError('');
     if (postSuccessMessage) setPostSuccessMessage('');
+    if (anonymousShortcutMessage) setAnonymousShortcutMessage('');
+  };
+
+  const handleWriteAnonymously = () => {
+    setPostAnonymously(true);
+    setAnonymousShortcutMessage('Anonymous mode enabled.');
+    postInputRef.current?.focus();
+  };
+
+  const handleSupportSpaceView = (spaceTitle) => {
+    setSupportSpaceFeedback(`${spaceTitle} preview is coming soon.`);
   };
 
   const displayName = getExistingDisplayName(personalDetails);
   const birthDate = getCommunityBirthday(personalDetails);
+  const hasCompletedCommunityProfile = communityUserProfile.profileCompleted === true;
+  const communityDisplayName = hasCompletedCommunityProfile
+    ? communityUserProfile.displayName
+    : displayName;
+  const communityBirthday = hasCompletedCommunityProfile
+    ? communityUserProfile.birthday
+    : birthDate;
   const hasRequiredPersonalDetails = hasRequiredCommunityPersonalDetails(personalDetails);
-  const canUseCommunity = hasRequiredPersonalDetails && communityPreferences.birthdayVisibilityCompleted;
-  const visibleBirthdayUsers = communityPreferences.showBirthday && birthDate
-    ? [{ id: personalDetails.id || 'current-user', name: displayName || 'Current User', birthday: birthDate }]
+  const hasCommunityAccessDetails = hasRequiredPersonalDetails || hasCompletedCommunityProfile;
+  const hasCompletedCommunitySetup = communityPreferences.birthdayVisibilityCompleted || hasCompletedCommunityProfile;
+  const canUseCommunity = hasCommunityAccessDetails && hasCompletedCommunitySetup;
+  const showBirthdayInCommunity = communityPreferences.birthdayVisibilityCompleted
+    ? communityPreferences.showBirthday
+    : communityUserProfile.showBirthday;
+  const allowAnonymousPosting = communityUserProfile.allowAnonymousPosting !== false;
+  const visibleBirthdayUsers = showBirthdayInCommunity && communityBirthday
+    ? [{
+      id: communityUserProfile.id || personalDetails.id || 'current-user',
+      name: communityDisplayName || 'Current User',
+      birthday: communityBirthday,
+    }]
     : [];
+  const visiblePosts = posts
+    .filter(isCommunityContentVisible)
+    .map((post) => ({
+      ...post,
+      comments: Array.isArray(post.comments)
+        ? post.comments.filter(isCommunityContentVisible)
+        : [],
+    }));
+  const filteredPosts = filterPostsByTab(visiblePosts, activeFeedTab);
+  const sortedVisiblePosts = sortFeedPosts(filteredPosts, feedSortBy);
+  const emptyFeedMessage = getEmptyFeedMessage(activeFeedTab);
 
   const handleBirthdayPreferenceSave = (showBirthday) => {
     setCommunityPreferences({
       birthdayVisibilityCompleted: true,
       showBirthday,
     });
+    setCommunityUserProfile({
+      ...communityUserProfile,
+      id: personalDetails.id || communityUserProfile.id || 'current-user',
+      displayName: displayName || communityUserProfile.displayName,
+      birthday: birthDate || communityUserProfile.birthday || '',
+      showBirthday,
+      allowAnonymousPosting: communityUserProfile.allowAnonymousPosting !== false,
+      profileCompleted: true,
+      communityJoinedAt: communityUserProfile.communityJoinedAt || new Date(),
+    });
     setProfileSuccessMessage('Community preference saved.');
   };
+
+  const handleBirthdayVisibilityChange = (showBirthday) => {
+    setCommunityPreferences({
+      birthdayVisibilityCompleted: true,
+      showBirthday,
+    });
+    setCommunityUserProfile((currentProfile) => {
+      if (!currentProfile.profileCompleted) return currentProfile;
+
+      return {
+        ...currentProfile,
+        showBirthday,
+      };
+    });
+    setProfileSuccessMessage('Birthday privacy updated.');
+  };
+
+  useEffect(() => {
+    if (!allowAnonymousPosting && postAnonymously) {
+      setPostAnonymously(false);
+    }
+  }, [allowAnonymousPosting, postAnonymously]);
 
   const handleGoToSettings = () => {
     if (onGoToSettings) {
@@ -225,8 +420,8 @@ export default function CommunityPage({
       return;
     }
 
-    const isAnonymous = postAnonymously;
-    const author = isAnonymous ? 'Anonymous User' : displayName || 'Current User';
+    const isAnonymous = allowAnonymousPosting && postAnonymously;
+    const author = isAnonymous ? 'Anonymous User' : communityDisplayName || 'Current User';
     let newPost;
 
     try {
@@ -246,6 +441,7 @@ export default function CommunityPage({
     setPostAnonymously(false);
     setPostError('');
     setPostSuccessMessage('Post published successfully.');
+    setAnonymousShortcutMessage('');
     registerCommunityActivity();
   };
 
@@ -277,6 +473,92 @@ export default function CommunityPage({
     if (shouldIncreaseStreak) {
       registerCommunityActivity();
     }
+  };
+
+  const handleReportPostRequest = (postId) => {
+    const localUserId = communityUserProfile.id || personalDetails.id || 'current-user';
+    const postToReport = posts.find((post) => post.id === postId);
+    const reportedBy = Array.isArray(postToReport?.reportedBy) ? postToReport.reportedBy : [];
+
+    if (reportedBy.includes(localUserId)) {
+      setConfirmingReportPostId(null);
+      setReportFeedbackByPostId((currentFeedback) => ({
+        ...currentFeedback,
+        [postId]: {
+          type: 'error',
+          message: 'You already reported this post.',
+        },
+      }));
+      return;
+    }
+
+    setReportFeedbackByPostId((currentFeedback) => {
+      if (!currentFeedback[postId]) return currentFeedback;
+
+      const nextFeedback = { ...currentFeedback };
+      delete nextFeedback[postId];
+      return nextFeedback;
+    });
+    setConfirmingReportPostId(postId);
+  };
+
+  const handleCancelReportPost = () => {
+    setConfirmingReportPostId(null);
+  };
+
+  const handleConfirmReportPost = async (postId) => {
+    const localUserId = communityUserProfile.id || personalDetails.id || 'current-user';
+    const postToReport = posts.find((post) => post.id === postId);
+    const reportedBy = Array.isArray(postToReport?.reportedBy) ? postToReport.reportedBy : [];
+
+    if (!postToReport) return;
+
+    if (reportedBy.includes(localUserId)) {
+      setConfirmingReportPostId(null);
+      setReportFeedbackByPostId((currentFeedback) => ({
+        ...currentFeedback,
+        [postId]: {
+          type: 'error',
+          message: 'You already reported this post.',
+        },
+      }));
+      return;
+    }
+
+    try {
+      await reportCommunityPost(postId, localUserId);
+    } catch {
+      // Keep the local placeholder flow responsive; Firebase reporting will handle failures later.
+    }
+
+    setPosts((currentPosts) => currentPosts.map((post) => {
+      if (post.id !== postId) return post;
+
+      const currentReportedBy = Array.isArray(post.reportedBy) ? post.reportedBy : [];
+      if (currentReportedBy.includes(localUserId)) return post;
+
+      const reportsCount = Number(post.reportsCount);
+      const nextReportsCount = Number.isFinite(reportsCount) && reportsCount >= 0
+        ? reportsCount + 1
+        : 1;
+
+      return {
+        ...post,
+        reportsCount: nextReportsCount,
+        reportedBy: [...currentReportedBy, localUserId],
+        status: post.status === COMMUNITY_POST_STATUS.active
+          ? COMMUNITY_POST_STATUS.reported
+          : post.status ?? COMMUNITY_POST_STATUS.reported,
+      };
+    }));
+    setConfirmingReportPostId(null);
+    setReportFeedbackByPostId((currentFeedback) => ({
+      ...currentFeedback,
+      [postId]: {
+        type: 'success',
+        message: 'Thanks, your report was submitted.',
+      },
+    }));
   };
 
   const handleCommentInputChange = (postId, value) => {
@@ -312,8 +594,8 @@ export default function CommunityPage({
 
     try {
       newComment = await addCommunityPostComment(postId, {
-        author: displayName || 'Current User',
-        authorDisplayName: displayName || 'Current User',
+        author: communityDisplayName || 'Current User',
+        authorDisplayName: communityDisplayName || 'Current User',
         content,
       });
     } catch {
@@ -365,18 +647,17 @@ export default function CommunityPage({
       {showGuidelinesModal && <CommunityGuidelinesModal onContinue={handleGuidelinesContinue} />}
 
       <header className="community-page__header">
-        <div>
-          <span>Participant community</span>
+        <div className="community-page__header-copy">
+          <span className="community-page__header-icon" aria-hidden="true">
+            <FavoriteBorderOutlinedIcon />
+          </span>
           <h1 id="community-page-title">Community</h1>
           <p>Connect, share, and support each other in a safe space.</p>
         </div>
-        <span className="community-page__header-icon" aria-hidden="true">
-          <Diversity3OutlinedIcon />
-        </span>
       </header>
 
-      <div className="community-page__layout">
-        <main className="community-page__feed" aria-label="Community feed">
+      <div className="community-page-shell">
+        <main className="community-main-feed" aria-label="Community feed">
           {isPersonalDetailsLoading && (
             <section className="community-profile-setup" aria-label="Loading community profile">
               <div className="community-profile-setup__heading">
@@ -391,26 +672,84 @@ export default function CommunityPage({
               </div>
             </section>
           )}
-          {!isPersonalDetailsLoading && !hasRequiredPersonalDetails && (
+          {!isPersonalDetailsLoading && !hasCommunityAccessDetails && (
             <CommunityAccessPanel onGoToSettings={handleGoToSettings} />
           )}
-          {!isPersonalDetailsLoading && hasRequiredPersonalDetails && !communityPreferences.birthdayVisibilityCompleted && (
+          {!isPersonalDetailsLoading && hasRequiredPersonalDetails && !hasCompletedCommunitySetup && (
             <CommunityBirthdayPreferenceCard onSave={handleBirthdayPreferenceSave} />
           )}
           {profileSuccessMessage && canUseCommunity && (
-            <p className="community-profile-setup__success">{profileSuccessMessage}</p>
+            <p className="community-profile-setup__success" aria-live="polite">{profileSuccessMessage}</p>
           )}
           {canUseCommunity && (
             <>
               <CreatePostCard
+                allowAnonymousPosting={allowAnonymousPosting}
                 isAnonymous={postAnonymously}
                 error={postError}
                 onAnonymousChange={setPostAnonymously}
                 onPostTextChange={handlePostTextChange}
                 onSubmit={handleCreatePost}
+                postInputRef={postInputRef}
                 postText={newPostText}
                 successMessage={postSuccessMessage}
               />
+
+              {allowAnonymousPosting && (
+                <section className="community-anonymous-promo" aria-labelledby="community-anonymous-promo-title">
+                  <span className="community-anonymous-promo__icon" aria-hidden="true">
+                    <LockOutlinedIcon />
+                  </span>
+                  <div className="community-anonymous-promo__copy">
+                    <h2 id="community-anonymous-promo-title">Share anonymously</h2>
+                    <p>Share what’s on your mind without showing your name or profile.</p>
+                    {anonymousShortcutMessage && (
+                      <span className="community-anonymous-promo__feedback" aria-live="polite">
+                        {anonymousShortcutMessage}
+                      </span>
+                    )}
+                  </div>
+                  <button
+                    aria-label="Write anonymously in the community composer"
+                    type="button"
+                    onClick={handleWriteAnonymously}
+                  >
+                    Write Anonymously
+                  </button>
+                </section>
+              )}
+
+              <section className="community-feed-controls" aria-label="Community feed controls">
+                <div className="community-feed-tabs" role="tablist" aria-label="Community feed filters">
+                  {FEED_TABS.map((tab) => (
+                    <button
+                      aria-controls="community-feed-panel"
+                      aria-selected={activeFeedTab === tab.id}
+                      className={activeFeedTab === tab.id ? 'is-active' : undefined}
+                      id={`community-feed-tab-${tab.id}`}
+                      key={tab.id}
+                      onClick={() => setActiveFeedTab(tab.id)}
+                      role="tab"
+                      type="button"
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+
+                <label className="community-feed-sort">
+                  <span>Sort</span>
+                  <select
+                    aria-label="Sort community feed"
+                    value={feedSortBy}
+                    onChange={(event) => setFeedSortBy(event.target.value)}
+                  >
+                    {FEED_SORT_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>{option.label}</option>
+                    ))}
+                  </select>
+                </label>
+              </section>
 
               <section className="community-page-card community-page-card--intro">
                 <span className="community-page-card__icon">
@@ -422,65 +761,145 @@ export default function CommunityPage({
                 </div>
               </section>
 
-              {posts.length === 0 ? (
-                <section className="community-empty-state" aria-label="Empty community feed">
-                  <h2>No posts yet</h2>
-                  <p>Be the first to share something with the community.</p>
+              {sortedVisiblePosts.length === 0 ? (
+                <section
+                  aria-labelledby={`community-feed-tab-${activeFeedTab}`}
+                  className="community-empty-state"
+                  id="community-feed-panel"
+                  role="tabpanel"
+                >
+                  <h2>{emptyFeedMessage.title}</h2>
+                  <p>{emptyFeedMessage.description}</p>
                 </section>
               ) : (
-                posts.map((post) => (
-                  <CommunityPostCard
-                    commentText={commentInputs[post.id] ?? ''}
-                    commentFeedback={commentFeedbackByPostId[post.id]}
-                    isCommentsExpanded={Boolean(expandedCommentPostIds[post.id])}
-                    onCommentTextChange={(value) => handleCommentInputChange(post.id, value)}
-                    onSubmitComment={() => handleSubmitComment(post.id)}
-                    onToggleCommentsExpanded={() => handleToggleCommentsExpanded(post.id)}
-                    onToggleLike={handleToggleLike}
-                    post={post}
-                    key={post.id}
-                  />
-                ))
+                <section
+                  aria-labelledby={`community-feed-tab-${activeFeedTab}`}
+                  className="community-post-list"
+                  id="community-feed-panel"
+                  role="tabpanel"
+                >
+                  {sortedVisiblePosts.map((post) => (
+                    <CommunityPostCard
+                      commentText={commentInputs[post.id] ?? ''}
+                      commentFeedback={commentFeedbackByPostId[post.id]}
+                      isCommentsExpanded={Boolean(expandedCommentPostIds[post.id])}
+                      isReportConfirming={confirmingReportPostId === post.id}
+                      key={post.id}
+                      onCommentTextChange={(value) => handleCommentInputChange(post.id, value)}
+                      onCancelReport={() => handleCancelReportPost(post.id)}
+                      onConfirmReport={() => handleConfirmReportPost(post.id)}
+                      onReportPost={() => handleReportPostRequest(post.id)}
+                      onSubmitComment={() => handleSubmitComment(post.id)}
+                      onToggleCommentsExpanded={() => handleToggleCommentsExpanded(post.id)}
+                      onToggleLike={handleToggleLike}
+                      post={post}
+                      reportFeedback={reportFeedbackByPostId[post.id]}
+                    />
+                  ))}
+                </section>
               )}
             </>
           )}
         </main>
 
-        <aside className="community-page__rail" aria-label="Community sidebar">
-          <BirthdayCard birthdayUsers={visibleBirthdayUsers} />
+        <aside className="community-right-sidebar" aria-label="Community sidebar">
           <CommunityStreakCard
             isAtRisk={isCommunityStreakAtRisk || isStreakAtRiskForDate(lastActivityDate)}
             streakCount={communityStreakCount}
           />
-          <CommunityGuidelinesCard />
+          <BirthdayCard birthdayUsers={visibleBirthdayUsers} />
 
-          <section className="community-page-card">
+          <section className="community-page-card community-active-widget" aria-labelledby="community-active-members-title">
             <div className="community-page-card__heading">
               <span className="community-page-card__icon">
                 <Diversity3OutlinedIcon />
               </span>
               <div>
-                <span>Circles</span>
-                <h2>Support Spaces</h2>
+                <span>{communityActiveMembers.length} members</span>
+                <h2 id="community-active-members-title">Active Members</h2>
               </div>
             </div>
-            <div className="community-circle-list">
-              {supportCircles.map((circle) => {
-                const Icon = circle.icon;
+            <div className="community-active-members" aria-label="Recently active community members">
+              {communityActiveMembers.map((member) => (
+                <article className="community-active-member" key={member.id}>
+                  <span aria-label={`${member.name}, ${member.status}`} className="community-active-member__avatar">
+                    {member.initials}
+                  </span>
+                  <div>
+                    <strong>{member.name}</strong>
+                    <small>{member.status}</small>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
+
+          <section className="community-page-card community-support-spaces-widget" aria-labelledby="community-support-spaces-title">
+            <div className="community-page-card__heading">
+              <span className="community-page-card__icon">
+                <Diversity3OutlinedIcon />
+              </span>
+              <div>
+                <span>Spaces</span>
+                <h2 id="community-support-spaces-title">Support Spaces</h2>
+              </div>
+            </div>
+            <div className="community-support-space-list">
+              {communitySupportSpaces.map((space) => {
+                const Icon = space.icon;
                 return (
-                  <article className="community-circle-item" key={circle.title}>
-                    <span>
+                  <article className="community-support-space" key={space.title}>
+                    <span className="community-support-space__icon" aria-hidden="true">
                       <Icon fontSize="small" />
                     </span>
                     <div>
-                      <strong>{circle.title}</strong>
-                      <small>{circle.meta}</small>
+                      <strong>{space.title}</strong>
+                      <small>{space.meta}</small>
                     </div>
+                    <button
+                      aria-label={`View ${space.title}. Preview only.`}
+                      type="button"
+                      onClick={() => handleSupportSpaceView(space.title)}
+                    >
+                      View
+                    </button>
                   </article>
                 );
               })}
             </div>
+            {supportSpaceFeedback && (
+              <p className="community-support-spaces-widget__feedback" aria-live="polite">
+                {supportSpaceFeedback}
+              </p>
+            )}
           </section>
+
+          {canUseCommunity && (
+            <section className="community-page-card community-privacy-card">
+              <div className="community-page-card__heading">
+                <span className="community-page-card__icon">
+                  <Diversity3OutlinedIcon />
+                </span>
+                <div>
+                  <span>Privacy</span>
+                  <h2>Community Privacy</h2>
+                </div>
+              </div>
+              <label className="community-privacy-card__toggle">
+                <input
+                  aria-label="Show my birthday in the community"
+                  type="checkbox"
+                  checked={showBirthdayInCommunity}
+                  onChange={(event) => handleBirthdayVisibilityChange(event.target.checked)}
+                />
+                <span>Show my birthday in the community</span>
+              </label>
+              <p>
+                This only controls community visibility. Your birthday stays unchanged in Settings.
+              </p>
+            </section>
+          )}
+          <CommunityGuidelinesCard />
 
           <section className="community-page-card community-page-card--soft">
             <div className="community-page-card__heading">
@@ -498,6 +917,7 @@ export default function CommunityPage({
               ))}
             </ul>
           </section>
+
         </aside>
       </div>
     </section>
