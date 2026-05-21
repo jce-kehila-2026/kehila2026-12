@@ -1991,6 +1991,12 @@
   transform: translateY(-1px);
 }
 
+.community-page-post footer button.is-liked {
+  border-color: rgba(236, 22, 140, 0.28);
+  background: #fff2f9;
+  color: #ec168c;
+}
+
 .community-page-post footer button span {
   color: rgba(75, 19, 107, 0.52);
   font-size: 0.78rem;

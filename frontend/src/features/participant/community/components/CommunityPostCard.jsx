@@ -3,7 +3,7 @@ import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlin
 import VolunteerActivismOutlinedIcon from '@mui/icons-material/VolunteerActivismOutlined';
 import CommentsPreview from './CommentsPreview';
 
-export default function CommunityPostCard({ post }) {
+export default function CommunityPostCard({ onToggleLike, post }) {
   const likesCount = post.likesCount ?? post.likes ?? 0;
   const commentsCount = Array.isArray(post.comments)
     ? post.comments.length
@@ -26,7 +26,12 @@ export default function CommunityPostCard({ post }) {
         <p>{postBody}</p>
       </div>
       <footer>
-        <button type="button">
+        <button
+          aria-pressed={post.isLiked}
+          className={post.isLiked ? 'is-liked' : undefined}
+          onClick={() => onToggleLike(post.id)}
+          type="button"
+        >
           <FavoriteBorderOutlinedIcon fontSize="small" />
           Like
           <span>{likesCount}</span>

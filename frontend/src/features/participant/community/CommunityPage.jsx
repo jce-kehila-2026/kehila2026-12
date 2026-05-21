@@ -19,11 +19,18 @@ import CommunityPostCard from './components/CommunityPostCard';
 import CommunityStreakCard from './components/CommunityStreakCard';
 import CreatePostCard from './components/CreatePostCard';
 
+const normalizeCommunityPosts = (posts) => posts.map((post, index) => ({
+  ...post,
+  id: post.id ?? `demo-post-${index + 1}`,
+  likesCount: post.likesCount ?? post.likes ?? 0,
+  isLiked: post.isLiked ?? false,
+}));
+
 export default function CommunityPage() {
   const [showGuidelinesModal, setShowGuidelinesModal] = useState(
     () => getAcceptedGuidelinesVersion() !== COMMUNITY_GUIDELINES_VERSION,
   );
-  const [posts, setPosts] = useState(communityPosts);
+  const [posts, setPosts] = useState(() => normalizeCommunityPosts(communityPosts));
   const [newPostText, setNewPostText] = useState('');
   const [postAnonymously, setPostAnonymously] = useState(false);
   const [postError, setPostError] = useState('');
@@ -77,6 +84,25 @@ export default function CommunityPage() {
     setPostError('');
   };
 
+  const handleToggleLike = (postId) => {
+    setPosts((currentPosts) => currentPosts.map((post) => {
+      if (post.id !== postId) return post;
+
+      const wasLiked = post.isLiked;
+      const currentLikesCount = post.likesCount ?? post.likes ?? 0;
+      const nextLikesCount = wasLiked
+        ? Math.max(currentLikesCount - 1, 0)
+        : currentLikesCount + 1;
+
+      return {
+        ...post,
+        isLiked: !wasLiked,
+        likesCount: nextLikesCount,
+        likes: nextLikesCount,
+      };
+    }));
+  };
+
   return (
     <section className="community-page" aria-labelledby="community-page-title">
       {showGuidelinesModal && <CommunityGuidelinesModal onContinue={handleGuidelinesContinue} />}
@@ -114,7 +140,11 @@ export default function CommunityPage() {
           </section>
 
           {posts.map((post) => (
-            <CommunityPostCard post={post} key={post.id || `${post.author}-${post.title}`} />
+            <CommunityPostCard
+              onToggleLike={handleToggleLike}
+              post={post}
+              key={post.id}
+            />
           ))}
         </main>
 
