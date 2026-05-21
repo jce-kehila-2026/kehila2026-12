@@ -6,6 +6,7 @@ import InstagramIcon from '@mui/icons-material/Instagram';
 import FacebookIcon from '@mui/icons-material/Facebook';
 import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined';
 import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded';
+import PublicSectionHeading from './PublicSectionHeading';
 import useInViewOnce from '../hooks/useInViewOnce';
 
 const THANK_YOU_MESSAGE = 'תודה שאת/ה חלק מהקהילה שלנו';
@@ -38,23 +39,6 @@ function getSocialIcon(link = {}, index) {
   );
 }
 
-function ContactHeroDivider() {
-  return (
-    <div className="public-contact__divider" aria-hidden="true">
-      <span className="public-contact__divider-line" />
-      <span className="public-contact__divider-heart">
-        <svg viewBox="0 0 24 24" width="12" height="12" focusable="false">
-          <path
-            d="M12 20.25s-7.5-4.35-7.5-10.5C4.5 7.5 7.5 4.5 12 7.5c4.5-3 7.5 0 7.5 2.25 0 6.15-7.5 10.5-7.5 10.5z"
-            fill="currentColor"
-          />
-        </svg>
-      </span>
-      <span className="public-contact__divider-line public-contact__divider-line--end" />
-    </div>
-  );
-}
-
 export default function ContactSection({ contact = {}, organization = {} }) {
   const panelRef = useRef(null);
   const panelInView = useInViewOnce(panelRef, { threshold: 0.1, rootMargin: '0px 0px -8% 0px' });
@@ -74,7 +58,7 @@ export default function ContactSection({ contact = {}, organization = {} }) {
 
   const columnCount = [hasSocial, hasPhone, hasEmail].filter(Boolean).length;
 
-  const eyebrow = contactContent.eyebrow || 'צור קשר';
+  const eyebrow = contactContent.eyebrow || 'צרי קשר';
   const title = contactContent.title || 'אנחנו כאן בשבילך';
   const description =
     contactContent.description ||
@@ -93,28 +77,13 @@ export default function ContactSection({ contact = {}, organization = {} }) {
       </div>
 
       <div className="public-contact__shell">
-        <header className="public-contact__hero reveal">
-          <p className="public-contact__eyebrow">
-            <span className="public-contact__eyebrow-dot" aria-hidden="true" />
-            <span className="public-contact__eyebrow-heart" aria-hidden="true">
-              ♥
-            </span>
-            {eyebrow}
-            <span className="public-contact__eyebrow-heart" aria-hidden="true">
-              ♥
-            </span>
-            <span className="public-contact__eyebrow-dot" aria-hidden="true" />
-          </p>
-
-          <div className="public-contact__title-wrap">
-            <h2 id="public-contact-title" className="public-contact__title">
-              {title}
-            </h2>
-          </div>
-
-          <p className="public-contact__description reveal reveal-delay-1">{description}</p>
-          <ContactHeroDivider />
-        </header>
+        <PublicSectionHeading
+          className="public-contact__heading-wrap"
+          eyebrow={eyebrow}
+          title={title}
+          titleId="public-contact-title"
+          subtitle={description}
+        />
 
         {hasAnyContact ? (
           <>
