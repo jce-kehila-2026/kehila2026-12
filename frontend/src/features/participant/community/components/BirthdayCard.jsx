@@ -1,7 +1,46 @@
 import { useState } from 'react';
-import { birthdayMessages } from '../communityMockData';
+import { birthdayMessages, communityBirthdayUsers } from '../communityMockData';
+
+const getBirthdayMonthDay = (birthday) => {
+  if (typeof birthday !== 'string') return null;
+
+  const dateParts = birthday.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (dateParts) {
+    const year = Number(dateParts[1]);
+    const month = Number(dateParts[2]);
+    const day = Number(dateParts[3]);
+    const parsedDate = new Date(year, month - 1, day);
+
+    if (
+      parsedDate.getFullYear() === year
+      && parsedDate.getMonth() === month - 1
+      && parsedDate.getDate() === day
+    ) {
+      return { month, day };
+    }
+  }
+
+  const parsedDate = new Date(birthday);
+  if (Number.isNaN(parsedDate.getTime())) return null;
+
+  return {
+    month: parsedDate.getMonth() + 1,
+    day: parsedDate.getDate(),
+  };
+};
+
+const getTodaysBirthdayUsers = (users = [], today = new Date()) => users.filter((user) => {
+  const birthdayMonthDay = getBirthdayMonthDay(user?.birthday);
+
+  if (!birthdayMonthDay) return false;
+
+  return birthdayMonthDay.month === today.getMonth() + 1
+    && birthdayMonthDay.day === today.getDate();
+});
 
 export default function BirthdayCard() {
+  const todaysBirthdayUsers = getTodaysBirthdayUsers(communityBirthdayUsers);
+  const birthdayUser = todaysBirthdayUsers[0];
   const [selectedMessage, setSelectedMessage] = useState('');
   const [showCustomMessage, setShowCustomMessage] = useState(false);
   const [customMessage, setCustomMessage] = useState('');
@@ -45,6 +84,14 @@ export default function BirthdayCard() {
     setBirthdayWishError('');
   };
 
+  if (!birthdayUser) {
+    return (
+      <section className="birthday-empty-state" aria-label="Birthday celebration">
+        No birthdays today
+      </section>
+    );
+  }
+
   return (
     <section className="birthday-card" aria-label="Birthday celebration">
       <div className="birthday-card__header">
@@ -53,10 +100,10 @@ export default function BirthdayCard() {
         </span>
         <div>
           <span>Community celebration</span>
-          <h2>Today is Sara’s birthday!</h2>
+          <h2>Today is {birthdayUser.name}’s birthday!</h2>
         </div>
       </div>
-      <p>Would you like to send her a kind message?</p>
+      <p>Would you like to send {birthdayUser.name} a kind message?</p>
       <div className="birthday-card__messages">
         {birthdayMessages.map((message) => (
           <button

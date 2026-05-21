@@ -1837,6 +1837,16 @@
   font-weight: 800;
 }
 
+.birthday-empty-state {
+  border: 1px solid rgba(123, 63, 161, 0.1);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.78);
+  color: rgba(75, 19, 107, 0.62);
+  font-size: 0.86rem;
+  font-weight: 800;
+  padding: 18px 20px;
+}
+
 .community-page-card--intro {
   display: flex;
   align-items: center;
