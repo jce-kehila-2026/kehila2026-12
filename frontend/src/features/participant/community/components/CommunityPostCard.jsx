@@ -1,6 +1,7 @@
 import ChatBubbleOutlineOutlinedIcon from '@mui/icons-material/ChatBubbleOutlineOutlined';
 import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined';
 import VolunteerActivismOutlinedIcon from '@mui/icons-material/VolunteerActivismOutlined';
+import { isCommunityContentVisible } from '../communityInteractionHelpers';
 import CommentsPreview from './CommentsPreview';
 
 export default function CommunityPostCard({
@@ -14,7 +15,8 @@ export default function CommunityPostCard({
   post,
 }) {
   const likesCount = post.likesCount ?? post.likes ?? 0;
-  const comments = Array.isArray(post.comments) ? post.comments : post.previewComments ?? [];
+  const comments = (Array.isArray(post.comments) ? post.comments : post.previewComments ?? [])
+    .filter(isCommunityContentVisible);
   const commentsCount = comments.length;
   const postBody = post.content ?? post.body;
   const commentFeedbackId = commentFeedback ? `comment-feedback-${post.id}` : undefined;

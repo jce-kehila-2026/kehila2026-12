@@ -1,4 +1,5 @@
 import {
+  COMMUNITY_POST_STATUS,
   createCommunityCommentModel,
   createCommunityPostModel,
   createCommunityStreakModel,
@@ -13,6 +14,23 @@ export const COMMUNITY_PREFERENCES_STORAGE_KEY = 'community.preferences';
 export const COMMUNITY_USER_PROFILE_STORAGE_KEY = 'community.userProfile';
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+const getModerationFields = (item = {}) => {
+  const reportsCount = Number(item.reportsCount);
+
+  return {
+    status: item.status ?? COMMUNITY_POST_STATUS.active,
+    reportsCount: Number.isFinite(reportsCount) && reportsCount >= 0 ? reportsCount : 0,
+    reportedBy: Array.isArray(item.reportedBy) ? item.reportedBy : [],
+    hiddenByAdmin: Boolean(item.hiddenByAdmin),
+  };
+};
+
+export const isCommunityContentVisible = (item = {}) => (
+  !item.hiddenByAdmin
+  && item.status !== COMMUNITY_POST_STATUS.hidden
+  && item.status !== COMMUNITY_POST_STATUS.deleted
+);
 
 export const createCommunityId = (prefix, createdAt = new Date()) => (
   typeof crypto !== 'undefined' && crypto.randomUUID
@@ -65,14 +83,6 @@ export const createCommentModel = (content, author = 'Current User') => {
     text: content,
   };
 };
-
-export const normalizeCommunityPosts = (posts) => posts.map((post, index) => ({
-  ...post,
-  id: post.id ?? `demo-post-${index + 1}`,
-  likesCount: post.likesCount ?? post.likes ?? 0,
-  isLiked: post.isLiked ?? false,
-  comments: Array.isArray(post.comments) ? post.comments : post.previewComments ?? [],
-}));
 
 export const safeLoadFromStorage = (storageKey) => {
   if (typeof window === 'undefined' || typeof window.localStorage === 'undefined') return null;
@@ -145,21 +155,27 @@ const normalizeComment = (comment, index) => {
   const createdAt = comment?.createdAt ?? null;
 
   return {
+    ...comment,
     id: comment?.id ?? `stored-comment-${index + 1}`,
     author: comment?.author ?? 'Current User',
+    authorDisplayName: comment?.authorDisplayName ?? comment?.author ?? 'Current User',
     content,
     createdAt,
     initials: comment?.initials ?? 'CU',
     time: comment?.time ?? 'Just now',
     text: comment?.text ?? content,
+    ...getModerationFields(comment),
   };
 };
 
 const normalizeStoredPost = (post, index) => {
   const content = typeof post?.content === 'string' ? post.content : post?.body ?? '';
-  const comments = Array.isArray(post?.comments)
-    ? post.comments.map(normalizeComment)
-    : [];
+  const rawComments = Array.isArray(post?.comments)
+    ? post.comments
+    : Array.isArray(post?.previewComments)
+      ? post.previewComments
+      : [];
+  const comments = rawComments.map(normalizeComment);
   const likesCount = Number.isFinite(post?.likesCount)
     ? post.likesCount
     : Number.isFinite(post?.likes)
@@ -170,8 +186,10 @@ const normalizeStoredPost = (post, index) => {
     ...post,
     id: post?.id ?? `stored-post-${index + 1}`,
     author: post?.author ?? 'Current User',
+    authorDisplayName: post?.authorDisplayName ?? post?.author ?? 'Current User',
     content,
     createdAt: post?.createdAt ?? null,
+    updatedAt: post?.updatedAt ?? null,
     likesCount,
     isLiked: Boolean(post?.isLiked),
     isAnonymous: Boolean(post?.isAnonymous),
@@ -185,22 +203,41 @@ const normalizeStoredPost = (post, index) => {
     support: post?.support ?? 0,
     tone: post?.tone ?? 'pink',
     previewComments: Array.isArray(post?.previewComments) ? post.previewComments : [],
+    commentsCount: comments.filter(isCommunityContentVisible).length,
+    ...getModerationFields(post),
   };
 };
+
+export const normalizeCommunityPosts = (posts) => posts.map(normalizeStoredPost);
 
 export const serializeCommunityPost = (post) => ({
   id: post.id,
   author: post.author,
+  authorDisplayName: post.authorDisplayName ?? post.author,
   content: post.content ?? post.body ?? '',
   createdAt: post.createdAt instanceof Date ? post.createdAt.toISOString() : post.createdAt ?? null,
+  updatedAt: post.updatedAt instanceof Date ? post.updatedAt.toISOString() : post.updatedAt ?? null,
   likesCount: post.likesCount ?? post.likes ?? 0,
   isLiked: Boolean(post.isLiked),
   isAnonymous: Boolean(post.isAnonymous),
+  commentsCount: Array.isArray(post.comments)
+    ? post.comments.filter(isCommunityContentVisible).length
+    : post.commentsCount ?? 0,
+  status: post.status ?? COMMUNITY_POST_STATUS.active,
+  reportsCount: post.reportsCount ?? 0,
+  reportedBy: Array.isArray(post.reportedBy) ? post.reportedBy : [],
+  hiddenByAdmin: Boolean(post.hiddenByAdmin),
   comments: Array.isArray(post.comments) ? post.comments.map((comment) => ({
     id: comment.id,
     author: comment.author,
+    authorDisplayName: comment.authorDisplayName ?? comment.author,
     content: comment.content ?? comment.text ?? '',
     createdAt: comment.createdAt instanceof Date ? comment.createdAt.toISOString() : comment.createdAt ?? null,
+    updatedAt: comment.updatedAt instanceof Date ? comment.updatedAt.toISOString() : comment.updatedAt ?? null,
+    status: comment.status ?? COMMUNITY_POST_STATUS.active,
+    reportsCount: comment.reportsCount ?? 0,
+    reportedBy: Array.isArray(comment.reportedBy) ? comment.reportedBy : [],
+    hiddenByAdmin: Boolean(comment.hiddenByAdmin),
     initials: comment.initials,
     time: comment.time,
     text: comment.text ?? comment.content ?? '',

@@ -1,4 +1,5 @@
 export const COMMUNITY_POST_STATUS = {
+  active: 'active',
   visible: 'visible',
   hidden: 'hidden',
   deleted: 'deleted',
@@ -22,7 +23,7 @@ export const createCommunityPostModel = ({
   likedBy = [],
   commentsCount = 0,
   comments = [],
-  status = COMMUNITY_POST_STATUS.visible,
+  status = COMMUNITY_POST_STATUS.active,
   reportsCount = 0,
   reportedBy = [],
   hiddenByAdmin = false,
@@ -52,7 +53,7 @@ export const createCommunityCommentModel = ({
   content = '',
   createdAt = new Date(),
   updatedAt = createdAt,
-  status = COMMUNITY_POST_STATUS.visible,
+  status = COMMUNITY_POST_STATUS.active,
   reportsCount = 0,
   reportedBy = [],
   hiddenByAdmin = false,

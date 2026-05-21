@@ -18,6 +18,7 @@ import {
   getInitialPosts,
   getInitialStreakState,
   getTodayKey,
+  isCommunityContentVisible,
   isStreakAtRiskForDate,
   safeSaveToStorage,
   serializeCommunityPreferences,
@@ -228,6 +229,14 @@ export default function CommunityPage({
       birthday: communityBirthday,
     }]
     : [];
+  const visiblePosts = posts
+    .filter(isCommunityContentVisible)
+    .map((post) => ({
+      ...post,
+      comments: Array.isArray(post.comments)
+        ? post.comments.filter(isCommunityContentVisible)
+        : [],
+    }));
 
   const handleBirthdayPreferenceSave = (showBirthday) => {
     setCommunityPreferences({
@@ -485,13 +494,13 @@ export default function CommunityPage({
                 </div>
               </section>
 
-              {posts.length === 0 ? (
+              {visiblePosts.length === 0 ? (
                 <section className="community-empty-state" aria-label="Empty community feed">
                   <h2>No posts yet</h2>
                   <p>Be the first to share something with the community.</p>
                 </section>
               ) : (
-                posts.map((post) => (
+                visiblePosts.map((post) => (
                   <CommunityPostCard
                     commentText={commentInputs[post.id] ?? ''}
                     commentFeedback={commentFeedbackByPostId[post.id]}
