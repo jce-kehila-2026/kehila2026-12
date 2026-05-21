@@ -10,8 +10,6 @@ import {
 import {
   COMMUNITY_POSTS_STORAGE_KEY,
   COMMUNITY_STREAK_STORAGE_KEY,
-  createCommentModel,
-  createPostModel,
   getDayDifference,
   getInitialPosts,
   getInitialStreakState,
@@ -20,6 +18,12 @@ import {
   safeSaveToStorage,
   serializeCommunityPost,
 } from './communityInteractionHelpers';
+import {
+  addCommunityPostComment,
+  createCommunityPost,
+  getCommunityPosts,
+  toggleCommunityPostLike,
+} from './services/communityService';
 import {
   COMMUNITY_GUIDELINES_VERSION,
   getAcceptedGuidelinesVersion,
@@ -50,6 +54,24 @@ export default function CommunityPage() {
   const [isCommunityStreakAtRisk, setIsCommunityStreakAtRisk] = useState(
     () => isStreakAtRiskForDate(initialStreakState.lastActivityDate),
   );
+
+  useEffect(() => {
+    let ignoreResult = false;
+
+    getCommunityPosts()
+      .then((loadedPosts) => {
+        if (!ignoreResult && Array.isArray(loadedPosts)) {
+          setPosts(loadedPosts);
+        }
+      })
+      .catch(() => {
+        // Keep the existing local fallback state if the placeholder service fails.
+      });
+
+    return () => {
+      ignoreResult = true;
+    };
+  }, []);
 
   useEffect(() => {
     safeSaveToStorage(COMMUNITY_POSTS_STORAGE_KEY, posts.map(serializeCommunityPost));
@@ -88,7 +110,7 @@ export default function CommunityPage() {
     if (postSuccessMessage) setPostSuccessMessage('');
   };
 
-  const handleCreatePost = () => {
+  const handleCreatePost = async () => {
     const content = newPostText.trim();
 
     if (!content) {
@@ -99,11 +121,19 @@ export default function CommunityPage() {
 
     const isAnonymous = postAnonymously;
     const author = isAnonymous ? 'Anonymous User' : 'Current User';
-    const newPost = createPostModel({
-      author,
-      content,
-      isAnonymous,
-    });
+    let newPost;
+
+    try {
+      newPost = await createCommunityPost({
+        author,
+        content,
+        isAnonymous,
+      });
+    } catch {
+      setPostError('Unable to publish your post right now.');
+      setPostSuccessMessage('');
+      return;
+    }
 
     setPosts((currentPosts) => [newPost, ...currentPosts]);
     setNewPostText('');
@@ -116,6 +146,10 @@ export default function CommunityPage() {
   const handleToggleLike = (postId) => {
     const postToUpdate = posts.find((post) => post.id === postId);
     const shouldIncreaseStreak = postToUpdate ? !postToUpdate.isLiked : false;
+
+    toggleCommunityPostLike(postId, 'current-user').catch(() => {
+      // Keep the optimistic local UI update; the placeholder service has no remote side effect yet.
+    });
 
     setPosts((currentPosts) => currentPosts.map((post) => {
       if (post.id !== postId) return post;
@@ -153,7 +187,7 @@ export default function CommunityPage() {
     });
   };
 
-  const handleSubmitComment = (postId) => {
+  const handleSubmitComment = async (postId) => {
     const content = (commentInputs[postId] ?? '').trim();
 
     if (!content) {
@@ -168,7 +202,24 @@ export default function CommunityPage() {
     }
     if (!posts.some((post) => post.id === postId)) return;
 
-    const newComment = createCommentModel(content);
+    let newComment;
+
+    try {
+      newComment = await addCommunityPostComment(postId, {
+        author: 'Current User',
+        authorDisplayName: 'Current User',
+        content,
+      });
+    } catch {
+      setCommentFeedbackByPostId((currentFeedback) => ({
+        ...currentFeedback,
+        [postId]: {
+          type: 'error',
+          message: 'Unable to add your comment right now.',
+        },
+      }));
+      return;
+    }
 
     setPosts((currentPosts) => currentPosts.map((post) => {
       if (post.id !== postId) return post;

@@ -1,23 +1,26 @@
 import {
   createBirthdayWishModel,
-  createCommunityCommentModel,
-  createCommunityPostModel,
   createCommunityStreakModel,
 } from '../communityModels';
-
-const createPlaceholderId = (prefix) => `${prefix}-${Date.now()}`;
+import { communityPosts } from '../communityMockData';
+import {
+  createCommentModel,
+  createPostModel,
+  getInitialPosts,
+} from '../communityInteractionHelpers';
 
 // Temporary local placeholders for the future community Firestore service layer.
 // These functions intentionally do not import Firebase or perform network/database work yet.
 
 export async function getCommunityPosts() {
-  return [];
+  return getInitialPosts(communityPosts);
 }
 
 export async function createCommunityPost(postData = {}) {
-  return createCommunityPostModel({
-    id: postData.id ?? createPlaceholderId('community-post'),
-    ...postData,
+  return createPostModel({
+    author: postData.author ?? postData.authorDisplayName ?? 'Current User',
+    content: postData.content ?? '',
+    isAnonymous: Boolean(postData.isAnonymous),
   });
 }
 
@@ -45,11 +48,10 @@ export async function toggleCommunityPostLike(postId, userId) {
 }
 
 export async function addCommunityPostComment(postId, commentData = {}) {
-  return createCommunityCommentModel({
-    id: commentData.id ?? createPlaceholderId('community-comment'),
+  return {
+    ...createCommentModel(commentData.content ?? ''),
     postId,
-    ...commentData,
-  });
+  };
 }
 
 export async function getTodayCommunityBirthdays() {
@@ -58,7 +60,7 @@ export async function getTodayCommunityBirthdays() {
 
 export async function sendBirthdayWish(wishData = {}) {
   return createBirthdayWishModel({
-    id: wishData.id ?? createPlaceholderId('birthday-wish'),
+    id: wishData.id ?? `birthday-wish-${Date.now()}`,
     ...wishData,
   });
 }
