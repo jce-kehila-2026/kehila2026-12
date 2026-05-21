@@ -1,5 +1,6 @@
 @import "./public-layout.css";
 @import "./public-hero-section.css";
+@import "./public-section-heading.css";
 @import "./public-sections.css";
 @import "./public-cards.css";
 @import "./join-modal.css";
@@ -21,8 +22,16 @@
   color: #ffffff;
 }
 
-.public-homepage :where(.public-section__header h2, .public-donation h2, .public-support-cta__title, .public-team-section__title, .public-about__title, .public-contact__title, .medical-partners__heading, .press-articles__heading, .public-card h3, .public-footer h2) {
+.public-homepage :where(.public-section__header h2, .public-donation h2, .press-articles__heading, .public-card h3, .public-footer h2) {
   font-weight: 900;
+}
+
+/* Unified premium section titles — same typography as eyebrow labels */
+.public-homepage .public-section--about .public-about__title,
+.public-homepage .public-section-heading__title {
+  font-family: inherit;
+  font-weight: 600;
+  letter-spacing: 0.03em;
 }
 
 .public-homepage :where(.public-button, .public-navbar__cta, .public-eyebrow) {
