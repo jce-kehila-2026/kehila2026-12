@@ -411,18 +411,25 @@ export default function CommunityPage() {
             </div>
           </section>
 
-          {posts.map((post) => (
-            <CommunityPostCard
-              commentText={commentInputs[post.id] ?? ''}
-              isCommentsExpanded={Boolean(expandedCommentPostIds[post.id])}
-              onCommentTextChange={(value) => handleCommentInputChange(post.id, value)}
-              onSubmitComment={() => handleSubmitComment(post.id)}
-              onToggleCommentsExpanded={() => handleToggleCommentsExpanded(post.id)}
-              onToggleLike={handleToggleLike}
-              post={post}
-              key={post.id}
-            />
-          ))}
+          {posts.length === 0 ? (
+            <section className="community-empty-state" aria-label="Empty community feed">
+              <h2>No posts yet</h2>
+              <p>Be the first to share something with the community.</p>
+            </section>
+          ) : (
+            posts.map((post) => (
+              <CommunityPostCard
+                commentText={commentInputs[post.id] ?? ''}
+                isCommentsExpanded={Boolean(expandedCommentPostIds[post.id])}
+                onCommentTextChange={(value) => handleCommentInputChange(post.id, value)}
+                onSubmitComment={() => handleSubmitComment(post.id)}
+                onToggleCommentsExpanded={() => handleToggleCommentsExpanded(post.id)}
+                onToggleLike={handleToggleLike}
+                post={post}
+                key={post.id}
+              />
+            ))
+          )}
         </main>
 
         <aside className="community-page__rail" aria-label="Community sidebar">

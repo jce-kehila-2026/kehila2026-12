@@ -8,7 +8,9 @@ export default function CommentsPreview({
   const hasMoreComments = comments.length > COMMENTS_PREVIEW_LIMIT;
   const visibleComments = isExpanded ? comments : comments.slice(0, COMMENTS_PREVIEW_LIMIT);
 
-  if (visibleComments.length === 0) return null;
+  if (visibleComments.length === 0) {
+    return <p className="comments-preview__empty">Be the first to comment.</p>;
+  }
 
   return (
     <section className="comments-preview" aria-label="Comments preview">
