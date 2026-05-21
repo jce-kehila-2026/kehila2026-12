@@ -217,9 +217,9 @@ export default function CommunityPage({
   const hasCommunityAccessDetails = hasRequiredPersonalDetails || hasCompletedCommunityProfile;
   const hasCompletedCommunitySetup = communityPreferences.birthdayVisibilityCompleted || hasCompletedCommunityProfile;
   const canUseCommunity = hasCommunityAccessDetails && hasCompletedCommunitySetup;
-  const showBirthdayInCommunity = hasCompletedCommunityProfile
-    ? communityUserProfile.showBirthday
-    : communityPreferences.showBirthday;
+  const showBirthdayInCommunity = communityPreferences.birthdayVisibilityCompleted
+    ? communityPreferences.showBirthday
+    : communityUserProfile.showBirthday;
   const allowAnonymousPosting = communityUserProfile.allowAnonymousPosting !== false;
   const visibleBirthdayUsers = showBirthdayInCommunity && communityBirthday
     ? [{
@@ -245,6 +245,22 @@ export default function CommunityPage({
       communityJoinedAt: communityUserProfile.communityJoinedAt || new Date(),
     });
     setProfileSuccessMessage('Community preference saved.');
+  };
+
+  const handleBirthdayVisibilityChange = (showBirthday) => {
+    setCommunityPreferences({
+      birthdayVisibilityCompleted: true,
+      showBirthday,
+    });
+    setCommunityUserProfile((currentProfile) => {
+      if (!currentProfile.profileCompleted) return currentProfile;
+
+      return {
+        ...currentProfile,
+        showBirthday,
+      };
+    });
+    setProfileSuccessMessage('Birthday privacy updated.');
   };
 
   useEffect(() => {
@@ -495,6 +511,30 @@ export default function CommunityPage({
 
         <aside className="community-page__rail" aria-label="Community sidebar">
           <BirthdayCard birthdayUsers={visibleBirthdayUsers} />
+          {canUseCommunity && (
+            <section className="community-page-card community-privacy-card">
+              <div className="community-page-card__heading">
+                <span className="community-page-card__icon">
+                  <Diversity3OutlinedIcon />
+                </span>
+                <div>
+                  <span>Privacy</span>
+                  <h2>Community Privacy</h2>
+                </div>
+              </div>
+              <label className="community-privacy-card__toggle">
+                <input
+                  type="checkbox"
+                  checked={showBirthdayInCommunity}
+                  onChange={(event) => handleBirthdayVisibilityChange(event.target.checked)}
+                />
+                <span>Show my birthday in the community</span>
+              </label>
+              <p>
+                This only controls community visibility. Your birthday stays unchanged in Settings.
+              </p>
+            </section>
+          )}
           <CommunityStreakCard
             isAtRisk={isCommunityStreakAtRisk || isStreakAtRiskForDate(lastActivityDate)}
             streakCount={communityStreakCount}

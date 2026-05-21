@@ -2089,6 +2089,24 @@
   overflow-wrap: anywhere;
 }
 
+.community-privacy-card__toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  color: #201033;
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.community-privacy-card__toggle input {
+  flex: 0 0 auto;
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  accent-color: #7b3fa1;
+}
+
 .community-page-post {
   padding: 22px 24px;
 }
