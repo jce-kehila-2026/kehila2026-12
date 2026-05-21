@@ -40,6 +40,7 @@ export default function PublicHomePage() {
       content.teamMembers?.length || 0,
       content.articles?.length || 0,
       content.events?.length || 0,
+      publicHomeDoc.learnTogether?.cards?.length || 0,
     ].join(':'),
     [
       content.articles?.length,
@@ -48,6 +49,7 @@ export default function PublicHomePage() {
       content.supportAreas?.length,
       content.teamMembers?.length,
       loading,
+      publicHomeDoc.learnTogether?.cards?.length,
     ],
   );
 
