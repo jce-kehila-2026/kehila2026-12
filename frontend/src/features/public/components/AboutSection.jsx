@@ -1,5 +1,7 @@
-import { useRef } from 'react';
+import { useMemo, useRef } from 'react';
 import useInViewOnce from '../hooks/useInViewOnce';
+import { usePublicLocale } from '../context/PublicLocaleContext';
+import { localizeAboutUs } from '../i18n/publicHomeContentLocalization';
 import { DEFAULT_ABOUT_US, ABOUT_US_CARD_COUNT } from '../services/publicPagesService';
 import { getAboutUsIconComponent } from './cmsIcons';
 
@@ -25,13 +27,15 @@ function AboutHeaderDivider() {
 export default function AboutSection({ aboutUs }) {
   const cardsRef = useRef(null);
   const cardsInView = useInViewOnce(cardsRef, { threshold: 0.1, rootMargin: '0px 0px -5% 0px' });
+  const { locale, t } = usePublicLocale();
 
-  const safeAboutUs = aboutUs && typeof aboutUs === 'object' ? aboutUs : DEFAULT_ABOUT_US;
+  const safeAboutUs = useMemo(() => {
+    const source = aboutUs && typeof aboutUs === 'object' ? aboutUs : DEFAULT_ABOUT_US;
+    return localizeAboutUs(source, locale);
+  }, [aboutUs, locale]);
+
   const paragraph = safeAboutUs.paragraph || DEFAULT_ABOUT_US.paragraph;
   const incomingCards = Array.isArray(safeAboutUs.cards) ? safeAboutUs.cards : [];
-  // Storage order in Firestore is the admin's natural left-to-right reading order
-  // (Card 1 first). The grid uses CSS direction: rtl from the layout, so we
-  // render in reverse to preserve the original right-to-left visual placement.
   const cards = Array.from({ length: ABOUT_US_CARD_COUNT }, (_, displayIndex) => {
     const storageIndex = ABOUT_US_CARD_COUNT - 1 - displayIndex;
     const fallback = DEFAULT_ABOUT_US.cards[storageIndex];
@@ -74,7 +78,7 @@ export default function AboutSection({ aboutUs }) {
             <span className="public-about__eyebrow-heart" aria-hidden="true">
               ♥
             </span>
-            <span className="public-about__eyebrow-text">ביחד יוצרות מרחב בטוח</span>
+            <span className="public-about__eyebrow-text">{t('aboutEyebrow')}</span>
             <span className="public-about__eyebrow-heart" aria-hidden="true">
               ♥
             </span>
@@ -82,7 +86,7 @@ export default function AboutSection({ aboutUs }) {
           </p>
 
           <h2 id="public-about-title" className="public-about__title">
-            מי אנחנו
+            {t('aboutTitle')}
           </h2>
 
           <AboutHeaderDivider />
@@ -90,7 +94,7 @@ export default function AboutSection({ aboutUs }) {
           <p className="public-about__subtitle reveal reveal-delay-1">{paragraph}</p>
         </header>
 
-        <div className="public-about__cards" ref={cardsRef} aria-label="ערכי התמיכה המרכזיים">
+        <div className="public-about__cards" ref={cardsRef} aria-label={t('aboutCardsAriaLabel')}>
           {cards.map((card, index) => {
             const Icon = getAboutUsIconComponent(card.iconKey);
             return (
