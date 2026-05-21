@@ -318,12 +318,48 @@
   text-align: center;
 }
 
+/* Card title — gradient + subtle line/heart ornaments (::before / ::after) */
 .public-homepage .public-section--support .public-support__title {
+  position: relative;
   margin: 0;
-  color: var(--support-purple);
-  font-size: clamp(1.15rem, 1.3vw, 1.32rem);
-  font-weight: 900;
+  max-width: 24ch;
+  padding-block: 20px;
+  background: linear-gradient(92deg, var(--support-pink) 0%, #d04da8 38%, var(--support-purple) 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  font-size: clamp(1.1rem, 1.28vw, 1.28rem);
+  font-weight: 800;
   line-height: 1.35;
+  letter-spacing: -0.02em;
+  text-align: center;
+}
+
+.public-homepage .public-section--support .public-support__title::before,
+.public-homepage .public-section--support .public-support__title::after {
+  position: absolute;
+  left: 50%;
+  width: min(200px, 88%);
+  height: 10px;
+  transform: translateX(-50%);
+  content: '♥';
+  color: var(--support-pink);
+  font-size: 0.5rem;
+  line-height: 10px;
+  text-align: center;
+  background:
+    linear-gradient(90deg, transparent, rgba(217, 70, 161, 0.35)) left center / calc(50% - 8px) 1px no-repeat,
+    linear-gradient(270deg, transparent, rgba(217, 70, 161, 0.35)) right center / calc(50% - 8px) 1px no-repeat;
+  pointer-events: none;
+}
+
+.public-homepage .public-section--support .public-support__title::before {
+  top: 0;
+}
+
+.public-homepage .public-section--support .public-support__title::after {
+  bottom: 0;
 }
 
 .public-homepage .public-section--support .public-support__excerpt {
