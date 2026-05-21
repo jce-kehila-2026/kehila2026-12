@@ -12,19 +12,12 @@ const ABOUT_ICON_PROPS = {
 
 const CARD_STAGGER_MS = 90;
 
-function AboutTitleDivider() {
+function AboutHeaderDivider() {
   return (
-    <div className="public-about__title-divider" aria-hidden="true">
-      <span className="public-about__title-divider-line" />
-      <span className="public-about__title-divider-heart">
-        <svg viewBox="0 0 24 24" width="16" height="16" focusable="false">
-          <path
-            d="M12 20.25s-7.5-4.35-7.5-10.5C4.5 7.5 7.5 4.5 12 7.5c4.5-3 7.5 0 7.5 2.25 0 6.15-7.5 10.5-7.5 10.5z"
-            fill="currentColor"
-          />
-        </svg>
-      </span>
-      <span className="public-about__title-divider-line public-about__title-divider-line--end" />
+    <div className="public-about__divider public-about__divider--title" aria-hidden="true">
+      <span className="public-about__divider-line" />
+      <span className="public-about__divider-heart">♥</span>
+      <span className="public-about__divider-line" />
     </div>
   );
 }
@@ -75,11 +68,25 @@ export default function AboutSection({ aboutUs }) {
       </div>
 
       <div className="public-about__inner">
-        <header className="public-about__header">
-          <h2 id="public-about-title" className="public-about__title reveal">
+        <header className="public-about__header reveal">
+          <p className="public-about__eyebrow">
+            <span className="public-about__eyebrow-line" aria-hidden="true" />
+            <span className="public-about__eyebrow-heart" aria-hidden="true">
+              ♥
+            </span>
+            <span className="public-about__eyebrow-text">ביחד יוצרות מרחב בטוח</span>
+            <span className="public-about__eyebrow-heart" aria-hidden="true">
+              ♥
+            </span>
+            <span className="public-about__eyebrow-line" aria-hidden="true" />
+          </p>
+
+          <h2 id="public-about-title" className="public-about__title">
             מי אנחנו
           </h2>
-          <AboutTitleDivider />
+
+          <AboutHeaderDivider />
+
           <p className="public-about__subtitle reveal reveal-delay-1">{paragraph}</p>
         </header>
 
