@@ -8,11 +8,16 @@ export default function CommunityPostCard({
   commentFeedback,
   commentText,
   isCommentsExpanded,
+  isReportConfirming,
+  onCancelReport,
   onCommentTextChange,
+  onConfirmReport,
+  onReportPost,
   onSubmitComment,
   onToggleCommentsExpanded,
   onToggleLike,
   post,
+  reportFeedback,
 }) {
   const likesCount = post.likesCount ?? post.likes ?? 0;
   const comments = (Array.isArray(post.comments) ? post.comments : post.previewComments ?? [])
@@ -60,7 +65,26 @@ export default function CommunityPostCard({
           Support
           <span>{post.support}</span>
         </button>
+        <button className="community-page-post__report-button" onClick={onReportPost} type="button">
+          Report
+        </button>
       </footer>
+      {isReportConfirming && (
+        <div className="community-page-post__report-confirmation" role="group" aria-label="Confirm report">
+          <p>Report this post to the community team?</p>
+          <div>
+            <button type="button" onClick={onConfirmReport}>Confirm</button>
+            <button type="button" onClick={onCancelReport}>Cancel</button>
+          </div>
+        </div>
+      )}
+      {reportFeedback && (
+        <p
+          className={`community-page-post__report-feedback community-page-post__report-feedback--${reportFeedback.type}`}
+        >
+          {reportFeedback.message}
+        </p>
+      )}
       <CommentsPreview
         comments={comments}
         isExpanded={isCommentsExpanded}

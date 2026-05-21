@@ -29,8 +29,10 @@ import {
   addCommunityPostComment,
   createCommunityPost,
   getCommunityPosts,
+  reportCommunityPost,
   toggleCommunityPostLike,
 } from './services/communityService';
+import { COMMUNITY_POST_STATUS } from './communityModels';
 import {
   COMMUNITY_GUIDELINES_VERSION,
   getAcceptedGuidelinesVersion,
@@ -125,6 +127,8 @@ export default function CommunityPage({
   const [profileSuccessMessage, setProfileSuccessMessage] = useState('');
   const [commentInputs, setCommentInputs] = useState({});
   const [commentFeedbackByPostId, setCommentFeedbackByPostId] = useState({});
+  const [reportFeedbackByPostId, setReportFeedbackByPostId] = useState({});
+  const [confirmingReportPostId, setConfirmingReportPostId] = useState(null);
   const [expandedCommentPostIds, setExpandedCommentPostIds] = useState({});
   const [communityStreakCount, setCommunityStreakCount] = useState(initialStreakState.streakCount);
   const [lastActivityDate, setLastActivityDate] = useState(initialStreakState.lastActivityDate);
@@ -350,6 +354,92 @@ export default function CommunityPage({
     }
   };
 
+  const handleReportPostRequest = (postId) => {
+    const localUserId = communityUserProfile.id || personalDetails.id || 'current-user';
+    const postToReport = posts.find((post) => post.id === postId);
+    const reportedBy = Array.isArray(postToReport?.reportedBy) ? postToReport.reportedBy : [];
+
+    if (reportedBy.includes(localUserId)) {
+      setConfirmingReportPostId(null);
+      setReportFeedbackByPostId((currentFeedback) => ({
+        ...currentFeedback,
+        [postId]: {
+          type: 'error',
+          message: 'You already reported this post.',
+        },
+      }));
+      return;
+    }
+
+    setReportFeedbackByPostId((currentFeedback) => {
+      if (!currentFeedback[postId]) return currentFeedback;
+
+      const nextFeedback = { ...currentFeedback };
+      delete nextFeedback[postId];
+      return nextFeedback;
+    });
+    setConfirmingReportPostId(postId);
+  };
+
+  const handleCancelReportPost = () => {
+    setConfirmingReportPostId(null);
+  };
+
+  const handleConfirmReportPost = async (postId) => {
+    const localUserId = communityUserProfile.id || personalDetails.id || 'current-user';
+    const postToReport = posts.find((post) => post.id === postId);
+    const reportedBy = Array.isArray(postToReport?.reportedBy) ? postToReport.reportedBy : [];
+
+    if (!postToReport) return;
+
+    if (reportedBy.includes(localUserId)) {
+      setConfirmingReportPostId(null);
+      setReportFeedbackByPostId((currentFeedback) => ({
+        ...currentFeedback,
+        [postId]: {
+          type: 'error',
+          message: 'You already reported this post.',
+        },
+      }));
+      return;
+    }
+
+    try {
+      await reportCommunityPost(postId, localUserId);
+    } catch {
+      // Keep the local placeholder flow responsive; Firebase reporting will handle failures later.
+    }
+
+    setPosts((currentPosts) => currentPosts.map((post) => {
+      if (post.id !== postId) return post;
+
+      const currentReportedBy = Array.isArray(post.reportedBy) ? post.reportedBy : [];
+      if (currentReportedBy.includes(localUserId)) return post;
+
+      const reportsCount = Number(post.reportsCount);
+      const nextReportsCount = Number.isFinite(reportsCount) && reportsCount >= 0
+        ? reportsCount + 1
+        : 1;
+
+      return {
+        ...post,
+        reportsCount: nextReportsCount,
+        reportedBy: [...currentReportedBy, localUserId],
+        status: post.status === COMMUNITY_POST_STATUS.active
+          ? COMMUNITY_POST_STATUS.reported
+          : post.status ?? COMMUNITY_POST_STATUS.reported,
+      };
+    }));
+    setConfirmingReportPostId(null);
+    setReportFeedbackByPostId((currentFeedback) => ({
+      ...currentFeedback,
+      [postId]: {
+        type: 'success',
+        message: 'Thanks, your report was submitted.',
+      },
+    }));
+  };
+
   const handleCommentInputChange = (postId, value) => {
     setCommentInputs((currentInputs) => ({
       ...currentInputs,
@@ -505,12 +595,17 @@ export default function CommunityPage({
                     commentText={commentInputs[post.id] ?? ''}
                     commentFeedback={commentFeedbackByPostId[post.id]}
                     isCommentsExpanded={Boolean(expandedCommentPostIds[post.id])}
+                    isReportConfirming={confirmingReportPostId === post.id}
                     onCommentTextChange={(value) => handleCommentInputChange(post.id, value)}
+                    onCancelReport={() => handleCancelReportPost(post.id)}
+                    onConfirmReport={() => handleConfirmReportPost(post.id)}
+                    onReportPost={() => handleReportPostRequest(post.id)}
                     onSubmitComment={() => handleSubmitComment(post.id)}
                     onToggleCommentsExpanded={() => handleToggleCommentsExpanded(post.id)}
                     onToggleLike={handleToggleLike}
                     post={post}
                     key={post.id}
+                    reportFeedback={reportFeedbackByPostId[post.id]}
                   />
                 ))
               )}

@@ -2215,6 +2215,67 @@
   font-size: 0.78rem;
 }
 
+.community-page-post footer button.community-page-post__report-button {
+  margin-inline-start: auto;
+  background: transparent;
+  color: rgba(75, 19, 107, 0.54);
+}
+
+.community-page-post__report-confirmation {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+  border: 1px solid rgba(123, 63, 161, 0.1);
+  border-radius: 14px;
+  background: rgba(255, 248, 252, 0.8);
+  padding: 10px 12px;
+}
+
+.community-page-post__report-confirmation p {
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.community-page-post__report-confirmation div {
+  display: flex;
+  gap: 8px;
+}
+
+.community-page-post__report-confirmation button {
+  min-height: 32px;
+  border: 1px solid rgba(123, 63, 161, 0.12);
+  border-radius: 999px;
+  background: #fff;
+  color: rgba(75, 19, 107, 0.72);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.78rem;
+  font-weight: 800;
+  padding: 0 12px;
+}
+
+.community-page-post__report-confirmation button:first-child {
+  border-color: rgba(180, 35, 90, 0.18);
+  color: #b4235a;
+}
+
+.community-page-post__report-feedback {
+  margin: 9px 0 0;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.community-page-post__report-feedback--error {
+  color: #b4235a;
+}
+
+.community-page-post__report-feedback--success {
+  color: #287a3e;
+}
+
 .comments-preview {
   display: grid;
   gap: 12px;

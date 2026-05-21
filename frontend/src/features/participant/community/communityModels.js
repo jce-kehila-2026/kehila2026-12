@@ -1,6 +1,7 @@
 export const COMMUNITY_POST_STATUS = {
   active: 'active',
   visible: 'visible',
+  reported: 'reported',
   hidden: 'hidden',
   deleted: 'deleted',
 };
