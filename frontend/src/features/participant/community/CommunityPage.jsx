@@ -8,6 +8,19 @@ import {
   supportCircles,
 } from './communityMockData';
 import {
+  COMMUNITY_POSTS_STORAGE_KEY,
+  COMMUNITY_STREAK_STORAGE_KEY,
+  createCommentModel,
+  createPostModel,
+  getDayDifference,
+  getInitialPosts,
+  getInitialStreakState,
+  getTodayKey,
+  isStreakAtRiskForDate,
+  safeSaveToStorage,
+  serializeCommunityPost,
+} from './communityInteractionHelpers';
+import {
   COMMUNITY_GUIDELINES_VERSION,
   getAcceptedGuidelinesVersion,
   saveAcceptedGuidelinesVersion,
@@ -19,197 +32,12 @@ import CommunityPostCard from './components/CommunityPostCard';
 import CommunityStreakCard from './components/CommunityStreakCard';
 import CreatePostCard from './components/CreatePostCard';
 
-const normalizeCommunityPosts = (posts) => posts.map((post, index) => ({
-  ...post,
-  id: post.id ?? `demo-post-${index + 1}`,
-  likesCount: post.likesCount ?? post.likes ?? 0,
-  isLiked: post.isLiked ?? false,
-  comments: Array.isArray(post.comments) ? post.comments : post.previewComments ?? [],
-}));
-
-const INITIAL_COMMUNITY_STREAK_COUNT = 0;
-const INITIAL_LAST_ACTIVITY_DATE = null;
-const MS_PER_DAY = 24 * 60 * 60 * 1000;
-const COMMUNITY_POSTS_STORAGE_KEY = 'community.posts';
-const COMMUNITY_STREAK_STORAGE_KEY = 'community.streak';
-
-const canUseLocalStorage = () => (
-  typeof window !== 'undefined' && typeof window.localStorage !== 'undefined'
-);
-
-const safeReadJson = (storageKey) => {
-  if (!canUseLocalStorage()) return null;
-
-  try {
-    const storedValue = window.localStorage.getItem(storageKey);
-    return storedValue ? JSON.parse(storedValue) : null;
-  } catch {
-    return null;
-  }
-};
-
-const safeWriteJson = (storageKey, value) => {
-  if (!canUseLocalStorage()) return;
-
-  try {
-    window.localStorage.setItem(storageKey, JSON.stringify(value));
-  } catch {
-    // Storage can fail in private mode or when quota is exceeded; keep local state working.
-  }
-};
-
-const getTodayKey = (date = new Date()) => {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-
-  return `${year}-${month}-${day}`;
-};
-
-const getDateKeyTimestamp = (dateKey) => {
-  if (typeof dateKey !== 'string') return null;
-
-  const dateParts = dateKey.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-  if (!dateParts) return null;
-
-  const year = Number(dateParts[1]);
-  const month = Number(dateParts[2]);
-  const day = Number(dateParts[3]);
-  const parsedDate = new Date(year, month - 1, day);
-
-  if (
-    parsedDate.getFullYear() !== year
-    || parsedDate.getMonth() !== month - 1
-    || parsedDate.getDate() !== day
-  ) {
-    return null;
-  }
-
-  return Date.UTC(year, month - 1, day);
-};
-
-const getDayDifference = (previousDateKey, currentDateKey = getTodayKey()) => {
-  const previousTimestamp = getDateKeyTimestamp(previousDateKey);
-  const currentTimestamp = getDateKeyTimestamp(currentDateKey);
-
-  if (previousTimestamp === null || currentTimestamp === null) return null;
-
-  return Math.round((currentTimestamp - previousTimestamp) / MS_PER_DAY);
-};
-
-const isStreakAtRiskForDate = (lastActivityDate, todayKey = getTodayKey()) => (
-  getDayDifference(lastActivityDate, todayKey) === 2
-);
-
-const normalizeComment = (comment, index) => {
-  const content = typeof comment?.content === 'string'
-    ? comment.content
-    : comment?.text ?? '';
-  const createdAt = comment?.createdAt ?? null;
-
-  return {
-    id: comment?.id ?? `stored-comment-${index + 1}`,
-    author: comment?.author ?? 'Current User',
-    content,
-    createdAt,
-    initials: comment?.initials ?? 'CU',
-    time: comment?.time ?? 'Just now',
-    text: comment?.text ?? content,
-  };
-};
-
-const normalizeStoredPost = (post, index) => {
-  const content = typeof post?.content === 'string' ? post.content : post?.body ?? '';
-  const comments = Array.isArray(post?.comments)
-    ? post.comments.map(normalizeComment)
-    : [];
-  const likesCount = Number.isFinite(post?.likesCount)
-    ? post.likesCount
-    : Number.isFinite(post?.likes)
-      ? post.likes
-      : 0;
-
-  return {
-    ...post,
-    id: post?.id ?? `stored-post-${index + 1}`,
-    author: post?.author ?? 'Current User',
-    content,
-    createdAt: post?.createdAt ?? null,
-    likesCount,
-    isLiked: Boolean(post?.isLiked),
-    isAnonymous: Boolean(post?.isAnonymous),
-    comments,
-    initials: post?.initials ?? (post?.isAnonymous ? 'AU' : 'CU'),
-    time: post?.time ?? 'Just now',
-    topic: post?.topic ?? 'Community share',
-    title: post?.title ?? 'New community post',
-    body: post?.body ?? content,
-    likes: likesCount,
-    support: post?.support ?? 0,
-    tone: post?.tone ?? 'pink',
-    previewComments: Array.isArray(post?.previewComments) ? post.previewComments : [],
-  };
-};
-
-const serializeCommunityPost = (post) => ({
-  id: post.id,
-  author: post.author,
-  content: post.content ?? post.body ?? '',
-  createdAt: post.createdAt instanceof Date ? post.createdAt.toISOString() : post.createdAt ?? null,
-  likesCount: post.likesCount ?? post.likes ?? 0,
-  isLiked: Boolean(post.isLiked),
-  isAnonymous: Boolean(post.isAnonymous),
-  comments: Array.isArray(post.comments) ? post.comments.map((comment) => ({
-    id: comment.id,
-    author: comment.author,
-    content: comment.content ?? comment.text ?? '',
-    createdAt: comment.createdAt instanceof Date ? comment.createdAt.toISOString() : comment.createdAt ?? null,
-    initials: comment.initials,
-    time: comment.time,
-    text: comment.text ?? comment.content ?? '',
-  })) : [],
-  initials: post.initials,
-  time: post.time,
-  topic: post.topic,
-  title: post.title,
-  body: post.body ?? post.content ?? '',
-  likes: post.likesCount ?? post.likes ?? 0,
-  support: post.support ?? 0,
-  tone: post.tone,
-  previewComments: Array.isArray(post.previewComments) ? post.previewComments : [],
-});
-
-const getInitialPosts = () => {
-  const storedPosts = safeReadJson(COMMUNITY_POSTS_STORAGE_KEY);
-
-  if (Array.isArray(storedPosts)) {
-    return storedPosts.map(normalizeStoredPost);
-  }
-
-  return normalizeCommunityPosts(communityPosts);
-};
-
-const getInitialStreakState = () => {
-  const storedStreak = safeReadJson(COMMUNITY_STREAK_STORAGE_KEY);
-  const storedStreakCount = Number(storedStreak?.streakCount);
-  const storedLastActivityDate = storedStreak?.lastActivityDate;
-
-  return {
-    streakCount: Number.isFinite(storedStreakCount) && storedStreakCount >= 0
-      ? storedStreakCount
-      : INITIAL_COMMUNITY_STREAK_COUNT,
-    lastActivityDate: getDateKeyTimestamp(storedLastActivityDate) === null
-      ? INITIAL_LAST_ACTIVITY_DATE
-      : storedLastActivityDate,
-  };
-};
-
 export default function CommunityPage() {
   const [initialStreakState] = useState(getInitialStreakState);
   const [showGuidelinesModal, setShowGuidelinesModal] = useState(
     () => getAcceptedGuidelinesVersion() !== COMMUNITY_GUIDELINES_VERSION,
   );
-  const [posts, setPosts] = useState(getInitialPosts);
+  const [posts, setPosts] = useState(() => getInitialPosts(communityPosts));
   const [newPostText, setNewPostText] = useState('');
   const [postAnonymously, setPostAnonymously] = useState(false);
   const [postError, setPostError] = useState('');
@@ -224,11 +52,11 @@ export default function CommunityPage() {
   );
 
   useEffect(() => {
-    safeWriteJson(COMMUNITY_POSTS_STORAGE_KEY, posts.map(serializeCommunityPost));
+    safeSaveToStorage(COMMUNITY_POSTS_STORAGE_KEY, posts.map(serializeCommunityPost));
   }, [posts]);
 
   useEffect(() => {
-    safeWriteJson(COMMUNITY_STREAK_STORAGE_KEY, {
+    safeSaveToStorage(COMMUNITY_STREAK_STORAGE_KEY, {
       streakCount: communityStreakCount,
       lastActivityDate,
     });
@@ -268,31 +96,13 @@ export default function CommunityPage() {
       return;
     }
 
-    const createdAt = new Date();
     const isAnonymous = postAnonymously;
     const author = isAnonymous ? 'Anonymous User' : 'Current User';
-    const newPost = {
-      id: typeof crypto !== 'undefined' && crypto.randomUUID
-        ? crypto.randomUUID()
-        : `community-post-${createdAt.getTime()}`,
+    const newPost = createPostModel({
       author,
       content,
-      createdAt,
-      likesCount: 0,
-      isLiked: false,
       isAnonymous,
-      comments: [],
-      commentsCount: 0,
-      initials: isAnonymous ? 'AU' : 'CU',
-      time: 'Just now',
-      topic: 'Community share',
-      title: 'New community post',
-      body: content,
-      likes: 0,
-      support: 0,
-      tone: 'pink',
-      previewComments: [],
-    };
+    });
 
     setPosts((currentPosts) => [newPost, ...currentPosts]);
     setNewPostText('');
@@ -357,18 +167,7 @@ export default function CommunityPage() {
     }
     if (!posts.some((post) => post.id === postId)) return;
 
-    const createdAt = new Date();
-    const newComment = {
-      id: typeof crypto !== 'undefined' && crypto.randomUUID
-        ? crypto.randomUUID()
-        : `community-comment-${createdAt.getTime()}`,
-      author: 'Current User',
-      content,
-      createdAt,
-      initials: 'CU',
-      time: 'Just now',
-      text: content,
-    };
+    const newComment = createCommentModel(content);
 
     setPosts((currentPosts) => currentPosts.map((post) => {
       if (post.id !== postId) return post;
