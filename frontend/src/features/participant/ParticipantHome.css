@@ -1425,7 +1425,8 @@
 .community-page-post,
 .create-post-card,
 .birthday-card,
-.guidelines-card {
+.guidelines-card,
+.community-streak-card {
   border: 1px solid rgba(123, 63, 161, 0.1);
   border-radius: 24px;
   background: rgba(255, 255, 255, 0.88);
@@ -1620,6 +1621,56 @@
   font-size: 0.82rem;
   font-weight: 800;
   padding: 0;
+}
+
+.community-streak-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background:
+    radial-gradient(circle at 92% 16%, rgba(255, 255, 255, 0.88), transparent 7rem),
+    linear-gradient(135deg, #fff6df, #fff8fc);
+  padding: 18px;
+}
+
+.community-streak-card__icon {
+  flex: 0 0 auto;
+  width: 54px;
+  height: 54px;
+  display: grid;
+  place-items: center;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #ffe9b9, #ffe1f0);
+  font-size: 1.45rem;
+  box-shadow: inset 0 0 0 1px rgba(236, 22, 140, 0.1);
+}
+
+.community-streak-card span:not(.community-streak-card__icon),
+.community-streak-card strong,
+.community-streak-card p {
+  display: block;
+}
+
+.community-streak-card span:not(.community-streak-card__icon) {
+  color: rgba(75, 19, 107, 0.58);
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.community-streak-card strong {
+  margin-top: 3px;
+  color: #201033;
+  font-size: 1.55rem;
+  line-height: 1.1;
+}
+
+.community-streak-card p {
+  margin: 5px 0 0;
+  color: rgba(32, 16, 51, 0.64);
+  font-size: 0.84rem;
+  line-height: 1.4;
 }
 
 .birthday-card {
@@ -2080,7 +2131,8 @@
 .participant-home--dark .community-page-post,
 .participant-home--dark .create-post-card,
 .participant-home--dark .birthday-card,
-.participant-home--dark .guidelines-card {
+.participant-home--dark .guidelines-card,
+.participant-home--dark .community-streak-card {
   border-color: rgba(236, 72, 153, 0.25);
   background: rgba(15, 23, 42, 0.92);
   color: #e2e8f0;
@@ -2099,6 +2151,7 @@
 .participant-home--dark .community-circle-item strong,
 .participant-home--dark .birthday-card h2,
 .participant-home--dark .guidelines-card h2,
+.participant-home--dark .community-streak-card strong,
 .participant-home--dark .recommendation-card strong,
 .participant-home--dark .participant-profile span {
   color: #f8fafc;
@@ -2116,6 +2169,7 @@
 .participant-home--dark .birthday-card p,
 .participant-home--dark .community-resource-list li,
 .participant-home--dark .guidelines-card li,
+.participant-home--dark .community-streak-card p,
 .participant-home--dark .dashboard-section-heading span {
   color: #cbd5e1;
 }
@@ -2205,6 +2259,10 @@
 
 .participant-home--dark .guidelines-card button {
   color: #fbcfe8;
+}
+
+.participant-home--dark .community-streak-card__icon {
+  background: rgba(236, 72, 153, 0.16);
 }
 
 .participant-home--dark .community-guidelines-modal {

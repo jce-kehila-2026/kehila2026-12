@@ -214,6 +214,21 @@ function CommunityGuidelinesCard() {
   );
 }
 
+function CommunityStreakCard() {
+  return (
+    <section className="community-streak-card" aria-label="Community streak">
+      <span className="community-streak-card__icon" aria-hidden="true">
+        ✨
+      </span>
+      <div>
+        <span>Your streak</span>
+        <strong>5 days</strong>
+        <p>Stay active and support the community</p>
+      </div>
+    </section>
+  );
+}
+
 function BirthdayCelebrationCard() {
   const [selectedMessage, setSelectedMessage] = useState('');
   const [showCustomMessage, setShowCustomMessage] = useState(false);
@@ -431,6 +446,8 @@ export default function CommunityPage() {
           </section>
 
           <CommunityGuidelinesCard />
+
+          <CommunityStreakCard />
 
           <section className="community-page-card community-page-card--soft">
             <div className="community-page-card__heading">
