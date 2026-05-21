@@ -14,6 +14,7 @@
 @import "./public-support-section.css";
 @import "./public-medical-partners-section.css";
 @import "./public-articles-section.css";
+@import "./public-events-section.css";
 
 .public-homepage :where(.public-hero h1) {
   font-weight: 900;
