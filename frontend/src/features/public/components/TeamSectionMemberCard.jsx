@@ -149,9 +149,6 @@ export default function TeamSectionMemberCard({
             .join(' ')}
         >
           <div className="public-team-section__email-popover-inner">
-            <a className="public-team-section__email-value" href={`mailto:${member.email}`} title={member.email}>
-              {member.email}
-            </a>
             <button
               type="button"
               className={[
@@ -164,6 +161,11 @@ export default function TeamSectionMemberCard({
             >
               {copied ? 'הועתק!' : 'העתקת אימייל'}
             </button>
+            <div className="public-team-section__email-field">
+              <a className="public-team-section__email-value" href={`mailto:${member.email}`} title={member.email}>
+                {member.email}
+              </a>
+            </div>
           </div>
         </div>
       </div>
