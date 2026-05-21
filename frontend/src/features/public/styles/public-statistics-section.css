@@ -131,6 +131,9 @@
 }
 
 .public-statistics__header {
+  --statistics-heading-pink: #ec3c97;
+  --statistics-heading-purple: #5b1e8c;
+
   display: grid;
   justify-items: center;
   max-width: 780px;
@@ -142,11 +145,18 @@
   display: inline-flex;
   align-items: center;
   gap: 12px;
-  margin: 0 0 12px;
-  color: var(--shena-pink);
+  margin: 0 0 clamp(16px, 2.2vw, 24px);
   font-size: clamp(0.9rem, 1.08vw, 1rem);
   font-weight: 600;
   letter-spacing: 0.03em;
+}
+
+.public-statistics__eyebrow-text {
+  background: linear-gradient(92deg, var(--statistics-heading-pink) 0%, #d04da8 38%, var(--statistics-heading-purple) 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
 }
 
 .public-statistics__eyebrow-line {
@@ -163,22 +173,23 @@
 .public-statistics__eyebrow-heart {
   font-size: 0.5rem;
   line-height: 1;
-  color: var(--shena-pink);
+  color: var(--statistics-heading-pink);
   opacity: 0.9;
 }
 
 .public-statistics__title,
 .public-section--statistics .public-statistics__title {
   margin: 0;
-  background: linear-gradient(92deg, var(--shena-pink) 0%, #d04da8 38%, var(--shena-purple) 100%);
+  background: linear-gradient(92deg, var(--statistics-heading-pink) 0%, #d04da8 38%, var(--statistics-heading-purple) 100%);
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
   -webkit-text-fill-color: transparent;
+  font-family: inherit;
   font-size: clamp(2.35rem, 4.5vw, 3.25rem);
-  font-weight: 800;
+  font-weight: 600;
   line-height: 1.1;
-  letter-spacing: -0.025em;
+  letter-spacing: 0.03em;
 }
 
 /* Shared heart + line ornament (title + cards) */
@@ -191,7 +202,7 @@
 
 .public-statistics__divider--title {
   width: min(100%, 300px);
-  margin-block: 12px 0;
+  margin-block: clamp(16px, 2.2vw, 24px) 0;
 }
 
 .public-statistics__divider--card {
@@ -212,14 +223,15 @@
 
 .public-statistics__divider-heart {
   flex-shrink: 0;
-  color: var(--shena-pink);
+  color: var(--statistics-heading-pink, var(--shena-pink));
   font-size: 0.55rem;
   line-height: 1;
 }
 
 .public-statistics__subtitle {
   max-width: 600px;
-  margin: 14px 0 0;
+  margin: clamp(20px, 2.6vw, 30px) 0 0;
+  padding-inline: clamp(8px, 2vw, 16px);
   color: var(--shena-text-muted);
   font-size: clamp(0.98rem, 1.2vw, 1.08rem);
   font-weight: 400;

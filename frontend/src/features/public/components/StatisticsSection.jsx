@@ -60,7 +60,7 @@ export default function StatisticsSection({ statistics = [], isLoading = false, 
             <span className="public-statistics__eyebrow-heart" aria-hidden="true">
               ♥
             </span>
-            יחד יוצרות שינוי
+            <span className="public-statistics__eyebrow-text">יחד יוצרות שינוי</span>
             <span className="public-statistics__eyebrow-heart" aria-hidden="true">
               ♥
             </span>
