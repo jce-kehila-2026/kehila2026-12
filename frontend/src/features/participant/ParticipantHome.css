@@ -1296,7 +1296,8 @@
 
 .community-page-card,
 .community-page-post,
-.create-post-card {
+.create-post-card,
+.birthday-card {
   border: 1px solid rgba(123, 63, 161, 0.1);
   border-radius: 24px;
   background: rgba(255, 255, 255, 0.88);
@@ -1414,6 +1415,94 @@
 
 .community-page-card {
   padding: 22px;
+}
+
+.birthday-card {
+  display: grid;
+  gap: 16px;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 94% 10%, rgba(255, 255, 255, 0.9), transparent 8rem),
+    radial-gradient(circle at 8% 100%, rgba(236, 22, 140, 0.14), transparent 9rem),
+    linear-gradient(135deg, #fff6df, #fff2f9 62%, #f4e7ff);
+  padding: 22px;
+}
+
+.birthday-card__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.birthday-card__icon {
+  flex: 0 0 auto;
+  width: 52px;
+  height: 52px;
+  display: grid;
+  place-items: center;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: inset 0 0 0 1px rgba(236, 22, 140, 0.12);
+  font-size: 1.45rem;
+}
+
+.birthday-card__header span:not(.birthday-card__icon) {
+  color: rgba(75, 19, 107, 0.58);
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.birthday-card h2,
+.birthday-card p {
+  margin: 0;
+}
+
+.birthday-card h2 {
+  margin-top: 3px;
+  color: #201033;
+  font-size: 1.08rem;
+  line-height: 1.25;
+}
+
+.birthday-card p {
+  color: rgba(32, 16, 51, 0.66);
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.birthday-card__messages {
+  display: grid;
+  gap: 10px;
+}
+
+.birthday-card__messages button,
+.birthday-card__custom {
+  border: 1px solid rgba(123, 63, 161, 0.1);
+  border-radius: 16px;
+  cursor: pointer;
+  font: inherit;
+  font-weight: 800;
+  text-align: left;
+}
+
+.birthday-card__messages button {
+  background: rgba(255, 255, 255, 0.72);
+  color: rgba(75, 19, 107, 0.78);
+  font-size: 0.82rem;
+  line-height: 1.35;
+  padding: 11px 12px;
+}
+
+.birthday-card__custom {
+  min-height: 42px;
+  background: linear-gradient(135deg, #4b136b, #7b3fa1);
+  color: #fff;
+  font-size: 0.86rem;
+  padding: 0 15px;
+  text-align: center;
+  box-shadow: 0 14px 28px rgba(75, 19, 107, 0.18);
 }
 
 .community-page-card--intro {
@@ -1727,7 +1816,8 @@
 .participant-home--dark .participant-panel,
 .participant-home--dark .community-page-card,
 .participant-home--dark .community-page-post,
-.participant-home--dark .create-post-card {
+.participant-home--dark .create-post-card,
+.participant-home--dark .birthday-card {
   border-color: rgba(236, 72, 153, 0.25);
   background: rgba(15, 23, 42, 0.92);
   color: #e2e8f0;
@@ -1744,6 +1834,7 @@
 .participant-home--dark .community-page-post h3,
 .participant-home--dark .community-page-post strong,
 .participant-home--dark .community-circle-item strong,
+.participant-home--dark .birthday-card h2,
 .participant-home--dark .recommendation-card strong,
 .participant-home--dark .participant-profile span {
   color: #f8fafc;
@@ -1758,6 +1849,7 @@
 .participant-home--dark .community-page-card p,
 .participant-home--dark .community-page-post p,
 .participant-home--dark .create-post-card__footer span,
+.participant-home--dark .birthday-card p,
 .participant-home--dark .community-resource-list li,
 .participant-home--dark .dashboard-section-heading span {
   color: #cbd5e1;
@@ -1811,6 +1903,13 @@
 
 .participant-home--dark .comments-preview__view-all {
   color: #fbcfe8;
+}
+
+.participant-home--dark .birthday-card__icon,
+.participant-home--dark .birthday-card__messages button {
+  border-color: rgba(236, 72, 153, 0.18);
+  background: rgba(30, 41, 59, 0.72);
+  color: #f8fafc;
 }
 
 .participant-home--dark .participant-brand strong {

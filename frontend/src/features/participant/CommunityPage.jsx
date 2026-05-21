@@ -86,6 +86,12 @@ const communityResources = [
   'Community notes collected by the She-Na team',
 ];
 
+const birthdayMessages = [
+  'Wishing you happiness and beautiful days ahead 💜',
+  'Happy Birthday! Your journey inspires us 🌸',
+  'Sending you love and warm wishes today 🎂',
+];
+
 function CreatePostCard() {
   const [postAnonymously, setPostAnonymously] = useState(false);
 
@@ -112,6 +118,33 @@ function CreatePostCard() {
         <span>Share a thought with the She-Na community.</span>
         <button type="button">Share Post</button>
       </div>
+    </section>
+  );
+}
+
+function BirthdayCelebrationCard() {
+  return (
+    <section className="birthday-card" aria-label="Birthday celebration">
+      <div className="birthday-card__header">
+        <span className="birthday-card__icon" aria-hidden="true">
+          🎂
+        </span>
+        <div>
+          <span>Community celebration</span>
+          <h2>Today is Sara’s birthday!</h2>
+        </div>
+      </div>
+      <p>Would you like to send her a kind message?</p>
+      <div className="birthday-card__messages">
+        {birthdayMessages.map((message) => (
+          <button type="button" key={message}>
+            {message}
+          </button>
+        ))}
+      </div>
+      <button className="birthday-card__custom" type="button">
+        Write Your Own Message
+      </button>
     </section>
   );
 }
@@ -215,6 +248,8 @@ export default function CommunityPage() {
         </main>
 
         <aside className="community-page__rail" aria-label="Community sidebar">
+          <BirthdayCelebrationCard />
+
           <section className="community-page-card">
             <div className="community-page-card__heading">
               <span className="community-page-card__icon">
