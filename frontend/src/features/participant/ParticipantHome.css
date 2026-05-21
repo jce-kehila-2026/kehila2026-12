@@ -1495,6 +1495,13 @@
   padding: 11px 12px;
 }
 
+.birthday-card__messages button.is-selected {
+  border-color: rgba(236, 22, 140, 0.34);
+  background: #fff2f9;
+  color: #ec168c;
+  box-shadow: 0 10px 22px rgba(236, 22, 140, 0.12);
+}
+
 .birthday-card__custom {
   min-height: 42px;
   background: linear-gradient(135deg, #4b136b, #7b3fa1);
@@ -1503,6 +1510,56 @@
   padding: 0 15px;
   text-align: center;
   box-shadow: 0 14px 28px rgba(75, 19, 107, 0.18);
+}
+
+.birthday-card__textarea {
+  width: 100%;
+  min-height: 86px;
+  resize: vertical;
+  border: 1px solid rgba(123, 63, 161, 0.12);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.74);
+  color: #201033;
+  font: inherit;
+  font-size: 0.86rem;
+  line-height: 1.5;
+  outline: none;
+  padding: 12px;
+}
+
+.birthday-card__textarea:focus {
+  border-color: rgba(236, 22, 140, 0.42);
+  box-shadow: 0 0 0 4px rgba(236, 22, 140, 0.1);
+}
+
+.birthday-card__send {
+  min-height: 42px;
+  border: 0;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #ec168c, #f45ba5);
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 800;
+  padding: 0 15px;
+  box-shadow: 0 14px 28px rgba(236, 22, 140, 0.18);
+}
+
+.birthday-card__send:disabled {
+  cursor: not-allowed;
+  background: rgba(123, 63, 161, 0.14);
+  color: rgba(75, 19, 107, 0.42);
+  box-shadow: none;
+}
+
+.birthday-card__success {
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.7);
+  color: #4b136b;
+  font-size: 0.82rem;
+  font-weight: 800;
+  padding: 10px 12px;
 }
 
 .community-page-card--intro {
@@ -1910,6 +1967,28 @@
   border-color: rgba(236, 72, 153, 0.18);
   background: rgba(30, 41, 59, 0.72);
   color: #f8fafc;
+}
+
+.participant-home--dark .birthday-card__messages button.is-selected {
+  border-color: rgba(236, 72, 153, 0.44);
+  background: rgba(236, 72, 153, 0.16);
+  color: #fbcfe8;
+}
+
+.participant-home--dark .birthday-card__textarea {
+  border-color: rgba(236, 72, 153, 0.22);
+  background: rgba(30, 41, 59, 0.82);
+  color: #f8fafc;
+}
+
+.participant-home--dark .birthday-card__send:disabled {
+  background: rgba(148, 163, 184, 0.16);
+  color: #94a3b8;
+}
+
+.participant-home--dark .birthday-card__success {
+  background: rgba(236, 72, 153, 0.12);
+  color: #fbcfe8;
 }
 
 .participant-home--dark .participant-brand strong {
