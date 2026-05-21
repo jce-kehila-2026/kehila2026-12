@@ -2,6 +2,7 @@ import {
   createCommunityCommentModel,
   createCommunityPostModel,
   createCommunityStreakModel,
+  createCommunityUserProfileModel,
 } from './communityModels';
 
 export const INITIAL_COMMUNITY_STREAK_COUNT = 0;
@@ -9,6 +10,7 @@ export const INITIAL_LAST_ACTIVITY_DATE = null;
 export const COMMUNITY_POSTS_STORAGE_KEY = 'community.posts';
 export const COMMUNITY_STREAK_STORAGE_KEY = 'community.streak';
 export const COMMUNITY_PREFERENCES_STORAGE_KEY = 'community.preferences';
+export const COMMUNITY_USER_PROFILE_STORAGE_KEY = 'community.userProfile';
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
@@ -259,4 +261,51 @@ export const getInitialCommunityPreferences = () => {
 export const serializeCommunityPreferences = (preferences) => ({
   communityPreferencesCompleted: Boolean(preferences.birthdayVisibilityCompleted),
   showBirthdayInCommunity: Boolean(preferences.showBirthday),
+});
+
+export const createDefaultCommunityUserProfile = () => createCommunityUserProfileModel({
+  id: 'current-user',
+  displayName: '',
+  birthday: '',
+  showBirthday: false,
+  allowAnonymousPosting: true,
+  profileCompleted: false,
+});
+
+const normalizeStoredCommunityUserProfile = (profile) => {
+  if (!profile || profile.profileCompleted !== true || typeof profile.displayName !== 'string') {
+    return createDefaultCommunityUserProfile();
+  }
+
+  const displayName = profile.displayName.trim();
+  if (!displayName) return createDefaultCommunityUserProfile();
+
+  return createCommunityUserProfileModel({
+    id: profile.id || 'current-user',
+    displayName,
+    avatarUrl: profile.avatarUrl ?? '',
+    birthday: profile.birthday ?? '',
+    showBirthday: Boolean(profile.showBirthday),
+    allowAnonymousPosting: profile.allowAnonymousPosting !== false,
+    communityJoinedAt: profile.communityJoinedAt ?? new Date(),
+    profileCompleted: true,
+    role: profile.role ?? 'participant',
+    status: profile.status ?? 'active',
+  });
+};
+
+export const getInitialCommunityUserProfile = () => normalizeStoredCommunityUserProfile(
+  safeLoadFromStorage(COMMUNITY_USER_PROFILE_STORAGE_KEY),
+);
+
+export const serializeCommunityUserProfile = (profile) => ({
+  id: profile.id || 'current-user',
+  displayName: profile.displayName ?? '',
+  birthday: profile.birthday ?? '',
+  showBirthday: Boolean(profile.showBirthday),
+  allowAnonymousPosting: profile.allowAnonymousPosting !== false,
+  profileCompleted: Boolean(profile.profileCompleted),
+  communityJoinedAt: profile.communityJoinedAt instanceof Date
+    ? profile.communityJoinedAt.toISOString()
+    : profile.communityJoinedAt ?? null,
 });

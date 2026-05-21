@@ -11,8 +11,10 @@ import {
   COMMUNITY_PREFERENCES_STORAGE_KEY,
   COMMUNITY_POSTS_STORAGE_KEY,
   COMMUNITY_STREAK_STORAGE_KEY,
+  COMMUNITY_USER_PROFILE_STORAGE_KEY,
   getDayDifference,
   getInitialCommunityPreferences,
+  getInitialCommunityUserProfile,
   getInitialPosts,
   getInitialStreakState,
   getTodayKey,
@@ -20,6 +22,7 @@ import {
   safeSaveToStorage,
   serializeCommunityPreferences,
   serializeCommunityPost,
+  serializeCommunityUserProfile,
 } from './communityInteractionHelpers';
 import {
   addCommunityPostComment,
@@ -116,6 +119,7 @@ export default function CommunityPage({
   const [postAnonymously, setPostAnonymously] = useState(false);
   const [postError, setPostError] = useState('');
   const [postSuccessMessage, setPostSuccessMessage] = useState('');
+  const [communityUserProfile, setCommunityUserProfile] = useState(getInitialCommunityUserProfile);
   const [communityPreferences, setCommunityPreferences] = useState(getInitialCommunityPreferences);
   const [profileSuccessMessage, setProfileSuccessMessage] = useState('');
   const [commentInputs, setCommentInputs] = useState({});
@@ -166,6 +170,15 @@ export default function CommunityPage({
     );
   }, [communityPreferences]);
 
+  useEffect(() => {
+    if (!communityUserProfile.profileCompleted) return;
+
+    safeSaveToStorage(
+      COMMUNITY_USER_PROFILE_STORAGE_KEY,
+      serializeCommunityUserProfile(communityUserProfile),
+    );
+  }, [communityUserProfile]);
+
   const registerCommunityActivity = () => {
     const todayKey = getTodayKey();
     const dayDifference = getDayDifference(lastActivityDate, todayKey);
@@ -193,10 +206,27 @@ export default function CommunityPage({
 
   const displayName = getExistingDisplayName(personalDetails);
   const birthDate = getCommunityBirthday(personalDetails);
+  const hasCompletedCommunityProfile = communityUserProfile.profileCompleted === true;
+  const communityDisplayName = hasCompletedCommunityProfile
+    ? communityUserProfile.displayName
+    : displayName;
+  const communityBirthday = hasCompletedCommunityProfile
+    ? communityUserProfile.birthday
+    : birthDate;
   const hasRequiredPersonalDetails = hasRequiredCommunityPersonalDetails(personalDetails);
-  const canUseCommunity = hasRequiredPersonalDetails && communityPreferences.birthdayVisibilityCompleted;
-  const visibleBirthdayUsers = communityPreferences.showBirthday && birthDate
-    ? [{ id: personalDetails.id || 'current-user', name: displayName || 'Current User', birthday: birthDate }]
+  const hasCommunityAccessDetails = hasRequiredPersonalDetails || hasCompletedCommunityProfile;
+  const hasCompletedCommunitySetup = communityPreferences.birthdayVisibilityCompleted || hasCompletedCommunityProfile;
+  const canUseCommunity = hasCommunityAccessDetails && hasCompletedCommunitySetup;
+  const showBirthdayInCommunity = hasCompletedCommunityProfile
+    ? communityUserProfile.showBirthday
+    : communityPreferences.showBirthday;
+  const allowAnonymousPosting = communityUserProfile.allowAnonymousPosting !== false;
+  const visibleBirthdayUsers = showBirthdayInCommunity && communityBirthday
+    ? [{
+      id: communityUserProfile.id || personalDetails.id || 'current-user',
+      name: communityDisplayName || 'Current User',
+      birthday: communityBirthday,
+    }]
     : [];
 
   const handleBirthdayPreferenceSave = (showBirthday) => {
@@ -204,8 +234,24 @@ export default function CommunityPage({
       birthdayVisibilityCompleted: true,
       showBirthday,
     });
+    setCommunityUserProfile({
+      ...communityUserProfile,
+      id: personalDetails.id || communityUserProfile.id || 'current-user',
+      displayName: displayName || communityUserProfile.displayName,
+      birthday: birthDate || communityUserProfile.birthday || '',
+      showBirthday,
+      allowAnonymousPosting: communityUserProfile.allowAnonymousPosting !== false,
+      profileCompleted: true,
+      communityJoinedAt: communityUserProfile.communityJoinedAt || new Date(),
+    });
     setProfileSuccessMessage('Community preference saved.');
   };
+
+  useEffect(() => {
+    if (!allowAnonymousPosting && postAnonymously) {
+      setPostAnonymously(false);
+    }
+  }, [allowAnonymousPosting, postAnonymously]);
 
   const handleGoToSettings = () => {
     if (onGoToSettings) {
@@ -225,8 +271,8 @@ export default function CommunityPage({
       return;
     }
 
-    const isAnonymous = postAnonymously;
-    const author = isAnonymous ? 'Anonymous User' : displayName || 'Current User';
+    const isAnonymous = allowAnonymousPosting && postAnonymously;
+    const author = isAnonymous ? 'Anonymous User' : communityDisplayName || 'Current User';
     let newPost;
 
     try {
@@ -312,8 +358,8 @@ export default function CommunityPage({
 
     try {
       newComment = await addCommunityPostComment(postId, {
-        author: displayName || 'Current User',
-        authorDisplayName: displayName || 'Current User',
+        author: communityDisplayName || 'Current User',
+        authorDisplayName: communityDisplayName || 'Current User',
         content,
       });
     } catch {
@@ -391,10 +437,10 @@ export default function CommunityPage({
               </div>
             </section>
           )}
-          {!isPersonalDetailsLoading && !hasRequiredPersonalDetails && (
+          {!isPersonalDetailsLoading && !hasCommunityAccessDetails && (
             <CommunityAccessPanel onGoToSettings={handleGoToSettings} />
           )}
-          {!isPersonalDetailsLoading && hasRequiredPersonalDetails && !communityPreferences.birthdayVisibilityCompleted && (
+          {!isPersonalDetailsLoading && hasRequiredPersonalDetails && !hasCompletedCommunitySetup && (
             <CommunityBirthdayPreferenceCard onSave={handleBirthdayPreferenceSave} />
           )}
           {profileSuccessMessage && canUseCommunity && (
@@ -403,6 +449,7 @@ export default function CommunityPage({
           {canUseCommunity && (
             <>
               <CreatePostCard
+                allowAnonymousPosting={allowAnonymousPosting}
                 isAnonymous={postAnonymously}
                 error={postError}
                 onAnonymousChange={setPostAnonymously}
