@@ -1222,6 +1222,7 @@
   display: grid;
   gap: 24px;
   min-width: 0;
+  max-width: 100%;
 }
 
 .community-guidelines-modal {
@@ -1233,6 +1234,7 @@
   background: rgba(32, 16, 51, 0.42);
   padding: 22px;
   backdrop-filter: blur(10px);
+  overflow: auto;
 }
 
 .community-guidelines-modal__panel {
@@ -1248,6 +1250,7 @@
     linear-gradient(135deg, #fff, #fff8fc 56%, #f4e7ff);
   box-shadow: 0 30px 90px rgba(32, 16, 51, 0.26);
   padding: 28px;
+  box-sizing: border-box;
 }
 
 .community-guidelines-modal__icon {
@@ -1413,6 +1416,7 @@
   gap: 24px;
   align-items: start;
   min-width: 0;
+  max-width: 100%;
 }
 
 .community-page__feed,
@@ -1448,6 +1452,7 @@
   display: flex;
   align-items: flex-start;
   gap: 14px;
+  min-width: 0;
 }
 
 .create-post-card__avatar {
@@ -1464,6 +1469,7 @@
 }
 
 .create-post-card textarea {
+  min-width: 0;
   width: 100%;
   box-sizing: border-box;
   min-height: 96px;
@@ -1499,6 +1505,7 @@
   cursor: pointer;
   font-size: 0.86rem;
   font-weight: 800;
+  max-width: 100%;
 }
 
 .create-post-card__anonymous input {
@@ -1538,15 +1545,19 @@
   align-items: center;
   justify-content: space-between;
   gap: 14px;
+  flex-wrap: wrap;
+  min-width: 0;
 }
 
 .create-post-card__footer span {
+  min-width: 0;
   color: rgba(75, 19, 107, 0.58);
   font-size: 0.82rem;
   font-weight: 700;
 }
 
 .create-post-card__footer button {
+  flex: 0 0 auto;
   min-height: 42px;
   border: 0;
   border-radius: 14px;
@@ -1575,12 +1586,14 @@
     rgba(255, 255, 255, 0.9);
   box-shadow: 0 16px 42px rgba(75, 19, 107, 0.075);
   padding: 22px;
+  min-width: 0;
 }
 
 .community-profile-setup__heading {
   display: flex;
   align-items: flex-start;
   gap: 12px;
+  min-width: 0;
 }
 
 .community-profile-setup__icon {
@@ -1679,6 +1692,7 @@
 .community-profile-setup__form button,
 .community-profile-setup__action,
 .community-profile-setup__actions button {
+  min-width: 0;
   min-height: 42px;
   border: 0;
   border-radius: 14px;
@@ -1696,6 +1710,7 @@
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
+  min-width: 0;
 }
 
 .community-profile-setup__error,
@@ -1822,6 +1837,7 @@
     radial-gradient(circle at 92% 16%, rgba(255, 255, 255, 0.88), transparent 7rem),
     linear-gradient(135deg, #fff6df, #fff8fc);
   padding: 18px 20px;
+  min-width: 0;
 }
 
 .community-streak-card__icon {
@@ -1873,12 +1889,14 @@
     radial-gradient(circle at 8% 100%, rgba(236, 22, 140, 0.14), transparent 9rem),
     linear-gradient(135deg, #fff6df, #fff2f9 62%, #f4e7ff);
   padding: 20px;
+  min-width: 0;
 }
 
 .birthday-card__header {
   display: flex;
   align-items: center;
   gap: 12px;
+  min-width: 0;
 }
 
 .birthday-card__icon {
@@ -1926,12 +1944,14 @@
 
 .birthday-card__messages button,
 .birthday-card__custom {
+  min-width: 0;
   border: 1px solid rgba(123, 63, 161, 0.1);
   border-radius: 16px;
   cursor: pointer;
   font: inherit;
   font-weight: 800;
   text-align: left;
+  overflow-wrap: anywhere;
 }
 
 .birthday-card__messages button {
@@ -1981,6 +2001,7 @@
 }
 
 .birthday-card__send {
+  min-width: 0;
   min-height: 42px;
   border: 0;
   border-radius: 16px;
@@ -2030,6 +2051,7 @@
   display: flex;
   align-items: center;
   gap: 16px;
+  min-width: 0;
   background:
     radial-gradient(circle at 94% 18%, rgba(244, 91, 165, 0.14), transparent 9rem),
     rgba(255, 255, 255, 0.9);
@@ -2046,6 +2068,7 @@
   align-items: center;
   gap: 12px;
   margin-bottom: 16px;
+  min-width: 0;
 }
 
 .community-page-card__icon {
@@ -2093,6 +2116,7 @@
   display: flex;
   align-items: flex-start;
   gap: 10px;
+  min-width: 0;
   color: #201033;
   font-size: 0.92rem;
   font-weight: 700;
@@ -2109,6 +2133,7 @@
 
 .community-page-post {
   padding: 22px 24px;
+  overflow: hidden;
 }
 
 .community-page-post header,
@@ -2121,6 +2146,10 @@
 .community-page-post header {
   gap: 12px;
   margin-bottom: 14px;
+  min-width: 0;
+}
+
+.community-page-post header > div {
   min-width: 0;
 }
 
@@ -2142,6 +2171,7 @@
   display: block;
   color: #241332;
   font-size: 0.94rem;
+  overflow-wrap: anywhere;
 }
 
 .community-page-post small,
@@ -2177,9 +2207,11 @@
   flex-wrap: wrap;
   gap: 10px;
   margin-top: 18px;
+  min-width: 0;
 }
 
 .community-page-post footer button {
+  flex: 0 1 auto;
   display: inline-flex;
   align-items: center;
   gap: 7px;
@@ -2194,6 +2226,7 @@
   font-weight: 800;
   padding: 0 13px;
   max-width: 100%;
+  min-width: 0;
   transition: background 180ms ease, border-color 180ms ease, color 180ms ease, transform 180ms ease;
 }
 
@@ -2231,6 +2264,7 @@
   border-radius: 14px;
   background: rgba(255, 248, 252, 0.8);
   padding: 10px 12px;
+  min-width: 0;
 }
 
 .community-page-post__report-confirmation p {
@@ -2241,6 +2275,7 @@
 
 .community-page-post__report-confirmation div {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
 }
 
@@ -2293,6 +2328,7 @@
   display: flex;
   align-items: flex-start;
   gap: 10px;
+  min-width: 0;
 }
 
 .comments-preview__avatar {
@@ -2319,6 +2355,7 @@
 .comments-preview__item header {
   display: flex;
   align-items: center;
+  flex-wrap: wrap;
   gap: 8px;
   margin-bottom: 4px;
 }
@@ -2344,6 +2381,7 @@
 
 .comments-preview__view-all {
   justify-self: start;
+  min-height: 36px;
   border: 0;
   background: transparent;
   color: #7b3fa1;
@@ -2351,7 +2389,7 @@
   font: inherit;
   font-size: 0.8rem;
   font-weight: 800;
-  padding: 0;
+  padding: 0 2px;
 }
 
 .comments-preview__empty {
@@ -2367,6 +2405,7 @@
   display: flex;
   gap: 10px;
   margin-top: 14px;
+  min-width: 0;
 }
 
 .community-comment-form input {
@@ -2391,6 +2430,7 @@
 }
 
 .community-comment-form button {
+  flex: 0 0 auto;
   min-height: 40px;
   border: 0;
   border-radius: 14px;
@@ -2441,6 +2481,11 @@
   border-radius: 18px;
   background: #fff;
   padding: 14px;
+  min-width: 0;
+}
+
+.community-circle-item > div {
+  min-width: 0;
 }
 
 .community-circle-item > span {
@@ -2836,6 +2881,18 @@
     padding: 24px;
   }
 
+  .community-guidelines-modal {
+    align-items: start;
+    padding: 14px;
+  }
+
+  .community-guidelines-modal__panel {
+    max-height: calc(100dvh - 28px);
+    border-radius: 22px;
+    gap: 14px;
+    padding: 20px;
+  }
+
   .community-page__header-icon {
     width: 72px;
     height: 72px;
@@ -2855,7 +2912,10 @@
   .community-page-post,
   .create-post-card,
   .birthday-card,
-  .guidelines-card {
+  .guidelines-card,
+  .community-streak-card,
+  .community-profile-setup,
+  .community-empty-state {
     border-radius: 20px;
     padding: 18px;
   }
@@ -2866,12 +2926,40 @@
     flex-direction: column;
   }
 
+  .create-post-card__avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+  }
+
   .create-post-card__footer button {
     width: 100%;
   }
 
-  .create-post-card__helper {
+  .create-post-card__helper,
+  .create-post-card__error,
+  .create-post-card__success {
     margin-left: 0;
+  }
+
+  .community-profile-setup__heading,
+  .birthday-card__header,
+  .community-page-card__heading,
+  .guidelines-card__heading {
+    align-items: flex-start;
+  }
+
+  .community-profile-setup__actions,
+  .community-page-post__report-confirmation,
+  .community-page-post__report-confirmation div {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .community-profile-setup__actions button,
+  .community-profile-setup__action,
+  .community-page-post__report-confirmation button {
+    width: 100%;
   }
 
   .birthday-card__messages button,
@@ -2882,7 +2970,7 @@
 
   .community-page-post footer {
     display: grid;
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .community-page-post footer button {
@@ -2890,8 +2978,22 @@
     width: 100%;
   }
 
+  .community-page-post footer button.community-page-post__report-button {
+    grid-column: 1 / -1;
+    margin-inline-start: 0;
+  }
+
   .comments-preview__item {
     gap: 8px;
+  }
+
+  .community-comment-form {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .community-comment-form button {
+    width: 100%;
   }
 
   .schedule-item {
@@ -2901,6 +3003,59 @@
 
   .schedule-item__tag {
     margin-left: 0;
+  }
+}
+
+@media (max-width: 460px) {
+  .participant-main {
+    padding-inline: 10px;
+  }
+
+  .community-page__header,
+  .community-page-card,
+  .community-page-post,
+  .create-post-card,
+  .birthday-card,
+  .guidelines-card,
+  .community-streak-card,
+  .community-profile-setup,
+  .community-empty-state {
+    border-radius: 18px;
+    padding: 16px;
+  }
+
+  .community-page__header h1 {
+    font-size: clamp(1.8rem, 12vw, 2.35rem);
+  }
+
+  .community-page-post footer {
+    grid-template-columns: 1fr;
+  }
+
+  .community-page-post__avatar,
+  .create-post-card__avatar,
+  .community-page-card__icon,
+  .community-profile-setup__icon,
+  .birthday-card__icon,
+  .guidelines-card__icon,
+  .community-streak-card__icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 14px;
+  }
+
+  .comments-preview__avatar {
+    width: 30px;
+    height: 30px;
+    border-radius: 10px;
+  }
+
+  .comments-preview__item > div {
+    padding: 9px 10px;
+  }
+
+  .community-streak-card {
+    align-items: flex-start;
   }
 }
 
