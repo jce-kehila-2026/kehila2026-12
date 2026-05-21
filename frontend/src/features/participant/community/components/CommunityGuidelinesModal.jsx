@@ -1,9 +1,14 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Diversity3OutlinedIcon from '@mui/icons-material/Diversity3Outlined';
 import { modalGuidelines } from '../communityMockData';
 
 export default function CommunityGuidelinesModal({ onContinue }) {
   const [agreedToGuidelines, setAgreedToGuidelines] = useState(false);
+  const titleRef = useRef(null);
+
+  useEffect(() => {
+    titleRef.current?.focus();
+  }, []);
 
   return (
     <div className="community-guidelines-modal" role="dialog" aria-modal="true" aria-labelledby="community-guidelines-modal-title">
@@ -12,7 +17,7 @@ export default function CommunityGuidelinesModal({ onContinue }) {
           <Diversity3OutlinedIcon />
         </span>
         <div className="community-guidelines-modal__copy">
-          <h2 id="community-guidelines-modal-title">Welcome to the Community</h2>
+          <h2 id="community-guidelines-modal-title" ref={titleRef} tabIndex="-1">Welcome to the Community</h2>
           <p>This is a safe space for sharing, support, and respectful interaction.</p>
         </div>
         <ul className="community-guidelines-modal__list">

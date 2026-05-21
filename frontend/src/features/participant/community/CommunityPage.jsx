@@ -559,7 +559,7 @@ export default function CommunityPage({
             <CommunityBirthdayPreferenceCard onSave={handleBirthdayPreferenceSave} />
           )}
           {profileSuccessMessage && canUseCommunity && (
-            <p className="community-profile-setup__success">{profileSuccessMessage}</p>
+            <p className="community-profile-setup__success" aria-live="polite">{profileSuccessMessage}</p>
           )}
           {canUseCommunity && (
             <>
@@ -628,6 +628,7 @@ export default function CommunityPage({
               </div>
               <label className="community-privacy-card__toggle">
                 <input
+                  aria-label="Show my birthday in the community"
                   type="checkbox"
                   checked={showBirthdayInCommunity}
                   onChange={(event) => handleBirthdayVisibilityChange(event.target.checked)}

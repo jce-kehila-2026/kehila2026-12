@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { birthdayMessages, communityBirthdayUsers } from '../communityMockData';
 
 const getBirthdayMonthDay = (birthday) => {
@@ -49,6 +49,7 @@ export default function BirthdayCard({ birthdayUsers = [] }) {
   const [customMessage, setCustomMessage] = useState('');
   const [sentBirthdayWish, setSentBirthdayWish] = useState(false);
   const [birthdayWishError, setBirthdayWishError] = useState('');
+  const customMessageRef = useRef(null);
 
   const handleReadyMessageClick = (message) => {
     setSelectedMessage(message);
@@ -63,6 +64,7 @@ export default function BirthdayCard({ birthdayUsers = [] }) {
     setSelectedMessage('');
     setSentBirthdayWish(false);
     setBirthdayWishError('');
+    window.requestAnimationFrame(() => customMessageRef.current?.focus());
   };
 
   const handleCustomMessageChange = (event) => {
@@ -126,15 +128,17 @@ export default function BirthdayCard({ birthdayUsers = [] }) {
         <>
           <textarea
             aria-describedby={birthdayWishError ? 'birthday-card-error' : undefined}
+            aria-label="Birthday wish message"
             aria-invalid={Boolean(birthdayWishError)}
             className="birthday-card__textarea"
+            ref={customMessageRef}
             value={customMessage}
             onChange={handleCustomMessageChange}
             rows="3"
             placeholder="Write a warm birthday message..."
           />
           {birthdayWishError && (
-            <p className="birthday-card__error" id="birthday-card-error">
+            <p className="birthday-card__error" id="birthday-card-error" role="alert">
               {birthdayWishError}
             </p>
           )}
@@ -147,7 +151,11 @@ export default function BirthdayCard({ birthdayUsers = [] }) {
       >
         Send Birthday Wishes
       </button>
-      {sentBirthdayWish && <p className="birthday-card__success">Birthday wish submitted successfully.</p>}
+      {sentBirthdayWish && (
+        <p className="birthday-card__success" aria-live="polite">
+          Birthday wish submitted successfully.
+        </p>
+      )}
     </section>
   );
 }

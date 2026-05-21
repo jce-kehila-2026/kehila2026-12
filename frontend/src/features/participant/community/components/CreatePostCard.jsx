@@ -15,6 +15,7 @@ export default function CreatePostCard({
       <div className="create-post-card__body">
         <span className="create-post-card__avatar">ME</span>
         <textarea
+          aria-label="Write a community post"
           aria-describedby={feedbackId}
           aria-invalid={Boolean(error)}
           onChange={(event) => onPostTextChange(event.target.value)}
@@ -24,12 +25,12 @@ export default function CreatePostCard({
         />
       </div>
       {error && (
-        <p className="create-post-card__error" id="create-post-error">
+        <p className="create-post-card__error" id="create-post-error" role="alert">
           {error}
         </p>
       )}
       {successMessage && !error && (
-        <p className="create-post-card__success" id="create-post-success">
+        <p className="create-post-card__success" id="create-post-success" aria-live="polite">
           {successMessage}
         </p>
       )}
