@@ -1,0 +1,102 @@
+/* Shared premium section heading — matches "מי אנחנו" */
+.public-section-heading {
+  --section-heading-pink: #ec3c97;
+  --section-heading-purple: #5b1e8c;
+
+  display: grid;
+  justify-items: center;
+  max-width: 780px;
+  margin-inline: auto;
+  padding-inline: 16px;
+  text-align: center;
+}
+
+.public-section-heading__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0 0 clamp(16px, 2.2vw, 24px);
+  font-size: clamp(0.9rem, 1.08vw, 1rem);
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+.public-section-heading__eyebrow-text {
+  background: linear-gradient(92deg, var(--section-heading-pink) 0%, #d04da8 38%, var(--section-heading-purple) 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+}
+
+.public-section-heading__eyebrow-line {
+  width: clamp(36px, 5vw, 56px);
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(236, 60, 151, 0.45));
+  border-radius: 999px;
+}
+
+.public-section-heading__eyebrow-line:last-of-type {
+  background: linear-gradient(270deg, transparent, rgba(236, 60, 151, 0.45));
+}
+
+.public-section-heading__eyebrow-heart {
+  font-size: 0.5rem;
+  line-height: 1;
+  color: var(--section-heading-pink);
+  opacity: 0.9;
+}
+
+.public-section-heading__title {
+  margin: 0;
+  background: linear-gradient(92deg, var(--section-heading-pink) 0%, #d04da8 38%, var(--section-heading-purple) 100%);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+  -webkit-text-fill-color: transparent;
+  font-family: inherit;
+  font-size: clamp(2.35rem, 4.5vw, 3.25rem);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: 0.03em;
+}
+
+.public-section-heading__divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.public-section-heading__divider--title {
+  width: min(100%, 300px);
+  margin-block: clamp(16px, 2.2vw, 24px) 0;
+}
+
+.public-section-heading__divider-line {
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(236, 60, 151, 0.35));
+  border-radius: 999px;
+}
+
+.public-section-heading__divider-line:last-child {
+  background: linear-gradient(270deg, transparent, rgba(236, 60, 151, 0.35));
+}
+
+.public-section-heading__divider-heart {
+  flex-shrink: 0;
+  color: var(--section-heading-pink);
+  font-size: 0.55rem;
+  line-height: 1;
+}
+
+.public-section-heading__subtitle {
+  max-width: 600px;
+  margin: clamp(20px, 2.6vw, 30px) 0 0;
+  padding-inline: clamp(8px, 2vw, 16px);
+  color: #8a7a9c;
+  font-size: clamp(0.98rem, 1.2vw, 1.08rem);
+  font-weight: 400;
+  line-height: 1.62;
+}
