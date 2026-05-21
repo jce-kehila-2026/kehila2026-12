@@ -244,14 +244,19 @@
 .support-area-modal__point-icon {
   display: inline-grid;
   flex-shrink: 0;
-  width: 34px;
-  height: 34px;
+  width: 54px;
+  height: 54px;
   place-items: center;
   color: var(--modal-pink);
-  font-size: 1.1rem;
+  font-size: 22px;
   background: #ffffff;
   border: 1px solid rgba(217, 70, 161, 0.16);
   border-radius: 50%;
+}
+
+.support-area-modal__point-icon svg {
+  width: 22px;
+  height: 22px;
 }
 
 .support-area-modal__actions {
