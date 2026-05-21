@@ -25,7 +25,7 @@ import CalendarPage from '../calendar/CalendarPage';
 import { getCalendarData } from '../calendar/calendarService';
 import AppointmentPage from '../appointments/pages/AppointmentPage';
 import ProfilePage from '../profile/pages/ProfilePage';
-import CommunityPage from './CommunityPage';
+import CommunityPage from './community/CommunityPage';
 import WorkshopFeed from './WorkshopFeed';
 import { useAdmin } from '../admin/context/AdminContext';
 import { communityHighlights, moodOptions, recommendations, resourceGuides } from './dashboardMockData';
