@@ -4,6 +4,13 @@ import VolunteerActivismOutlinedIcon from '@mui/icons-material/VolunteerActivism
 import CommentsPreview from './CommentsPreview';
 
 export default function CommunityPostCard({ post }) {
+  const likesCount = post.likesCount ?? post.likes ?? 0;
+  const commentsCount = Array.isArray(post.comments)
+    ? post.comments.length
+    : post.comments ?? 0;
+  const previewComments = post.previewComments ?? (Array.isArray(post.comments) ? post.comments : []);
+  const postBody = post.content ?? post.body;
+
   return (
     <article className={`community-page-post community-page-post--${post.tone}`}>
       <header>
@@ -16,18 +23,18 @@ export default function CommunityPostCard({ post }) {
       </header>
       <div className="community-page-post__content">
         <h3>{post.title}</h3>
-        <p>{post.body}</p>
+        <p>{postBody}</p>
       </div>
       <footer>
         <button type="button">
           <FavoriteBorderOutlinedIcon fontSize="small" />
           Like
-          <span>{post.likes}</span>
+          <span>{likesCount}</span>
         </button>
         <button type="button">
           <ChatBubbleOutlineOutlinedIcon fontSize="small" />
           Comment
-          <span>{post.comments}</span>
+          <span>{commentsCount}</span>
         </button>
         <button type="button">
           <VolunteerActivismOutlinedIcon fontSize="small" />
@@ -35,7 +42,7 @@ export default function CommunityPostCard({ post }) {
           <span>{post.support}</span>
         </button>
       </footer>
-      <CommentsPreview comments={post.previewComments} />
+      <CommentsPreview comments={previewComments} />
     </article>
   );
 }

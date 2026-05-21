@@ -1,14 +1,31 @@
 import { useState } from 'react';
 
-export default function CreatePostCard() {
+export default function CreatePostCard({
+  error = '',
+  onPostTextChange,
+  onSubmit,
+  postText,
+}) {
   const [postAnonymously, setPostAnonymously] = useState(false);
 
   return (
     <section className="create-post-card" aria-label="Create a community post">
       <div className="create-post-card__body">
         <span className="create-post-card__avatar">ME</span>
-        <textarea placeholder="What’s on your mind today?" rows="3" />
+        <textarea
+          aria-describedby={error ? 'create-post-error' : undefined}
+          aria-invalid={Boolean(error)}
+          onChange={(event) => onPostTextChange(event.target.value)}
+          placeholder="What’s on your mind today?"
+          rows="3"
+          value={postText}
+        />
       </div>
+      {error && (
+        <p className="create-post-card__error" id="create-post-error">
+          {error}
+        </p>
+      )}
       <label className="create-post-card__anonymous">
         <input
           type="checkbox"
@@ -24,7 +41,7 @@ export default function CreatePostCard() {
       )}
       <div className="create-post-card__footer">
         <span>Share a thought with the She-Na community.</span>
-        <button type="button">Share Post</button>
+        <button type="button" onClick={onSubmit}>Share Post</button>
       </div>
     </section>
   );

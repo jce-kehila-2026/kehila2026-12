@@ -23,10 +23,53 @@ export default function CommunityPage() {
   const [showGuidelinesModal, setShowGuidelinesModal] = useState(
     () => getAcceptedGuidelinesVersion() !== COMMUNITY_GUIDELINES_VERSION,
   );
+  const [posts, setPosts] = useState(communityPosts);
+  const [newPostText, setNewPostText] = useState('');
+  const [postError, setPostError] = useState('');
 
   const handleGuidelinesContinue = () => {
     saveAcceptedGuidelinesVersion();
     setShowGuidelinesModal(false);
+  };
+
+  const handlePostTextChange = (value) => {
+    setNewPostText(value);
+    if (postError) setPostError('');
+  };
+
+  const handleCreatePost = () => {
+    const content = newPostText.trim();
+
+    if (!content) {
+      setPostError('Please write something before sharing.');
+      return;
+    }
+
+    const createdAt = new Date();
+    const newPost = {
+      id: typeof crypto !== 'undefined' && crypto.randomUUID
+        ? crypto.randomUUID()
+        : `community-post-${createdAt.getTime()}`,
+      author: 'Current User',
+      content,
+      createdAt,
+      likesCount: 0,
+      isLiked: false,
+      comments: [],
+      initials: 'CU',
+      time: 'Just now',
+      topic: 'Community share',
+      title: 'New community post',
+      body: content,
+      likes: 0,
+      support: 0,
+      tone: 'pink',
+      previewComments: [],
+    };
+
+    setPosts((currentPosts) => [newPost, ...currentPosts]);
+    setNewPostText('');
+    setPostError('');
   };
 
   return (
@@ -46,7 +89,12 @@ export default function CommunityPage() {
 
       <div className="community-page__layout">
         <main className="community-page__feed" aria-label="Community feed">
-          <CreatePostCard />
+          <CreatePostCard
+            error={postError}
+            onPostTextChange={handlePostTextChange}
+            onSubmit={handleCreatePost}
+            postText={newPostText}
+          />
 
           <section className="community-page-card community-page-card--intro">
             <span className="community-page-card__icon">
@@ -58,8 +106,8 @@ export default function CommunityPage() {
             </div>
           </section>
 
-          {communityPosts.map((post) => (
-            <CommunityPostCard post={post} key={`${post.author}-${post.title}`} />
+          {posts.map((post) => (
+            <CommunityPostCard post={post} key={post.id || `${post.author}-${post.title}`} />
           ))}
         </main>
 

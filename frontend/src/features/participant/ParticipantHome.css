@@ -1519,6 +1519,13 @@
   padding: 10px 12px;
 }
 
+.create-post-card__error {
+  margin: -8px 0 0 62px;
+  color: #b4235a;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
 .create-post-card__footer {
   display: flex;
   align-items: center;
