@@ -5,9 +5,10 @@ import LocalFloristOutlinedIcon from '@mui/icons-material/LocalFloristOutlined';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import MenuBookOutlinedIcon from '@mui/icons-material/MenuBookOutlined';
 import {
+  communityActiveMembers,
   communityPosts,
   communityResources,
-  supportCircles,
+  communitySupportSpaces,
 } from './communityMockData';
 import {
   COMMUNITY_PREFERENCES_STORAGE_KEY,
@@ -226,6 +227,7 @@ export default function CommunityPage({
   const [anonymousShortcutMessage, setAnonymousShortcutMessage] = useState('');
   const [activeFeedTab, setActiveFeedTab] = useState('all');
   const [feedSortBy, setFeedSortBy] = useState('latest');
+  const [supportSpaceFeedback, setSupportSpaceFeedback] = useState('');
   const [communityUserProfile, setCommunityUserProfile] = useState(getInitialCommunityUserProfile);
   const [communityPreferences, setCommunityPreferences] = useState(getInitialCommunityPreferences);
   const [profileSuccessMessage, setProfileSuccessMessage] = useState('');
@@ -318,6 +320,10 @@ export default function CommunityPage({
     setPostAnonymously(true);
     setAnonymousShortcutMessage('Anonymous mode enabled.');
     postInputRef.current?.focus();
+  };
+
+  const handleSupportSpaceView = (spaceTitle) => {
+    setSupportSpaceFeedback(`${spaceTitle} preview is coming soon.`);
   };
 
   const displayName = getExistingDisplayName(personalDetails);
@@ -797,7 +803,77 @@ export default function CommunityPage({
         </main>
 
         <aside className="community-right-sidebar" aria-label="Community sidebar">
+          <CommunityStreakCard
+            isAtRisk={isCommunityStreakAtRisk || isStreakAtRiskForDate(lastActivityDate)}
+            streakCount={communityStreakCount}
+          />
           <BirthdayCard birthdayUsers={visibleBirthdayUsers} />
+
+          <section className="community-page-card community-active-widget" aria-labelledby="community-active-members-title">
+            <div className="community-page-card__heading">
+              <span className="community-page-card__icon">
+                <Diversity3OutlinedIcon />
+              </span>
+              <div>
+                <span>{communityActiveMembers.length} members</span>
+                <h2 id="community-active-members-title">Active Members</h2>
+              </div>
+            </div>
+            <div className="community-active-members" aria-label="Recently active community members">
+              {communityActiveMembers.map((member) => (
+                <article className="community-active-member" key={member.id}>
+                  <span aria-label={`${member.name}, ${member.status}`} className="community-active-member__avatar">
+                    {member.initials}
+                  </span>
+                  <div>
+                    <strong>{member.name}</strong>
+                    <small>{member.status}</small>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </section>
+
+          <section className="community-page-card community-support-spaces-widget" aria-labelledby="community-support-spaces-title">
+            <div className="community-page-card__heading">
+              <span className="community-page-card__icon">
+                <Diversity3OutlinedIcon />
+              </span>
+              <div>
+                <span>Spaces</span>
+                <h2 id="community-support-spaces-title">Support Spaces</h2>
+              </div>
+            </div>
+            <div className="community-support-space-list">
+              {communitySupportSpaces.map((space) => {
+                const Icon = space.icon;
+                return (
+                  <article className="community-support-space" key={space.title}>
+                    <span className="community-support-space__icon" aria-hidden="true">
+                      <Icon fontSize="small" />
+                    </span>
+                    <div>
+                      <strong>{space.title}</strong>
+                      <small>{space.meta}</small>
+                    </div>
+                    <button
+                      aria-label={`View ${space.title}. Preview only.`}
+                      type="button"
+                      onClick={() => handleSupportSpaceView(space.title)}
+                    >
+                      View
+                    </button>
+                  </article>
+                );
+              })}
+            </div>
+            {supportSpaceFeedback && (
+              <p className="community-support-spaces-widget__feedback" aria-live="polite">
+                {supportSpaceFeedback}
+              </p>
+            )}
+          </section>
+
           {canUseCommunity && (
             <section className="community-page-card community-privacy-card">
               <div className="community-page-card__heading">
@@ -823,39 +899,7 @@ export default function CommunityPage({
               </p>
             </section>
           )}
-          <CommunityStreakCard
-            isAtRisk={isCommunityStreakAtRisk || isStreakAtRiskForDate(lastActivityDate)}
-            streakCount={communityStreakCount}
-          />
           <CommunityGuidelinesCard />
-
-          <section className="community-page-card">
-            <div className="community-page-card__heading">
-              <span className="community-page-card__icon">
-                <Diversity3OutlinedIcon />
-              </span>
-              <div>
-                <span>Circles</span>
-                <h2>Support Spaces</h2>
-              </div>
-            </div>
-            <div className="community-circle-list">
-              {supportCircles.map((circle) => {
-                const Icon = circle.icon;
-                return (
-                  <article className="community-circle-item" key={circle.title}>
-                    <span>
-                      <Icon fontSize="small" />
-                    </span>
-                    <div>
-                      <strong>{circle.title}</strong>
-                      <small>{circle.meta}</small>
-                    </div>
-                  </article>
-                );
-              })}
-            </div>
-          </section>
 
           <section className="community-page-card community-page-card--soft">
             <div className="community-page-card__heading">
@@ -873,6 +917,7 @@ export default function CommunityPage({
               ))}
             </ul>
           </section>
+
         </aside>
       </div>
     </section>

@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react';
+import CakeOutlinedIcon from '@mui/icons-material/CakeOutlined';
 import { birthdayMessages, communityBirthdayUsers } from '../communityMockData';
 
 const getBirthdayMonthDay = (birthday) => {
@@ -92,24 +93,31 @@ export default function BirthdayCard({ birthdayUsers = [] }) {
   if (!birthdayUser) {
     return (
       <section className="birthday-empty-state" aria-label="Birthday celebration">
-        No birthdays today
+        <span className="birthday-empty-state__icon" aria-hidden="true">
+          <CakeOutlinedIcon fontSize="small" />
+        </span>
+        <div>
+          <strong>No birthdays today</strong>
+          <p>Birthday celebrations will appear here when someone is celebrating.</p>
+        </div>
       </section>
     );
   }
 
   return (
-    <section className="birthday-card" aria-label="Birthday celebration">
+    <section className="birthday-card" aria-labelledby="birthday-card-title">
       <div className="birthday-card__header">
         <span className="birthday-card__icon" aria-hidden="true">
-          🎂
+          <CakeOutlinedIcon />
         </span>
-        <div>
-          <span>Community celebration</span>
-          <h2>Today is {birthdayUser.name}’s birthday!</h2>
+        <div className="birthday-card__heading">
+          <span>Today’s Birthday</span>
+          <h2 id="birthday-card-title">{birthdayUser.name}</h2>
+          <p>Send a kind wish and make her day brighter.</p>
         </div>
       </div>
-      <p>Would you like to send {birthdayUser.name} a kind message?</p>
-      <div className="birthday-card__messages">
+
+      <div className="birthday-card__messages" aria-label="Ready-made birthday wishes">
         {birthdayMessages.map((message) => (
           <button
             className={selectedMessage === message ? 'is-selected' : ''}
@@ -122,10 +130,10 @@ export default function BirthdayCard({ birthdayUsers = [] }) {
         ))}
       </div>
       <button className="birthday-card__custom" type="button" onClick={handleCustomMessageClick}>
-        Write Your Own Message
+        Write your own message
       </button>
       {(showCustomMessage || birthdayWishError) && (
-        <>
+        <div className="birthday-card__custom-area">
           <textarea
             aria-describedby={birthdayWishError ? 'birthday-card-error' : undefined}
             aria-label="Birthday wish message"
@@ -142,7 +150,7 @@ export default function BirthdayCard({ birthdayUsers = [] }) {
               {birthdayWishError}
             </p>
           )}
-        </>
+        </div>
       )}
       <button
         className="birthday-card__send"
