@@ -1526,6 +1526,13 @@
   font-weight: 800;
 }
 
+.create-post-card__success {
+  margin: -8px 0 0 62px;
+  color: #287a3e;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
 .create-post-card__footer {
   display: flex;
   align-items: center;
@@ -2167,6 +2174,20 @@
   font-size: 0.82rem;
   font-weight: 800;
   padding: 0 15px;
+}
+
+.community-comment-form__feedback {
+  margin: 8px 0 0;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
+.community-comment-form__feedback--error {
+  color: #b4235a;
+}
+
+.community-comment-form__feedback--success {
+  color: #287a3e;
 }
 
 .community-page-post--pink {

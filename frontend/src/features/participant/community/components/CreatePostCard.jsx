@@ -5,13 +5,16 @@ export default function CreatePostCard({
   onPostTextChange,
   onSubmit,
   postText,
+  successMessage = '',
 }) {
+  const feedbackId = error ? 'create-post-error' : successMessage ? 'create-post-success' : undefined;
+
   return (
     <section className="create-post-card" aria-label="Create a community post">
       <div className="create-post-card__body">
         <span className="create-post-card__avatar">ME</span>
         <textarea
-          aria-describedby={error ? 'create-post-error' : undefined}
+          aria-describedby={feedbackId}
           aria-invalid={Boolean(error)}
           onChange={(event) => onPostTextChange(event.target.value)}
           placeholder="What’s on your mind today?"
@@ -22,6 +25,11 @@ export default function CreatePostCard({
       {error && (
         <p className="create-post-card__error" id="create-post-error">
           {error}
+        </p>
+      )}
+      {successMessage && !error && (
+        <p className="create-post-card__success" id="create-post-success">
+          {successMessage}
         </p>
       )}
       <label className="create-post-card__anonymous">

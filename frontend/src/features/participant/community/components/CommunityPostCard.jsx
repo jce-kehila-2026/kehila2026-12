@@ -4,6 +4,7 @@ import VolunteerActivismOutlinedIcon from '@mui/icons-material/VolunteerActivism
 import CommentsPreview from './CommentsPreview';
 
 export default function CommunityPostCard({
+  commentFeedback,
   commentText,
   isCommentsExpanded,
   onCommentTextChange,
@@ -16,6 +17,7 @@ export default function CommunityPostCard({
   const comments = Array.isArray(post.comments) ? post.comments : post.previewComments ?? [];
   const commentsCount = comments.length;
   const postBody = post.content ?? post.body;
+  const commentFeedbackId = commentFeedback ? `comment-feedback-${post.id}` : undefined;
   const handleCommentSubmit = (event) => {
     event.preventDefault();
     onSubmitComment();
@@ -64,7 +66,9 @@ export default function CommunityPostCard({
       />
       <form className="community-comment-form" onSubmit={handleCommentSubmit}>
         <input
+          aria-describedby={commentFeedbackId}
           aria-label={`Add a comment to ${post.author}'s post`}
+          aria-invalid={commentFeedback?.type === 'error'}
           onChange={(event) => onCommentTextChange(event.target.value)}
           placeholder="Write a comment..."
           type="text"
@@ -72,6 +76,14 @@ export default function CommunityPostCard({
         />
         <button type="submit">Post</button>
       </form>
+      {commentFeedback && (
+        <p
+          className={`community-comment-form__feedback community-comment-form__feedback--${commentFeedback.type}`}
+          id={commentFeedbackId}
+        >
+          {commentFeedback.message}
+        </p>
+      )}
     </article>
   );
 }

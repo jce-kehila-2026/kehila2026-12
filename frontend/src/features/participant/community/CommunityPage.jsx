@@ -213,7 +213,9 @@ export default function CommunityPage() {
   const [newPostText, setNewPostText] = useState('');
   const [postAnonymously, setPostAnonymously] = useState(false);
   const [postError, setPostError] = useState('');
+  const [postSuccessMessage, setPostSuccessMessage] = useState('');
   const [commentInputs, setCommentInputs] = useState({});
+  const [commentFeedbackByPostId, setCommentFeedbackByPostId] = useState({});
   const [expandedCommentPostIds, setExpandedCommentPostIds] = useState({});
   const [communityStreakCount, setCommunityStreakCount] = useState(initialStreakState.streakCount);
   const [lastActivityDate, setLastActivityDate] = useState(initialStreakState.lastActivityDate);
@@ -254,6 +256,7 @@ export default function CommunityPage() {
   const handlePostTextChange = (value) => {
     setNewPostText(value);
     if (postError) setPostError('');
+    if (postSuccessMessage) setPostSuccessMessage('');
   };
 
   const handleCreatePost = () => {
@@ -261,6 +264,7 @@ export default function CommunityPage() {
 
     if (!content) {
       setPostError('Please write something before sharing.');
+      setPostSuccessMessage('');
       return;
     }
 
@@ -294,6 +298,7 @@ export default function CommunityPage() {
     setNewPostText('');
     setPostAnonymously(false);
     setPostError('');
+    setPostSuccessMessage('Post published successfully.');
     registerCommunityActivity();
   };
 
@@ -328,12 +333,28 @@ export default function CommunityPage() {
       ...currentInputs,
       [postId]: value,
     }));
+    setCommentFeedbackByPostId((currentFeedback) => {
+      if (!currentFeedback[postId]) return currentFeedback;
+
+      const nextFeedback = { ...currentFeedback };
+      delete nextFeedback[postId];
+      return nextFeedback;
+    });
   };
 
   const handleSubmitComment = (postId) => {
     const content = (commentInputs[postId] ?? '').trim();
 
-    if (!content) return;
+    if (!content) {
+      setCommentFeedbackByPostId((currentFeedback) => ({
+        ...currentFeedback,
+        [postId]: {
+          type: 'error',
+          message: 'Please write a comment before posting.',
+        },
+      }));
+      return;
+    }
     if (!posts.some((post) => post.id === postId)) return;
 
     const createdAt = new Date();
@@ -364,6 +385,13 @@ export default function CommunityPage() {
     setCommentInputs((currentInputs) => ({
       ...currentInputs,
       [postId]: '',
+    }));
+    setCommentFeedbackByPostId((currentFeedback) => ({
+      ...currentFeedback,
+      [postId]: {
+        type: 'success',
+        message: 'Comment added successfully.',
+      },
     }));
     registerCommunityActivity();
   };
@@ -399,6 +427,7 @@ export default function CommunityPage() {
             onPostTextChange={handlePostTextChange}
             onSubmit={handleCreatePost}
             postText={newPostText}
+            successMessage={postSuccessMessage}
           />
 
           <section className="community-page-card community-page-card--intro">
@@ -420,6 +449,7 @@ export default function CommunityPage() {
             posts.map((post) => (
               <CommunityPostCard
                 commentText={commentInputs[post.id] ?? ''}
+                commentFeedback={commentFeedbackByPostId[post.id]}
                 isCommentsExpanded={Boolean(expandedCommentPostIds[post.id])}
                 onCommentTextChange={(value) => handleCommentInputChange(post.id, value)}
                 onSubmitComment={() => handleSubmitComment(post.id)}

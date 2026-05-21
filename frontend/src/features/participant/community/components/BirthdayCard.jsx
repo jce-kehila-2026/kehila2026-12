@@ -144,7 +144,7 @@ export default function BirthdayCard() {
       >
         Send Birthday Wishes
       </button>
-      {sentBirthdayWish && <p className="birthday-card__success">Birthday wishes ready to send.</p>}
+      {sentBirthdayWish && <p className="birthday-card__success">Birthday wish submitted successfully.</p>}
     </section>
   );
 }
