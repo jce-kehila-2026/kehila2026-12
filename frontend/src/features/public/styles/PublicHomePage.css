@@ -9,6 +9,7 @@
 @import "./public-statistics-section.css";
 @import "./public-support-cta.css";
 @import "./public-team-section.css";
+@import "./public-language-switcher.css";
 @import "./medical-partner-modal.css";
 @import "./public-contact-section.css";
 @import "./public-responsive.css";
@@ -16,6 +17,7 @@
 @import "./public-medical-partners-section.css";
 @import "./public-articles-section.css";
 @import "./public-events-section.css";
+@import "./public-arabic-typography.css";
 
 .public-homepage :where(.public-hero h1) {
   font-weight: 900;

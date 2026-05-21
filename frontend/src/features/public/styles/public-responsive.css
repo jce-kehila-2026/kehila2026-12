@@ -72,9 +72,25 @@
 
   .public-navbar__actions {
     display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
     gap: 10px;
     width: 100%;
+    align-items: center;
+  }
+
+  .public-navbar__actions-end {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 10px;
+    width: auto;
+    min-width: 0;
+  }
+
+  .public-navbar__actions-end .public-navbar__cta {
+    width: auto;
+    min-width: 108px;
+    flex: 1 1 auto;
   }
 
   .public-navbar__cta {
@@ -101,6 +117,19 @@
 
   .public-navbar__actions {
     grid-template-columns: 1fr;
+  }
+
+  .public-navbar__actions-end {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .public-navbar__actions-end .public-navbar__cta {
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 0;
   }
 
   .public-navbar__links a {

@@ -83,6 +83,11 @@
   text-align: right;
 }
 
+.public-homepage[dir='ltr'] .public-hero__content {
+  direction: ltr;
+  text-align: left;
+}
+
 .public-hero__content::before {
   position: absolute;
   inset: -28px -24px -28px -16px;
