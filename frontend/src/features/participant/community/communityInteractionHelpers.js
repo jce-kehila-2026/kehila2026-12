@@ -8,6 +8,7 @@ export const INITIAL_COMMUNITY_STREAK_COUNT = 0;
 export const INITIAL_LAST_ACTIVITY_DATE = null;
 export const COMMUNITY_POSTS_STORAGE_KEY = 'community.posts';
 export const COMMUNITY_STREAK_STORAGE_KEY = 'community.streak';
+export const COMMUNITY_PREFERENCES_STORAGE_KEY = 'community.preferences';
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
@@ -44,11 +45,11 @@ export const createPostModel = ({ author, content, isAnonymous }) => {
   };
 };
 
-export const createCommentModel = (content) => {
+export const createCommentModel = (content, author = 'Current User') => {
   const createdAt = new Date();
   const commentModel = createCommunityCommentModel({
     id: createCommunityId('community-comment', createdAt),
-    authorDisplayName: 'Current User',
+    authorDisplayName: author,
     content,
     createdAt,
     updatedAt: createdAt,
@@ -56,7 +57,7 @@ export const createCommentModel = (content) => {
 
   return {
     ...commentModel,
-    author: 'Current User',
+    author,
     initials: 'CU',
     time: 'Just now',
     text: content,
@@ -238,3 +239,24 @@ export const getInitialStreakState = () => {
     updatedAt: storedStreak?.updatedAt ?? new Date(),
   });
 };
+
+export const getInitialCommunityPreferences = () => {
+  const storedPreferences = safeLoadFromStorage(COMMUNITY_PREFERENCES_STORAGE_KEY);
+
+  if (storedPreferences?.communityPreferencesCompleted === true) {
+    return {
+      birthdayVisibilityCompleted: true,
+      showBirthday: Boolean(storedPreferences.showBirthdayInCommunity),
+    };
+  }
+
+  return {
+    birthdayVisibilityCompleted: false,
+    showBirthday: false,
+  };
+};
+
+export const serializeCommunityPreferences = (preferences) => ({
+  communityPreferencesCompleted: Boolean(preferences.birthdayVisibilityCompleted),
+  showBirthdayInCommunity: Boolean(preferences.showBirthday),
+});

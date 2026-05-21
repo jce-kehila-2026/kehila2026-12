@@ -38,8 +38,11 @@ const getTodaysBirthdayUsers = (users = [], today = new Date()) => users.filter(
     && birthdayMonthDay.day === today.getDate();
 });
 
-export default function BirthdayCard() {
-  const todaysBirthdayUsers = getTodaysBirthdayUsers(communityBirthdayUsers);
+export default function BirthdayCard({ birthdayUsers = [] }) {
+  const todaysBirthdayUsers = getTodaysBirthdayUsers([
+    ...birthdayUsers,
+    ...communityBirthdayUsers,
+  ]);
   const birthdayUser = todaysBirthdayUsers[0];
   const [selectedMessage, setSelectedMessage] = useState('');
   const [showCustomMessage, setShowCustomMessage] = useState(false);

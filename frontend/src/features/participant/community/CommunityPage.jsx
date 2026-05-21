@@ -8,14 +8,17 @@ import {
   supportCircles,
 } from './communityMockData';
 import {
+  COMMUNITY_PREFERENCES_STORAGE_KEY,
   COMMUNITY_POSTS_STORAGE_KEY,
   COMMUNITY_STREAK_STORAGE_KEY,
   getDayDifference,
+  getInitialCommunityPreferences,
   getInitialPosts,
   getInitialStreakState,
   getTodayKey,
   isStreakAtRiskForDate,
   safeSaveToStorage,
+  serializeCommunityPreferences,
   serializeCommunityPost,
 } from './communityInteractionHelpers';
 import {
@@ -30,13 +33,80 @@ import {
   saveAcceptedGuidelinesVersion,
 } from './communityGuidelinesStorage';
 import BirthdayCard from './components/BirthdayCard';
+import CommunityAccessPanel from './components/CommunityAccessPanel';
+import CommunityBirthdayPreferenceCard from './components/CommunityBirthdayPreferenceCard';
 import CommunityGuidelinesCard from './components/CommunityGuidelinesCard';
 import CommunityGuidelinesModal from './components/CommunityGuidelinesModal';
 import CommunityPostCard from './components/CommunityPostCard';
 import CommunityStreakCard from './components/CommunityStreakCard';
 import CreatePostCard from './components/CreatePostCard';
 
-export default function CommunityPage() {
+const getExistingDisplayName = (personalDetails = {}) => (
+  personalDetails.fullName
+  || personalDetails.displayName
+  || personalDetails.userName
+  || personalDetails.name
+  || [personalDetails.firstName, personalDetails.lastName].filter(Boolean).join(' ')
+  || ''
+).trim();
+
+const formatDateToDateKey = (date) => {
+  if (!(date instanceof Date) || Number.isNaN(date.getTime())) return '';
+
+  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+};
+
+const normalizeCommunityBirthday = (birthdayValue) => {
+  if (!birthdayValue) return '';
+
+  if (birthdayValue instanceof Date) {
+    return formatDateToDateKey(birthdayValue);
+  }
+
+  if (typeof birthdayValue === 'object' && typeof birthdayValue.seconds === 'number') {
+    return formatDateToDateKey(new Date(birthdayValue.seconds * 1000));
+  }
+
+  if (typeof birthdayValue !== 'string') return '';
+
+  const trimmed = birthdayValue.trim();
+  if (!trimmed) return '';
+
+  const dateParts = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (dateParts) {
+    const year = Number(dateParts[1]);
+    const month = Number(dateParts[2]);
+    const day = Number(dateParts[3]);
+    const parsedDate = new Date(year, month - 1, day);
+
+    if (
+      parsedDate.getFullYear() === year
+      && parsedDate.getMonth() === month - 1
+      && parsedDate.getDate() === day
+    ) {
+      return trimmed;
+    }
+  }
+
+  const parsedDate = new Date(trimmed);
+  return formatDateToDateKey(parsedDate);
+};
+
+const getCommunityBirthday = (personalDetails = {}) => normalizeCommunityBirthday(
+  personalDetails.birthDate
+  || personalDetails.birthday
+  || personalDetails.dateOfBirth,
+);
+
+const hasRequiredCommunityPersonalDetails = (personalDetails = {}) => Boolean(
+  getExistingDisplayName(personalDetails) && getCommunityBirthday(personalDetails),
+);
+
+export default function CommunityPage({
+  personalDetails = {},
+  isPersonalDetailsLoading = false,
+  onGoToSettings,
+}) {
   const [initialStreakState] = useState(getInitialStreakState);
   const [showGuidelinesModal, setShowGuidelinesModal] = useState(
     () => getAcceptedGuidelinesVersion() !== COMMUNITY_GUIDELINES_VERSION,
@@ -46,6 +116,8 @@ export default function CommunityPage() {
   const [postAnonymously, setPostAnonymously] = useState(false);
   const [postError, setPostError] = useState('');
   const [postSuccessMessage, setPostSuccessMessage] = useState('');
+  const [communityPreferences, setCommunityPreferences] = useState(getInitialCommunityPreferences);
+  const [profileSuccessMessage, setProfileSuccessMessage] = useState('');
   const [commentInputs, setCommentInputs] = useState({});
   const [commentFeedbackByPostId, setCommentFeedbackByPostId] = useState({});
   const [expandedCommentPostIds, setExpandedCommentPostIds] = useState({});
@@ -85,6 +157,15 @@ export default function CommunityPage() {
     });
   }, [communityStreakCount, lastActivityDate]);
 
+  useEffect(() => {
+    if (!communityPreferences.birthdayVisibilityCompleted) return;
+
+    safeSaveToStorage(
+      COMMUNITY_PREFERENCES_STORAGE_KEY,
+      serializeCommunityPreferences(communityPreferences),
+    );
+  }, [communityPreferences]);
+
   const registerCommunityActivity = () => {
     const todayKey = getTodayKey();
     const dayDifference = getDayDifference(lastActivityDate, todayKey);
@@ -110,6 +191,31 @@ export default function CommunityPage() {
     if (postSuccessMessage) setPostSuccessMessage('');
   };
 
+  const displayName = getExistingDisplayName(personalDetails);
+  const birthDate = getCommunityBirthday(personalDetails);
+  const hasRequiredPersonalDetails = hasRequiredCommunityPersonalDetails(personalDetails);
+  const canUseCommunity = hasRequiredPersonalDetails && communityPreferences.birthdayVisibilityCompleted;
+  const visibleBirthdayUsers = communityPreferences.showBirthday && birthDate
+    ? [{ id: personalDetails.id || 'current-user', name: displayName || 'Current User', birthday: birthDate }]
+    : [];
+
+  const handleBirthdayPreferenceSave = (showBirthday) => {
+    setCommunityPreferences({
+      birthdayVisibilityCompleted: true,
+      showBirthday,
+    });
+    setProfileSuccessMessage('Community preference saved.');
+  };
+
+  const handleGoToSettings = () => {
+    if (onGoToSettings) {
+      onGoToSettings();
+      return;
+    }
+
+    window.location.assign('/profile');
+  };
+
   const handleCreatePost = async () => {
     const content = newPostText.trim();
 
@@ -120,7 +226,7 @@ export default function CommunityPage() {
     }
 
     const isAnonymous = postAnonymously;
-    const author = isAnonymous ? 'Anonymous User' : 'Current User';
+    const author = isAnonymous ? 'Anonymous User' : displayName || 'Current User';
     let newPost;
 
     try {
@@ -206,8 +312,8 @@ export default function CommunityPage() {
 
     try {
       newComment = await addCommunityPostComment(postId, {
-        author: 'Current User',
-        authorDisplayName: 'Current User',
+        author: displayName || 'Current User',
+        authorDisplayName: displayName || 'Current User',
         content,
       });
     } catch {
@@ -271,50 +377,77 @@ export default function CommunityPage() {
 
       <div className="community-page__layout">
         <main className="community-page__feed" aria-label="Community feed">
-          <CreatePostCard
-            isAnonymous={postAnonymously}
-            error={postError}
-            onAnonymousChange={setPostAnonymously}
-            onPostTextChange={handlePostTextChange}
-            onSubmit={handleCreatePost}
-            postText={newPostText}
-            successMessage={postSuccessMessage}
-          />
-
-          <section className="community-page-card community-page-card--intro">
-            <span className="community-page-card__icon">
-              <LocalFloristOutlinedIcon />
-            </span>
-            <div>
-              <h2>Today in the community</h2>
-              <p>Stories, reflections, and encouragement from participants walking a similar path.</p>
-            </div>
-          </section>
-
-          {posts.length === 0 ? (
-            <section className="community-empty-state" aria-label="Empty community feed">
-              <h2>No posts yet</h2>
-              <p>Be the first to share something with the community.</p>
+          {isPersonalDetailsLoading && (
+            <section className="community-profile-setup" aria-label="Loading community profile">
+              <div className="community-profile-setup__heading">
+                <span className="community-profile-setup__icon" aria-hidden="true">
+                  <Diversity3OutlinedIcon />
+                </span>
+                <div>
+                  <span>Community access</span>
+                  <h2>Checking your personal details</h2>
+                  <p>Preparing your community profile...</p>
+                </div>
+              </div>
             </section>
-          ) : (
-            posts.map((post) => (
-              <CommunityPostCard
-                commentText={commentInputs[post.id] ?? ''}
-                commentFeedback={commentFeedbackByPostId[post.id]}
-                isCommentsExpanded={Boolean(expandedCommentPostIds[post.id])}
-                onCommentTextChange={(value) => handleCommentInputChange(post.id, value)}
-                onSubmitComment={() => handleSubmitComment(post.id)}
-                onToggleCommentsExpanded={() => handleToggleCommentsExpanded(post.id)}
-                onToggleLike={handleToggleLike}
-                post={post}
-                key={post.id}
+          )}
+          {!isPersonalDetailsLoading && !hasRequiredPersonalDetails && (
+            <CommunityAccessPanel onGoToSettings={handleGoToSettings} />
+          )}
+          {!isPersonalDetailsLoading && hasRequiredPersonalDetails && !communityPreferences.birthdayVisibilityCompleted && (
+            <CommunityBirthdayPreferenceCard onSave={handleBirthdayPreferenceSave} />
+          )}
+          {profileSuccessMessage && canUseCommunity && (
+            <p className="community-profile-setup__success">{profileSuccessMessage}</p>
+          )}
+          {canUseCommunity && (
+            <>
+              <CreatePostCard
+                isAnonymous={postAnonymously}
+                error={postError}
+                onAnonymousChange={setPostAnonymously}
+                onPostTextChange={handlePostTextChange}
+                onSubmit={handleCreatePost}
+                postText={newPostText}
+                successMessage={postSuccessMessage}
               />
-            ))
+
+              <section className="community-page-card community-page-card--intro">
+                <span className="community-page-card__icon">
+                  <LocalFloristOutlinedIcon />
+                </span>
+                <div>
+                  <h2>Today in the community</h2>
+                  <p>Stories, reflections, and encouragement from participants walking a similar path.</p>
+                </div>
+              </section>
+
+              {posts.length === 0 ? (
+                <section className="community-empty-state" aria-label="Empty community feed">
+                  <h2>No posts yet</h2>
+                  <p>Be the first to share something with the community.</p>
+                </section>
+              ) : (
+                posts.map((post) => (
+                  <CommunityPostCard
+                    commentText={commentInputs[post.id] ?? ''}
+                    commentFeedback={commentFeedbackByPostId[post.id]}
+                    isCommentsExpanded={Boolean(expandedCommentPostIds[post.id])}
+                    onCommentTextChange={(value) => handleCommentInputChange(post.id, value)}
+                    onSubmitComment={() => handleSubmitComment(post.id)}
+                    onToggleCommentsExpanded={() => handleToggleCommentsExpanded(post.id)}
+                    onToggleLike={handleToggleLike}
+                    post={post}
+                    key={post.id}
+                  />
+                ))
+              )}
+            </>
           )}
         </main>
 
         <aside className="community-page__rail" aria-label="Community sidebar">
-          <BirthdayCard />
+          <BirthdayCard birthdayUsers={visibleBirthdayUsers} />
           <CommunityStreakCard
             isAtRisk={isCommunityStreakAtRisk || isStreakAtRiskForDate(lastActivityDate)}
             streakCount={communityStreakCount}

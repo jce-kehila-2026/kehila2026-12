@@ -49,7 +49,10 @@ export async function toggleCommunityPostLike(postId, userId) {
 
 export async function addCommunityPostComment(postId, commentData = {}) {
   return {
-    ...createCommentModel(commentData.content ?? ''),
+    ...createCommentModel(
+      commentData.content ?? '',
+      commentData.author ?? commentData.authorDisplayName ?? 'Current User',
+    ),
     postId,
   };
 }
