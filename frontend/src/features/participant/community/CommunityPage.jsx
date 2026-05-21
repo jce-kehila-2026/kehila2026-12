@@ -27,6 +27,53 @@ const normalizeCommunityPosts = (posts) => posts.map((post, index) => ({
   comments: Array.isArray(post.comments) ? post.comments : post.previewComments ?? [],
 }));
 
+const INITIAL_COMMUNITY_STREAK_COUNT = 0;
+const INITIAL_LAST_ACTIVITY_DATE = null;
+const MS_PER_DAY = 24 * 60 * 60 * 1000;
+
+const getTodayKey = (date = new Date()) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
+};
+
+const getDateKeyTimestamp = (dateKey) => {
+  if (typeof dateKey !== 'string') return null;
+
+  const dateParts = dateKey.match(/^(\d{4})-(\d{2})-(\d{2})$/);
+  if (!dateParts) return null;
+
+  const year = Number(dateParts[1]);
+  const month = Number(dateParts[2]);
+  const day = Number(dateParts[3]);
+  const parsedDate = new Date(year, month - 1, day);
+
+  if (
+    parsedDate.getFullYear() !== year
+    || parsedDate.getMonth() !== month - 1
+    || parsedDate.getDate() !== day
+  ) {
+    return null;
+  }
+
+  return Date.UTC(year, month - 1, day);
+};
+
+const getDayDifference = (previousDateKey, currentDateKey = getTodayKey()) => {
+  const previousTimestamp = getDateKeyTimestamp(previousDateKey);
+  const currentTimestamp = getDateKeyTimestamp(currentDateKey);
+
+  if (previousTimestamp === null || currentTimestamp === null) return null;
+
+  return Math.round((currentTimestamp - previousTimestamp) / MS_PER_DAY);
+};
+
+const isStreakAtRiskForDate = (lastActivityDate, todayKey = getTodayKey()) => (
+  getDayDifference(lastActivityDate, todayKey) === 2
+);
+
 export default function CommunityPage() {
   const [showGuidelinesModal, setShowGuidelinesModal] = useState(
     () => getAcceptedGuidelinesVersion() !== COMMUNITY_GUIDELINES_VERSION,
@@ -37,6 +84,25 @@ export default function CommunityPage() {
   const [postError, setPostError] = useState('');
   const [commentInputs, setCommentInputs] = useState({});
   const [expandedCommentPostIds, setExpandedCommentPostIds] = useState({});
+  const [communityStreakCount, setCommunityStreakCount] = useState(INITIAL_COMMUNITY_STREAK_COUNT);
+  const [lastActivityDate, setLastActivityDate] = useState(INITIAL_LAST_ACTIVITY_DATE);
+  const [isCommunityStreakAtRisk, setIsCommunityStreakAtRisk] = useState(
+    () => isStreakAtRiskForDate(INITIAL_LAST_ACTIVITY_DATE),
+  );
+
+  const registerCommunityActivity = () => {
+    const todayKey = getTodayKey();
+    const dayDifference = getDayDifference(lastActivityDate, todayKey);
+
+    if (!lastActivityDate || dayDifference === null || dayDifference >= 3) {
+      setCommunityStreakCount(1);
+    } else if (dayDifference === 1 || dayDifference === 2) {
+      setCommunityStreakCount((currentCount) => currentCount + 1);
+    }
+
+    setLastActivityDate(todayKey);
+    setIsCommunityStreakAtRisk(false);
+  };
 
   const handleGuidelinesContinue = () => {
     saveAcceptedGuidelinesVersion();
@@ -86,9 +152,13 @@ export default function CommunityPage() {
     setNewPostText('');
     setPostAnonymously(false);
     setPostError('');
+    registerCommunityActivity();
   };
 
   const handleToggleLike = (postId) => {
+    const postToUpdate = posts.find((post) => post.id === postId);
+    const shouldIncreaseStreak = postToUpdate ? !postToUpdate.isLiked : false;
+
     setPosts((currentPosts) => currentPosts.map((post) => {
       if (post.id !== postId) return post;
 
@@ -105,6 +175,10 @@ export default function CommunityPage() {
         likes: nextLikesCount,
       };
     }));
+
+    if (shouldIncreaseStreak) {
+      registerCommunityActivity();
+    }
   };
 
   const handleCommentInputChange = (postId, value) => {
@@ -118,6 +192,7 @@ export default function CommunityPage() {
     const content = (commentInputs[postId] ?? '').trim();
 
     if (!content) return;
+    if (!posts.some((post) => post.id === postId)) return;
 
     const createdAt = new Date();
     const newComment = {
@@ -148,6 +223,7 @@ export default function CommunityPage() {
       ...currentInputs,
       [postId]: '',
     }));
+    registerCommunityActivity();
   };
 
   const handleToggleCommentsExpanded = (postId) => {
@@ -209,7 +285,10 @@ export default function CommunityPage() {
 
         <aside className="community-page__rail" aria-label="Community sidebar">
           <BirthdayCard />
-          <CommunityStreakCard />
+          <CommunityStreakCard
+            isAtRisk={isCommunityStreakAtRisk || isStreakAtRiskForDate(lastActivityDate)}
+            streakCount={communityStreakCount}
+          />
           <CommunityGuidelinesCard />
 
           <section className="community-page-card">
