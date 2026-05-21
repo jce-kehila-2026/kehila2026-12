@@ -475,10 +475,10 @@
   grid-template-columns: repeat(3, minmax(0, 1fr));
   grid-auto-rows: auto;
   align-items: stretch;
-  gap: clamp(30px, 3vw, 40px);
-  width: 100%;
+  gap: var(--public-grid-gap, clamp(20px, 2.4vw, 28px));
+  width: min(100%, var(--public-grid-max, 1280px));
   max-width: 100%;
-  margin: 0;
+  margin: 0 auto;
   padding-block-end: 0;
   opacity: 1;
   visibility: visible;
@@ -788,10 +788,6 @@
 }
 
 @media (max-width: 1180px) {
-  .public-homepage .public-section--support .public-support__grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
   .public-homepage .public-section--learn-together .services-grid-wrapper .public-support__card {
     width: clamp(260px, calc((100cqw - var(--services-scroll-gap)) / 2), 400px);
   }
@@ -814,11 +810,6 @@
 
   .public-homepage .public-section--learn-together .services-grid-wrapper .public-support__card {
     width: clamp(260px, calc(100cqw - 24px), 400px);
-  }
-
-  .public-homepage .public-section--support .public-support__grid {
-    grid-template-columns: 1fr;
-    gap: 24px;
   }
 
   .public-homepage .public-section--support .public-support__media {

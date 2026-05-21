@@ -132,9 +132,10 @@
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   align-items: stretch;
-  gap: clamp(24px, 2.8vw, 32px);
-  width: 100%;
-  margin: 0;
+  gap: var(--public-grid-gap, clamp(20px, 2.4vw, 28px));
+  width: min(100%, var(--public-grid-max, 1280px));
+  max-width: 100%;
+  margin: 0 auto;
   padding: 0;
 }
 
@@ -367,20 +368,9 @@
   outline-offset: 3px;
 }
 
-@media (max-width: 1080px) {
-  .public-homepage .public-section--events .public-events-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-}
-
 @media (max-width: 680px) {
   .public-homepage .public-section.public-section--events {
     padding-inline: clamp(18px, 5vw, 28px);
-  }
-
-  .public-homepage .public-section--events .public-events-grid {
-    grid-template-columns: 1fr;
-    gap: 24px;
   }
 
   .public-homepage .public-section--events .public-event-card__media {
