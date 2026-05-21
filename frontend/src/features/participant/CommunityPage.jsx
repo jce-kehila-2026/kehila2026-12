@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import ChatBubbleOutlineOutlinedIcon from '@mui/icons-material/ChatBubbleOutlineOutlined';
 import Diversity3OutlinedIcon from '@mui/icons-material/Diversity3Outlined';
 import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined';
@@ -17,6 +18,17 @@ const communityPosts = [
     likes: 28,
     comments: 7,
     tone: 'pink',
+  },
+  {
+    author: 'Anonymous Participant',
+    initials: 'AP',
+    time: 'Today at 8:10',
+    topic: 'Quiet courage',
+    title: 'Sharing a small brave step',
+    body: 'I was nervous to join a group session, but listening quietly still helped me feel less alone. Taking part can look different for each of us.',
+    likes: 22,
+    comments: 4,
+    tone: 'lavender',
   },
   {
     author: 'Leah',
@@ -55,12 +67,27 @@ const communityResources = [
 ];
 
 function CreatePostCard() {
+  const [postAnonymously, setPostAnonymously] = useState(false);
+
   return (
     <section className="create-post-card" aria-label="Create a community post">
       <div className="create-post-card__body">
         <span className="create-post-card__avatar">ME</span>
         <textarea placeholder="What’s on your mind today?" rows="3" />
       </div>
+      <label className="create-post-card__anonymous">
+        <input
+          type="checkbox"
+          checked={postAnonymously}
+          onChange={(event) => setPostAnonymously(event.target.checked)}
+        />
+        <span>Post anonymously</span>
+      </label>
+      {postAnonymously && (
+        <p className="create-post-card__helper">
+          Your post will appear as Anonymous Participant to other members.
+        </p>
+      )}
       <div className="create-post-card__footer">
         <span>Share a thought with the She-Na community.</span>
         <button type="button">Share Post</button>
