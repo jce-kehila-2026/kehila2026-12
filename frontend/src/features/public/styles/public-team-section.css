@@ -35,18 +35,20 @@
 }
 
 .public-team-section__row {
-  display: grid;
   gap: clamp(20px, 2.2vw, 28px);
 }
 
 .public-team-section__row--primary {
+  display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: stretch;
 }
 
 .public-team-section__row--secondary {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
+  align-items: stretch;
   gap: clamp(20px, 2.2vw, 28px);
 }
 
@@ -64,6 +66,7 @@
   justify-items: center;
   gap: 0;
   min-height: auto;
+  height: 100%;
   padding-block: clamp(26px, 2.8vw, 32px) clamp(22px, 2.4vw, 28px);
   padding-inline: clamp(18px, 2vw, 24px);
   overflow: visible;

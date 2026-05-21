@@ -5,8 +5,11 @@
 .public-support__grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 28px;
+  gap: var(--public-grid-gap, clamp(20px, 2.4vw, 28px));
+  width: min(100%, var(--public-grid-max, 1280px));
+  max-width: 100%;
   margin-block-start: 56px;
+  margin-inline: auto;
 }
 
 .public-learn-together__scroller {
@@ -162,8 +165,11 @@
 .public-team-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 28px;
+  gap: var(--public-grid-gap, clamp(20px, 2.4vw, 28px));
+  width: min(100%, var(--public-grid-max, 1280px));
+  max-width: 100%;
   margin-block-start: 0;
+  margin-inline: auto;
 }
 
 .public-team-card {
@@ -284,8 +290,11 @@
 .public-articles-grid,
 .public-events-grid {
   display: grid;
-  gap: 28px;
+  gap: var(--public-grid-gap, clamp(20px, 2.4vw, 28px));
+  width: min(100%, var(--public-grid-max, 1280px));
+  max-width: 100%;
   margin-block-start: 58px;
+  margin-inline: auto;
 }
 
 .public-articles-grid,
@@ -334,6 +343,8 @@
 .public-article-card,
 .public-event-card {
   display: grid;
+  min-width: 0;
+  max-width: 100%;
   overflow: hidden;
 }
 

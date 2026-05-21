@@ -49,3 +49,110 @@
 .public-homepage :where(small, time, .public-article-card__meta) {
   font-weight: 300;
 }
+
+/* —— Shared homepage card grids (responsive) —— */
+.public-homepage {
+  --public-grid-gap: clamp(20px, 2.4vw, 28px);
+  --public-grid-max: 1280px;
+  --public-grid-min: 280px;
+}
+
+.public-homepage :is(
+  .public-about__cards,
+  .public-statistics__grid,
+  .medical-partners__grid,
+  .press-articles__grid,
+  .public-team-grid,
+  .public-articles-grid,
+  .public-events-grid,
+  .public-section--events .public-events-grid,
+  .public-section--support .public-support__grid
+) {
+  display: grid;
+  gap: var(--public-grid-gap);
+  width: min(100%, var(--public-grid-max));
+  max-width: 100%;
+  margin-inline: auto;
+  justify-items: stretch;
+  align-items: stretch;
+}
+
+.public-homepage :is(
+  .public-about__cards,
+  .public-statistics__grid,
+  .medical-partners__grid,
+  .press-articles__grid
+) {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.public-homepage :is(
+  .public-team-grid,
+  .public-articles-grid,
+  .public-events-grid,
+  .public-section--events .public-events-grid,
+  .public-section--support .public-support__grid
+) {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.public-homepage :is(
+  .public-about__card,
+  .public-statistics__card,
+  .medical-partners__card,
+  .press-article-card,
+  .public-team-section__card,
+  .public-team-card,
+  .public-article-card,
+  .public-event-card,
+  .public-section--support .public-support__card
+) {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.public-homepage :is(
+  .public-article-card__media img,
+  .public-event-card__media img,
+  .public-section--events .public-event-card__image,
+  .press-article-card__media img,
+  .public-support__media img,
+  .public-team-card__media img
+) {
+  display: block;
+  width: 100%;
+  object-fit: cover;
+}
+
+@media (max-width: 1024px) {
+  .public-homepage :is(
+    .public-about__cards,
+    .public-statistics__grid,
+    .medical-partners__grid,
+    .press-articles__grid,
+    .public-team-grid,
+    .public-articles-grid,
+    .public-events-grid,
+    .public-section--events .public-events-grid,
+    .public-section--support .public-support__grid
+  ) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .public-homepage :is(
+    .public-about__cards,
+    .public-statistics__grid,
+    .medical-partners__grid,
+    .press-articles__grid,
+    .public-team-grid,
+    .public-articles-grid,
+    .public-events-grid,
+    .public-section--events .public-events-grid,
+    .public-section--support .public-support__grid
+  ) {
+    grid-template-columns: minmax(0, 1fr);
+    gap: clamp(18px, 4vw, 22px);
+  }
+}
