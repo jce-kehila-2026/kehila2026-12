@@ -99,6 +99,14 @@ const communityGuidelines = [
   'No judgment, just support',
 ];
 
+const modalGuidelines = [
+  'Be kind and respectful',
+  'Protect your privacy and the privacy of others',
+  'Do not share harmful or offensive content',
+  'What is shared here should stay within the community',
+  'No judgment, only support',
+];
+
 function CreatePostCard() {
   const [postAnonymously, setPostAnonymously] = useState(false);
 
@@ -126,6 +134,40 @@ function CreatePostCard() {
         <button type="button">Share Post</button>
       </div>
     </section>
+  );
+}
+
+function CommunityGuidelinesModal({ onContinue }) {
+  const [agreedToGuidelines, setAgreedToGuidelines] = useState(false);
+
+  return (
+    <div className="community-guidelines-modal" role="dialog" aria-modal="true" aria-labelledby="community-guidelines-modal-title">
+      <div className="community-guidelines-modal__panel">
+        <span className="community-guidelines-modal__icon" aria-hidden="true">
+          <Diversity3OutlinedIcon />
+        </span>
+        <div className="community-guidelines-modal__copy">
+          <h2 id="community-guidelines-modal-title">Welcome to the Community</h2>
+          <p>This is a safe space for sharing, support, and respectful interaction.</p>
+        </div>
+        <ul className="community-guidelines-modal__list">
+          {modalGuidelines.map((guideline) => (
+            <li key={guideline}>{guideline}</li>
+          ))}
+        </ul>
+        <label className="community-guidelines-modal__agree">
+          <input
+            type="checkbox"
+            checked={agreedToGuidelines}
+            onChange={(event) => setAgreedToGuidelines(event.target.checked)}
+          />
+          <span>I agree to the community guidelines</span>
+        </label>
+        <button type="button" disabled={!agreedToGuidelines} onClick={onContinue}>
+          Continue
+        </button>
+      </div>
+    </div>
   );
 }
 
@@ -291,8 +333,12 @@ function CommunityPostCard({ post }) {
 }
 
 export default function CommunityPage() {
+  const [showGuidelinesModal, setShowGuidelinesModal] = useState(true);
+
   return (
     <section className="community-page" aria-labelledby="community-page-title">
+      {showGuidelinesModal && <CommunityGuidelinesModal onContinue={() => setShowGuidelinesModal(false)} />}
+
       <header className="community-page__header">
         <div>
           <span>Participant community</span>
