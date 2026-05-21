@@ -7,6 +7,30 @@ import MenuBookOutlinedIcon from '@mui/icons-material/MenuBookOutlined';
 import SelfImprovementOutlinedIcon from '@mui/icons-material/SelfImprovementOutlined';
 import VolunteerActivismOutlinedIcon from '@mui/icons-material/VolunteerActivismOutlined';
 
+const COMMUNITY_GUIDELINES_VERSION = 'v1';
+const COMMUNITY_GUIDELINES_ACCEPTED_KEY = 'communityGuidelinesAccepted';
+
+function getAcceptedGuidelinesVersion() {
+  if (typeof window === 'undefined') return null;
+
+  try {
+    return window.localStorage.getItem(COMMUNITY_GUIDELINES_ACCEPTED_KEY);
+  } catch (error) {
+    console.warn('Unable to read community guidelines acceptance:', error);
+    return null;
+  }
+}
+
+function saveAcceptedGuidelinesVersion() {
+  if (typeof window === 'undefined') return;
+
+  try {
+    window.localStorage.setItem(COMMUNITY_GUIDELINES_ACCEPTED_KEY, COMMUNITY_GUIDELINES_VERSION);
+  } catch (error) {
+    console.warn('Unable to save community guidelines acceptance:', error);
+  }
+}
+
 const communityPosts = [
   {
     author: 'Maya',
@@ -333,11 +357,17 @@ function CommunityPostCard({ post }) {
 }
 
 export default function CommunityPage() {
-  const [showGuidelinesModal, setShowGuidelinesModal] = useState(true);
+  const [showGuidelinesModal, setShowGuidelinesModal] = useState(
+    () => getAcceptedGuidelinesVersion() !== COMMUNITY_GUIDELINES_VERSION,
+  );
+  const handleGuidelinesContinue = () => {
+    saveAcceptedGuidelinesVersion();
+    setShowGuidelinesModal(false);
+  };
 
   return (
     <section className="community-page" aria-labelledby="community-page-title">
-      {showGuidelinesModal && <CommunityGuidelinesModal onContinue={() => setShowGuidelinesModal(false)} />}
+      {showGuidelinesModal && <CommunityGuidelinesModal onContinue={handleGuidelinesContinue} />}
 
       <header className="community-page__header">
         <div>
