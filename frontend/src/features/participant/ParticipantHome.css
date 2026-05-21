@@ -1297,7 +1297,8 @@
 .community-page-card,
 .community-page-post,
 .create-post-card,
-.birthday-card {
+.birthday-card,
+.guidelines-card {
   border: 1px solid rgba(123, 63, 161, 0.1);
   border-radius: 24px;
   background: rgba(255, 255, 255, 0.88);
@@ -1415,6 +1416,83 @@
 
 .community-page-card {
   padding: 22px;
+}
+
+.guidelines-card {
+  display: grid;
+  gap: 16px;
+  padding: 22px;
+}
+
+.guidelines-card__heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.guidelines-card__icon {
+  flex: 0 0 auto;
+  width: 48px;
+  height: 48px;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  background: linear-gradient(135deg, #eadffd, #ffe1f0);
+  color: #7b3fa1;
+}
+
+.guidelines-card__icon svg {
+  font-size: 26px;
+}
+
+.guidelines-card h2 {
+  margin: 0;
+  color: #201033;
+  font-size: 1.05rem;
+  line-height: 1.25;
+}
+
+.guidelines-card ul {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.guidelines-card li {
+  position: relative;
+  border-radius: 14px;
+  background: #fff8fc;
+  color: rgba(32, 16, 51, 0.68);
+  font-size: 0.86rem;
+  font-weight: 700;
+  line-height: 1.4;
+  padding: 10px 12px 10px 34px;
+}
+
+.guidelines-card li::before {
+  content: '';
+  position: absolute;
+  left: 14px;
+  top: 17px;
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #ec168c;
+  box-shadow: 0 0 0 4px rgba(236, 22, 140, 0.1);
+}
+
+.guidelines-card button {
+  justify-self: start;
+  border: 0;
+  background: transparent;
+  color: #7b3fa1;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 800;
+  padding: 0;
 }
 
 .birthday-card {
@@ -1874,7 +1952,8 @@
 .participant-home--dark .community-page-card,
 .participant-home--dark .community-page-post,
 .participant-home--dark .create-post-card,
-.participant-home--dark .birthday-card {
+.participant-home--dark .birthday-card,
+.participant-home--dark .guidelines-card {
   border-color: rgba(236, 72, 153, 0.25);
   background: rgba(15, 23, 42, 0.92);
   color: #e2e8f0;
@@ -1892,6 +1971,7 @@
 .participant-home--dark .community-page-post strong,
 .participant-home--dark .community-circle-item strong,
 .participant-home--dark .birthday-card h2,
+.participant-home--dark .guidelines-card h2,
 .participant-home--dark .recommendation-card strong,
 .participant-home--dark .participant-profile span {
   color: #f8fafc;
@@ -1908,6 +1988,7 @@
 .participant-home--dark .create-post-card__footer span,
 .participant-home--dark .birthday-card p,
 .participant-home--dark .community-resource-list li,
+.participant-home--dark .guidelines-card li,
 .participant-home--dark .dashboard-section-heading span {
   color: #cbd5e1;
 }
@@ -1988,6 +2069,14 @@
 
 .participant-home--dark .birthday-card__success {
   background: rgba(236, 72, 153, 0.12);
+  color: #fbcfe8;
+}
+
+.participant-home--dark .guidelines-card li {
+  background: rgba(30, 41, 59, 0.78);
+}
+
+.participant-home--dark .guidelines-card button {
   color: #fbcfe8;
 }
 

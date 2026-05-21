@@ -92,6 +92,13 @@ const birthdayMessages = [
   'Sending you love and warm wishes today 🎂',
 ];
 
+const communityGuidelines = [
+  'Be kind and respectful',
+  'Share with honesty and empathy',
+  'What’s shared here, stays here',
+  'No judgment, just support',
+];
+
 function CreatePostCard() {
   const [postAnonymously, setPostAnonymously] = useState(false);
 
@@ -118,6 +125,25 @@ function CreatePostCard() {
         <span>Share a thought with the She-Na community.</span>
         <button type="button">Share Post</button>
       </div>
+    </section>
+  );
+}
+
+function CommunityGuidelinesCard() {
+  return (
+    <section className="guidelines-card" aria-labelledby="community-guidelines-title">
+      <div className="guidelines-card__heading">
+        <span className="guidelines-card__icon">
+          <VolunteerActivismOutlinedIcon />
+        </span>
+        <h2 id="community-guidelines-title">Community Guidelines</h2>
+      </div>
+      <ul>
+        {communityGuidelines.map((rule) => (
+          <li key={rule}>{rule}</li>
+        ))}
+      </ul>
+      <button type="button">Read full guidelines</button>
     </section>
   );
 }
@@ -327,6 +353,8 @@ export default function CommunityPage() {
               })}
             </div>
           </section>
+
+          <CommunityGuidelinesCard />
 
           <section className="community-page-card community-page-card--soft">
             <div className="community-page-card__heading">
