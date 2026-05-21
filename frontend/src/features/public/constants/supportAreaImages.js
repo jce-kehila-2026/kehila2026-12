@@ -56,6 +56,9 @@ export const SUPPORT_AREA_IMAGE_ORDER = [
   'women-events',
 ];
 
+/** Primary bundled images for homepage activity cards (display order). */
+export const LEARN_TOGETHER_DISPLAY_IMAGES = ['support-groups', 'lectures-workshops', 'women-events'];
+
 /** Maps Learn Together CMS card ids to bundled local image keys. */
 export const LEARN_TOGETHER_CARD_AREA_IDS = {
   'seed-support-groups': 'support-groups',
@@ -67,12 +70,16 @@ export const LEARN_TOGETHER_CARD_AREA_IDS = {
 };
 
 export function getLearnTogetherCardImageMeta(card = {}, index = 0) {
-  const areaId = LEARN_TOGETHER_CARD_AREA_IDS[card.id] || SUPPORT_AREA_IMAGE_ORDER[index % SUPPORT_AREA_IMAGE_ORDER.length];
+  const areaId =
+    LEARN_TOGETHER_CARD_AREA_IDS[card.id] ||
+    LEARN_TOGETHER_DISPLAY_IMAGES[index % LEARN_TOGETHER_DISPLAY_IMAGES.length] ||
+    SUPPORT_AREA_IMAGE_ORDER[index % SUPPORT_AREA_IMAGE_ORDER.length];
   const meta = getSupportAreaImageMeta({ id: areaId }, index);
 
   return {
     ...meta,
     id: areaId,
+    bundledSrc: meta.bundledSrc,
   };
 }
 
