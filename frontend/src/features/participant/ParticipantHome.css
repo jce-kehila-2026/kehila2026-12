@@ -1831,6 +1831,12 @@
   padding: 10px 12px;
 }
 
+.birthday-card__error {
+  color: #b4235a;
+  font-size: 0.8rem;
+  font-weight: 800;
+}
+
 .community-page-card--intro {
   display: flex;
   align-items: center;

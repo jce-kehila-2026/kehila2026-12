@@ -6,27 +6,43 @@ export default function BirthdayCard() {
   const [showCustomMessage, setShowCustomMessage] = useState(false);
   const [customMessage, setCustomMessage] = useState('');
   const [sentBirthdayWish, setSentBirthdayWish] = useState(false);
-  const canSendBirthdayWish = selectedMessage || customMessage.trim();
+  const [birthdayWishError, setBirthdayWishError] = useState('');
 
   const handleReadyMessageClick = (message) => {
     setSelectedMessage(message);
+    setShowCustomMessage(true);
+    setCustomMessage(message);
     setSentBirthdayWish(false);
+    setBirthdayWishError('');
   };
 
   const handleCustomMessageClick = () => {
     setShowCustomMessage(true);
     setSelectedMessage('');
     setSentBirthdayWish(false);
+    setBirthdayWishError('');
   };
 
   const handleCustomMessageChange = (event) => {
     setCustomMessage(event.target.value);
+    setSelectedMessage('');
     setSentBirthdayWish(false);
+    setBirthdayWishError('');
   };
 
   const handleSendBirthdayWish = () => {
-    if (!canSendBirthdayWish) return;
+    const message = customMessage.trim();
+
+    if (!message) {
+      setBirthdayWishError('Please choose or write a birthday message.');
+      setSentBirthdayWish(false);
+      return;
+    }
+
+    setCustomMessage('');
+    setSelectedMessage('');
     setSentBirthdayWish(true);
+    setBirthdayWishError('');
   };
 
   return (
@@ -56,19 +72,27 @@ export default function BirthdayCard() {
       <button className="birthday-card__custom" type="button" onClick={handleCustomMessageClick}>
         Write Your Own Message
       </button>
-      {showCustomMessage && (
-        <textarea
-          className="birthday-card__textarea"
-          value={customMessage}
-          onChange={handleCustomMessageChange}
-          rows="3"
-          placeholder="Write a warm birthday message..."
-        />
+      {(showCustomMessage || birthdayWishError) && (
+        <>
+          <textarea
+            aria-describedby={birthdayWishError ? 'birthday-card-error' : undefined}
+            aria-invalid={Boolean(birthdayWishError)}
+            className="birthday-card__textarea"
+            value={customMessage}
+            onChange={handleCustomMessageChange}
+            rows="3"
+            placeholder="Write a warm birthday message..."
+          />
+          {birthdayWishError && (
+            <p className="birthday-card__error" id="birthday-card-error">
+              {birthdayWishError}
+            </p>
+          )}
+        </>
       )}
       <button
         className="birthday-card__send"
         type="button"
-        disabled={!canSendBirthdayWish}
         onClick={handleSendBirthdayWish}
       >
         Send Birthday Wishes
