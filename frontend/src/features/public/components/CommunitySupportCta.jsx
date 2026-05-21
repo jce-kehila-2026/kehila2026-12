@@ -1,7 +1,10 @@
+import { useMemo } from 'react';
 import { BadgeCheck, HandHeart, Heart, ShieldCheck } from 'lucide-react';
 import donationHandsImage from '../../../assets/images/donation-hands.png';
 import { PUBLIC_DONATION_TARGET } from '../constants/publicDonationLink';
 import PublicSectionHeading from './PublicSectionHeading';
+import { usePublicLocale } from '../context/PublicLocaleContext';
+import { localizeDonationFeatures } from '../i18n/publicHomeContentLocalization';
 
 const FEATURE_ICON_PROPS = {
   className: 'public-support-cta__feature-icon-glyph',
@@ -32,6 +35,9 @@ const SUPPORT_FEATURES = [
 ];
 
 export default function CommunitySupportCta({ onDonationClick }) {
+  const { locale, t } = usePublicLocale();
+  const features = useMemo(() => localizeDonationFeatures(SUPPORT_FEATURES, locale), [locale]);
+
   function handleDonationClick(event) {
     event.preventDefault();
     onDonationClick?.();
@@ -58,15 +64,15 @@ export default function CommunitySupportCta({ onDonationClick }) {
         <div className="public-support-cta__content">
           <PublicSectionHeading
             className="public-support-cta__heading"
-            eyebrow="עזרו לנו להמשיך לתמוך"
-            title="כל תרומה קטנה יוצרת שינוי גדול"
+            eyebrow={t('donationEyebrow')}
+            title={t('donationTitle')}
             titleId="public-support-cta-title"
-            subtitle="בעזרתכם נוכל להמשיך להעניק תמיכה, ליווי ותקווה לנשים בקהילה."
+            subtitle={t('donationSubtitle')}
           />
 
           <div className="public-support-cta__feature-zone stagger-children">
             <ul className="public-support-cta__features">
-              {SUPPORT_FEATURES.map((feature) => {
+              {features.map((feature) => {
                 const Icon = feature.icon;
 
                 return (
@@ -85,7 +91,7 @@ export default function CommunitySupportCta({ onDonationClick }) {
 
             <a className="public-support-cta__button reveal" href={PUBLIC_DONATION_TARGET} onClick={handleDonationClick}>
               <Heart className="public-support-cta__button-icon" strokeWidth={2} fill="currentColor" aria-hidden="true" />
-              לתרומה
+              {t('donationButton')}
             </a>
           </div>
         </div>
@@ -105,7 +111,7 @@ export default function CommunitySupportCta({ onDonationClick }) {
               <img
                 className="public-support-cta__image"
                 src={donationHandsImage}
-                alt="ידיים מחבקות לב ורוד — סמל לתמיכה ולתרומה"
+                alt={t('donationImageAlt')}
                 width={560}
                 height={560}
                 loading="lazy"

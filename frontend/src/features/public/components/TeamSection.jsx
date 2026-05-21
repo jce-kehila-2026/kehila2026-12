@@ -1,8 +1,10 @@
-import { useRef } from 'react';
+import { useMemo, useRef } from 'react';
 import { TEAM_MEMBERS } from '../constants/teamMembers';
 import PublicSectionHeading from './PublicSectionHeading';
 import TeamSectionMemberCard from './TeamSectionMemberCard';
 import useInViewOnce from '../hooks/useInViewOnce';
+import { usePublicLocale } from '../context/PublicLocaleContext';
+import { localizeTeamStaff } from '../i18n/publicHomeContentLocalization';
 
 const PRIMARY_ROW_COUNT = 4;
 const TEAM_CARD_STAGGER_MS = 100;
@@ -10,8 +12,10 @@ const TEAM_CARD_STAGGER_MS = 100;
 export default function TeamSection() {
   const rowsRef = useRef(null);
   const cardsInView = useInViewOnce(rowsRef, { threshold: 0.12, rootMargin: '0px 0px -4% 0px' });
-  const primaryRow = TEAM_MEMBERS.slice(0, PRIMARY_ROW_COUNT);
-  const secondaryRow = TEAM_MEMBERS.slice(PRIMARY_ROW_COUNT);
+  const { locale, t } = usePublicLocale();
+  const localizedMembers = useMemo(() => localizeTeamStaff(TEAM_MEMBERS, locale), [locale]);
+  const primaryRow = localizedMembers.slice(0, PRIMARY_ROW_COUNT);
+  const secondaryRow = localizedMembers.slice(PRIMARY_ROW_COUNT);
 
   return (
     <section
@@ -22,10 +26,10 @@ export default function TeamSection() {
       <div className="public-team-section__inner">
         <PublicSectionHeading
           className="public-team-section__heading"
-          eyebrow="הכוח שמאחורי הקהילה"
-          title="הכירו את הצוות שלנו"
+          eyebrow={t('teamEyebrow')}
+          title={t('teamTitle')}
           titleId="public-team-section-title"
-          subtitle="צוות מקצועי ומסור שמלווה נשים בדרך לצמיחה, תמיכה והחלמה."
+          subtitle={t('teamSubtitle')}
         />
 
         <div className="public-team-section__rows" ref={rowsRef}>
