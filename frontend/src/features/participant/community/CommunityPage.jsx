@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from 'react';
 import Diversity3OutlinedIcon from '@mui/icons-material/Diversity3Outlined';
 import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined';
 import LocalFloristOutlinedIcon from '@mui/icons-material/LocalFloristOutlined';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import MenuBookOutlinedIcon from '@mui/icons-material/MenuBookOutlined';
 import RefreshOutlinedIcon from '@mui/icons-material/RefreshOutlined';
 import {
@@ -242,7 +241,6 @@ export default function CommunityPage({
   const [postAttachment, setPostAttachment] = useState(null);
   const [postError, setPostError] = useState('');
   const [postSuccessMessage, setPostSuccessMessage] = useState('');
-  const [anonymousShortcutMessage, setAnonymousShortcutMessage] = useState('');
   const [activeFeedTab, setActiveFeedTab] = useState('all');
   const [feedSortBy, setFeedSortBy] = useState('latest');
   const [isRefreshingFeed, setIsRefreshingFeed] = useState(false);
@@ -393,13 +391,6 @@ export default function CommunityPage({
     setNewPostText(value);
     if (postError) setPostError('');
     if (postSuccessMessage) setPostSuccessMessage('');
-    if (anonymousShortcutMessage) setAnonymousShortcutMessage('');
-  };
-
-  const handleWriteAnonymously = () => {
-    setPostAnonymously(true);
-    setAnonymousShortcutMessage('Anonymous mode enabled.');
-    postInputRef.current?.focus();
   };
 
   const handleSupportSpaceView = (space) => {
@@ -525,7 +516,6 @@ export default function CommunityPage({
     setPostAnonymously(false);
     setPostError('');
     setPostSuccessMessage('Post published successfully.');
-    setAnonymousShortcutMessage('');
     registerCommunityActivity();
   };
 
@@ -829,30 +819,6 @@ export default function CommunityPage({
                 postText={newPostText}
                 successMessage={postSuccessMessage}
               />
-
-              {allowAnonymousPosting && (
-                <section className="community-anonymous-promo" aria-labelledby="community-anonymous-promo-title">
-                  <span className="community-anonymous-promo__icon" aria-hidden="true">
-                    <LockOutlinedIcon />
-                  </span>
-                  <div className="community-anonymous-promo__copy">
-                    <h2 id="community-anonymous-promo-title">Share anonymously</h2>
-                    <p>Share what’s on your mind without showing your name or profile.</p>
-                    {anonymousShortcutMessage && (
-                      <span className="community-anonymous-promo__feedback" aria-live="polite">
-                        {anonymousShortcutMessage}
-                      </span>
-                    )}
-                  </div>
-                  <button
-                    aria-label="Write anonymously in the community composer"
-                    type="button"
-                    onClick={handleWriteAnonymously}
-                  >
-                    Write Anonymously
-                  </button>
-                </section>
-              )}
 
               <section className="community-feed-controls" aria-label="Community feed controls">
                 <div className="community-feed-tabs" role="tablist" aria-label="Community feed filters">

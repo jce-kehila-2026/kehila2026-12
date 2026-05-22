@@ -1587,7 +1587,6 @@
 .community-page-card,
 .community-page-post,
 .create-post-card,
-.community-anonymous-promo,
 .birthday-card,
 .guidelines-card,
 .community-streak-card {
@@ -1665,7 +1664,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
   flex-wrap: wrap;
   min-width: 0;
   border-top: 1px solid var(--community-divider);
@@ -1705,6 +1704,22 @@
   background: #fff2f9;
   color: #ec168c;
   outline: none;
+}
+
+.create-post-card__anonymous-status {
+  width: fit-content;
+  max-width: calc(100% - 56px);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin: -2px 0 0 56px;
+  border: 1px solid rgba(123, 63, 161, 0.1);
+  border-radius: 999px;
+  background: linear-gradient(135deg, #fff2f9, #f5ecff);
+  color: #7b3fa1;
+  font-size: 0.76rem;
+  font-weight: 800;
+  padding: 7px 10px;
 }
 
 .create-post-card__picker,
@@ -1833,26 +1848,112 @@
 }
 
 .create-post-card__anonymous {
+  flex: 1 1 250px;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  min-height: 34px;
+  gap: 9px;
+  min-height: 42px;
   border: 1px solid var(--community-card-border);
-  border-radius: 999px;
+  border-radius: 16px;
   background: rgba(255, 255, 255, 0.78);
   color: var(--community-accent-strong);
   cursor: pointer;
-  font-size: 0.8rem;
-  font-weight: 800;
+  font-size: 0.82rem;
+  font-weight: 700;
   max-width: 100%;
-  padding: 0 11px;
+  padding: 8px 10px;
+  transition: border-color 180ms ease, background 180ms ease, color 180ms ease, box-shadow 180ms ease;
+}
+
+.create-post-card__anonymous:hover,
+.create-post-card__anonymous:focus-within {
+  border-color: rgba(236, 22, 140, 0.24);
+  background: #fff2f9;
+  box-shadow: var(--community-focus-ring);
+}
+
+.create-post-card__anonymous.is-active {
+  border-color: rgba(236, 22, 140, 0.28);
+  background: linear-gradient(135deg, #fff2f9, #f5ecff);
+  color: #ec168c;
 }
 
 .create-post-card__anonymous input {
-  width: 15px;
-  height: 15px;
-  accent-color: #ec168c;
-  cursor: pointer;
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.create-post-card__anonymous-icon {
+  flex: 0 0 auto;
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(123, 63, 161, 0.08);
+  color: #7b3fa1;
+}
+
+.create-post-card__anonymous.is-active .create-post-card__anonymous-icon {
+  background: rgba(236, 22, 140, 0.1);
+  color: #ec168c;
+}
+
+.create-post-card__anonymous-copy {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+}
+
+.create-post-card__anonymous-copy strong,
+.create-post-card__anonymous-copy small {
+  display: block;
+  overflow-wrap: anywhere;
+}
+
+.create-post-card__anonymous-copy strong {
+  color: var(--community-primary-text);
+  font-size: 0.82rem;
+  line-height: 1.2;
+}
+
+.create-post-card__anonymous-copy small {
+  color: var(--community-muted-strong);
+  font-size: 0.72rem;
+  line-height: 1.25;
+}
+
+.create-post-card__anonymous-switch {
+  position: relative;
+  flex: 0 0 auto;
+  width: 38px;
+  height: 22px;
+  margin-left: auto;
+  border-radius: 999px;
+  background: rgba(123, 63, 161, 0.14);
+  transition: background 180ms ease;
+}
+
+.create-post-card__anonymous-switch::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(75, 19, 107, 0.18);
+  transition: transform 180ms ease;
+}
+
+.create-post-card__anonymous.is-active .create-post-card__anonymous-switch {
+  background: linear-gradient(135deg, #7b3fa1, #ec168c);
+}
+
+.create-post-card__anonymous.is-active .create-post-card__anonymous-switch::after {
+  transform: translateX(16px);
 }
 
 .create-post-card__helper {
@@ -1880,23 +1981,7 @@
   font-weight: 800;
 }
 
-.create-post-card__footer {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 12px;
-  flex-wrap: wrap;
-  min-width: 0;
-}
-
-.create-post-card__footer span {
-  min-width: 0;
-  color: var(--community-muted-strong);
-  font-size: 0.82rem;
-  font-weight: 700;
-}
-
-.create-post-card__footer button {
+.create-post-card__submit {
   flex: 0 0 auto;
   min-height: 40px;
   border: 0;
@@ -1910,79 +1995,6 @@
   padding: 0 20px;
   box-shadow: 0 12px 24px rgba(236, 22, 140, 0.18);
   white-space: nowrap;
-}
-
-.community-anonymous-promo {
-  display: grid;
-  grid-template-columns: auto minmax(0, 1fr) auto;
-  align-items: center;
-  gap: 14px;
-  overflow: hidden;
-  background:
-    radial-gradient(circle at 92% 14%, rgba(255, 255, 255, 0.78), transparent 8rem),
-    linear-gradient(135deg, #fff2f9, #f5ecff 64%, #fff);
-  padding: var(--community-card-padding);
-}
-
-.community-anonymous-promo__icon {
-  width: 46px;
-  height: 46px;
-  display: grid;
-  place-items: center;
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.76);
-  color: #7b3fa1;
-  box-shadow: inset 0 0 0 1px rgba(123, 63, 161, 0.09);
-}
-
-.community-anonymous-promo__icon svg {
-  color: #ec168c;
-  font-size: 24px;
-}
-
-.community-anonymous-promo__copy {
-  min-width: 0;
-}
-
-.community-anonymous-promo h2,
-.community-anonymous-promo p {
-  margin: 0;
-}
-
-.community-anonymous-promo h2 {
-  color: var(--community-primary-text);
-  font-size: 1rem;
-  line-height: 1.25;
-}
-
-.community-anonymous-promo p {
-  margin-top: 5px;
-  color: var(--community-muted);
-  font-size: 0.88rem;
-  line-height: 1.45;
-}
-
-.community-anonymous-promo__feedback {
-  display: inline-flex;
-  margin-top: 8px;
-  color: #287a3e;
-  font-size: 0.8rem;
-  font-weight: 800;
-}
-
-.community-anonymous-promo button {
-  min-height: 38px;
-  border: 0;
-  border-radius: 999px;
-  background: linear-gradient(135deg, #7b3fa1, #ec168c);
-  color: #fff;
-  cursor: pointer;
-  font: inherit;
-  font-size: 0.84rem;
-  font-weight: 800;
-  padding: 0 16px;
-  white-space: nowrap;
-  box-shadow: 0 12px 24px rgba(123, 63, 161, 0.16);
 }
 
 .community-feed-controls {
@@ -3359,8 +3371,7 @@
 }
 
 .community-comment-form button:focus-visible,
-.community-anonymous-promo button:focus-visible,
-.create-post-card__footer button:focus-visible,
+.create-post-card__submit:focus-visible,
 .birthday-card__send:focus-visible,
 .community-profile-setup__form button:focus-visible,
 .community-profile-setup__action:focus-visible,
@@ -3596,7 +3607,6 @@
 .participant-home--dark .community-page-card,
 .participant-home--dark .community-page-post,
 .participant-home--dark .create-post-card,
-.participant-home--dark .community-anonymous-promo,
 .participant-home--dark .birthday-card,
 .participant-home--dark .guidelines-card,
 .participant-home--dark .community-streak-card {
@@ -3616,7 +3626,7 @@
 .participant-home--dark .community-page-post h3,
 .participant-home--dark .community-page-post strong,
 .participant-home--dark .community-circle-item strong,
-.participant-home--dark .community-anonymous-promo h2,
+.participant-home--dark .create-post-card__anonymous-copy strong,
 .participant-home--dark .birthday-card h2,
 .participant-home--dark .guidelines-card h2,
 .participant-home--dark .community-streak-card strong,
@@ -3633,8 +3643,7 @@
 .participant-home--dark .community-page__header p,
 .participant-home--dark .community-page-card p,
 .participant-home--dark .community-page-post p,
-.participant-home--dark .community-anonymous-promo p,
-.participant-home--dark .create-post-card__footer span,
+.participant-home--dark .create-post-card__anonymous-copy small,
 .participant-home--dark .birthday-card p,
 .participant-home--dark .community-resource-list li,
 .participant-home--dark .guidelines-card li,
@@ -3663,6 +3672,18 @@
   color: #fbcfe8;
 }
 
+.participant-home--dark .create-post-card__anonymous-status,
+.participant-home--dark .create-post-card__anonymous.is-active {
+  border-color: rgba(236, 72, 153, 0.28);
+  background: rgba(236, 72, 153, 0.14);
+  color: #fbcfe8;
+}
+
+.participant-home--dark .create-post-card__anonymous-icon {
+  background: rgba(236, 72, 153, 0.14);
+  color: #fbcfe8;
+}
+
 .participant-home--dark .create-post-card__action:hover,
 .participant-home--dark .create-post-card__action:focus-visible {
   border-color: rgba(236, 72, 153, 0.38);
@@ -3673,21 +3694,6 @@
 .participant-home--dark .create-post-card__helper {
   background: rgba(236, 72, 153, 0.12);
   color: #cbd5e1;
-}
-
-.participant-home--dark .community-anonymous-promo {
-  background:
-    radial-gradient(circle at 92% 14%, rgba(236, 72, 153, 0.16), transparent 8rem),
-    rgba(15, 23, 42, 0.92);
-}
-
-.participant-home--dark .community-anonymous-promo__icon {
-  background: rgba(236, 72, 153, 0.12);
-  color: #fbcfe8;
-}
-
-.participant-home--dark .community-anonymous-promo__feedback {
-  color: #86efac;
 }
 
 .participant-home--dark .community-feed-tabs button,
@@ -4208,7 +4214,6 @@
   .community-page-card,
   .community-page-post,
   .create-post-card,
-  .community-anonymous-promo,
   .birthday-card,
   .guidelines-card,
   .community-streak-card,
@@ -4216,11 +4221,6 @@
   .community-empty-state {
     border-radius: 20px;
     padding: 18px;
-  }
-
-  .create-post-card__footer {
-    align-items: stretch;
-    flex-direction: column;
   }
 
   .create-post-card__avatar {
@@ -4244,7 +4244,7 @@
     justify-content: center;
   }
 
-  .create-post-card__footer button {
+  .create-post-card__submit {
     width: 100%;
   }
 
@@ -4301,20 +4301,14 @@
   }
 
   .community-profile-setup__actions,
-  .community-anonymous-promo,
   .community-page-post__report-confirmation,
   .community-page-post__report-confirmation div {
     align-items: stretch;
     flex-direction: column;
   }
 
-  .community-anonymous-promo {
-    grid-template-columns: 1fr;
-  }
-
   .community-profile-setup__actions button,
   .community-profile-setup__action,
-  .community-anonymous-promo button,
   .community-page-post__report-confirmation button {
     width: 100%;
   }
@@ -4376,7 +4370,6 @@
   .community-page-card,
   .community-page-post,
   .create-post-card,
-  .community-anonymous-promo,
   .birthday-card,
   .guidelines-card,
   .community-streak-card,

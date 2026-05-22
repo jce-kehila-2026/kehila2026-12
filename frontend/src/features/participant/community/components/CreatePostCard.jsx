@@ -3,6 +3,7 @@ import AddPhotoAlternateOutlinedIcon from '@mui/icons-material/AddPhotoAlternate
 import EmojiEmotionsOutlinedIcon from '@mui/icons-material/EmojiEmotionsOutlined';
 import GifBoxOutlinedIcon from '@mui/icons-material/GifBoxOutlined';
 import KeyboardVoiceOutlinedIcon from '@mui/icons-material/KeyboardVoiceOutlined';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 
 const composerActions = [
   { label: 'Photo', icon: AddPhotoAlternateOutlinedIcon },
@@ -260,6 +261,12 @@ export default function CreatePostCard({
           {successMessage}
         </p>
       )}
+      {allowAnonymousPosting && isAnonymous && (
+        <div className="create-post-card__anonymous-status" aria-live="polite">
+          <LockOutlinedIcon fontSize="inherit" />
+          Posting anonymously
+        </div>
+      )}
       <div className="create-post-card__toolbar" aria-label="Post options">
         <div className="create-post-card__actions" aria-label="Attachment options">
           {composerActions.map(({ label, icon: Icon }) => (
@@ -278,15 +285,24 @@ export default function CreatePostCard({
         </div>
 
         {allowAnonymousPosting && (
-          <label className="create-post-card__anonymous">
+          <label className={`create-post-card__anonymous${isAnonymous ? ' is-active' : ''}`}>
             <input
+              aria-label="Post anonymously"
               type="checkbox"
               checked={isAnonymous}
               onChange={(event) => onAnonymousChange(event.target.checked)}
             />
-            <span>Anonymous</span>
+            <span className="create-post-card__anonymous-icon" aria-hidden="true">
+              <LockOutlinedIcon fontSize="small" />
+            </span>
+            <span className="create-post-card__anonymous-copy">
+              <strong>Post anonymously</strong>
+              <small>Your name and profile will be hidden</small>
+            </span>
+            <span className="create-post-card__anonymous-switch" aria-hidden="true" />
           </label>
         )}
+        <button className="create-post-card__submit" type="button" onClick={onSubmit}>Share Post</button>
       </div>
       {openPicker === 'GIF' && (
         <div className="create-post-card__picker" aria-label="Local GIF picker">
@@ -325,14 +341,6 @@ export default function CreatePostCard({
           {localFeedback}
         </p>
       )}
-      {allowAnonymousPosting && isAnonymous && (
-        <p className="create-post-card__helper">
-          Your post will appear as Anonymous Participant to other members.
-        </p>
-      )}
-      <div className="create-post-card__footer">
-        <button type="button" onClick={onSubmit}>Share Post</button>
-      </div>
     </section>
   );
 }
