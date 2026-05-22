@@ -2059,6 +2059,130 @@
   box-shadow: var(--community-focus-ring);
 }
 
+.community-feed-refresh {
+  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid rgba(236, 22, 140, 0.18);
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.8), transparent 2.8rem),
+    linear-gradient(135deg, #fff2f9, #f5ecff);
+  color: var(--community-accent-strong);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.82rem;
+  font-weight: 800;
+  padding: 0 14px;
+  box-shadow: 0 10px 22px rgba(123, 63, 161, 0.1);
+  transition:
+    transform 180ms ease,
+    background 180ms ease,
+    border-color 180ms ease,
+    color 180ms ease,
+    box-shadow 180ms ease,
+    opacity 180ms ease;
+}
+
+.community-feed-refresh:hover,
+.community-feed-refresh:focus-visible {
+  transform: translateY(-1px);
+  border-color: rgba(236, 22, 140, 0.3);
+  background:
+    radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.9), transparent 2.8rem),
+    linear-gradient(135deg, #ffe7f4, #efe4ff);
+  color: #ec168c;
+  box-shadow: var(--community-focus-ring), 0 14px 26px rgba(236, 22, 140, 0.12);
+  outline: none;
+}
+
+.community-feed-refresh:disabled {
+  cursor: wait;
+  opacity: 0.78;
+  transform: none;
+}
+
+.community-feed-refresh__icon {
+  transition: transform 180ms ease;
+}
+
+.community-feed-refresh.is-refreshing .community-feed-refresh__icon {
+  animation: community-refresh-spin 850ms linear infinite;
+}
+
+.community-feed-refresh__feedback {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  width: fit-content;
+  max-width: 100%;
+  margin: -5px 0 0;
+  border: 1px solid rgba(40, 122, 62, 0.12);
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 12% 20%, rgba(255, 255, 255, 0.86), transparent 2.5rem),
+    rgba(245, 255, 249, 0.9);
+  color: #287a3e;
+  font-size: 0.76rem;
+  font-weight: 800;
+  line-height: 1.35;
+  padding: 7px 10px;
+  box-shadow: 0 10px 22px rgba(40, 122, 62, 0.08);
+  animation: community-refresh-feedback 2600ms ease forwards;
+}
+
+.community-feed-refresh__feedback::before {
+  content: '';
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #34a853;
+  box-shadow: 0 0 0 5px rgba(52, 168, 83, 0.11);
+}
+
+.community-feed-panel--refreshed {
+  animation: community-feed-refresh-pulse 520ms ease both;
+}
+
+@keyframes community-refresh-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes community-refresh-feedback {
+  0% {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+
+  14%,
+  78% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes community-feed-refresh-pulse {
+  0% {
+    opacity: 0.74;
+    transform: translateY(5px);
+    filter: saturate(0.96);
+  }
+
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    filter: saturate(1);
+  }
+}
+
 .community-post-list {
   display: grid;
   gap: var(--community-section-gap);
@@ -3567,10 +3691,19 @@
 }
 
 .participant-home--dark .community-feed-tabs button,
-.participant-home--dark .community-feed-sort select {
+.participant-home--dark .community-feed-sort select,
+.participant-home--dark .community-feed-refresh {
   border-color: rgba(236, 72, 153, 0.18);
   background: rgba(30, 41, 59, 0.72);
   color: #cbd5e1;
+}
+
+.participant-home--dark .community-feed-refresh:hover,
+.participant-home--dark .community-feed-refresh:focus-visible,
+.participant-home--dark .community-feed-refresh.is-refreshing {
+  border-color: rgba(236, 72, 153, 0.36);
+  background: rgba(236, 72, 153, 0.14);
+  color: #fbcfe8;
 }
 
 .participant-home--dark .community-feed-tabs button.is-active {
@@ -3581,6 +3714,12 @@
 
 .participant-home--dark .community-feed-sort {
   color: #cbd5e1;
+}
+
+.participant-home--dark .community-feed-refresh__feedback {
+  border-color: rgba(134, 239, 172, 0.18);
+  background: rgba(22, 101, 52, 0.18);
+  color: #86efac;
 }
 
 .participant-home--dark .community-page-post__actions {
@@ -4117,7 +4256,8 @@
 
   .community-feed-tabs,
   .community-feed-sort,
-  .community-feed-sort select {
+  .community-feed-sort select,
+  .community-feed-refresh {
     width: 100%;
   }
 
@@ -4127,6 +4267,10 @@
   }
 
   .community-feed-tabs button {
+    justify-content: center;
+  }
+
+  .community-feed-refresh {
     justify-content: center;
   }
 

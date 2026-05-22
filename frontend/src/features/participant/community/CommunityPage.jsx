@@ -4,6 +4,7 @@ import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlin
 import LocalFloristOutlinedIcon from '@mui/icons-material/LocalFloristOutlined';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import MenuBookOutlinedIcon from '@mui/icons-material/MenuBookOutlined';
+import RefreshOutlinedIcon from '@mui/icons-material/RefreshOutlined';
 import {
   communityActiveMembers,
   communityPosts,
@@ -244,6 +245,10 @@ export default function CommunityPage({
   const [anonymousShortcutMessage, setAnonymousShortcutMessage] = useState('');
   const [activeFeedTab, setActiveFeedTab] = useState('all');
   const [feedSortBy, setFeedSortBy] = useState('latest');
+  const [isRefreshingFeed, setIsRefreshingFeed] = useState(false);
+  const [refreshFeedback, setRefreshFeedback] = useState('');
+  const [refreshPulseKey, setRefreshPulseKey] = useState(0);
+  const [relativeTimeNow, setRelativeTimeNow] = useState(() => new Date());
   const [supportSpaceFeedback, setSupportSpaceFeedback] = useState('');
   const [communityUserProfile, setCommunityUserProfile] = useState(getInitialCommunityUserProfile);
   const [communityPreferences, setCommunityPreferences] = useState(getInitialCommunityPreferences);
@@ -263,6 +268,33 @@ export default function CommunityPage({
     () => isStreakAtRiskForDate(initialStreakState.lastActivityDate),
   );
 
+  const refreshCommunityFeed = async ({ showFeedback = false } = {}) => {
+    if (showFeedback) {
+      setIsRefreshingFeed(true);
+      setRefreshFeedback('');
+    }
+
+    try {
+      const loadedPosts = await getCommunityPosts();
+      if (Array.isArray(loadedPosts)) {
+        setPosts(loadedPosts);
+      }
+      setRelativeTimeNow(new Date());
+      if (showFeedback) {
+        setRefreshPulseKey((currentKey) => currentKey + 1);
+        setRefreshFeedback('Community feed refreshed');
+      }
+    } catch {
+      if (showFeedback) {
+        setRefreshFeedback('Community feed refreshed');
+      }
+    } finally {
+      if (showFeedback) {
+        setIsRefreshingFeed(false);
+      }
+    }
+  };
+
   useEffect(() => {
     let ignoreResult = false;
 
@@ -270,6 +302,7 @@ export default function CommunityPage({
       .then((loadedPosts) => {
         if (!ignoreResult && Array.isArray(loadedPosts)) {
           setPosts(loadedPosts);
+          setRelativeTimeNow(new Date());
         }
       })
       .catch(() => {
@@ -280,6 +313,28 @@ export default function CommunityPage({
       ignoreResult = true;
     };
   }, []);
+
+  useEffect(() => {
+    const timerId = window.setInterval(() => {
+      setRelativeTimeNow(new Date());
+    }, 30000);
+
+    return () => {
+      window.clearInterval(timerId);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!refreshFeedback) return undefined;
+
+    const timerId = window.setTimeout(() => {
+      setRefreshFeedback('');
+    }, 2600);
+
+    return () => {
+      window.clearTimeout(timerId);
+    };
+  }, [refreshFeedback]);
 
   useEffect(() => {
     safeSaveToStorage(COMMUNITY_POSTS_STORAGE_KEY, posts.map(serializeCommunityPost));
@@ -829,7 +884,25 @@ export default function CommunityPage({
                     ))}
                   </select>
                 </label>
+
+                <button
+                  aria-label="Refresh local community feed"
+                  aria-busy={isRefreshingFeed}
+                  className={`community-feed-refresh${isRefreshingFeed ? ' is-refreshing' : ''}`}
+                  disabled={isRefreshingFeed}
+                  title="Refresh local community feed"
+                  type="button"
+                  onClick={() => refreshCommunityFeed({ showFeedback: true })}
+                >
+                  <RefreshOutlinedIcon className="community-feed-refresh__icon" fontSize="small" />
+                  <span>{isRefreshingFeed ? 'Refreshing...' : 'Refresh'}</span>
+                </button>
               </section>
+              {refreshFeedback && (
+                <p className="community-feed-refresh__feedback" aria-live="polite">
+                  {refreshFeedback}
+                </p>
+              )}
 
               <section className="community-page-card community-page-card--intro">
                 <span className="community-page-card__icon">
@@ -844,8 +917,9 @@ export default function CommunityPage({
               {sortedVisiblePosts.length === 0 ? (
                 <section
                   aria-labelledby={`community-feed-tab-${activeFeedTab}`}
-                  className="community-empty-state"
+                  className={`community-empty-state${refreshPulseKey > 0 ? ' community-feed-panel--refreshed' : ''}`}
                   id="community-feed-panel"
+                  key={`empty-${activeFeedTab}-${refreshPulseKey}`}
                   role="tabpanel"
                 >
                   <h2>{emptyFeedMessage.title}</h2>
@@ -854,8 +928,9 @@ export default function CommunityPage({
               ) : (
                 <section
                   aria-labelledby={`community-feed-tab-${activeFeedTab}`}
-                  className="community-post-list"
+                  className={`community-post-list${refreshPulseKey > 0 ? ' community-feed-panel--refreshed' : ''}`}
                   id="community-feed-panel"
+                  key={`posts-${activeFeedTab}-${refreshPulseKey}`}
                   role="tabpanel"
                 >
                   {sortedVisiblePosts.map((post) => (
@@ -878,6 +953,7 @@ export default function CommunityPage({
                       onToggleCommentsExpanded={() => handleToggleCommentsExpanded(post.id)}
                       onToggleLike={handleToggleLike}
                       post={post}
+                      relativeTimeNow={relativeTimeNow}
                       isReportedByCurrentUser={Array.isArray(post.reportedBy) && post.reportedBy.includes(localUserId)}
                       reportFeedback={reportFeedbackByPostId[post.id]}
                     />

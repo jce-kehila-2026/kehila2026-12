@@ -4,7 +4,10 @@ import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlin
 import MoreHorizOutlinedIcon from '@mui/icons-material/MoreHorizOutlined';
 import ShieldOutlinedIcon from '@mui/icons-material/ShieldOutlined';
 import VolunteerActivismOutlinedIcon from '@mui/icons-material/VolunteerActivismOutlined';
-import { isCommunityContentVisible } from '../communityInteractionHelpers';
+import {
+  formatRelativeCommunityTime,
+  isCommunityContentVisible,
+} from '../communityInteractionHelpers';
 import CommentsPreview from './CommentsPreview';
 
 export default function CommunityPostCard({
@@ -26,6 +29,7 @@ export default function CommunityPostCard({
   onToggleCommentsExpanded,
   onToggleLike,
   post,
+  relativeTimeNow,
   reportFeedback,
 }) {
   const reportConfirmButtonRef = useRef(null);
@@ -36,6 +40,7 @@ export default function CommunityPostCard({
     .filter(isCommunityContentVisible);
   const commentsCount = comments.length;
   const postBody = post.content ?? post.body;
+  const postTime = formatRelativeCommunityTime(post.createdAt, relativeTimeNow);
   const commentFeedbackId = commentFeedback ? `comment-feedback-${post.id}` : undefined;
   const handleCommentSubmit = (event) => {
     event.preventDefault();
@@ -118,7 +123,7 @@ export default function CommunityPostCard({
               </button>
             )}
           </div>
-          <small>{post.time}</small>
+          <small>{postTime}</small>
         </div>
         <span className="community-page-post__topic">{post.topic}</span>
         <span className="community-page-post__more" aria-hidden="true">
