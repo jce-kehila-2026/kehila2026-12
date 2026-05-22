@@ -1,9 +1,38 @@
+import { formatRelativeCommunityTime } from '../communityInteractionHelpers';
+
 const COMMENTS_PREVIEW_LIMIT = 2;
+
+const getCommentInitials = (comment = {}) => {
+  if (comment.initials) return comment.initials;
+
+  const displayName = comment.authorDisplayName ?? comment.author ?? 'CU';
+  return displayName
+    .split(' ')
+    .filter(Boolean)
+    .map((part) => part[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase() || 'CU';
+};
+
+const isOwnComment = (comment = {}, localUserId, localUserName) => {
+  if (localUserId && comment.authorId === localUserId) return true;
+  if (comment.isLocalCurrentUser) return true;
+  if (!comment.authorId && localUserName) {
+    return [comment.author, comment.authorDisplayName].some((name) => name === localUserName);
+  }
+
+  return false;
+};
 
 export default function CommentsPreview({
   comments = [],
   isExpanded = false,
+  localUserId,
+  localUserName,
+  onDeleteComment,
   onToggleExpanded,
+  relativeTimeNow,
 }) {
   const hasMoreComments = comments.length > COMMENTS_PREVIEW_LIMIT;
   const visibleComments = isExpanded ? comments : comments.slice(0, COMMENTS_PREVIEW_LIMIT);
@@ -19,18 +48,35 @@ export default function CommentsPreview({
   return (
     <section className="comments-preview" aria-label="Comments preview">
       <div className="comments-preview__list">
-        {visibleComments.map((comment) => (
-          <article className="comments-preview__item" key={comment.id ?? `${comment.author}-${comment.text}`}>
-            <span className="comments-preview__avatar">{comment.initials}</span>
-            <div className="comments-preview__bubble">
-              <header className="comments-preview__header">
-                <strong>{comment.author}</strong>
-                {comment.time && <small>{comment.time}</small>}
-              </header>
-              <p>{comment.content ?? comment.text}</p>
-            </div>
-          </article>
-        ))}
+        {visibleComments.map((comment) => {
+          const commentAuthor = comment.authorDisplayName ?? comment.author ?? 'Community member';
+          const canDeleteComment = isOwnComment(comment, localUserId, localUserName);
+          const commentTime = formatRelativeCommunityTime(comment.createdAt, relativeTimeNow);
+
+          return (
+            <article className="comments-preview__item" key={comment.id ?? `${comment.author}-${comment.text}`}>
+              <span className="comments-preview__avatar" aria-hidden="true">{getCommentInitials(comment)}</span>
+              <div className="comments-preview__bubble">
+                <header className="comments-preview__header">
+                  <div className="comments-preview__meta">
+                    <strong>{commentAuthor}</strong>
+                    <small>{commentTime}</small>
+                  </div>
+                  {canDeleteComment && (
+                    <button
+                      className="comments-preview__delete"
+                      type="button"
+                      onClick={() => onDeleteComment?.(comment.id)}
+                    >
+                      Delete
+                    </button>
+                  )}
+                </header>
+                <p>{comment.content ?? comment.text}</p>
+              </div>
+            </article>
+          );
+        })}
       </div>
       {hasMoreComments && (
         <button className="comments-preview__view-all" onClick={onToggleExpanded} type="button">

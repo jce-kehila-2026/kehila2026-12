@@ -1,10 +1,7 @@
-import { useState } from 'react';
 import VolunteerActivismOutlinedIcon from '@mui/icons-material/VolunteerActivismOutlined';
 import { communityGuidelines } from '../communityMockData';
 
-export default function CommunityGuidelinesCard() {
-  const [guidelinesFeedback, setGuidelinesFeedback] = useState('');
-
+export default function CommunityGuidelinesCard({ onReadFullGuidelines }) {
   return (
     <section className="guidelines-card" aria-labelledby="community-guidelines-title">
       <div className="guidelines-card__heading">
@@ -22,12 +19,9 @@ export default function CommunityGuidelinesCard() {
           <li key={rule}>{rule}</li>
         ))}
       </ul>
-      <button type="button" onClick={() => setGuidelinesFeedback('Full guidelines preview is coming soon.')}>
+      <button type="button" onClick={onReadFullGuidelines}>
         Read full guidelines
       </button>
-      {guidelinesFeedback && (
-        <p className="guidelines-card__feedback" aria-live="polite">{guidelinesFeedback}</p>
-      )}
     </section>
   );
 }

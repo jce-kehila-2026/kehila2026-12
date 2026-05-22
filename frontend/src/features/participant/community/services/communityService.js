@@ -21,6 +21,7 @@ export async function createCommunityPost(postData = {}) {
     author: postData.author ?? postData.authorDisplayName ?? 'Current User',
     content: postData.content ?? '',
     isAnonymous: Boolean(postData.isAnonymous),
+    attachment: postData.attachment ?? null,
   });
 }
 
@@ -52,6 +53,7 @@ export async function addCommunityPostComment(postId, commentData = {}) {
     ...createCommentModel(
       commentData.content ?? '',
       commentData.author ?? commentData.authorDisplayName ?? 'Current User',
+      commentData.authorId ?? 'current-user',
     ),
     postId,
   };
@@ -82,11 +84,17 @@ export async function updateCommunityStreak(userId, streakData = {}) {
   });
 }
 
-export async function reportCommunityPost(postId, userId, reason = '') {
+export async function reportCommunityPost(postId, reportData = {}) {
+  const reporterUserId = typeof reportData === 'string'
+    ? reportData
+    : reportData.reporterUserId ?? reportData.userId ?? null;
+
   return {
     success: true,
     postId,
-    userId,
-    reason,
+    reporterUserId,
+    reason: typeof reportData === 'string' ? '' : reportData.reason ?? '',
+    postOwnerId: typeof reportData === 'string' ? null : reportData.postOwnerId ?? null,
+    createdAt: typeof reportData === 'string' ? new Date() : reportData.createdAt ?? new Date(),
   };
 }

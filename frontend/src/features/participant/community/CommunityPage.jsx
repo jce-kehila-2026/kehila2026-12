@@ -1,9 +1,10 @@
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import Diversity3OutlinedIcon from '@mui/icons-material/Diversity3Outlined';
 import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined';
 import LocalFloristOutlinedIcon from '@mui/icons-material/LocalFloristOutlined';
-import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import MenuBookOutlinedIcon from '@mui/icons-material/MenuBookOutlined';
+import RefreshOutlinedIcon from '@mui/icons-material/RefreshOutlined';
 import {
   communityActiveMembers,
   communityPosts,
@@ -12,6 +13,7 @@ import {
 } from './communityMockData';
 import {
   COMMUNITY_PREFERENCES_STORAGE_KEY,
+  COMMUNITY_FOLLOWED_AUTHORS_STORAGE_KEY,
   COMMUNITY_POSTS_STORAGE_KEY,
   COMMUNITY_STREAK_STORAGE_KEY,
   COMMUNITY_USER_PROFILE_STORAGE_KEY,
@@ -23,6 +25,7 @@ import {
   getTodayKey,
   isCommunityContentVisible,
   isStreakAtRiskForDate,
+  safeLoadFromStorage,
   safeSaveToStorage,
   serializeCommunityPreferences,
   serializeCommunityPost,
@@ -54,21 +57,16 @@ const FEED_TABS = [
   { id: 'all', label: 'All Posts' },
   { id: 'following', label: 'Following' },
   { id: 'anonymous', label: 'Anonymous' },
-  { id: 'birthdays', label: 'Birthdays' },
-  { id: 'wins', label: 'Wins' },
 ];
 
-const FEED_SORT_OPTIONS = [
-  { value: 'latest', label: 'Latest' },
-  { value: 'supported', label: 'Most supported' },
+const REPORT_REASON_OPTIONS = [
+  'Offensive content',
+  'Harassment or bullying',
+  'False information',
+  'Spam',
+  'Inappropriate community content',
+  'Other',
 ];
-
-const normalizePostTaxonomy = (post = {}) => [
-  post.category,
-  post.type,
-  post.topic,
-  post.title,
-].filter(Boolean).join(' ').toLowerCase();
 
 const getPostCreatedAtTime = (post = {}) => {
   const createdAt = post.createdAt instanceof Date
@@ -79,45 +77,35 @@ const getPostCreatedAtTime = (post = {}) => {
   return Number.isNaN(timestamp) ? 0 : timestamp;
 };
 
-const filterPostsByTab = (posts, activeTab) => posts.filter((post) => {
-  if (activeTab === 'all') return true;
-  if (activeTab === 'following') return false;
+const filterPostsByTab = (posts, activeTab, followedAuthors = []) => posts.filter((post) => {
+  if (activeTab === 'following') return followedAuthors.includes(post.author);
   if (activeTab === 'anonymous') return post.isAnonymous === true;
-
-  const postTaxonomy = normalizePostTaxonomy(post);
-
-  if (activeTab === 'birthdays') {
-    return postTaxonomy.includes('birthday') || postTaxonomy.includes('birthdays');
-  }
-
-  if (activeTab === 'wins') {
-    return postTaxonomy.includes('win') || postTaxonomy.includes('wins');
-  }
 
   return true;
 });
 
-const sortFeedPosts = (posts, sortBy) => posts
+const sortFeedPosts = (posts) => posts
   .map((post, index) => ({ post, index }))
   .sort((firstPost, secondPost) => {
-    if (sortBy === 'supported') {
-      const firstLikes = firstPost.post.likesCount ?? firstPost.post.likes ?? 0;
-      const secondLikes = secondPost.post.likesCount ?? secondPost.post.likes ?? 0;
-      if (secondLikes !== firstLikes) return secondLikes - firstLikes;
-    } else {
-      const dateDifference = getPostCreatedAtTime(secondPost.post) - getPostCreatedAtTime(firstPost.post);
-      if (dateDifference !== 0) return dateDifference;
-    }
+    const dateDifference = getPostCreatedAtTime(secondPost.post) - getPostCreatedAtTime(firstPost.post);
+    if (dateDifference !== 0) return dateDifference;
 
     return firstPost.index - secondPost.index;
   })
   .map(({ post }) => post);
 
-const getEmptyFeedMessage = (activeTab) => {
+const getEmptyFeedMessage = (activeTab, followedAuthorsCount = 0) => {
   if (activeTab === 'following') {
+    if (followedAuthorsCount === 0) {
+      return {
+        title: 'No followed authors yet',
+        description: 'Use the Follow button on posts to build a local following feed on this device.',
+      };
+    }
+
     return {
-      title: 'Following feed will appear here.',
-      description: 'When following is available, posts from people you follow will show in this space.',
+      title: 'No posts from followed authors yet',
+      description: 'Posts from authors you follow locally will appear here.',
     };
   }
 
@@ -128,24 +116,37 @@ const getEmptyFeedMessage = (activeTab) => {
     };
   }
 
-  if (activeTab === 'birthdays') {
-    return {
-      title: 'No birthday posts yet',
-      description: 'Birthday posts and celebrations will appear here.',
-    };
-  }
-
-  if (activeTab === 'wins') {
-    return {
-      title: 'No wins yet',
-      description: 'Community wins and encouraging milestones will appear here.',
-    };
-  }
-
   return {
     title: 'No posts yet',
     description: 'Be the first to share something with the community.',
   };
+};
+
+const normalizeCommunityName = (name = '') => name.trim().toLowerCase();
+
+const isPostOwnedByCurrentUser = (post = {}, localUserId, localUserName) => {
+  if (localUserId && post.authorId === localUserId) return true;
+
+  const normalizedLocalName = normalizeCommunityName(localUserName);
+  if (!normalizedLocalName || post.isAnonymous) return false;
+
+  return [
+    post.author,
+    post.authorDisplayName,
+  ].some((name) => normalizeCommunityName(name ?? '') === normalizedLocalName);
+};
+
+const isPostReportedByUser = (post = {}, localUserId) => {
+  if (!localUserId) return false;
+
+  const reportedBy = Array.isArray(post.reportedBy) ? post.reportedBy : [];
+  if (reportedBy.includes(localUserId)) return true;
+
+  const reports = Array.isArray(post.reports) ? post.reports : [];
+  return reports.some((report) => (
+    report?.reporterUserId === localUserId
+    || report?.userId === localUserId
+  ));
 };
 
 const getExistingDisplayName = (personalDetails = {}) => (
@@ -209,12 +210,20 @@ const hasRequiredCommunityPersonalDetails = (personalDetails = {}) => Boolean(
   getExistingDisplayName(personalDetails) && getCommunityBirthday(personalDetails),
 );
 
+const getInitialFollowedAuthors = () => {
+  const storedAuthors = safeLoadFromStorage(COMMUNITY_FOLLOWED_AUTHORS_STORAGE_KEY);
+  return Array.isArray(storedAuthors)
+    ? storedAuthors.filter((author) => typeof author === 'string' && author.trim())
+    : [];
+};
+
 export default function CommunityPage({
   personalDetails = {},
   isPersonalDetailsLoading = false,
   onGoToSettings,
 }) {
   const postInputRef = useRef(null);
+  const reportModalRef = useRef(null);
   const [initialStreakState] = useState(getInitialStreakState);
   const [showGuidelinesModal, setShowGuidelinesModal] = useState(
     () => getAcceptedGuidelinesVersion() !== COMMUNITY_GUIDELINES_VERSION,
@@ -222,11 +231,14 @@ export default function CommunityPage({
   const [posts, setPosts] = useState(() => getInitialPosts(communityPosts));
   const [newPostText, setNewPostText] = useState('');
   const [postAnonymously, setPostAnonymously] = useState(false);
+  const [postAttachment, setPostAttachment] = useState(null);
   const [postError, setPostError] = useState('');
   const [postSuccessMessage, setPostSuccessMessage] = useState('');
-  const [anonymousShortcutMessage, setAnonymousShortcutMessage] = useState('');
   const [activeFeedTab, setActiveFeedTab] = useState('all');
-  const [feedSortBy, setFeedSortBy] = useState('latest');
+  const [isRefreshingFeed, setIsRefreshingFeed] = useState(false);
+  const [refreshFeedback, setRefreshFeedback] = useState('');
+  const [refreshPulseKey, setRefreshPulseKey] = useState(0);
+  const [relativeTimeNow, setRelativeTimeNow] = useState(() => new Date());
   const [supportSpaceFeedback, setSupportSpaceFeedback] = useState('');
   const [communityUserProfile, setCommunityUserProfile] = useState(getInitialCommunityUserProfile);
   const [communityPreferences, setCommunityPreferences] = useState(getInitialCommunityPreferences);
@@ -235,12 +247,45 @@ export default function CommunityPage({
   const [commentFeedbackByPostId, setCommentFeedbackByPostId] = useState({});
   const [reportFeedbackByPostId, setReportFeedbackByPostId] = useState({});
   const [confirmingReportPostId, setConfirmingReportPostId] = useState(null);
+  const [selectedReportReason, setSelectedReportReason] = useState('');
+  const [reportReasonError, setReportReasonError] = useState('');
   const [expandedCommentPostIds, setExpandedCommentPostIds] = useState({});
+  const [openCommentPostIds, setOpenCommentPostIds] = useState({});
+  const [followedAuthors, setFollowedAuthors] = useState(getInitialFollowedAuthors);
+  const [selectedSupportSpace, setSelectedSupportSpace] = useState(null);
+  const [showFullGuidelinesModal, setShowFullGuidelinesModal] = useState(false);
   const [communityStreakCount, setCommunityStreakCount] = useState(initialStreakState.streakCount);
   const [lastActivityDate, setLastActivityDate] = useState(initialStreakState.lastActivityDate);
   const [isCommunityStreakAtRisk, setIsCommunityStreakAtRisk] = useState(
     () => isStreakAtRiskForDate(initialStreakState.lastActivityDate),
   );
+
+  const refreshCommunityFeed = async ({ showFeedback = false } = {}) => {
+    if (showFeedback) {
+      setIsRefreshingFeed(true);
+      setRefreshFeedback('');
+    }
+
+    try {
+      const loadedPosts = await getCommunityPosts();
+      if (Array.isArray(loadedPosts)) {
+        setPosts(loadedPosts);
+      }
+      setRelativeTimeNow(new Date());
+      if (showFeedback) {
+        setRefreshPulseKey((currentKey) => currentKey + 1);
+        setRefreshFeedback('Community feed refreshed');
+      }
+    } catch {
+      if (showFeedback) {
+        setRefreshFeedback('Community feed refreshed');
+      }
+    } finally {
+      if (showFeedback) {
+        setIsRefreshingFeed(false);
+      }
+    }
+  };
 
   useEffect(() => {
     let ignoreResult = false;
@@ -249,6 +294,7 @@ export default function CommunityPage({
       .then((loadedPosts) => {
         if (!ignoreResult && Array.isArray(loadedPosts)) {
           setPosts(loadedPosts);
+          setRelativeTimeNow(new Date());
         }
       })
       .catch(() => {
@@ -259,6 +305,38 @@ export default function CommunityPage({
       ignoreResult = true;
     };
   }, []);
+
+  useEffect(() => {
+    const timerId = window.setInterval(() => {
+      setRelativeTimeNow(new Date());
+    }, 30000);
+
+    return () => {
+      window.clearInterval(timerId);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!refreshFeedback) return undefined;
+
+    const timerId = window.setTimeout(() => {
+      setRefreshFeedback('');
+    }, 2600);
+
+    return () => {
+      window.clearTimeout(timerId);
+    };
+  }, [refreshFeedback]);
+
+  useEffect(() => {
+    if (!confirmingReportPostId) return;
+
+    setSelectedReportReason('');
+    setReportReasonError('');
+    window.setTimeout(() => {
+      reportModalRef.current?.focus();
+    }, 0);
+  }, [confirmingReportPostId]);
 
   useEffect(() => {
     safeSaveToStorage(COMMUNITY_POSTS_STORAGE_KEY, posts.map(serializeCommunityPost));
@@ -290,6 +368,10 @@ export default function CommunityPage({
     );
   }, [communityUserProfile]);
 
+  useEffect(() => {
+    safeSaveToStorage(COMMUNITY_FOLLOWED_AUTHORS_STORAGE_KEY, followedAuthors);
+  }, [followedAuthors]);
+
   const registerCommunityActivity = () => {
     const todayKey = getTodayKey();
     const dayDifference = getDayDifference(lastActivityDate, todayKey);
@@ -313,17 +395,11 @@ export default function CommunityPage({
     setNewPostText(value);
     if (postError) setPostError('');
     if (postSuccessMessage) setPostSuccessMessage('');
-    if (anonymousShortcutMessage) setAnonymousShortcutMessage('');
   };
 
-  const handleWriteAnonymously = () => {
-    setPostAnonymously(true);
-    setAnonymousShortcutMessage('Anonymous mode enabled.');
-    postInputRef.current?.focus();
-  };
-
-  const handleSupportSpaceView = (spaceTitle) => {
-    setSupportSpaceFeedback(`${spaceTitle} preview is coming soon.`);
+  const handleSupportSpaceView = (space) => {
+    setSelectedSupportSpace(space);
+    setSupportSpaceFeedback(`${space.title} details opened.`);
   };
 
   const displayName = getExistingDisplayName(personalDetails);
@@ -343,6 +419,7 @@ export default function CommunityPage({
     ? communityPreferences.showBirthday
     : communityUserProfile.showBirthday;
   const allowAnonymousPosting = communityUserProfile.allowAnonymousPosting !== false;
+  const localUserId = communityUserProfile.id || personalDetails.id || 'current-user';
   const visibleBirthdayUsers = showBirthdayInCommunity && communityBirthday
     ? [{
       id: communityUserProfile.id || personalDetails.id || 'current-user',
@@ -358,9 +435,9 @@ export default function CommunityPage({
         ? post.comments.filter(isCommunityContentVisible)
         : [],
     }));
-  const filteredPosts = filterPostsByTab(visiblePosts, activeFeedTab);
-  const sortedVisiblePosts = sortFeedPosts(filteredPosts, feedSortBy);
-  const emptyFeedMessage = getEmptyFeedMessage(activeFeedTab);
+  const filteredPosts = filterPostsByTab(visiblePosts, activeFeedTab, followedAuthors);
+  const sortedVisiblePosts = sortFeedPosts(filteredPosts);
+  const emptyFeedMessage = getEmptyFeedMessage(activeFeedTab, followedAuthors.length);
 
   const handleBirthdayPreferenceSave = (showBirthday) => {
     setCommunityPreferences({
@@ -414,8 +491,8 @@ export default function CommunityPage({
   const handleCreatePost = async () => {
     const content = newPostText.trim();
 
-    if (!content) {
-      setPostError('Please write something before sharing.');
+    if (!content && !postAttachment) {
+      setPostError('Please write something or add a local attachment before sharing.');
       setPostSuccessMessage('');
       return;
     }
@@ -429,6 +506,7 @@ export default function CommunityPage({
         author,
         content,
         isAnonymous,
+        attachment: postAttachment,
       });
     } catch {
       setPostError('Unable to publish your post right now.');
@@ -438,11 +516,48 @@ export default function CommunityPage({
 
     setPosts((currentPosts) => [newPost, ...currentPosts]);
     setNewPostText('');
+    setPostAttachment(null);
     setPostAnonymously(false);
     setPostError('');
     setPostSuccessMessage('Post published successfully.');
-    setAnonymousShortcutMessage('');
     registerCommunityActivity();
+  };
+
+  const handleToggleSupport = (postId) => {
+    const postToUpdate = posts.find((post) => post.id === postId);
+    const shouldIncreaseStreak = postToUpdate ? !postToUpdate.isSupported : false;
+
+    setPosts((currentPosts) => currentPosts.map((post) => {
+      if (post.id !== postId) return post;
+
+      const wasSupported = Boolean(post.isSupported);
+      const currentSupportCount = post.supportCount ?? post.support ?? 0;
+      const nextSupportCount = wasSupported
+        ? Math.max(currentSupportCount - 1, 0)
+        : currentSupportCount + 1;
+
+      return {
+        ...post,
+        isSupported: !wasSupported,
+        supportCount: nextSupportCount,
+        support: nextSupportCount,
+      };
+    }));
+
+    if (shouldIncreaseStreak) {
+      registerCommunityActivity();
+    }
+  };
+
+  const handleToggleFollowAuthor = (author) => {
+    if (!author || author === 'Anonymous User' || author === 'Anonymous Participant') return;
+    if (normalizeCommunityName(author) === normalizeCommunityName(communityDisplayName || 'Current User')) return;
+
+    setFollowedAuthors((currentAuthors) => (
+      currentAuthors.includes(author)
+        ? currentAuthors.filter((currentAuthor) => currentAuthor !== author)
+        : [...currentAuthors, author]
+    ));
   };
 
   const handleToggleLike = (postId) => {
@@ -476,11 +591,9 @@ export default function CommunityPage({
   };
 
   const handleReportPostRequest = (postId) => {
-    const localUserId = communityUserProfile.id || personalDetails.id || 'current-user';
     const postToReport = posts.find((post) => post.id === postId);
-    const reportedBy = Array.isArray(postToReport?.reportedBy) ? postToReport.reportedBy : [];
 
-    if (reportedBy.includes(localUserId)) {
+    if (isPostReportedByUser(postToReport, localUserId)) {
       setConfirmingReportPostId(null);
       setReportFeedbackByPostId((currentFeedback) => ({
         ...currentFeedback,
@@ -504,16 +617,46 @@ export default function CommunityPage({
 
   const handleCancelReportPost = () => {
     setConfirmingReportPostId(null);
+    setSelectedReportReason('');
+    setReportReasonError('');
   };
 
-  const handleConfirmReportPost = async (postId) => {
-    const localUserId = communityUserProfile.id || personalDetails.id || 'current-user';
+  const handleReportModalBackdropClick = (event) => {
+    if (event.target === event.currentTarget) {
+      handleCancelReportPost();
+    }
+  };
+
+  const handleReportModalKeyDown = (event) => {
+    if (event.key === 'Escape') {
+      handleCancelReportPost();
+    }
+  };
+
+  const handleReportReasonChange = (reason) => {
+    setSelectedReportReason(reason);
+    if (reportReasonError) setReportReasonError('');
+  };
+
+  const handleReportSubmit = (event) => {
+    event.preventDefault();
+
+    if (!confirmingReportPostId) return;
+
+    if (!selectedReportReason) {
+      setReportReasonError('Please choose a report reason before submitting.');
+      return;
+    }
+
+    handleConfirmReportPost(confirmingReportPostId, selectedReportReason);
+  };
+
+  const handleConfirmReportPost = async (postId, reason) => {
     const postToReport = posts.find((post) => post.id === postId);
-    const reportedBy = Array.isArray(postToReport?.reportedBy) ? postToReport.reportedBy : [];
 
     if (!postToReport) return;
 
-    if (reportedBy.includes(localUserId)) {
+    if (isPostReportedByUser(postToReport, localUserId)) {
       setConfirmingReportPostId(null);
       setReportFeedbackByPostId((currentFeedback) => ({
         ...currentFeedback,
@@ -525,8 +668,18 @@ export default function CommunityPage({
       return;
     }
 
+    const createdAt = new Date();
+    const reportRecord = {
+      id: `community-report-${postId}-${localUserId}-${createdAt.getTime()}`,
+      postId,
+      reporterUserId: localUserId,
+      postOwnerId: postToReport.authorId ?? postToReport.authorDisplayName ?? postToReport.author ?? null,
+      reason,
+      createdAt: createdAt.toISOString(),
+    };
+
     try {
-      await reportCommunityPost(postId, localUserId);
+      await reportCommunityPost(postId, reportRecord);
     } catch {
       // Keep the local placeholder flow responsive; Firebase reporting will handle failures later.
     }
@@ -546,17 +699,20 @@ export default function CommunityPage({
         ...post,
         reportsCount: nextReportsCount,
         reportedBy: [...currentReportedBy, localUserId],
+        reports: [...(Array.isArray(post.reports) ? post.reports : []), reportRecord],
         status: post.status === COMMUNITY_POST_STATUS.active
           ? COMMUNITY_POST_STATUS.reported
           : post.status ?? COMMUNITY_POST_STATUS.reported,
       };
     }));
     setConfirmingReportPostId(null);
+    setSelectedReportReason('');
+    setReportReasonError('');
     setReportFeedbackByPostId((currentFeedback) => ({
       ...currentFeedback,
       [postId]: {
         type: 'success',
-        message: 'Thanks, your report was submitted.',
+        message: 'Thanks, your report was saved locally for review.',
       },
     }));
   };
@@ -594,6 +750,7 @@ export default function CommunityPage({
 
     try {
       newComment = await addCommunityPostComment(postId, {
+        authorId: localUserId,
         author: communityDisplayName || 'Current User',
         authorDisplayName: communityDisplayName || 'Current User',
         content,
@@ -618,12 +775,17 @@ export default function CommunityPage({
       return {
         ...post,
         comments: nextComments,
+        commentsCount: nextComments.filter(isCommunityContentVisible).length,
       };
     }));
 
     setCommentInputs((currentInputs) => ({
       ...currentInputs,
       [postId]: '',
+    }));
+    setOpenCommentPostIds((currentPostIds) => ({
+      ...currentPostIds,
+      [postId]: false,
     }));
     setCommentFeedbackByPostId((currentFeedback) => ({
       ...currentFeedback,
@@ -642,9 +804,97 @@ export default function CommunityPage({
     }));
   };
 
+  const handleOpenCommentComposer = (postId) => {
+    setOpenCommentPostIds((currentPostIds) => ({
+      ...currentPostIds,
+      [postId]: !currentPostIds[postId],
+    }));
+    setExpandedCommentPostIds((currentPostIds) => ({
+      ...currentPostIds,
+      [postId]: true,
+    }));
+  };
+
+  const handleDeleteComment = (postId, commentId) => {
+    setPosts((currentPosts) => currentPosts.map((post) => {
+      if (post.id !== postId) return post;
+
+      const currentComments = Array.isArray(post.comments) ? post.comments : [];
+      const nextComments = currentComments.filter((comment) => comment.id !== commentId);
+
+      return {
+        ...post,
+        comments: nextComments,
+        commentsCount: nextComments.filter(isCommunityContentVisible).length,
+      };
+    }));
+  };
+
+  const reportModal = confirmingReportPostId ? (
+    <div
+      className="community-report-modal"
+      role="presentation"
+      onMouseDown={handleReportModalBackdropClick}
+    >
+      <form
+        aria-labelledby="community-report-title"
+        className="community-report-modal__panel"
+        onKeyDown={handleReportModalKeyDown}
+        onSubmit={handleReportSubmit}
+        ref={reportModalRef}
+        role="dialog"
+        tabIndex={-1}
+      >
+        <header className="community-report-modal__header">
+          <div>
+            <h3 id="community-report-title">Report post</h3>
+            <p>Choose a reason for reporting this post.</p>
+          </div>
+          <button
+            aria-label="Close report form"
+            className="community-report-modal__close"
+            type="button"
+            onClick={handleCancelReportPost}
+          >
+            ×
+          </button>
+        </header>
+        <div className="community-report-modal__reasons" role="radiogroup" aria-label="Report reason">
+          {REPORT_REASON_OPTIONS.map((reason) => (
+            <label
+              className={`community-report-modal__reason${selectedReportReason === reason ? ' is-selected' : ''}`}
+              key={reason}
+            >
+              <input
+                checked={selectedReportReason === reason}
+                name="community-report-reason"
+                type="radio"
+                value={reason}
+                onChange={() => handleReportReasonChange(reason)}
+              />
+              <span>{reason}</span>
+            </label>
+          ))}
+        </div>
+        {reportReasonError && (
+          <p className="community-report-modal__error" role="alert">{reportReasonError}</p>
+        )}
+        <div className="community-report-modal__actions">
+          <button className="community-report-modal__cancel" type="button" onClick={handleCancelReportPost}>
+            Cancel
+          </button>
+          <button className="community-report-modal__submit" disabled={!selectedReportReason} type="submit">
+            Submit report
+          </button>
+        </div>
+      </form>
+    </div>
+  ) : null;
+
   return (
     <section className="community-page" aria-labelledby="community-page-title">
       {showGuidelinesModal && <CommunityGuidelinesModal onContinue={handleGuidelinesContinue} />}
+      {reportModal && typeof document !== 'undefined' ? createPortal(reportModal, document.body) : reportModal}
 
       <header className="community-page__header">
         <div className="community-page__header-copy">
@@ -684,40 +934,18 @@ export default function CommunityPage({
           {canUseCommunity && (
             <>
               <CreatePostCard
+                attachment={postAttachment}
                 allowAnonymousPosting={allowAnonymousPosting}
                 isAnonymous={postAnonymously}
                 error={postError}
                 onAnonymousChange={setPostAnonymously}
+                onAttachmentChange={setPostAttachment}
                 onPostTextChange={handlePostTextChange}
                 onSubmit={handleCreatePost}
                 postInputRef={postInputRef}
                 postText={newPostText}
                 successMessage={postSuccessMessage}
               />
-
-              {allowAnonymousPosting && (
-                <section className="community-anonymous-promo" aria-labelledby="community-anonymous-promo-title">
-                  <span className="community-anonymous-promo__icon" aria-hidden="true">
-                    <LockOutlinedIcon />
-                  </span>
-                  <div className="community-anonymous-promo__copy">
-                    <h2 id="community-anonymous-promo-title">Share anonymously</h2>
-                    <p>Share what’s on your mind without showing your name or profile.</p>
-                    {anonymousShortcutMessage && (
-                      <span className="community-anonymous-promo__feedback" aria-live="polite">
-                        {anonymousShortcutMessage}
-                      </span>
-                    )}
-                  </div>
-                  <button
-                    aria-label="Write anonymously in the community composer"
-                    type="button"
-                    onClick={handleWriteAnonymously}
-                  >
-                    Write Anonymously
-                  </button>
-                </section>
-              )}
 
               <section className="community-feed-controls" aria-label="Community feed controls">
                 <div className="community-feed-tabs" role="tablist" aria-label="Community feed filters">
@@ -737,19 +965,24 @@ export default function CommunityPage({
                   ))}
                 </div>
 
-                <label className="community-feed-sort">
-                  <span>Sort</span>
-                  <select
-                    aria-label="Sort community feed"
-                    value={feedSortBy}
-                    onChange={(event) => setFeedSortBy(event.target.value)}
-                  >
-                    {FEED_SORT_OPTIONS.map((option) => (
-                      <option key={option.value} value={option.value}>{option.label}</option>
-                    ))}
-                  </select>
-                </label>
+                <button
+                  aria-label="Refresh local community feed"
+                  aria-busy={isRefreshingFeed}
+                  className={`community-feed-refresh${isRefreshingFeed ? ' is-refreshing' : ''}`}
+                  disabled={isRefreshingFeed}
+                  title="Refresh local community feed"
+                  type="button"
+                  onClick={() => refreshCommunityFeed({ showFeedback: true })}
+                >
+                  <RefreshOutlinedIcon className="community-feed-refresh__icon" fontSize="small" />
+                  <span>{isRefreshingFeed ? 'Refreshing...' : 'Refresh'}</span>
+                </button>
               </section>
+              {refreshFeedback && (
+                <p className="community-feed-refresh__feedback" aria-live="polite">
+                  {refreshFeedback}
+                </p>
+              )}
 
               <section className="community-page-card community-page-card--intro">
                 <span className="community-page-card__icon">
@@ -764,8 +997,9 @@ export default function CommunityPage({
               {sortedVisiblePosts.length === 0 ? (
                 <section
                   aria-labelledby={`community-feed-tab-${activeFeedTab}`}
-                  className="community-empty-state"
+                  className={`community-empty-state${refreshPulseKey > 0 ? ' community-feed-panel--refreshed' : ''}`}
                   id="community-feed-panel"
+                  key={`empty-${activeFeedTab}-${refreshPulseKey}`}
                   role="tabpanel"
                 >
                   <h2>{emptyFeedMessage.title}</h2>
@@ -774,8 +1008,9 @@ export default function CommunityPage({
               ) : (
                 <section
                   aria-labelledby={`community-feed-tab-${activeFeedTab}`}
-                  className="community-post-list"
+                  className={`community-post-list${refreshPulseKey > 0 ? ' community-feed-panel--refreshed' : ''}`}
                   id="community-feed-panel"
+                  key={`posts-${activeFeedTab}-${refreshPulseKey}`}
                   role="tabpanel"
                 >
                   {sortedVisiblePosts.map((post) => (
@@ -783,16 +1018,24 @@ export default function CommunityPage({
                       commentText={commentInputs[post.id] ?? ''}
                       commentFeedback={commentFeedbackByPostId[post.id]}
                       isCommentsExpanded={Boolean(expandedCommentPostIds[post.id])}
-                      isReportConfirming={confirmingReportPostId === post.id}
+                      isCommentComposerOpen={Boolean(openCommentPostIds[post.id])}
+                      isFollowingAuthor={followedAuthors.includes(post.author)}
+                      isOwnPost={isPostOwnedByCurrentUser(post, localUserId, communityDisplayName || 'Current User')}
                       key={post.id}
                       onCommentTextChange={(value) => handleCommentInputChange(post.id, value)}
-                      onCancelReport={() => handleCancelReportPost(post.id)}
-                      onConfirmReport={() => handleConfirmReportPost(post.id)}
+                      onFollowAuthor={handleToggleFollowAuthor}
+                      onOpenCommentComposer={() => handleOpenCommentComposer(post.id)}
                       onReportPost={() => handleReportPostRequest(post.id)}
+                      onDeleteComment={(commentId) => handleDeleteComment(post.id, commentId)}
                       onSubmitComment={() => handleSubmitComment(post.id)}
+                      onToggleSupport={handleToggleSupport}
                       onToggleCommentsExpanded={() => handleToggleCommentsExpanded(post.id)}
                       onToggleLike={handleToggleLike}
                       post={post}
+                      relativeTimeNow={relativeTimeNow}
+                      localUserId={localUserId}
+                      localUserName={communityDisplayName || 'Current User'}
+                      isReportedByCurrentUser={isPostReportedByUser(post, localUserId)}
                       reportFeedback={reportFeedbackByPostId[post.id]}
                     />
                   ))}
@@ -857,9 +1100,9 @@ export default function CommunityPage({
                       <small>{space.meta}</small>
                     </div>
                     <button
-                      aria-label={`View ${space.title}. Preview only.`}
+                      aria-label={`View ${space.title} details`}
                       type="button"
-                      onClick={() => handleSupportSpaceView(space.title)}
+                      onClick={() => handleSupportSpaceView(space)}
                     >
                       View
                     </button>
@@ -899,7 +1142,7 @@ export default function CommunityPage({
               </p>
             </section>
           )}
-          <CommunityGuidelinesCard />
+          <CommunityGuidelinesCard onReadFullGuidelines={() => setShowFullGuidelinesModal(true)} />
 
           <section className="community-page-card community-page-card--soft">
             <div className="community-page-card__heading">
@@ -920,6 +1163,33 @@ export default function CommunityPage({
 
         </aside>
       </div>
+      {selectedSupportSpace && (
+        <div className="community-local-modal" role="dialog" aria-modal="true" aria-labelledby="community-support-space-modal-title">
+          <section className="community-local-modal__panel">
+            <button
+              aria-label="Close support space details"
+              className="community-local-modal__close"
+              type="button"
+              onClick={() => setSelectedSupportSpace(null)}
+            >
+              ×
+            </button>
+            <span className="community-local-modal__eyebrow">Support Space</span>
+            <h2 id="community-support-space-modal-title">{selectedSupportSpace.title}</h2>
+            <p>{selectedSupportSpace.description}</p>
+            <strong>{selectedSupportSpace.schedule}</strong>
+            <button type="button" onClick={() => setSelectedSupportSpace(null)}>
+              Close
+            </button>
+          </section>
+        </div>
+      )}
+      {showFullGuidelinesModal && (
+        <CommunityGuidelinesModal
+          mode="read"
+          onClose={() => setShowFullGuidelinesModal(false)}
+        />
+      )}
     </section>
   );
 }
