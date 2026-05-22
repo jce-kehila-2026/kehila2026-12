@@ -12,6 +12,7 @@ export const COMMUNITY_POSTS_STORAGE_KEY = 'community.posts';
 export const COMMUNITY_STREAK_STORAGE_KEY = 'community.streak';
 export const COMMUNITY_PREFERENCES_STORAGE_KEY = 'community.preferences';
 export const COMMUNITY_USER_PROFILE_STORAGE_KEY = 'community.userProfile';
+export const COMMUNITY_FOLLOWED_AUTHORS_STORAGE_KEY = 'community.followedAuthors';
 
 const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
@@ -38,7 +39,7 @@ export const createCommunityId = (prefix, createdAt = new Date()) => (
     : `${prefix}-${createdAt.getTime()}`
 );
 
-export const createPostModel = ({ author, content, isAnonymous }) => {
+export const createPostModel = ({ author, content, isAnonymous, attachment = null }) => {
   const createdAt = new Date();
   const postModel = createCommunityPostModel({
     id: createCommunityId('community-post', createdAt),
@@ -60,6 +61,9 @@ export const createPostModel = ({ author, content, isAnonymous }) => {
     body: content,
     likes: 0,
     support: 0,
+    supportCount: 0,
+    isSupported: false,
+    attachment,
     tone: 'pink',
     previewComments: [],
   };
@@ -181,6 +185,11 @@ const normalizeStoredPost = (post, index) => {
     : Number.isFinite(post?.likes)
       ? post.likes
       : 0;
+  const supportCount = Number.isFinite(post?.supportCount)
+    ? post.supportCount
+    : Number.isFinite(post?.support)
+      ? post.support
+      : 0;
 
   return {
     ...post,
@@ -200,7 +209,10 @@ const normalizeStoredPost = (post, index) => {
     title: post?.title ?? 'New community post',
     body: post?.body ?? content,
     likes: likesCount,
-    support: post?.support ?? 0,
+    support: supportCount,
+    supportCount,
+    isSupported: Boolean(post?.isSupported),
+    attachment: post?.attachment ?? null,
     tone: post?.tone ?? 'pink',
     category: post?.category,
     type: post?.type,
@@ -250,7 +262,10 @@ export const serializeCommunityPost = (post) => ({
   title: post.title,
   body: post.body ?? post.content ?? '',
   likes: post.likesCount ?? post.likes ?? 0,
-  support: post.support ?? 0,
+  support: post.supportCount ?? post.support ?? 0,
+  supportCount: post.supportCount ?? post.support ?? 0,
+  isSupported: Boolean(post.isSupported),
+  attachment: post.attachment ?? null,
   tone: post.tone,
   category: post.category,
   type: post.type,

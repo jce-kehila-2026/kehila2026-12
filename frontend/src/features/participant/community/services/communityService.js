@@ -21,6 +21,7 @@ export async function createCommunityPost(postData = {}) {
     author: postData.author ?? postData.authorDisplayName ?? 'Current User',
     content: postData.content ?? '',
     isAnonymous: Boolean(postData.isAnonymous),
+    attachment: postData.attachment ?? null,
   });
 }
 

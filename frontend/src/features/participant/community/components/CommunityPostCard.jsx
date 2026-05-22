@@ -11,19 +11,27 @@ export default function CommunityPostCard({
   commentFeedback,
   commentText,
   isCommentsExpanded,
+  isCommentComposerOpen,
+  isFollowingAuthor,
+  isReportedByCurrentUser,
   isReportConfirming,
   onCancelReport,
   onCommentTextChange,
   onConfirmReport,
+  onFollowAuthor,
+  onOpenCommentComposer,
   onReportPost,
   onSubmitComment,
+  onToggleSupport,
   onToggleCommentsExpanded,
   onToggleLike,
   post,
   reportFeedback,
 }) {
   const reportConfirmButtonRef = useRef(null);
+  const commentInputRef = useRef(null);
   const likesCount = post.likesCount ?? post.likes ?? 0;
+  const supportCount = post.supportCount ?? post.support ?? 0;
   const comments = (Array.isArray(post.comments) ? post.comments : post.previewComments ?? [])
     .filter(isCommunityContentVisible);
   const commentsCount = comments.length;
@@ -40,6 +48,45 @@ export default function CommunityPostCard({
       reportConfirmButtonRef.current?.focus();
     }
   }, [isReportConfirming]);
+
+  useEffect(() => {
+    if (isCommentComposerOpen) {
+      commentInputRef.current?.focus();
+    }
+  }, [isCommentComposerOpen]);
+
+  const renderAttachment = () => {
+    if (!post.attachment) return null;
+
+    if (post.attachment.type === 'image') {
+      return (
+        <figure className="community-page-post__attachment">
+          <img src={post.attachment.url} alt={post.attachment.name || 'Community post attachment'} />
+        </figure>
+      );
+    }
+
+    if (post.attachment.type === 'gif') {
+      return (
+        <div className="community-page-post__attachment community-page-post__attachment--gif">
+          <div className="community-gif-preview" aria-label={post.attachment.label}>
+            <span>{post.attachment.emoji}</span>
+            <strong>{post.attachment.label}</strong>
+          </div>
+        </div>
+      );
+    }
+
+    if (post.attachment.type === 'voice') {
+      return (
+        <div className="community-page-post__attachment community-page-post__attachment--voice">
+          <audio controls src={post.attachment.url} aria-label="Community post voice note" />
+        </div>
+      );
+    }
+
+    return null;
+  };
 
   const handleReportConfirmationKeyDown = (event) => {
     if (event.key === 'Escape') {
@@ -60,6 +107,16 @@ export default function CommunityPostCard({
                 Anonymous
               </span>
             )}
+            {!post.isAnonymous && (
+              <button
+                aria-pressed={isFollowingAuthor}
+                className={`community-page-post__follow${isFollowingAuthor ? ' is-following' : ''}`}
+                type="button"
+                onClick={() => onFollowAuthor(post.author)}
+              >
+                {isFollowingAuthor ? 'Following' : 'Follow'}
+              </button>
+            )}
           </div>
           <small>{post.time}</small>
         </div>
@@ -72,6 +129,7 @@ export default function CommunityPostCard({
         <h3>{post.title}</h3>
         <p>{postBody}</p>
       </div>
+      {renderAttachment()}
       <footer className="community-page-post__actions">
         <div className="community-page-post__primary-actions">
           <button
@@ -85,24 +143,36 @@ export default function CommunityPostCard({
             Like
             <span>{likesCount}</span>
           </button>
-          <button type="button" aria-label={`${commentsCount} comments on ${post.author}'s post`}>
+          <button
+            type="button"
+            aria-expanded={isCommentComposerOpen}
+            aria-label={`${commentsCount} comments on ${post.author}'s post`}
+            onClick={onOpenCommentComposer}
+          >
             <ChatBubbleOutlineOutlinedIcon fontSize="small" />
             Comment
             <span>{commentsCount}</span>
           </button>
-          <button type="button" aria-label={`${post.support} support reactions on ${post.author}'s post`}>
+          <button
+            aria-pressed={post.isSupported}
+            className={post.isSupported ? 'is-supported' : undefined}
+            type="button"
+            aria-label={`${post.isSupported ? 'Remove support from' : 'Support'} ${post.author}'s post. ${supportCount} support reactions`}
+            onClick={() => onToggleSupport(post.id)}
+          >
             <VolunteerActivismOutlinedIcon fontSize="small" />
             Support
-            <span>{post.support}</span>
+            <span>{supportCount}</span>
           </button>
         </div>
         <button
           aria-describedby={reportFeedbackId}
           className="community-page-post__report-button"
+          disabled={isReportedByCurrentUser}
           onClick={onReportPost}
           type="button"
         >
-          Report
+          {isReportedByCurrentUser ? 'Reported' : 'Report'}
         </button>
       </footer>
       {isReportConfirming && (
@@ -134,18 +204,21 @@ export default function CommunityPostCard({
         isExpanded={isCommentsExpanded}
         onToggleExpanded={onToggleCommentsExpanded}
       />
-      <form className="community-comment-form" onSubmit={handleCommentSubmit}>
-        <input
-          aria-describedby={commentFeedbackId}
-          aria-label={`Add a comment to ${post.author}'s post`}
-          aria-invalid={commentFeedback?.type === 'error'}
-          onChange={(event) => onCommentTextChange(event.target.value)}
-          placeholder="Write a comment..."
-          type="text"
-          value={commentText}
-        />
-        <button type="submit">Reply</button>
-      </form>
+      {isCommentComposerOpen && (
+        <form className="community-comment-form" onSubmit={handleCommentSubmit}>
+          <input
+            aria-describedby={commentFeedbackId}
+            aria-label={`Add a comment to ${post.author}'s post`}
+            aria-invalid={commentFeedback?.type === 'error'}
+            onChange={(event) => onCommentTextChange(event.target.value)}
+            placeholder="Write a comment..."
+            ref={commentInputRef}
+            type="text"
+            value={commentText}
+          />
+          <button type="submit">Reply</button>
+        </form>
+      )}
       {commentFeedback && (
         <p
           className={`community-comment-form__feedback community-comment-form__feedback--${commentFeedback.type}`}
