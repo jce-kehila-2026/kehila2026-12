@@ -56,21 +56,7 @@ const FEED_TABS = [
   { id: 'all', label: 'All Posts' },
   { id: 'following', label: 'Following' },
   { id: 'anonymous', label: 'Anonymous' },
-  { id: 'birthdays', label: 'Birthdays' },
-  { id: 'wins', label: 'Wins' },
 ];
-
-const FEED_SORT_OPTIONS = [
-  { value: 'latest', label: 'Latest' },
-  { value: 'supported', label: 'Most supported' },
-];
-
-const normalizePostTaxonomy = (post = {}) => [
-  post.category,
-  post.type,
-  post.topic,
-  post.title,
-].filter(Boolean).join(' ').toLowerCase();
 
 const getPostCreatedAtTime = (post = {}) => {
   const createdAt = post.createdAt instanceof Date
@@ -82,34 +68,17 @@ const getPostCreatedAtTime = (post = {}) => {
 };
 
 const filterPostsByTab = (posts, activeTab, followedAuthors = []) => posts.filter((post) => {
-  if (activeTab === 'all') return true;
   if (activeTab === 'following') return followedAuthors.includes(post.author);
   if (activeTab === 'anonymous') return post.isAnonymous === true;
-
-  const postTaxonomy = normalizePostTaxonomy(post);
-
-  if (activeTab === 'birthdays') {
-    return postTaxonomy.includes('birthday') || postTaxonomy.includes('birthdays');
-  }
-
-  if (activeTab === 'wins') {
-    return postTaxonomy.includes('win') || postTaxonomy.includes('wins');
-  }
 
   return true;
 });
 
-const sortFeedPosts = (posts, sortBy) => posts
+const sortFeedPosts = (posts) => posts
   .map((post, index) => ({ post, index }))
   .sort((firstPost, secondPost) => {
-    if (sortBy === 'supported') {
-      const firstSupport = firstPost.post.supportCount ?? firstPost.post.support ?? 0;
-      const secondSupport = secondPost.post.supportCount ?? secondPost.post.support ?? 0;
-      if (secondSupport !== firstSupport) return secondSupport - firstSupport;
-    } else {
-      const dateDifference = getPostCreatedAtTime(secondPost.post) - getPostCreatedAtTime(firstPost.post);
-      if (dateDifference !== 0) return dateDifference;
-    }
+    const dateDifference = getPostCreatedAtTime(secondPost.post) - getPostCreatedAtTime(firstPost.post);
+    if (dateDifference !== 0) return dateDifference;
 
     return firstPost.index - secondPost.index;
   })
@@ -134,20 +103,6 @@ const getEmptyFeedMessage = (activeTab, followedAuthorsCount = 0) => {
     return {
       title: 'No anonymous posts yet',
       description: 'Anonymous shares will appear here when members choose that option.',
-    };
-  }
-
-  if (activeTab === 'birthdays') {
-    return {
-      title: 'No birthday posts yet',
-      description: 'Birthday posts and celebrations will appear here.',
-    };
-  }
-
-  if (activeTab === 'wins') {
-    return {
-      title: 'No wins yet',
-      description: 'Community wins and encouraging milestones will appear here.',
     };
   }
 
@@ -242,7 +197,6 @@ export default function CommunityPage({
   const [postError, setPostError] = useState('');
   const [postSuccessMessage, setPostSuccessMessage] = useState('');
   const [activeFeedTab, setActiveFeedTab] = useState('all');
-  const [feedSortBy, setFeedSortBy] = useState('latest');
   const [isRefreshingFeed, setIsRefreshingFeed] = useState(false);
   const [refreshFeedback, setRefreshFeedback] = useState('');
   const [refreshPulseKey, setRefreshPulseKey] = useState(0);
@@ -432,7 +386,7 @@ export default function CommunityPage({
         : [],
     }));
   const filteredPosts = filterPostsByTab(visiblePosts, activeFeedTab, followedAuthors);
-  const sortedVisiblePosts = sortFeedPosts(filteredPosts, feedSortBy);
+  const sortedVisiblePosts = sortFeedPosts(filteredPosts);
   const emptyFeedMessage = getEmptyFeedMessage(activeFeedTab, followedAuthors.length);
 
   const handleBirthdayPreferenceSave = (showBirthday) => {
@@ -837,19 +791,6 @@ export default function CommunityPage({
                     </button>
                   ))}
                 </div>
-
-                <label className="community-feed-sort">
-                  <span>Sort</span>
-                  <select
-                    aria-label="Sort community feed"
-                    value={feedSortBy}
-                    onChange={(event) => setFeedSortBy(event.target.value)}
-                  >
-                    {FEED_SORT_OPTIONS.map((option) => (
-                      <option key={option.value} value={option.value}>{option.label}</option>
-                    ))}
-                  </select>
-                </label>
 
                 <button
                   aria-label="Refresh local community feed"
