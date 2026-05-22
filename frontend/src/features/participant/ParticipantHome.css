@@ -1722,7 +1722,6 @@
   padding: 7px 10px;
 }
 
-.create-post-card__picker,
 .create-post-card__voice-panel,
 .create-post-card__attachment-preview {
   display: flex;
@@ -1736,7 +1735,6 @@
   padding: 10px;
 }
 
-.create-post-card__picker button,
 .create-post-card__voice-panel button,
 .create-post-card__attachment-preview button {
   min-height: 32px;
@@ -1751,8 +1749,6 @@
   padding: 0 11px;
 }
 
-.create-post-card__picker button:hover,
-.create-post-card__picker button:focus-visible,
 .create-post-card__voice-panel button:hover,
 .create-post-card__voice-panel button:focus-visible,
 .create-post-card__attachment-preview button:hover,
@@ -1787,12 +1783,6 @@
   opacity: 0.55;
 }
 
-.create-post-card__picker--emoji button {
-  width: 34px;
-  padding: 0;
-  font-size: 1.05rem;
-}
-
 .create-post-card__attachment-preview {
   align-items: flex-start;
 }
@@ -1808,42 +1798,121 @@
   max-width: 100%;
 }
 
-.community-gif-preview {
-  min-width: 132px;
+.create-post-card__emoji-popover {
+  position: absolute;
+  z-index: 30;
+  right: 18px;
+  bottom: 82px;
+  width: min(360px, calc(100% - 36px));
+  max-height: min(440px, 70vh);
+  display: grid;
+  gap: 12px;
+  overflow: auto;
+  border: 1px solid rgba(123, 63, 161, 0.12);
+  border-radius: 22px;
+  background:
+    radial-gradient(circle at 88% 10%, rgba(236, 22, 140, 0.12), transparent 7rem),
+    rgba(255, 255, 255, 0.96);
+  box-shadow: 0 22px 60px rgba(75, 19, 107, 0.18);
+  padding: 14px;
+  animation: community-emoji-popover-in 180ms ease both;
+  backdrop-filter: blur(16px);
+}
+
+.create-post-card__emoji-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-width: 0;
+}
+
+.create-post-card__emoji-header strong {
+  color: var(--community-primary-text);
+  font-size: 0.9rem;
+  line-height: 1.2;
+}
+
+.create-post-card__emoji-header button {
+  width: 30px;
+  height: 30px;
   display: grid;
   place-items: center;
-  gap: 5px;
-  border-radius: 16px;
-  background: linear-gradient(135deg, #fff, #fff2f9 52%, #f5ecff);
+  border: 1px solid var(--community-card-border);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.76);
   color: #7b3fa1;
-  padding: 14px;
-  text-align: center;
+  cursor: pointer;
+  font: inherit;
+  font-size: 1.1rem;
+  font-weight: 800;
+  line-height: 1;
+  padding: 0;
 }
 
-.community-gif-preview span {
-  display: inline-grid;
-  place-items: center;
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  background: rgba(236, 22, 140, 0.1);
-  font-size: 1.55rem;
-  animation: community-gif-bounce 1.6s ease-in-out infinite;
+.create-post-card__emoji-groups {
+  display: grid;
+  gap: 12px;
 }
 
-.community-gif-preview strong {
-  color: #4b136b;
-  font-size: 0.78rem;
+.create-post-card__emoji-group {
+  display: grid;
+  gap: 7px;
 }
 
-@keyframes community-gif-bounce {
-  0%,
-  100% {
-    transform: translateY(0) scale(1);
+.create-post-card__emoji-group h3 {
+  margin: 0;
+  color: var(--community-muted-strong);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.create-post-card__emoji-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 7px;
+}
+
+.create-post-card__emoji-grid button {
+  aspect-ratio: 1;
+  min-width: 0;
+  border: 1px solid rgba(123, 63, 161, 0.1);
+  border-radius: 999px;
+  background: rgba(255, 248, 252, 0.86);
+  cursor: pointer;
+  font: inherit;
+  font-size: 1.2rem;
+  line-height: 1;
+  padding: 0;
+  transition: transform 160ms ease, background 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.create-post-card__emoji-header button:hover,
+.create-post-card__emoji-header button:focus-visible,
+.create-post-card__emoji-grid button:hover,
+.create-post-card__emoji-grid button:focus-visible {
+  border-color: rgba(236, 22, 140, 0.28);
+  background: #fff2f9;
+  box-shadow: var(--community-focus-ring);
+  outline: none;
+}
+
+.create-post-card__emoji-grid button:hover,
+.create-post-card__emoji-grid button:focus-visible {
+  transform: translateY(-1px) scale(1.04);
+}
+
+@keyframes community-emoji-popover-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
   }
 
-  50% {
-    transform: translateY(-5px) scale(1.05);
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
   }
 }
 
@@ -3080,12 +3149,6 @@
   object-fit: cover;
 }
 
-.community-page-post__attachment--gif {
-  display: grid;
-  place-items: center;
-  padding: 14px;
-}
-
 .community-page-post__attachment--voice {
   padding: 12px;
 }
@@ -3936,7 +3999,7 @@
 }
 
 .participant-home--dark .community-local-modal__panel,
-.participant-home--dark .create-post-card__picker,
+.participant-home--dark .create-post-card__emoji-popover,
 .participant-home--dark .create-post-card__voice-panel,
 .participant-home--dark .create-post-card__attachment-preview,
 .participant-home--dark .community-page-post__attachment {
@@ -3945,7 +4008,7 @@
 }
 
 .participant-home--dark .community-local-modal__panel h2,
-.participant-home--dark .community-gif-preview strong {
+.participant-home--dark .create-post-card__emoji-header strong {
   color: #f8fafc;
 }
 
@@ -3955,12 +4018,9 @@
   color: #cbd5e1;
 }
 
-.participant-home--dark .community-gif-preview {
-  background: rgba(15, 23, 42, 0.82);
-}
-
 .participant-home--dark .community-page-post__follow,
-.participant-home--dark .create-post-card__picker button,
+.participant-home--dark .create-post-card__emoji-header button,
+.participant-home--dark .create-post-card__emoji-grid button,
 .participant-home--dark .create-post-card__voice-panel button,
 .participant-home--dark .create-post-card__attachment-preview button,
 .participant-home--dark .community-guidelines-modal__panel > .community-guidelines-modal__close,
@@ -4277,10 +4337,20 @@
   .create-post-card__helper,
   .create-post-card__error,
   .create-post-card__success,
-  .create-post-card__picker,
   .create-post-card__voice-panel,
   .create-post-card__attachment-preview {
     margin-left: 0;
+  }
+
+  .create-post-card__emoji-popover {
+    right: 12px;
+    bottom: 128px;
+    width: calc(100% - 24px);
+    max-height: 58vh;
+  }
+
+  .create-post-card__emoji-grid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
   }
 
   .create-post-card__attachment-preview {

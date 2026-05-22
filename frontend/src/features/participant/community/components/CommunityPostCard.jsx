@@ -71,17 +71,6 @@ export default function CommunityPostCard({
       );
     }
 
-    if (post.attachment.type === 'gif') {
-      return (
-        <div className="community-page-post__attachment community-page-post__attachment--gif">
-          <div className="community-gif-preview" aria-label={post.attachment.label}>
-            <span>{post.attachment.emoji}</span>
-            <strong>{post.attachment.label}</strong>
-          </div>
-        </div>
-      );
-    }
-
     if (post.attachment.type === 'voice') {
       return (
         <div className="community-page-post__attachment community-page-post__attachment--voice">

@@ -1,24 +1,21 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import AddPhotoAlternateOutlinedIcon from '@mui/icons-material/AddPhotoAlternateOutlined';
 import EmojiEmotionsOutlinedIcon from '@mui/icons-material/EmojiEmotionsOutlined';
-import GifBoxOutlinedIcon from '@mui/icons-material/GifBoxOutlined';
 import KeyboardVoiceOutlinedIcon from '@mui/icons-material/KeyboardVoiceOutlined';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 
 const composerActions = [
   { label: 'Photo', icon: AddPhotoAlternateOutlinedIcon },
-  { label: 'GIF', icon: GifBoxOutlinedIcon },
   { label: 'Voice', icon: KeyboardVoiceOutlinedIcon },
   { label: 'Emoji', icon: EmojiEmotionsOutlinedIcon },
 ];
 
-const SUPPORTIVE_EMOJIS = ['💜', '🌸', '🤍', '✨', '🙏', '💪', '🫶', '☀️', '🌿', '🎗️'];
-
-const LOCAL_GIF_OPTIONS = [
-  { id: 'sparkle-hug', emoji: '🫶', label: 'Sending support' },
-  { id: 'gentle-sparkles', emoji: '✨', label: 'Gentle sparkles' },
-  { id: 'flower-care', emoji: '🌸', label: 'Blooming care' },
-  { id: 'strong-heart', emoji: '💜', label: 'Strong heart' },
+const EMOJI_GROUPS = [
+  { label: 'Support', emojis: ['💜', '🤍', '🫶', '🙏', '🤝', '🌷', '🕊️'] },
+  { label: 'Love', emojis: ['❤️', '💖', '💗', '💞', '🥰', '🤗'] },
+  { label: 'Strength', emojis: ['💪', '🌟', '✨', '🔥', '🦋', '🌱'] },
+  { label: 'Celebration', emojis: ['🎉', '🎊', '🌈', '⭐', '👏', '🙌'] },
+  { label: 'Calm', emojis: ['🌿', '☀️', '🌙', '🌸', '🍃', '💫'] },
 ];
 
 const MAX_LOCAL_MEDIA_BYTES = 1.5 * 1024 * 1024;
@@ -43,6 +40,8 @@ export default function CreatePostCard({
   const mediaRecorderRef = useRef(null);
   const recordedChunksRef = useRef([]);
   const fileInputRef = useRef(null);
+  const emojiPickerRef = useRef(null);
+  const emojiButtonRef = useRef(null);
   const textareaRef = useRef(null);
   const feedbackId = error ? 'create-post-error' : successMessage ? 'create-post-success' : undefined;
   const setTextareaRef = (element) => {
@@ -53,6 +52,29 @@ export default function CreatePostCard({
   };
 
   const closePickers = () => setOpenPicker(null);
+
+  useEffect(() => {
+    if (openPicker !== 'Emoji') return undefined;
+
+    const handlePointerDown = (event) => {
+      if (
+        emojiPickerRef.current?.contains(event.target)
+        || emojiButtonRef.current?.contains(event.target)
+      ) {
+        return;
+      }
+
+      setOpenPicker(null);
+    };
+
+    document.addEventListener('mousedown', handlePointerDown);
+    document.addEventListener('touchstart', handlePointerDown);
+
+    return () => {
+      document.removeEventListener('mousedown', handlePointerDown);
+      document.removeEventListener('touchstart', handlePointerDown);
+    };
+  }, [openPicker]);
 
   const handlePhotoClick = () => {
     closePickers();
@@ -86,17 +108,6 @@ export default function CreatePostCard({
     };
     reader.onerror = () => setLocalFeedback('Unable to preview this image.');
     reader.readAsDataURL(file);
-  };
-
-  const handleGifSelect = (gif) => {
-    onAttachmentChange?.({
-      type: 'gif',
-      id: gif.id,
-      emoji: gif.emoji,
-      label: gif.label,
-    });
-    setLocalFeedback('');
-    closePickers();
   };
 
   const handleEmojiSelect = (emoji) => {
@@ -202,12 +213,6 @@ export default function CreatePostCard({
         {attachment.type === 'image' && (
           <img src={attachment.url} alt={attachment.name || 'Selected attachment preview'} />
         )}
-        {attachment.type === 'gif' && (
-          <div className="community-gif-preview" aria-label={attachment.label}>
-            <span>{attachment.emoji}</span>
-            <strong>{attachment.label}</strong>
-          </div>
-        )}
         {attachment.type === 'voice' && (
           <audio controls src={attachment.url} aria-label="Voice note preview" />
         )}
@@ -276,6 +281,7 @@ export default function CreatePostCard({
               className={`create-post-card__action${openPicker === label ? ' is-active' : ''}`}
               key={label}
               onClick={() => handleComposerAction(label)}
+              ref={label === 'Emoji' ? emojiButtonRef : undefined}
               type="button"
             >
               <Icon fontSize="small" />
@@ -304,23 +310,38 @@ export default function CreatePostCard({
         )}
         <button className="create-post-card__submit" type="button" onClick={onSubmit}>Share Post</button>
       </div>
-      {openPicker === 'GIF' && (
-        <div className="create-post-card__picker" aria-label="Local GIF picker">
-          {LOCAL_GIF_OPTIONS.map((gif) => (
-            <button type="button" key={gif.id} onClick={() => handleGifSelect(gif)}>
-              <span>{gif.emoji}</span>
-              {gif.label}
-            </button>
-          ))}
-        </div>
-      )}
       {openPicker === 'Emoji' && (
-        <div className="create-post-card__picker create-post-card__picker--emoji" aria-label="Emoji picker">
-          {SUPPORTIVE_EMOJIS.map((emoji) => (
-            <button type="button" key={emoji} onClick={() => handleEmojiSelect(emoji)}>
-              {emoji}
+        <div
+          className="create-post-card__emoji-popover"
+          ref={emojiPickerRef}
+          role="dialog"
+          aria-label="Choose an emoji"
+        >
+          <div className="create-post-card__emoji-header">
+            <strong>Choose an emoji</strong>
+            <button type="button" aria-label="Close emoji picker" onClick={closePickers}>
+              ×
             </button>
-          ))}
+          </div>
+          <div className="create-post-card__emoji-groups">
+            {EMOJI_GROUPS.map((group) => (
+              <section className="create-post-card__emoji-group" key={group.label}>
+                <h3>{group.label}</h3>
+                <div className="create-post-card__emoji-grid">
+                  {group.emojis.map((emoji) => (
+                    <button
+                      aria-label={`Insert ${emoji} emoji`}
+                      type="button"
+                      key={`${group.label}-${emoji}`}
+                      onClick={() => handleEmojiSelect(emoji)}
+                    >
+                      {emoji}
+                    </button>
+                  ))}
+                </div>
+              </section>
+            ))}
+          </div>
         </div>
       )}
       {openPicker === 'Voice' && (
