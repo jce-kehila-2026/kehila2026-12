@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import Diversity3OutlinedIcon from '@mui/icons-material/Diversity3Outlined';
 import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined';
 import LocalFloristOutlinedIcon from '@mui/icons-material/LocalFloristOutlined';
@@ -58,6 +59,15 @@ const FEED_TABS = [
   { id: 'anonymous', label: 'Anonymous' },
 ];
 
+const REPORT_REASON_OPTIONS = [
+  'Offensive content',
+  'Harassment or bullying',
+  'False information',
+  'Spam',
+  'Inappropriate community content',
+  'Other',
+];
+
 const getPostCreatedAtTime = (post = {}) => {
   const createdAt = post.createdAt instanceof Date
     ? post.createdAt
@@ -110,6 +120,33 @@ const getEmptyFeedMessage = (activeTab, followedAuthorsCount = 0) => {
     title: 'No posts yet',
     description: 'Be the first to share something with the community.',
   };
+};
+
+const normalizeCommunityName = (name = '') => name.trim().toLowerCase();
+
+const isPostOwnedByCurrentUser = (post = {}, localUserId, localUserName) => {
+  if (localUserId && post.authorId === localUserId) return true;
+
+  const normalizedLocalName = normalizeCommunityName(localUserName);
+  if (!normalizedLocalName || post.isAnonymous) return false;
+
+  return [
+    post.author,
+    post.authorDisplayName,
+  ].some((name) => normalizeCommunityName(name ?? '') === normalizedLocalName);
+};
+
+const isPostReportedByUser = (post = {}, localUserId) => {
+  if (!localUserId) return false;
+
+  const reportedBy = Array.isArray(post.reportedBy) ? post.reportedBy : [];
+  if (reportedBy.includes(localUserId)) return true;
+
+  const reports = Array.isArray(post.reports) ? post.reports : [];
+  return reports.some((report) => (
+    report?.reporterUserId === localUserId
+    || report?.userId === localUserId
+  ));
 };
 
 const getExistingDisplayName = (personalDetails = {}) => (
@@ -186,6 +223,7 @@ export default function CommunityPage({
   onGoToSettings,
 }) {
   const postInputRef = useRef(null);
+  const reportModalRef = useRef(null);
   const [initialStreakState] = useState(getInitialStreakState);
   const [showGuidelinesModal, setShowGuidelinesModal] = useState(
     () => getAcceptedGuidelinesVersion() !== COMMUNITY_GUIDELINES_VERSION,
@@ -209,6 +247,8 @@ export default function CommunityPage({
   const [commentFeedbackByPostId, setCommentFeedbackByPostId] = useState({});
   const [reportFeedbackByPostId, setReportFeedbackByPostId] = useState({});
   const [confirmingReportPostId, setConfirmingReportPostId] = useState(null);
+  const [selectedReportReason, setSelectedReportReason] = useState('');
+  const [reportReasonError, setReportReasonError] = useState('');
   const [expandedCommentPostIds, setExpandedCommentPostIds] = useState({});
   const [openCommentPostIds, setOpenCommentPostIds] = useState({});
   const [followedAuthors, setFollowedAuthors] = useState(getInitialFollowedAuthors);
@@ -287,6 +327,16 @@ export default function CommunityPage({
       window.clearTimeout(timerId);
     };
   }, [refreshFeedback]);
+
+  useEffect(() => {
+    if (!confirmingReportPostId) return;
+
+    setSelectedReportReason('');
+    setReportReasonError('');
+    window.setTimeout(() => {
+      reportModalRef.current?.focus();
+    }, 0);
+  }, [confirmingReportPostId]);
 
   useEffect(() => {
     safeSaveToStorage(COMMUNITY_POSTS_STORAGE_KEY, posts.map(serializeCommunityPost));
@@ -501,6 +551,7 @@ export default function CommunityPage({
 
   const handleToggleFollowAuthor = (author) => {
     if (!author || author === 'Anonymous User' || author === 'Anonymous Participant') return;
+    if (normalizeCommunityName(author) === normalizeCommunityName(communityDisplayName || 'Current User')) return;
 
     setFollowedAuthors((currentAuthors) => (
       currentAuthors.includes(author)
@@ -541,9 +592,8 @@ export default function CommunityPage({
 
   const handleReportPostRequest = (postId) => {
     const postToReport = posts.find((post) => post.id === postId);
-    const reportedBy = Array.isArray(postToReport?.reportedBy) ? postToReport.reportedBy : [];
 
-    if (reportedBy.includes(localUserId)) {
+    if (isPostReportedByUser(postToReport, localUserId)) {
       setConfirmingReportPostId(null);
       setReportFeedbackByPostId((currentFeedback) => ({
         ...currentFeedback,
@@ -567,15 +617,46 @@ export default function CommunityPage({
 
   const handleCancelReportPost = () => {
     setConfirmingReportPostId(null);
+    setSelectedReportReason('');
+    setReportReasonError('');
   };
 
-  const handleConfirmReportPost = async (postId) => {
+  const handleReportModalBackdropClick = (event) => {
+    if (event.target === event.currentTarget) {
+      handleCancelReportPost();
+    }
+  };
+
+  const handleReportModalKeyDown = (event) => {
+    if (event.key === 'Escape') {
+      handleCancelReportPost();
+    }
+  };
+
+  const handleReportReasonChange = (reason) => {
+    setSelectedReportReason(reason);
+    if (reportReasonError) setReportReasonError('');
+  };
+
+  const handleReportSubmit = (event) => {
+    event.preventDefault();
+
+    if (!confirmingReportPostId) return;
+
+    if (!selectedReportReason) {
+      setReportReasonError('Please choose a report reason before submitting.');
+      return;
+    }
+
+    handleConfirmReportPost(confirmingReportPostId, selectedReportReason);
+  };
+
+  const handleConfirmReportPost = async (postId, reason) => {
     const postToReport = posts.find((post) => post.id === postId);
-    const reportedBy = Array.isArray(postToReport?.reportedBy) ? postToReport.reportedBy : [];
 
     if (!postToReport) return;
 
-    if (reportedBy.includes(localUserId)) {
+    if (isPostReportedByUser(postToReport, localUserId)) {
       setConfirmingReportPostId(null);
       setReportFeedbackByPostId((currentFeedback) => ({
         ...currentFeedback,
@@ -587,8 +668,18 @@ export default function CommunityPage({
       return;
     }
 
+    const createdAt = new Date();
+    const reportRecord = {
+      id: `community-report-${postId}-${localUserId}-${createdAt.getTime()}`,
+      postId,
+      reporterUserId: localUserId,
+      postOwnerId: postToReport.authorId ?? postToReport.authorDisplayName ?? postToReport.author ?? null,
+      reason,
+      createdAt: createdAt.toISOString(),
+    };
+
     try {
-      await reportCommunityPost(postId, localUserId);
+      await reportCommunityPost(postId, reportRecord);
     } catch {
       // Keep the local placeholder flow responsive; Firebase reporting will handle failures later.
     }
@@ -608,17 +699,20 @@ export default function CommunityPage({
         ...post,
         reportsCount: nextReportsCount,
         reportedBy: [...currentReportedBy, localUserId],
+        reports: [...(Array.isArray(post.reports) ? post.reports : []), reportRecord],
         status: post.status === COMMUNITY_POST_STATUS.active
           ? COMMUNITY_POST_STATUS.reported
           : post.status ?? COMMUNITY_POST_STATUS.reported,
       };
     }));
     setConfirmingReportPostId(null);
+    setSelectedReportReason('');
+    setReportReasonError('');
     setReportFeedbackByPostId((currentFeedback) => ({
       ...currentFeedback,
       [postId]: {
         type: 'success',
-        message: 'Thanks, your report was saved locally for this device.',
+        message: 'Thanks, your report was saved locally for review.',
       },
     }));
   };
@@ -656,6 +750,7 @@ export default function CommunityPage({
 
     try {
       newComment = await addCommunityPostComment(postId, {
+        authorId: localUserId,
         author: communityDisplayName || 'Current User',
         authorDisplayName: communityDisplayName || 'Current User',
         content,
@@ -680,6 +775,7 @@ export default function CommunityPage({
       return {
         ...post,
         comments: nextComments,
+        commentsCount: nextComments.filter(isCommunityContentVisible).length,
       };
     }));
 
@@ -689,7 +785,7 @@ export default function CommunityPage({
     }));
     setOpenCommentPostIds((currentPostIds) => ({
       ...currentPostIds,
-      [postId]: true,
+      [postId]: false,
     }));
     setCommentFeedbackByPostId((currentFeedback) => ({
       ...currentFeedback,
@@ -711,7 +807,7 @@ export default function CommunityPage({
   const handleOpenCommentComposer = (postId) => {
     setOpenCommentPostIds((currentPostIds) => ({
       ...currentPostIds,
-      [postId]: true,
+      [postId]: !currentPostIds[postId],
     }));
     setExpandedCommentPostIds((currentPostIds) => ({
       ...currentPostIds,
@@ -719,9 +815,86 @@ export default function CommunityPage({
     }));
   };
 
+  const handleDeleteComment = (postId, commentId) => {
+    setPosts((currentPosts) => currentPosts.map((post) => {
+      if (post.id !== postId) return post;
+
+      const currentComments = Array.isArray(post.comments) ? post.comments : [];
+      const nextComments = currentComments.filter((comment) => comment.id !== commentId);
+
+      return {
+        ...post,
+        comments: nextComments,
+        commentsCount: nextComments.filter(isCommunityContentVisible).length,
+      };
+    }));
+  };
+
+  const reportModal = confirmingReportPostId ? (
+    <div
+      className="community-report-modal"
+      role="presentation"
+      onMouseDown={handleReportModalBackdropClick}
+    >
+      <form
+        aria-labelledby="community-report-title"
+        className="community-report-modal__panel"
+        onKeyDown={handleReportModalKeyDown}
+        onSubmit={handleReportSubmit}
+        ref={reportModalRef}
+        role="dialog"
+        tabIndex={-1}
+      >
+        <header className="community-report-modal__header">
+          <div>
+            <h3 id="community-report-title">Report post</h3>
+            <p>Choose a reason for reporting this post.</p>
+          </div>
+          <button
+            aria-label="Close report form"
+            className="community-report-modal__close"
+            type="button"
+            onClick={handleCancelReportPost}
+          >
+            ×
+          </button>
+        </header>
+        <div className="community-report-modal__reasons" role="radiogroup" aria-label="Report reason">
+          {REPORT_REASON_OPTIONS.map((reason) => (
+            <label
+              className={`community-report-modal__reason${selectedReportReason === reason ? ' is-selected' : ''}`}
+              key={reason}
+            >
+              <input
+                checked={selectedReportReason === reason}
+                name="community-report-reason"
+                type="radio"
+                value={reason}
+                onChange={() => handleReportReasonChange(reason)}
+              />
+              <span>{reason}</span>
+            </label>
+          ))}
+        </div>
+        {reportReasonError && (
+          <p className="community-report-modal__error" role="alert">{reportReasonError}</p>
+        )}
+        <div className="community-report-modal__actions">
+          <button className="community-report-modal__cancel" type="button" onClick={handleCancelReportPost}>
+            Cancel
+          </button>
+          <button className="community-report-modal__submit" disabled={!selectedReportReason} type="submit">
+            Submit report
+          </button>
+        </div>
+      </form>
+    </div>
+  ) : null;
+
   return (
     <section className="community-page" aria-labelledby="community-page-title">
       {showGuidelinesModal && <CommunityGuidelinesModal onContinue={handleGuidelinesContinue} />}
+      {reportModal && typeof document !== 'undefined' ? createPortal(reportModal, document.body) : reportModal}
 
       <header className="community-page__header">
         <div className="community-page__header-copy">
@@ -847,21 +1020,22 @@ export default function CommunityPage({
                       isCommentsExpanded={Boolean(expandedCommentPostIds[post.id])}
                       isCommentComposerOpen={Boolean(openCommentPostIds[post.id])}
                       isFollowingAuthor={followedAuthors.includes(post.author)}
-                      isReportConfirming={confirmingReportPostId === post.id}
+                      isOwnPost={isPostOwnedByCurrentUser(post, localUserId, communityDisplayName || 'Current User')}
                       key={post.id}
                       onCommentTextChange={(value) => handleCommentInputChange(post.id, value)}
-                      onCancelReport={() => handleCancelReportPost(post.id)}
-                      onConfirmReport={() => handleConfirmReportPost(post.id)}
                       onFollowAuthor={handleToggleFollowAuthor}
                       onOpenCommentComposer={() => handleOpenCommentComposer(post.id)}
                       onReportPost={() => handleReportPostRequest(post.id)}
+                      onDeleteComment={(commentId) => handleDeleteComment(post.id, commentId)}
                       onSubmitComment={() => handleSubmitComment(post.id)}
                       onToggleSupport={handleToggleSupport}
                       onToggleCommentsExpanded={() => handleToggleCommentsExpanded(post.id)}
                       onToggleLike={handleToggleLike}
                       post={post}
                       relativeTimeNow={relativeTimeNow}
-                      isReportedByCurrentUser={Array.isArray(post.reportedBy) && post.reportedBy.includes(localUserId)}
+                      localUserId={localUserId}
+                      localUserName={communityDisplayName || 'Current User'}
+                      isReportedByCurrentUser={isPostReportedByUser(post, localUserId)}
                       reportFeedback={reportFeedbackByPostId[post.id]}
                     />
                   ))}

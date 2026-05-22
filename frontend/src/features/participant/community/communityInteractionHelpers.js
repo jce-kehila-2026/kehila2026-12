@@ -25,6 +25,7 @@ const getModerationFields = (item = {}) => {
     status: item.status ?? COMMUNITY_POST_STATUS.active,
     reportsCount: Number.isFinite(reportsCount) && reportsCount >= 0 ? reportsCount : 0,
     reportedBy: Array.isArray(item.reportedBy) ? item.reportedBy : [],
+    reports: Array.isArray(item.reports) ? item.reports : [],
     hiddenByAdmin: Boolean(item.hiddenByAdmin),
   };
 };
@@ -126,10 +127,11 @@ export const createPostModel = ({ author, content, isAnonymous, attachment = nul
   };
 };
 
-export const createCommentModel = (content, author = 'Current User') => {
+export const createCommentModel = (content, author = 'Current User', authorId = 'current-user') => {
   const createdAt = new Date();
   const commentModel = createCommunityCommentModel({
     id: createCommunityId('community-comment', createdAt),
+    authorId,
     authorDisplayName: author,
     content,
     createdAt,
@@ -140,7 +142,8 @@ export const createCommentModel = (content, author = 'Current User') => {
     ...commentModel,
     author,
     initials: 'CU',
-    time: 'Just now',
+    isLocalCurrentUser: true,
+    time: formatRelativeCommunityTime(createdAt),
     text: content,
   };
 };
@@ -213,17 +216,24 @@ const normalizeComment = (comment, index) => {
   const content = typeof comment?.content === 'string'
     ? comment.content
     : comment?.text ?? '';
-  const createdAt = comment?.createdAt ?? null;
+  const createdAtDate = parseCommunityDate(comment?.createdAt)
+    ?? parseCommunityDate(comment?.date)
+    ?? inferCreatedAtFromLegacyTime(comment?.time, index)
+    ?? new Date(Date.now() - index * MS_PER_MINUTE);
+  const updatedAtDate = parseCommunityDate(comment?.updatedAt) ?? createdAtDate;
 
   return {
     ...comment,
     id: comment?.id ?? `stored-comment-${index + 1}`,
+    authorId: comment?.authorId ?? null,
     author: comment?.author ?? 'Current User',
     authorDisplayName: comment?.authorDisplayName ?? comment?.author ?? 'Current User',
     content,
-    createdAt,
+    createdAt: createdAtDate.toISOString(),
+    updatedAt: updatedAtDate.toISOString(),
     initials: comment?.initials ?? 'CU',
-    time: comment?.time ?? 'Just now',
+    isLocalCurrentUser: Boolean(comment?.isLocalCurrentUser),
+    time: formatRelativeCommunityTime(createdAtDate),
     text: comment?.text ?? content,
     ...getModerationFields(comment),
   };
@@ -352,9 +362,18 @@ export const serializeCommunityPost = (post) => ({
   status: post.status ?? COMMUNITY_POST_STATUS.active,
   reportsCount: post.reportsCount ?? 0,
   reportedBy: Array.isArray(post.reportedBy) ? post.reportedBy : [],
+  reports: Array.isArray(post.reports) ? post.reports.map((report) => ({
+    id: report.id,
+    postId: report.postId ?? post.id,
+    reporterUserId: report.reporterUserId ?? report.userId ?? null,
+    postOwnerId: report.postOwnerId ?? null,
+    reason: report.reason ?? '',
+    createdAt: report.createdAt instanceof Date ? report.createdAt.toISOString() : report.createdAt ?? null,
+  })) : [],
   hiddenByAdmin: Boolean(post.hiddenByAdmin),
   comments: Array.isArray(post.comments) ? post.comments.map((comment) => ({
     id: comment.id,
+    authorId: comment.authorId ?? null,
     author: comment.author,
     authorDisplayName: comment.authorDisplayName ?? comment.author,
     content: comment.content ?? comment.text ?? '',
@@ -365,6 +384,7 @@ export const serializeCommunityPost = (post) => ({
     reportedBy: Array.isArray(comment.reportedBy) ? comment.reportedBy : [],
     hiddenByAdmin: Boolean(comment.hiddenByAdmin),
     initials: comment.initials,
+    isLocalCurrentUser: Boolean(comment.isLocalCurrentUser),
     time: comment.time,
     text: comment.text ?? comment.content ?? '',
   })) : [],
