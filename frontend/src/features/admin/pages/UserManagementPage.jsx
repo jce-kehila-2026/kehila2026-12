@@ -19,8 +19,6 @@ import InputAdornment from '@mui/material/InputAdornment';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import Stack from '@mui/material/Stack';
-import Tab from '@mui/material/Tab';
-import Tabs from '@mui/material/Tabs';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import AddIcon from '@mui/icons-material/Add';
@@ -39,32 +37,11 @@ import SortIcon from '@mui/icons-material/Sort';
 const ROLES = ['participant', 'volunteer', 'therapist', 'admin'];
 
 const ROLE_STYLES = {
-  admin: { color: '#C02666', backgroundColor: 'rgba(233, 75, 147, 0.13)' },
+  admin: { color: '#15803D', backgroundColor: 'rgba(34, 197, 94, 0.14)' },
   participant: { color: '#6D3CCF', backgroundColor: 'rgba(109, 60, 207, 0.12)' },
   volunteer: { color: '#3B82F6', backgroundColor: 'rgba(59, 130, 246, 0.12)' },
   therapist: { color: '#7C3AED', backgroundColor: 'rgba(124, 58, 237, 0.13)' },
   editor: { color: '#7C3AED', backgroundColor: 'rgba(124, 58, 237, 0.13)' },
-};
-
-const TAB_SX = {
-  '& .MuiTabs-indicator': {
-    height: 2,
-    borderRadius: 999,
-    background: 'linear-gradient(90deg, #7C3AED, #DF327B)',
-    boxShadow: '0 0 10px rgba(124, 58, 237, 0.22)',
-    transition: 'all 240ms ease',
-  },
-  '& .MuiTab-root': {
-    minHeight: 38,
-    px: 1.6,
-    textTransform: 'none',
-    fontWeight: 850,
-    fontSize: 13,
-    color: '#7B7397',
-    transition: 'color 180ms ease, transform 180ms ease',
-    '&:hover': { color: '#6D3CCF', transform: 'translateY(-1px)' },
-  },
-  '& .Mui-selected': { color: '#6D3CCF' },
 };
 
 const actionButtonBaseSx = {
@@ -168,16 +145,20 @@ function InfoCard({ label, value, icon }) {
   return (
     <Box
       sx={{
-        px: 1.4,
-        py: 1.15,
-        minHeight: 58,
-        borderRadius: 3.2,
+        px: 2,
+        py: 1.35,
+        width: '100%',
+        height: 86,
+        flex: '0 0 86px',
+        boxSizing: 'border-box',
+        overflow: 'hidden',
+        borderRadius: '28px',
         border: '1px solid rgba(130, 92, 206, 0.12)',
         bgcolor: 'rgba(255, 255, 255, 0.72)',
         boxShadow: '0 8px 20px rgba(91, 57, 145, 0.045)',
         display: 'flex',
         alignItems: 'center',
-        gap: 1.15,
+        gap: 1.45,
         flexDirection: 'row-reverse',
         justifyContent: 'flex-start',
         textAlign: 'right',
@@ -185,9 +166,9 @@ function InfoCard({ label, value, icon }) {
     >
       <Box
         sx={{
-          width: 32,
-          height: 32,
-          borderRadius: 2.2,
+          width: 44,
+          height: 44,
+          borderRadius: '50%',
           display: 'grid',
           placeItems: 'center',
           flexShrink: 0,
@@ -198,10 +179,15 @@ function InfoCard({ label, value, icon }) {
         {icon || getFieldIcon(label)}
       </Box>
       <Box sx={{ minWidth: 0, flex: 1 }}>
-        <Typography variant="caption" color="text.secondary" fontWeight={800} sx={{ display: 'block', lineHeight: 1.1 }}>
+        <Typography variant="caption" color="text.secondary" fontWeight={800} sx={{ display: 'block', lineHeight: 1.1, fontSize: 13 }}>
           {label}
         </Typography>
-        <Typography fontWeight={850} sx={{ color: '#17122E', wordBreak: 'break-word', fontSize: 14, mt: 0.25, lineHeight: 1.3 }}>
+        <Typography
+          fontWeight={850}
+          noWrap
+          title={value || '-'}
+          sx={{ color: '#17122E', fontSize: 16, mt: 0.35, lineHeight: 1.3 }}
+        >
           {value || '-'}
         </Typography>
       </Box>
@@ -215,7 +201,6 @@ export default function UserManagementPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(null);
   const [search, setSearch] = useState('');
-  const [mainTab, setMainTab] = useState('users');
   const [roleFilter, setRoleFilter] = useState('all');
   const [sortBy, setSortBy] = useState('newest');
   const [selectedUser, setSelectedUser] = useState(null);
@@ -289,8 +274,7 @@ export default function UserManagementPage() {
         [getFullName(user), user.email, user.phoneNumber, getAddress(user)]
           .some((value) => String(value || '').toLowerCase().includes(q));
       const matchesRole = roleFilter === 'all' || role === roleFilter;
-      const matchesTab = mainTab === 'users' || role !== 'participant';
-      return matchesSearch && matchesRole && matchesTab;
+      return matchesSearch && matchesRole;
     });
 
     return [...next].sort((left, right) => {
@@ -301,7 +285,7 @@ export default function UserManagementPage() {
       const rightDate = getJoinedDate(right)?.toDate?.() || new Date(getJoinedDate(right) || 0);
       return sortBy === 'oldest' ? leftDate - rightDate : rightDate - leftDate;
     });
-  }, [mainTab, roleFilter, search, sortBy, users]);
+  }, [roleFilter, search, sortBy, users]);
 
   const personalSections = selectedUser
     ? [
@@ -360,11 +344,6 @@ export default function UserManagementPage() {
             Preview Participant View
           </Button>
         </Stack>
-
-        <Tabs value={mainTab} onChange={(_, value) => setMainTab(value)} sx={{ ...TAB_SX, borderBottom: '1px solid rgba(130, 92, 206, 0.14)' }}>
-          <Tab value="users" label="Users" />
-          <Tab value="roles" label="Roles & Permissions" />
-        </Tabs>
 
         <Grid container spacing={3} alignItems="flex-start">
           <Grid item xs={12}>
@@ -523,14 +502,15 @@ export default function UserManagementPage() {
         PaperProps={{
           dir: 'ltr',
           sx: {
-            width: { xs: 'calc(100vw - 24px)', sm: 420 },
-            maxWidth: 420,
+            width: { xs: 'calc(100vw - 24px)', sm: 560 },
+            maxWidth: 560,
             m: 0,
             position: 'fixed',
             top: '50%',
             insetInlineStart: '50%',
             transform: 'translate(-50%, -50%)',
-            maxHeight: { xs: 'calc(100vh - 24px)', md: '82vh' },
+            height: { xs: 'auto', sm: 850 },
+            maxHeight: { xs: 'calc(100vh - 24px)', md: 850 },
             borderRadius: { xs: '24px', md: '34px' },
             overflow: 'hidden',
             bgcolor: 'rgba(255, 255, 255, 0.94)',
@@ -546,17 +526,19 @@ export default function UserManagementPage() {
         }}
       >
         {selectedUser ? (
-          <Box sx={{ display: 'flex', flexDirection: 'column', maxHeight: { xs: 'calc(100vh - 24px)', md: '82vh' }, background: 'radial-gradient(circle at 50% 0%, rgba(223, 50, 123, 0.08), transparent 32%), linear-gradient(180deg, #FFFFFF 0%, #FFFBFE 100%)' }}>
-            <Box sx={{ p: { xs: 2, md: 2.35 }, pb: 1.45, position: 'relative' }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', height: { xs: 'auto', sm: 850 }, maxHeight: { xs: 'calc(100vh - 24px)', md: 850 }, background: 'radial-gradient(circle at 50% 0%, rgba(223, 50, 123, 0.08), transparent 32%), linear-gradient(180deg, #FFFFFF 0%, #FFFBFE 100%)' }}>
+            <Box sx={{ p: { xs: 2, md: 2.6 }, pb: 1.8, position: 'relative', height: 228, flex: '0 0 228px', boxSizing: 'border-box', overflow: 'hidden' }}>
               <Stack spacing={1.45} alignItems="stretch" textAlign="right">
                 <Stack direction="row-reverse" spacing={1.5} alignItems="center" sx={{ width: '100%', pr: 0 }}>
                   <Avatar src={selectedUser.avatarUrl || ''} sx={{ width: 82, height: 82, bgcolor: '#EEE7FF', color: '#6D3CCF', fontSize: 30, fontWeight: 950, boxShadow: '0 14px 30px rgba(109, 60, 207, 0.16)', flexShrink: 0 }}>
                     {initials(selectedUser)}
                   </Avatar>
                   <Box sx={{ minWidth: 0, flex: 1 }}>
-                    <Stack direction="row-reverse" spacing={1} alignItems="center" justifyContent="flex-start" flexWrap="wrap">
-                      <Typography variant="h5" fontWeight={950} sx={{ fontSize: 21, textAlign: 'right' }}>{getFullName(selectedUser)}</Typography>
-                      <RoleChip role={selectedUser.role || 'participant'} />
+                    <Stack direction="row-reverse" spacing={0.75} alignItems="center" justifyContent="flex-start" flexWrap="nowrap" sx={{ minWidth: 0 }}>
+                      <Typography variant="h5" fontWeight={950} noWrap sx={{ fontSize: 21, textAlign: 'right', minWidth: 0, flex: 1 }}>{getFullName(selectedUser)}</Typography>
+                      <Box sx={{ flexShrink: 0 }}>
+                        <RoleChip role={selectedUser.role || 'participant'} />
+                      </Box>
                       <IconButton
                         size="small"
                         onClick={closeDetails}
@@ -573,7 +555,7 @@ export default function UserManagementPage() {
                       </IconButton>
                       {detailsLoading ? <CircularProgress size={16} /> : null}
                     </Stack>
-                    <Typography color="text.secondary" sx={{ mt: 0.45, fontSize: 13.5, textAlign: 'right', wordBreak: 'break-word' }}>{selectedUser.email || 'No email provided'}</Typography>
+                    <Typography color="text.secondary" noWrap sx={{ mt: 0.45, fontSize: 13.5, textAlign: 'right' }}>{selectedUser.email || 'No email provided'}</Typography>
                     <Stack direction="row-reverse" spacing={1.1} justifyContent="flex-start" alignItems="center" flexWrap="wrap" sx={{ mt: 0.75 }}>
                       <Typography color="text.secondary" sx={{ fontSize: 13 }}>Joined {formatDateValue(getJoinedDate(selectedUser))}</Typography>
                     </Stack>
@@ -636,10 +618,10 @@ export default function UserManagementPage() {
               </Stack>
             </Box>
 
-            <Box sx={{ flex: 1, overflow: 'auto', p: { xs: 1.6, md: 1.9 }, borderTop: '1px solid rgba(130, 92, 206, 0.08)' }}>
-              <Stack spacing={1}>
+            <Box sx={{ flex: 1, overflow: 'auto', p: { xs: 2, md: 2.6 }, borderTop: '1px solid rgba(130, 92, 206, 0.08)' }}>
+              <Stack spacing={1.35}>
                 {compactDetails.map(([label, value]) => (
-                  <Box key={label}>
+                  <Box key={label} sx={{ width: '100%' }}>
                     <InfoCard label={label} value={value} />
                   </Box>
                 ))}
