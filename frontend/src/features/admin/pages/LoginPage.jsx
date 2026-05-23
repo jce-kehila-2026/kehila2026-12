@@ -1,25 +1,18 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, updateProfile } from 'firebase/auth';
-import Box from '@mui/material/Box';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
-import Typography from '@mui/material/Typography';
-import TextField from '@mui/material/TextField';
-import Button from '@mui/material/Button';
-import Divider from '@mui/material/Divider';
-import Alert from '@mui/material/Alert';
-import Checkbox from '@mui/material/Checkbox';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import IconButton from '@mui/material/IconButton';
-import InputAdornment from '@mui/material/InputAdornment';
-import Link from '@mui/material/Link';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import GoogleIcon from '@mui/icons-material/Google';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
+import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined';
+import sheNaLogo from '../../../assets/she-na-logo.png';
+import loginBgImage from '../../../assets/images/she-na-login-lilac-bg.png';
 import { auth, googleProvider } from '../../../firebase';
 import { ensureParticipantProfile, getPostLoginPath, resolveUserRole } from '../services/authRoleService';
+import './LoginPage.css';
 
 export default function LoginPage() {
   const [authMode, setAuthMode] = useState('login');
@@ -132,235 +125,206 @@ export default function LoginPage() {
     }
   }
 
+  const isLogin = authMode === 'login';
+
   return (
-    <Box
-      dir="ltr"
-      sx={{
-        minHeight: '100vh',
-        display: 'grid',
-        gridTemplateColumns: { xs: '1fr', md: '1.08fr 0.92fr' },
-        bgcolor: '#13081c',
-        color: '#111827',
-        overflow: 'hidden',
-      }}
-    >
-      <Box
-        sx={{
-          position: 'relative',
-          display: { xs: 'none', md: 'flex' },
-          flexDirection: 'column',
-          justifyContent: 'space-between',
-          minHeight: '100vh',
-          p: { md: 6, lg: 8 },
-          color: '#fff',
-          backgroundImage:
-            'linear-gradient(135deg, rgba(19,8,28,0.9), rgba(75,19,107,0.62), rgba(223,50,123,0.36)), url("https://images.unsplash.com/photo-1497366754035-f200968a6e72?auto=format&fit=crop&w=1400&q=80")',
-          backgroundPosition: 'center',
-          backgroundSize: 'cover',
-        }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative', zIndex: 1 }}>
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-            <Box
-              sx={{
-                width: 46,
-                height: 46,
-                display: 'grid',
-                placeItems: 'center',
-                borderRadius: 2,
-                bgcolor: '#fff',
-                color: '#DF327B',
-                fontSize: 24,
-                fontWeight: 800,
-              }}
-            >
-              S
-            </Box>
-            <Typography variant="h5" sx={{ fontWeight: 800 }}>
-              She-Na
-            </Typography>
-          </Box>
-
-          <Button color="inherit" startIcon={<ArrowBackIcon />} onClick={() => navigate('/')} sx={{ color: 'rgba(255,255,255,0.86)', fontWeight: 700 }}>
-            Back to website
-          </Button>
-        </Box>
-
-        <Box sx={{ maxWidth: 720, position: 'relative', zIndex: 1 }}>
-          <Typography variant="h1" sx={{ color: '#fff', fontSize: { md: '3.5rem', lg: '4.6rem' }, lineHeight: 1.05, mb: 3 }}>
-            Heal Gently. Connect Safely. Grow Together.
-          </Typography>
-          <Typography sx={{ maxWidth: 620, color: 'rgba(255,255,255,0.78)', fontSize: '1.15rem', lineHeight: 1.7 }}>
-            A calm participant space for workshops, appointments, reminders, and She-Na community support.
-          </Typography>
-          <Box sx={{ display: 'flex', gap: 1, mt: 6 }}>
-            <Box sx={{ width: 42, height: 6, borderRadius: 999, bgcolor: '#fff' }} />
-            <Box sx={{ width: 10, height: 6, borderRadius: 999, bgcolor: 'rgba(255,255,255,0.36)' }} />
-            <Box sx={{ width: 10, height: 6, borderRadius: 999, bgcolor: 'rgba(255,255,255,0.36)' }} />
-          </Box>
-        </Box>
-      </Box>
-
-      <Box
-        sx={{
-          minHeight: '100vh',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          p: { xs: 2, sm: 4, lg: 5 },
-          background:
-            'radial-gradient(circle at 10% 0%, rgba(223,50,123,0.13), transparent 22rem), linear-gradient(135deg, #fff8fc, #f7effb)',
-        }}
-      >
-        <Card
-          sx={{
-            width: '100%',
-            maxWidth: 560,
-            minHeight: { md: 680 },
-            display: 'flex',
-            alignItems: 'center',
-            border: '1px solid rgba(75,19,107,0.1)',
-            borderRadius: { xs: 4, sm: 5 },
-            boxShadow: '0 24px 80px rgba(75,19,107,0.18)',
-          }}
+    <div className="login-page">
+      <div className="login-page__bg" aria-hidden="true">
+        <div
+          className="login-page__ambient"
+          style={{ '--login-bg-image': `url(${loginBgImage})` }}
         >
-          <CardContent sx={{ width: '100%', p: { xs: 3, sm: 6, lg: 7 } }}>
-            <Box sx={{ mb: 4 }}>
-              <Typography variant="h3" sx={{ fontSize: { xs: '2rem', sm: '2.65rem' }, fontWeight: 800, mb: 1 }}>
-                {authMode === 'login' ? 'Welcome Back!' : 'Create Account'}
-              </Typography>
-              <Typography color="text.secondary" sx={{ fontSize: '1rem' }}>
-                {authMode === 'login'
-                  ? 'Log in to continue to your She-Na space.'
-                  : 'Sign up as a participant and we will prepare your home page.'}
-              </Typography>
-            </Box>
+          <div className="login-page__ambient-grade" aria-hidden="true" />
+          <div className="login-page__ambient-overlay" aria-hidden="true" />
+        </div>
+        <span className="login-page__blob login-page__blob--pink" />
+        <span className="login-page__blob login-page__blob--lavender" />
+        <span className="login-page__blob login-page__blob--soft" />
+        <span className="login-page__leaf login-page__leaf--one" />
+        <span className="login-page__leaf login-page__leaf--two" />
+        <span className="login-page__butterfly" />
+      </div>
 
-            {error && (
-              <Alert severity="error" sx={{ mb: 2.5 }} id="login-error">
-                {error}
-              </Alert>
-            )}
+      <div className="login-page__canvas">
+        <header className="login-page__page-header">
+          <img className="login-page__logo" src={sheNaLogo} alt="She-Na" />
+        </header>
 
-            <Box component="form" onSubmit={authMode === 'login' ? handleEmailLogin : handleEmailSignUp}>
-              {authMode === 'signup' && (
-                <TextField
-                  id="signup-name"
-                  label="Full name"
-                  type="text"
-                  fullWidth
-                  placeholder="Input your full name"
-                  value={displayName}
-                  onChange={(event) => setDisplayName(event.target.value)}
-                  required
-                  autoComplete="name"
-                  sx={{ mb: 2.5 }}
+        <section className="login-page__hero-panel" aria-label="She-Na welcome">
+          <div className="login-page__hero-content">
+            <div className="login-page__title-group">
+              <span className="login-page__title-accent" aria-hidden="true" />
+
+              <div className="login-page__title-stack">
+                <svg className="login-page__heart-doodle" viewBox="0 0 24 22" aria-hidden="true">
+                  <path
+                    d="M12 19.8C12 19.8 3.8 14.1 3.8 9.2C3.8 6.5 5.9 4.5 8.2 4.5C9.7 4.5 11 5.4 12 6.7C13 5.4 14.3 4.5 15.8 4.5C18.1 4.5 20.2 6.5 20.2 9.2C20.2 14.1 12 19.8 12 19.8Z"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.15"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                <h1 className="login-page__title">ברוכה שוב!</h1>
+              </div>
+
+              <span className="login-page__title-accent login-page__title-accent--right" aria-hidden="true" />
+            </div>
+
+            <p className="login-page__subtitle">
+              התחברי למרחב הבטוח שלך ב-<span className="login-page__brand-mark">She-Na</span>
+            </p>
+
+            <div className="login-page__ornament" aria-hidden="true">
+              <span className="login-page__ornament-line" />
+              <svg className="login-page__ornament-heart" viewBox="0 0 12 11" aria-hidden="true">
+                <path
+                  d="M6 10.2C6 10.2 1.2 7.1 1.2 4.2C1.2 2.6 2.5 1.3 4 1.3C4.9 1.3 5.7 1.8 6 2.5C6.3 1.8 7.1 1.3 8 1.3C9.5 1.3 10.8 2.6 10.8 4.2C10.8 7.1 6 10.2 6 10.2Z"
+                  fill="currentColor"
                 />
-              )}
+              </svg>
+              <span className="login-page__ornament-line" />
+            </div>
+          </div>
+        </section>
 
-              <TextField
-                id="login-email"
-                label="Email"
-                type="email"
-                fullWidth
-                placeholder="Input your email"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                required
-                autoComplete="email"
-                sx={{ mb: 2.5 }}
-              />
+        <main className="login-page__login-float">
+          <div className="login-page__card">
+            <span className="login-page__card-leaf" aria-hidden="true" />
 
-              <TextField
-                id="login-password"
-                label="Password"
-                type={showPassword ? 'text' : 'password'}
-                fullWidth
-                placeholder="Input your password"
-                value={password}
-                onChange={(event) => setPassword(event.target.value)}
-                required
-                autoComplete={authMode === 'login' ? 'current-password' : 'new-password'}
-                sx={{ mb: authMode === 'login' ? 1.5 : 3 }}
-                InputProps={{
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      <IconButton
-                        aria-label={showPassword ? 'Hide password' : 'Show password'}
-                        edge="end"
-                        onClick={() => setShowPassword((current) => !current)}
-                      >
-                        {showPassword ? <VisibilityOffIcon /> : <VisibilityIcon />}
-                      </IconButton>
-                    </InputAdornment>
-                  ),
-                }}
-              />
+            <h2 className="login-page__card-title">{isLogin ? 'התחברי למרחב שלך' : 'יצירת חשבון חדש'}</h2>
+            <p className="login-page__card-subtitle">
+              {isLogin ? 'המשיכי למרחב She-Na שלך' : 'הירשמי כקהילת She-Na והתחילי את המסע שלך'}
+            </p>
 
-              {authMode === 'login' && (
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
-                  <FormControlLabel control={<Checkbox size="small" />} label="Remember me" />
-                  <Link component="button" type="button" underline="hover" color="text.secondary" sx={{ fontWeight: 700 }}>
-                    Forgot password?
-                  </Link>
-                </Box>
-              )}
+            {error ? (
+              <div className="login-page__error" id="login-error" role="alert">
+                {error}
+              </div>
+            ) : null}
 
-              <Button
-                fullWidth
-                variant="contained"
-                size="large"
-                type="submit"
-                disabled={submitting}
-                id="btn-login"
-                sx={{
-                  py: 1.55,
-                  borderRadius: 999,
-                  bgcolor: '#111111',
-                  boxShadow: '0 14px 28px rgba(17,17,17,0.18)',
-                  '&:hover': { bgcolor: '#4B136B' },
-                }}
-              >
-                {submitting ? 'Please wait...' : authMode === 'login' ? 'Login' : 'Create Account'}
-              </Button>
-            </Box>
+            <form onSubmit={isLogin ? handleEmailLogin : handleEmailSignUp}>
+              {!isLogin ? (
+                <div className="login-page__field">
+                  <label className="login-page__label" htmlFor="signup-name">
+                    שם מלא
+                  </label>
+                  <div className="login-page__input-wrap">
+                    <span className="login-page__input-icon" aria-hidden="true">
+                      <PersonOutlineOutlinedIcon fontSize="inherit" />
+                    </span>
+                    <input
+                      id="signup-name"
+                      className="login-page__input"
+                      type="text"
+                      placeholder="הזיני את שמך המלא"
+                      value={displayName}
+                      onChange={(event) => setDisplayName(event.target.value)}
+                      required
+                      autoComplete="name"
+                    />
+                  </div>
+                </div>
+              ) : null}
 
-            <Divider sx={{ my: 4 }}>
-              <Typography variant="caption" color="text.disabled">
-                Or continue with:
-              </Typography>
-            </Divider>
+              <div className="login-page__field">
+                <label className="login-page__label" htmlFor="login-email">
+                  אימייל
+                </label>
+                <div className="login-page__input-wrap">
+                  <span className="login-page__input-icon" aria-hidden="true">
+                    <EmailOutlinedIcon fontSize="inherit" />
+                  </span>
+                  <input
+                    id="login-email"
+                    className="login-page__input"
+                    type="email"
+                    placeholder="הזיני את כתובת האימייל"
+                    value={email}
+                    onChange={(event) => setEmail(event.target.value)}
+                    required
+                    autoComplete="email"
+                  />
+                </div>
+              </div>
 
-            <Button
-              fullWidth
-              variant="outlined"
-              size="large"
-              startIcon={<GoogleIcon />}
+              <div className="login-page__field">
+                <label className="login-page__label" htmlFor="login-password">
+                  סיסמה
+                </label>
+                <div className="login-page__input-wrap">
+                  <span className="login-page__input-icon" aria-hidden="true">
+                    <LockOutlinedIcon fontSize="inherit" />
+                  </span>
+                  <input
+                    id="login-password"
+                    className="login-page__input login-page__input--password"
+                    type={showPassword ? 'text' : 'password'}
+                    placeholder="הזיני את הסיסמה"
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                    required
+                    autoComplete={isLogin ? 'current-password' : 'new-password'}
+                  />
+                  <button
+                    type="button"
+                    className="login-page__toggle-password"
+                    aria-label={showPassword ? 'Hide password' : 'Show password'}
+                    onClick={() => setShowPassword((current) => !current)}
+                  >
+                    {showPassword ? <VisibilityOffIcon fontSize="small" /> : <VisibilityIcon fontSize="small" />}
+                  </button>
+                </div>
+              </div>
+
+              {isLogin ? (
+                <div className="login-page__row">
+                  <label className="login-page__remember">
+                    <input type="checkbox" />
+                    זכור אותי
+                  </label>
+                  <button type="button" className="login-page__link-btn">
+                    שכחת סיסמה?
+                  </button>
+                </div>
+              ) : null}
+
+              <button className="login-page__submit" type="submit" disabled={submitting} id="btn-login">
+                <span>{submitting ? 'אנא המתיני...' : isLogin ? 'התחברי' : 'יצירת חשבון'}</span>
+                <span className="login-page__submit-arrow" aria-hidden="true">
+                  <ArrowBackIcon fontSize="small" />
+                </span>
+              </button>
+            </form>
+
+            <div className="login-page__divider-text">או המשיכי עם</div>
+
+            <button
+              type="button"
+              className="login-page__google"
               onClick={handleGoogleLogin}
               disabled={submitting}
               id="btn-google-login"
-              sx={{
-                py: 1.35,
-                borderRadius: 999,
-                borderColor: 'rgba(0,0,0,0.12)',
-                color: 'text.primary',
-                fontWeight: 800,
-                '&:hover': { borderColor: 'primary.main', backgroundColor: 'rgba(223,50,123,0.05)' },
-              }}
             >
-              Continue with Google
-            </Button>
+              <GoogleIcon fontSize="small" aria-hidden="true" />
+              המשיכי עם Google
+            </button>
 
-            <Typography align="center" color="text.secondary" sx={{ mt: 4, fontWeight: 600 }}>
-              {authMode === 'login' ? "Don't have an account? " : 'Already have an account? '}
-              <Link component="button" type="button" underline="hover" disabled={submitting} onClick={toggleAuthMode} sx={{ color: '#4B136B', fontWeight: 800 }}>
-                {authMode === 'login' ? 'Sign up here' : 'Sign in here'}
-              </Link>
-            </Typography>
-          </CardContent>
-        </Card>
-      </Box>
-    </Box>
+            <p className="login-page__footer-text">
+              {isLogin ? 'אין לך חשבון? ' : 'יש לך כבר חשבון? '}
+              <button type="button" className="login-page__footer-link" disabled={submitting} onClick={toggleAuthMode}>
+                {isLogin ? 'הירשמי כאן' : 'התחברי כאן'}
+              </button>
+            </p>
+          </div>
+        </main>
+      </div>
+
+      <button type="button" className="login-page__back-btn" onClick={() => navigate('/')}>
+        חזרה לאתר
+        <ArrowBackIcon aria-hidden="true" />
+      </button>
+    </div>
   );
 }
-
