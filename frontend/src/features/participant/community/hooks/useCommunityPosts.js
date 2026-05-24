@@ -129,6 +129,14 @@ export default function useCommunityPosts({
         : [],
     }));
 
+  const updatePostById = (postId, updater) => {
+    if (!postId || typeof updater !== 'function') return;
+
+    setPosts((currentPosts) => currentPosts.map((post) => (
+      post.id === postId ? updater(post) : post
+    )));
+  };
+
   const handleCreatePost = async () => {
     const content = newPostText.trim();
 
@@ -173,9 +181,7 @@ export default function useCommunityPosts({
       // Keep the optimistic local UI update; the local adapter has no remote side effect yet.
     });
 
-    setPosts((currentPosts) => currentPosts.map((post) => {
-      if (post.id !== postId) return post;
-
+    updatePostById(postId, (post) => {
       const wasSupported = Boolean(post.isSupported);
       const currentSupportCount = post.supportCount ?? post.support ?? 0;
       const nextSupportCount = wasSupported
@@ -188,7 +194,7 @@ export default function useCommunityPosts({
         supportCount: nextSupportCount,
         support: nextSupportCount,
       };
-    }));
+    });
 
     if (shouldIncreaseStreak) {
       registerCommunityActivity();
@@ -203,9 +209,7 @@ export default function useCommunityPosts({
       // Keep the optimistic local UI update; the placeholder service has no remote side effect yet.
     });
 
-    setPosts((currentPosts) => currentPosts.map((post) => {
-      if (post.id !== postId) return post;
-
+    updatePostById(postId, (post) => {
       const wasLiked = post.isLiked;
       const currentLikesCount = post.likesCount ?? post.likes ?? 0;
       const nextLikesCount = wasLiked
@@ -218,7 +222,7 @@ export default function useCommunityPosts({
         likesCount: nextLikesCount,
         likes: nextLikesCount,
       };
-    }));
+    });
 
     if (shouldIncreaseStreak) {
       registerCommunityActivity();
@@ -263,15 +267,11 @@ export default function useCommunityPosts({
       // Keep the existing local-only edit flow responsive.
     });
 
-    setPosts((currentPosts) => currentPosts.map((post) => {
-      if (post.id !== editingPostId) return post;
-
-      return {
-        ...post,
-        content,
-        body: content,
-        updatedAt,
-      };
+    updatePostById(editingPostId, (post) => ({
+      ...post,
+      content,
+      body: content,
+      updatedAt,
     }));
     onCancelEditPost();
   };
@@ -298,21 +298,17 @@ export default function useCommunityPosts({
       // Keep the existing local-only delete flow responsive.
     });
 
-    setPosts((currentPosts) => currentPosts.map((post) => {
-      if (post.id !== confirmingDeletePostId) return post;
-
-      return {
-        ...post,
-        status: COMMUNITY_POST_STATUS.deleted,
-        updatedAt,
-      };
+    updatePostById(confirmingDeletePostId, (post) => ({
+      ...post,
+      status: COMMUNITY_POST_STATUS.deleted,
+      updatedAt,
     }));
     onCancelDeletePost();
   };
 
   return {
     posts,
-    setPosts,
+    updatePostById,
     visiblePosts,
     isRefreshingFeed,
     refreshFeedback,

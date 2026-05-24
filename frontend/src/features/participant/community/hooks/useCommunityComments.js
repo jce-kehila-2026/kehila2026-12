@@ -13,7 +13,7 @@ export default function useCommunityComments({
   localUserId,
   posts,
   registerCommunityActivity,
-  setPosts,
+  updatePostById,
 }) {
   const [commentInputs, setCommentInputs] = useState({});
   const [commentFeedbackByPostId, setCommentFeedbackByPostId] = useState({});
@@ -72,9 +72,7 @@ export default function useCommunityComments({
       return;
     }
 
-    setPosts((currentPosts) => currentPosts.map((post) => {
-      if (post.id !== postId) return post;
-
+    updatePostById(postId, (post) => {
       const currentComments = Array.isArray(post.comments) ? post.comments : [];
       const nextComments = [newComment, ...currentComments];
 
@@ -83,7 +81,7 @@ export default function useCommunityComments({
         comments: nextComments,
         commentsCount: nextComments.filter(isCommunityContentVisible).length,
       };
-    }));
+    });
 
     setCommentInputs((currentInputs) => ({
       ...currentInputs,
@@ -154,9 +152,7 @@ export default function useCommunityComments({
       // Keep the existing local-only delete flow responsive.
     });
 
-    setPosts((currentPosts) => currentPosts.map((post) => {
-      if (post.id !== postId) return post;
-
+    updatePostById(postId, (post) => {
       const currentComments = Array.isArray(post.comments) ? post.comments : [];
       const nextComments = currentComments.filter((comment) => comment.id !== commentId);
 
@@ -165,7 +161,7 @@ export default function useCommunityComments({
         comments: nextComments,
         commentsCount: nextComments.filter(isCommunityContentVisible).length,
       };
-    }));
+    });
     handleCancelDeleteComment();
   };
 

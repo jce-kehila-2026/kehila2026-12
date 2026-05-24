@@ -131,7 +131,7 @@ export default function CommunityPage({
   } = useCommunityStreak();
   const {
     posts,
-    setPosts,
+    updatePostById,
     visiblePosts,
     isRefreshingFeed,
     refreshFeedback,
@@ -186,7 +186,7 @@ export default function CommunityPage({
     localUserId,
     posts,
     registerCommunityActivity,
-    setPosts,
+    updatePostById,
   });
   const {
     reportFeedbackByPostId,
@@ -201,7 +201,7 @@ export default function CommunityPage({
     communityDisplayName,
     localUserId,
     posts,
-    setPosts,
+    updatePostById,
   });
   const {
     followedAuthors,

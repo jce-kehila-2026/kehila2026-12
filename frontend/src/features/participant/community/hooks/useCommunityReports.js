@@ -11,7 +11,7 @@ export default function useCommunityReports({
   communityDisplayName,
   localUserId,
   posts,
-  setPosts,
+  updatePostById,
 }) {
   const [reportFeedbackByPostId, setReportFeedbackByPostId] = useState({});
   const [confirmingReportPostId, setConfirmingReportPostId] = useState(null);
@@ -114,9 +114,7 @@ export default function useCommunityReports({
       // Keep the local placeholder flow responsive; Firebase reporting will handle failures later.
     }
 
-    setPosts((currentPosts) => currentPosts.map((post) => {
-      if (post.id !== postId) return post;
-
+    updatePostById(postId, (post) => {
       const currentReportedBy = Array.isArray(post.reportedBy) ? post.reportedBy : [];
       if (currentReportedBy.includes(localUserId)) return post;
 
@@ -134,7 +132,7 @@ export default function useCommunityReports({
           ? COMMUNITY_POST_STATUS.reported
           : post.status ?? COMMUNITY_POST_STATUS.reported,
       };
-    }));
+    });
     setConfirmingReportPostId(null);
     setSelectedReportReason('');
     setReportReasonError('');
