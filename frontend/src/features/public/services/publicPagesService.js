@@ -259,6 +259,53 @@ export const DEFAULT_INSPIRATIONAL_STORIES = [
   },
 ];
 
+export const DEFAULT_PRESS_COVERAGE = [
+  {
+    id: 'seed-press-1',
+    title: 'סיקור ב-Jerusalem Post',
+    description: 'כתבה על הקהילה, החמלה והליווי שאנחנו מעניקים לנשים ולמשפחות.',
+    imageUrl: 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=1000&q=80',
+    articleUrl: 'https://www.jpost.com/',
+  },
+  {
+    id: 'seed-press-2',
+    title: 'קול נשי בתקשורת',
+    description: 'סיפור על כוחה של קהילה תומכת ועל מרחב בטוח לנשים בדרך.',
+    imageUrl: 'https://images.unsplash.com/photo-1573164574511-73c773193279?auto=format&fit=crop&w=1000&q=80',
+    articleUrl: '',
+  },
+  {
+    id: 'seed-press-3',
+    title: 'תקווה, אמונה וחיבור',
+    description: 'על העשייה הקהילתית של שנה ועל המשמעות של לא להיות לבד.',
+    imageUrl: 'https://images.unsplash.com/photo-1521791136064-7986c2920216?auto=format&fit=crop&w=1000&q=80',
+    articleUrl: '',
+  },
+  {
+    id: 'seed-press-4',
+    title: 'מהעיתונות עלינו',
+    description: 'עוד זווית על התמיכה, הליווי והאהבה שמלוות נשים בכל שלב.',
+    imageUrl: 'https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?auto=format&fit=crop&w=1000&q=80',
+    articleUrl: '',
+  },
+];
+
+function mergePressCoverageItem(item, index) {
+  const safe = item && typeof item === 'object' ? item : {};
+  return {
+    id: safeString(safe.id) || `press-${index}`,
+    title: safeString(safe.title),
+    description: safeString(safe.description),
+    imageUrl: safeString(safe.imageUrl),
+    articleUrl: safeString(safe.articleUrl),
+  };
+}
+
+export function mergePressCoverage(value) {
+  if (!Array.isArray(value)) return DEFAULT_PRESS_COVERAGE.map((item) => ({ ...item }));
+  return value.map((item, index) => mergePressCoverageItem(item, index));
+}
+
 function mergeInspirationalStory(story, index) {
   const safe = story && typeof story === 'object' ? story : {};
   return {
@@ -420,6 +467,7 @@ export function getDefaultPublicHomeDoc() {
       })),
     },
     inspirationalStories: DEFAULT_INSPIRATIONAL_STORIES.map((s) => ({ ...s })),
+    pressCoverage: DEFAULT_PRESS_COVERAGE.map((p) => ({ ...p })),
     updatedAt: null,
     updatedBy: '',
   };
@@ -438,6 +486,7 @@ export async function getPublicHomeDoc() {
       aboutUs: mergeAboutUs(data.aboutUs),
       learnTogether: mergeLearnTogether(data.learnTogether),
       inspirationalStories: mergeInspirationalStories(data.inspirationalStories),
+      pressCoverage: mergePressCoverage(data.pressCoverage),
     };
   } catch (error) {
     console.warn('[publicPagesService] Failed to load public_pages/home, using defaults.', error);
