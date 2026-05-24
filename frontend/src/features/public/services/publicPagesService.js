@@ -232,6 +232,49 @@ export const DEFAULT_LEARN_TOGETHER = {
 
 export const LEARN_TOGETHER_MAX_SECTIONS = 3;
 
+export const DEFAULT_INSPIRATIONAL_STORIES = [
+  {
+    id: 'seed-story-rachel',
+    name: 'רחל כהן',
+    occupation: 'מתמודדת מנצחת',
+    story:
+      'הקהילה של SHE-NA היתה האור שלי בתקופה החשוכה ביותר. מצאתי כאן לא רק תמיכה, אלא משפחה אמיתית שהבינה אותי.',
+    imageUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=600&q=78',
+  },
+  {
+    id: 'seed-story-sara',
+    name: 'שרה לוי',
+    occupation: 'מתנדבת ותומכת',
+    story:
+      'אחרי שעברתי את המסע בעצמי, החלטתי לתת חזרה. כל יום שאני עוזרת לאישה אחרת מזכיר לי את הכוח שיש בנו.',
+    imageUrl: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=600&q=78',
+  },
+  {
+    id: 'seed-story-michal',
+    name: 'מיכל אברהם',
+    occupation: 'חברת קהילה',
+    story:
+      'הסדנאות וההרצאות שינו את הדרך שבה אני מסתכלת על החיים. למדתי שיש תקווה ושאני יכולה להיות חזקה יותר ממה שחשבתי.',
+    imageUrl: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=600&q=78',
+  },
+];
+
+function mergeInspirationalStory(story, index) {
+  const safe = story && typeof story === 'object' ? story : {};
+  return {
+    id: safeString(safe.id) || `story-${index}`,
+    name: safeString(safe.name),
+    story: safeString(safe.story),
+    imageUrl: safeString(safe.imageUrl),
+    occupation: safeString(safe.occupation),
+  };
+}
+
+export function mergeInspirationalStories(value) {
+  if (!Array.isArray(value)) return DEFAULT_INSPIRATIONAL_STORIES.map((s) => ({ ...s }));
+  return value.map((story, index) => mergeInspirationalStory(story, index));
+}
+
 export function emptyLearnTogetherPopup() {
   return {
     title: '',
@@ -376,6 +419,7 @@ export function getDefaultPublicHomeDoc() {
         popup: { ...card.popup },
       })),
     },
+    inspirationalStories: DEFAULT_INSPIRATIONAL_STORIES.map((s) => ({ ...s })),
     updatedAt: null,
     updatedBy: '',
   };
@@ -393,6 +437,7 @@ export async function getPublicHomeDoc() {
       hero: mergeHero(data.hero),
       aboutUs: mergeAboutUs(data.aboutUs),
       learnTogether: mergeLearnTogether(data.learnTogether),
+      inspirationalStories: mergeInspirationalStories(data.inspirationalStories),
     };
   } catch (error) {
     console.warn('[publicPagesService] Failed to load public_pages/home, using defaults.', error);
