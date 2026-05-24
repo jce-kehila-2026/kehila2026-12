@@ -44,6 +44,7 @@ import {
   getPostAuthorId,
   isAuthorCurrentUser,
   isAuthorFollowed,
+  isCommentOwnedByCurrentUser,
   isPostOwnedByCurrentUser,
   isPostReportedByUser,
 } from './utils/communityModerationUtils';
@@ -89,6 +90,7 @@ export default function CommunityPage({
   const postInputRef = useRef(null);
   const reportModalRef = useRef(null);
   const deletePostModalRef = useRef(null);
+  const deleteCommentModalRef = useRef(null);
   const editPostModalRef = useRef(null);
   const [initialStreakState] = useState(getInitialStreakState);
   const [showGuidelinesModal, setShowGuidelinesModal] = useState(
@@ -116,6 +118,7 @@ export default function CommunityPage({
   const [selectedReportReason, setSelectedReportReason] = useState('');
   const [reportReasonError, setReportReasonError] = useState('');
   const [confirmingDeletePostId, setConfirmingDeletePostId] = useState(null);
+  const [pendingCommentDeletion, setPendingCommentDeletion] = useState(null);
   const [editingPostId, setEditingPostId] = useState(null);
   const [editPostText, setEditPostText] = useState('');
   const [editPostError, setEditPostError] = useState('');
@@ -215,6 +218,14 @@ export default function CommunityPage({
       deletePostModalRef.current?.focus();
     }, 0);
   }, [confirmingDeletePostId]);
+
+  useEffect(() => {
+    if (!pendingCommentDeletion) return;
+
+    window.setTimeout(() => {
+      deleteCommentModalRef.current?.focus();
+    }, 0);
+  }, [pendingCommentDeletion]);
 
   useEffect(() => {
     if (!editingPostId) return;
@@ -713,7 +724,47 @@ export default function CommunityPage({
     }));
   };
 
-  const handleDeleteComment = (postId, commentId) => {
+  const handleDeleteCommentRequest = (postId, commentId) => {
+    const postToUpdate = posts.find((post) => post.id === postId);
+    const commentToDelete = Array.isArray(postToUpdate?.comments)
+      ? postToUpdate.comments.find((comment) => comment.id === commentId)
+      : null;
+
+    if (!isCommentOwnedByCurrentUser(commentToDelete, localUserId, communityDisplayName || 'Current User')) return;
+
+    setPendingCommentDeletion({ postId, commentId });
+  };
+
+  const handleCancelDeleteComment = () => {
+    setPendingCommentDeletion(null);
+  };
+
+  const handleDeleteCommentModalBackdropClick = (event) => {
+    if (event.target === event.currentTarget) {
+      handleCancelDeleteComment();
+    }
+  };
+
+  const handleDeleteCommentModalKeyDown = (event) => {
+    if (event.key === 'Escape') {
+      handleCancelDeleteComment();
+    }
+  };
+
+  const handleConfirmDeleteComment = () => {
+    if (!pendingCommentDeletion) return;
+
+    const { postId, commentId } = pendingCommentDeletion;
+    const postToUpdate = posts.find((post) => post.id === postId);
+    const commentToDelete = Array.isArray(postToUpdate?.comments)
+      ? postToUpdate.comments.find((comment) => comment.id === commentId)
+      : null;
+
+    if (!isCommentOwnedByCurrentUser(commentToDelete, localUserId, communityDisplayName || 'Current User')) {
+      handleCancelDeleteComment();
+      return;
+    }
+
     setPosts((currentPosts) => currentPosts.map((post) => {
       if (post.id !== postId) return post;
 
@@ -726,6 +777,7 @@ export default function CommunityPage({
         commentsCount: nextComments.filter(isCommunityContentVisible).length,
       };
     }));
+    handleCancelDeleteComment();
   };
 
   const handleEditPostRequest = (postId) => {
@@ -877,12 +929,27 @@ export default function CommunityPage({
     />
   ) : null;
 
+  const deleteCommentModal = pendingCommentDeletion ? (
+    <DeletePostModal
+      closeLabel="Close comment delete confirmation"
+      deleteModalRef={deleteCommentModalRef}
+      description="Are you sure you want to delete this comment?"
+      title="Delete comment"
+      titleId="community-delete-comment-title"
+      onBackdropMouseDown={handleDeleteCommentModalBackdropClick}
+      onCancel={handleCancelDeleteComment}
+      onConfirm={handleConfirmDeleteComment}
+      onKeyDown={handleDeleteCommentModalKeyDown}
+    />
+  ) : null;
+
   return (
     <section className="community-page" aria-labelledby="community-page-title">
       {showGuidelinesModal && <CommunityGuidelinesModal onContinue={handleGuidelinesContinue} />}
       {reportModal && typeof document !== 'undefined' ? createPortal(reportModal, document.body) : reportModal}
       {editPostModal && typeof document !== 'undefined' ? createPortal(editPostModal, document.body) : editPostModal}
       {deletePostModal && typeof document !== 'undefined' ? createPortal(deletePostModal, document.body) : deletePostModal}
+      {deleteCommentModal && typeof document !== 'undefined' ? createPortal(deleteCommentModal, document.body) : deleteCommentModal}
 
       <header className="community-page__header">
         <div className="community-page__header-copy">
@@ -1005,7 +1072,7 @@ export default function CommunityPage({
                       onFollowAuthor={() => handleToggleFollowAuthor(post)}
                       onOpenCommentComposer={() => handleOpenCommentComposer(post.id)}
                       onReportPost={() => handleReportPostRequest(post.id)}
-                      onDeleteComment={(commentId) => handleDeleteComment(post.id, commentId)}
+                      onDeleteComment={(commentId) => handleDeleteCommentRequest(post.id, commentId)}
                       onSubmitComment={() => handleSubmitComment(post.id)}
                       onToggleSupport={handleToggleSupport}
                       onToggleCommentsExpanded={() => handleToggleCommentsExpanded(post.id)}

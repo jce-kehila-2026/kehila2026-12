@@ -1,9 +1,9 @@
-import { useEffect, useRef } from 'react';
 import ShieldOutlinedIcon from '@mui/icons-material/ShieldOutlined';
 import {
   formatRelativeCommunityTime,
   isCommunityContentVisible,
 } from '../communityInteractionHelpers';
+import CommentComposer from './CommentComposer';
 import CommentsPreview from './CommentsPreview';
 import PostActions from './PostActions';
 import PostOverflowMenu from './PostOverflowMenu';
@@ -33,7 +33,6 @@ export default function CommunityPostCard({
   relativeTimeNow,
   reportFeedback,
 }) {
-  const commentInputRef = useRef(null);
   const likesCount = post.likesCount ?? post.likes ?? 0;
   const supportCount = post.supportCount ?? post.support ?? 0;
   const comments = (Array.isArray(post.comments) ? post.comments : post.previewComments ?? [])
@@ -42,17 +41,7 @@ export default function CommunityPostCard({
   const postBody = post.content ?? post.body;
   const postTime = formatRelativeCommunityTime(post.createdAt, relativeTimeNow);
   const commentFeedbackId = commentFeedback ? `comment-feedback-${post.id}` : undefined;
-  const handleCommentSubmit = (event) => {
-    event.preventDefault();
-    onSubmitComment();
-  };
   const reportFeedbackId = reportFeedback ? `report-feedback-${post.id}` : undefined;
-
-  useEffect(() => {
-    if (isCommentComposerOpen) {
-      commentInputRef.current?.focus();
-    }
-  }, [isCommentComposerOpen]);
 
   const renderAttachment = () => {
     if (!post.attachment) return null;
@@ -156,19 +145,14 @@ export default function CommunityPostCard({
         />
       )}
       {isCommentComposerOpen && !isReportedByCurrentUser && (
-        <form className="community-comment-form" onSubmit={handleCommentSubmit}>
-          <input
-            aria-describedby={commentFeedbackId}
-            aria-label={`Add a comment to ${post.author}'s post`}
-            aria-invalid={commentFeedback?.type === 'error'}
-            onChange={(event) => onCommentTextChange(event.target.value)}
-            placeholder="Write a comment..."
-            ref={commentInputRef}
-            type="text"
-            value={commentText}
-          />
-          <button type="submit">Reply</button>
-        </form>
+        <CommentComposer
+          commentFeedback={commentFeedback}
+          commentFeedbackId={commentFeedbackId}
+          commentText={commentText}
+          onCommentTextChange={onCommentTextChange}
+          onSubmitComment={onSubmitComment}
+          postAuthor={post.author}
+        />
       )}
       {commentFeedback && (
         <p

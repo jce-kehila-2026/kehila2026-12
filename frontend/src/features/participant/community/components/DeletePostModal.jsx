@@ -1,5 +1,9 @@
 export default function DeletePostModal({
+  closeLabel = 'Close delete confirmation',
   deleteModalRef,
+  description = 'Are you sure you want to delete this post?',
+  title = 'Delete post',
+  titleId = 'community-delete-post-title',
   onBackdropMouseDown,
   onCancel,
   onConfirm,
@@ -12,7 +16,7 @@ export default function DeletePostModal({
       onMouseDown={onBackdropMouseDown}
     >
       <section
-        aria-labelledby="community-delete-post-title"
+        aria-labelledby={titleId}
         className="community-report-modal__panel"
         onKeyDown={onKeyDown}
         ref={deleteModalRef}
@@ -21,11 +25,11 @@ export default function DeletePostModal({
       >
         <header className="community-report-modal__header">
           <div>
-            <h3 id="community-delete-post-title">Delete post</h3>
-            <p>Are you sure you want to delete this post?</p>
+            <h3 id={titleId}>{title}</h3>
+            <p>{description}</p>
           </div>
           <button
-            aria-label="Close delete confirmation"
+            aria-label={closeLabel}
             className="community-report-modal__close"
             type="button"
             onClick={onCancel}
