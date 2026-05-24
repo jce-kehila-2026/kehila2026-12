@@ -11,7 +11,6 @@ export const PUBLIC_LANGUAGE_OPTIONS = [
 
 const NAV_LINK_KEYS = [
   { key: 'navHome', href: '#home' },
-  { key: 'navAbout', href: '#about' },
   { key: 'navLearnTogether', href: '#support' },
   { key: 'navStories', href: '#stories' },
   { key: 'navDonations', href: '__donation__' },
@@ -21,8 +20,7 @@ const NAV_LINK_KEYS = [
 export const publicHomeTranslations = {
   he: {
     navHome: 'הבית',
-    navAbout: 'מי אנחנו',
-    navLearnTogether: 'בואי נלמד ביחד',
+    navLearnTogether: 'מי אנחנו',
     navStories: 'סיפורי השראה',
     navDonations: 'תרומות',
     navContact: 'צרי קשר',
@@ -44,8 +42,7 @@ export const publicHomeTranslations = {
   },
   ar: {
     navHome: 'الرئيسية',
-    navAbout: 'من نحن',
-    navLearnTogether: 'لنتعلّم معًا',
+    navLearnTogether: 'من نحن',
     navStories: 'قصص ملهمة',
     navDonations: 'تبرعات',
     navContact: 'تواصلي معنا',
@@ -67,8 +64,7 @@ export const publicHomeTranslations = {
   },
   en: {
     navHome: 'Home',
-    navAbout: 'About Us',
-    navLearnTogether: 'Learn Together',
+    navLearnTogether: 'About Us',
     navStories: 'Inspiration Stories',
     navDonations: 'Donate',
     navContact: 'Contact',

@@ -6,16 +6,21 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import HomeIcon from '@mui/icons-material/Home';
 import InfoIcon from '@mui/icons-material/Info';
-import SchoolIcon from '@mui/icons-material/School';
+import AutoStoriesIcon from '@mui/icons-material/AutoStories';
 import PreviewIcon from '@mui/icons-material/Preview';
 import PublicHomePageHomeTab from './PublicHomePageHomeTab';
-import PublicHomePageAboutUsTab from './PublicHomePageAboutUsTab';
 import PublicHomePageLearnTogetherTab from './PublicHomePageLearnTogetherTab';
+import PublicHomePageInspirationStoriesTab from './PublicHomePageInspirationStoriesTab';
 
 const TABS = [
   { key: 'home', label: 'Home', icon: <HomeIcon />, Component: PublicHomePageHomeTab },
-  { key: 'aboutUs', label: 'About Us', icon: <InfoIcon />, Component: PublicHomePageAboutUsTab },
-  { key: 'learnTogether', label: 'Learn Together', icon: <SchoolIcon />, Component: PublicHomePageLearnTogetherTab },
+  { key: 'aboutUs', label: 'About Us', icon: <InfoIcon />, Component: PublicHomePageLearnTogetherTab },
+  {
+    key: 'inspirationStories',
+    label: 'Inspirational Stories',
+    icon: <AutoStoriesIcon />,
+    Component: PublicHomePageInspirationStoriesTab,
+  },
 ];
 
 export default function CMSPage() {

@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import PublicNavbar from '../components/PublicNavbar';
 import HeroSection from '../components/HeroSection';
-import AboutSection from '../components/AboutSection';
 import StatisticsSection from '../components/StatisticsSection';
 import LearnTogetherSection from '../components/LearnTogetherSection';
-import TeamPreviewSection from '../components/TeamPreviewSection';
+import InspirationStoriesSection from '../components/InspirationStoriesSection';
 import ArticlesPreviewSection from '../components/ArticlesPreviewSection';
 import EventsPreviewSection from '../components/EventsPreviewSection';
 import CommunitySupportCta from '../components/CommunitySupportCta';
@@ -110,10 +109,9 @@ function PublicHomePageContent() {
           <EmptyState message={t('emptyHomepage')} />
         ) : null}
         <HeroSection hero={publicHomeDoc.hero} loading={loading} onJoinClick={() => setIsJoinModalOpen(true)} />
-        <AboutSection aboutUs={publicHomeDoc.aboutUs} />
         <LearnTogetherSection learnTogether={publicHomeDoc.learnTogether} />
         <StatisticsSection statistics={content.statistics} isLoading={loading} />
-        <TeamPreviewSection teamMembers={content.teamMembers} isLoading={loading} />
+        <InspirationStoriesSection stories={publicHomeDoc.inspirationalStories} />
         <ArticlesPreviewSection articles={content.articles} isLoading={loading} hasError={error} />
         <EventsPreviewSection events={content.events} isLoading={loading} hasError={error} />
         <CommunitySupportCta onDonationClick={() => setIsDonationModalOpen(true)} />
