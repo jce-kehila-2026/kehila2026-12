@@ -36,18 +36,14 @@ import {
 } from './utils/communityProfileUtils';
 import {
   getCurrentCommunityUserId,
-  getFollowAuthorKey,
-  isAuthorCurrentUser,
   isAuthorFollowed,
   isPostOwnedByCurrentUser,
   isPostReportedByUser,
 } from './utils/communityModerationUtils';
 import {
-  loadStoredFollowedAuthors,
   saveStoredCommunityPreferences,
   saveStoredCommunityStreak,
   saveStoredCommunityUserProfile,
-  saveStoredFollowedAuthors,
 } from './services/communityStorageService';
 import {
   COMMUNITY_GUIDELINES_VERSION,
@@ -67,6 +63,7 @@ import EditPostModal from './components/EditPostModal';
 import FeedTabs from './components/FeedTabs';
 import ReportPostModal from './components/ReportPostModal';
 import useCommunityComments from './hooks/useCommunityComments';
+import useCommunityFollows from './hooks/useCommunityFollows';
 import useCommunityPosts from './hooks/useCommunityPosts';
 import useCommunityReports from './hooks/useCommunityReports';
 import './styles/community.css';
@@ -99,7 +96,6 @@ export default function CommunityPage({
   const [editingPostId, setEditingPostId] = useState(null);
   const [editPostText, setEditPostText] = useState('');
   const [editPostError, setEditPostError] = useState('');
-  const [followedAuthors, setFollowedAuthors] = useState(loadStoredFollowedAuthors);
   const [selectedSupportSpace, setSelectedSupportSpace] = useState(null);
   const [showFullGuidelinesModal, setShowFullGuidelinesModal] = useState(false);
   const [communityStreakCount, setCommunityStreakCount] = useState(initialStreakState.streakCount);
@@ -143,10 +139,6 @@ export default function CommunityPage({
 
     saveStoredCommunityUserProfile(serializeCommunityUserProfile(communityUserProfile));
   }, [communityUserProfile]);
-
-  useEffect(() => {
-    saveStoredFollowedAuthors(followedAuthors);
-  }, [followedAuthors]);
 
   const registerCommunityActivity = () => {
     const todayKey = getTodayKey();
@@ -278,6 +270,13 @@ export default function CommunityPage({
     posts,
     setPosts,
   });
+  const {
+    followedAuthors,
+    handleToggleFollowAuthor,
+  } = useCommunityFollows({
+    communityDisplayName,
+    localUserId,
+  });
   useEffect(() => {
     if (!confirmingReportPostId) return;
 
@@ -352,22 +351,6 @@ export default function CommunityPage({
     }
 
     window.location.assign('/profile');
-  };
-
-  const handleToggleFollowAuthor = (post) => {
-    if (!post || post.isAnonymous || post.author === 'Anonymous User' || post.author === 'Anonymous Participant') return;
-    if (isAuthorCurrentUser(post, localUserId, communityDisplayName || 'Current User')) return;
-
-    const authorKey = getFollowAuthorKey(post);
-    if (!authorKey) return;
-
-    setFollowedAuthors((currentAuthors) => (
-      isAuthorFollowed(post, currentAuthors)
-        ? currentAuthors.filter((currentAuthor) => (
-          currentAuthor !== authorKey && currentAuthor !== post.author
-        ))
-        : [...currentAuthors, authorKey]
-    ));
   };
 
   const handleReportModalBackdropClick = (event) => {
