@@ -40,8 +40,6 @@ import {
   getPostAuthorId,
   isAuthorCurrentUser,
   isAuthorFollowed,
-  isCommunityContentVisible,
-  isCommentOwnedByCurrentUser,
   isPostOwnedByCurrentUser,
   isPostReportedByUser,
 } from './utils/communityModerationUtils';
@@ -53,8 +51,6 @@ import {
   saveStoredFollowedAuthors,
 } from './services/communityStorageService';
 import {
-  createCommunityComment,
-  deleteCommunityComment,
   reportCommunityPost,
 } from './services/communityService';
 import { COMMUNITY_POST_STATUS } from './communityModels';
@@ -75,6 +71,7 @@ import DeletePostModal from './components/DeletePostModal';
 import EditPostModal from './components/EditPostModal';
 import FeedTabs from './components/FeedTabs';
 import ReportPostModal from './components/ReportPostModal';
+import useCommunityComments from './hooks/useCommunityComments';
 import useCommunityPosts from './hooks/useCommunityPosts';
 import './styles/community.css';
 
@@ -102,19 +99,14 @@ export default function CommunityPage({
   const [communityUserProfile, setCommunityUserProfile] = useState(getInitialCommunityUserProfile);
   const [communityPreferences, setCommunityPreferences] = useState(getInitialCommunityPreferences);
   const [profileSuccessMessage, setProfileSuccessMessage] = useState('');
-  const [commentInputs, setCommentInputs] = useState({});
-  const [commentFeedbackByPostId, setCommentFeedbackByPostId] = useState({});
   const [reportFeedbackByPostId, setReportFeedbackByPostId] = useState({});
   const [confirmingReportPostId, setConfirmingReportPostId] = useState(null);
   const [selectedReportReason, setSelectedReportReason] = useState('');
   const [reportReasonError, setReportReasonError] = useState('');
   const [confirmingDeletePostId, setConfirmingDeletePostId] = useState(null);
-  const [pendingCommentDeletion, setPendingCommentDeletion] = useState(null);
   const [editingPostId, setEditingPostId] = useState(null);
   const [editPostText, setEditPostText] = useState('');
   const [editPostError, setEditPostError] = useState('');
-  const [expandedCommentPostIds, setExpandedCommentPostIds] = useState({});
-  const [openCommentPostIds, setOpenCommentPostIds] = useState({});
   const [followedAuthors, setFollowedAuthors] = useState(loadStoredFollowedAuthors);
   const [selectedSupportSpace, setSelectedSupportSpace] = useState(null);
   const [showFullGuidelinesModal, setShowFullGuidelinesModal] = useState(false);
@@ -141,14 +133,6 @@ export default function CommunityPage({
       deletePostModalRef.current?.focus();
     }, 0);
   }, [confirmingDeletePostId]);
-
-  useEffect(() => {
-    if (!pendingCommentDeletion) return;
-
-    window.setTimeout(() => {
-      deleteCommentModalRef.current?.focus();
-    }, 0);
-  }, [pendingCommentDeletion]);
 
   useEffect(() => {
     if (!editingPostId) return;
@@ -277,6 +261,34 @@ export default function CommunityPage({
     setEditPostText,
     setEditingPostId,
   });
+  const {
+    commentInputs,
+    commentFeedbackByPostId,
+    expandedCommentPostIds,
+    openCommentPostIds,
+    pendingCommentDeletion,
+    handleCommentInputChange,
+    handleSubmitComment,
+    handleToggleCommentsExpanded,
+    handleOpenCommentComposer,
+    handleDeleteCommentRequest,
+    handleCancelDeleteComment,
+    handleConfirmDeleteComment,
+  } = useCommunityComments({
+    communityDisplayName,
+    localUserId,
+    posts,
+    registerCommunityActivity,
+    setPosts,
+  });
+  useEffect(() => {
+    if (!pendingCommentDeletion) return;
+
+    window.setTimeout(() => {
+      deleteCommentModalRef.current?.focus();
+    }, 0);
+  }, [pendingCommentDeletion]);
+
   const visibleBirthdayUsers = showBirthdayInCommunity && communityBirthday
     ? [{
       id: localUserId,
@@ -492,119 +504,6 @@ export default function CommunityPage({
     }));
   };
 
-  const handleCommentInputChange = (postId, value) => {
-    setCommentInputs((currentInputs) => ({
-      ...currentInputs,
-      [postId]: value,
-    }));
-    setCommentFeedbackByPostId((currentFeedback) => {
-      if (!currentFeedback[postId]) return currentFeedback;
-
-      const nextFeedback = { ...currentFeedback };
-      delete nextFeedback[postId];
-      return nextFeedback;
-    });
-  };
-
-  const handleSubmitComment = async (postId) => {
-    const content = (commentInputs[postId] ?? '').trim();
-
-    if (!content) {
-      setCommentFeedbackByPostId((currentFeedback) => ({
-        ...currentFeedback,
-        [postId]: {
-          type: 'error',
-          message: 'Please write a comment before posting.',
-        },
-      }));
-      return;
-    }
-    if (!posts.some((post) => post.id === postId)) return;
-
-    let newComment;
-
-    try {
-      newComment = await createCommunityComment(postId, {
-        authorId: localUserId,
-        author: communityDisplayName || 'Current User',
-        authorDisplayName: communityDisplayName || 'Current User',
-        content,
-      });
-    } catch {
-      setCommentFeedbackByPostId((currentFeedback) => ({
-        ...currentFeedback,
-        [postId]: {
-          type: 'error',
-          message: 'Unable to add your comment right now.',
-        },
-      }));
-      return;
-    }
-
-    setPosts((currentPosts) => currentPosts.map((post) => {
-      if (post.id !== postId) return post;
-
-      const currentComments = Array.isArray(post.comments) ? post.comments : [];
-      const nextComments = [newComment, ...currentComments];
-
-      return {
-        ...post,
-        comments: nextComments,
-        commentsCount: nextComments.filter(isCommunityContentVisible).length,
-      };
-    }));
-
-    setCommentInputs((currentInputs) => ({
-      ...currentInputs,
-      [postId]: '',
-    }));
-    setOpenCommentPostIds((currentPostIds) => ({
-      ...currentPostIds,
-      [postId]: false,
-    }));
-    setCommentFeedbackByPostId((currentFeedback) => ({
-      ...currentFeedback,
-      [postId]: {
-        type: 'success',
-        message: 'Comment added successfully.',
-      },
-    }));
-    registerCommunityActivity();
-  };
-
-  const handleToggleCommentsExpanded = (postId) => {
-    setExpandedCommentPostIds((currentPostIds) => ({
-      ...currentPostIds,
-      [postId]: !currentPostIds[postId],
-    }));
-  };
-
-  const handleOpenCommentComposer = (postId) => {
-    setOpenCommentPostIds((currentPostIds) => ({
-      ...currentPostIds,
-      [postId]: !currentPostIds[postId],
-    }));
-    setExpandedCommentPostIds((currentPostIds) => ({
-      ...currentPostIds,
-      [postId]: true,
-    }));
-  };
-
-  const handleDeleteCommentRequest = (postId, commentId) => {
-    const postToUpdate = posts.find((post) => post.id === postId);
-    const commentToDelete = Array.isArray(postToUpdate?.comments)
-      ? postToUpdate.comments.find((comment) => comment.id === commentId)
-      : null;
-
-    if (!isCommentOwnedByCurrentUser(commentToDelete, localUserId, communityDisplayName || 'Current User')) return;
-
-    setPendingCommentDeletion({ postId, commentId });
-  };
-
-  const handleCancelDeleteComment = () => {
-    setPendingCommentDeletion(null);
-  };
-
   const handleDeleteCommentModalBackdropClick = (event) => {
     if (event.target === event.currentTarget) {
       handleCancelDeleteComment();
@@ -615,39 +514,6 @@ export default function CommunityPage({
     if (event.key === 'Escape') {
       handleCancelDeleteComment();
     }
-  };
-
-  const handleConfirmDeleteComment = () => {
-    if (!pendingCommentDeletion) return;
-
-    const { postId, commentId } = pendingCommentDeletion;
-    const postToUpdate = posts.find((post) => post.id === postId);
-    const commentToDelete = Array.isArray(postToUpdate?.comments)
-      ? postToUpdate.comments.find((comment) => comment.id === commentId)
-      : null;
-
-    if (!isCommentOwnedByCurrentUser(commentToDelete, localUserId, communityDisplayName || 'Current User')) {
-      handleCancelDeleteComment();
-      return;
-    }
-
-    deleteCommunityComment(postId, commentId).catch(() => {
-      // Keep the existing local-only delete flow responsive.
-    });
-
-    setPosts((currentPosts) => currentPosts.map((post) => {
-      if (post.id !== postId) return post;
-
-      const currentComments = Array.isArray(post.comments) ? post.comments : [];
-      const nextComments = currentComments.filter((comment) => comment.id !== commentId);
-
-      return {
-        ...post,
-        comments: nextComments,
-        commentsCount: nextComments.filter(isCommunityContentVisible).length,
-      };
-    }));
-    handleCancelDeleteComment();
   };
 
   const handleEditPostModalBackdropClick = (event) => {
