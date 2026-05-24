@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 
-const COUNTER_DURATION_MS = 1200;
+const DEFAULT_COUNTER_DURATION_MS = 1200;
 
 function parseCounterValue(value) {
   const text = String(value ?? '');
@@ -18,15 +18,17 @@ function parseCounterValue(value) {
     return null;
   }
 
+  const rawPrefix = text.slice(0, match.index);
+  const rawSuffix = text.slice(endIndex);
+
+  // Normalize "+85" style values to "85+" for display while counting.
+  const plusAfterNumber = rawPrefix === '+' && !rawSuffix;
+
   return {
     finalNumber,
-    prefix: text.slice(0, match.index),
-    suffix: text.slice(endIndex),
+    prefix: plusAfterNumber ? '' : rawPrefix,
+    suffix: plusAfterNumber ? '+' : rawSuffix,
   };
-}
-
-function formatCounterValue(value, parsedValue) {
-  return `${parsedValue.prefix}${new Intl.NumberFormat('en-US').format(value)}${parsedValue.suffix}`;
 }
 
 function formatNumberOnly(value) {
@@ -55,97 +57,125 @@ function renderAffix(text) {
   return text;
 }
 
+function renderStructuredValue({ parsedValue, displayNumber, reserveWidth = false }) {
+  const finalNumberText = formatNumberOnly(parsedValue.finalNumber);
+
+  return (
+    <>
+      {parsedValue.prefix ? (
+        <span className="public-statistics__value-affix">{renderAffix(parsedValue.prefix)}</span>
+      ) : null}
+      {reserveWidth ? (
+        <span className="public-statistics__value-number-slot">
+          <strong className="public-statistics__value-number public-statistics__value-number--measure" aria-hidden="true">
+            {finalNumberText}
+          </strong>
+          <strong className="public-statistics__value-number">{displayNumber}</strong>
+        </span>
+      ) : (
+        <strong className="public-statistics__value-number">{displayNumber}</strong>
+      )}
+      {parsedValue.suffix ? (
+        <span className="public-statistics__value-affix">{renderAffix(parsedValue.suffix)}</span>
+      ) : null}
+    </>
+  );
+}
+
 export default function AnimatedCounter({
   value,
   structured = false,
   className = '',
   startAnimation = false,
+  instant = false,
+  durationMs = DEFAULT_COUNTER_DURATION_MS,
+  runOnce = false,
 }) {
   const elementRef = useRef(null);
-  const hasAnimatedRef = useRef(false);
+  const hasCompletedRef = useRef(false);
   const parsedValue = useMemo(() => parseCounterValue(value), [value]);
-  const [displayValue, setDisplayValue] = useState(() => {
-    if (!parsedValue) return String(value ?? '');
-    return formatCounterValue(0, parsedValue);
-  });
   const [displayNumber, setDisplayNumber] = useState(() => {
     if (!parsedValue) return String(value ?? '');
+    if (instant) return formatNumberOnly(parsedValue.finalNumber);
     return formatNumberOnly(0);
   });
 
   useEffect(() => {
-    hasAnimatedRef.current = false;
-    if (!parsedValue) {
-      setDisplayValue(String(value ?? ''));
-      setDisplayNumber(String(value ?? ''));
-      return;
+    if (instant || !parsedValue) {
+      if (!parsedValue) {
+        setDisplayNumber(String(value ?? ''));
+      } else if (instant) {
+        setDisplayNumber(formatNumberOnly(parsedValue.finalNumber));
+      }
+      return undefined;
     }
 
-    setDisplayValue(formatCounterValue(0, parsedValue));
-    setDisplayNumber(formatNumberOnly(0));
-  }, [parsedValue, value]);
+    if (runOnce && hasCompletedRef.current) {
+      setDisplayNumber(formatNumberOnly(parsedValue.finalNumber));
+      return undefined;
+    }
 
-  useEffect(() => {
-    if (!startAnimation || !parsedValue || hasAnimatedRef.current) return undefined;
+    if (!startAnimation) {
+      setDisplayNumber(formatNumberOnly(0));
+      return undefined;
+    }
 
     const prefersReducedMotion =
       typeof window.matchMedia === 'function' &&
       window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     if (prefersReducedMotion) {
-      hasAnimatedRef.current = true;
-      setDisplayValue(formatCounterValue(parsedValue.finalNumber, parsedValue));
+      hasCompletedRef.current = true;
       setDisplayNumber(formatNumberOnly(parsedValue.finalNumber));
       return undefined;
     }
 
     let animationFrameId = 0;
-    hasAnimatedRef.current = true;
+    let cancelled = false;
+    const startTime = performance.now();
 
-    const runCounter = () => {
-      const startTime = performance.now();
+    const tick = (currentTime) => {
+      if (cancelled) return;
 
-      const tick = (currentTime) => {
-        const progress = Math.min((currentTime - startTime) / COUNTER_DURATION_MS, 1);
-        const easedProgress = easeOutCubic(progress);
-        const currentValue =
-          progress >= 1 ? parsedValue.finalNumber : Math.round(parsedValue.finalNumber * easedProgress);
+      const progress = Math.min((currentTime - startTime) / durationMs, 1);
+      const easedProgress = easeOutCubic(progress);
+      const currentValue =
+        progress >= 1 ? parsedValue.finalNumber : Math.round(parsedValue.finalNumber * easedProgress);
 
-        setDisplayValue(formatCounterValue(currentValue, parsedValue));
-        setDisplayNumber(formatNumberOnly(currentValue));
+      setDisplayNumber(formatNumberOnly(currentValue));
 
-        if (progress < 1) {
-          animationFrameId = requestAnimationFrame(tick);
-        }
-      };
+      if (progress < 1) {
+        animationFrameId = requestAnimationFrame(tick);
+        return;
+      }
 
-      setDisplayValue(formatCounterValue(0, parsedValue));
-      setDisplayNumber(formatNumberOnly(0));
-      animationFrameId = requestAnimationFrame(tick);
+      hasCompletedRef.current = true;
     };
 
-    runCounter();
+    setDisplayNumber(formatNumberOnly(0));
+    animationFrameId = requestAnimationFrame(tick);
 
-    return () => cancelAnimationFrame(animationFrameId);
-  }, [parsedValue, startAnimation]);
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(animationFrameId);
+    };
+  }, [durationMs, instant, parsedValue, runOnce, startAnimation, value]);
 
   if (!structured || !parsedValue) {
     return (
       <strong ref={elementRef} className={className}>
-        {displayValue}
+        {displayNumber}
       </strong>
     );
   }
 
   return (
     <span className={`public-statistics__value ${className}`.trim()} ref={elementRef}>
-      {parsedValue.prefix ? (
-        <span className="public-statistics__value-affix">{renderAffix(parsedValue.prefix)}</span>
-      ) : null}
-      <strong className="public-statistics__value-number">{displayNumber}</strong>
-      {parsedValue.suffix ? (
-        <span className="public-statistics__value-affix">{renderAffix(parsedValue.suffix)}</span>
-      ) : null}
+      {renderStructuredValue({
+        parsedValue,
+        displayNumber,
+        reserveWidth: !instant,
+      })}
     </span>
   );
 }
