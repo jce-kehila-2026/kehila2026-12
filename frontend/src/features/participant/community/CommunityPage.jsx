@@ -24,11 +24,6 @@ import {
   isPostOwnedByCurrentUser,
   isPostReportedByUser,
 } from './utils/communityModerationUtils';
-import {
-  COMMUNITY_GUIDELINES_VERSION,
-  getAcceptedGuidelinesVersion,
-  saveAcceptedGuidelinesVersion,
-} from './communityGuidelinesStorage';
 import BirthdayCard from './components/BirthdayCard';
 import CommunityAccessPanel from './components/CommunityAccessPanel';
 import CommunityBirthdayPreferenceCard from './components/CommunityBirthdayPreferenceCard';
@@ -43,6 +38,7 @@ import FeedTabs from './components/FeedTabs';
 import ReportPostModal from './components/ReportPostModal';
 import useCommunityComments from './hooks/useCommunityComments';
 import useCommunityFollows from './hooks/useCommunityFollows';
+import useCommunityGuidelines from './hooks/useCommunityGuidelines';
 import useCommunityPosts from './hooks/useCommunityPosts';
 import useCommunityProfile from './hooks/useCommunityProfile';
 import useCommunityReports from './hooks/useCommunityReports';
@@ -59,9 +55,6 @@ export default function CommunityPage({
   const deletePostModalRef = useRef(null);
   const deleteCommentModalRef = useRef(null);
   const editPostModalRef = useRef(null);
-  const [showGuidelinesModal, setShowGuidelinesModal] = useState(
-    () => getAcceptedGuidelinesVersion() !== COMMUNITY_GUIDELINES_VERSION,
-  );
   const [newPostText, setNewPostText] = useState('');
   const [postAnonymously, setPostAnonymously] = useState(false);
   const [postAttachment, setPostAttachment] = useState(null);
@@ -74,7 +67,13 @@ export default function CommunityPage({
   const [editPostText, setEditPostText] = useState('');
   const [editPostError, setEditPostError] = useState('');
   const [selectedSupportSpace, setSelectedSupportSpace] = useState(null);
-  const [showFullGuidelinesModal, setShowFullGuidelinesModal] = useState(false);
+  const {
+    showGuidelinesModal,
+    showFullGuidelinesModal,
+    handleGuidelinesContinue,
+    handleReadFullGuidelines,
+    handleCloseFullGuidelines,
+  } = useCommunityGuidelines();
 
   useEffect(() => {
     if (!confirmingDeletePostId) return;
@@ -91,11 +90,6 @@ export default function CommunityPage({
       editPostModalRef.current?.focus();
     }, 0);
   }, [editingPostId]);
-
-  const handleGuidelinesContinue = () => {
-    saveAcceptedGuidelinesVersion();
-    setShowGuidelinesModal(false);
-  };
 
   const handlePostTextChange = (value) => {
     setNewPostText(value);
@@ -600,7 +594,7 @@ export default function CommunityPage({
               </p>
             </section>
           )}
-          <CommunityGuidelinesCard onReadFullGuidelines={() => setShowFullGuidelinesModal(true)} />
+          <CommunityGuidelinesCard onReadFullGuidelines={handleReadFullGuidelines} />
 
           <section className="community-page-card community-page-card--soft">
             <div className="community-page-card__heading">
@@ -645,7 +639,7 @@ export default function CommunityPage({
       {showFullGuidelinesModal && (
         <CommunityGuidelinesModal
           mode="read"
-          onClose={() => setShowFullGuidelinesModal(false)}
+          onClose={handleCloseFullGuidelines}
         />
       )}
     </section>
