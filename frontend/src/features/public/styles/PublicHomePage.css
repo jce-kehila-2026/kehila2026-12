@@ -81,7 +81,7 @@
 
 .public-homepage :is(
   .public-about__cards,
-  .public-statistics__grid,
+  .public-statistics__grid:not(.public-statistics__grid--hero),
   .medical-partners__grid,
   .press-articles__grid
 ) {
@@ -127,34 +127,34 @@
 }
 
 @media (max-width: 1024px) {
-  .public-homepage :is(
-    .public-about__cards,
-    .public-statistics__grid,
-    .medical-partners__grid,
-    .press-articles__grid,
-    .public-team-grid,
-    .public-articles-grid,
-    .public-events-grid,
-    .public-section--events .public-events-grid,
-    .public-section--support .public-support__grid
-  ) {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
+.public-homepage :is(
+  .public-about__cards,
+  .public-statistics__grid:not(.public-statistics__grid--hero),
+  .medical-partners__grid,
+  .press-articles__grid,
+  .public-team-grid,
+  .public-articles-grid,
+  .public-events-grid,
+  .public-section--events .public-events-grid,
+  .public-section--support .public-support__grid
+) {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
 }
 
 @media (max-width: 640px) {
-  .public-homepage :is(
-    .public-about__cards,
-    .public-statistics__grid,
-    .medical-partners__grid,
-    .press-articles__grid,
-    .public-team-grid,
-    .public-articles-grid,
-    .public-events-grid,
-    .public-section--events .public-events-grid,
-    .public-section--support .public-support__grid
-  ) {
-    grid-template-columns: minmax(0, 1fr);
-    gap: clamp(18px, 4vw, 22px);
-  }
+.public-homepage :is(
+  .public-about__cards,
+  .public-statistics__grid:not(.public-statistics__grid--hero),
+  .medical-partners__grid,
+  .press-articles__grid,
+  .public-team-grid,
+  .public-articles-grid,
+  .public-events-grid,
+  .public-section--events .public-events-grid,
+  .public-section--support .public-support__grid
+) {
+  grid-template-columns: minmax(0, 1fr);
+  gap: clamp(18px, 4vw, 22px);
+}
 }
