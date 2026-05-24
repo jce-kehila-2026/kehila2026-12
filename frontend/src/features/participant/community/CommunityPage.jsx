@@ -12,11 +12,6 @@ import {
   communitySupportSpaces,
 } from './communityMockData';
 import {
-  COMMUNITY_PREFERENCES_STORAGE_KEY,
-  COMMUNITY_FOLLOWED_AUTHORS_STORAGE_KEY,
-  COMMUNITY_POSTS_STORAGE_KEY,
-  COMMUNITY_STREAK_STORAGE_KEY,
-  COMMUNITY_USER_PROFILE_STORAGE_KEY,
   getDayDifference,
   getInitialCommunityPreferences,
   getInitialCommunityUserProfile,
@@ -31,6 +26,30 @@ import {
   serializeCommunityPost,
   serializeCommunityUserProfile,
 } from './communityInteractionHelpers';
+import {
+  COMMUNITY_FOLLOWED_AUTHORS_STORAGE_KEY,
+  COMMUNITY_PREFERENCES_STORAGE_KEY,
+  COMMUNITY_POSTS_STORAGE_KEY,
+  COMMUNITY_STREAK_STORAGE_KEY,
+  COMMUNITY_USER_PROFILE_STORAGE_KEY,
+  FEED_TABS,
+  REPORT_REASON_OPTIONS,
+} from './constants/communityConstants';
+import {
+  filterPostsByTab,
+  getEmptyFeedMessage,
+  sortFeedPosts,
+} from './utils/communityFeedUtils';
+import {
+  getCommunityBirthday,
+  getExistingDisplayName,
+  hasRequiredCommunityPersonalDetails,
+  normalizeCommunityName,
+} from './utils/communityProfileUtils';
+import {
+  isPostOwnedByCurrentUser,
+  isPostReportedByUser,
+} from './utils/communityModerationUtils';
 import {
   addCommunityPostComment,
   createCommunityPost,
@@ -52,163 +71,6 @@ import CommunityGuidelinesModal from './components/CommunityGuidelinesModal';
 import CommunityPostCard from './components/CommunityPostCard';
 import CommunityStreakCard from './components/CommunityStreakCard';
 import CreatePostCard from './components/CreatePostCard';
-
-const FEED_TABS = [
-  { id: 'all', label: 'All Posts' },
-  { id: 'following', label: 'Following' },
-  { id: 'anonymous', label: 'Anonymous' },
-];
-
-const REPORT_REASON_OPTIONS = [
-  'Offensive content',
-  'Harassment or bullying',
-  'False information',
-  'Spam',
-  'Inappropriate community content',
-  'Other',
-];
-
-const getPostCreatedAtTime = (post = {}) => {
-  const createdAt = post.createdAt instanceof Date
-    ? post.createdAt
-    : new Date(post.createdAt ?? 0);
-  const timestamp = createdAt.getTime();
-
-  return Number.isNaN(timestamp) ? 0 : timestamp;
-};
-
-const filterPostsByTab = (posts, activeTab, followedAuthors = []) => posts.filter((post) => {
-  if (activeTab === 'following') return followedAuthors.includes(post.author);
-  if (activeTab === 'anonymous') return post.isAnonymous === true;
-
-  return true;
-});
-
-const sortFeedPosts = (posts) => posts
-  .map((post, index) => ({ post, index }))
-  .sort((firstPost, secondPost) => {
-    const dateDifference = getPostCreatedAtTime(secondPost.post) - getPostCreatedAtTime(firstPost.post);
-    if (dateDifference !== 0) return dateDifference;
-
-    return firstPost.index - secondPost.index;
-  })
-  .map(({ post }) => post);
-
-const getEmptyFeedMessage = (activeTab, followedAuthorsCount = 0) => {
-  if (activeTab === 'following') {
-    if (followedAuthorsCount === 0) {
-      return {
-        title: 'No followed authors yet',
-        description: 'Use the Follow button on posts to build a local following feed on this device.',
-      };
-    }
-
-    return {
-      title: 'No posts from followed authors yet',
-      description: 'Posts from authors you follow locally will appear here.',
-    };
-  }
-
-  if (activeTab === 'anonymous') {
-    return {
-      title: 'No anonymous posts yet',
-      description: 'Anonymous shares will appear here when members choose that option.',
-    };
-  }
-
-  return {
-    title: 'No posts yet',
-    description: 'Be the first to share something with the community.',
-  };
-};
-
-const normalizeCommunityName = (name = '') => name.trim().toLowerCase();
-
-const isPostOwnedByCurrentUser = (post = {}, localUserId, localUserName) => {
-  if (localUserId && post.authorId === localUserId) return true;
-
-  const normalizedLocalName = normalizeCommunityName(localUserName);
-  if (!normalizedLocalName || post.isAnonymous) return false;
-
-  return [
-    post.author,
-    post.authorDisplayName,
-  ].some((name) => normalizeCommunityName(name ?? '') === normalizedLocalName);
-};
-
-const isPostReportedByUser = (post = {}, localUserId) => {
-  if (!localUserId) return false;
-
-  const reportedBy = Array.isArray(post.reportedBy) ? post.reportedBy : [];
-  if (reportedBy.includes(localUserId)) return true;
-
-  const reports = Array.isArray(post.reports) ? post.reports : [];
-  return reports.some((report) => (
-    report?.reporterUserId === localUserId
-    || report?.userId === localUserId
-  ));
-};
-
-const getExistingDisplayName = (personalDetails = {}) => (
-  personalDetails.fullName
-  || personalDetails.displayName
-  || personalDetails.userName
-  || personalDetails.name
-  || [personalDetails.firstName, personalDetails.lastName].filter(Boolean).join(' ')
-  || ''
-).trim();
-
-const formatDateToDateKey = (date) => {
-  if (!(date instanceof Date) || Number.isNaN(date.getTime())) return '';
-
-  return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-};
-
-const normalizeCommunityBirthday = (birthdayValue) => {
-  if (!birthdayValue) return '';
-
-  if (birthdayValue instanceof Date) {
-    return formatDateToDateKey(birthdayValue);
-  }
-
-  if (typeof birthdayValue === 'object' && typeof birthdayValue.seconds === 'number') {
-    return formatDateToDateKey(new Date(birthdayValue.seconds * 1000));
-  }
-
-  if (typeof birthdayValue !== 'string') return '';
-
-  const trimmed = birthdayValue.trim();
-  if (!trimmed) return '';
-
-  const dateParts = trimmed.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-  if (dateParts) {
-    const year = Number(dateParts[1]);
-    const month = Number(dateParts[2]);
-    const day = Number(dateParts[3]);
-    const parsedDate = new Date(year, month - 1, day);
-
-    if (
-      parsedDate.getFullYear() === year
-      && parsedDate.getMonth() === month - 1
-      && parsedDate.getDate() === day
-    ) {
-      return trimmed;
-    }
-  }
-
-  const parsedDate = new Date(trimmed);
-  return formatDateToDateKey(parsedDate);
-};
-
-const getCommunityBirthday = (personalDetails = {}) => normalizeCommunityBirthday(
-  personalDetails.birthDate
-  || personalDetails.birthday
-  || personalDetails.dateOfBirth,
-);
-
-const hasRequiredCommunityPersonalDetails = (personalDetails = {}) => Boolean(
-  getExistingDisplayName(personalDetails) && getCommunityBirthday(personalDetails),
-);
 
 const getInitialFollowedAuthors = () => {
   const storedAuthors = safeLoadFromStorage(COMMUNITY_FOLLOWED_AUTHORS_STORAGE_KEY);
