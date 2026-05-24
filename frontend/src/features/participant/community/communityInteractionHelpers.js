@@ -5,16 +5,48 @@ import {
   createCommunityStreakModel,
   createCommunityUserProfileModel,
 } from './communityModels';
+import {
+  formatRelativeCommunityTime,
+  getDateKeyTimestamp,
+  getDayDifference,
+  getTodayKey,
+  isStreakAtRiskForDate,
+  parseCommunityDate,
+} from './utils/communityDateUtils';
+import { isCommunityContentVisible } from './utils/communityModerationUtils';
+import {
+  loadStoredCommunityPosts,
+  loadStoredCommunityPreferences,
+  loadStoredCommunityStreak,
+  loadStoredCommunityUserProfile,
+  safeLoadFromStorage,
+  safeSaveToStorage,
+} from './services/communityStorageService';
+
+export {
+  COMMUNITY_FOLLOWED_AUTHORS_STORAGE_KEY,
+  COMMUNITY_PREFERENCES_STORAGE_KEY,
+  COMMUNITY_POSTS_STORAGE_KEY,
+  COMMUNITY_STREAK_STORAGE_KEY,
+  COMMUNITY_USER_PROFILE_STORAGE_KEY,
+} from './constants/communityConstants';
+export {
+  formatRelativeCommunityTime,
+  getDateKeyTimestamp,
+  getDayDifference,
+  getTodayKey,
+  isStreakAtRiskForDate,
+  parseCommunityDate,
+} from './utils/communityDateUtils';
+export { isCommunityContentVisible } from './utils/communityModerationUtils';
+export {
+  safeLoadFromStorage,
+  safeSaveToStorage,
+} from './services/communityStorageService';
 
 export const INITIAL_COMMUNITY_STREAK_COUNT = 0;
 export const INITIAL_LAST_ACTIVITY_DATE = null;
-export const COMMUNITY_POSTS_STORAGE_KEY = 'community.posts';
-export const COMMUNITY_STREAK_STORAGE_KEY = 'community.streak';
-export const COMMUNITY_PREFERENCES_STORAGE_KEY = 'community.preferences';
-export const COMMUNITY_USER_PROFILE_STORAGE_KEY = 'community.userProfile';
-export const COMMUNITY_FOLLOWED_AUTHORS_STORAGE_KEY = 'community.followedAuthors';
 
-const MS_PER_DAY = 24 * 60 * 60 * 1000;
 const MS_PER_HOUR = 60 * 60 * 1000;
 const MS_PER_MINUTE = 60 * 1000;
 
@@ -30,77 +62,23 @@ const getModerationFields = (item = {}) => {
   };
 };
 
-export const isCommunityContentVisible = (item = {}) => (
-  !item.hiddenByAdmin
-  && item.status !== COMMUNITY_POST_STATUS.hidden
-  && item.status !== COMMUNITY_POST_STATUS.deleted
-);
-
-export const parseCommunityDate = (value) => {
-  if (!value) return null;
-
-  if (value instanceof Date) {
-    return Number.isNaN(value.getTime()) ? null : value;
-  }
-
-  if (typeof value === 'object' && typeof value.seconds === 'number') {
-    const parsedTimestamp = new Date(value.seconds * 1000);
-    return Number.isNaN(parsedTimestamp.getTime()) ? null : parsedTimestamp;
-  }
-
-  if (typeof value === 'number') {
-    const parsedTimestamp = new Date(value);
-    return Number.isNaN(parsedTimestamp.getTime()) ? null : parsedTimestamp;
-  }
-
-  if (typeof value !== 'string') return null;
-
-  const parsedDate = new Date(value);
-  return Number.isNaN(parsedDate.getTime()) ? null : parsedDate;
-};
-
-const formatCommunityDayMonth = (date) => (
-  `${String(date.getDate()).padStart(2, '0')}-${String(date.getMonth() + 1).padStart(2, '0')}`
-);
-
-export const formatRelativeCommunityTime = (createdAt, now = new Date()) => {
-  const createdDate = parseCommunityDate(createdAt);
-  const currentDate = parseCommunityDate(now) ?? new Date();
-
-  if (!createdDate) return 'just now';
-
-  const diffMs = Math.max(currentDate.getTime() - createdDate.getTime(), 0);
-
-  if (diffMs < MS_PER_MINUTE) return 'just now';
-
-  if (diffMs < MS_PER_HOUR) {
-    const minutes = Math.floor(diffMs / MS_PER_MINUTE);
-    return `${minutes} ${minutes === 1 ? 'min' : 'mins'} ago`;
-  }
-
-  if (diffMs < MS_PER_DAY) {
-    const hours = Math.floor(diffMs / MS_PER_HOUR);
-    return `${hours} ${hours === 1 ? 'hour' : 'hours'} ago`;
-  }
-
-  if (diffMs <= 3 * MS_PER_DAY) {
-    const days = Math.floor(diffMs / MS_PER_DAY);
-    return `${days} ${days === 1 ? 'day' : 'days'} ago`;
-  }
-
-  return formatCommunityDayMonth(createdDate);
-};
-
 export const createCommunityId = (prefix, createdAt = new Date()) => (
   typeof crypto !== 'undefined' && crypto.randomUUID
     ? crypto.randomUUID()
     : `${prefix}-${createdAt.getTime()}`
 );
 
-export const createPostModel = ({ author, content, isAnonymous, attachment = null }) => {
+export const createPostModel = ({
+  author,
+  authorId = null,
+  content,
+  isAnonymous,
+  attachment = null,
+}) => {
   const createdAt = new Date();
   const postModel = createCommunityPostModel({
     id: createCommunityId('community-post', createdAt),
+    authorId,
     authorDisplayName: author,
     isAnonymous,
     content,
@@ -141,76 +119,13 @@ export const createCommentModel = (content, author = 'Current User', authorId = 
   return {
     ...commentModel,
     author,
+    userId: authorId,
     initials: 'CU',
     isLocalCurrentUser: true,
     time: formatRelativeCommunityTime(createdAt),
     text: content,
   };
 };
-
-export const safeLoadFromStorage = (storageKey) => {
-  if (typeof window === 'undefined' || typeof window.localStorage === 'undefined') return null;
-
-  try {
-    const storedValue = window.localStorage.getItem(storageKey);
-    return storedValue ? JSON.parse(storedValue) : null;
-  } catch {
-    return null;
-  }
-};
-
-export const safeSaveToStorage = (storageKey, value) => {
-  if (typeof window === 'undefined' || typeof window.localStorage === 'undefined') return;
-
-  try {
-    window.localStorage.setItem(storageKey, JSON.stringify(value));
-  } catch {
-    // Storage can fail in private mode or when quota is exceeded; keep local state working.
-  }
-};
-
-export const getTodayKey = (date = new Date()) => {
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-
-  return `${year}-${month}-${day}`;
-};
-
-export const getDateKeyTimestamp = (dateKey) => {
-  if (typeof dateKey !== 'string') return null;
-
-  const dateParts = dateKey.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-  if (!dateParts) return null;
-
-  const year = Number(dateParts[1]);
-  const month = Number(dateParts[2]);
-  const day = Number(dateParts[3]);
-  const parsedDate = new Date(year, month - 1, day);
-
-  if (
-    parsedDate.getFullYear() !== year
-    || parsedDate.getMonth() !== month - 1
-    || parsedDate.getDate() !== day
-  ) {
-    return null;
-  }
-
-  return Date.UTC(year, month - 1, day);
-};
-
-export const getDayDifference = (previousDateKey, currentDateKey = getTodayKey()) => {
-  const previousTimestamp = getDateKeyTimestamp(previousDateKey);
-  const currentTimestamp = getDateKeyTimestamp(currentDateKey);
-
-  if (previousTimestamp === null || currentTimestamp === null) return null;
-
-  return Math.round((currentTimestamp - previousTimestamp) / MS_PER_DAY);
-};
-
-export const isStreakAtRiskForDate = (lastActivityDate, todayKey = getTodayKey()) => (
-  getDayDifference(lastActivityDate, todayKey) === 2
-);
 
 const normalizeComment = (comment, index) => {
   const content = typeof comment?.content === 'string'
@@ -225,7 +140,8 @@ const normalizeComment = (comment, index) => {
   return {
     ...comment,
     id: comment?.id ?? `stored-comment-${index + 1}`,
-    authorId: comment?.authorId ?? null,
+    authorId: comment?.authorId ?? comment?.userId ?? null,
+    userId: comment?.userId ?? comment?.authorId ?? null,
     author: comment?.author ?? 'Current User',
     authorDisplayName: comment?.authorDisplayName ?? comment?.author ?? 'Current User',
     content,
@@ -316,6 +232,7 @@ const normalizeStoredPost = (post, index) => {
   return {
     ...post,
     id: post?.id ?? `stored-post-${index + 1}`,
+    authorId: post?.authorId ?? post?.userId ?? post?.ownerId ?? null,
     author: post?.author ?? 'Current User',
     authorDisplayName: post?.authorDisplayName ?? post?.author ?? 'Current User',
     content,
@@ -348,6 +265,7 @@ export const normalizeCommunityPosts = (posts) => posts.map(normalizeStoredPost)
 
 export const serializeCommunityPost = (post) => ({
   id: post.id,
+  authorId: post.authorId ?? null,
   author: post.author,
   authorDisplayName: post.authorDisplayName ?? post.author,
   content: post.content ?? post.body ?? '',
@@ -374,6 +292,7 @@ export const serializeCommunityPost = (post) => ({
   comments: Array.isArray(post.comments) ? post.comments.map((comment) => ({
     id: comment.id,
     authorId: comment.authorId ?? null,
+    userId: comment.userId ?? comment.authorId ?? null,
     author: comment.author,
     authorDisplayName: comment.authorDisplayName ?? comment.author,
     content: comment.content ?? comment.text ?? '',
@@ -405,7 +324,7 @@ export const serializeCommunityPost = (post) => ({
 });
 
 export const getInitialPosts = (defaultPosts) => {
-  const storedPosts = safeLoadFromStorage(COMMUNITY_POSTS_STORAGE_KEY);
+  const storedPosts = loadStoredCommunityPosts();
 
   if (Array.isArray(storedPosts)) {
     return storedPosts.map(normalizeStoredPost);
@@ -415,7 +334,7 @@ export const getInitialPosts = (defaultPosts) => {
 };
 
 export const getInitialStreakState = () => {
-  const storedStreak = safeLoadFromStorage(COMMUNITY_STREAK_STORAGE_KEY);
+  const storedStreak = loadStoredCommunityStreak();
   const storedStreakCount = Number(storedStreak?.streakCount);
   const storedLastActivityDate = storedStreak?.lastActivityDate;
 
@@ -431,7 +350,7 @@ export const getInitialStreakState = () => {
 };
 
 export const getInitialCommunityPreferences = () => {
-  const storedPreferences = safeLoadFromStorage(COMMUNITY_PREFERENCES_STORAGE_KEY);
+  const storedPreferences = loadStoredCommunityPreferences();
 
   if (storedPreferences?.communityPreferencesCompleted === true) {
     return {
@@ -483,7 +402,7 @@ const normalizeStoredCommunityUserProfile = (profile) => {
 };
 
 export const getInitialCommunityUserProfile = () => normalizeStoredCommunityUserProfile(
-  safeLoadFromStorage(COMMUNITY_USER_PROFILE_STORAGE_KEY),
+  loadStoredCommunityUserProfile(),
 );
 
 export const serializeCommunityUserProfile = (profile) => ({

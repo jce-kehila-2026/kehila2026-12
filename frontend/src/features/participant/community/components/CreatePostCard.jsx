@@ -3,22 +3,16 @@ import AddPhotoAlternateOutlinedIcon from '@mui/icons-material/AddPhotoAlternate
 import EmojiEmotionsOutlinedIcon from '@mui/icons-material/EmojiEmotionsOutlined';
 import KeyboardVoiceOutlinedIcon from '@mui/icons-material/KeyboardVoiceOutlined';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import { MAX_LOCAL_MEDIA_BYTES } from '../utils/postComposerUtils';
+import AttachmentPreview from './AttachmentPreview';
+import EmojiPicker from './EmojiPicker';
+import VoiceRecorderControls from './VoiceRecorderControls';
 
 const composerActions = [
   { label: 'Photo', icon: AddPhotoAlternateOutlinedIcon },
   { label: 'Voice', icon: KeyboardVoiceOutlinedIcon },
   { label: 'Emoji', icon: EmojiEmotionsOutlinedIcon },
 ];
-
-const EMOJI_GROUPS = [
-  { label: 'Support', emojis: ['💜', '🤍', '🫶', '🙏', '🤝', '🌷', '🕊️'] },
-  { label: 'Love', emojis: ['❤️', '💖', '💗', '💞', '🥰', '🤗'] },
-  { label: 'Strength', emojis: ['💪', '🌟', '✨', '🔥', '🦋', '🌱'] },
-  { label: 'Celebration', emojis: ['🎉', '🎊', '🌈', '⭐', '👏', '🙌'] },
-  { label: 'Calm', emojis: ['🌿', '☀️', '🌙', '🌸', '🍃', '💫'] },
-];
-
-const MAX_LOCAL_MEDIA_BYTES = 1.5 * 1024 * 1024;
 
 export default function CreatePostCard({
   attachment = null,
@@ -205,22 +199,6 @@ export default function CreatePostCard({
     setLocalFeedback('');
   };
 
-  const renderAttachmentPreview = () => {
-    if (!attachment) return null;
-
-    return (
-      <div className="create-post-card__attachment-preview">
-        {attachment.type === 'image' && (
-          <img src={attachment.url} alt={attachment.name || 'Selected attachment preview'} />
-        )}
-        {attachment.type === 'voice' && (
-          <audio controls src={attachment.url} aria-label="Voice note preview" />
-        )}
-        <button type="button" onClick={handleRemoveAttachment}>Remove</button>
-      </div>
-    );
-  };
-
   const handleComposerAction = (label) => {
     if (label === 'Photo') {
       handlePhotoClick();
@@ -255,7 +233,10 @@ export default function CreatePostCard({
           />
         </div>
       </div>
-      {renderAttachmentPreview()}
+      <AttachmentPreview
+        attachment={attachment}
+        onRemoveAttachment={handleRemoveAttachment}
+      />
       {error && (
         <p className="create-post-card__error" id="create-post-error" role="alert">
           {error}
@@ -311,51 +292,18 @@ export default function CreatePostCard({
         <button className="create-post-card__submit" type="button" onClick={onSubmit}>Share Post</button>
       </div>
       {openPicker === 'Emoji' && (
-        <div
-          className="create-post-card__emoji-popover"
-          ref={emojiPickerRef}
-          role="dialog"
-          aria-label="Choose an emoji"
-        >
-          <div className="create-post-card__emoji-header">
-            <strong>Choose an emoji</strong>
-            <button type="button" aria-label="Close emoji picker" onClick={closePickers}>
-              ×
-            </button>
-          </div>
-          <div className="create-post-card__emoji-groups">
-            {EMOJI_GROUPS.map((group) => (
-              <section className="create-post-card__emoji-group" key={group.label}>
-                <h3>{group.label}</h3>
-                <div className="create-post-card__emoji-grid">
-                  {group.emojis.map((emoji) => (
-                    <button
-                      aria-label={`Insert ${emoji} emoji`}
-                      type="button"
-                      key={`${group.label}-${emoji}`}
-                      onClick={() => handleEmojiSelect(emoji)}
-                    >
-                      {emoji}
-                    </button>
-                  ))}
-                </div>
-              </section>
-            ))}
-          </div>
-        </div>
+        <EmojiPicker
+          emojiPickerRef={emojiPickerRef}
+          onClose={closePickers}
+          onEmojiSelect={handleEmojiSelect}
+        />
       )}
       {openPicker === 'Voice' && (
-        <div className="create-post-card__voice-panel" aria-label="Voice note recorder">
-          <p>{isRecording ? 'Recording locally. Stop when you are done.' : 'Record a short local voice note.'}</p>
-          <div>
-            <button type="button" onClick={handleStartRecording} disabled={isRecording}>
-              Start recording
-            </button>
-            <button type="button" onClick={handleStopRecording} disabled={!isRecording}>
-              Stop recording
-            </button>
-          </div>
-        </div>
+        <VoiceRecorderControls
+          isRecording={isRecording}
+          onStartRecording={handleStartRecording}
+          onStopRecording={handleStopRecording}
+        />
       )}
       {localFeedback && (
         <p className="create-post-card__helper" aria-live="polite">

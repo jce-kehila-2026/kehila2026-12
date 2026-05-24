@@ -1,16 +1,12 @@
-export const COMMUNITY_POST_STATUS = {
-  active: 'active',
-  visible: 'visible',
-  reported: 'reported',
-  hidden: 'hidden',
-  deleted: 'deleted',
-};
+import {
+  COMMUNITY_POST_STATUS,
+  COMMUNITY_USER_STATUS,
+} from './constants/communityConstants';
 
-export const COMMUNITY_USER_STATUS = {
-  active: 'active',
-  inactive: 'inactive',
-  blocked: 'blocked',
-};
+export {
+  COMMUNITY_POST_STATUS,
+  COMMUNITY_USER_STATUS,
+} from './constants/communityConstants';
 
 export const createCommunityPostModel = ({
   id,
