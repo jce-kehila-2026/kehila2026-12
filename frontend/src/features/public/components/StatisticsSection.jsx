@@ -34,6 +34,67 @@ function StatisticsDivider({ modifier = '' }) {
   );
 }
 
+function StatisticsGrid({
+  statistics,
+  countersInView,
+  ariaLabel,
+  gridClassName = '',
+  enableEntranceAnimation = true,
+  instantCounters = false,
+  animateOnMount = false,
+  revealCards = false,
+  counterDurationMs = 1200,
+  counterRunOnce = false,
+}) {
+  const shouldAnimateEntrance = enableEntranceAnimation && (countersInView || animateOnMount);
+  const shouldAnimateCounters = !instantCounters && (countersInView || animateOnMount);
+  const gridClasses = [
+    'public-statistics__grid',
+    shouldAnimateEntrance ? 'public-statistics__grid--in-view' : '',
+    gridClassName,
+  ]
+    .filter(Boolean)
+    .join(' ');
+
+  return (
+    <div className={gridClasses} aria-label={ariaLabel}>
+      {statistics.map((statistic, index) => {
+        const Icon = STATISTIC_ICONS[statistic.id] || BookOpen;
+        const tone = index % 2 === 0 ? 'pink' : 'purple';
+
+        return (
+          <article
+            className={[
+              `public-statistics__card public-statistics__card--${tone}`,
+              revealCards ? 'reveal' : '',
+            ]
+              .filter(Boolean)
+              .join(' ')}
+            key={statistic.id || statistic.label}
+          >
+            <span className="public-statistics__icon" aria-hidden="true">
+              <Icon {...STATISTIC_ICON_PROPS} />
+            </span>
+            <AnimatedCounter
+              value={statistic.value}
+              structured
+              startAnimation={shouldAnimateCounters}
+              instant={instantCounters}
+              durationMs={counterDurationMs}
+              runOnce={counterRunOnce}
+            />
+            <StatisticsDivider modifier="public-statistics__divider--card" />
+            <h3>{statistic.label}</h3>
+            {statistic.note ? <p className="public-statistics__card-text">{statistic.note}</p> : null}
+          </article>
+        );
+      })}
+    </div>
+  );
+}
+
+export { StatisticsGrid, StatisticsDivider };
+
 export default function StatisticsSection({ statistics = [], isLoading = false, hasError = false }) {
   const { locale, t } = usePublicLocale();
   const localizedStatistics = localizeStatistics(statistics, locale);
@@ -93,34 +154,5 @@ export default function StatisticsSection({ statistics = [], isLoading = false, 
         )}
       </div>
     </section>
-  );
-}
-
-function StatisticsGrid({ statistics, countersInView, ariaLabel }) {
-  return (
-    <div
-      className={`public-statistics__grid${countersInView ? ' public-statistics__grid--in-view' : ''}`}
-      aria-label={ariaLabel}
-    >
-      {statistics.map((statistic, index) => {
-        const Icon = STATISTIC_ICONS[statistic.id] || BookOpen;
-        const tone = index % 2 === 0 ? 'pink' : 'purple';
-
-        return (
-          <article
-            className={`public-statistics__card public-statistics__card--${tone}`}
-            key={statistic.id || statistic.label}
-          >
-            <span className="public-statistics__icon" aria-hidden="true">
-              <Icon {...STATISTIC_ICON_PROPS} />
-            </span>
-            <AnimatedCounter value={statistic.value} structured startAnimation={countersInView} />
-            <StatisticsDivider modifier="public-statistics__divider--card" />
-            <h3>{statistic.label}</h3>
-            {statistic.note ? <p className="public-statistics__card-text">{statistic.note}</p> : null}
-          </article>
-        );
-      })}
-    </div>
   );
 }
