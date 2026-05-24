@@ -7,7 +7,6 @@ import MenuBookOutlinedIcon from '@mui/icons-material/MenuBookOutlined';
 import RefreshOutlinedIcon from '@mui/icons-material/RefreshOutlined';
 import {
   communityActiveMembers,
-  communityPosts,
   communityResources,
   communitySupportSpaces,
 } from './communityMockData';
@@ -15,13 +14,10 @@ import {
   getDayDifference,
   getInitialCommunityPreferences,
   getInitialCommunityUserProfile,
-  getInitialPosts,
   getInitialStreakState,
   getTodayKey,
-  isCommunityContentVisible,
   isStreakAtRiskForDate,
   serializeCommunityPreferences,
-  serializeCommunityPost,
   serializeCommunityUserProfile,
 } from './communityInteractionHelpers';
 import {
@@ -44,28 +40,22 @@ import {
   getPostAuthorId,
   isAuthorCurrentUser,
   isAuthorFollowed,
+  isCommunityContentVisible,
   isCommentOwnedByCurrentUser,
   isPostOwnedByCurrentUser,
   isPostReportedByUser,
 } from './utils/communityModerationUtils';
 import {
   loadStoredFollowedAuthors,
-  saveStoredCommunityPosts,
   saveStoredCommunityPreferences,
   saveStoredCommunityStreak,
   saveStoredCommunityUserProfile,
   saveStoredFollowedAuthors,
 } from './services/communityStorageService';
 import {
-  createCommunityPost,
   createCommunityComment,
   deleteCommunityComment,
-  deleteCommunityPost,
-  getCommunityPosts,
   reportCommunityPost,
-  toggleCommunityPostLike,
-  toggleCommunityPostSupport,
-  updateCommunityPost,
 } from './services/communityService';
 import { COMMUNITY_POST_STATUS } from './communityModels';
 import {
@@ -85,6 +75,7 @@ import DeletePostModal from './components/DeletePostModal';
 import EditPostModal from './components/EditPostModal';
 import FeedTabs from './components/FeedTabs';
 import ReportPostModal from './components/ReportPostModal';
+import useCommunityPosts from './hooks/useCommunityPosts';
 import './styles/community.css';
 
 export default function CommunityPage({
@@ -101,17 +92,12 @@ export default function CommunityPage({
   const [showGuidelinesModal, setShowGuidelinesModal] = useState(
     () => getAcceptedGuidelinesVersion() !== COMMUNITY_GUIDELINES_VERSION,
   );
-  const [posts, setPosts] = useState(() => getInitialPosts(communityPosts));
   const [newPostText, setNewPostText] = useState('');
   const [postAnonymously, setPostAnonymously] = useState(false);
   const [postAttachment, setPostAttachment] = useState(null);
   const [postError, setPostError] = useState('');
   const [postSuccessMessage, setPostSuccessMessage] = useState('');
   const [activeFeedTab, setActiveFeedTab] = useState('all');
-  const [isRefreshingFeed, setIsRefreshingFeed] = useState(false);
-  const [refreshFeedback, setRefreshFeedback] = useState('');
-  const [refreshPulseKey, setRefreshPulseKey] = useState(0);
-  const [relativeTimeNow, setRelativeTimeNow] = useState(() => new Date());
   const [supportSpaceFeedback, setSupportSpaceFeedback] = useState('');
   const [communityUserProfile, setCommunityUserProfile] = useState(getInitialCommunityUserProfile);
   const [communityPreferences, setCommunityPreferences] = useState(getInitialCommunityPreferences);
@@ -137,74 +123,6 @@ export default function CommunityPage({
   const [isCommunityStreakAtRisk, setIsCommunityStreakAtRisk] = useState(
     () => isStreakAtRiskForDate(initialStreakState.lastActivityDate),
   );
-
-  const refreshCommunityFeed = async ({ showFeedback = false } = {}) => {
-    if (showFeedback) {
-      setIsRefreshingFeed(true);
-      setRefreshFeedback('');
-    }
-
-    try {
-      const loadedPosts = await getCommunityPosts();
-      if (Array.isArray(loadedPosts)) {
-        setPosts(loadedPosts);
-      }
-      setRelativeTimeNow(new Date());
-      if (showFeedback) {
-        setRefreshPulseKey((currentKey) => currentKey + 1);
-        setRefreshFeedback('Community feed refreshed');
-      }
-    } catch {
-      if (showFeedback) {
-        setRefreshFeedback('Community feed refreshed');
-      }
-    } finally {
-      if (showFeedback) {
-        setIsRefreshingFeed(false);
-      }
-    }
-  };
-
-  useEffect(() => {
-    let ignoreResult = false;
-
-    getCommunityPosts()
-      .then((loadedPosts) => {
-        if (!ignoreResult && Array.isArray(loadedPosts)) {
-          setPosts(loadedPosts);
-          setRelativeTimeNow(new Date());
-        }
-      })
-      .catch(() => {
-        // Keep the existing local fallback state if the placeholder service fails.
-      });
-
-    return () => {
-      ignoreResult = true;
-    };
-  }, []);
-
-  useEffect(() => {
-    const timerId = window.setInterval(() => {
-      setRelativeTimeNow(new Date());
-    }, 30000);
-
-    return () => {
-      window.clearInterval(timerId);
-    };
-  }, []);
-
-  useEffect(() => {
-    if (!refreshFeedback) return undefined;
-
-    const timerId = window.setTimeout(() => {
-      setRefreshFeedback('');
-    }, 2600);
-
-    return () => {
-      window.clearTimeout(timerId);
-    };
-  }, [refreshFeedback]);
 
   useEffect(() => {
     if (!confirmingReportPostId) return;
@@ -239,10 +157,6 @@ export default function CommunityPage({
       editPostModalRef.current?.focus();
     }, 0);
   }, [editingPostId]);
-
-  useEffect(() => {
-    saveStoredCommunityPosts(posts.map(serializeCommunityPost));
-  }, [posts]);
 
   useEffect(() => {
     saveStoredCommunityStreak({
@@ -316,6 +230,53 @@ export default function CommunityPage({
     : communityUserProfile.showBirthday;
   const allowAnonymousPosting = communityUserProfile.allowAnonymousPosting !== false;
   const localUserId = getCurrentCommunityUserId(personalDetails, communityUserProfile);
+  const handleCancelEditPost = () => {
+    setEditingPostId(null);
+    setEditPostText('');
+    setEditPostError('');
+  };
+  const handleCancelDeletePost = () => {
+    setConfirmingDeletePostId(null);
+  };
+  const {
+    posts,
+    setPosts,
+    visiblePosts,
+    isRefreshingFeed,
+    refreshFeedback,
+    refreshPulseKey,
+    relativeTimeNow,
+    refreshCommunityFeed,
+    handleCreatePost,
+    handleToggleSupport,
+    handleToggleLike,
+    handleEditPostRequest,
+    handleEditPostSubmit,
+    handleDeletePostRequest,
+    handleConfirmDeletePost,
+  } = useCommunityPosts({
+    allowAnonymousPosting,
+    communityDisplayName,
+    confirmingDeletePostId,
+    editPostText,
+    editingPostId,
+    localUserId,
+    newPostText,
+    postAnonymously,
+    postAttachment,
+    registerCommunityActivity,
+    setNewPostText,
+    setPostAnonymously,
+    setPostAttachment,
+    setPostError,
+    setPostSuccessMessage,
+    onCancelDeletePost: handleCancelDeletePost,
+    onCancelEditPost: handleCancelEditPost,
+    setConfirmingDeletePostId,
+    setEditPostError,
+    setEditPostText,
+    setEditingPostId,
+  });
   const visibleBirthdayUsers = showBirthdayInCommunity && communityBirthday
     ? [{
       id: localUserId,
@@ -323,14 +284,6 @@ export default function CommunityPage({
       birthday: communityBirthday,
     }]
     : [];
-  const visiblePosts = posts
-    .filter(isCommunityContentVisible)
-    .map((post) => ({
-      ...post,
-      comments: Array.isArray(post.comments)
-        ? post.comments.filter(isCommunityContentVisible)
-        : [],
-    }));
   const filteredPosts = filterPostsByTab(visiblePosts, activeFeedTab, followedAuthors);
   const sortedVisiblePosts = sortFeedPosts(filteredPosts);
   const emptyFeedMessage = getEmptyFeedMessage(activeFeedTab, followedAuthors.length);
@@ -384,72 +337,6 @@ export default function CommunityPage({
     window.location.assign('/profile');
   };
 
-  const handleCreatePost = async () => {
-    const content = newPostText.trim();
-
-    if (!content && !postAttachment) {
-      setPostError('Please write something or add a local attachment before sharing.');
-      setPostSuccessMessage('');
-      return;
-    }
-
-    const isAnonymous = allowAnonymousPosting && postAnonymously;
-    const author = isAnonymous ? 'Anonymous User' : communityDisplayName || 'Current User';
-    let newPost;
-
-    try {
-      newPost = await createCommunityPost({
-        authorId: localUserId,
-        author,
-        content,
-        isAnonymous,
-        attachment: postAttachment,
-      });
-    } catch {
-      setPostError('Unable to publish your post right now.');
-      setPostSuccessMessage('');
-      return;
-    }
-
-    setPosts((currentPosts) => [newPost, ...currentPosts]);
-    setNewPostText('');
-    setPostAttachment(null);
-    setPostAnonymously(false);
-    setPostError('');
-    setPostSuccessMessage('Post published successfully.');
-    registerCommunityActivity();
-  };
-
-  const handleToggleSupport = (postId) => {
-    const postToUpdate = posts.find((post) => post.id === postId);
-    const shouldIncreaseStreak = postToUpdate ? !postToUpdate.isSupported : false;
-
-    toggleCommunityPostSupport(postId, localUserId).catch(() => {
-      // Keep the optimistic local UI update; the local adapter has no remote side effect yet.
-    });
-
-    setPosts((currentPosts) => currentPosts.map((post) => {
-      if (post.id !== postId) return post;
-
-      const wasSupported = Boolean(post.isSupported);
-      const currentSupportCount = post.supportCount ?? post.support ?? 0;
-      const nextSupportCount = wasSupported
-        ? Math.max(currentSupportCount - 1, 0)
-        : currentSupportCount + 1;
-
-      return {
-        ...post,
-        isSupported: !wasSupported,
-        supportCount: nextSupportCount,
-        support: nextSupportCount,
-      };
-    }));
-
-    if (shouldIncreaseStreak) {
-      registerCommunityActivity();
-    }
-  };
-
   const handleToggleFollowAuthor = (post) => {
     if (!post || post.isAnonymous || post.author === 'Anonymous User' || post.author === 'Anonymous Participant') return;
     if (isAuthorCurrentUser(post, localUserId, communityDisplayName || 'Current User')) return;
@@ -464,36 +351,6 @@ export default function CommunityPage({
         ))
         : [...currentAuthors, authorKey]
     ));
-  };
-
-  const handleToggleLike = (postId) => {
-    const postToUpdate = posts.find((post) => post.id === postId);
-    const shouldIncreaseStreak = postToUpdate ? !postToUpdate.isLiked : false;
-
-    toggleCommunityPostLike(postId, localUserId).catch(() => {
-      // Keep the optimistic local UI update; the placeholder service has no remote side effect yet.
-    });
-
-    setPosts((currentPosts) => currentPosts.map((post) => {
-      if (post.id !== postId) return post;
-
-      const wasLiked = post.isLiked;
-      const currentLikesCount = post.likesCount ?? post.likes ?? 0;
-      const nextLikesCount = wasLiked
-        ? Math.max(currentLikesCount - 1, 0)
-        : currentLikesCount + 1;
-
-      return {
-        ...post,
-        isLiked: !wasLiked,
-        likesCount: nextLikesCount,
-        likes: nextLikesCount,
-      };
-    }));
-
-    if (shouldIncreaseStreak) {
-      registerCommunityActivity();
-    }
   };
 
   const handleReportPostRequest = (postId) => {
@@ -793,22 +650,6 @@ export default function CommunityPage({
     handleCancelDeleteComment();
   };
 
-  const handleEditPostRequest = (postId) => {
-    const postToEdit = posts.find((post) => post.id === postId);
-
-    if (!isPostOwnedByCurrentUser(postToEdit, localUserId, communityDisplayName || 'Current User')) return;
-
-    setEditingPostId(postId);
-    setEditPostText(postToEdit.content ?? postToEdit.body ?? '');
-    setEditPostError('');
-  };
-
-  const handleCancelEditPost = () => {
-    setEditingPostId(null);
-    setEditPostText('');
-    setEditPostError('');
-  };
-
   const handleEditPostModalBackdropClick = (event) => {
     if (event.target === event.currentTarget) {
       handleCancelEditPost();
@@ -826,59 +667,6 @@ export default function CommunityPage({
     if (editPostError) setEditPostError('');
   };
 
-  const handleEditPostSubmit = (event) => {
-    event.preventDefault();
-
-    const postToEdit = posts.find((post) => post.id === editingPostId);
-    if (!postToEdit) return;
-
-    if (!isPostOwnedByCurrentUser(postToEdit, localUserId, communityDisplayName || 'Current User')) {
-      handleCancelEditPost();
-      return;
-    }
-
-    const content = editPostText.trim();
-
-    if (!content && !postToEdit.attachment) {
-      setEditPostError('Please write something or keep an attachment before saving.');
-      return;
-    }
-
-    const updatedAt = new Date().toISOString();
-
-    updateCommunityPost(editingPostId, {
-      content,
-      body: content,
-      updatedAt,
-    }).catch(() => {
-      // Keep the existing local-only edit flow responsive.
-    });
-
-    setPosts((currentPosts) => currentPosts.map((post) => {
-      if (post.id !== editingPostId) return post;
-
-      return {
-        ...post,
-        content,
-        body: content,
-        updatedAt,
-      };
-    }));
-    handleCancelEditPost();
-  };
-
-  const handleDeletePostRequest = (postId) => {
-    const postToDelete = posts.find((post) => post.id === postId);
-
-    if (!isPostOwnedByCurrentUser(postToDelete, localUserId, communityDisplayName || 'Current User')) return;
-
-    setConfirmingDeletePostId(postId);
-  };
-
-  const handleCancelDeletePost = () => {
-    setConfirmingDeletePostId(null);
-  };
-
   const handleDeletePostModalBackdropClick = (event) => {
     if (event.target === event.currentTarget) {
       handleCancelDeletePost();
@@ -889,32 +677,6 @@ export default function CommunityPage({
     if (event.key === 'Escape') {
       handleCancelDeletePost();
     }
-  };
-
-  const handleConfirmDeletePost = () => {
-    const postToDelete = posts.find((post) => post.id === confirmingDeletePostId);
-
-    if (!isPostOwnedByCurrentUser(postToDelete, localUserId, communityDisplayName || 'Current User')) {
-      handleCancelDeletePost();
-      return;
-    }
-
-    const updatedAt = new Date().toISOString();
-
-    deleteCommunityPost(confirmingDeletePostId).catch(() => {
-      // Keep the existing local-only delete flow responsive.
-    });
-
-    setPosts((currentPosts) => currentPosts.map((post) => {
-      if (post.id !== confirmingDeletePostId) return post;
-
-      return {
-        ...post,
-        status: COMMUNITY_POST_STATUS.deleted,
-        updatedAt,
-      };
-    }));
-    handleCancelDeletePost();
   };
 
   const reportModal = confirmingReportPostId ? (
