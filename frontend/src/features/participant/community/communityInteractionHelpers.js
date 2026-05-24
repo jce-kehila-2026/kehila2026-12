@@ -6,13 +6,6 @@ import {
   createCommunityUserProfileModel,
 } from './communityModels';
 import {
-  COMMUNITY_FOLLOWED_AUTHORS_STORAGE_KEY,
-  COMMUNITY_PREFERENCES_STORAGE_KEY,
-  COMMUNITY_POSTS_STORAGE_KEY,
-  COMMUNITY_STREAK_STORAGE_KEY,
-  COMMUNITY_USER_PROFILE_STORAGE_KEY,
-} from './constants/communityConstants';
-import {
   formatRelativeCommunityTime,
   getDateKeyTimestamp,
   getDayDifference,
@@ -21,6 +14,14 @@ import {
   parseCommunityDate,
 } from './utils/communityDateUtils';
 import { isCommunityContentVisible } from './utils/communityModerationUtils';
+import {
+  loadStoredCommunityPosts,
+  loadStoredCommunityPreferences,
+  loadStoredCommunityStreak,
+  loadStoredCommunityUserProfile,
+  safeLoadFromStorage,
+  safeSaveToStorage,
+} from './services/communityStorageService';
 
 export {
   COMMUNITY_FOLLOWED_AUTHORS_STORAGE_KEY,
@@ -38,6 +39,10 @@ export {
   parseCommunityDate,
 } from './utils/communityDateUtils';
 export { isCommunityContentVisible } from './utils/communityModerationUtils';
+export {
+  safeLoadFromStorage,
+  safeSaveToStorage,
+} from './services/communityStorageService';
 
 export const INITIAL_COMMUNITY_STREAK_COUNT = 0;
 export const INITIAL_LAST_ACTIVITY_DATE = null;
@@ -112,27 +117,6 @@ export const createCommentModel = (content, author = 'Current User', authorId = 
     time: formatRelativeCommunityTime(createdAt),
     text: content,
   };
-};
-
-export const safeLoadFromStorage = (storageKey) => {
-  if (typeof window === 'undefined' || typeof window.localStorage === 'undefined') return null;
-
-  try {
-    const storedValue = window.localStorage.getItem(storageKey);
-    return storedValue ? JSON.parse(storedValue) : null;
-  } catch {
-    return null;
-  }
-};
-
-export const safeSaveToStorage = (storageKey, value) => {
-  if (typeof window === 'undefined' || typeof window.localStorage === 'undefined') return;
-
-  try {
-    window.localStorage.setItem(storageKey, JSON.stringify(value));
-  } catch {
-    // Storage can fail in private mode or when quota is exceeded; keep local state working.
-  }
 };
 
 const normalizeComment = (comment, index) => {
@@ -328,7 +312,7 @@ export const serializeCommunityPost = (post) => ({
 });
 
 export const getInitialPosts = (defaultPosts) => {
-  const storedPosts = safeLoadFromStorage(COMMUNITY_POSTS_STORAGE_KEY);
+  const storedPosts = loadStoredCommunityPosts();
 
   if (Array.isArray(storedPosts)) {
     return storedPosts.map(normalizeStoredPost);
@@ -338,7 +322,7 @@ export const getInitialPosts = (defaultPosts) => {
 };
 
 export const getInitialStreakState = () => {
-  const storedStreak = safeLoadFromStorage(COMMUNITY_STREAK_STORAGE_KEY);
+  const storedStreak = loadStoredCommunityStreak();
   const storedStreakCount = Number(storedStreak?.streakCount);
   const storedLastActivityDate = storedStreak?.lastActivityDate;
 
@@ -354,7 +338,7 @@ export const getInitialStreakState = () => {
 };
 
 export const getInitialCommunityPreferences = () => {
-  const storedPreferences = safeLoadFromStorage(COMMUNITY_PREFERENCES_STORAGE_KEY);
+  const storedPreferences = loadStoredCommunityPreferences();
 
   if (storedPreferences?.communityPreferencesCompleted === true) {
     return {
@@ -406,7 +390,7 @@ const normalizeStoredCommunityUserProfile = (profile) => {
 };
 
 export const getInitialCommunityUserProfile = () => normalizeStoredCommunityUserProfile(
-  safeLoadFromStorage(COMMUNITY_USER_PROFILE_STORAGE_KEY),
+  loadStoredCommunityUserProfile(),
 );
 
 export const serializeCommunityUserProfile = (profile) => ({

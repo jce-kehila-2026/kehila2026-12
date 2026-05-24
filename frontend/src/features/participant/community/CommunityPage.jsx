@@ -20,18 +20,11 @@ import {
   getTodayKey,
   isCommunityContentVisible,
   isStreakAtRiskForDate,
-  safeLoadFromStorage,
-  safeSaveToStorage,
   serializeCommunityPreferences,
   serializeCommunityPost,
   serializeCommunityUserProfile,
 } from './communityInteractionHelpers';
 import {
-  COMMUNITY_FOLLOWED_AUTHORS_STORAGE_KEY,
-  COMMUNITY_PREFERENCES_STORAGE_KEY,
-  COMMUNITY_POSTS_STORAGE_KEY,
-  COMMUNITY_STREAK_STORAGE_KEY,
-  COMMUNITY_USER_PROFILE_STORAGE_KEY,
   FEED_TABS,
   REPORT_REASON_OPTIONS,
 } from './constants/communityConstants';
@@ -50,6 +43,14 @@ import {
   isPostOwnedByCurrentUser,
   isPostReportedByUser,
 } from './utils/communityModerationUtils';
+import {
+  loadStoredFollowedAuthors,
+  saveStoredCommunityPosts,
+  saveStoredCommunityPreferences,
+  saveStoredCommunityStreak,
+  saveStoredCommunityUserProfile,
+  saveStoredFollowedAuthors,
+} from './services/communityStorageService';
 import {
   addCommunityPostComment,
   createCommunityPost,
@@ -71,13 +72,6 @@ import CommunityGuidelinesModal from './components/CommunityGuidelinesModal';
 import CommunityPostCard from './components/CommunityPostCard';
 import CommunityStreakCard from './components/CommunityStreakCard';
 import CreatePostCard from './components/CreatePostCard';
-
-const getInitialFollowedAuthors = () => {
-  const storedAuthors = safeLoadFromStorage(COMMUNITY_FOLLOWED_AUTHORS_STORAGE_KEY);
-  return Array.isArray(storedAuthors)
-    ? storedAuthors.filter((author) => typeof author === 'string' && author.trim())
-    : [];
-};
 
 export default function CommunityPage({
   personalDetails = {},
@@ -113,7 +107,7 @@ export default function CommunityPage({
   const [reportReasonError, setReportReasonError] = useState('');
   const [expandedCommentPostIds, setExpandedCommentPostIds] = useState({});
   const [openCommentPostIds, setOpenCommentPostIds] = useState({});
-  const [followedAuthors, setFollowedAuthors] = useState(getInitialFollowedAuthors);
+  const [followedAuthors, setFollowedAuthors] = useState(loadStoredFollowedAuthors);
   const [selectedSupportSpace, setSelectedSupportSpace] = useState(null);
   const [showFullGuidelinesModal, setShowFullGuidelinesModal] = useState(false);
   const [communityStreakCount, setCommunityStreakCount] = useState(initialStreakState.streakCount);
@@ -201,11 +195,11 @@ export default function CommunityPage({
   }, [confirmingReportPostId]);
 
   useEffect(() => {
-    safeSaveToStorage(COMMUNITY_POSTS_STORAGE_KEY, posts.map(serializeCommunityPost));
+    saveStoredCommunityPosts(posts.map(serializeCommunityPost));
   }, [posts]);
 
   useEffect(() => {
-    safeSaveToStorage(COMMUNITY_STREAK_STORAGE_KEY, {
+    saveStoredCommunityStreak({
       streakCount: communityStreakCount,
       lastActivityDate,
       updatedAt: new Date(),
@@ -215,23 +209,17 @@ export default function CommunityPage({
   useEffect(() => {
     if (!communityPreferences.birthdayVisibilityCompleted) return;
 
-    safeSaveToStorage(
-      COMMUNITY_PREFERENCES_STORAGE_KEY,
-      serializeCommunityPreferences(communityPreferences),
-    );
+    saveStoredCommunityPreferences(serializeCommunityPreferences(communityPreferences));
   }, [communityPreferences]);
 
   useEffect(() => {
     if (!communityUserProfile.profileCompleted) return;
 
-    safeSaveToStorage(
-      COMMUNITY_USER_PROFILE_STORAGE_KEY,
-      serializeCommunityUserProfile(communityUserProfile),
-    );
+    saveStoredCommunityUserProfile(serializeCommunityUserProfile(communityUserProfile));
   }, [communityUserProfile]);
 
   useEffect(() => {
-    safeSaveToStorage(COMMUNITY_FOLLOWED_AUTHORS_STORAGE_KEY, followedAuthors);
+    saveStoredFollowedAuthors(followedAuthors);
   }, [followedAuthors]);
 
   const registerCommunityActivity = () => {

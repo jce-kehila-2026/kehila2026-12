@@ -18,6 +18,8 @@ export const COMMUNITY_STREAK_STORAGE_KEY = 'community.streak';
 export const COMMUNITY_PREFERENCES_STORAGE_KEY = 'community.preferences';
 export const COMMUNITY_USER_PROFILE_STORAGE_KEY = 'community.userProfile';
 export const COMMUNITY_FOLLOWED_AUTHORS_STORAGE_KEY = 'community.followedAuthors';
+export const COMMUNITY_GUIDELINES_VERSION = 'v1';
+export const COMMUNITY_GUIDELINES_ACCEPTED_KEY = 'communityGuidelinesAccepted';
 
 export const COMMUNITY_POST_STATUS = {
   active: 'active',
