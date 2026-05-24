@@ -11,12 +11,6 @@ import {
   communitySupportSpaces,
 } from './communityMockData';
 import {
-  getInitialCommunityPreferences,
-  getInitialCommunityUserProfile,
-  serializeCommunityPreferences,
-  serializeCommunityUserProfile,
-} from './communityInteractionHelpers';
-import {
   FEED_TABS,
   REPORT_REASON_OPTIONS,
 } from './constants/communityConstants';
@@ -26,20 +20,10 @@ import {
   sortFeedPosts,
 } from './utils/communityFeedUtils';
 import {
-  getCommunityBirthday,
-  getExistingDisplayName,
-  hasRequiredCommunityPersonalDetails,
-} from './utils/communityProfileUtils';
-import {
-  getCurrentCommunityUserId,
   isAuthorFollowed,
   isPostOwnedByCurrentUser,
   isPostReportedByUser,
 } from './utils/communityModerationUtils';
-import {
-  saveStoredCommunityPreferences,
-  saveStoredCommunityUserProfile,
-} from './services/communityStorageService';
 import {
   COMMUNITY_GUIDELINES_VERSION,
   getAcceptedGuidelinesVersion,
@@ -60,6 +44,7 @@ import ReportPostModal from './components/ReportPostModal';
 import useCommunityComments from './hooks/useCommunityComments';
 import useCommunityFollows from './hooks/useCommunityFollows';
 import useCommunityPosts from './hooks/useCommunityPosts';
+import useCommunityProfile from './hooks/useCommunityProfile';
 import useCommunityReports from './hooks/useCommunityReports';
 import useCommunityStreak from './hooks/useCommunityStreak';
 import './styles/community.css';
@@ -84,9 +69,6 @@ export default function CommunityPage({
   const [postSuccessMessage, setPostSuccessMessage] = useState('');
   const [activeFeedTab, setActiveFeedTab] = useState('all');
   const [supportSpaceFeedback, setSupportSpaceFeedback] = useState('');
-  const [communityUserProfile, setCommunityUserProfile] = useState(getInitialCommunityUserProfile);
-  const [communityPreferences, setCommunityPreferences] = useState(getInitialCommunityPreferences);
-  const [profileSuccessMessage, setProfileSuccessMessage] = useState('');
   const [confirmingDeletePostId, setConfirmingDeletePostId] = useState(null);
   const [editingPostId, setEditingPostId] = useState(null);
   const [editPostText, setEditPostText] = useState('');
@@ -110,18 +92,6 @@ export default function CommunityPage({
     }, 0);
   }, [editingPostId]);
 
-  useEffect(() => {
-    if (!communityPreferences.birthdayVisibilityCompleted) return;
-
-    saveStoredCommunityPreferences(serializeCommunityPreferences(communityPreferences));
-  }, [communityPreferences]);
-
-  useEffect(() => {
-    if (!communityUserProfile.profileCompleted) return;
-
-    saveStoredCommunityUserProfile(serializeCommunityUserProfile(communityUserProfile));
-  }, [communityUserProfile]);
-
   const handleGuidelinesContinue = () => {
     saveAcceptedGuidelinesVersion();
     setShowGuidelinesModal(false);
@@ -138,24 +108,20 @@ export default function CommunityPage({
     setSupportSpaceFeedback(`${space.title} details opened.`);
   };
 
-  const displayName = getExistingDisplayName(personalDetails);
-  const birthDate = getCommunityBirthday(personalDetails);
-  const hasCompletedCommunityProfile = communityUserProfile.profileCompleted === true;
-  const communityDisplayName = hasCompletedCommunityProfile
-    ? communityUserProfile.displayName
-    : displayName;
-  const communityBirthday = hasCompletedCommunityProfile
-    ? communityUserProfile.birthday
-    : birthDate;
-  const hasRequiredPersonalDetails = hasRequiredCommunityPersonalDetails(personalDetails);
-  const hasCommunityAccessDetails = hasRequiredPersonalDetails || hasCompletedCommunityProfile;
-  const hasCompletedCommunitySetup = communityPreferences.birthdayVisibilityCompleted || hasCompletedCommunityProfile;
-  const canUseCommunity = hasCommunityAccessDetails && hasCompletedCommunitySetup;
-  const showBirthdayInCommunity = communityPreferences.birthdayVisibilityCompleted
-    ? communityPreferences.showBirthday
-    : communityUserProfile.showBirthday;
-  const allowAnonymousPosting = communityUserProfile.allowAnonymousPosting !== false;
-  const localUserId = getCurrentCommunityUserId(personalDetails, communityUserProfile);
+  const {
+    communityDisplayName,
+    hasRequiredPersonalDetails,
+    hasCommunityAccessDetails,
+    hasCompletedCommunitySetup,
+    canUseCommunity,
+    showBirthdayInCommunity,
+    allowAnonymousPosting,
+    localUserId,
+    visibleBirthdayUsers,
+    profileSuccessMessage,
+    handleBirthdayPreferenceSave,
+    handleBirthdayVisibilityChange,
+  } = useCommunityProfile({ personalDetails });
   const handleCancelEditPost = () => {
     setEditingPostId(null);
     setEditPostText('');
@@ -266,50 +232,9 @@ export default function CommunityPage({
     }, 0);
   }, [pendingCommentDeletion]);
 
-  const visibleBirthdayUsers = showBirthdayInCommunity && communityBirthday
-    ? [{
-      id: localUserId,
-      name: communityDisplayName || 'Current User',
-      birthday: communityBirthday,
-    }]
-    : [];
   const filteredPosts = filterPostsByTab(visiblePosts, activeFeedTab, followedAuthors);
   const sortedVisiblePosts = sortFeedPosts(filteredPosts);
   const emptyFeedMessage = getEmptyFeedMessage(activeFeedTab, followedAuthors.length);
-
-  const handleBirthdayPreferenceSave = (showBirthday) => {
-    setCommunityPreferences({
-      birthdayVisibilityCompleted: true,
-      showBirthday,
-    });
-    setCommunityUserProfile({
-      ...communityUserProfile,
-      id: localUserId,
-      displayName: displayName || communityUserProfile.displayName,
-      birthday: birthDate || communityUserProfile.birthday || '',
-      showBirthday,
-      allowAnonymousPosting: communityUserProfile.allowAnonymousPosting !== false,
-      profileCompleted: true,
-      communityJoinedAt: communityUserProfile.communityJoinedAt || new Date(),
-    });
-    setProfileSuccessMessage('Community preference saved.');
-  };
-
-  const handleBirthdayVisibilityChange = (showBirthday) => {
-    setCommunityPreferences({
-      birthdayVisibilityCompleted: true,
-      showBirthday,
-    });
-    setCommunityUserProfile((currentProfile) => {
-      if (!currentProfile.profileCompleted) return currentProfile;
-
-      return {
-        ...currentProfile,
-        showBirthday,
-      };
-    });
-    setProfileSuccessMessage('Birthday privacy updated.');
-  };
 
   useEffect(() => {
     if (!allowAnonymousPosting && postAnonymously) {
