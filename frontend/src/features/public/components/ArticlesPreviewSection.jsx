@@ -1,42 +1,54 @@
-import { useMemo } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import ArticleCard from './ArticleCard';
 import EmptyState from './EmptyState';
-import LoadingState from './LoadingState';
 import PublicSectionHeading from './PublicSectionHeading';
-import { FALLBACK_PRESS_ARTICLES } from '../constants/pressArticleImages';
-import { resolvePressArticleHref } from '../constants/pressArticles';
 import { usePublicLocale } from '../context/PublicLocaleContext';
-import { localizeArticles } from '../i18n/publicHomeContentLocalization';
 import '../styles/public-articles-section.css';
 
-function getVisibleArticles(articles, maxItems) {
-  return (Array.isArray(articles) ? articles : [])
-    .filter((article) => {
-      if (!article || typeof article !== 'object') {
-        return false;
-      }
+export default function ArticlesPreviewSection({ coverage = [] }) {
+  const { t, direction } = usePublicLocale();
+  const scrollerRef = useRef(null);
+  const [canScrollPrev, setCanScrollPrev] = useState(false);
+  const [canScrollNext, setCanScrollNext] = useState(false);
 
-      const isPublished = article.isPublished !== false && article.published !== false;
-      const isActive = article.active !== false && article.status !== 'inactive';
-      const isDraft = article.status === 'draft';
+  const items = Array.isArray(coverage) ? coverage : [];
 
-      return isPublished && isActive && !isDraft;
-    })
-    .slice(0, maxItems);
-}
+  const updateBoundaries = useCallback(() => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    const maxScroll = el.scrollWidth - el.clientWidth;
+    if (maxScroll <= 1) {
+      setCanScrollPrev(false);
+      setCanScrollNext(false);
+      return;
+    }
+    const absScroll = Math.abs(el.scrollLeft);
+    setCanScrollPrev(absScroll > 1);
+    setCanScrollNext(absScroll < maxScroll - 1);
+  }, []);
 
-export default function ArticlesPreviewSection({
-  articles = [],
-  maxItems = 4,
-  isLoading = false,
-  hasError = false,
-}) {
-  const { locale, t } = usePublicLocale();
-  const visibleArticles = getVisibleArticles(articles, maxItems);
-  const displayArticles = useMemo(() => {
-    const source = visibleArticles.length ? visibleArticles : FALLBACK_PRESS_ARTICLES.slice(0, maxItems);
-    return localizeArticles(source, locale);
-  }, [locale, maxItems, visibleArticles]);
+  useEffect(() => {
+    const el = scrollerRef.current;
+    if (!el) return undefined;
+    updateBoundaries();
+    el.addEventListener('scroll', updateBoundaries, { passive: true });
+    window.addEventListener('resize', updateBoundaries);
+    return () => {
+      el.removeEventListener('scroll', updateBoundaries);
+      window.removeEventListener('resize', updateBoundaries);
+    };
+  }, [updateBoundaries, items.length]);
+
+  function scrollByCards(delta) {
+    const el = scrollerRef.current;
+    if (!el) return;
+    const card = el.querySelector('.press-article-card');
+    const step = card ? card.getBoundingClientRect().width + 24 : el.clientWidth * 0.8;
+    const dir = direction === 'rtl' ? -delta : delta;
+    el.scrollBy({ left: dir * step, behavior: 'smooth' });
+  }
 
   return (
     <section
@@ -53,28 +65,32 @@ export default function ArticlesPreviewSection({
           subtitle={t('articlesSubtitle')}
         />
 
-        {isLoading ? (
-          <div className="press-articles__state">
-            <LoadingState message={t('loadingArticles')} />
-          </div>
-        ) : displayArticles.length ? (
-          <>
-            {hasError ? (
-              <p className="press-articles__notice" role="status">
-                {t('errorArticlesPartial')}
-              </p>
-            ) : null}
-            <div className="press-articles__grid" role="list">
-              {displayArticles.map((article, index) => (
-                <ArticleCard
-                  article={article}
-                  imageIndex={index}
-                  key={article.id || `${article.title}-${index}`}
-                  readMoreUrl={resolvePressArticleHref(article, index)}
-                />
+        {items.length ? (
+          <div className="public-stories-slider press-articles__slider">
+            <button
+              type="button"
+              className="public-stories-slider__arrow public-stories-slider__arrow--prev"
+              onClick={() => scrollByCards(-1)}
+              disabled={!canScrollPrev}
+              aria-label="Previous"
+            >
+              <ChevronRightIcon />
+            </button>
+            <div className="public-stories-slider__track press-articles__track" ref={scrollerRef}>
+              {items.map((article) => (
+                <ArticleCard article={article} key={article.id} />
               ))}
             </div>
-          </>
+            <button
+              type="button"
+              className="public-stories-slider__arrow public-stories-slider__arrow--next"
+              onClick={() => scrollByCards(1)}
+              disabled={!canScrollNext}
+              aria-label="Next"
+            >
+              <ChevronLeftIcon />
+            </button>
+          </div>
         ) : (
           <div className="press-articles__state">
             <EmptyState message={t('emptyArticles')} />

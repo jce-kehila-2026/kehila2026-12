@@ -112,7 +112,7 @@ function PublicHomePageContent() {
         <LearnTogetherSection learnTogether={publicHomeDoc.learnTogether} />
         <StatisticsSection statistics={content.statistics} isLoading={loading} />
         <InspirationStoriesSection stories={publicHomeDoc.inspirationalStories} />
-        <ArticlesPreviewSection articles={content.articles} isLoading={loading} hasError={error} />
+        <ArticlesPreviewSection coverage={publicHomeDoc.pressCoverage} />
         <EventsPreviewSection events={content.events} isLoading={loading} hasError={error} />
         <CommunitySupportCta onDonationClick={() => setIsDonationModalOpen(true)} />
         <TeamSection />

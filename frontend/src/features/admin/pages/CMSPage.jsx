@@ -7,10 +7,12 @@ import Tab from '@mui/material/Tab';
 import HomeIcon from '@mui/icons-material/Home';
 import InfoIcon from '@mui/icons-material/Info';
 import AutoStoriesIcon from '@mui/icons-material/AutoStories';
+import NewspaperIcon from '@mui/icons-material/Newspaper';
 import PreviewIcon from '@mui/icons-material/Preview';
 import PublicHomePageHomeTab from './PublicHomePageHomeTab';
 import PublicHomePageLearnTogetherTab from './PublicHomePageLearnTogetherTab';
 import PublicHomePageInspirationStoriesTab from './PublicHomePageInspirationStoriesTab';
+import PublicHomePagePressCoverageTab from './PublicHomePagePressCoverageTab';
 
 const TABS = [
   { key: 'home', label: 'Home', icon: <HomeIcon />, Component: PublicHomePageHomeTab },
@@ -20,6 +22,12 @@ const TABS = [
     label: 'Inspirational Stories',
     icon: <AutoStoriesIcon />,
     Component: PublicHomePageInspirationStoriesTab,
+  },
+  {
+    key: 'pressCoverage',
+    label: 'Press Coverage',
+    icon: <NewspaperIcon />,
+    Component: PublicHomePagePressCoverageTab,
   },
 ];
 
