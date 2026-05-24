@@ -19,6 +19,7 @@ export async function getCommunityPosts() {
 export async function createCommunityPost(postData = {}) {
   return createPostModel({
     author: postData.author ?? postData.authorDisplayName ?? 'Current User',
+    authorId: postData.authorId ?? postData.userId ?? null,
     content: postData.content ?? '',
     isAnonymous: Boolean(postData.isAnonymous),
     attachment: postData.attachment ?? null,
@@ -53,7 +54,7 @@ export async function addCommunityPostComment(postId, commentData = {}) {
     ...createCommentModel(
       commentData.content ?? '',
       commentData.author ?? commentData.authorDisplayName ?? 'Current User',
-      commentData.authorId ?? 'current-user',
+      commentData.authorId ?? commentData.userId ?? 'current-user',
     ),
     postId,
   };

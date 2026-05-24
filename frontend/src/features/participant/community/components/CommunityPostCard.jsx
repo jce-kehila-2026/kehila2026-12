@@ -1,14 +1,12 @@
-import { useEffect, useRef, useState } from 'react';
-import ChatBubbleOutlineOutlinedIcon from '@mui/icons-material/ChatBubbleOutlineOutlined';
-import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined';
-import MoreHorizOutlinedIcon from '@mui/icons-material/MoreHorizOutlined';
+import { useEffect, useRef } from 'react';
 import ShieldOutlinedIcon from '@mui/icons-material/ShieldOutlined';
-import VolunteerActivismOutlinedIcon from '@mui/icons-material/VolunteerActivismOutlined';
 import {
   formatRelativeCommunityTime,
   isCommunityContentVisible,
 } from '../communityInteractionHelpers';
 import CommentsPreview from './CommentsPreview';
+import PostActions from './PostActions';
+import PostOverflowMenu from './PostOverflowMenu';
 
 export default function CommunityPostCard({
   commentFeedback,
@@ -36,8 +34,6 @@ export default function CommunityPostCard({
   reportFeedback,
 }) {
   const commentInputRef = useRef(null);
-  const postMenuRef = useRef(null);
-  const [isPostMenuOpen, setIsPostMenuOpen] = useState(false);
   const likesCount = post.likesCount ?? post.likes ?? 0;
   const supportCount = post.supportCount ?? post.support ?? 0;
   const comments = (Array.isArray(post.comments) ? post.comments : post.previewComments ?? [])
@@ -46,37 +42,17 @@ export default function CommunityPostCard({
   const postBody = post.content ?? post.body;
   const postTime = formatRelativeCommunityTime(post.createdAt, relativeTimeNow);
   const commentFeedbackId = commentFeedback ? `comment-feedback-${post.id}` : undefined;
-  const hasPostMenuActions = true;
   const handleCommentSubmit = (event) => {
     event.preventDefault();
     onSubmitComment();
   };
   const reportFeedbackId = reportFeedback ? `report-feedback-${post.id}` : undefined;
-  const postMenuId = `community-post-menu-${post.id}`;
 
   useEffect(() => {
     if (isCommentComposerOpen) {
       commentInputRef.current?.focus();
     }
   }, [isCommentComposerOpen]);
-
-  useEffect(() => {
-    if (!isPostMenuOpen) return undefined;
-
-    const handlePointerDown = (event) => {
-      if (!postMenuRef.current?.contains(event.target)) {
-        setIsPostMenuOpen(false);
-      }
-    };
-
-    document.addEventListener('mousedown', handlePointerDown);
-    document.addEventListener('touchstart', handlePointerDown);
-
-    return () => {
-      document.removeEventListener('mousedown', handlePointerDown);
-      document.removeEventListener('touchstart', handlePointerDown);
-    };
-  }, [isPostMenuOpen]);
 
   const renderAttachment = () => {
     if (!post.attachment) return null;
@@ -98,30 +74,6 @@ export default function CommunityPostCard({
     }
 
     return null;
-  };
-
-  const handlePostMenuKeyDown = (event) => {
-    if (event.key === 'Escape') {
-      setIsPostMenuOpen(false);
-    }
-  };
-
-  const handleReportFromMenu = () => {
-    if (isOwnPost || isReportedByCurrentUser) return;
-    setIsPostMenuOpen(false);
-    onReportPost();
-  };
-
-  const handleEditFromMenu = () => {
-    if (!isOwnPost) return;
-    setIsPostMenuOpen(false);
-    onEditPost();
-  };
-
-  const handleDeleteFromMenu = () => {
-    if (!isOwnPost) return;
-    setIsPostMenuOpen(false);
-    onDeletePost();
   };
 
   return (
@@ -147,7 +99,7 @@ export default function CommunityPostCard({
                 aria-pressed={isFollowingAuthor}
                 className={`community-page-post__follow${isFollowingAuthor ? ' is-following' : ''}`}
                 type="button"
-                onClick={() => onFollowAuthor(post.author)}
+                onClick={onFollowAuthor}
               >
                 {isFollowingAuthor ? 'Following' : 'Follow'}
               </button>
@@ -156,103 +108,32 @@ export default function CommunityPostCard({
           <small>{postTime}</small>
         </div>
         <span className="community-page-post__topic">{post.topic}</span>
-        <div className="community-page-post__menu" ref={postMenuRef} onKeyDown={handlePostMenuKeyDown}>
-          <button
-            aria-controls={postMenuId}
-            aria-expanded={hasPostMenuActions && isPostMenuOpen}
-            aria-haspopup="menu"
-            aria-label={`Open actions for ${post.author}'s post`}
-            className="community-page-post__more"
-            type="button"
-            onClick={() => {
-              if (!hasPostMenuActions) return;
-              setIsPostMenuOpen((isOpen) => !isOpen);
-            }}
-          >
-            <MoreHorizOutlinedIcon fontSize="small" />
-          </button>
-          {hasPostMenuActions && isPostMenuOpen && (
-            <div className="community-page-post__menu-popover" id={postMenuId} role="menu">
-              {isOwnPost ? (
-                <>
-                  <button
-                    className="community-page-post__menu-item"
-                    onClick={handleEditFromMenu}
-                    role="menuitem"
-                    type="button"
-                  >
-                    Edit post
-                  </button>
-                  <button
-                    className="community-page-post__menu-item"
-                    onClick={handleDeleteFromMenu}
-                    role="menuitem"
-                    type="button"
-                  >
-                    Delete post
-                  </button>
-                </>
-              ) : (
-                <button
-                  aria-describedby={reportFeedbackId}
-                  className="community-page-post__menu-item"
-                  disabled={isReportedByCurrentUser}
-                  onClick={handleReportFromMenu}
-                  role="menuitem"
-                  type="button"
-                >
-                  {isReportedByCurrentUser ? 'Reported' : 'Report post'}
-                </button>
-              )}
-            </div>
-          )}
-        </div>
+        <PostOverflowMenu
+          isOwnPost={isOwnPost}
+          isReportedByCurrentUser={isReportedByCurrentUser}
+          onDeletePost={onDeletePost}
+          onEditPost={onEditPost}
+          onReportPost={onReportPost}
+          post={post}
+          reportFeedbackId={reportFeedbackId}
+        />
       </header>
       <div className="community-page-post__content">
         <h3>{post.title}</h3>
         <p>{postBody}</p>
       </div>
       {renderAttachment()}
-      <footer className="community-page-post__actions">
-        <div className="community-page-post__primary-actions">
-          <button
-            aria-pressed={post.isLiked}
-            aria-label={`${post.isLiked ? 'Unlike' : 'Like'} ${post.author}'s post. ${likesCount} likes`}
-            className={post.isLiked ? 'is-liked' : undefined}
-            disabled={isReportedByCurrentUser}
-            onClick={() => onToggleLike(post.id)}
-            type="button"
-          >
-            <FavoriteBorderOutlinedIcon fontSize="small" />
-            Like
-            <span>{likesCount}</span>
-          </button>
-          <button
-            type="button"
-            aria-expanded={isCommentComposerOpen}
-            aria-label={`${commentsCount} comments on ${post.author}'s post`}
-            className={isCommentComposerOpen ? 'is-commenting' : undefined}
-            disabled={isReportedByCurrentUser}
-            onClick={onOpenCommentComposer}
-          >
-            <ChatBubbleOutlineOutlinedIcon fontSize="small" />
-            Comment
-            <span>{commentsCount}</span>
-          </button>
-          <button
-            aria-pressed={post.isSupported}
-            className={post.isSupported ? 'is-supported' : undefined}
-            type="button"
-            disabled={isReportedByCurrentUser}
-            aria-label={`${post.isSupported ? 'Remove support from' : 'Support'} ${post.author}'s post. ${supportCount} support reactions`}
-            onClick={() => onToggleSupport(post.id)}
-          >
-            <VolunteerActivismOutlinedIcon fontSize="small" />
-            Support
-            <span>{supportCount}</span>
-          </button>
-        </div>
-      </footer>
+      <PostActions
+        commentsCount={commentsCount}
+        isCommentComposerOpen={isCommentComposerOpen}
+        isReportedByCurrentUser={isReportedByCurrentUser}
+        likesCount={likesCount}
+        onOpenCommentComposer={onOpenCommentComposer}
+        onToggleLike={onToggleLike}
+        onToggleSupport={onToggleSupport}
+        post={post}
+        supportCount={supportCount}
+      />
       {reportFeedback && (
         <p
           className={`community-page-post__report-feedback community-page-post__report-feedback--${reportFeedback.type}`}

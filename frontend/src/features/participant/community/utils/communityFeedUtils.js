@@ -1,3 +1,5 @@
+import { isAuthorFollowed } from './communityModerationUtils';
+
 export const getPostCreatedAtTime = (post = {}) => {
   const createdAt = post.createdAt instanceof Date
     ? post.createdAt
@@ -8,7 +10,7 @@ export const getPostCreatedAtTime = (post = {}) => {
 };
 
 export const filterPostsByTab = (posts, activeTab, followedAuthors = []) => posts.filter((post) => {
-  if (activeTab === 'following') return followedAuthors.includes(post.author);
+  if (activeTab === 'following') return isAuthorFollowed(post, followedAuthors);
   if (activeTab === 'anonymous') return post.isAnonymous === true;
 
   return true;

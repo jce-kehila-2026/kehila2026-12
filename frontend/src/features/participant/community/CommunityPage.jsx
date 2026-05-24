@@ -37,9 +37,13 @@ import {
   getCommunityBirthday,
   getExistingDisplayName,
   hasRequiredCommunityPersonalDetails,
-  normalizeCommunityName,
 } from './utils/communityProfileUtils';
 import {
+  getCurrentCommunityUserId,
+  getFollowAuthorKey,
+  getPostAuthorId,
+  isAuthorCurrentUser,
+  isAuthorFollowed,
   isPostOwnedByCurrentUser,
   isPostReportedByUser,
 } from './utils/communityModerationUtils';
@@ -74,6 +78,7 @@ import CommunityStreakCard from './components/CommunityStreakCard';
 import CreatePostCard from './components/CreatePostCard';
 import DeletePostModal from './components/DeletePostModal';
 import EditPostModal from './components/EditPostModal';
+import FeedTabs from './components/FeedTabs';
 import ReportPostModal from './components/ReportPostModal';
 
 export default function CommunityPage({
@@ -294,10 +299,10 @@ export default function CommunityPage({
     ? communityPreferences.showBirthday
     : communityUserProfile.showBirthday;
   const allowAnonymousPosting = communityUserProfile.allowAnonymousPosting !== false;
-  const localUserId = communityUserProfile.id || personalDetails.id || 'current-user';
+  const localUserId = getCurrentCommunityUserId(personalDetails, communityUserProfile);
   const visibleBirthdayUsers = showBirthdayInCommunity && communityBirthday
     ? [{
-      id: communityUserProfile.id || personalDetails.id || 'current-user',
+      id: localUserId,
       name: communityDisplayName || 'Current User',
       birthday: communityBirthday,
     }]
@@ -321,7 +326,7 @@ export default function CommunityPage({
     });
     setCommunityUserProfile({
       ...communityUserProfile,
-      id: personalDetails.id || communityUserProfile.id || 'current-user',
+      id: localUserId,
       displayName: displayName || communityUserProfile.displayName,
       birthday: birthDate || communityUserProfile.birthday || '',
       showBirthday,
@@ -378,6 +383,7 @@ export default function CommunityPage({
 
     try {
       newPost = await createCommunityPost({
+        authorId: localUserId,
         author,
         content,
         isAnonymous,
@@ -424,14 +430,19 @@ export default function CommunityPage({
     }
   };
 
-  const handleToggleFollowAuthor = (author) => {
-    if (!author || author === 'Anonymous User' || author === 'Anonymous Participant') return;
-    if (normalizeCommunityName(author) === normalizeCommunityName(communityDisplayName || 'Current User')) return;
+  const handleToggleFollowAuthor = (post) => {
+    if (!post || post.isAnonymous || post.author === 'Anonymous User' || post.author === 'Anonymous Participant') return;
+    if (isAuthorCurrentUser(post, localUserId, communityDisplayName || 'Current User')) return;
+
+    const authorKey = getFollowAuthorKey(post);
+    if (!authorKey) return;
 
     setFollowedAuthors((currentAuthors) => (
-      currentAuthors.includes(author)
-        ? currentAuthors.filter((currentAuthor) => currentAuthor !== author)
-        : [...currentAuthors, author]
+      isAuthorFollowed(post, currentAuthors)
+        ? currentAuthors.filter((currentAuthor) => (
+          currentAuthor !== authorKey && currentAuthor !== post.author
+        ))
+        : [...currentAuthors, authorKey]
     ));
   };
 
@@ -439,7 +450,7 @@ export default function CommunityPage({
     const postToUpdate = posts.find((post) => post.id === postId);
     const shouldIncreaseStreak = postToUpdate ? !postToUpdate.isLiked : false;
 
-    toggleCommunityPostLike(postId, 'current-user').catch(() => {
+    toggleCommunityPostLike(postId, localUserId).catch(() => {
       // Keep the optimistic local UI update; the placeholder service has no remote side effect yet.
     });
 
@@ -560,7 +571,7 @@ export default function CommunityPage({
       id: `community-report-${postId}-${localUserId}-${createdAt.getTime()}`,
       postId,
       reporterUserId: localUserId,
-      postOwnerId: postToReport.authorId ?? postToReport.authorDisplayName ?? postToReport.author ?? null,
+      postOwnerId: getPostAuthorId(postToReport) || postToReport.authorDisplayName || postToReport.author || null,
       reason,
       createdAt: createdAt.toISOString(),
     };
@@ -925,22 +936,11 @@ export default function CommunityPage({
               />
 
               <section className="community-feed-controls" aria-label="Community feed controls">
-                <div className="community-feed-tabs" role="tablist" aria-label="Community feed filters">
-                  {FEED_TABS.map((tab) => (
-                    <button
-                      aria-controls="community-feed-panel"
-                      aria-selected={activeFeedTab === tab.id}
-                      className={activeFeedTab === tab.id ? 'is-active' : undefined}
-                      id={`community-feed-tab-${tab.id}`}
-                      key={tab.id}
-                      onClick={() => setActiveFeedTab(tab.id)}
-                      role="tab"
-                      type="button"
-                    >
-                      {tab.label}
-                    </button>
-                  ))}
-                </div>
+                <FeedTabs
+                  activeTab={activeFeedTab}
+                  onTabChange={setActiveFeedTab}
+                  tabs={FEED_TABS}
+                />
 
                 <button
                   aria-label="Refresh local community feed"
@@ -996,13 +996,13 @@ export default function CommunityPage({
                       commentFeedback={commentFeedbackByPostId[post.id]}
                       isCommentsExpanded={Boolean(expandedCommentPostIds[post.id])}
                       isCommentComposerOpen={Boolean(openCommentPostIds[post.id])}
-                      isFollowingAuthor={followedAuthors.includes(post.author)}
+                      isFollowingAuthor={isAuthorFollowed(post, followedAuthors)}
                       isOwnPost={isPostOwnedByCurrentUser(post, localUserId, communityDisplayName || 'Current User')}
                       key={post.id}
                       onCommentTextChange={(value) => handleCommentInputChange(post.id, value)}
                       onDeletePost={() => handleDeletePostRequest(post.id)}
                       onEditPost={() => handleEditPostRequest(post.id)}
-                      onFollowAuthor={handleToggleFollowAuthor}
+                      onFollowAuthor={() => handleToggleFollowAuthor(post)}
                       onOpenCommentComposer={() => handleOpenCommentComposer(post.id)}
                       onReportPost={() => handleReportPostRequest(post.id)}
                       onDeleteComment={(commentId) => handleDeleteComment(post.id, commentId)}

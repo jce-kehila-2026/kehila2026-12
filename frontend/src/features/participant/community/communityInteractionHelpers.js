@@ -68,10 +68,17 @@ export const createCommunityId = (prefix, createdAt = new Date()) => (
     : `${prefix}-${createdAt.getTime()}`
 );
 
-export const createPostModel = ({ author, content, isAnonymous, attachment = null }) => {
+export const createPostModel = ({
+  author,
+  authorId = null,
+  content,
+  isAnonymous,
+  attachment = null,
+}) => {
   const createdAt = new Date();
   const postModel = createCommunityPostModel({
     id: createCommunityId('community-post', createdAt),
+    authorId,
     authorDisplayName: author,
     isAnonymous,
     content,
@@ -112,6 +119,7 @@ export const createCommentModel = (content, author = 'Current User', authorId = 
   return {
     ...commentModel,
     author,
+    userId: authorId,
     initials: 'CU',
     isLocalCurrentUser: true,
     time: formatRelativeCommunityTime(createdAt),
@@ -132,7 +140,8 @@ const normalizeComment = (comment, index) => {
   return {
     ...comment,
     id: comment?.id ?? `stored-comment-${index + 1}`,
-    authorId: comment?.authorId ?? null,
+    authorId: comment?.authorId ?? comment?.userId ?? null,
+    userId: comment?.userId ?? comment?.authorId ?? null,
     author: comment?.author ?? 'Current User',
     authorDisplayName: comment?.authorDisplayName ?? comment?.author ?? 'Current User',
     content,
@@ -223,6 +232,7 @@ const normalizeStoredPost = (post, index) => {
   return {
     ...post,
     id: post?.id ?? `stored-post-${index + 1}`,
+    authorId: post?.authorId ?? post?.userId ?? post?.ownerId ?? null,
     author: post?.author ?? 'Current User',
     authorDisplayName: post?.authorDisplayName ?? post?.author ?? 'Current User',
     content,
@@ -255,6 +265,7 @@ export const normalizeCommunityPosts = (posts) => posts.map(normalizeStoredPost)
 
 export const serializeCommunityPost = (post) => ({
   id: post.id,
+  authorId: post.authorId ?? null,
   author: post.author,
   authorDisplayName: post.authorDisplayName ?? post.author,
   content: post.content ?? post.body ?? '',
@@ -281,6 +292,7 @@ export const serializeCommunityPost = (post) => ({
   comments: Array.isArray(post.comments) ? post.comments.map((comment) => ({
     id: comment.id,
     authorId: comment.authorId ?? null,
+    userId: comment.userId ?? comment.authorId ?? null,
     author: comment.author,
     authorDisplayName: comment.authorDisplayName ?? comment.author,
     content: comment.content ?? comment.text ?? '',

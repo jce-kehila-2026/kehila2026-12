@@ -1,4 +1,5 @@
 import { formatRelativeCommunityTime } from '../communityInteractionHelpers';
+import { isCommentOwnedByCurrentUser } from '../utils/communityModerationUtils';
 
 const COMMENTS_PREVIEW_LIMIT = 2;
 
@@ -13,16 +14,6 @@ const getCommentInitials = (comment = {}) => {
     .join('')
     .slice(0, 2)
     .toUpperCase() || 'CU';
-};
-
-const isOwnComment = (comment = {}, localUserId, localUserName) => {
-  if (localUserId && comment.authorId === localUserId) return true;
-  if (comment.isLocalCurrentUser) return true;
-  if (!comment.authorId && localUserName) {
-    return [comment.author, comment.authorDisplayName].some((name) => name === localUserName);
-  }
-
-  return false;
 };
 
 export default function CommentsPreview({
@@ -50,7 +41,7 @@ export default function CommentsPreview({
       <div className="comments-preview__list">
         {visibleComments.map((comment) => {
           const commentAuthor = comment.authorDisplayName ?? comment.author ?? 'Community member';
-          const canDeleteComment = isOwnComment(comment, localUserId, localUserName);
+          const canDeleteComment = isCommentOwnedByCurrentUser(comment, localUserId, localUserName);
           const commentTime = formatRelativeCommunityTime(comment.createdAt, relativeTimeNow);
 
           return (
