@@ -81,6 +81,7 @@ import DeletePostModal from './components/DeletePostModal';
 import EditPostModal from './components/EditPostModal';
 import FeedTabs from './components/FeedTabs';
 import ReportPostModal from './components/ReportPostModal';
+import './styles/community.css';
 
 export default function CommunityPage({
   personalDetails = {},
