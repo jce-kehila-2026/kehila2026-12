@@ -72,6 +72,9 @@ import CommunityGuidelinesModal from './components/CommunityGuidelinesModal';
 import CommunityPostCard from './components/CommunityPostCard';
 import CommunityStreakCard from './components/CommunityStreakCard';
 import CreatePostCard from './components/CreatePostCard';
+import DeletePostModal from './components/DeletePostModal';
+import EditPostModal from './components/EditPostModal';
+import ReportPostModal from './components/ReportPostModal';
 
 export default function CommunityPage({
   personalDetails = {},
@@ -80,6 +83,8 @@ export default function CommunityPage({
 }) {
   const postInputRef = useRef(null);
   const reportModalRef = useRef(null);
+  const deletePostModalRef = useRef(null);
+  const editPostModalRef = useRef(null);
   const [initialStreakState] = useState(getInitialStreakState);
   const [showGuidelinesModal, setShowGuidelinesModal] = useState(
     () => getAcceptedGuidelinesVersion() !== COMMUNITY_GUIDELINES_VERSION,
@@ -105,6 +110,10 @@ export default function CommunityPage({
   const [confirmingReportPostId, setConfirmingReportPostId] = useState(null);
   const [selectedReportReason, setSelectedReportReason] = useState('');
   const [reportReasonError, setReportReasonError] = useState('');
+  const [confirmingDeletePostId, setConfirmingDeletePostId] = useState(null);
+  const [editingPostId, setEditingPostId] = useState(null);
+  const [editPostText, setEditPostText] = useState('');
+  const [editPostError, setEditPostError] = useState('');
   const [expandedCommentPostIds, setExpandedCommentPostIds] = useState({});
   const [openCommentPostIds, setOpenCommentPostIds] = useState({});
   const [followedAuthors, setFollowedAuthors] = useState(loadStoredFollowedAuthors);
@@ -193,6 +202,22 @@ export default function CommunityPage({
       reportModalRef.current?.focus();
     }, 0);
   }, [confirmingReportPostId]);
+
+  useEffect(() => {
+    if (!confirmingDeletePostId) return;
+
+    window.setTimeout(() => {
+      deletePostModalRef.current?.focus();
+    }, 0);
+  }, [confirmingDeletePostId]);
+
+  useEffect(() => {
+    if (!editingPostId) return;
+
+    window.setTimeout(() => {
+      editPostModalRef.current?.focus();
+    }, 0);
+  }, [editingPostId]);
 
   useEffect(() => {
     saveStoredCommunityPosts(posts.map(serializeCommunityPost));
@@ -443,6 +468,11 @@ export default function CommunityPage({
   const handleReportPostRequest = (postId) => {
     const postToReport = posts.find((post) => post.id === postId);
 
+    if (isPostOwnedByCurrentUser(postToReport, localUserId, communityDisplayName || 'Current User')) {
+      setConfirmingReportPostId(null);
+      return;
+    }
+
     if (isPostReportedByUser(postToReport, localUserId)) {
       setConfirmingReportPostId(null);
       setReportFeedbackByPostId((currentFeedback) => ({
@@ -505,6 +535,13 @@ export default function CommunityPage({
     const postToReport = posts.find((post) => post.id === postId);
 
     if (!postToReport) return;
+
+    if (isPostOwnedByCurrentUser(postToReport, localUserId, communityDisplayName || 'Current User')) {
+      setConfirmingReportPostId(null);
+      setSelectedReportReason('');
+      setReportReasonError('');
+      return;
+    }
 
     if (isPostReportedByUser(postToReport, localUserId)) {
       setConfirmingReportPostId(null);
@@ -680,71 +717,161 @@ export default function CommunityPage({
     }));
   };
 
+  const handleEditPostRequest = (postId) => {
+    const postToEdit = posts.find((post) => post.id === postId);
+
+    if (!isPostOwnedByCurrentUser(postToEdit, localUserId, communityDisplayName || 'Current User')) return;
+
+    setEditingPostId(postId);
+    setEditPostText(postToEdit.content ?? postToEdit.body ?? '');
+    setEditPostError('');
+  };
+
+  const handleCancelEditPost = () => {
+    setEditingPostId(null);
+    setEditPostText('');
+    setEditPostError('');
+  };
+
+  const handleEditPostModalBackdropClick = (event) => {
+    if (event.target === event.currentTarget) {
+      handleCancelEditPost();
+    }
+  };
+
+  const handleEditPostModalKeyDown = (event) => {
+    if (event.key === 'Escape') {
+      handleCancelEditPost();
+    }
+  };
+
+  const handleEditPostTextChange = (value) => {
+    setEditPostText(value);
+    if (editPostError) setEditPostError('');
+  };
+
+  const handleEditPostSubmit = (event) => {
+    event.preventDefault();
+
+    const postToEdit = posts.find((post) => post.id === editingPostId);
+    if (!postToEdit) return;
+
+    if (!isPostOwnedByCurrentUser(postToEdit, localUserId, communityDisplayName || 'Current User')) {
+      handleCancelEditPost();
+      return;
+    }
+
+    const content = editPostText.trim();
+
+    if (!content && !postToEdit.attachment) {
+      setEditPostError('Please write something or keep an attachment before saving.');
+      return;
+    }
+
+    const updatedAt = new Date().toISOString();
+
+    setPosts((currentPosts) => currentPosts.map((post) => {
+      if (post.id !== editingPostId) return post;
+
+      return {
+        ...post,
+        content,
+        body: content,
+        updatedAt,
+      };
+    }));
+    handleCancelEditPost();
+  };
+
+  const handleDeletePostRequest = (postId) => {
+    const postToDelete = posts.find((post) => post.id === postId);
+
+    if (!isPostOwnedByCurrentUser(postToDelete, localUserId, communityDisplayName || 'Current User')) return;
+
+    setConfirmingDeletePostId(postId);
+  };
+
+  const handleCancelDeletePost = () => {
+    setConfirmingDeletePostId(null);
+  };
+
+  const handleDeletePostModalBackdropClick = (event) => {
+    if (event.target === event.currentTarget) {
+      handleCancelDeletePost();
+    }
+  };
+
+  const handleDeletePostModalKeyDown = (event) => {
+    if (event.key === 'Escape') {
+      handleCancelDeletePost();
+    }
+  };
+
+  const handleConfirmDeletePost = () => {
+    const postToDelete = posts.find((post) => post.id === confirmingDeletePostId);
+
+    if (!isPostOwnedByCurrentUser(postToDelete, localUserId, communityDisplayName || 'Current User')) {
+      handleCancelDeletePost();
+      return;
+    }
+
+    const updatedAt = new Date().toISOString();
+
+    setPosts((currentPosts) => currentPosts.map((post) => {
+      if (post.id !== confirmingDeletePostId) return post;
+
+      return {
+        ...post,
+        status: COMMUNITY_POST_STATUS.deleted,
+        updatedAt,
+      };
+    }));
+    handleCancelDeletePost();
+  };
+
   const reportModal = confirmingReportPostId ? (
-    <div
-      className="community-report-modal"
-      role="presentation"
-      onMouseDown={handleReportModalBackdropClick}
-    >
-      <form
-        aria-labelledby="community-report-title"
-        className="community-report-modal__panel"
-        onKeyDown={handleReportModalKeyDown}
-        onSubmit={handleReportSubmit}
-        ref={reportModalRef}
-        role="dialog"
-        tabIndex={-1}
-      >
-        <header className="community-report-modal__header">
-          <div>
-            <h3 id="community-report-title">Report post</h3>
-            <p>Choose a reason for reporting this post.</p>
-          </div>
-          <button
-            aria-label="Close report form"
-            className="community-report-modal__close"
-            type="button"
-            onClick={handleCancelReportPost}
-          >
-            ×
-          </button>
-        </header>
-        <div className="community-report-modal__reasons" role="radiogroup" aria-label="Report reason">
-          {REPORT_REASON_OPTIONS.map((reason) => (
-            <label
-              className={`community-report-modal__reason${selectedReportReason === reason ? ' is-selected' : ''}`}
-              key={reason}
-            >
-              <input
-                checked={selectedReportReason === reason}
-                name="community-report-reason"
-                type="radio"
-                value={reason}
-                onChange={() => handleReportReasonChange(reason)}
-              />
-              <span>{reason}</span>
-            </label>
-          ))}
-        </div>
-        {reportReasonError && (
-          <p className="community-report-modal__error" role="alert">{reportReasonError}</p>
-        )}
-        <div className="community-report-modal__actions">
-          <button className="community-report-modal__cancel" type="button" onClick={handleCancelReportPost}>
-            Cancel
-          </button>
-          <button className="community-report-modal__submit" disabled={!selectedReportReason} type="submit">
-            Submit report
-          </button>
-        </div>
-      </form>
-    </div>
+    <ReportPostModal
+      onBackdropMouseDown={handleReportModalBackdropClick}
+      onCancel={handleCancelReportPost}
+      onKeyDown={handleReportModalKeyDown}
+      onReasonChange={handleReportReasonChange}
+      onSubmit={handleReportSubmit}
+      reasonError={reportReasonError}
+      reasons={REPORT_REASON_OPTIONS}
+      reportModalRef={reportModalRef}
+      selectedReason={selectedReportReason}
+    />
+  ) : null;
+
+  const editPostModal = editingPostId ? (
+    <EditPostModal
+      editModalRef={editPostModalRef}
+      error={editPostError}
+      onBackdropMouseDown={handleEditPostModalBackdropClick}
+      onCancel={handleCancelEditPost}
+      onChange={handleEditPostTextChange}
+      onKeyDown={handleEditPostModalKeyDown}
+      onSubmit={handleEditPostSubmit}
+      postText={editPostText}
+    />
+  ) : null;
+
+  const deletePostModal = confirmingDeletePostId ? (
+    <DeletePostModal
+      deleteModalRef={deletePostModalRef}
+      onBackdropMouseDown={handleDeletePostModalBackdropClick}
+      onCancel={handleCancelDeletePost}
+      onConfirm={handleConfirmDeletePost}
+      onKeyDown={handleDeletePostModalKeyDown}
+    />
   ) : null;
 
   return (
     <section className="community-page" aria-labelledby="community-page-title">
       {showGuidelinesModal && <CommunityGuidelinesModal onContinue={handleGuidelinesContinue} />}
       {reportModal && typeof document !== 'undefined' ? createPortal(reportModal, document.body) : reportModal}
+      {editPostModal && typeof document !== 'undefined' ? createPortal(editPostModal, document.body) : editPostModal}
+      {deletePostModal && typeof document !== 'undefined' ? createPortal(deletePostModal, document.body) : deletePostModal}
 
       <header className="community-page__header">
         <div className="community-page__header-copy">
@@ -873,6 +1000,8 @@ export default function CommunityPage({
                       isOwnPost={isPostOwnedByCurrentUser(post, localUserId, communityDisplayName || 'Current User')}
                       key={post.id}
                       onCommentTextChange={(value) => handleCommentInputChange(post.id, value)}
+                      onDeletePost={() => handleDeletePostRequest(post.id)}
+                      onEditPost={() => handleEditPostRequest(post.id)}
                       onFollowAuthor={handleToggleFollowAuthor}
                       onOpenCommentComposer={() => handleOpenCommentComposer(post.id)}
                       onReportPost={() => handleReportPostRequest(post.id)}

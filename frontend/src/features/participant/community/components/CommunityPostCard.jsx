@@ -22,6 +22,8 @@ export default function CommunityPostCard({
   localUserName,
   onCommentTextChange,
   onDeleteComment,
+  onDeletePost,
+  onEditPost,
   onFollowAuthor,
   onOpenCommentComposer,
   onReportPost,
@@ -44,6 +46,7 @@ export default function CommunityPostCard({
   const postBody = post.content ?? post.body;
   const postTime = formatRelativeCommunityTime(post.createdAt, relativeTimeNow);
   const commentFeedbackId = commentFeedback ? `comment-feedback-${post.id}` : undefined;
+  const hasPostMenuActions = true;
   const handleCommentSubmit = (event) => {
     event.preventDefault();
     onSubmitComment();
@@ -104,9 +107,21 @@ export default function CommunityPostCard({
   };
 
   const handleReportFromMenu = () => {
-    if (isReportedByCurrentUser) return;
+    if (isOwnPost || isReportedByCurrentUser) return;
     setIsPostMenuOpen(false);
     onReportPost();
+  };
+
+  const handleEditFromMenu = () => {
+    if (!isOwnPost) return;
+    setIsPostMenuOpen(false);
+    onEditPost();
+  };
+
+  const handleDeleteFromMenu = () => {
+    if (!isOwnPost) return;
+    setIsPostMenuOpen(false);
+    onDeletePost();
   };
 
   return (
@@ -144,27 +159,51 @@ export default function CommunityPostCard({
         <div className="community-page-post__menu" ref={postMenuRef} onKeyDown={handlePostMenuKeyDown}>
           <button
             aria-controls={postMenuId}
-            aria-expanded={isPostMenuOpen}
+            aria-expanded={hasPostMenuActions && isPostMenuOpen}
             aria-haspopup="menu"
             aria-label={`Open actions for ${post.author}'s post`}
             className="community-page-post__more"
             type="button"
-            onClick={() => setIsPostMenuOpen((isOpen) => !isOpen)}
+            onClick={() => {
+              if (!hasPostMenuActions) return;
+              setIsPostMenuOpen((isOpen) => !isOpen);
+            }}
           >
             <MoreHorizOutlinedIcon fontSize="small" />
           </button>
-          {isPostMenuOpen && (
+          {hasPostMenuActions && isPostMenuOpen && (
             <div className="community-page-post__menu-popover" id={postMenuId} role="menu">
-              <button
-                aria-describedby={reportFeedbackId}
-                className="community-page-post__menu-item"
-                disabled={isReportedByCurrentUser}
-                onClick={handleReportFromMenu}
-                role="menuitem"
-                type="button"
-              >
-                {isReportedByCurrentUser ? 'Reported' : 'Report post'}
-              </button>
+              {isOwnPost ? (
+                <>
+                  <button
+                    className="community-page-post__menu-item"
+                    onClick={handleEditFromMenu}
+                    role="menuitem"
+                    type="button"
+                  >
+                    Edit post
+                  </button>
+                  <button
+                    className="community-page-post__menu-item"
+                    onClick={handleDeleteFromMenu}
+                    role="menuitem"
+                    type="button"
+                  >
+                    Delete post
+                  </button>
+                </>
+              ) : (
+                <button
+                  aria-describedby={reportFeedbackId}
+                  className="community-page-post__menu-item"
+                  disabled={isReportedByCurrentUser}
+                  onClick={handleReportFromMenu}
+                  role="menuitem"
+                  type="button"
+                >
+                  {isReportedByCurrentUser ? 'Reported' : 'Report post'}
+                </button>
+              )}
             </div>
           )}
         </div>
