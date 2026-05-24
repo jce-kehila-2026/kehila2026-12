@@ -57,11 +57,15 @@ import {
   saveStoredFollowedAuthors,
 } from './services/communityStorageService';
 import {
-  addCommunityPostComment,
   createCommunityPost,
+  createCommunityComment,
+  deleteCommunityComment,
+  deleteCommunityPost,
   getCommunityPosts,
   reportCommunityPost,
   toggleCommunityPostLike,
+  toggleCommunityPostSupport,
+  updateCommunityPost,
 } from './services/communityService';
 import { COMMUNITY_POST_STATUS } from './communityModels';
 import {
@@ -420,6 +424,10 @@ export default function CommunityPage({
     const postToUpdate = posts.find((post) => post.id === postId);
     const shouldIncreaseStreak = postToUpdate ? !postToUpdate.isSupported : false;
 
+    toggleCommunityPostSupport(postId, localUserId).catch(() => {
+      // Keep the optimistic local UI update; the local adapter has no remote side effect yet.
+    });
+
     setPosts((currentPosts) => currentPosts.map((post) => {
       if (post.id !== postId) return post;
 
@@ -659,7 +667,7 @@ export default function CommunityPage({
     let newComment;
 
     try {
-      newComment = await addCommunityPostComment(postId, {
+      newComment = await createCommunityComment(postId, {
         authorId: localUserId,
         author: communityDisplayName || 'Current User',
         authorDisplayName: communityDisplayName || 'Current User',
@@ -766,6 +774,10 @@ export default function CommunityPage({
       return;
     }
 
+    deleteCommunityComment(postId, commentId).catch(() => {
+      // Keep the existing local-only delete flow responsive.
+    });
+
     setPosts((currentPosts) => currentPosts.map((post) => {
       if (post.id !== postId) return post;
 
@@ -834,6 +846,14 @@ export default function CommunityPage({
 
     const updatedAt = new Date().toISOString();
 
+    updateCommunityPost(editingPostId, {
+      content,
+      body: content,
+      updatedAt,
+    }).catch(() => {
+      // Keep the existing local-only edit flow responsive.
+    });
+
     setPosts((currentPosts) => currentPosts.map((post) => {
       if (post.id !== editingPostId) return post;
 
@@ -880,6 +900,10 @@ export default function CommunityPage({
     }
 
     const updatedAt = new Date().toISOString();
+
+    deleteCommunityPost(confirmingDeletePostId).catch(() => {
+      // Keep the existing local-only delete flow responsive.
+    });
 
     setPosts((currentPosts) => currentPosts.map((post) => {
       if (post.id !== confirmingDeletePostId) return post;
