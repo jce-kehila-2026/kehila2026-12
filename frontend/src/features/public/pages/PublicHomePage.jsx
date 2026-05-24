@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import PublicNavbar from '../components/PublicNavbar';
 import HeroSection from '../components/HeroSection';
-import StatisticsSection from '../components/StatisticsSection';
 import LearnTogetherSection from '../components/LearnTogetherSection';
 import InspirationStoriesSection from '../components/InspirationStoriesSection';
 import ArticlesPreviewSection from '../components/ArticlesPreviewSection';
@@ -108,9 +107,14 @@ function PublicHomePageContent() {
         {!loading && !content ? (
           <EmptyState message={t('emptyHomepage')} />
         ) : null}
-        <HeroSection hero={publicHomeDoc.hero} loading={loading} onJoinClick={() => setIsJoinModalOpen(true)} />
+        <HeroSection
+          hero={publicHomeDoc.hero}
+          statistics={content.statistics}
+          isLoading={loading}
+          hasError={Boolean(error)}
+          onJoinClick={() => setIsJoinModalOpen(true)}
+        />
         <LearnTogetherSection learnTogether={publicHomeDoc.learnTogether} />
-        <StatisticsSection statistics={content.statistics} isLoading={loading} />
         <InspirationStoriesSection stories={publicHomeDoc.inspirationalStories} />
         <ArticlesPreviewSection coverage={publicHomeDoc.pressCoverage} />
         <EventsPreviewSection events={content.events} isLoading={loading} hasError={error} />

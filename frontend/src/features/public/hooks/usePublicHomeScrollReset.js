@@ -37,10 +37,14 @@ export default function usePublicHomeScrollReset(containerRef, { resetAfterLoad 
     if (!resetAfterLoad || isLoading || hasAppliedPostLoadResetRef.current) return;
 
     hasAppliedPostLoadResetRef.current = true;
-    scrollToTopInstant();
-    const rafId = window.requestAnimationFrame(scrollToTopInstant);
 
-    return () => window.cancelAnimationFrame(rafId);
+    if (window.scrollY > 0) {
+      scrollToTopInstant();
+      const rafId = window.requestAnimationFrame(scrollToTopInstant);
+      return () => window.cancelAnimationFrame(rafId);
+    }
+
+    return undefined;
   }, [isLoading, resetAfterLoad]);
 
   useEffect(() => {
