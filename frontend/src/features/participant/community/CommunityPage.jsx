@@ -11,12 +11,8 @@ import {
   communitySupportSpaces,
 } from './communityMockData';
 import {
-  getDayDifference,
   getInitialCommunityPreferences,
   getInitialCommunityUserProfile,
-  getInitialStreakState,
-  getTodayKey,
-  isStreakAtRiskForDate,
   serializeCommunityPreferences,
   serializeCommunityUserProfile,
 } from './communityInteractionHelpers';
@@ -42,7 +38,6 @@ import {
 } from './utils/communityModerationUtils';
 import {
   saveStoredCommunityPreferences,
-  saveStoredCommunityStreak,
   saveStoredCommunityUserProfile,
 } from './services/communityStorageService';
 import {
@@ -66,6 +61,7 @@ import useCommunityComments from './hooks/useCommunityComments';
 import useCommunityFollows from './hooks/useCommunityFollows';
 import useCommunityPosts from './hooks/useCommunityPosts';
 import useCommunityReports from './hooks/useCommunityReports';
+import useCommunityStreak from './hooks/useCommunityStreak';
 import './styles/community.css';
 
 export default function CommunityPage({
@@ -78,7 +74,6 @@ export default function CommunityPage({
   const deletePostModalRef = useRef(null);
   const deleteCommentModalRef = useRef(null);
   const editPostModalRef = useRef(null);
-  const [initialStreakState] = useState(getInitialStreakState);
   const [showGuidelinesModal, setShowGuidelinesModal] = useState(
     () => getAcceptedGuidelinesVersion() !== COMMUNITY_GUIDELINES_VERSION,
   );
@@ -98,11 +93,6 @@ export default function CommunityPage({
   const [editPostError, setEditPostError] = useState('');
   const [selectedSupportSpace, setSelectedSupportSpace] = useState(null);
   const [showFullGuidelinesModal, setShowFullGuidelinesModal] = useState(false);
-  const [communityStreakCount, setCommunityStreakCount] = useState(initialStreakState.streakCount);
-  const [lastActivityDate, setLastActivityDate] = useState(initialStreakState.lastActivityDate);
-  const [isCommunityStreakAtRisk, setIsCommunityStreakAtRisk] = useState(
-    () => isStreakAtRiskForDate(initialStreakState.lastActivityDate),
-  );
 
   useEffect(() => {
     if (!confirmingDeletePostId) return;
@@ -121,14 +111,6 @@ export default function CommunityPage({
   }, [editingPostId]);
 
   useEffect(() => {
-    saveStoredCommunityStreak({
-      streakCount: communityStreakCount,
-      lastActivityDate,
-      updatedAt: new Date(),
-    });
-  }, [communityStreakCount, lastActivityDate]);
-
-  useEffect(() => {
     if (!communityPreferences.birthdayVisibilityCompleted) return;
 
     saveStoredCommunityPreferences(serializeCommunityPreferences(communityPreferences));
@@ -139,20 +121,6 @@ export default function CommunityPage({
 
     saveStoredCommunityUserProfile(serializeCommunityUserProfile(communityUserProfile));
   }, [communityUserProfile]);
-
-  const registerCommunityActivity = () => {
-    const todayKey = getTodayKey();
-    const dayDifference = getDayDifference(lastActivityDate, todayKey);
-
-    if (!lastActivityDate || dayDifference === null || dayDifference >= 3) {
-      setCommunityStreakCount(1);
-    } else if (dayDifference === 1 || dayDifference === 2) {
-      setCommunityStreakCount((currentCount) => currentCount + 1);
-    }
-
-    setLastActivityDate(todayKey);
-    setIsCommunityStreakAtRisk(false);
-  };
 
   const handleGuidelinesContinue = () => {
     saveAcceptedGuidelinesVersion();
@@ -196,6 +164,11 @@ export default function CommunityPage({
   const handleCancelDeletePost = () => {
     setConfirmingDeletePostId(null);
   };
+  const {
+    communityStreakCount,
+    isCommunityStreakAtRisk,
+    registerCommunityActivity,
+  } = useCommunityStreak();
   const {
     posts,
     setPosts,
@@ -607,7 +580,7 @@ export default function CommunityPage({
 
         <aside className="community-right-sidebar" aria-label="Community sidebar">
           <CommunityStreakCard
-            isAtRisk={isCommunityStreakAtRisk || isStreakAtRiskForDate(lastActivityDate)}
+            isAtRisk={isCommunityStreakAtRisk}
             streakCount={communityStreakCount}
           />
           <BirthdayCard birthdayUsers={visibleBirthdayUsers} />
