@@ -572,8 +572,8 @@ export default function ParticipantHome({ initialView = 'home' }) {
           </button>
         </aside>
 
-        <section className="participant-main" id="home">
-          <header className="participant-topbar">
+        <section className={`participant-main${activeView === 'community' ? ' participant-main--community' : ''}`} id="home">
+          <header className={`participant-topbar${activeView === 'community' ? ' participant-header-sticky' : ''}`}>
             <div>
               <p>Good morning, {displayName}</p>
               <strong>{new Intl.DateTimeFormat('en', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }).format(new Date())}</strong>

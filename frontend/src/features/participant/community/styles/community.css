@@ -14,11 +14,15 @@
   --community-primary-text: #201033;
   --community-section-gap: 16px;
   display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
   gap: 22px;
+  height: 100%;
+  min-height: 0;
   min-width: 0;
   width: 100%;
   max-width: 1440px;
   margin: 0 auto;
+  overflow: hidden;
 }
 
 .community-guidelines-modal {
@@ -312,8 +316,10 @@
   justify-content: center;
   gap: 24px;
   align-items: start;
+  min-height: 0;
   min-width: 0;
   max-width: 100%;
+  overflow: hidden;
 }
 
 .community-main-feed,
@@ -322,7 +328,18 @@
 .community-resource-list {
   display: grid;
   gap: var(--community-section-gap);
+  align-content: start;
+  min-height: 0;
   min-width: 0;
+}
+
+.community-main-feed,
+.community-right-sidebar {
+  max-height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding-right: 4px;
+  scrollbar-gutter: stable;
 }
 
 .community-right-sidebar {
@@ -3171,8 +3188,23 @@
 }
 
 @media (max-width: 1320px) {
+  .community-page {
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+  }
+
   .community-page-shell {
     grid-template-columns: 1fr;
+    overflow: visible;
+  }
+
+  .community-main-feed,
+  .community-right-sidebar {
+    max-height: none;
+    overflow: visible;
+    padding-right: 0;
+    scrollbar-gutter: auto;
   }
 
   .community-right-sidebar {

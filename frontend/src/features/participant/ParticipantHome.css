@@ -205,11 +205,25 @@
   padding: 28px 32px 42px;
 }
 
+.participant-main--community {
+  height: 100vh;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  overflow: hidden;
+}
+
 .participant-topbar {
   align-items: center;
   justify-content: space-between;
   gap: 18px;
   margin-bottom: 24px;
+}
+
+.participant-header-sticky {
+  position: sticky;
+  top: 0;
+  z-index: 50;
 }
 
 .participant-topbar p,
@@ -1287,6 +1301,13 @@
     grid-template-columns: 94px minmax(0, 1fr);
   }
 
+  .participant-main--community {
+    height: auto;
+    min-height: 0;
+    display: block;
+    overflow: visible;
+  }
+
   .participant-sidebar {
     align-items: center;
     padding-inline: 14px;
@@ -1362,6 +1383,13 @@
 
   .participant-main {
     padding: 18px 14px 28px;
+  }
+
+  .participant-main--community {
+    height: auto;
+    min-height: 0;
+    display: block;
+    overflow: visible;
   }
 
   .participant-topbar {
