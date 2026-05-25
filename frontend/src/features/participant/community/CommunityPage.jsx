@@ -1,13 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import Diversity3OutlinedIcon from '@mui/icons-material/Diversity3Outlined';
-import MenuBookOutlinedIcon from '@mui/icons-material/MenuBookOutlined';
 import RefreshOutlinedIcon from '@mui/icons-material/RefreshOutlined';
-import {
-  communityActiveMembers,
-  communityResources,
-  communitySupportSpaces,
-} from './communityMockData';
 import {
   FEED_TABS,
   REPORT_REASON_OPTIONS,
@@ -59,12 +53,10 @@ export default function CommunityPage({
   const [postError, setPostError] = useState('');
   const [postSuccessMessage, setPostSuccessMessage] = useState('');
   const [activeFeedTab, setActiveFeedTab] = useState('all');
-  const [supportSpaceFeedback, setSupportSpaceFeedback] = useState('');
   const [confirmingDeletePostId, setConfirmingDeletePostId] = useState(null);
   const [editingPostId, setEditingPostId] = useState(null);
   const [editPostText, setEditPostText] = useState('');
   const [editPostError, setEditPostError] = useState('');
-  const [selectedSupportSpace, setSelectedSupportSpace] = useState(null);
   const {
     showGuidelinesModal,
     showFullGuidelinesModal,
@@ -93,11 +85,6 @@ export default function CommunityPage({
     setNewPostText(value);
     if (postError) setPostError('');
     if (postSuccessMessage) setPostSuccessMessage('');
-  };
-
-  const handleSupportSpaceView = (space) => {
-    setSelectedSupportSpace(space);
-    setSupportSpaceFeedback(`${space.title} details opened.`);
   };
 
   const {
@@ -493,71 +480,6 @@ export default function CommunityPage({
           />
           <BirthdayCard birthdayUsers={visibleBirthdayUsers} />
 
-          <section className="community-page-card community-active-widget" aria-labelledby="community-active-members-title">
-            <div className="community-page-card__heading">
-              <span className="community-page-card__icon">
-                <Diversity3OutlinedIcon />
-              </span>
-              <div>
-                <span>{communityActiveMembers.length} members</span>
-                <h2 id="community-active-members-title">Active Members</h2>
-              </div>
-            </div>
-            <div className="community-active-members" aria-label="Recently active community members">
-              {communityActiveMembers.map((member) => (
-                <article className="community-active-member" key={member.id}>
-                  <span aria-label={`${member.name}, ${member.status}`} className="community-active-member__avatar">
-                    {member.initials}
-                  </span>
-                  <div>
-                    <strong>{member.name}</strong>
-                    <small>{member.status}</small>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </section>
-
-          <section className="community-page-card community-support-spaces-widget" aria-labelledby="community-support-spaces-title">
-            <div className="community-page-card__heading">
-              <span className="community-page-card__icon">
-                <Diversity3OutlinedIcon />
-              </span>
-              <div>
-                <span>Spaces</span>
-                <h2 id="community-support-spaces-title">Support Spaces</h2>
-              </div>
-            </div>
-            <div className="community-support-space-list">
-              {communitySupportSpaces.map((space) => {
-                const Icon = space.icon;
-                return (
-                  <article className="community-support-space" key={space.title}>
-                    <span className="community-support-space__icon" aria-hidden="true">
-                      <Icon fontSize="small" />
-                    </span>
-                    <div>
-                      <strong>{space.title}</strong>
-                      <small>{space.meta}</small>
-                    </div>
-                    <button
-                      aria-label={`View ${space.title} details`}
-                      type="button"
-                      onClick={() => handleSupportSpaceView(space)}
-                    >
-                      View
-                    </button>
-                  </article>
-                );
-              })}
-            </div>
-            {supportSpaceFeedback && (
-              <p className="community-support-spaces-widget__feedback" aria-live="polite">
-                {supportSpaceFeedback}
-              </p>
-            )}
-          </section>
-
           {canUseCommunity && (
             <section className="community-page-card community-privacy-card">
               <div className="community-page-card__heading">
@@ -584,47 +506,8 @@ export default function CommunityPage({
             </section>
           )}
           <CommunityGuidelinesCard onReadFullGuidelines={handleReadFullGuidelines} />
-
-          <section className="community-page-card community-page-card--soft">
-            <div className="community-page-card__heading">
-              <span className="community-page-card__icon">
-                <MenuBookOutlinedIcon />
-              </span>
-              <div>
-                <span>Shared care</span>
-                <h2>Community Resources</h2>
-              </div>
-            </div>
-            <ul className="community-resource-list">
-              {communityResources.map((resource) => (
-                <li key={resource}>{resource}</li>
-              ))}
-            </ul>
-          </section>
-
         </aside>
       </div>
-      {selectedSupportSpace && (
-        <div className="community-local-modal" role="dialog" aria-modal="true" aria-labelledby="community-support-space-modal-title">
-          <section className="community-local-modal__panel">
-            <button
-              aria-label="Close support space details"
-              className="community-local-modal__close"
-              type="button"
-              onClick={() => setSelectedSupportSpace(null)}
-            >
-              ×
-            </button>
-            <span className="community-local-modal__eyebrow">Support Space</span>
-            <h2 id="community-support-space-modal-title">{selectedSupportSpace.title}</h2>
-            <p>{selectedSupportSpace.description}</p>
-            <strong>{selectedSupportSpace.schedule}</strong>
-            <button type="button" onClick={() => setSelectedSupportSpace(null)}>
-              Close
-            </button>
-          </section>
-        </div>
-      )}
       {showFullGuidelinesModal && (
         <CommunityGuidelinesModal
           mode="read"

@@ -75,50 +75,6 @@ export const supportCircles = [
   { title: 'Care Partners', meta: 'Shared encouragement', icon: VolunteerActivismOutlinedIcon },
 ];
 
-export const communityActiveMembers = [
-  { id: 'active-maya', name: 'Maya', initials: 'MA', status: 'Active now' },
-  { id: 'active-rina', name: 'Rina', initials: 'RI', status: 'Recently active' },
-  { id: 'active-leah', name: 'Leah', initials: 'LE', status: 'Recently active' },
-  { id: 'active-noa', name: 'Noa', initials: 'NO', status: 'Active now' },
-];
-
-export const communitySupportSpaces = [
-  {
-    title: 'New Members Circle',
-    meta: '12 members',
-    icon: Diversity3OutlinedIcon,
-    description: 'A gentle place for introductions, first questions, and finding your rhythm in the community.',
-    schedule: 'Local preview: Sundays at 18:00',
-  },
-  {
-    title: 'Mindful Mornings',
-    meta: 'Weekly reflection',
-    icon: SelfImprovementOutlinedIcon,
-    description: 'Short grounding prompts, breathing reminders, and calm check-ins to begin the day.',
-    schedule: 'Local preview: Weekday mornings',
-  },
-  {
-    title: 'Daily Encouragement',
-    meta: 'Open check-ins',
-    icon: VolunteerActivismOutlinedIcon,
-    description: 'A light daily space for sharing wins, asking for support, and sending encouragement.',
-    schedule: 'Local preview: Open all day',
-  },
-  {
-    title: 'Care Partners',
-    meta: 'Shared encouragement',
-    icon: VolunteerActivismOutlinedIcon,
-    description: 'Supportive notes for care partners and close family members walking alongside participants.',
-    schedule: 'Local preview: Thursdays at 19:00',
-  },
-];
-
-export const communityResources = [
-  'Conversation starters for asking for support',
-  'Gentle grounding practices from recent workshops',
-  'Community notes collected by the She-Na team',
-];
-
 export const birthdayMessages = [
   'Wishing you happiness and beautiful days ahead 💜',
   'Happy Birthday! Your journey inspires us 🌸',

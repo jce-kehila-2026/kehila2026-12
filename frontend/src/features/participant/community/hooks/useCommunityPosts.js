@@ -43,6 +43,7 @@ export default function useCommunityPosts({
   setEditingPostId,
 }) {
   const editFeedbackTimersRef = useRef({});
+  const postSuccessTimerRef = useRef(null);
   const [posts, setPosts] = useState(() => getInitialPosts(communityPosts));
   const [isRefreshingFeed, setIsRefreshingFeed] = useState(false);
   const [refreshFeedback, setRefreshFeedback] = useState('');
@@ -126,7 +127,26 @@ export default function useCommunityPosts({
 
   useEffect(() => () => {
     Object.values(editFeedbackTimersRef.current).forEach(window.clearTimeout);
+    if (postSuccessTimerRef.current) {
+      window.clearTimeout(postSuccessTimerRef.current);
+    }
   }, []);
+
+  const clearPostSuccessTimer = () => {
+    if (!postSuccessTimerRef.current) return;
+
+    window.clearTimeout(postSuccessTimerRef.current);
+    postSuccessTimerRef.current = null;
+  };
+
+  const setTemporaryPostSuccessMessage = (message) => {
+    clearPostSuccessTimer();
+    setPostSuccessMessage(message);
+    postSuccessTimerRef.current = window.setTimeout(() => {
+      setPostSuccessMessage('');
+      postSuccessTimerRef.current = null;
+    }, 2500);
+  };
 
   const clearEditFeedbackTimer = (postId) => {
     if (!editFeedbackTimersRef.current[postId]) return;
@@ -185,6 +205,7 @@ export default function useCommunityPosts({
     const content = newPostText.trim();
 
     if (!content && !postAttachment) {
+      clearPostSuccessTimer();
       setPostError('Please write something or add a local attachment before sharing.');
       setPostSuccessMessage('');
       return;
@@ -203,6 +224,7 @@ export default function useCommunityPosts({
         attachment: postAttachment,
       });
     } catch {
+      clearPostSuccessTimer();
       setPostError('Unable to publish your post right now.');
       setPostSuccessMessage('');
       return;
@@ -213,7 +235,7 @@ export default function useCommunityPosts({
     setPostAttachment(null);
     setPostAnonymously(false);
     setPostError('');
-    setPostSuccessMessage('Post published successfully.');
+    setTemporaryPostSuccessMessage('Post published successfully.');
     registerCommunityActivity();
   };
 
