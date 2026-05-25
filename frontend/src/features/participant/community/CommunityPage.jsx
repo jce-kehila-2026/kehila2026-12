@@ -108,6 +108,7 @@ export default function CommunityPage({
   };
   const {
     communityStreakCount,
+    lastActivityDate,
     isCommunityStreakAtRisk,
     registerCommunityActivity,
   } = useCommunityStreak();
@@ -473,6 +474,7 @@ export default function CommunityPage({
         <aside className="community-right-sidebar" aria-label="Community sidebar">
           <CommunityStreakCard
             isAtRisk={isCommunityStreakAtRisk}
+            lastActivityDate={lastActivityDate}
             streakCount={communityStreakCount}
           />
           <BirthdayCard birthdayUsers={visibleBirthdayUsers} />
