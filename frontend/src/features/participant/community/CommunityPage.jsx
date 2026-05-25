@@ -1,8 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import Diversity3OutlinedIcon from '@mui/icons-material/Diversity3Outlined';
-import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined';
-import LocalFloristOutlinedIcon from '@mui/icons-material/LocalFloristOutlined';
 import MenuBookOutlinedIcon from '@mui/icons-material/MenuBookOutlined';
 import RefreshOutlinedIcon from '@mui/icons-material/RefreshOutlined';
 import {
@@ -360,22 +358,12 @@ export default function CommunityPage({
   ) : null;
 
   return (
-    <section className="community-page" aria-labelledby="community-page-title">
+    <section className="community-page" aria-label="Community">
       {showGuidelinesModal && <CommunityGuidelinesModal onContinue={handleGuidelinesContinue} />}
       {reportModal && typeof document !== 'undefined' ? createPortal(reportModal, document.body) : reportModal}
       {editPostModal && typeof document !== 'undefined' ? createPortal(editPostModal, document.body) : editPostModal}
       {deletePostModal && typeof document !== 'undefined' ? createPortal(deletePostModal, document.body) : deletePostModal}
       {deleteCommentModal && typeof document !== 'undefined' ? createPortal(deleteCommentModal, document.body) : deleteCommentModal}
-
-      <header className="community-page__header">
-        <div className="community-page__header-copy">
-          <span className="community-page__header-icon" aria-hidden="true">
-            <FavoriteBorderOutlinedIcon />
-          </span>
-          <h1 id="community-page-title">Community</h1>
-          <p>Connect, share, and support each other in a safe space.</p>
-        </div>
-      </header>
 
       <div className="community-page-shell">
         <main className="community-main-feed" aria-label="Community feed">
@@ -443,16 +431,6 @@ export default function CommunityPage({
                   {refreshFeedback}
                 </p>
               )}
-
-              <section className="community-page-card community-page-card--intro">
-                <span className="community-page-card__icon">
-                  <LocalFloristOutlinedIcon />
-                </span>
-                <div>
-                  <h2>Today in the community</h2>
-                  <p>Stories, reflections, and encouragement from participants walking a similar path.</p>
-                </div>
-              </section>
 
               {sortedVisiblePosts.length === 0 ? (
                 <section
