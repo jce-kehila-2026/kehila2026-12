@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   createCommunityComment,
   deleteCommunityComment,
@@ -15,6 +15,7 @@ export default function useCommunityComments({
   registerCommunityActivity,
   updatePostById,
 }) {
+  const commentFeedbackTimersRef = useRef({});
   const [commentInputs, setCommentInputs] = useState({});
   const [commentFeedbackByPostId, setCommentFeedbackByPostId] = useState({});
   const [expandedCommentPostIds, setExpandedCommentPostIds] = useState({});
@@ -23,11 +24,19 @@ export default function useCommunityComments({
 
   const localUserName = communityDisplayName || 'Current User';
 
-  const handleCommentInputChange = (postId, value) => {
-    setCommentInputs((currentInputs) => ({
-      ...currentInputs,
-      [postId]: value,
-    }));
+  useEffect(() => () => {
+    Object.values(commentFeedbackTimersRef.current).forEach(window.clearTimeout);
+  }, []);
+
+  const clearCommentFeedbackTimer = (postId) => {
+    if (!commentFeedbackTimersRef.current[postId]) return;
+
+    window.clearTimeout(commentFeedbackTimersRef.current[postId]);
+    delete commentFeedbackTimersRef.current[postId];
+  };
+
+  const clearCommentFeedback = (postId) => {
+    clearCommentFeedbackTimer(postId);
     setCommentFeedbackByPostId((currentFeedback) => {
       if (!currentFeedback[postId]) return currentFeedback;
 
@@ -37,17 +46,36 @@ export default function useCommunityComments({
     });
   };
 
+  const setCommentFeedback = (postId, feedback, options = {}) => {
+    clearCommentFeedbackTimer(postId);
+    setCommentFeedbackByPostId((currentFeedback) => ({
+      ...currentFeedback,
+      [postId]: feedback,
+    }));
+
+    if (!options.autoHide) return;
+
+    commentFeedbackTimersRef.current[postId] = window.setTimeout(() => {
+      clearCommentFeedback(postId);
+    }, options.autoHide);
+  };
+
+  const handleCommentInputChange = (postId, value) => {
+    setCommentInputs((currentInputs) => ({
+      ...currentInputs,
+      [postId]: value,
+    }));
+    clearCommentFeedback(postId);
+  };
+
   const handleSubmitComment = async (postId) => {
     const content = (commentInputs[postId] ?? '').trim();
 
     if (!content) {
-      setCommentFeedbackByPostId((currentFeedback) => ({
-        ...currentFeedback,
-        [postId]: {
-          type: 'error',
-          message: 'Please write a comment before posting.',
-        },
-      }));
+      setCommentFeedback(postId, {
+        type: 'error',
+        message: 'Please write a comment before posting.',
+      });
       return;
     }
     if (!posts.some((post) => post.id === postId)) return;
@@ -62,13 +90,10 @@ export default function useCommunityComments({
         content,
       });
     } catch {
-      setCommentFeedbackByPostId((currentFeedback) => ({
-        ...currentFeedback,
-        [postId]: {
-          type: 'error',
-          message: 'Unable to add your comment right now.',
-        },
-      }));
+      setCommentFeedback(postId, {
+        type: 'error',
+        message: 'Unable to add your comment right now.',
+      });
       return;
     }
 
@@ -91,13 +116,10 @@ export default function useCommunityComments({
       ...currentPostIds,
       [postId]: false,
     }));
-    setCommentFeedbackByPostId((currentFeedback) => ({
-      ...currentFeedback,
-      [postId]: {
-        type: 'success',
-        message: 'Comment added successfully.',
-      },
-    }));
+    setCommentFeedback(postId, {
+      type: 'success',
+      message: 'Comment added.',
+    }, { autoHide: 2500 });
     registerCommunityActivity();
   };
 

@@ -2033,6 +2033,26 @@
   line-height: 1.55;
 }
 
+.community-comment-toast {
+  position: absolute;
+  right: 18px;
+  bottom: 18px;
+  z-index: 2;
+  max-width: min(240px, calc(100% - 36px));
+  margin: 0;
+  border: 1px solid rgba(40, 122, 62, 0.14);
+  border-radius: 999px;
+  background: rgba(245, 255, 249, 0.94);
+  color: #287a3e;
+  font-size: 0.76rem;
+  font-weight: 800;
+  line-height: 1.35;
+  padding: 7px 11px;
+  box-shadow: 0 14px 34px rgba(75, 19, 107, 0.12);
+  animation: community-comment-toast-in 180ms ease both;
+  backdrop-filter: blur(12px);
+}
+
 .community-page-post__attachment {
   margin: 0;
   overflow: hidden;
@@ -2512,6 +2532,18 @@
   color: #287a3e;
 }
 
+@keyframes community-comment-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .community-page-post--pink {
   background:
     radial-gradient(circle at 96% 8%, rgba(236, 22, 140, 0.12), transparent 9rem),
@@ -2936,6 +2968,12 @@
 .participant-home--dark .community-comment-form__feedback {
   border-color: rgba(236, 72, 153, 0.16);
   background: rgba(30, 41, 59, 0.78);
+}
+
+.participant-home--dark .community-comment-toast {
+  border-color: rgba(74, 222, 128, 0.18);
+  background: rgba(20, 83, 45, 0.88);
+  color: #bbf7d0;
 }
 
 .participant-home--dark .comments-preview__item strong {
