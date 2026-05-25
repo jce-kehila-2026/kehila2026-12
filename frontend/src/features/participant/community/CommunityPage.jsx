@@ -226,7 +226,13 @@ export default function CommunityPage({
     }, 0);
   }, [pendingCommentDeletion]);
 
-  const filteredPosts = filterPostsByTab(visiblePosts, activeFeedTab, followedAuthors);
+  const filteredPosts = filterPostsByTab(
+    visiblePosts,
+    activeFeedTab,
+    followedAuthors,
+    localUserId,
+    communityDisplayName || 'Current User',
+  );
   const sortedVisiblePosts = sortFeedPosts(filteredPosts);
   const emptyFeedMessage = getEmptyFeedMessage(activeFeedTab, followedAuthors.length);
 

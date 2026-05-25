@@ -1,4 +1,7 @@
-import { isAuthorFollowed } from './communityModerationUtils';
+import {
+  isAuthorFollowed,
+  isPostOwnedByCurrentUser,
+} from './communityModerationUtils';
 
 export const getPostCreatedAtTime = (post = {}) => {
   const createdAt = post.createdAt instanceof Date
@@ -9,8 +12,15 @@ export const getPostCreatedAtTime = (post = {}) => {
   return Number.isNaN(timestamp) ? 0 : timestamp;
 };
 
-export const filterPostsByTab = (posts, activeTab, followedAuthors = []) => posts.filter((post) => {
+export const filterPostsByTab = (
+  posts,
+  activeTab,
+  followedAuthors = [],
+  localUserId = '',
+  localUserName = '',
+) => posts.filter((post) => {
   if (activeTab === 'following') return isAuthorFollowed(post, followedAuthors);
+  if (activeTab === 'my-posts') return isPostOwnedByCurrentUser(post, localUserId, localUserName);
   if (activeTab === 'anonymous') return post.isAnonymous === true;
 
   return true;
@@ -45,6 +55,13 @@ export const getEmptyFeedMessage = (activeTab, followedAuthorsCount = 0) => {
     return {
       title: 'No anonymous posts yet',
       description: 'Anonymous shares will appear here when members choose that option.',
+    };
+  }
+
+  if (activeTab === 'my-posts') {
+    return {
+      title: 'No posts from you yet',
+      description: 'Posts you create, including anonymous shares, will appear here.',
     };
   }
 

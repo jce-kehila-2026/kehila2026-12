@@ -1,6 +1,7 @@
 export const FEED_TABS = [
   { id: 'all', label: 'All Posts' },
   { id: 'following', label: 'Following' },
+  { id: 'my-posts', label: 'My Posts' },
   { id: 'anonymous', label: 'Anonymous' },
 ];
 
