@@ -288,6 +288,7 @@ export const serializeCommunityPost = (post) => ({
     postOwnerId: report.postOwnerId ?? null,
     reason: report.reason ?? '',
     createdAt: report.createdAt instanceof Date ? report.createdAt.toISOString() : report.createdAt ?? null,
+    reportedAt: report.reportedAt instanceof Date ? report.reportedAt.toISOString() : report.reportedAt ?? report.createdAt ?? null,
   })) : [],
   hiddenByAdmin: Boolean(post.hiddenByAdmin),
   comments: Array.isArray(post.comments) ? post.comments.map((comment) => ({

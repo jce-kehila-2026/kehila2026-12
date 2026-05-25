@@ -1,5 +1,8 @@
 import { COMMUNITY_POST_STATUS } from '../constants/communityConstants';
+import { parseCommunityDate } from './communityDateUtils';
 import { normalizeCommunityName } from './communityProfileUtils';
+
+export const REPORTED_POST_HIDE_DELAY_MS = 20 * 1000;
 
 const normalizeCommunityId = (value) => (
   typeof value === 'string' ? value.trim() : ''
@@ -94,15 +97,46 @@ export const isAuthorFollowed = (post = {}, followedAuthors = []) => {
   return followedValues.includes(post.author);
 };
 
-export const isPostReportedByUser = (post = {}, localUserId) => {
-  if (!localUserId) return false;
+export const getPostReportForUser = (post = {}, localUserId) => {
+  const currentUserId = normalizeCommunityId(localUserId);
+  if (!currentUserId) return null;
 
   const reportedBy = Array.isArray(post.reportedBy) ? post.reportedBy : [];
-  if (reportedBy.includes(localUserId)) return true;
-
   const reports = Array.isArray(post.reports) ? post.reports : [];
-  return reports.some((report) => (
-    report?.reporterUserId === localUserId
-    || report?.userId === localUserId
+
+  const reportRecord = reports.find((report) => (
+    normalizeCommunityId(report?.reporterUserId) === currentUserId
+    || normalizeCommunityId(report?.userId) === currentUserId
   ));
+
+  if (reportRecord) return reportRecord;
+  if (reportedBy.includes(currentUserId)) return { reporterUserId: currentUserId, createdAt: null };
+
+  return null;
+};
+
+export const getPostReportedAtTime = (post = {}, localUserId) => {
+  const reportRecord = getPostReportForUser(post, localUserId);
+  if (!reportRecord) return null;
+
+  const parsedDate = parseCommunityDate(
+    reportRecord.reportedAt
+    ?? reportRecord.createdAt
+    ?? reportRecord.date
+  );
+
+  return parsedDate ? parsedDate.getTime() : null;
+};
+
+export const isPostReportedByUser = (post = {}, localUserId) => (
+  Boolean(getPostReportForUser(post, localUserId))
+);
+
+export const shouldHidePostReportedByUser = (post = {}, localUserId, now = Date.now()) => {
+  if (!isPostReportedByUser(post, localUserId)) return false;
+
+  const reportedAtTime = getPostReportedAtTime(post, localUserId);
+  if (reportedAtTime === null) return true;
+
+  return now - reportedAtTime >= REPORTED_POST_HIDE_DELAY_MS;
 };

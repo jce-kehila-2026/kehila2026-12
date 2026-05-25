@@ -99,13 +99,15 @@ export default function useCommunityReports({
     }
 
     const createdAt = new Date();
+    const createdAtIso = createdAt.toISOString();
     const reportRecord = {
       id: `community-report-${postId}-${localUserId}-${createdAt.getTime()}`,
       postId,
       reporterUserId: localUserId,
       postOwnerId: getPostAuthorId(postToReport) || postToReport.authorDisplayName || postToReport.author || null,
       reason,
-      createdAt: createdAt.toISOString(),
+      createdAt: createdAtIso,
+      reportedAt: createdAtIso,
     };
 
     try {

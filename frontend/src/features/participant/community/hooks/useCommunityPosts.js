@@ -15,7 +15,12 @@ import {
   updateCommunityPost,
 } from '../services/communityService';
 import { saveStoredCommunityPosts } from '../services/communityStorageService';
-import { isPostOwnedByCurrentUser } from '../utils/communityModerationUtils';
+import {
+  getPostReportedAtTime,
+  isPostOwnedByCurrentUser,
+  REPORTED_POST_HIDE_DELAY_MS,
+  shouldHidePostReportedByUser,
+} from '../utils/communityModerationUtils';
 
 const normalizeEditablePostText = (value = '') => String(value).replace(/\r\n/g, '\n').trim();
 
@@ -50,6 +55,7 @@ export default function useCommunityPosts({
   const [editFeedbackByPostId, setEditFeedbackByPostId] = useState({});
   const [refreshPulseKey, setRefreshPulseKey] = useState(0);
   const [relativeTimeNow, setRelativeTimeNow] = useState(() => new Date());
+  const [reportVisibilityNow, setReportVisibilityNow] = useState(() => Date.now());
 
   const localUserName = communityDisplayName || 'Current User';
 
@@ -125,6 +131,39 @@ export default function useCommunityPosts({
     saveStoredCommunityPosts(posts.map(serializeCommunityPost));
   }, [posts]);
 
+  useEffect(() => {
+    setReportVisibilityNow(Date.now());
+  }, [posts]);
+
+  useEffect(() => {
+    if (!localUserId) return undefined;
+
+    const nextHideDelay = posts.reduce((closestDelay, post) => {
+      if (!isCommunityContentVisible(post)) return closestDelay;
+      if (shouldHidePostReportedByUser(post, localUserId, reportVisibilityNow)) return closestDelay;
+
+      const reportedAtTime = getPostReportedAtTime(post, localUserId);
+      if (reportedAtTime === null) return closestDelay;
+
+      const delay = Math.max(
+        reportedAtTime + REPORTED_POST_HIDE_DELAY_MS - reportVisibilityNow,
+        0,
+      );
+
+      return closestDelay === null ? delay : Math.min(closestDelay, delay);
+    }, null);
+
+    if (nextHideDelay === null) return undefined;
+
+    const timerId = window.setTimeout(() => {
+      setReportVisibilityNow(Date.now());
+    }, nextHideDelay + 25);
+
+    return () => {
+      window.clearTimeout(timerId);
+    };
+  }, [posts, localUserId, reportVisibilityNow]);
+
   useEffect(() => () => {
     Object.values(editFeedbackTimersRef.current).forEach(window.clearTimeout);
     if (postSuccessTimerRef.current) {
@@ -182,6 +221,7 @@ export default function useCommunityPosts({
 
   const visiblePosts = posts
     .filter(isCommunityContentVisible)
+    .filter((post) => !shouldHidePostReportedByUser(post, localUserId, reportVisibilityNow))
     .map((post) => ({
       ...post,
       comments: Array.isArray(post.comments)
