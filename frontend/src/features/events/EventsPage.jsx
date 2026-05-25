@@ -703,7 +703,7 @@ function StatCard({ icon: Icon, label, value, tone }) {
   );
 }
 
-function EventCategoryButton({ title, active, color, onClick }) {
+function EventCategoryButton({ title, active, color, icon: Icon, onClick }) {
   return (
     <button
       className={`events-category-button events-category-button--${color}${active ? ' is-active' : ''}`}
@@ -711,6 +711,7 @@ function EventCategoryButton({ title, active, color, onClick }) {
       onClick={onClick}
       aria-pressed={active}
     >
+      {Icon && <Icon fontSize="small" />}
       <span>{title}</span>
     </button>
   );
@@ -727,8 +728,8 @@ function CardDescriptionToggle({ description }) {
         onClick={() => setIsOpen((current) => !current)}
         aria-expanded={isOpen}
       >
-        <span>{isOpen ? 'Show Less' : 'Read About It'}</span>
         <KeyboardArrowDownIcon fontSize="small" />
+        <span>About</span>
       </button>
 
       <div className={`events-card__description-panel${isOpen ? ' is-open' : ''}`}>
@@ -752,18 +753,14 @@ function EventCard({
     <article className={`events-card events-card--${event.tone}`}>
       <div className="events-card__image">
         <img src={event.imageUrl} alt="" />
+        <span className={`events-card__floating-action events-card__floating-action--${event.eventType}`} aria-label={typeLabel}>
+          <CalendarMonthIcon fontSize="small" />
+        </span>
       </div>
 
       <div className="events-card__body">
-        <div className="events-card__badges">
-          <span className={`events-card__type events-card__type--${event.eventType}`}>{typeLabel}</span>
-          <span className="events-card__status events-card__status--weekly">
-            Weekly
-          </span>
-        </div>
-
         <h3>{event.title}</h3>
-        <strong className="events-card__instructor">{event.providerSummary}</strong>
+        <strong className="events-card__instructor">with {event.providerSummary}</strong>
         <span className="events-card__schedule">
           <CalendarMonthIcon fontSize="small" />
           {event.weeklySchedule}
@@ -775,7 +772,8 @@ function EventCard({
           type="button"
           onClick={() => onOpenSessions(event.id)}
         >
-          {hasRegisteredSessions ? 'Choose Another Session' : 'View Available Dates'}
+          <CalendarMonthIcon fontSize="small" />
+          {hasRegisteredSessions ? 'Choose More Dates' : 'View Dates'}
           <ArrowForwardIcon fontSize="small" />
         </button>
       </div>
@@ -949,14 +947,12 @@ function RegisteredSessionCard({ session, onCancelRegistration }) {
     <article className={`events-card events-card--${session.tone}`}>
       <div className="events-card__image">
         <img src={session.imageUrl} alt="" />
+        <span className={`events-card__floating-action events-card__floating-action--${session.eventType}`} aria-label={typeLabel}>
+          <CalendarMonthIcon fontSize="small" />
+        </span>
       </div>
 
       <div className="events-card__body">
-        <div className="events-card__badges">
-          <span className={`events-card__type events-card__type--${session.eventType}`}>{typeLabel}</span>
-          <span className="events-card__status events-card__status--registered">Registered</span>
-        </div>
-
         <h3>{session.title}</h3>
         <strong className="events-card__instructor">With {session.providerName}</strong>
         <span className="events-card__schedule">
@@ -971,6 +967,7 @@ function RegisteredSessionCard({ session, onCancelRegistration }) {
           onClick={() => onCancelRegistration(session)}
           disabled={session.isRegistering}
         >
+          <CalendarMonthIcon fontSize="small" />
           {session.isRegistering ? 'Please wait...' : 'Cancel Registration'}
         </button>
       </div>
@@ -1313,16 +1310,19 @@ export default function EventsPage({ embedInDashboard = false }) {
         type: VIEW_WORKSHOPS,
         title: 'Workshops',
         color: 'lavender',
+        icon: VolunteerActivismIcon,
       },
       {
         type: VIEW_APPOINTMENTS,
         title: 'Appointments',
         color: 'blush',
+        icon: CalendarMonthIcon,
       },
       {
         type: VIEW_REGISTERED,
         title: 'Registered Events',
         color: 'peach',
+        icon: PersonIcon,
       },
     ];
   }, []);
