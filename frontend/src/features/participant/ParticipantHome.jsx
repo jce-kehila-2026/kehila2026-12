@@ -24,6 +24,7 @@ import { useNavigate } from 'react-router-dom';
 import CalendarPage from '../calendar/CalendarPage';
 import { getCalendarData } from '../calendar/calendarService';
 import AppointmentPage from '../appointments/pages/AppointmentPage';
+import EventsPage from '../events/EventsPage';
 import ProfilePage from '../profile/pages/ProfilePage';
 import { getParticipantData } from '../profile/services/participantService';
 import CommunityPage from './community/CommunityPage';
@@ -33,7 +34,7 @@ import { communityHighlights, moodOptions, recommendations, resourceGuides } fro
 import './ParticipantHome.css';
 
 const overviewIconMap = {
-  'Upcoming Workshops': EventAvailableOutlinedIcon,
+  'Upcoming Events': EventAvailableOutlinedIcon,
   'Registered Activities': TaskAltIcon,
   'Upcoming Appointments': FavoriteBorderOutlinedIcon,
   'Personal Notes': EditNoteOutlinedIcon,
@@ -42,8 +43,7 @@ const overviewIconMap = {
 const participantNavItems = [
   { key: 'home', label: 'Home', icon: HomeOutlinedIcon },
   { key: 'calendar', label: 'Calendar', icon: CalendarMonthOutlinedIcon },
-  { key: 'workshops', label: 'Workshops', icon: EventAvailableOutlinedIcon, path: '/events' },
-  { key: 'appointments', label: 'Appointments', icon: FavoriteBorderOutlinedIcon },
+  { key: 'events', label: 'Events', icon: EventAvailableOutlinedIcon, path: '/events' },
   { key: 'resources', label: 'Resources', icon: MenuBookOutlinedIcon },
   { key: 'community', label: 'Community', icon: Diversity3OutlinedIcon },
   { key: 'messages', label: 'Messages', icon: ChatBubbleOutlineOutlinedIcon, badge: 3 },
@@ -121,7 +121,7 @@ function HeroSection({ displayName, onExplore, onDailyMotivation }) {
         <p>Every small step counts. Your workshops, appointments, reminders, and care tools are ready for today.</p>
         <div className="dashboard-hero__actions">
           <button type="button" onClick={onExplore}>
-            Explore Workshops
+            Explore Events
             <ChevronRightOutlinedIcon fontSize="small" />
           </button>
           <button type="button" className="dashboard-hero__play" onClick={onDailyMotivation}>
@@ -360,7 +360,7 @@ function HomeDashboard({ displayName, navigate, setActiveView, overviewCards, sc
   };
   const handleOverviewAction = (card) => {
     if (card.target === 'events') navigate('/events');
-    if (card.target === 'appointments') setActiveView('appointments');
+    if (card.target === 'appointments') navigate('/events');
     if (card.target === 'calendar') setActiveView('calendar');
     if (card.target === 'resources') setActiveView('resources');
   };
@@ -401,6 +401,10 @@ export default function ParticipantHome({ initialView = 'home' }) {
     return 'there';
   }, [currentUser]);
   const displayInitials = displayName.slice(0, 2).toUpperCase();
+
+  useEffect(() => {
+    setActiveView(initialView);
+  }, [initialView]);
 
   useEffect(() => {
     let ignore = false;
@@ -511,7 +515,7 @@ export default function ParticipantHome({ initialView = 'home' }) {
     const upcomingWorkshopCount = upcomingItems.filter((item) => item.type !== 'appointment').length;
     const upcomingAppointmentCount = upcomingItems.filter((item) => item.type === 'appointment').length;
     const overviewCards = [
-      { label: 'Upcoming Workshops', value: String(upcomingWorkshopCount), tone: 'amber', action: 'View all', target: 'events' },
+      { label: 'Upcoming Events', value: String(upcomingWorkshopCount + upcomingAppointmentCount), tone: 'amber', action: 'View all', target: 'events' },
       { label: 'Registered Activities', value: String(dashboardData.events.length), tone: 'violet', action: 'View all', target: 'events' },
       { label: 'Upcoming Appointments', value: String(upcomingAppointmentCount), tone: 'rose', action: 'View all', target: 'appointments' },
       { label: 'Personal Notes', value: String(dashboardData.notes.length), tone: 'lavender', action: 'View all', target: 'calendar' },
@@ -546,7 +550,10 @@ export default function ParticipantHome({ initialView = 'home' }) {
                 <button
                   className={activeView === item.key ? 'is-active' : ''}
                   type="button"
-                  onClick={() => (item.path ? navigate(item.path) : setActiveView(item.key))}
+                  onClick={() => {
+                    setActiveView(item.key);
+                    if (item.path) navigate(item.path);
+                  }}
                   key={item.label}
                 >
                   <Icon fontSize="small" />
@@ -612,6 +619,12 @@ export default function ParticipantHome({ initialView = 'home' }) {
             </section>
           )}
 
+          {activeView === 'events' && (
+            <section className="participant-content participant-content--single participant-content--events">
+              <EventsPage embedInDashboard />
+            </section>
+          )}
+
           {activeView === 'workshops' && (
             <section className="participant-content participant-content--single">
               <div className="participant-panel participant-panel--wide">
@@ -655,7 +668,7 @@ export default function ParticipantHome({ initialView = 'home' }) {
             </section>
           )}
 
-          {!['home', 'calendar', 'workshops', 'appointments', 'resources', 'community', 'profile'].includes(activeView) && (
+          {!['home', 'calendar', 'events', 'workshops', 'appointments', 'resources', 'community', 'profile'].includes(activeView) && (
             <section className="participant-content participant-content--single">
               <div className="participant-panel participant-panel--wide participant-placeholder-view">
                 <MoodOutlinedIcon />

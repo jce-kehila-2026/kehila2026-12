@@ -22,7 +22,6 @@ import UserManagementPage from './features/admin/pages/UserManagementPage';
 import AuditLogPage from './features/admin/pages/AuditLogPage';
 import ProfilePage from './features/profile/pages/ProfilePage';
 import CalendarPage from './features/calendar/CalendarPage';
-import EventsPage from './features/events/EventsPage';
 import ParticipantHome from './features/participant/ParticipantHome';
 import AppointmentPage from './features/appointments/pages/AppointmentPage';
 import PublicHomePage from './features/public/pages/PublicHomePage';
@@ -78,7 +77,7 @@ function ThemedApp() {
               path="/events"
               element={
                 <AuthenticatedRoute>
-                  <EventsPage />
+                  <ParticipantHome initialView="events" />
                 </AuthenticatedRoute>
               }
             />
