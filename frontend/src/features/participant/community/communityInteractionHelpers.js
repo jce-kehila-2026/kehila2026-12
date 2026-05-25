@@ -11,6 +11,7 @@ import {
   getDayDifference,
   getTodayKey,
   isStreakAtRiskForDate,
+  normalizeCommunityDateKey,
   parseCommunityDate,
 } from './utils/communityDateUtils';
 import { isCommunityContentVisible } from './utils/communityModerationUtils';
@@ -36,6 +37,7 @@ export {
   getDayDifference,
   getTodayKey,
   isStreakAtRiskForDate,
+  normalizeCommunityDateKey,
   parseCommunityDate,
 } from './utils/communityDateUtils';
 export { isCommunityContentVisible } from './utils/communityModerationUtils';
@@ -335,15 +337,13 @@ export const getInitialPosts = (defaultPosts) => {
 export const getInitialStreakState = () => {
   const storedStreak = loadStoredCommunityStreak();
   const storedStreakCount = Number(storedStreak?.streakCount);
-  const storedLastActivityDate = storedStreak?.lastActivityDate;
+  const storedLastActivityDate = normalizeCommunityDateKey(storedStreak?.lastActivityDate);
 
   return createCommunityStreakModel({
     streakCount: Number.isFinite(storedStreakCount) && storedStreakCount >= 0
       ? storedStreakCount
       : INITIAL_COMMUNITY_STREAK_COUNT,
-    lastActivityDate: getDateKeyTimestamp(storedLastActivityDate) === null
-      ? INITIAL_LAST_ACTIVITY_DATE
-      : storedLastActivityDate,
+    lastActivityDate: storedLastActivityDate ?? INITIAL_LAST_ACTIVITY_DATE,
     updatedAt: storedStreak?.updatedAt ?? new Date(),
   });
 };
