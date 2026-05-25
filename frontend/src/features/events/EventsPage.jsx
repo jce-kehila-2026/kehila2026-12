@@ -1482,12 +1482,6 @@ export default function EventsPage({ embedInDashboard = false }) {
       </section>
 
         <section className="events-list-panel">
-          <div className="events-list-heading">
-            <div>
-              <h2>{sectionTitle}</h2>
-            </div>
-          </div>
-
           <div className="events-grid-shell">
             <section className="events-grid" aria-label={sectionTitle}>
               {activeView === VIEW_REGISTERED
