@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { communityPosts } from '../communityMockData';
 import {
   getInitialPosts,
@@ -16,6 +16,8 @@ import {
 } from '../services/communityService';
 import { saveStoredCommunityPosts } from '../services/communityStorageService';
 import { isPostOwnedByCurrentUser } from '../utils/communityModerationUtils';
+
+const normalizeEditablePostText = (value = '') => String(value).replace(/\r\n/g, '\n').trim();
 
 export default function useCommunityPosts({
   allowAnonymousPosting,
@@ -40,9 +42,11 @@ export default function useCommunityPosts({
   setEditPostText,
   setEditingPostId,
 }) {
+  const editFeedbackTimersRef = useRef({});
   const [posts, setPosts] = useState(() => getInitialPosts(communityPosts));
   const [isRefreshingFeed, setIsRefreshingFeed] = useState(false);
   const [refreshFeedback, setRefreshFeedback] = useState('');
+  const [editFeedbackByPostId, setEditFeedbackByPostId] = useState({});
   const [refreshPulseKey, setRefreshPulseKey] = useState(0);
   const [relativeTimeNow, setRelativeTimeNow] = useState(() => new Date());
 
@@ -120,6 +124,42 @@ export default function useCommunityPosts({
     saveStoredCommunityPosts(posts.map(serializeCommunityPost));
   }, [posts]);
 
+  useEffect(() => () => {
+    Object.values(editFeedbackTimersRef.current).forEach(window.clearTimeout);
+  }, []);
+
+  const clearEditFeedbackTimer = (postId) => {
+    if (!editFeedbackTimersRef.current[postId]) return;
+
+    window.clearTimeout(editFeedbackTimersRef.current[postId]);
+    delete editFeedbackTimersRef.current[postId];
+  };
+
+  const clearEditFeedback = (postId) => {
+    clearEditFeedbackTimer(postId);
+    setEditFeedbackByPostId((currentFeedback) => {
+      if (!currentFeedback[postId]) return currentFeedback;
+
+      const nextFeedback = { ...currentFeedback };
+      delete nextFeedback[postId];
+      return nextFeedback;
+    });
+  };
+
+  const setTemporaryEditFeedback = (postId, feedback) => {
+    if (!postId) return;
+
+    clearEditFeedbackTimer(postId);
+    setEditFeedbackByPostId((currentFeedback) => ({
+      ...currentFeedback,
+      [postId]: feedback,
+    }));
+
+    editFeedbackTimersRef.current[postId] = window.setTimeout(() => {
+      clearEditFeedback(postId);
+    }, 2500);
+  };
+
   const visiblePosts = posts
     .filter(isCommunityContentVisible)
     .map((post) => ({
@@ -128,6 +168,10 @@ export default function useCommunityPosts({
         ? post.comments.filter(isCommunityContentVisible)
         : [],
     }));
+  const editingPost = posts.find((post) => post.id === editingPostId);
+  const isEditPostUnchanged = editingPost
+    ? normalizeEditablePostText(editPostText) === normalizeEditablePostText(editingPost.content ?? editingPost.body ?? '')
+    : true;
 
   const updatePostById = (postId, updater) => {
     if (!postId || typeof updater !== 'function') return;
@@ -237,9 +281,10 @@ export default function useCommunityPosts({
     setEditingPostId(postId);
     setEditPostText(postToEdit.content ?? postToEdit.body ?? '');
     setEditPostError('');
+    clearEditFeedback(postId);
   };
 
-  const handleEditPostSubmit = (event) => {
+  const handleEditPostSubmit = async (event) => {
     event.preventDefault();
 
     const postToEdit = posts.find((post) => post.id === editingPostId);
@@ -252,6 +297,8 @@ export default function useCommunityPosts({
 
     const content = editPostText.trim();
 
+    if (isEditPostUnchanged) return;
+
     if (!content && !postToEdit.attachment) {
       setEditPostError('Please write something or keep an attachment before saving.');
       return;
@@ -259,13 +306,19 @@ export default function useCommunityPosts({
 
     const updatedAt = new Date().toISOString();
 
-    updateCommunityPost(editingPostId, {
-      content,
-      body: content,
-      updatedAt,
-    }).catch(() => {
-      // Keep the existing local-only edit flow responsive.
-    });
+    try {
+      await updateCommunityPost(editingPostId, {
+        content,
+        body: content,
+        updatedAt,
+      });
+    } catch {
+      setTemporaryEditFeedback(editingPostId, {
+        type: 'error',
+        message: 'Failed to update post.',
+      });
+      return;
+    }
 
     updatePostById(editingPostId, (post) => ({
       ...post,
@@ -273,6 +326,10 @@ export default function useCommunityPosts({
       body: content,
       updatedAt,
     }));
+    setTemporaryEditFeedback(editingPostId, {
+      type: 'success',
+      message: 'Post updated successfully.',
+    });
     onCancelEditPost();
   };
 
@@ -312,6 +369,8 @@ export default function useCommunityPosts({
     visiblePosts,
     isRefreshingFeed,
     refreshFeedback,
+    editFeedbackByPostId,
+    isEditPostUnchanged,
     refreshPulseKey,
     relativeTimeNow,
     refreshCommunityFeed,

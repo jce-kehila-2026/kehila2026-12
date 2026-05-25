@@ -32,6 +32,7 @@ export default function CommunityPostCard({
   onToggleCommentsExpanded,
   onToggleLike,
   post,
+  postEditFeedback,
   relativeTimeNow,
   reportFeedback,
 }) {
@@ -124,6 +125,15 @@ export default function CommunityPostCard({
           aria-live="polite"
         >
           {commentFeedback.message}
+        </p>
+      )}
+      {postEditFeedback?.type === 'success' && (
+        <p
+          className="community-comment-toast community-post-edit-toast"
+          role="status"
+          aria-live="polite"
+        >
+          {postEditFeedback.message}
         </p>
       )}
       {renderAttachment()}

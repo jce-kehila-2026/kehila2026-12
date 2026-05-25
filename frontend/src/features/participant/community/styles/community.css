@@ -2279,6 +2279,33 @@
   font-weight: 800;
 }
 
+.community-report-modal__feedback {
+  justify-self: start;
+  width: fit-content;
+  max-width: 100%;
+  margin: 0;
+  border: 1px solid rgba(123, 63, 161, 0.12);
+  border-radius: 999px;
+  background: rgba(255, 248, 252, 0.84);
+  font-size: 0.78rem;
+  font-weight: 800;
+  line-height: 1.35;
+  padding: 7px 10px;
+  animation: community-comment-toast-in 180ms ease both;
+}
+
+.community-report-modal__feedback--error {
+  border-color: rgba(180, 35, 90, 0.14);
+  background: rgba(255, 242, 249, 0.92);
+  color: #b4235a;
+}
+
+.community-report-modal__feedback--success {
+  border-color: rgba(40, 122, 62, 0.14);
+  background: rgba(245, 255, 249, 0.94);
+  color: #287a3e;
+}
+
 .community-report-modal__actions {
   display: flex;
   flex-direction: row;
@@ -2317,6 +2344,11 @@
   cursor: not-allowed;
   opacity: 0.52;
   background: rgba(123, 63, 161, 0.42);
+  box-shadow: none;
+}
+
+.community-report-modal__actions button:disabled:hover,
+.community-report-modal__actions button:disabled:focus-visible {
   box-shadow: none;
 }
 
@@ -2948,6 +2980,21 @@
 
 .participant-home--dark .community-report-modal__actions {
   border-top-color: rgba(236, 72, 153, 0.14);
+}
+
+.participant-home--dark .community-report-modal__feedback {
+  border-color: rgba(236, 72, 153, 0.16);
+  background: rgba(30, 41, 59, 0.78);
+}
+
+.participant-home--dark .community-report-modal__feedback--error {
+  border-color: rgba(244, 114, 182, 0.2);
+  color: #f9a8d4;
+}
+
+.participant-home--dark .community-report-modal__feedback--success {
+  border-color: rgba(74, 222, 128, 0.18);
+  color: #bbf7d0;
 }
 
 .participant-home--dark .community-page-post__reported-overlay {

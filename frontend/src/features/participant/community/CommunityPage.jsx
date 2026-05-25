@@ -135,6 +135,8 @@ export default function CommunityPage({
     visiblePosts,
     isRefreshingFeed,
     refreshFeedback,
+    editFeedbackByPostId,
+    isEditPostUnchanged,
     refreshPulseKey,
     relativeTimeNow,
     refreshCommunityFeed,
@@ -322,6 +324,8 @@ export default function CommunityPage({
     <EditPostModal
       editModalRef={editPostModalRef}
       error={editPostError}
+      feedback={editFeedbackByPostId[editingPostId]}
+      isSaveDisabled={isEditPostUnchanged}
       onBackdropMouseDown={handleEditPostModalBackdropClick}
       onCancel={handleCancelEditPost}
       onChange={handleEditPostTextChange}
@@ -490,6 +494,7 @@ export default function CommunityPage({
                       onToggleCommentsExpanded={() => handleToggleCommentsExpanded(post.id)}
                       onToggleLike={handleToggleLike}
                       post={post}
+                      postEditFeedback={editFeedbackByPostId[post.id]}
                       relativeTimeNow={relativeTimeNow}
                       localUserId={localUserId}
                       localUserName={communityDisplayName || 'Current User'}
