@@ -703,21 +703,9 @@ function EventCategoryButton({ title, active, color, icon: Icon, onClick }) {
   );
 }
 
-function CardDescriptionToggle({ description }) {
-  const [isOpen, setIsOpen] = useState(false);
-
+function CardDescriptionPanel({ description, isOpen }) {
   return (
     <div className="events-card__description">
-      <button
-        className="events-card__read-button"
-        type="button"
-        onClick={() => setIsOpen((current) => !current)}
-        aria-expanded={isOpen}
-      >
-        <KeyboardArrowDownIcon fontSize="small" />
-        <span>About</span>
-      </button>
-
       <div className={`events-card__description-panel${isOpen ? ' is-open' : ''}`}>
         <div className="events-card__description-inner">
           <p>{description}</p>
@@ -734,14 +722,22 @@ function EventCard({
 }) {
   const typeLabel = event.eventType === 'appointment' ? 'Appointment' : 'Workshop';
   const hasRegisteredSessions = event.sessionOptions.some((session) => registeredSessionIds.has(session.id));
+  const [isDescriptionOpen, setIsDescriptionOpen] = useState(false);
 
   return (
     <article className={`events-card events-card--${event.tone}`}>
       <div className="events-card__image">
         <img src={event.imageUrl} alt="" />
-        <span className={`events-card__floating-action events-card__floating-action--${event.eventType}`} aria-label={typeLabel}>
-          <CalendarMonthIcon fontSize="small" />
-        </span>
+        <button
+          className={`events-card__about-button events-card__about-button--${event.eventType}`}
+          type="button"
+          onClick={() => setIsDescriptionOpen((current) => !current)}
+          aria-expanded={isDescriptionOpen}
+          aria-label={`About ${typeLabel.toLowerCase()}`}
+        >
+          <KeyboardArrowDownIcon fontSize="small" />
+          <span>About</span>
+        </button>
       </div>
 
       <div className="events-card__body">
@@ -750,7 +746,7 @@ function EventCard({
           <CalendarMonthIcon fontSize="small" />
           {event.weeklySchedule}
         </span>
-        <CardDescriptionToggle description={event.description} />
+        <CardDescriptionPanel description={event.description} isOpen={isDescriptionOpen} />
 
         <button
           className="events-card__action"
@@ -926,14 +922,22 @@ function SessionSelectionModal({
 
 function RegisteredSessionCard({ session, onCancelRegistration }) {
   const typeLabel = session.eventType === 'appointment' ? 'Appointment' : 'Workshop';
+  const [isDescriptionOpen, setIsDescriptionOpen] = useState(false);
 
   return (
     <article className={`events-card events-card--${session.tone}`}>
       <div className="events-card__image">
         <img src={session.imageUrl} alt="" />
-        <span className={`events-card__floating-action events-card__floating-action--${session.eventType}`} aria-label={typeLabel}>
-          <CalendarMonthIcon fontSize="small" />
-        </span>
+        <button
+          className={`events-card__about-button events-card__about-button--${session.eventType}`}
+          type="button"
+          onClick={() => setIsDescriptionOpen((current) => !current)}
+          aria-expanded={isDescriptionOpen}
+          aria-label={`About ${typeLabel.toLowerCase()}`}
+        >
+          <KeyboardArrowDownIcon fontSize="small" />
+          <span>About</span>
+        </button>
       </div>
 
       <div className="events-card__body">
@@ -943,7 +947,7 @@ function RegisteredSessionCard({ session, onCancelRegistration }) {
           <CalendarMonthIcon fontSize="small" />
           Registered for {session.date}
         </span>
-        <CardDescriptionToggle description={session.description} />
+        <CardDescriptionPanel description={session.description} isOpen={isDescriptionOpen} />
 
         <button
           className="events-card__action is-cancel"

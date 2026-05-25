@@ -868,26 +868,48 @@
   pointer-events: none;
 }
 
-.events-card__floating-action {
+.events-card__about-button {
   position: absolute;
   top: 10px;
   right: 10px;
   z-index: 2;
-  width: 34px;
-  height: 34px;
-  display: grid;
-  place-items: center;
+  min-height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
   border: 1px solid rgba(255, 255, 255, 0.76);
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.78);
   color: #7b3fa1;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.64rem;
+  font-weight: 800;
+  padding: 0 10px;
   box-shadow:
     0 12px 22px rgba(75, 19, 107, 0.14),
     inset 0 1px 0 rgba(255, 255, 255, 0.86);
   backdrop-filter: blur(16px);
+  transition: transform 180ms ease, box-shadow 180ms ease, filter 180ms ease;
 }
 
-.events-card__floating-action--appointment {
+.events-card__about-button:hover {
+  transform: translateY(-1px);
+  filter: saturate(1.08);
+}
+
+.events-card__about-button svg {
+  width: 16px;
+  height: 16px;
+  transition: transform 220ms ease;
+}
+
+.events-card__about-button[aria-expanded="true"] svg {
+  transform: rotate(180deg);
+}
+
+.events-card__about-button--appointment {
   color: #ec5f97;
 }
 
