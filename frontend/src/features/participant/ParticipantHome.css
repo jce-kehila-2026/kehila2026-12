@@ -1,4 +1,5 @@
 .participant-home {
+  box-sizing: border-box;
   min-height: 100vh;
   display: grid;
   grid-template-columns: 274px minmax(0, 1fr);
@@ -7,6 +8,18 @@
     linear-gradient(135deg, #fff9fc 0%, #f7f1fb 46%, #fffdfd 100%);
   color: #201033;
   font-family: var(--font-sans);
+}
+
+.participant-home--events,
+.participant-home--events *,
+.participant-home--events *::before,
+.participant-home--events *::after {
+  box-sizing: border-box;
+}
+
+.participant-home--events {
+  height: 100vh;
+  overflow: hidden;
 }
 
 .participant-admin-preview {
@@ -210,6 +223,53 @@
   min-height: 0;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
+  overflow: hidden;
+}
+
+.participant-main--events {
+  height: 100vh;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  overflow: hidden;
+  padding-block: 18px;
+}
+
+.participant-home--events .participant-sidebar {
+  gap: 18px;
+  padding-block: 20px;
+  overflow: hidden;
+}
+
+.participant-home--events .participant-nav {
+  gap: 5px;
+  overflow: hidden;
+}
+
+.participant-home--events .participant-nav button,
+.participant-home--events .participant-logout {
+  min-height: 40px;
+  border-radius: 12px;
+}
+
+.participant-home--events .participant-support-card {
+  gap: 5px;
+  padding: 14px;
+}
+
+.participant-home--events .participant-support-card button {
+  min-height: 34px;
+  margin-top: 5px;
+}
+
+.participant-main--events .participant-topbar {
+  margin-bottom: 12px;
+}
+
+.participant-main--events .participant-content--events {
+  height: 100%;
+  min-height: 0;
+  display: block;
   overflow: hidden;
 }
 
@@ -1367,6 +1427,11 @@
     display: block;
   }
 
+  .participant-home--events {
+    height: auto;
+    overflow: visible;
+  }
+
   .participant-sidebar {
     position: static;
     height: auto;
@@ -1389,6 +1454,17 @@
     height: auto;
     min-height: 0;
     display: block;
+    overflow: visible;
+  }
+
+  .participant-main--events {
+    height: auto;
+    display: block;
+    overflow: visible;
+  }
+
+  .participant-main--events .participant-content--events {
+    height: auto;
     overflow: visible;
   }
 

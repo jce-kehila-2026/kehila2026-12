@@ -1,4 +1,5 @@
 .events-page {
+  box-sizing: border-box;
   height: 100vh;
   min-height: 100vh;
   overflow: hidden;
@@ -8,6 +9,16 @@
   color: #21124a;
   font-family: var(--font-sans);
   direction: rtl;
+}
+
+.events-page *,
+.events-page *::before,
+.events-page *::after,
+.events-main,
+.events-main *,
+.events-main *::before,
+.events-main *::after {
+  box-sizing: border-box;
 }
 
 .events-sidebar {
@@ -32,6 +43,8 @@
   width: min(1280px, 100%);
   height: 100vh;
   overflow: hidden;
+  display: grid;
+  grid-template-rows: auto auto auto auto minmax(0, 1fr) auto auto auto;
   margin: 0 auto;
   padding: 18px 30px 22px;
 }
@@ -42,7 +55,7 @@
   max-height: 100%;
   min-height: 0;
   display: grid;
-  grid-template-rows: auto auto auto minmax(0, auto) auto;
+  grid-template-rows: auto auto auto minmax(0, 1fr) auto auto auto;
   overflow: hidden;
   margin: 0;
   padding: 0 0 0 1rem;
@@ -687,10 +700,14 @@
 }
 
 .events-list-panel {
+  flex: 1 1 auto;
   min-height: 0;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
   margin-block-start: 8px;
-  padding: 0;
+  padding: 0 2px 12px 0;
   border: 0;
   background: transparent;
   box-shadow: none;
@@ -699,6 +716,20 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+}
+
+.events-list-panel::-webkit-scrollbar {
+  width: 8px;
+}
+
+.events-list-panel::-webkit-scrollbar-track {
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.44);
+}
+
+.events-list-panel::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: linear-gradient(180deg, rgba(236, 111, 162, 0.58), rgba(159, 107, 208, 0.58));
 }
 
 .events-grid-shell {
@@ -2079,6 +2110,9 @@
 @media (max-width: 860px) {
   .events-page {
     display: block;
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
   }
 
   .events-sidebar {
@@ -2095,7 +2129,16 @@
   }
 
   .events-main {
+    height: auto;
+    overflow: visible;
     padding: 24px 18px 36px;
+  }
+
+  .events-main--embedded {
+    height: auto;
+    max-height: none;
+    display: block;
+    overflow: visible;
   }
 
   .events-profile {
@@ -2281,5 +2324,3 @@
     grid-template-columns: 1fr;
   }
 }
-  min-height: 0;
-  overflow: hidden;
