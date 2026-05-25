@@ -1453,9 +1453,6 @@ export default function EventsPage({ embedInDashboard = false }) {
           <h1>Events</h1>
           <p>All your sessions in one place</p>
         </div>
-      </section>
-
-      <section className="events-summary-row" aria-label="Events summary">
         <button className="events-suggest-pill" type="button" onClick={openSuggestionModal}>
           <AddCircleOutlineIcon fontSize="small" />
           Suggest a Workshop
