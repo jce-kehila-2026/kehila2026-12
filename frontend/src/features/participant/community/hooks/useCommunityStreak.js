@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   getDayDifference,
   getInitialStreakState,
@@ -11,6 +11,8 @@ export default function useCommunityStreak() {
   const [initialStreakState] = useState(getInitialStreakState);
   const [communityStreakCount, setCommunityStreakCount] = useState(initialStreakState.streakCount);
   const [lastActivityDate, setLastActivityDate] = useState(initialStreakState.lastActivityDate);
+  const communityStreakCountRef = useRef(initialStreakState.streakCount);
+  const lastActivityDateRef = useRef(initialStreakState.lastActivityDate);
   const [isCommunityStreakAtRisk, setIsCommunityStreakAtRisk] = useState(
     () => isStreakAtRiskForDate(initialStreakState.lastActivityDate),
   );
@@ -25,14 +27,19 @@ export default function useCommunityStreak() {
 
   const registerCommunityActivity = () => {
     const todayKey = getTodayKey();
-    const dayDifference = getDayDifference(lastActivityDate, todayKey);
+    const previousActivityDate = lastActivityDateRef.current;
+    const dayDifference = getDayDifference(previousActivityDate, todayKey);
+    let nextStreakCount = communityStreakCountRef.current;
 
-    if (!lastActivityDate || dayDifference === null || dayDifference >= 3) {
-      setCommunityStreakCount(1);
-    } else if (dayDifference === 1 || dayDifference === 2) {
-      setCommunityStreakCount((currentCount) => currentCount + 1);
+    if (!previousActivityDate || dayDifference === null || dayDifference >= 2) {
+      nextStreakCount = 1;
+    } else if (dayDifference === 1) {
+      nextStreakCount = communityStreakCountRef.current + 1;
     }
 
+    communityStreakCountRef.current = nextStreakCount;
+    lastActivityDateRef.current = todayKey;
+    setCommunityStreakCount(nextStreakCount);
     setLastActivityDate(todayKey);
     setIsCommunityStreakAtRisk(false);
   };

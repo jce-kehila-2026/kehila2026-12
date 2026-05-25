@@ -65,6 +65,15 @@ export const getTodayKey = (date = new Date()) => {
   return `${year}-${month}-${day}`;
 };
 
+export const normalizeCommunityDateKey = (value) => {
+  if (typeof value === 'string' && getDateKeyTimestamp(value) !== null) {
+    return value;
+  }
+
+  const parsedDate = parseCommunityDate(value);
+  return parsedDate ? getTodayKey(parsedDate) : null;
+};
+
 export const getDateKeyTimestamp = (dateKey) => {
   if (typeof dateKey !== 'string') return null;
 

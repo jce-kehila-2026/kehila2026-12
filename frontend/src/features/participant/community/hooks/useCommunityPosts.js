@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { communityPosts } from '../communityMockData';
 import {
   getInitialPosts,
@@ -15,7 +15,14 @@ import {
   updateCommunityPost,
 } from '../services/communityService';
 import { saveStoredCommunityPosts } from '../services/communityStorageService';
-import { isPostOwnedByCurrentUser } from '../utils/communityModerationUtils';
+import {
+  getPostReportedAtTime,
+  isPostOwnedByCurrentUser,
+  REPORTED_POST_HIDE_DELAY_MS,
+  shouldHidePostReportedByUser,
+} from '../utils/communityModerationUtils';
+
+const normalizeEditablePostText = (value = '') => String(value).replace(/\r\n/g, '\n').trim();
 
 export default function useCommunityPosts({
   allowAnonymousPosting,
@@ -40,11 +47,15 @@ export default function useCommunityPosts({
   setEditPostText,
   setEditingPostId,
 }) {
+  const editFeedbackTimersRef = useRef({});
+  const postSuccessTimerRef = useRef(null);
   const [posts, setPosts] = useState(() => getInitialPosts(communityPosts));
   const [isRefreshingFeed, setIsRefreshingFeed] = useState(false);
   const [refreshFeedback, setRefreshFeedback] = useState('');
+  const [editFeedbackByPostId, setEditFeedbackByPostId] = useState({});
   const [refreshPulseKey, setRefreshPulseKey] = useState(0);
   const [relativeTimeNow, setRelativeTimeNow] = useState(() => new Date());
+  const [reportVisibilityNow, setReportVisibilityNow] = useState(() => Date.now());
 
   const localUserName = communityDisplayName || 'Current User';
 
@@ -120,14 +131,107 @@ export default function useCommunityPosts({
     saveStoredCommunityPosts(posts.map(serializeCommunityPost));
   }, [posts]);
 
+  useEffect(() => {
+    setReportVisibilityNow(Date.now());
+  }, [posts]);
+
+  useEffect(() => {
+    if (!localUserId) return undefined;
+
+    const nextHideDelay = posts.reduce((closestDelay, post) => {
+      if (!isCommunityContentVisible(post)) return closestDelay;
+      if (shouldHidePostReportedByUser(post, localUserId, reportVisibilityNow)) return closestDelay;
+
+      const reportedAtTime = getPostReportedAtTime(post, localUserId);
+      if (reportedAtTime === null) return closestDelay;
+
+      const delay = Math.max(
+        reportedAtTime + REPORTED_POST_HIDE_DELAY_MS - reportVisibilityNow,
+        0,
+      );
+
+      return closestDelay === null ? delay : Math.min(closestDelay, delay);
+    }, null);
+
+    if (nextHideDelay === null) return undefined;
+
+    const timerId = window.setTimeout(() => {
+      setReportVisibilityNow(Date.now());
+    }, nextHideDelay + 25);
+
+    return () => {
+      window.clearTimeout(timerId);
+    };
+  }, [posts, localUserId, reportVisibilityNow]);
+
+  useEffect(() => () => {
+    Object.values(editFeedbackTimersRef.current).forEach(window.clearTimeout);
+    if (postSuccessTimerRef.current) {
+      window.clearTimeout(postSuccessTimerRef.current);
+    }
+  }, []);
+
+  const clearPostSuccessTimer = () => {
+    if (!postSuccessTimerRef.current) return;
+
+    window.clearTimeout(postSuccessTimerRef.current);
+    postSuccessTimerRef.current = null;
+  };
+
+  const setTemporaryPostSuccessMessage = (message) => {
+    clearPostSuccessTimer();
+    setPostSuccessMessage(message);
+    postSuccessTimerRef.current = window.setTimeout(() => {
+      setPostSuccessMessage('');
+      postSuccessTimerRef.current = null;
+    }, 2500);
+  };
+
+  const clearEditFeedbackTimer = (postId) => {
+    if (!editFeedbackTimersRef.current[postId]) return;
+
+    window.clearTimeout(editFeedbackTimersRef.current[postId]);
+    delete editFeedbackTimersRef.current[postId];
+  };
+
+  const clearEditFeedback = (postId) => {
+    clearEditFeedbackTimer(postId);
+    setEditFeedbackByPostId((currentFeedback) => {
+      if (!currentFeedback[postId]) return currentFeedback;
+
+      const nextFeedback = { ...currentFeedback };
+      delete nextFeedback[postId];
+      return nextFeedback;
+    });
+  };
+
+  const setTemporaryEditFeedback = (postId, feedback) => {
+    if (!postId) return;
+
+    clearEditFeedbackTimer(postId);
+    setEditFeedbackByPostId((currentFeedback) => ({
+      ...currentFeedback,
+      [postId]: feedback,
+    }));
+
+    editFeedbackTimersRef.current[postId] = window.setTimeout(() => {
+      clearEditFeedback(postId);
+    }, 2500);
+  };
+
   const visiblePosts = posts
     .filter(isCommunityContentVisible)
+    .filter((post) => !shouldHidePostReportedByUser(post, localUserId, reportVisibilityNow))
     .map((post) => ({
       ...post,
       comments: Array.isArray(post.comments)
         ? post.comments.filter(isCommunityContentVisible)
         : [],
     }));
+  const editingPost = posts.find((post) => post.id === editingPostId);
+  const isEditPostUnchanged = editingPost
+    ? normalizeEditablePostText(editPostText) === normalizeEditablePostText(editingPost.content ?? editingPost.body ?? '')
+    : true;
 
   const updatePostById = (postId, updater) => {
     if (!postId || typeof updater !== 'function') return;
@@ -141,6 +245,7 @@ export default function useCommunityPosts({
     const content = newPostText.trim();
 
     if (!content && !postAttachment) {
+      clearPostSuccessTimer();
       setPostError('Please write something or add a local attachment before sharing.');
       setPostSuccessMessage('');
       return;
@@ -159,6 +264,7 @@ export default function useCommunityPosts({
         attachment: postAttachment,
       });
     } catch {
+      clearPostSuccessTimer();
       setPostError('Unable to publish your post right now.');
       setPostSuccessMessage('');
       return;
@@ -169,7 +275,7 @@ export default function useCommunityPosts({
     setPostAttachment(null);
     setPostAnonymously(false);
     setPostError('');
-    setPostSuccessMessage('Post published successfully.');
+    setTemporaryPostSuccessMessage('Post published successfully.');
     registerCommunityActivity();
   };
 
@@ -237,9 +343,10 @@ export default function useCommunityPosts({
     setEditingPostId(postId);
     setEditPostText(postToEdit.content ?? postToEdit.body ?? '');
     setEditPostError('');
+    clearEditFeedback(postId);
   };
 
-  const handleEditPostSubmit = (event) => {
+  const handleEditPostSubmit = async (event) => {
     event.preventDefault();
 
     const postToEdit = posts.find((post) => post.id === editingPostId);
@@ -252,6 +359,8 @@ export default function useCommunityPosts({
 
     const content = editPostText.trim();
 
+    if (isEditPostUnchanged) return;
+
     if (!content && !postToEdit.attachment) {
       setEditPostError('Please write something or keep an attachment before saving.');
       return;
@@ -259,13 +368,19 @@ export default function useCommunityPosts({
 
     const updatedAt = new Date().toISOString();
 
-    updateCommunityPost(editingPostId, {
-      content,
-      body: content,
-      updatedAt,
-    }).catch(() => {
-      // Keep the existing local-only edit flow responsive.
-    });
+    try {
+      await updateCommunityPost(editingPostId, {
+        content,
+        body: content,
+        updatedAt,
+      });
+    } catch {
+      setTemporaryEditFeedback(editingPostId, {
+        type: 'error',
+        message: 'Failed to update post.',
+      });
+      return;
+    }
 
     updatePostById(editingPostId, (post) => ({
       ...post,
@@ -273,6 +388,10 @@ export default function useCommunityPosts({
       body: content,
       updatedAt,
     }));
+    setTemporaryEditFeedback(editingPostId, {
+      type: 'success',
+      message: 'Post updated successfully.',
+    });
     onCancelEditPost();
   };
 
@@ -312,6 +431,8 @@ export default function useCommunityPosts({
     visiblePosts,
     isRefreshingFeed,
     refreshFeedback,
+    editFeedbackByPostId,
+    isEditPostUnchanged,
     refreshPulseKey,
     relativeTimeNow,
     refreshCommunityFeed,

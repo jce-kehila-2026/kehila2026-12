@@ -8,6 +8,8 @@ import CommentsPreview from './CommentsPreview';
 import PostActions from './PostActions';
 import PostOverflowMenu from './PostOverflowMenu';
 
+const GENERIC_POST_TITLE = 'New community post';
+
 export default function CommunityPostCard({
   commentFeedback,
   commentText,
@@ -30,6 +32,7 @@ export default function CommunityPostCard({
   onToggleCommentsExpanded,
   onToggleLike,
   post,
+  postEditFeedback,
   relativeTimeNow,
   reportFeedback,
 }) {
@@ -39,6 +42,9 @@ export default function CommunityPostCard({
     .filter(isCommunityContentVisible);
   const commentsCount = comments.length;
   const postBody = post.content ?? post.body;
+  const postTitle = typeof post.title === 'string' && post.title.trim() !== GENERIC_POST_TITLE
+    ? post.title.trim()
+    : '';
   const postTime = formatRelativeCommunityTime(post.createdAt, relativeTimeNow);
   const commentFeedbackId = commentFeedback ? `comment-feedback-${post.id}` : undefined;
   const reportFeedbackId = reportFeedback ? `report-feedback-${post.id}` : undefined;
@@ -108,9 +114,28 @@ export default function CommunityPostCard({
         />
       </header>
       <div className="community-page-post__content">
-        <h3>{post.title}</h3>
+        {postTitle && <h3>{postTitle}</h3>}
         <p>{postBody}</p>
       </div>
+      {commentFeedback?.type === 'success' && (
+        <p
+          className="community-comment-toast"
+          id={commentFeedbackId}
+          role="status"
+          aria-live="polite"
+        >
+          {commentFeedback.message}
+        </p>
+      )}
+      {postEditFeedback?.type === 'success' && (
+        <p
+          className="community-comment-toast community-post-edit-toast"
+          role="status"
+          aria-live="polite"
+        >
+          {postEditFeedback.message}
+        </p>
+      )}
       {renderAttachment()}
       <PostActions
         commentsCount={commentsCount}
@@ -154,7 +179,7 @@ export default function CommunityPostCard({
           postAuthor={post.author}
         />
       )}
-      {commentFeedback && (
+      {commentFeedback?.type === 'error' && (
         <p
           className={`community-comment-form__feedback community-comment-form__feedback--${commentFeedback.type}`}
           id={commentFeedbackId}

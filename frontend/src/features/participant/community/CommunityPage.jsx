@@ -1,15 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import Diversity3OutlinedIcon from '@mui/icons-material/Diversity3Outlined';
-import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined';
-import LocalFloristOutlinedIcon from '@mui/icons-material/LocalFloristOutlined';
-import MenuBookOutlinedIcon from '@mui/icons-material/MenuBookOutlined';
 import RefreshOutlinedIcon from '@mui/icons-material/RefreshOutlined';
-import {
-  communityActiveMembers,
-  communityResources,
-  communitySupportSpaces,
-} from './communityMockData';
 import {
   FEED_TABS,
   REPORT_REASON_OPTIONS,
@@ -27,7 +19,6 @@ import {
 import BirthdayCard from './components/BirthdayCard';
 import CommunityAccessPanel from './components/CommunityAccessPanel';
 import CommunityBirthdayPreferenceCard from './components/CommunityBirthdayPreferenceCard';
-import CommunityGuidelinesCard from './components/CommunityGuidelinesCard';
 import CommunityGuidelinesModal from './components/CommunityGuidelinesModal';
 import CommunityPostCard from './components/CommunityPostCard';
 import CommunityStreakCard from './components/CommunityStreakCard';
@@ -61,12 +52,10 @@ export default function CommunityPage({
   const [postError, setPostError] = useState('');
   const [postSuccessMessage, setPostSuccessMessage] = useState('');
   const [activeFeedTab, setActiveFeedTab] = useState('all');
-  const [supportSpaceFeedback, setSupportSpaceFeedback] = useState('');
   const [confirmingDeletePostId, setConfirmingDeletePostId] = useState(null);
   const [editingPostId, setEditingPostId] = useState(null);
   const [editPostText, setEditPostText] = useState('');
   const [editPostError, setEditPostError] = useState('');
-  const [selectedSupportSpace, setSelectedSupportSpace] = useState(null);
   const {
     showGuidelinesModal,
     showFullGuidelinesModal,
@@ -97,24 +86,17 @@ export default function CommunityPage({
     if (postSuccessMessage) setPostSuccessMessage('');
   };
 
-  const handleSupportSpaceView = (space) => {
-    setSelectedSupportSpace(space);
-    setSupportSpaceFeedback(`${space.title} details opened.`);
-  };
-
   const {
     communityDisplayName,
     hasRequiredPersonalDetails,
     hasCommunityAccessDetails,
     hasCompletedCommunitySetup,
     canUseCommunity,
-    showBirthdayInCommunity,
     allowAnonymousPosting,
     localUserId,
     visibleBirthdayUsers,
     profileSuccessMessage,
     handleBirthdayPreferenceSave,
-    handleBirthdayVisibilityChange,
   } = useCommunityProfile({ personalDetails });
   const handleCancelEditPost = () => {
     setEditingPostId(null);
@@ -126,6 +108,7 @@ export default function CommunityPage({
   };
   const {
     communityStreakCount,
+    lastActivityDate,
     isCommunityStreakAtRisk,
     registerCommunityActivity,
   } = useCommunityStreak();
@@ -135,6 +118,8 @@ export default function CommunityPage({
     visiblePosts,
     isRefreshingFeed,
     refreshFeedback,
+    editFeedbackByPostId,
+    isEditPostUnchanged,
     refreshPulseKey,
     relativeTimeNow,
     refreshCommunityFeed,
@@ -226,7 +211,13 @@ export default function CommunityPage({
     }, 0);
   }, [pendingCommentDeletion]);
 
-  const filteredPosts = filterPostsByTab(visiblePosts, activeFeedTab, followedAuthors);
+  const filteredPosts = filterPostsByTab(
+    visiblePosts,
+    activeFeedTab,
+    followedAuthors,
+    localUserId,
+    communityDisplayName || 'Current User',
+  );
   const sortedVisiblePosts = sortFeedPosts(filteredPosts);
   const emptyFeedMessage = getEmptyFeedMessage(activeFeedTab, followedAuthors.length);
 
@@ -316,6 +307,8 @@ export default function CommunityPage({
     <EditPostModal
       editModalRef={editPostModalRef}
       error={editPostError}
+      feedback={editFeedbackByPostId[editingPostId]}
+      isSaveDisabled={isEditPostUnchanged}
       onBackdropMouseDown={handleEditPostModalBackdropClick}
       onCancel={handleCancelEditPost}
       onChange={handleEditPostTextChange}
@@ -350,22 +343,12 @@ export default function CommunityPage({
   ) : null;
 
   return (
-    <section className="community-page" aria-labelledby="community-page-title">
+    <section className="community-page" aria-label="Community">
       {showGuidelinesModal && <CommunityGuidelinesModal onContinue={handleGuidelinesContinue} />}
       {reportModal && typeof document !== 'undefined' ? createPortal(reportModal, document.body) : reportModal}
       {editPostModal && typeof document !== 'undefined' ? createPortal(editPostModal, document.body) : editPostModal}
       {deletePostModal && typeof document !== 'undefined' ? createPortal(deletePostModal, document.body) : deletePostModal}
       {deleteCommentModal && typeof document !== 'undefined' ? createPortal(deleteCommentModal, document.body) : deleteCommentModal}
-
-      <header className="community-page__header">
-        <div className="community-page__header-copy">
-          <span className="community-page__header-icon" aria-hidden="true">
-            <FavoriteBorderOutlinedIcon />
-          </span>
-          <h1 id="community-page-title">Community</h1>
-          <p>Connect, share, and support each other in a safe space.</p>
-        </div>
-      </header>
 
       <div className="community-page-shell">
         <main className="community-main-feed" aria-label="Community feed">
@@ -434,16 +417,6 @@ export default function CommunityPage({
                 </p>
               )}
 
-              <section className="community-page-card community-page-card--intro">
-                <span className="community-page-card__icon">
-                  <LocalFloristOutlinedIcon />
-                </span>
-                <div>
-                  <h2>Today in the community</h2>
-                  <p>Stories, reflections, and encouragement from participants walking a similar path.</p>
-                </div>
-              </section>
-
               {sortedVisiblePosts.length === 0 ? (
                 <section
                   aria-labelledby={`community-feed-tab-${activeFeedTab}`}
@@ -484,6 +457,7 @@ export default function CommunityPage({
                       onToggleCommentsExpanded={() => handleToggleCommentsExpanded(post.id)}
                       onToggleLike={handleToggleLike}
                       post={post}
+                      postEditFeedback={editFeedbackByPostId[post.id]}
                       relativeTimeNow={relativeTimeNow}
                       localUserId={localUserId}
                       localUserName={communityDisplayName || 'Current User'}
@@ -500,142 +474,17 @@ export default function CommunityPage({
         <aside className="community-right-sidebar" aria-label="Community sidebar">
           <CommunityStreakCard
             isAtRisk={isCommunityStreakAtRisk}
+            lastActivityDate={lastActivityDate}
             streakCount={communityStreakCount}
           />
           <BirthdayCard birthdayUsers={visibleBirthdayUsers} />
-
-          <section className="community-page-card community-active-widget" aria-labelledby="community-active-members-title">
-            <div className="community-page-card__heading">
-              <span className="community-page-card__icon">
-                <Diversity3OutlinedIcon />
-              </span>
-              <div>
-                <span>{communityActiveMembers.length} members</span>
-                <h2 id="community-active-members-title">Active Members</h2>
-              </div>
-            </div>
-            <div className="community-active-members" aria-label="Recently active community members">
-              {communityActiveMembers.map((member) => (
-                <article className="community-active-member" key={member.id}>
-                  <span aria-label={`${member.name}, ${member.status}`} className="community-active-member__avatar">
-                    {member.initials}
-                  </span>
-                  <div>
-                    <strong>{member.name}</strong>
-                    <small>{member.status}</small>
-                  </div>
-                </article>
-              ))}
-            </div>
-          </section>
-
-          <section className="community-page-card community-support-spaces-widget" aria-labelledby="community-support-spaces-title">
-            <div className="community-page-card__heading">
-              <span className="community-page-card__icon">
-                <Diversity3OutlinedIcon />
-              </span>
-              <div>
-                <span>Spaces</span>
-                <h2 id="community-support-spaces-title">Support Spaces</h2>
-              </div>
-            </div>
-            <div className="community-support-space-list">
-              {communitySupportSpaces.map((space) => {
-                const Icon = space.icon;
-                return (
-                  <article className="community-support-space" key={space.title}>
-                    <span className="community-support-space__icon" aria-hidden="true">
-                      <Icon fontSize="small" />
-                    </span>
-                    <div>
-                      <strong>{space.title}</strong>
-                      <small>{space.meta}</small>
-                    </div>
-                    <button
-                      aria-label={`View ${space.title} details`}
-                      type="button"
-                      onClick={() => handleSupportSpaceView(space)}
-                    >
-                      View
-                    </button>
-                  </article>
-                );
-              })}
-            </div>
-            {supportSpaceFeedback && (
-              <p className="community-support-spaces-widget__feedback" aria-live="polite">
-                {supportSpaceFeedback}
-              </p>
-            )}
-          </section>
-
-          {canUseCommunity && (
-            <section className="community-page-card community-privacy-card">
-              <div className="community-page-card__heading">
-                <span className="community-page-card__icon">
-                  <Diversity3OutlinedIcon />
-                </span>
-                <div>
-                  <span>Privacy</span>
-                  <h2>Community Privacy</h2>
-                </div>
-              </div>
-              <label className="community-privacy-card__toggle">
-                <input
-                  aria-label="Show my birthday in the community"
-                  type="checkbox"
-                  checked={showBirthdayInCommunity}
-                  onChange={(event) => handleBirthdayVisibilityChange(event.target.checked)}
-                />
-                <span>Show my birthday in the community</span>
-              </label>
-              <p>
-                This only controls community visibility. Your birthday stays unchanged in Settings.
-              </p>
-            </section>
-          )}
-          <CommunityGuidelinesCard onReadFullGuidelines={handleReadFullGuidelines} />
-
-          <section className="community-page-card community-page-card--soft">
-            <div className="community-page-card__heading">
-              <span className="community-page-card__icon">
-                <MenuBookOutlinedIcon />
-              </span>
-              <div>
-                <span>Shared care</span>
-                <h2>Community Resources</h2>
-              </div>
-            </div>
-            <ul className="community-resource-list">
-              {communityResources.map((resource) => (
-                <li key={resource}>{resource}</li>
-              ))}
-            </ul>
-          </section>
-
         </aside>
       </div>
-      {selectedSupportSpace && (
-        <div className="community-local-modal" role="dialog" aria-modal="true" aria-labelledby="community-support-space-modal-title">
-          <section className="community-local-modal__panel">
-            <button
-              aria-label="Close support space details"
-              className="community-local-modal__close"
-              type="button"
-              onClick={() => setSelectedSupportSpace(null)}
-            >
-              ×
-            </button>
-            <span className="community-local-modal__eyebrow">Support Space</span>
-            <h2 id="community-support-space-modal-title">{selectedSupportSpace.title}</h2>
-            <p>{selectedSupportSpace.description}</p>
-            <strong>{selectedSupportSpace.schedule}</strong>
-            <button type="button" onClick={() => setSelectedSupportSpace(null)}>
-              Close
-            </button>
-          </section>
-        </div>
-      )}
+      <div className="community-guidelines-shortcut">
+        <button type="button" onClick={handleReadFullGuidelines}>
+          Community Guidelines
+        </button>
+      </div>
       {showFullGuidelinesModal && (
         <CommunityGuidelinesModal
           mode="read"

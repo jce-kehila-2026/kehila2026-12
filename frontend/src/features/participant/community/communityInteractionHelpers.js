@@ -11,6 +11,7 @@ import {
   getDayDifference,
   getTodayKey,
   isStreakAtRiskForDate,
+  normalizeCommunityDateKey,
   parseCommunityDate,
 } from './utils/communityDateUtils';
 import { isCommunityContentVisible } from './utils/communityModerationUtils';
@@ -36,6 +37,7 @@ export {
   getDayDifference,
   getTodayKey,
   isStreakAtRiskForDate,
+  normalizeCommunityDateKey,
   parseCommunityDate,
 } from './utils/communityDateUtils';
 export { isCommunityContentVisible } from './utils/communityModerationUtils';
@@ -93,7 +95,6 @@ export const createPostModel = ({
     initials: isAnonymous ? 'AU' : 'CU',
     time: formatRelativeCommunityTime(createdAt),
     topic: 'Community share',
-    title: 'New community post',
     body: content,
     likes: 0,
     support: 0,
@@ -245,7 +246,7 @@ const normalizeStoredPost = (post, index) => {
     initials: post?.initials ?? (post?.isAnonymous ? 'AU' : 'CU'),
     time: formatRelativeCommunityTime(createdAtDate),
     topic: post?.topic ?? 'Community share',
-    title: post?.title ?? 'New community post',
+    title: post?.title ?? null,
     body: post?.body ?? content,
     likes: likesCount,
     support: supportCount,
@@ -287,6 +288,7 @@ export const serializeCommunityPost = (post) => ({
     postOwnerId: report.postOwnerId ?? null,
     reason: report.reason ?? '',
     createdAt: report.createdAt instanceof Date ? report.createdAt.toISOString() : report.createdAt ?? null,
+    reportedAt: report.reportedAt instanceof Date ? report.reportedAt.toISOString() : report.reportedAt ?? report.createdAt ?? null,
   })) : [],
   hiddenByAdmin: Boolean(post.hiddenByAdmin),
   comments: Array.isArray(post.comments) ? post.comments.map((comment) => ({
@@ -336,15 +338,13 @@ export const getInitialPosts = (defaultPosts) => {
 export const getInitialStreakState = () => {
   const storedStreak = loadStoredCommunityStreak();
   const storedStreakCount = Number(storedStreak?.streakCount);
-  const storedLastActivityDate = storedStreak?.lastActivityDate;
+  const storedLastActivityDate = normalizeCommunityDateKey(storedStreak?.lastActivityDate);
 
   return createCommunityStreakModel({
     streakCount: Number.isFinite(storedStreakCount) && storedStreakCount >= 0
       ? storedStreakCount
       : INITIAL_COMMUNITY_STREAK_COUNT,
-    lastActivityDate: getDateKeyTimestamp(storedLastActivityDate) === null
-      ? INITIAL_LAST_ACTIVITY_DATE
-      : storedLastActivityDate,
+    lastActivityDate: storedLastActivityDate ?? INITIAL_LAST_ACTIVITY_DATE,
     updatedAt: storedStreak?.updatedAt ?? new Date(),
   });
 };

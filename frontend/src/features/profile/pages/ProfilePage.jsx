@@ -20,6 +20,7 @@ import { auth } from "../../../firebase";
 import ChangePasswordCard from "../components/ChangePasswordCard";
 import PersonalDetailsForm from "../components/PersonalDetailsForm";
 import ProfileCard from "../components/ProfileCard";
+import useCommunityProfile from "../../participant/community/hooks/useCommunityProfile";
 import {
   getParticipantData,
   createParticipantProfile,
@@ -40,6 +41,134 @@ const profileCacheLtr = createCache({
 
 const profilePageBg =
   "linear-gradient(145deg, #F7EEFF 0%, #FFF9FC 42%, #fdf8ff 100%)";
+
+function CommunitySettingsSection({ darkMode = false, participantId = "", profile = {} }) {
+  const {
+    showBirthdayInCommunity,
+    handleBirthdayVisibilityChange,
+  } = useCommunityProfile({
+    personalDetails: {
+      id: participantId,
+      ...profile,
+    },
+  });
+
+  return (
+    <Box
+      component="section"
+      aria-labelledby="community-settings-title"
+      sx={{
+        border: darkMode
+          ? "1px solid rgba(196, 165, 245, 0.22)"
+          : "1px solid rgba(181, 123, 232, 0.18)",
+        borderRadius: 4,
+        backgroundColor: darkMode ? WELLNESS_DARK.card : WELLNESS.card,
+        boxShadow: darkMode ? WELLNESS_DARK.shadowCard : WELLNESS.shadowCard,
+        p: { xs: 2.2, sm: 2.8 },
+      }}
+    >
+      <Typography
+        id="community-settings-title"
+        sx={{
+          color: darkMode ? WELLNESS_DARK.text : WELLNESS.text,
+          fontSize: 20,
+          fontWeight: 800,
+          lineHeight: 1.2,
+          mb: 1.8,
+        }}
+      >
+        Community Settings
+      </Typography>
+
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: { xs: "flex-start", sm: "center" },
+          justifyContent: "space-between",
+          flexDirection: { xs: "column", sm: "row" },
+          gap: 1.5,
+          border: darkMode
+            ? "1px solid rgba(196, 165, 245, 0.16)"
+            : "1px solid rgba(181, 123, 232, 0.14)",
+          borderRadius: 3,
+          backgroundColor: darkMode ? "rgba(15, 23, 42, 0.46)" : "rgba(255, 251, 255, 0.78)",
+          p: { xs: 1.6, sm: 1.8 },
+        }}
+      >
+        <Box sx={{ minWidth: 0 }}>
+          <Typography
+            sx={{
+              color: darkMode ? WELLNESS_DARK.text : WELLNESS.text,
+              fontSize: 15,
+              fontWeight: 800,
+              lineHeight: 1.3,
+            }}
+          >
+            Show my birthday in the community
+          </Typography>
+          <Typography
+            sx={{
+              color: darkMode ? WELLNESS_DARK.muted : WELLNESS.muted,
+              fontSize: 13,
+              lineHeight: 1.5,
+              mt: 0.45,
+            }}
+          >
+            This only controls community visibility. Your birthday stays unchanged in Settings.
+          </Typography>
+        </Box>
+
+        <ButtonBase
+          type="button"
+          role="switch"
+          aria-checked={showBirthdayInCommunity}
+          aria-label="Show my birthday in the community"
+          disableRipple
+          onClick={() => handleBirthdayVisibilityChange(!showBirthdayInCommunity)}
+          sx={{
+            flexShrink: 0,
+            alignSelf: { xs: "flex-end", sm: "center" },
+            width: 52,
+            height: 30,
+            borderRadius: 999,
+            border: darkMode
+              ? "1px solid rgba(196, 165, 245, 0.28)"
+              : "1px solid rgba(181, 123, 232, 0.32)",
+            backgroundColor: showBirthdayInCommunity
+              ? darkMode
+                ? "rgba(196, 165, 245, 0.24)"
+                : "rgba(234, 215, 255, 0.9)"
+              : darkMode
+                ? "rgba(30, 41, 59, 0.9)"
+                : "#ffffff",
+            transition: "background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease",
+            "&::after": {
+              content: '""',
+              width: 22,
+              height: 22,
+              borderRadius: "50%",
+              background: showBirthdayInCommunity
+                ? `linear-gradient(145deg, ${WELLNESS.primary}, #c4a5f5)`
+                : darkMode
+                  ? "#94a3b8"
+                  : "#d7c4ec",
+              transform: showBirthdayInCommunity ? "translateX(10px)" : "translateX(-10px)",
+              transition: "transform 0.2s ease, background 0.2s ease",
+              boxShadow: "0 2px 8px rgba(75, 19, 107, 0.18)",
+            },
+            "&:hover": {
+              borderColor: darkMode ? "rgba(196, 165, 245, 0.46)" : "rgba(181, 123, 232, 0.52)",
+            },
+            "&.Mui-focusVisible": {
+              outline: `2px solid ${WELLNESS.primary}`,
+              outlineOffset: 2,
+            },
+          }}
+        />
+      </Box>
+    </Box>
+  );
+}
 
 function ProfilePage({
   darkMode: darkModeFromParent,
@@ -405,6 +534,12 @@ function ProfilePage({
                       locale={locale}
                       onLocaleChange={setSelectedLanguage}
                       onSaveLanguage={handleSaveLanguage}
+                    />
+
+                    <CommunitySettingsSection
+                      darkMode={darkMode}
+                      participantId={participantId}
+                      profile={profile}
                     />
 
                     <ChangePasswordCard darkMode={darkMode} t={t} />
