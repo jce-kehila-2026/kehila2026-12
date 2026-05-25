@@ -247,12 +247,6 @@ export default function CreatePostCard({
           {successMessage}
         </p>
       )}
-      {allowAnonymousPosting && isAnonymous && (
-        <div className="create-post-card__anonymous-status" aria-live="polite">
-          <LockOutlinedIcon fontSize="inherit" />
-          Posting anonymously
-        </div>
-      )}
       <div className="create-post-card__toolbar" aria-label="Post options">
         <div className="create-post-card__actions" aria-label="Attachment options">
           {composerActions.map(({ label, icon: Icon }) => (

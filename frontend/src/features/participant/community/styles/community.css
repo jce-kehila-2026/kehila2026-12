@@ -264,23 +264,27 @@
 }
 
 .community-guidelines-shortcut {
+  width: min(100%, 1124px);
   display: flex;
   justify-content: flex-end;
+  justify-self: center;
+  margin-top: 4px;
   min-width: 0;
+  padding-right: 2px;
 }
 
 .community-guidelines-shortcut button {
-  min-height: 24px;
+  min-height: 21px;
   border: 0;
   border-radius: 6px;
   background: transparent;
   color: rgba(75, 19, 107, 0.56);
   cursor: pointer;
   font: inherit;
-  font-size: 0.76rem;
+  font-size: 0.72rem;
   font-weight: 700;
-  line-height: 1.2;
-  padding: 2px 0;
+  line-height: 1.15;
+  padding: 1px 0;
   text-decoration: underline;
   text-decoration-color: rgba(123, 63, 161, 0.22);
   text-decoration-thickness: 1px;
@@ -311,8 +315,7 @@
   min-width: 0;
 }
 
-.community-main-feed,
-.community-right-sidebar {
+.community-main-feed {
   max-height: 100%;
   overflow-y: auto;
   overscroll-behavior: contain;
@@ -323,6 +326,9 @@
 .community-right-sidebar {
   align-content: start;
   gap: 14px;
+  overflow: visible;
+  padding-right: 0;
+  scrollbar-gutter: auto;
 }
 
 .community-right-sidebar > * {
@@ -479,22 +485,6 @@
   background: #fff2f9;
   color: #ec168c;
   outline: none;
-}
-
-.create-post-card__anonymous-status {
-  width: fit-content;
-  max-width: calc(100% - 56px);
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  margin: -2px 0 0 56px;
-  border: 1px solid rgba(123, 63, 161, 0.1);
-  border-radius: 999px;
-  background: linear-gradient(135deg, #fff2f9, #f5ecff);
-  color: #7b3fa1;
-  font-size: 0.76rem;
-  font-weight: 800;
-  padding: 7px 10px;
 }
 
 .create-post-card__voice-panel,
@@ -2754,7 +2744,6 @@
   color: #fbcfe8;
 }
 
-.participant-home--dark .create-post-card__anonymous-status,
 .participant-home--dark .create-post-card__anonymous.is-active {
   border-color: rgba(236, 72, 153, 0.28);
   background: rgba(236, 72, 153, 0.14);
