@@ -871,7 +871,8 @@
 .events-card__about-button {
   position: absolute;
   top: 10px;
-  right: 10px;
+  right: auto;
+  left: 10px;
   z-index: 2;
   min-height: 30px;
   display: inline-flex;
@@ -883,10 +884,12 @@
   background: rgba(255, 255, 255, 0.78);
   color: #7b3fa1;
   cursor: pointer;
+  direction: ltr;
   font: inherit;
   font-size: 0.64rem;
   font-weight: 800;
   padding: 0 10px;
+  text-align: left;
   box-shadow:
     0 12px 22px rgba(75, 19, 107, 0.14),
     inset 0 1px 0 rgba(255, 255, 255, 0.86);
@@ -988,10 +991,15 @@
   z-index: 1;
   display: flex;
   flex-direction: column;
-  align-items: flex-end;
-  direction: rtl;
+  align-items: flex-start;
+  direction: ltr;
   padding: 12px 14px 14px;
-  text-align: right;
+  text-align: left;
+}
+
+.events-main--embedded .events-card__body {
+  direction: ltr;
+  text-align: left;
 }
 
 .events-card h3 {
@@ -1001,7 +1009,17 @@
   line-height: 1.08;
   width: 100%;
   font-weight: 900;
-  text-align: right;
+  text-align: left;
+}
+
+.events-card__title {
+  align-self: flex-start;
+  max-width: 100%;
+  margin-inline-start: 0;
+  margin-inline-end: auto;
+  direction: ltr;
+  unicode-bidi: isolate;
+  text-align: left;
 }
 
 .events-card__instructor {
@@ -1011,7 +1029,7 @@
   color: #ec5f97;
   font-size: 0.76rem;
   font-weight: 800;
-  text-align: right;
+  text-align: left;
 }
 
 .events-card__schedule {
@@ -1019,9 +1037,10 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  flex-direction: row-reverse;
+  flex-direction: row;
   gap: 6px;
-  align-self: flex-end;
+  align-self: flex-start;
+  direction: ltr;
   margin-block-start: 8px;
   min-height: 28px;
   border: 1px solid rgba(255, 255, 255, 0.68);
@@ -1031,7 +1050,7 @@
   font-size: 0.68rem;
   font-weight: 800;
   padding: 0 10px;
-  text-align: center;
+  text-align: left;
   box-shadow:
     0 12px 24px rgba(123, 63, 161, 0.12),
     inset 0 1px 0 rgba(255, 255, 255, 0.84);
@@ -1058,13 +1077,14 @@
   color: rgba(35, 20, 95, 0.64);
   font-size: 0.84rem;
   line-height: 1.42;
-  text-align: right;
+  text-align: left;
 }
 
 .events-card__description {
   width: 100%;
   display: grid;
-  justify-items: end;
+  justify-items: start;
+  direction: ltr;
   margin-block-start: 8px;
 }
 
@@ -1075,7 +1095,7 @@
   align-items: center;
   justify-content: center;
   gap: 6px;
-  direction: rtl;
+  direction: ltr;
   border: 1px solid rgba(255, 255, 255, 0.64);
   border-radius: 999px;
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.64), rgba(244, 233, 255, 0.56));
@@ -1085,7 +1105,7 @@
   font-size: 0.66rem;
   font-weight: 800;
   padding: 0 9px;
-  text-align: right;
+  text-align: left;
   box-shadow:
     0 8px 16px rgba(123, 63, 161, 0.08),
     inset 0 1px 0 rgba(255, 255, 255, 0.74);
@@ -1156,19 +1176,24 @@
   padding-block-start: 12px;
   width: 100%;
   border-block-start: 1px solid rgba(123, 63, 161, 0.1);
-  justify-items: end;
+  justify-items: start;
 }
 
 .events-card__meta span {
   min-width: 0;
   display: flex;
   align-items: center;
-  flex-direction: row-reverse;
-  justify-content: flex-end;
+  flex-direction: row;
+  justify-content: flex-start;
   gap: 8px;
   color: rgba(35, 20, 95, 0.68);
   font-size: 0.78rem;
   font-weight: 600;
+}
+
+.events-main--embedded .events-card__meta span {
+  flex-direction: row;
+  justify-content: flex-start;
 }
 
 .events-card__meta svg {

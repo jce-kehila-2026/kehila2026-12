@@ -741,7 +741,7 @@ function EventCard({
       </div>
 
       <div className="events-card__body">
-        <h3>{event.title}</h3>
+        <h3 className="events-card__title">{event.title}</h3>
         <span className="events-card__schedule">
           <CalendarMonthIcon fontSize="small" />
           {event.weeklySchedule}
@@ -941,7 +941,7 @@ function RegisteredSessionCard({ session, onCancelRegistration }) {
       </div>
 
       <div className="events-card__body">
-        <h3>{session.title}</h3>
+        <h3 className="events-card__title">{session.title}</h3>
         <strong className="events-card__instructor">With {session.providerName}</strong>
         <span className="events-card__schedule">
           <CalendarMonthIcon fontSize="small" />
