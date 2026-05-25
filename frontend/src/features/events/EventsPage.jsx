@@ -689,20 +689,6 @@ function getEventTone(type, index) {
   return ['lavender', 'purple', 'peach', 'blush'][index % 4];
 }
 
-function StatCard({ icon: Icon, label, value, tone }) {
-  return (
-    <article className={`events-stat events-stat--${tone}`}>
-      <span>
-        <Icon />
-      </span>
-      <div>
-        <strong>{value}</strong>
-        <p>{label}</p>
-      </div>
-    </article>
-  );
-}
-
 function EventCategoryButton({ title, active, color, icon: Icon, onClick }) {
   return (
     <button
@@ -1294,16 +1280,6 @@ export default function EventsPage({ embedInDashboard = false }) {
     return displayEvents.filter((event) => event.eventType === activeView.slice(0, -1));
   }, [activeView, displayEvents, registeredEvents]);
 
-  const stats = useMemo(() => {
-    const upcoming = displayEvents.reduce((total, event) => total + event.sessions.length, 0);
-
-    return [
-      { label: 'Total Events', value: displayEvents.length, tone: 'lavender', icon: CalendarMonthIcon },
-      { label: 'Upcoming', value: upcoming, tone: 'blush', icon: EventAvailableIcon },
-      { label: 'Registered', value: registeredEvents.length, tone: 'peach', icon: PersonIcon },
-    ];
-  }, [displayEvents, registeredEvents.length]);
-
   const categoryCards = useMemo(() => {
     return [
       {
@@ -1480,11 +1456,6 @@ export default function EventsPage({ embedInDashboard = false }) {
       </section>
 
       <section className="events-summary-row" aria-label="Events summary">
-        <div className="events-stats">
-          {stats.map((item) => (
-            <StatCard icon={item.icon} label={item.label} value={item.value} tone={item.tone} key={item.label} />
-          ))}
-        </div>
         <button className="events-suggest-pill" type="button" onClick={openSuggestionModal}>
           <AddCircleOutlineIcon fontSize="small" />
           Suggest a Workshop
