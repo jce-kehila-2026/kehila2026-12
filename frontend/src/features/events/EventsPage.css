@@ -399,9 +399,8 @@
 
 .events-hero h1 {
   color: #4b136b;
-  font-family: Georgia, "Times New Roman", serif;
   font-size: clamp(2rem, 3.2vw, 2.68rem);
-  font-weight: 500;
+  font-weight: 800;
   letter-spacing: 0;
   line-height: 1;
   text-align: right;
