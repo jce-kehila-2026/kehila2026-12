@@ -4,6 +4,8 @@
   "type": "module",
   "scripts": {
     "migrate": "node migrateFirestore.js",
+    "seed:events": "node seedEvents.js",
+    "seed:events:clean": "node seedEvents.js --archive-existing",
     "seed:public-home": "node seedPublicHome.js",
     "cleanup:public-home-cta": "node cleanupPublicHomeCta.js"
   },

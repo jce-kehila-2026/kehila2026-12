@@ -385,12 +385,28 @@ function getFirstSlotStartSource(scheduleTemplate, fallbackStart) {
   return firstScheduledSlot?.startTime || fallbackStart;
 }
 
-function getSessionStartsForEvent(event, scheduleTemplate) {
+function getFirstProviderSlotStartSource(providerSlots, fallbackStart) {
+  const firstProviderSlot = providerSlots?.find((slot) => slot.startSource);
+  return firstProviderSlot?.startSource || fallbackStart;
+}
+
+function getEventWeeklyDayIndex(event, scheduleTemplate) {
+  const rawDayIndex = event.weeklyDayIndex ?? event.dayIndex ?? event.recurringDayIndex ?? event.dayOfWeekIndex;
+  const dayIndex = Number(rawDayIndex);
+  if (Number.isInteger(dayIndex) && dayIndex >= 0 && dayIndex <= 6) return dayIndex;
+  if (Number.isInteger(scheduleTemplate?.dayIndex)) return scheduleTemplate.dayIndex;
+  return null;
+}
+
+function getSessionStartsForEvent(event, scheduleTemplate, providerSlots = null) {
   const fallbackStart = event.startTime || event.date;
-  if (Number.isInteger(scheduleTemplate?.dayIndex)) {
+  const eventDayIndex = getEventWeeklyDayIndex(event, scheduleTemplate);
+
+  if (Number.isInteger(eventDayIndex)) {
+    const slots = providerSlots || getProviderSlots(event);
     return getNextWeeklySessionStartsByDay(
-      scheduleTemplate.dayIndex,
-      getFirstSlotStartSource(scheduleTemplate, fallbackStart),
+      eventDayIndex,
+      getFirstProviderSlotStartSource(slots, getFirstSlotStartSource(scheduleTemplate, fallbackStart)),
     );
   }
 
@@ -402,7 +418,7 @@ function buildSessionIdsForEvents(eventList) {
     const scheduleTemplate = findScheduleTemplate(event);
     const providerSlots = getProviderSlots(event);
 
-    return getSessionStartsForEvent(event, scheduleTemplate).flatMap((sessionStart) =>
+    return getSessionStartsForEvent(event, scheduleTemplate, providerSlots).flatMap((sessionStart) =>
       providerSlots.map((slot) => {
         const optionStart = copyTimeToDate(sessionStart, slot.startSource);
         return buildSessionId(event.id, optionStart || sessionStart, slot.providerId, slot.slotId);
@@ -411,9 +427,12 @@ function buildSessionIdsForEvents(eventList) {
   });
 }
 
-function getWeeklyScheduleLabel(scheduleTemplate, fallbackStart) {
-  if (Number.isInteger(scheduleTemplate?.dayIndex)) {
-    return formatWeeklyScheduleFromDay(scheduleTemplate.dayIndex);
+function getWeeklyScheduleLabel(event, scheduleTemplate, fallbackStart) {
+  if (event.weeklyDay) return `Every ${event.weeklyDay}`;
+
+  const eventDayIndex = getEventWeeklyDayIndex(event, scheduleTemplate);
+  if (Number.isInteger(eventDayIndex)) {
+    return formatWeeklyScheduleFromDay(eventDayIndex);
   }
 
   return formatWeeklySchedule(fallbackStart);
@@ -577,29 +596,6 @@ function getLooseTimeSlots(event) {
 }
 
 function getProviderSlots(event) {
-  const scheduleTemplate = findScheduleTemplate(event);
-  if (scheduleTemplate?.slots?.length) {
-    return scheduleTemplate.slots
-      .filter((slot) => slot.startTime)
-      .map((slot, slotIndex) => {
-        const providerName = slot.providerName || getInstructorLabel(event);
-        const providerId = slugifyIdentifier(slot.providerId || providerName);
-        const slotId = slugifyIdentifier(slot.id || `${providerId}-${getTimeKey(slot.startTime)}-${getTimeKey(slot.endTime)}-${slotIndex + 1}`);
-
-        return {
-          providerId,
-          providerName,
-          providerSpecialty: slot.specialty || event.category || (inferEventType(event) === 'appointment' ? 'Therapist' : 'Instructor'),
-          providerAvatar: slot.avatarUrl || '',
-          slotId,
-          startSource: slot.startTime,
-          endSource: slot.endTime,
-          room: slot.room || event.room || event.location || 'She-Na Center',
-          capacity: Number(slot.capacity || event.maxParticipants || event.capacity) || 0,
-        };
-      });
-  }
-
   const providerEntries = getProviderSlotArrays(event);
 
   if (providerEntries.length) {
@@ -652,6 +648,29 @@ function getProviderSlots(event) {
         capacity: Number(slot.maxParticipants || slot.capacity || slot.availableSpots || event.maxParticipants || event.capacity) || 0,
       };
     });
+  }
+
+  const scheduleTemplate = findScheduleTemplate(event);
+  if (scheduleTemplate?.slots?.length) {
+    return scheduleTemplate.slots
+      .filter((slot) => slot.startTime)
+      .map((slot, slotIndex) => {
+        const providerName = slot.providerName || getInstructorLabel(event);
+        const providerId = slugifyIdentifier(slot.providerId || providerName);
+        const slotId = slugifyIdentifier(slot.id || `${providerId}-${getTimeKey(slot.startTime)}-${getTimeKey(slot.endTime)}-${slotIndex + 1}`);
+
+        return {
+          providerId,
+          providerName,
+          providerSpecialty: slot.specialty || event.category || (inferEventType(event) === 'appointment' ? 'Therapist' : 'Instructor'),
+          providerAvatar: slot.avatarUrl || '',
+          slotId,
+          startSource: slot.startTime,
+          endSource: slot.endTime,
+          room: slot.room || event.room || event.location || 'She-Na Center',
+          capacity: Number(slot.capacity || event.maxParticipants || event.capacity) || 0,
+        };
+      });
   }
 
   const fallbackProvider = getInstructorLabel(event);
@@ -1184,8 +1203,8 @@ export default function EventsPage({ embedInDashboard = false }) {
         const providerNames = [...new Set(providerSlots.map((slot) => slot.providerName))];
         const roomLabels = [...new Set(providerSlots.map((slot) => slot.room).filter(Boolean))];
         const displayLocation = scheduleTemplate ? getScheduleTemplateLocation(scheduleTemplate) : (roomLabels.length > 1 ? 'Multiple rooms' : roomLabels[0] || event.location || 'She-Na Center');
-        const sessionStarts = getSessionStartsForEvent(event, scheduleTemplate);
-        const weeklySchedule = getWeeklyScheduleLabel(scheduleTemplate, templateStart);
+        const sessionStarts = getSessionStartsForEvent(event, scheduleTemplate, providerSlots);
+        const weeklySchedule = getWeeklyScheduleLabel(event, scheduleTemplate, templateStart);
         const templateDescription = scheduleTemplate?.description || event.description || 'More details will be added soon.';
         const sessions = sessionStarts.map((sessionStart) => {
           const dateKey = toDateKey(sessionStart);
