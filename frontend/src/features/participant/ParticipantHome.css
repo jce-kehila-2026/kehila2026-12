@@ -1098,54 +1098,6 @@
   color: #4b136b;
 }
 
-.resources-grid {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
-}
-
-.resource-card {
-  min-height: 210px;
-  display: grid;
-  align-content: start;
-  gap: 12px;
-  border: 1px solid rgba(123, 63, 161, 0.1);
-  border-radius: 18px;
-  background:
-    radial-gradient(circle at 95% 12%, rgba(255, 255, 255, 0.92), transparent 7rem),
-    #fff8fc;
-  padding: 18px;
-}
-
-.resource-card span,
-.resource-card small {
-  justify-self: start;
-  border-radius: 999px;
-  background: #fff2f9;
-  color: #ec168c;
-  font-size: 0.72rem;
-  font-weight: 700;
-  padding: 6px 10px;
-}
-
-.resource-card h3 {
-  color: #241332;
-  font-size: 1rem;
-  line-height: 1.35;
-}
-
-.resource-card p {
-  color: rgba(36, 19, 50, 0.66);
-  font-size: 0.88rem;
-  line-height: 1.55;
-}
-
-.resource-card small {
-  align-self: end;
-  background: rgba(123, 63, 161, 0.08);
-  color: #7b3fa1;
-}
-
 .participant-panel .calendar-page--embedded {
   min-height: 0;
   padding: 0;
@@ -1350,7 +1302,6 @@
 .participant-home--dark .week-agenda__item,
 .participant-home--dark .community-post,
 .participant-home--dark .recommendation-card,
-.participant-home--dark .resource-card,
 .participant-home--dark .workshop-card {
   border-color: rgba(236, 72, 153, 0.22);
   background: #1e293b;
@@ -1409,10 +1360,6 @@
   }
 
   .dashboard-overview {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-  }
-
-  .resources-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -1484,7 +1431,6 @@
   }
 
   .dashboard-overview,
-  .resources-grid,
   .dashboard-rail {
     grid-template-columns: 1fr;
   }
@@ -1511,7 +1457,7 @@
   color: #151126;
 }
 
-.participant-home :where(.dashboard-section-heading h2, .participant-section-heading h2, .schedule-item h3, .community-post h3, .recommendation-card strong, .resource-card h3, .workshop-card__title) {
+.participant-home :where(.dashboard-section-heading h2, .participant-section-heading h2, .schedule-item h3, .community-post h3, .recommendation-card strong, .workshop-card__title) {
   font-weight: 700;
   color: #201033;
 }
@@ -1520,7 +1466,7 @@
   font-weight: 700;
 }
 
-.participant-home :where(.dashboard-stat p, .schedule-item__tag, .week-agenda__item strong, .resource-card span, .resource-card small) {
+.participant-home :where(.dashboard-stat p, .schedule-item__tag, .week-agenda__item strong) {
   font-weight: 600;
 }
 
@@ -1528,7 +1474,7 @@
   font-weight: 500;
 }
 
-.participant-home :where(.dashboard-hero p, .schedule-item p, .community-post p, .resource-card p, .workshop-card__description) {
+.participant-home :where(.dashboard-hero p, .schedule-item p, .community-post p, .workshop-card__description) {
   font-weight: 400;
   color: rgba(32, 16, 51, 0.64);
 }
