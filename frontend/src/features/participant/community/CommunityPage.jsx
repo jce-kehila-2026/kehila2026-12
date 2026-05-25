@@ -92,13 +92,11 @@ export default function CommunityPage({
     hasCommunityAccessDetails,
     hasCompletedCommunitySetup,
     canUseCommunity,
-    showBirthdayInCommunity,
     allowAnonymousPosting,
     localUserId,
     visibleBirthdayUsers,
     profileSuccessMessage,
     handleBirthdayPreferenceSave,
-    handleBirthdayVisibilityChange,
   } = useCommunityProfile({ personalDetails });
   const handleCancelEditPost = () => {
     setEditingPostId(null);
@@ -478,32 +476,6 @@ export default function CommunityPage({
             streakCount={communityStreakCount}
           />
           <BirthdayCard birthdayUsers={visibleBirthdayUsers} />
-
-          {canUseCommunity && (
-            <section className="community-page-card community-privacy-card">
-              <div className="community-page-card__heading">
-                <span className="community-page-card__icon">
-                  <Diversity3OutlinedIcon />
-                </span>
-                <div>
-                  <span>Privacy</span>
-                  <h2>Community Privacy</h2>
-                </div>
-              </div>
-              <label className="community-privacy-card__toggle">
-                <input
-                  aria-label="Show my birthday in the community"
-                  type="checkbox"
-                  checked={showBirthdayInCommunity}
-                  onChange={(event) => handleBirthdayVisibilityChange(event.target.checked)}
-                />
-                <span>Show my birthday in the community</span>
-              </label>
-              <p>
-                This only controls community visibility. Your birthday stays unchanged in Settings.
-              </p>
-            </section>
-          )}
         </aside>
       </div>
       <div className="community-guidelines-shortcut">
