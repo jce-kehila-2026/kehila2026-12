@@ -14,7 +14,7 @@
   --community-primary-text: #201033;
   --community-section-gap: 16px;
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr) auto;
   gap: 22px;
   height: 100%;
   min-height: 0;
@@ -261,6 +261,44 @@
   min-width: 0;
   max-width: 100%;
   overflow: hidden;
+}
+
+.community-guidelines-shortcut {
+  display: flex;
+  justify-content: flex-end;
+  min-width: 0;
+}
+
+.community-guidelines-shortcut button {
+  min-height: 24px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: rgba(75, 19, 107, 0.56);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.76rem;
+  font-weight: 700;
+  line-height: 1.2;
+  padding: 2px 0;
+  text-decoration: underline;
+  text-decoration-color: rgba(123, 63, 161, 0.22);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  transition: color 180ms ease, opacity 180ms ease, text-decoration-color 180ms ease;
+}
+
+.community-guidelines-shortcut button:hover {
+  color: var(--community-accent-strong);
+  opacity: 0.92;
+  text-decoration-color: rgba(236, 22, 140, 0.56);
+}
+
+.community-guidelines-shortcut button:focus-visible {
+  color: var(--community-accent-strong);
+  text-decoration-color: rgba(236, 22, 140, 0.72);
+  box-shadow: 0 0 0 3px rgba(236, 22, 140, 0.1);
+  outline: none;
 }
 
 .community-main-feed,
@@ -2660,12 +2698,28 @@
   color: #cbd5e1;
 }
 
+.participant-home--dark .community-guidelines-shortcut button {
+  color: rgba(203, 213, 225, 0.72);
+  text-decoration-color: rgba(236, 72, 153, 0.3);
+}
+
 .participant-home--dark .community-feed-refresh:hover,
 .participant-home--dark .community-feed-refresh:focus-visible,
 .participant-home--dark .community-feed-refresh.is-refreshing {
   border-color: rgba(236, 72, 153, 0.36);
   background: rgba(236, 72, 153, 0.14);
   color: #fbcfe8;
+}
+
+.participant-home--dark .community-guidelines-shortcut button:hover {
+  color: #fbcfe8;
+  text-decoration-color: rgba(236, 72, 153, 0.66);
+}
+
+.participant-home--dark .community-guidelines-shortcut button:focus-visible {
+  color: #fbcfe8;
+  text-decoration-color: rgba(236, 72, 153, 0.78);
+  box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.14);
 }
 
 .participant-home--dark .community-feed-tabs button.is-active {

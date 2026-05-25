@@ -19,7 +19,6 @@ import {
 import BirthdayCard from './components/BirthdayCard';
 import CommunityAccessPanel from './components/CommunityAccessPanel';
 import CommunityBirthdayPreferenceCard from './components/CommunityBirthdayPreferenceCard';
-import CommunityGuidelinesCard from './components/CommunityGuidelinesCard';
 import CommunityGuidelinesModal from './components/CommunityGuidelinesModal';
 import CommunityPostCard from './components/CommunityPostCard';
 import CommunityStreakCard from './components/CommunityStreakCard';
@@ -505,8 +504,12 @@ export default function CommunityPage({
               </p>
             </section>
           )}
-          <CommunityGuidelinesCard onReadFullGuidelines={handleReadFullGuidelines} />
         </aside>
+      </div>
+      <div className="community-guidelines-shortcut">
+        <button type="button" onClick={handleReadFullGuidelines}>
+          Community Guidelines
+        </button>
       </div>
       {showFullGuidelinesModal && (
         <CommunityGuidelinesModal
