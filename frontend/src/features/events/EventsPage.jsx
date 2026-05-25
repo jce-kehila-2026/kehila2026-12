@@ -746,7 +746,6 @@ function EventCard({
 
       <div className="events-card__body">
         <h3>{event.title}</h3>
-        <strong className="events-card__instructor">with {event.providerSummary}</strong>
         <span className="events-card__schedule">
           <CalendarMonthIcon fontSize="small" />
           {event.weeklySchedule}
@@ -758,7 +757,6 @@ function EventCard({
           type="button"
           onClick={() => onOpenSessions(event.id)}
         >
-          <CalendarMonthIcon fontSize="small" />
           {hasRegisteredSessions ? 'Choose More Dates' : 'View Dates'}
           <ArrowForwardIcon fontSize="small" />
         </button>
