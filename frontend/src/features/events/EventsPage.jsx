@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutlineOutlined';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutlineOutlined';
@@ -13,17 +14,12 @@ import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
 import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined';
 import LogoutIcon from '@mui/icons-material/Logout';
 import MenuBookIcon from '@mui/icons-material/MenuBookOutlined';
-import PaletteOutlinedIcon from '@mui/icons-material/PaletteOutlined';
-import PeopleAltOutlinedIcon from '@mui/icons-material/PeopleAltOutlined';
-import PsychologyAltOutlinedIcon from '@mui/icons-material/PsychologyAltOutlined';
-import SelfImprovementIcon from '@mui/icons-material/SelfImprovement';
-import SettingsIcon from '@mui/icons-material/Settings';
-import SpaIcon from '@mui/icons-material/Spa';
+import PersonIcon from '@mui/icons-material/Person';
 import SendOutlinedIcon from '@mui/icons-material/SendOutlined';
-import TaskAltIcon from '@mui/icons-material/TaskAlt';
+import SettingsIcon from '@mui/icons-material/Settings';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import PersonIcon from '@mui/icons-material/Person';
+import AutorenewIcon from '@mui/icons-material/Autorenew';
 import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivismOutlined';
 import { useNavigate } from 'react-router-dom';
 import appointmentsHero from '../../assets/appointments-hero.png';
@@ -38,7 +34,10 @@ import {
 import { createWorkshopSuggestion } from './workshopSuggestionService';
 import './EventsPage.css';
 
-const ALL_CATEGORY = 'All';
+const VIEW_WORKSHOPS = 'workshops';
+const VIEW_APPOINTMENTS = 'appointments';
+const VIEW_REGISTERED = 'registered';
+const UPCOMING_SESSION_COUNT = 4;
 
 const suggestionCategories = [
   'Anxiety Support',
@@ -64,22 +63,12 @@ const emptySuggestionForm = {
 const participantNavItems = [
   { key: 'home', label: 'Home', icon: HomeRoundedIcon, path: '/home' },
   { key: 'calendar', label: 'Calendar', icon: CalendarMonthIcon, path: '/calendar' },
-  { key: 'workshops', label: 'Workshops', icon: EventAvailableIcon, path: '/events' },
-  { key: 'appointments', label: 'Appointments', icon: FavoriteBorderIcon, path: '/home' },
+  { key: 'events', label: 'Events', icon: EventAvailableIcon, path: '/events' },
   { key: 'resources', label: 'Resources', icon: MenuBookIcon, path: '/home' },
   { key: 'community', label: 'Community', icon: Diversity3Icon, path: '/home' },
   { key: 'messages', label: 'Messages', icon: ChatBubbleOutlineIcon, path: '/home', badge: 3 },
   { key: 'settings', label: 'Settings', icon: SettingsIcon, path: '/home' },
 ];
-
-const eventIconMap = {
-  art: PaletteOutlinedIcon,
-  breath: SpaIcon,
-  group: GroupsRoundedIcon,
-  meditation: SelfImprovementIcon,
-  spa: SpaIcon,
-  spark: PsychologyAltOutlinedIcon,
-};
 
 function toDate(value) {
   if (!value) return null;
@@ -101,7 +90,7 @@ function formatEventDate(value) {
 function formatEventTime(startValue, endValue) {
   const start = toDate(startValue);
   const end = toDate(endValue);
-  if (!start) return 'To be scheduled';
+  if (!start) return 'Time TBD';
 
   const formatter = new Intl.DateTimeFormat('en', {
     hour: '2-digit',
@@ -111,92 +100,466 @@ function formatEventTime(startValue, endValue) {
   return end ? `${formatter.format(start)} - ${formatter.format(end)}` : formatter.format(start);
 }
 
-function getEventTone(index) {
-  return ['pink', 'purple', 'orange', 'violet', 'rose', 'lavender'][index % 6];
+function toDateKey(date) {
+  if (!date) return '';
+  return [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, '0'),
+    String(date.getDate()).padStart(2, '0'),
+  ].join('-');
 }
 
-function getEventIcon(category = '') {
-  const normalized = category.toLowerCase();
-  if (normalized.includes('support') || normalized.includes('circle')) return 'group';
-  if (normalized.includes('therapy') || normalized.includes('counsel') || normalized.includes('nlp')) return 'spark';
-  if (normalized.includes('movement') || normalized.includes('yoga') || normalized.includes('body')) return 'meditation';
-  if (normalized.includes('art')) return 'art';
-  return 'spa';
+function formatWeekday(value) {
+  const date = toDate(value);
+  if (!date) return 'Schedule TBD';
+
+  return new Intl.DateTimeFormat('en', { weekday: 'long' }).format(date);
 }
 
-function EventCard({ event, isRegistered, onToggleRegistration }) {
-  const isFull = event.capacity > 0 && event.participants >= event.capacity && !isRegistered;
-  const actionDisabled = event.isRegistering || isFull;
+function formatWeeklySchedule(value) {
+  const weekday = formatWeekday(value);
+  return weekday === 'Schedule TBD' ? weekday : `Every ${weekday}`;
+}
+
+function formatSessionDate(value) {
+  const date = toDate(value);
+  if (!date) return 'Date TBD';
+
+  return new Intl.DateTimeFormat('en', {
+    weekday: 'long',
+    month: 'long',
+    day: 'numeric',
+  }).format(date);
+}
+
+function copyTimeToDate(dateValue, timeSource) {
+  const date = toDate(dateValue);
+  const time = getTimeParts(timeSource);
+  if (!date || !time) return date;
+
+  const nextDate = new Date(date);
+  nextDate.setHours(time.hours, time.minutes, 0, 0);
+  return nextDate;
+}
+
+function getTimeParts(value) {
+  if (!value) return null;
+
+  if (value?.toDate || value instanceof Date) {
+    const date = toDate(value);
+    return date ? { hours: date.getHours(), minutes: date.getMinutes() } : null;
+  }
+
+  if (typeof value === 'string') {
+    const timeMatch = value.trim().match(/^(\d{1,2}):(\d{2})/);
+    if (timeMatch) {
+      return { hours: Number(timeMatch[1]), minutes: Number(timeMatch[2]) };
+    }
+  }
+
+  const date = toDate(value);
+  return date ? { hours: date.getHours(), minutes: date.getMinutes() } : null;
+}
+
+function getTimeKey(value) {
+  const time = getTimeParts(value);
+  if (!time) return 'time-tbd';
+
+  return `${String(time.hours).padStart(2, '0')}${String(time.minutes).padStart(2, '0')}`;
+}
+
+function slugifyIdentifier(value) {
+  return String(value || 'item')
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9\u0590-\u05ff]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 80) || 'item';
+}
+
+function getNextWeeklySessionStarts(startValue, count = UPCOMING_SESSION_COUNT) {
+  const templateStart = toDate(startValue);
+  if (!templateStart) return [];
+
+  const now = new Date();
+  const today = new Date(now);
+  today.setHours(0, 0, 0, 0);
+
+  const firstDate = new Date(today);
+  const daysUntilTemplateDay = (templateStart.getDay() - today.getDay() + 7) % 7;
+  firstDate.setDate(today.getDate() + daysUntilTemplateDay);
+
+  let firstSessionStart = copyTimeToDate(firstDate, templateStart);
+  if (firstSessionStart && firstSessionStart.getTime() <= now.getTime()) {
+    firstDate.setDate(firstDate.getDate() + 7);
+    firstSessionStart = copyTimeToDate(firstDate, templateStart);
+  }
+
+  return Array.from({ length: count }, (_, index) => {
+    const sessionDate = new Date(firstDate);
+    sessionDate.setDate(firstDate.getDate() + index * 7);
+    return copyTimeToDate(sessionDate, templateStart);
+  }).filter(Boolean);
+}
+
+function buildSessionId(templateId, sessionStart, providerId, slotId) {
+  return `${templateId}__${toDateKey(sessionStart)}__${providerId}__${slotId}`;
+}
+
+function buildSessionIdsForEvents(eventList) {
+  return eventList.flatMap((event) => {
+    const templateStart = event.startTime || event.date;
+    const providerSlots = getProviderSlots(event);
+
+    return getNextWeeklySessionStarts(templateStart).flatMap((sessionStart) =>
+      providerSlots.map((slot) => {
+        const optionStart = copyTimeToDate(sessionStart, slot.startSource);
+        return buildSessionId(event.id, optionStart || sessionStart, slot.providerId, slot.slotId);
+      }),
+    );
+  });
+}
+
+function getInstructorLabel(event) {
+  return (
+    event.therapist ||
+    event.instructor ||
+    event.facilitator ||
+    event.coach ||
+    event.host ||
+    event.provider ||
+    event.organizer ||
+    'She-Na Team'
+  );
+}
+
+function getProviderName(provider, fallback) {
+  return (
+    provider.providerName ||
+    provider.therapistName ||
+    provider.therapist ||
+    provider.instructorName ||
+    provider.instructor ||
+    provider.name ||
+    fallback ||
+    'She-Na Team'
+  );
+}
+
+function getProviderSlotArrays(event) {
+  return [
+    event.providers,
+    event.therapists,
+    event.providerSlots,
+    event.sessionProviders,
+  ].find((items) => Array.isArray(items) && items.length) || [];
+}
+
+function getLooseTimeSlots(event) {
+  return [
+    event.timeSlots,
+    event.slots,
+    event.availableSlots,
+  ].find((items) => Array.isArray(items) && items.length) || [];
+}
+
+function getProviderSlots(event) {
+  const providerEntries = getProviderSlotArrays(event);
+
+  if (providerEntries.length) {
+    return providerEntries.flatMap((provider, providerIndex) => {
+      const providerName = getProviderName(provider, getInstructorLabel(event));
+      const providerId = slugifyIdentifier(provider.id || provider.uid || provider.email || providerName || `provider-${providerIndex + 1}`);
+      const providerSlots = [
+        provider.timeSlots,
+        provider.slots,
+        provider.availableSlots,
+      ].find((items) => Array.isArray(items) && items.length) || [provider];
+
+      return providerSlots.map((slot, slotIndex) => {
+        const startSource = slot.startTime || slot.start || slot.from || provider.startTime || event.startTime || event.date;
+        const endSource = slot.endTime || slot.end || slot.to || provider.endTime || event.endTime;
+        const slotId = slugifyIdentifier(slot.id || `${providerId}-${getTimeKey(startSource)}-${getTimeKey(endSource)}-${slotIndex + 1}`);
+
+        return {
+          providerId,
+          providerName,
+          slotId,
+          startSource,
+          endSource,
+          room: slot.room || slot.location || provider.room || provider.location || event.room || event.location || 'She-Na Center',
+          capacity: Number(slot.maxParticipants || slot.capacity || slot.availableSpots || provider.maxParticipants || provider.capacity || event.maxParticipants || event.capacity) || 0,
+        };
+      });
+    });
+  }
+
+  const looseSlots = getLooseTimeSlots(event);
+  if (looseSlots.length) {
+    return looseSlots.map((slot, slotIndex) => {
+      const providerName = getProviderName(slot, getInstructorLabel(event));
+      const providerId = slugifyIdentifier(slot.providerId || slot.therapistId || slot.instructorId || providerName || `provider-${slotIndex + 1}`);
+      const startSource = slot.startTime || slot.start || slot.from || event.startTime || event.date;
+      const endSource = slot.endTime || slot.end || slot.to || event.endTime;
+
+      return {
+        providerId,
+        providerName,
+        slotId: slugifyIdentifier(slot.id || `${providerId}-${getTimeKey(startSource)}-${getTimeKey(endSource)}-${slotIndex + 1}`),
+        startSource,
+        endSource,
+        room: slot.room || slot.location || event.room || event.location || 'She-Na Center',
+        capacity: Number(slot.maxParticipants || slot.capacity || slot.availableSpots || event.maxParticipants || event.capacity) || 0,
+      };
+    });
+  }
+
+  const fallbackProvider = getInstructorLabel(event);
+  const providerId = slugifyIdentifier(event.providerId || event.therapistId || event.instructorId || fallbackProvider);
+
+  return [
+    {
+      providerId,
+      providerName: fallbackProvider,
+      slotId: slugifyIdentifier(`${providerId}-${getTimeKey(event.startTime || event.date)}-${getTimeKey(event.endTime)}`),
+      startSource: event.startTime || event.date,
+      endSource: event.endTime,
+      room: event.room || event.location || 'She-Na Center',
+      capacity: Number(event.maxParticipants || event.capacity) || 0,
+    },
+  ];
+}
+
+function inferEventType(event) {
+  const raw = `${event.type || ''} ${event.category || ''}`.toLowerCase();
+  if (raw.includes('appointment') || raw.includes('therapy') || raw.includes('session')) return 'appointment';
+  return 'workshop';
+}
+
+function getTemporalStatus(startValue) {
+  const start = toDate(startValue);
+  if (!start) return 'upcoming';
+  return start.getTime() < Date.now() ? 'completed' : 'upcoming';
+}
+
+function getEventTone(type, index) {
+  if (type === 'appointment') return 'rose';
+  return ['lavender', 'purple', 'peach', 'blush'][index % 4];
+}
+
+function StatCard({ icon: Icon, label, value, tone }) {
+  return (
+    <article className={`events-stat events-stat--${tone}`}>
+      <span>
+        <Icon />
+      </span>
+      <div>
+        <strong>{value}</strong>
+        <p>{label}</p>
+      </div>
+    </article>
+  );
+}
+
+function EventCategoryButton({ title, active, color, onClick }) {
+  return (
+    <button
+      className={`events-category-button events-category-button--${color}${active ? ' is-active' : ''}`}
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+    >
+      <span>{title}</span>
+    </button>
+  );
+}
+
+function EventCard({
+  event,
+  registeredSessionIds,
+  onOpenSessions,
+}) {
+  const typeLabel = event.eventType === 'appointment' ? 'Appointment' : 'Workshop';
+  const hasRegisteredSessions = event.sessionOptions.some((session) => registeredSessionIds.has(session.id));
 
   return (
-    <article className={`events-card events-card--${event.tone}`} style={{ '--event-card-image': `url("${event.imageUrl}")` }}>
-      <div className="events-card__visual" aria-hidden="true">
-        <span className="events-card__category">{event.category}</span>
-        {isRegistered && (
-          <span className="events-card__registered">
-            <TaskAltIcon fontSize="small" />
-            Registered
-          </span>
-        )}
+    <article className={`events-card events-card--${event.tone}`}>
+      <div className="events-card__image">
+        <img src={event.imageUrl} alt="" />
+        <span className={`events-card__type events-card__type--${event.eventType}`}>{typeLabel}</span>
+        <span className="events-card__status events-card__status--weekly">
+          Weekly
+        </span>
       </div>
 
       <div className="events-card__body">
-        <h2>{event.title}</h2>
+        <h3>{event.title}</h3>
+        <strong className="events-card__instructor">{event.providerSummary}</strong>
         <p>{event.description}</p>
 
-        <dl className="events-card__details">
-          <div>
+        <div className="events-card__meta">
+          <span>
             <CalendarMonthIcon fontSize="small" />
-            <dt>Date</dt>
-            <dd>{event.date}</dd>
-          </div>
-          <div>
+            {event.weeklySchedule}
+          </span>
+          <span>
             <AccessTimeIcon fontSize="small" />
-            <dt>Time</dt>
-            <dd>{event.time}</dd>
-          </div>
-          <div>
-            <PeopleAltOutlinedIcon fontSize="small" />
-            <dt>Participants</dt>
-            <dd>{event.capacity > 0 ? `${event.participants} / ${event.capacity} spots left` : `${event.participants} registered`}</dd>
-          </div>
-          <div>
+            {event.time}
+          </span>
+          <span>
             <LocationOnOutlinedIcon fontSize="small" />
-            <dt>Location</dt>
-            <dd>{event.location}</dd>
-          </div>
-        </dl>
+            {event.location}
+          </span>
+          <span>
+            <AutorenewIcon fontSize="small" />
+            Weekly Program
+          </span>
+        </div>
 
         <button
-          className={`events-card__action${isRegistered ? ' is-cancel' : ''}`}
+          className="events-card__action"
           type="button"
-          onClick={() => onToggleRegistration(event.id)}
-          disabled={actionDisabled}
+          onClick={() => onOpenSessions(event.id)}
         >
-          {event.isRegistering
-            ? 'Please wait...'
-            : isRegistered
-              ? 'Cancel Registration'
-              : isFull
-                ? 'Fully Booked'
-                : 'Register Now'}
+          {hasRegisteredSessions ? 'Choose Another Session' : 'View Available Dates'}
+          <ArrowForwardIcon fontSize="small" />
         </button>
       </div>
     </article>
   );
 }
 
-function HeroIllustration() {
+function SessionSelectionModal({
+  event,
+  registeredSessionIds,
+  onRegisterSession,
+  onClose,
+}) {
+  if (!event) return null;
+
   return (
-    <div className="events-hero-art" aria-hidden="true">
-      <span className="events-hero-art__leaf events-hero-art__leaf--one" />
-      <span className="events-hero-art__leaf events-hero-art__leaf--two" />
-      <span className="events-hero-art__leaf events-hero-art__leaf--three" />
-      <span className="events-hero-art__body" />
-      <span className="events-hero-art__head" />
-      <span className="events-hero-art__hair" />
-      <span className="events-hero-art__legs" />
+    <div className="session-modal" role="presentation">
+      <div className="session-modal__backdrop" onClick={onClose} />
+      <section
+        className="session-modal__dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="session-modal-title"
+        dir="rtl"
+      >
+        <button className="session-modal__close" type="button" onClick={onClose} aria-label="Close session picker">
+          <CloseIcon />
+        </button>
+
+        <header className="session-modal__header">
+          <span className="session-modal__mark">
+            <EventAvailableIcon />
+          </span>
+          <div>
+            <h2 id="session-modal-title">Choose Your Session</h2>
+            <p>Select your preferred date, therapist, and time</p>
+            <strong>{event.title}</strong>
+          </div>
+        </header>
+
+        <div className="session-modal__dates">
+          {event.sessions.length > 0 ? (
+            event.sessions.map((session) => (
+              <section className="session-modal__date-group" key={session.id}>
+                <h3>{session.date}</h3>
+                <div className="session-modal__options">
+                  {session.options.map((option) => {
+                    const isRegistered = registeredSessionIds.has(option.id);
+                    const isFull = option.capacity > 0 && option.participants >= option.capacity && !isRegistered;
+                    const actionDisabled = option.isRegistering || isFull || isRegistered;
+
+                    return (
+                      <article
+                        className={`session-option${isRegistered ? ' is-registered' : ''}`}
+                        key={option.id}
+                      >
+                        <div className="session-option__body">
+                          <strong>{option.providerName}</strong>
+                          <span>
+                            <AccessTimeIcon fontSize="small" />
+                            {option.time}
+                          </span>
+                          <span>
+                            <LocationOnOutlinedIcon fontSize="small" />
+                            {option.room}
+                          </span>
+                          <small>{option.availableSpotsLabel}</small>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => onRegisterSession(event, option)}
+                          disabled={actionDisabled}
+                        >
+                          {option.isRegistering
+                            ? 'Please wait...'
+                            : isRegistered
+                              ? 'Registered'
+                              : isFull
+                                ? 'Fully Booked'
+                                : 'Register'}
+                        </button>
+                      </article>
+                    );
+                  })}
+                </div>
+              </section>
+            ))
+          ) : (
+            <p className="session-modal__empty">Upcoming dates will appear soon.</p>
+          )}
+        </div>
+      </section>
     </div>
+  );
+}
+
+function RegisteredSessionCard({ session, onCancelRegistration }) {
+  const typeLabel = session.eventType === 'appointment' ? 'Appointment' : 'Workshop';
+
+  return (
+    <article className={`events-card events-card--${session.tone}`}>
+      <div className="events-card__image">
+        <img src={session.imageUrl} alt="" />
+        <span className={`events-card__type events-card__type--${session.eventType}`}>{typeLabel}</span>
+        <span className="events-card__status events-card__status--registered">Registered</span>
+      </div>
+
+      <div className="events-card__body">
+        <h3>{session.title}</h3>
+        <strong className="events-card__instructor">With {session.providerName}</strong>
+        <p>{session.description}</p>
+
+        <div className="events-card__meta">
+          <span>
+            <CalendarMonthIcon fontSize="small" />
+            {session.date}
+          </span>
+          <span>
+            <AccessTimeIcon fontSize="small" />
+            {session.time}
+          </span>
+          <span>
+            <LocationOnOutlinedIcon fontSize="small" />
+            {session.room}
+          </span>
+        </div>
+
+        <button
+          className="events-card__action is-cancel"
+          type="button"
+          onClick={() => onCancelRegistration(session)}
+          disabled={session.isRegistering}
+        >
+          {session.isRegistering ? 'Please wait...' : 'Cancel Registration'}
+        </button>
+      </div>
+    </article>
   );
 }
 
@@ -309,16 +672,17 @@ function SuggestWorkshopModal({
   );
 }
 
-export default function EventsPage() {
+export default function EventsPage({ embedInDashboard = false }) {
   const navigate = useNavigate();
   const { currentUser, logout } = useAdmin();
-  const [activeCategory, setActiveCategory] = useState(ALL_CATEGORY);
+  const [activeView, setActiveView] = useState(VIEW_WORKSHOPS);
   const [events, setEvents] = useState([]);
   const [counts, setCounts] = useState({});
   const [registeredMap, setRegisteredMap] = useState({});
   const [loadingEvents, setLoadingEvents] = useState(true);
   const [eventsError, setEventsError] = useState('');
   const [registeringId, setRegisteringId] = useState(null);
+  const [sessionModalEventId, setSessionModalEventId] = useState(null);
   const [suggestions, setSuggestions] = useState([]);
   const [suggestionForm, setSuggestionForm] = useState(emptySuggestionForm);
   const [suggestionErrors, setSuggestionErrors] = useState({});
@@ -341,8 +705,9 @@ export default function EventsPage() {
     }
 
     try {
+      const sessionIds = buildSessionIdsForEvents(eventList);
       const [countsData, userRegistrations] = await Promise.all([
-        getRegistrationCounts(eventList.map((event) => event.id)),
+        sessionIds.length ? getRegistrationCounts(sessionIds) : Promise.resolve({}),
         currentUser?.email ? getUserRegisteredEventIds(currentUser.email) : Promise.resolve({}),
       ]);
 
@@ -376,16 +741,28 @@ export default function EventsPage() {
     return () => { cancelled = true; };
   }, [refreshRegistrationData]);
 
-  const categories = useMemo(() => {
-    const uniqueCategories = Array.from(new Set(events.map((event) => event.category).filter(Boolean)));
-    return [ALL_CATEGORY, ...uniqueCategories];
-  }, [events]);
+  useEffect(() => {
+    setSessionModalEventId(null);
+  }, [activeView]);
+
+  useEffect(() => {
+    if (!sessionModalEventId) return undefined;
+
+    function handleKeyDown(event) {
+      if (event.key === 'Escape') {
+        setSessionModalEventId(null);
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [sessionModalEventId]);
 
   const displayEvents = useMemo(
     () =>
       [...events].sort((left, right) => {
-        const leftDate = toDate(left.startTime);
-        const rightDate = toDate(right.startTime);
+        const leftDate = getNextWeeklySessionStarts(left.startTime || left.date, 1)[0];
+        const rightDate = getNextWeeklySessionStarts(right.startTime || right.date, 1)[0];
 
         if (!leftDate && !rightDate) return 0;
         if (!leftDate) return 1;
@@ -393,69 +770,219 @@ export default function EventsPage() {
 
         return leftDate.getTime() - rightDate.getTime();
       }).map((event, index) => {
-        const registeredCount = counts[event.id] ?? 0;
+        const eventType = inferEventType(event);
         const imageUrl = event.imageUrl || event.thumbnailUrl || event.coverImageUrl || appointmentsHero;
+        const templateStart = event.startTime || event.date;
+        const providerSlots = getProviderSlots(event);
+        const providerNames = [...new Set(providerSlots.map((slot) => slot.providerName))];
+        const roomLabels = [...new Set(providerSlots.map((slot) => slot.room).filter(Boolean))];
+        const timeLabels = [...new Set(providerSlots.map((slot) => {
+          const previewStart = copyTimeToDate(templateStart, slot.startSource);
+          const previewEnd = copyTimeToDate(templateStart, slot.endSource);
+          return formatEventTime(previewStart, previewEnd);
+        }))];
+        const sessions = getNextWeeklySessionStarts(templateStart).map((sessionStart) => {
+          const dateKey = toDateKey(sessionStart);
+          const options = providerSlots.map((slot) => {
+            const optionStart = copyTimeToDate(sessionStart, slot.startSource);
+            const optionEnd = copyTimeToDate(sessionStart, slot.endSource);
+            const optionId = buildSessionId(event.id, optionStart || sessionStart, slot.providerId, slot.slotId);
+            const participants = counts[optionId] ?? 0;
+            const availableSpots = slot.capacity > 0 ? Math.max(0, slot.capacity - participants) : null;
+
+            return {
+              id: optionId,
+              templateId: event.id,
+              eventTemplateId: event.id,
+              title: event.title || 'Untitled Event',
+              category: event.category || (eventType === 'appointment' ? 'Appointment' : 'Workshop'),
+              description: event.description || 'More details will be added soon.',
+              date: formatSessionDate(optionStart || sessionStart),
+              dateKey,
+              selectedDate: dateKey,
+              startDate: optionStart || sessionStart,
+              endDate: optionEnd,
+              time: formatEventTime(optionStart || sessionStart, optionEnd),
+              selectedTimeSlot: formatEventTime(optionStart || sessionStart, optionEnd),
+              providerId: slot.providerId,
+              providerName: slot.providerName,
+              room: slot.room,
+              location: slot.room,
+              participants,
+              capacity: slot.capacity,
+              availableSpots,
+              availableSpotsLabel: availableSpots === null ? 'Spots available' : `${availableSpots} spots available`,
+              tone: getEventTone(eventType, index),
+              imageUrl,
+              eventType,
+              instructor: slot.providerName,
+              weeklySchedule: formatWeeklySchedule(templateStart),
+              isRegistering: registeringId === optionId,
+            };
+          });
+
+          return {
+            id: `${event.id}__${dateKey}`,
+            date: formatSessionDate(sessionStart),
+            dateKey,
+            startDate: sessionStart,
+            options,
+          };
+        });
+        const sessionOptions = sessions.flatMap((session) => session.options);
 
         return {
           id: event.id,
           title: event.title || 'Untitled Event',
-          category: event.category || 'Workshop',
+          category: event.category || (eventType === 'appointment' ? 'Appointment' : 'Workshop'),
           description: event.description || 'More details will be added soon.',
-          date: formatEventDate(event.startTime),
-          time: formatEventTime(event.startTime, event.endTime),
-          instructor: event.instructor || event.therapist || event.facilitator || event.providerName || 'She-Na team',
-          participants: registeredCount,
-          capacity: Number(event.maxParticipants) || 0,
-          location: event.location || 'She-Na Center',
-          tone: event.tone || getEventTone(index),
-          icon: event.icon || getEventIcon(event.category),
+          date: formatEventDate(templateStart),
+          time: timeLabels.length > 1 ? 'Multiple time slots' : timeLabels[0] || formatEventTime(event.startTime || event.date, event.endTime),
+          participants: sessionOptions.reduce((total, session) => total + session.participants, 0),
+          capacity: sessionOptions.reduce((total, session) => total + session.capacity, 0),
+          location: roomLabels.length > 1 ? 'Multiple rooms' : roomLabels[0] || event.location || 'She-Na Center',
+          tone: getEventTone(eventType, index),
           imageUrl,
-          isRegistering: registeringId === event.id,
+          eventType,
+          instructor: getInstructorLabel(event),
+          providerSummary: providerNames.length > 1 ? `${providerNames.length} providers available` : providerNames[0] || getInstructorLabel(event),
+          weeklySchedule: formatWeeklySchedule(templateStart),
+          temporalStatus: getTemporalStatus(sessions[0]?.startDate || templateStart),
+          sessions,
+          sessionOptions,
         };
       }),
     [counts, events, registeringId],
   );
 
-  const filteredEvents = useMemo(() => {
-    if (activeCategory === ALL_CATEGORY) return displayEvents;
-    return displayEvents.filter((event) => event.category === activeCategory);
-  }, [activeCategory, displayEvents]);
+  const registeredEvents = useMemo(
+    () =>
+      displayEvents.flatMap((event) =>
+        event.sessionOptions
+          .filter((session) => Boolean(registeredMap[session.id]))
+          .map((session) => ({
+            ...session,
+            registrationId: registeredMap[session.id],
+          })),
+      ),
+    [displayEvents, registeredMap],
+  );
 
-  async function handleToggleRegistration(eventId) {
+  const filteredEvents = useMemo(() => {
+    if (activeView === VIEW_REGISTERED) return registeredEvents;
+    return displayEvents.filter((event) => event.eventType === activeView.slice(0, -1));
+  }, [activeView, displayEvents, registeredEvents]);
+
+  const stats = useMemo(() => {
+    const upcoming = displayEvents.reduce((total, event) => total + event.sessions.length, 0);
+
+    return [
+      { label: 'Total Events', value: displayEvents.length, tone: 'lavender', icon: CalendarMonthIcon },
+      { label: 'Upcoming', value: upcoming, tone: 'blush', icon: EventAvailableIcon },
+      { label: 'Registered', value: registeredEvents.length, tone: 'peach', icon: PersonIcon },
+    ];
+  }, [displayEvents, registeredEvents.length]);
+
+  const categoryCards = useMemo(() => {
+    return [
+      {
+        type: VIEW_WORKSHOPS,
+        title: 'Workshops',
+        color: 'lavender',
+      },
+      {
+        type: VIEW_APPOINTMENTS,
+        title: 'Appointments',
+        color: 'blush',
+      },
+      {
+        type: VIEW_REGISTERED,
+        title: 'Registered Events',
+        color: 'peach',
+      },
+    ];
+  }, []);
+
+  const sectionTitle = useMemo(() => {
+    if (activeView === VIEW_APPOINTMENTS) return 'Upcoming Appointments';
+    if (activeView === VIEW_REGISTERED) return 'My Registered Events';
+    return 'Upcoming Workshops';
+  }, [activeView]);
+
+  const registeredSessionIds = useMemo(() => new Set(Object.keys(registeredMap)), [registeredMap]);
+  const activeSessionEvent = useMemo(
+    () => displayEvents.find((event) => event.id === sessionModalEventId) || null,
+    [displayEvents, sessionModalEventId],
+  );
+
+  function openSessionModal(eventId) {
+    setSessionModalEventId(eventId);
+  }
+
+  function closeSessionModal() {
+    setSessionModalEventId(null);
+  }
+
+  async function handleRegisterSession(event, session) {
     if (!currentUser?.email || registeringId) return;
 
-    const event = events.find((item) => item.id === eventId);
-    if (!event) return;
+    if (!event || !session || registeredMap[session.id]) return;
 
-    const registrationId = registeredMap[eventId];
-    setRegisteringId(eventId);
+    setRegisteringId(session.id);
     setEventsError('');
 
     try {
-      if (registrationId) {
-        await removeRegistration(registrationId, currentUser.displayName || currentUser.email, eventId);
-        setRegisteredMap((current) => {
-          const next = { ...current };
-          delete next[eventId];
-          return next;
-        });
-        setCounts((current) => ({ ...current, [eventId]: Math.max(0, (current[eventId] ?? 1) - 1) }));
-      } else {
-        const newRegistrationId = await addRegistration({
-          eventId,
-          uid: currentUser.uid,
-          participantName: currentUser.displayName || currentUser.email.split('@')[0],
-          participantEmail: currentUser.email,
-          eventTitle: event.title,
-          eventDate: event.startTime || event.date || null,
-          eventLocation: event.location || '',
-        });
-        setRegisteredMap((current) => ({ ...current, [eventId]: newRegistrationId }));
-        setCounts((current) => ({ ...current, [eventId]: (current[eventId] ?? 0) + 1 }));
-      }
+      const newRegistrationId = await addRegistration({
+        eventId: session.id,
+        uid: currentUser.uid,
+        participantName: currentUser.displayName || currentUser.email.split('@')[0],
+        participantEmail: currentUser.email,
+        eventTitle: event.title,
+        eventDate: session.startDate || null,
+        eventLocation: session.room || event.location || '',
+        eventCoverUrl: event.imageUrl || '',
+        eventTemplateId: event.id,
+        parentEventId: event.id,
+        eventType: event.eventType,
+        selectedDate: session.selectedDate,
+        providerId: session.providerId,
+        providerName: session.providerName,
+        selectedTimeSlot: session.selectedTimeSlot,
+        room: session.room,
+        sessionDateLabel: session.date,
+        sessionTime: session.time,
+        recurringSchedule: event.weeklySchedule,
+      });
+      setRegisteredMap((current) => ({ ...current, [session.id]: newRegistrationId }));
+      setCounts((current) => ({ ...current, [session.id]: (current[session.id] ?? 0) + 1 }));
     } catch (error) {
       console.error('Registration action failed:', error);
-      setEventsError('Could not update your registration. Please try again.');
+      setEventsError('Could not register for this session. Please try again.');
+    } finally {
+      setRegisteringId(null);
+    }
+  }
+
+  async function handleCancelSession(session) {
+    if (!currentUser?.email || registeringId || !session) return;
+
+    const registrationId = registeredMap[session.id];
+    if (!registrationId) return;
+
+    setRegisteringId(session.id);
+    setEventsError('');
+
+    try {
+      await removeRegistration(registrationId, currentUser.displayName || currentUser.email, session.id);
+      setRegisteredMap((current) => {
+        const next = { ...current };
+        delete next[session.id];
+        return next;
+      });
+      setCounts((current) => ({ ...current, [session.id]: Math.max(0, (current[session.id] ?? 1) - 1) }));
+    } catch (error) {
+      console.error('Cancel session registration failed:', error);
+      setEventsError('Could not cancel this session registration. Please try again.');
     } finally {
       setRegisteringId(null);
     }
@@ -504,7 +1031,7 @@ export default function EventsPage() {
     try {
       const suggestion = await createWorkshopSuggestion(suggestionForm, currentUser);
       setSuggestions((current) => [suggestion, ...current]);
-      setSuggestionSuccess('Thank you. Your suggestion was submitted successfully 💜');
+      setSuggestionSuccess('Thank you. Your suggestion was submitted successfully.');
       setSuggestionForm(emptySuggestionForm);
 
       window.setTimeout(() => {
@@ -519,8 +1046,117 @@ export default function EventsPage() {
     }
   }
 
+  const eventsContent = (
+    <>
+      <section className="events-hero">
+        <div className="events-hero__content">
+          <h1>Events</h1>
+          <p>All your sessions in one place</p>
+        </div>
+      </section>
+
+      <section className="events-summary-row" aria-label="Events summary">
+        <div className="events-stats">
+          {stats.map((item) => (
+            <StatCard icon={item.icon} label={item.label} value={item.value} tone={item.tone} key={item.label} />
+          ))}
+        </div>
+        <button className="events-suggest-pill" type="button" onClick={openSuggestionModal}>
+          <AddCircleOutlineIcon fontSize="small" />
+          Suggest a Workshop
+        </button>
+      </section>
+
+      {(loadingEvents || eventsError) && (
+        <div className={`events-status${eventsError ? ' events-status--error' : ''}`}>
+          {loadingEvents ? 'Loading live events from Firestore...' : eventsError}
+        </div>
+      )}
+
+      <section className="events-categories" aria-label="Event categories">
+        <div className="events-category-grid">
+          {categoryCards.map((card) => (
+              <EventCategoryButton
+                {...card}
+                active={activeView === card.type}
+                onClick={() => setActiveView(card.type)}
+              key={card.type}
+            />
+          ))}
+        </div>
+      </section>
+
+        <section className="events-list-panel">
+          <div className="events-list-heading">
+            <div>
+              <h2>{sectionTitle}</h2>
+            </div>
+          </div>
+
+          <div className="events-grid-shell">
+            <section className="events-grid" aria-label={sectionTitle}>
+              {activeView === VIEW_REGISTERED
+                ? filteredEvents.map((session) => (
+                  <RegisteredSessionCard
+                    session={session}
+                    onCancelRegistration={handleCancelSession}
+                    key={session.id}
+                  />
+                ))
+                : filteredEvents.map((event) => (
+                  <EventCard
+                    event={event}
+                    registeredSessionIds={registeredSessionIds}
+                    onOpenSessions={openSessionModal}
+                    key={event.id}
+                  />
+                ))}
+            </section>
+          </div>
+        </section>
+
+      {!loadingEvents && filteredEvents.length === 0 && (
+        <section className="events-empty">
+          <AutoAwesomeIcon />
+          <h2>No events here yet</h2>
+          <p>When matching published events are available, they will appear in this section.</p>
+        </section>
+      )}
+
+      {isSuggestionModalOpen && (
+        <SuggestWorkshopModal
+          form={suggestionForm}
+          errors={suggestionErrors}
+          successMessage={suggestionSuccess}
+          submitError={suggestionSubmitError}
+          isSubmitting={isSubmittingSuggestion}
+          onChange={updateSuggestionField}
+          onSubmit={handleSubmitSuggestion}
+          onClose={closeSuggestionModal}
+        />
+      )}
+
+      {activeSessionEvent && (
+        <SessionSelectionModal
+          event={activeSessionEvent}
+          registeredSessionIds={registeredSessionIds}
+          onRegisterSession={handleRegisterSession}
+          onClose={closeSessionModal}
+        />
+      )}
+    </>
+  );
+
+  if (embedInDashboard) {
+    return (
+      <section className="events-main events-main--embedded" dir="rtl">
+        {eventsContent}
+      </section>
+    );
+  }
+
   return (
-    <main className="events-page" dir="ltr">
+    <main className="events-page" dir="rtl">
       <aside className="events-sidebar" aria-label="Participant navigation">
         <button className="events-brand" type="button" onClick={() => navigate('/home')}>
           <span className="events-brand__mark">S</span>
@@ -535,7 +1171,7 @@ export default function EventsPage() {
             const Icon = item.icon;
             return (
               <button
-                className={item.key === 'workshops' ? 'is-active' : ''}
+                className={item.key === 'events' ? 'is-active' : ''}
                 type="button"
                 onClick={() => navigate(item.path)}
                 key={item.key}
@@ -566,7 +1202,7 @@ export default function EventsPage() {
       <section className="events-main">
         <header className="events-topbar">
           <div>
-            <p>Participant space</p>
+            <p>Hi, {displayName}</p>
             <strong>{new Intl.DateTimeFormat('en', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }).format(new Date())}</strong>
           </div>
           <div className="events-profile">
@@ -574,101 +1210,7 @@ export default function EventsPage() {
             <strong>{displayName.slice(0, 2).toUpperCase()}</strong>
           </div>
         </header>
-
-        <section className="events-hero">
-          <div className="events-hero__content">
-            <h1>Workshops & Sessions</h1>
-            <p>Discover calming, empowering sessions designed to support movement, reflection, creativity, and connection.</p>
-            <div className="events-hero__summary" aria-label="Workshop summary">
-              <div>
-                <EventAvailableIcon />
-                <strong>{events.length}</strong>
-                <span>Upcoming Workshops</span>
-              </div>
-              <div>
-                <TaskAltIcon />
-                <strong>{Object.keys(registeredMap).length}</strong>
-                <span>Registered</span>
-              </div>
-            </div>
-          </div>
-          <HeroIllustration />
-        </section>
-
-        {(loadingEvents || eventsError) && (
-          <div className={`events-status${eventsError ? ' events-status--error' : ''}`}>
-            {loadingEvents ? 'Loading live events from Firestore...' : eventsError}
-          </div>
-        )}
-
-        <section className="events-suggestion">
-          <div className="events-suggestion__icon" aria-hidden="true">
-            <CalendarMonthIcon />
-            <TaskAltIcon />
-          </div>
-          <div>
-            <h2>Can't find what you're looking for?</h2>
-            <p>Let us know what topics or sessions you'd like to see next.</p>
-          </div>
-          <button type="button" onClick={openSuggestionModal}>
-            Suggest a Workshop
-            <ArrowForwardIcon fontSize="small" />
-          </button>
-        </section>
-
-        <section className="events-workshops-panel">
-          <section className="events-filter" aria-label="Filter events by category">
-            {categories.map((category) => (
-              <button
-                className={activeCategory === category ? 'is-active' : ''}
-                type="button"
-                onClick={() => setActiveCategory(category)}
-                key={category}
-              >
-                {category}
-              </button>
-            ))}
-          </section>
-
-          <div className="events-list-heading">
-            <h2>Upcoming Workshops</h2>
-          </div>
-
-          <section className="events-grid" aria-label="Events and workshops">
-            {filteredEvents.map((event) => (
-              <EventCard
-                event={event}
-                isRegistered={Boolean(registeredMap[event.id])}
-                onToggleRegistration={handleToggleRegistration}
-                key={event.id}
-              />
-            ))}
-          </section>
-        </section>
-
-        {!loadingEvents && filteredEvents.length === 0 && (
-          <section className="events-empty">
-            <AutoAwesomeIcon />
-            <h2>No published events yet</h2>
-            <p>Create published events in the admin dashboard and they will appear here automatically.</p>
-            <button type="button" onClick={() => navigate('/admin/events')}>
-              Open Admin Events
-            </button>
-          </section>
-        )}
-
-        {isSuggestionModalOpen && (
-          <SuggestWorkshopModal
-            form={suggestionForm}
-            errors={suggestionErrors}
-            successMessage={suggestionSuccess}
-            submitError={suggestionSubmitError}
-            isSubmitting={isSubmittingSuggestion}
-            onChange={updateSuggestionField}
-            onSubmit={handleSubmitSuggestion}
-            onClose={closeSuggestionModal}
-          />
-        )}
+        {eventsContent}
       </section>
     </main>
   );
