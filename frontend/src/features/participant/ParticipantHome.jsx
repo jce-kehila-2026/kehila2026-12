@@ -533,7 +533,7 @@ export default function ParticipantHome({ initialView = 'home' }) {
           </button>
         </div>
       )}
-      <main className={`participant-home${darkMode ? ' participant-home--dark' : ''}`} dir="ltr">
+      <main className={`participant-home${darkMode ? ' participant-home--dark' : ''}${activeView === 'events' ? ' participant-home--events' : ''}`} dir="ltr">
         <aside className="participant-sidebar" aria-label="Participant navigation">
           <div className="participant-brand">
             <span className="participant-brand__mark">S</span>
@@ -579,7 +579,7 @@ export default function ParticipantHome({ initialView = 'home' }) {
           </button>
         </aside>
 
-        <section className={`participant-main${activeView === 'community' ? ' participant-main--community' : ''}`} id="home">
+        <section className={`participant-main${activeView === 'community' ? ' participant-main--community' : ''}${activeView === 'events' ? ' participant-main--events' : ''}`} id="home">
           <header className={`participant-topbar${activeView === 'community' ? ' participant-header-sticky' : ''}`}>
             <div>
               <p>Good morning, {displayName}</p>

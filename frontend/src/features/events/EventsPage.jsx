@@ -19,7 +19,7 @@ import SendOutlinedIcon from '@mui/icons-material/SendOutlined';
 import SettingsIcon from '@mui/icons-material/Settings';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
-import AutorenewIcon from '@mui/icons-material/Autorenew';
+import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivismOutlined';
 import { useNavigate } from 'react-router-dom';
 import appointmentsHero from '../../assets/appointments-hero.png';
@@ -38,6 +38,120 @@ const VIEW_WORKSHOPS = 'workshops';
 const VIEW_APPOINTMENTS = 'appointments';
 const VIEW_REGISTERED = 'registered';
 const UPCOMING_SESSION_COUNT = 4;
+
+const ENGLISH_SCHEDULE_TEMPLATES = [
+  {
+    title: 'Reflexology',
+    keys: ['reflexology'],
+    description: 'Gentle pressure therapy through the feet to support balance, relaxation, and inner wellbeing.',
+    dayIndex: 1,
+    slots: [
+      { providerName: 'Margarita', specialty: 'Reflexology Therapist', startTime: '10:30', endTime: '11:00', room: 'Treatment Room #1', capacity: 1 },
+      { providerName: 'Margarita', specialty: 'Reflexology Therapist', startTime: '11:00', endTime: '11:30', room: 'Treatment Room #1', capacity: 1 },
+      { providerName: 'Margarita', specialty: 'Reflexology Therapist', startTime: '11:30', endTime: '12:00', room: 'Treatment Room #1', capacity: 1 },
+      { providerName: 'Margarita', specialty: 'Reflexology Therapist', startTime: '12:00', endTime: '12:30', room: 'Treatment Room #1', capacity: 1 },
+      { providerName: 'Margarita', specialty: 'Reflexology Therapist', startTime: '12:30', endTime: '13:00', room: 'Treatment Room #1', capacity: 1 },
+    ],
+  },
+  {
+    title: 'Acupuncture and Herbal Medicine',
+    keys: ['acupuncture', 'herbal medicine', 'chinese medicine'],
+    description: 'Traditional Chinese medicine support for balance, symptom relief, and overall strengthening.',
+    dayIndex: 3,
+    slots: [
+      { providerName: 'Shagi', specialty: 'Acupuncture Therapist', startTime: '10:30', endTime: '11:30', room: 'Treatment Room #1', capacity: 1 },
+      { providerName: 'Omer', specialty: 'Acupuncture Therapist', startTime: '10:30', endTime: '11:30', room: 'Treatment Room #2', capacity: 1 },
+      { providerName: 'Shagi', specialty: 'Acupuncture Therapist', startTime: '11:30', endTime: '12:30', room: 'Treatment Room #1', capacity: 1 },
+      { providerName: 'Omer', specialty: 'Acupuncture Therapist', startTime: '11:30', endTime: '12:30', room: 'Treatment Room #2', capacity: 1 },
+    ],
+  },
+  {
+    title: 'Qi Gong',
+    keys: ['qi gong', 'qigong'],
+    description: 'Gentle movement and breathing practice for release, energetic balance, and mind-body strength.',
+    dayIndex: 2,
+    slots: [
+      { providerName: 'Tzofi', specialty: 'Qi Gong Instructor', startTime: '17:00', room: 'Workshop Room', capacity: 6 },
+    ],
+  },
+  {
+    title: "Women's Circle",
+    keys: ['women circle', "women's circle", 'the day after'],
+    description: 'A supportive women-centered space for sharing, listening, connection, and healing.',
+    dayIndex: 1,
+    slots: [
+      { providerName: 'Stav', specialty: "Women's Circle Facilitator", startTime: '19:30', room: 'Workshop Room', capacity: 8 },
+    ],
+  },
+  {
+    title: 'Yoga',
+    keys: ['yoga'],
+    description: 'Adapted yoga practice combining movement, breathing, and relaxation.',
+    dayIndex: 3,
+    slots: [
+      { providerName: 'Keren', specialty: 'Yoga Instructor', startTime: '10:30', room: 'Workshop Room', capacity: 6 },
+    ],
+  },
+  {
+    title: 'Couples Counseling',
+    keys: ['couples counseling', 'relationship counseling'],
+    description: 'Emotional, practical, and communication-based support for strengthening relationships.',
+    dayIndex: 4,
+    slots: [
+      { providerName: 'Michal Papo', specialty: 'Couples Counselor', startTime: '10:00', room: 'Conversation Room', capacity: 1 },
+    ],
+  },
+  {
+    title: 'NLP Therapy',
+    keys: ['nlp'],
+    description: 'NLP-based emotional and cognitive work for creating change, resilience, and healthier patterns.',
+    dayIndex: null,
+    slots: [
+      { providerName: 'Oshrat Yosef', specialty: 'NLP Therapist', startTime: '', room: '', capacity: 1 },
+    ],
+  },
+  {
+    title: 'NLP Touch Therapy',
+    keys: ['nlp touch', 'nlp touch therapy'],
+    description: 'A combination of NLP and supportive touch for emotional processing, strengthening, and inner resources.',
+    dayIndex: null,
+    slots: [
+      { providerName: 'Eilat Shabtai', specialty: 'NLP and Touch Therapist', startTime: '', room: '', capacity: 1 },
+    ],
+  },
+];
+
+const SCHEDULE_TEMPLATE_MATCH_KEYS = {
+  Reflexology: ['\u05e8\u05e4\u05dc\u05e7\u05e1\u05d5\u05dc\u05d5\u05d2\u05d9\u05d4'],
+  'Acupuncture and Herbal Medicine': [
+    '\u05d3\u05d9\u05e7\u05d5\u05e8 \u05d5\u05e6\u05de\u05d7\u05d9 \u05de\u05e8\u05e4\u05d0',
+    '\u05d3\u05d9\u05e7\u05d5\u05e8',
+    '\u05e6\u05de\u05d7\u05d9 \u05de\u05e8\u05e4\u05d0',
+  ],
+  'Qi Gong': [
+    '\u05e6\u05f3\u05d9 \u05e7\u05d5\u05e0\u05d2',
+    "\u05e6'\u05d9 \u05e7\u05d5\u05e0\u05d2",
+    '\u05e6\u05d9\u05e7\u05d5\u05e0\u05d2',
+  ],
+  "Women's Circle": [
+    '\u05de\u05e2\u05d2\u05dc \u05e0\u05e9\u05d9\u05dd',
+    '\u05d4\u05d9\u05d5\u05dd \u05e9\u05d0\u05d7\u05e8\u05d9',
+  ],
+  Yoga: ['\u05d9\u05d5\u05d2\u05d4'],
+  'Couples Counseling': [
+    '\u05d9\u05d9\u05e2\u05d5\u05e5 \u05d6\u05d5\u05d2\u05d9',
+    '\u05d9\u05e2\u05d5\u05e5 \u05d6\u05d5\u05d2\u05d9',
+  ],
+  'NLP Touch Therapy': ['nlp \u05de\u05d2\u05e2'],
+};
+
+const SCHEDULE_TEMPLATES = ENGLISH_SCHEDULE_TEMPLATES.map((template) => ({
+  ...template,
+  keys: [
+    ...template.keys,
+    ...(SCHEDULE_TEMPLATE_MATCH_KEYS[template.title] || []),
+  ],
+}));
 
 const suggestionCategories = [
   'Anxiety Support',
@@ -121,6 +235,15 @@ function formatWeeklySchedule(value) {
   return weekday === 'Schedule TBD' ? weekday : `Every ${weekday}`;
 }
 
+function formatWeeklyScheduleFromDay(dayIndex) {
+  if (!Number.isInteger(dayIndex)) return 'Schedule TBD';
+  const referenceSunday = new Date(2026, 4, 24, 12, 0, 0, 0);
+  const date = new Date(referenceSunday);
+  date.setDate(referenceSunday.getDate() + dayIndex);
+
+  return `Every ${new Intl.DateTimeFormat('en', { weekday: 'long' }).format(date)}`;
+}
+
 function formatSessionDate(value) {
   const date = toDate(value);
   if (!date) return 'Date TBD';
@@ -128,6 +251,17 @@ function formatSessionDate(value) {
   return new Intl.DateTimeFormat('en', {
     weekday: 'long',
     month: 'long',
+    day: 'numeric',
+  }).format(date);
+}
+
+function formatSessionTabDate(value) {
+  const date = toDate(value);
+  if (!date) return 'Date TBD';
+
+  return new Intl.DateTimeFormat('en', {
+    weekday: 'short',
+    month: 'short',
     day: 'numeric',
   }).format(date);
 }
@@ -202,22 +336,198 @@ function getNextWeeklySessionStarts(startValue, count = UPCOMING_SESSION_COUNT) 
   }).filter(Boolean);
 }
 
+function getNextWeeklySessionStartsByDay(dayIndex, timeSource, count = UPCOMING_SESSION_COUNT) {
+  if (!Number.isInteger(dayIndex)) return [];
+
+  const now = new Date();
+  const today = new Date(now);
+  today.setHours(0, 0, 0, 0);
+
+  const firstDate = new Date(today);
+  const daysUntilTemplateDay = (dayIndex - today.getDay() + 7) % 7;
+  firstDate.setDate(today.getDate() + daysUntilTemplateDay);
+
+  let firstSessionStart = copyTimeToDate(firstDate, timeSource) || firstDate;
+  if (firstSessionStart.getTime() <= now.getTime()) {
+    firstDate.setDate(firstDate.getDate() + 7);
+    firstSessionStart = copyTimeToDate(firstDate, timeSource) || firstDate;
+  }
+
+  return Array.from({ length: count }, (_, index) => {
+    const sessionDate = new Date(firstDate);
+    sessionDate.setDate(firstDate.getDate() + index * 7);
+    return copyTimeToDate(sessionDate, timeSource) || sessionDate;
+  }).filter(Boolean);
+}
+
 function buildSessionId(templateId, sessionStart, providerId, slotId) {
   return `${templateId}__${toDateKey(sessionStart)}__${providerId}__${slotId}`;
 }
 
+function normalizeScheduleText(value) {
+  return String(value || '')
+    .trim()
+    .toLowerCase()
+    .replace(/[\u05f3\u05f4'"]/g, '')
+    .replace(/\s+/g, ' ');
+}
+
+function findScheduleTemplate(event) {
+  const searchableText = normalizeScheduleText(`${event.title || ''} ${event.category || ''}`);
+
+  return SCHEDULE_TEMPLATES.find((template) =>
+    template.keys.some((key) => searchableText.includes(normalizeScheduleText(key))),
+  ) || null;
+}
+
+function getFirstSlotStartSource(scheduleTemplate, fallbackStart) {
+  const firstScheduledSlot = scheduleTemplate?.slots?.find((slot) => slot.startTime);
+  return firstScheduledSlot?.startTime || fallbackStart;
+}
+
+function getFirstProviderSlotStartSource(providerSlots, fallbackStart) {
+  const firstProviderSlot = providerSlots?.find((slot) => slot.startSource);
+  return firstProviderSlot?.startSource || fallbackStart;
+}
+
+function getEventWeeklyDayIndex(event, scheduleTemplate) {
+  const rawDayIndex = event.weeklyDayIndex ?? event.dayIndex ?? event.recurringDayIndex ?? event.dayOfWeekIndex;
+  const dayIndex = Number(rawDayIndex);
+  if (Number.isInteger(dayIndex) && dayIndex >= 0 && dayIndex <= 6) return dayIndex;
+  if (Number.isInteger(scheduleTemplate?.dayIndex)) return scheduleTemplate.dayIndex;
+  return null;
+}
+
+function getSessionStartsForEvent(event, scheduleTemplate, providerSlots = null) {
+  const fallbackStart = event.startTime || event.date;
+  const eventDayIndex = getEventWeeklyDayIndex(event, scheduleTemplate);
+
+  if (Number.isInteger(eventDayIndex)) {
+    const slots = providerSlots || getProviderSlots(event);
+    return getNextWeeklySessionStartsByDay(
+      eventDayIndex,
+      getFirstProviderSlotStartSource(slots, getFirstSlotStartSource(scheduleTemplate, fallbackStart)),
+    );
+  }
+
+  return getNextWeeklySessionStarts(fallbackStart);
+}
+
 function buildSessionIdsForEvents(eventList) {
   return eventList.flatMap((event) => {
-    const templateStart = event.startTime || event.date;
+    const scheduleTemplate = findScheduleTemplate(event);
     const providerSlots = getProviderSlots(event);
 
-    return getNextWeeklySessionStarts(templateStart).flatMap((sessionStart) =>
+    return getSessionStartsForEvent(event, scheduleTemplate, providerSlots).flatMap((sessionStart) =>
       providerSlots.map((slot) => {
         const optionStart = copyTimeToDate(sessionStart, slot.startSource);
         return buildSessionId(event.id, optionStart || sessionStart, slot.providerId, slot.slotId);
       }),
     );
   });
+}
+
+function getWeeklyScheduleLabel(event, scheduleTemplate, fallbackStart) {
+  if (event.weeklyDay) return `Every ${event.weeklyDay}`;
+
+  const eventDayIndex = getEventWeeklyDayIndex(event, scheduleTemplate);
+  if (Number.isInteger(eventDayIndex)) {
+    return formatWeeklyScheduleFromDay(eventDayIndex);
+  }
+
+  return formatWeeklySchedule(fallbackStart);
+}
+
+function formatAvailableSpots(availableSpots) {
+  if (availableSpots === null) return 'Spots available';
+  if (availableSpots === 1) return '1 spot left';
+  return `${availableSpots} spots left`;
+}
+
+function formatSlotsTimeRange(providerSlots, dateSource) {
+  const slotDates = providerSlots
+    .map((slot) => ({
+      start: copyTimeToDate(dateSource, slot.startSource),
+      end: copyTimeToDate(dateSource, slot.endSource),
+    }))
+    .filter((slot) => slot.start);
+
+  if (!slotDates.length) return 'Time TBD';
+
+  if (slotDates.length === 1) {
+    return formatEventTime(slotDates[0].start, slotDates[0].end);
+  }
+
+  const earliestStart = slotDates.reduce((earliest, slot) =>
+    slot.start.getTime() < earliest.getTime() ? slot.start : earliest,
+  slotDates[0].start);
+  const latestEnd = slotDates
+    .map((slot) => slot.end || slot.start)
+    .reduce((latest, date) => (date.getTime() > latest.getTime() ? date : latest), slotDates[0].end || slotDates[0].start);
+
+  return formatEventTime(earliestStart, latestEnd);
+}
+
+function getScheduleTemplateTitle(template) {
+  return template.title || template.keys[0] || 'Weekly Program';
+}
+
+function getScheduleTemplateEventType(template) {
+  return template.slots?.some((slot) => Number(slot.capacity) > 1) ? 'workshop' : 'appointment';
+}
+
+function getScheduleTemplateStartDate(template) {
+  if (!Number.isInteger(template.dayIndex)) return null;
+
+  const referenceSunday = new Date(2026, 4, 24, 12, 0, 0, 0);
+  const date = new Date(referenceSunday);
+  date.setDate(referenceSunday.getDate() + template.dayIndex);
+
+  return copyTimeToDate(date, getFirstSlotStartSource(template, date)) || date;
+}
+
+function getScheduleTemplateEndDate(template) {
+  const startDate = getScheduleTemplateStartDate(template);
+  if (!startDate) return null;
+
+  const lastTimedSlot = [...(template.slots || [])].reverse().find((slot) => slot.endTime || slot.startTime);
+  return copyTimeToDate(startDate, lastTimedSlot?.endTime || lastTimedSlot?.startTime) || startDate;
+}
+
+function getScheduleTemplateLocation(template) {
+  const rooms = [...new Set((template.slots || []).map((slot) => slot.room).filter(Boolean))];
+  if (rooms.length > 1) return 'Multiple rooms';
+  return rooms[0] || 'She-Na Center';
+}
+
+function createScheduleTemplateEvent(template) {
+  const title = getScheduleTemplateTitle(template);
+  const eventType = getScheduleTemplateEventType(template);
+  const startDate = getScheduleTemplateStartDate(template);
+
+  return {
+    id: `schedule-${slugifyIdentifier(title)}`,
+    title,
+    type: eventType,
+    category: eventType === 'appointment' ? 'Appointment' : 'Workshop',
+    description: template.description || '',
+    imageUrl: appointmentsHero,
+    date: startDate,
+    startTime: startDate,
+    endTime: getScheduleTemplateEndDate(template),
+    location: getScheduleTemplateLocation(template),
+    status: 'published',
+    isScheduleTemplate: true,
+  };
+}
+
+function mergeScheduleTemplateEvents(publishedEvents) {
+  const eventsWithSchedule = SCHEDULE_TEMPLATES
+    .filter((template) => Number.isInteger(template.dayIndex) && template.slots?.some((slot) => slot.startTime))
+    .filter((template) => !publishedEvents.some((event) => findScheduleTemplate(event) === template))
+    .map(createScheduleTemplateEvent);
+
+  return [...eventsWithSchedule, ...publishedEvents];
 }
 
 function getInstructorLabel(event) {
@@ -243,6 +553,28 @@ function getProviderName(provider, fallback) {
     provider.name ||
     fallback ||
     'She-Na Team'
+  );
+}
+
+function getProviderSpecialty(provider, event) {
+  return (
+    provider.specialty ||
+    provider.role ||
+    provider.title ||
+    provider.category ||
+    event.category ||
+    (inferEventType(event) === 'appointment' ? 'Therapist' : 'Instructor')
+  );
+}
+
+function getProviderAvatar(provider) {
+  return (
+    provider.avatarUrl ||
+    provider.photoUrl ||
+    provider.imageUrl ||
+    provider.profileImage ||
+    provider.thumbnailUrl ||
+    ''
   );
 }
 
@@ -284,6 +616,8 @@ function getProviderSlots(event) {
         return {
           providerId,
           providerName,
+          providerSpecialty: getProviderSpecialty(provider, event),
+          providerAvatar: getProviderAvatar(provider),
           slotId,
           startSource,
           endSource,
@@ -305,6 +639,8 @@ function getProviderSlots(event) {
       return {
         providerId,
         providerName,
+        providerSpecialty: getProviderSpecialty(slot, event),
+        providerAvatar: getProviderAvatar(slot),
         slotId: slugifyIdentifier(slot.id || `${providerId}-${getTimeKey(startSource)}-${getTimeKey(endSource)}-${slotIndex + 1}`),
         startSource,
         endSource,
@@ -314,6 +650,29 @@ function getProviderSlots(event) {
     });
   }
 
+  const scheduleTemplate = findScheduleTemplate(event);
+  if (scheduleTemplate?.slots?.length) {
+    return scheduleTemplate.slots
+      .filter((slot) => slot.startTime)
+      .map((slot, slotIndex) => {
+        const providerName = slot.providerName || getInstructorLabel(event);
+        const providerId = slugifyIdentifier(slot.providerId || providerName);
+        const slotId = slugifyIdentifier(slot.id || `${providerId}-${getTimeKey(slot.startTime)}-${getTimeKey(slot.endTime)}-${slotIndex + 1}`);
+
+        return {
+          providerId,
+          providerName,
+          providerSpecialty: slot.specialty || event.category || (inferEventType(event) === 'appointment' ? 'Therapist' : 'Instructor'),
+          providerAvatar: slot.avatarUrl || '',
+          slotId,
+          startSource: slot.startTime,
+          endSource: slot.endTime,
+          room: slot.room || event.room || event.location || 'She-Na Center',
+          capacity: Number(slot.capacity || event.maxParticipants || event.capacity) || 0,
+        };
+      });
+  }
+
   const fallbackProvider = getInstructorLabel(event);
   const providerId = slugifyIdentifier(event.providerId || event.therapistId || event.instructorId || fallbackProvider);
 
@@ -321,6 +680,8 @@ function getProviderSlots(event) {
     {
       providerId,
       providerName: fallbackProvider,
+      providerSpecialty: event.category || (inferEventType(event) === 'appointment' ? 'Therapist' : 'Instructor'),
+      providerAvatar: event.providerAvatarUrl || event.therapistAvatarUrl || '',
       slotId: slugifyIdentifier(`${providerId}-${getTimeKey(event.startTime || event.date)}-${getTimeKey(event.endTime)}`),
       startSource: event.startTime || event.date,
       endSource: event.endTime,
@@ -347,21 +708,7 @@ function getEventTone(type, index) {
   return ['lavender', 'purple', 'peach', 'blush'][index % 4];
 }
 
-function StatCard({ icon: Icon, label, value, tone }) {
-  return (
-    <article className={`events-stat events-stat--${tone}`}>
-      <span>
-        <Icon />
-      </span>
-      <div>
-        <strong>{value}</strong>
-        <p>{label}</p>
-      </div>
-    </article>
-  );
-}
-
-function EventCategoryButton({ title, active, color, onClick }) {
+function EventCategoryButton({ title, active, color, icon: Icon, onClick }) {
   return (
     <button
       className={`events-category-button events-category-button--${color}${active ? ' is-active' : ''}`}
@@ -369,8 +716,21 @@ function EventCategoryButton({ title, active, color, onClick }) {
       onClick={onClick}
       aria-pressed={active}
     >
+      {Icon && <Icon fontSize="small" />}
       <span>{title}</span>
     </button>
+  );
+}
+
+function CardDescriptionPanel({ description, isOpen }) {
+  return (
+    <div className="events-card__description">
+      <div className={`events-card__description-panel${isOpen ? ' is-open' : ''}`}>
+        <div className="events-card__description-inner">
+          <p>{description}</p>
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -381,47 +741,38 @@ function EventCard({
 }) {
   const typeLabel = event.eventType === 'appointment' ? 'Appointment' : 'Workshop';
   const hasRegisteredSessions = event.sessionOptions.some((session) => registeredSessionIds.has(session.id));
+  const [isDescriptionOpen, setIsDescriptionOpen] = useState(false);
 
   return (
     <article className={`events-card events-card--${event.tone}`}>
       <div className="events-card__image">
         <img src={event.imageUrl} alt="" />
-        <span className={`events-card__type events-card__type--${event.eventType}`}>{typeLabel}</span>
-        <span className="events-card__status events-card__status--weekly">
-          Weekly
-        </span>
+        <button
+          className={`events-card__about-button events-card__about-button--${event.eventType}`}
+          type="button"
+          onClick={() => setIsDescriptionOpen((current) => !current)}
+          aria-expanded={isDescriptionOpen}
+          aria-label={`About ${typeLabel.toLowerCase()}`}
+        >
+          <KeyboardArrowDownIcon fontSize="small" />
+          <span>About</span>
+        </button>
       </div>
 
       <div className="events-card__body">
-        <h3>{event.title}</h3>
-        <strong className="events-card__instructor">{event.providerSummary}</strong>
-        <p>{event.description}</p>
-
-        <div className="events-card__meta">
-          <span>
-            <CalendarMonthIcon fontSize="small" />
-            {event.weeklySchedule}
-          </span>
-          <span>
-            <AccessTimeIcon fontSize="small" />
-            {event.time}
-          </span>
-          <span>
-            <LocationOnOutlinedIcon fontSize="small" />
-            {event.location}
-          </span>
-          <span>
-            <AutorenewIcon fontSize="small" />
-            Weekly Program
-          </span>
-        </div>
+        <h3 className="events-card__title">{event.title}</h3>
+        <span className="events-card__schedule">
+          <CalendarMonthIcon fontSize="small" />
+          {event.weeklySchedule}
+        </span>
+        <CardDescriptionPanel description={event.description} isOpen={isDescriptionOpen} />
 
         <button
           className="events-card__action"
           type="button"
           onClick={() => onOpenSessions(event.id)}
         >
-          {hasRegisteredSessions ? 'Choose Another Session' : 'View Available Dates'}
+          {hasRegisteredSessions ? 'Choose More Dates' : 'View Dates'}
           <ArrowForwardIcon fontSize="small" />
         </button>
       </div>
@@ -435,7 +786,16 @@ function SessionSelectionModal({
   onRegisterSession,
   onClose,
 }) {
+  const [selectedDateKey, setSelectedDateKey] = useState(event?.sessions[0]?.dateKey || '');
+
+  useEffect(() => {
+    setSelectedDateKey(event?.sessions[0]?.dateKey || '');
+  }, [event]);
+
   if (!event) return null;
+
+  const selectedSession = event.sessions.find((session) => session.dateKey === selectedDateKey) || event.sessions[0];
+  const selectedOptions = selectedSession?.options || [];
 
   return (
     <div className="session-modal" role="presentation">
@@ -445,7 +805,7 @@ function SessionSelectionModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="session-modal-title"
-        dir="rtl"
+        dir="ltr"
       >
         <button className="session-modal__close" type="button" onClick={onClose} aria-label="Close session picker">
           <CloseIcon />
@@ -458,39 +818,89 @@ function SessionSelectionModal({
           <div>
             <h2 id="session-modal-title">Choose Your Session</h2>
             <p>Select your preferred date, therapist, and time</p>
-            <strong>{event.title}</strong>
           </div>
         </header>
 
-        <div className="session-modal__dates">
+        <section className="session-summary-card" aria-label="Selected activity">
+          <img src={event.imageUrl} alt="" />
+          <div>
+            <div className="session-summary-card__title-row">
+              <h3>{event.title}</h3>
+              <span>Weekly Program</span>
+            </div>
+            <div className="session-summary-card__meta">
+              <span>
+                <CalendarMonthIcon fontSize="small" />
+                {event.weeklySchedule}
+              </span>
+              <span>
+                <AccessTimeIcon fontSize="small" />
+                {event.time}
+              </span>
+              <span>
+                <LocationOnOutlinedIcon fontSize="small" />
+                {event.location}
+              </span>
+            </div>
+          </div>
+        </section>
+
+        <section className="session-modal__booking">
+          <h3>Available Sessions</h3>
+
           {event.sessions.length > 0 ? (
-            event.sessions.map((session) => (
-              <section className="session-modal__date-group" key={session.id}>
-                <h3>{session.date}</h3>
-                <div className="session-modal__options">
-                  {session.options.map((option) => {
-                    const isRegistered = registeredSessionIds.has(option.id);
-                    const isFull = option.capacity > 0 && option.participants >= option.capacity && !isRegistered;
-                    const actionDisabled = option.isRegistering || isFull || isRegistered;
+            <>
+              <div className="session-date-tabs" aria-label="Session dates">
+                {event.sessions.map((session) => (
+                  <button
+                    className={session.dateKey === selectedSession?.dateKey ? 'is-active' : ''}
+                    type="button"
+                    onClick={() => setSelectedDateKey(session.dateKey)}
+                    aria-pressed={session.dateKey === selectedSession?.dateKey}
+                    key={session.id}
+                  >
+                    <CalendarMonthIcon fontSize="small" />
+                    {session.tabLabel}
+                  </button>
+                ))}
+              </div>
 
-                    return (
-                      <article
-                        className={`session-option${isRegistered ? ' is-registered' : ''}`}
-                        key={option.id}
-                      >
-                        <div className="session-option__body">
+              <div className="session-modal__options">
+                {selectedOptions.map((option) => {
+                  const isRegistered = registeredSessionIds.has(option.id);
+                  const isFull = option.capacity > 0 && option.participants >= option.capacity && !isRegistered;
+                  const actionDisabled = option.isRegistering || isFull || isRegistered;
+
+                  return (
+                    <article
+                      className={`session-option${isRegistered ? ' is-registered' : ''}`}
+                      key={option.id}
+                    >
+                      <div className="session-option__provider">
+                        {option.providerAvatar ? (
+                          <img src={option.providerAvatar} alt="" />
+                        ) : (
+                          <span>{option.providerName.slice(0, 2).toUpperCase()}</span>
+                        )}
+                        <div>
                           <strong>{option.providerName}</strong>
-                          <span>
-                            <AccessTimeIcon fontSize="small" />
-                            {option.time}
-                          </span>
-                          <span>
-                            <LocationOnOutlinedIcon fontSize="small" />
-                            {option.room}
-                          </span>
-                          <small>{option.availableSpotsLabel}</small>
+                          <small>{option.providerSpecialty}</small>
                         </div>
+                      </div>
 
+                      <div className="session-option__details">
+                        <span>
+                          <AccessTimeIcon fontSize="small" />
+                          {option.time}
+                        </span>
+                        <span>
+                          <LocationOnOutlinedIcon fontSize="small" />
+                          {option.room}
+                        </span>
+                      </div>
+
+                      <div className="session-option__action">
+                        <small>{option.availableSpotsLabel}</small>
                         <button
                           type="button"
                           onClick={() => onRegisterSession(event, option)}
@@ -504,16 +914,26 @@ function SessionSelectionModal({
                                 ? 'Fully Booked'
                                 : 'Register'}
                         </button>
-                      </article>
-                    );
-                  })}
-                </div>
-              </section>
-            ))
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+            </>
           ) : (
             <p className="session-modal__empty">Upcoming dates will appear soon.</p>
           )}
-        </div>
+        </section>
+
+        <aside className="session-modal__notice">
+          <span>
+            <AutoAwesomeIcon />
+          </span>
+          <div>
+            <strong>You can register for any week separately.</strong>
+            <p>Each session is independent.</p>
+          </div>
+        </aside>
       </section>
     </div>
   );
@@ -521,34 +941,32 @@ function SessionSelectionModal({
 
 function RegisteredSessionCard({ session, onCancelRegistration }) {
   const typeLabel = session.eventType === 'appointment' ? 'Appointment' : 'Workshop';
+  const [isDescriptionOpen, setIsDescriptionOpen] = useState(false);
 
   return (
     <article className={`events-card events-card--${session.tone}`}>
       <div className="events-card__image">
         <img src={session.imageUrl} alt="" />
-        <span className={`events-card__type events-card__type--${session.eventType}`}>{typeLabel}</span>
-        <span className="events-card__status events-card__status--registered">Registered</span>
+        <button
+          className={`events-card__about-button events-card__about-button--${session.eventType}`}
+          type="button"
+          onClick={() => setIsDescriptionOpen((current) => !current)}
+          aria-expanded={isDescriptionOpen}
+          aria-label={`About ${typeLabel.toLowerCase()}`}
+        >
+          <KeyboardArrowDownIcon fontSize="small" />
+          <span>About</span>
+        </button>
       </div>
 
       <div className="events-card__body">
-        <h3>{session.title}</h3>
+        <h3 className="events-card__title">{session.title}</h3>
         <strong className="events-card__instructor">With {session.providerName}</strong>
-        <p>{session.description}</p>
-
-        <div className="events-card__meta">
-          <span>
-            <CalendarMonthIcon fontSize="small" />
-            {session.date}
-          </span>
-          <span>
-            <AccessTimeIcon fontSize="small" />
-            {session.time}
-          </span>
-          <span>
-            <LocationOnOutlinedIcon fontSize="small" />
-            {session.room}
-          </span>
-        </div>
+        <span className="events-card__schedule">
+          <CalendarMonthIcon fontSize="small" />
+          Registered for {session.date}
+        </span>
+        <CardDescriptionPanel description={session.description} isOpen={isDescriptionOpen} />
 
         <button
           className="events-card__action is-cancel"
@@ -556,6 +974,7 @@ function RegisteredSessionCard({ session, onCancelRegistration }) {
           onClick={() => onCancelRegistration(session)}
           disabled={session.isRegistering}
         >
+          <CalendarMonthIcon fontSize="small" />
           {session.isRegistering ? 'Please wait...' : 'Cancel Registration'}
         </button>
       </div>
@@ -727,14 +1146,18 @@ export default function EventsPage({ embedInDashboard = false }) {
     getPublishedEvents()
       .then((data) => {
         if (cancelled) return;
-        setEvents(data);
+        const mergedEvents = mergeScheduleTemplateEvents(data);
+        setEvents(mergedEvents);
         setLoadingEvents(false);
-        refreshRegistrationData(data);
+        refreshRegistrationData(mergedEvents);
       })
       .catch((error) => {
         if (cancelled) return;
         console.error('Failed to load published events:', error);
-        setEventsError('Could not load events from Firestore. Please check your connection and permissions.');
+        const fallbackEvents = mergeScheduleTemplateEvents([]);
+        setEvents(fallbackEvents);
+        refreshRegistrationData(fallbackEvents);
+        setEventsError('Could not load live Firestore events. Showing the weekly schedule templates.');
         setLoadingEvents(false);
       });
 
@@ -761,8 +1184,8 @@ export default function EventsPage({ embedInDashboard = false }) {
   const displayEvents = useMemo(
     () =>
       [...events].sort((left, right) => {
-        const leftDate = getNextWeeklySessionStarts(left.startTime || left.date, 1)[0];
-        const rightDate = getNextWeeklySessionStarts(right.startTime || right.date, 1)[0];
+        const leftDate = getSessionStartsForEvent(left, findScheduleTemplate(left))[0];
+        const rightDate = getSessionStartsForEvent(right, findScheduleTemplate(right))[0];
 
         if (!leftDate && !rightDate) return 0;
         if (!leftDate) return 1;
@@ -770,18 +1193,20 @@ export default function EventsPage({ embedInDashboard = false }) {
 
         return leftDate.getTime() - rightDate.getTime();
       }).map((event, index) => {
-        const eventType = inferEventType(event);
         const imageUrl = event.imageUrl || event.thumbnailUrl || event.coverImageUrl || appointmentsHero;
+        const scheduleTemplate = findScheduleTemplate(event);
+        const eventType = scheduleTemplate ? getScheduleTemplateEventType(scheduleTemplate) : inferEventType(event);
+        const displayTitle = scheduleTemplate ? getScheduleTemplateTitle(scheduleTemplate) : (event.title || 'Untitled Event');
+        const displayCategory = eventType === 'appointment' ? 'Appointment' : 'Workshop';
         const templateStart = event.startTime || event.date;
         const providerSlots = getProviderSlots(event);
         const providerNames = [...new Set(providerSlots.map((slot) => slot.providerName))];
         const roomLabels = [...new Set(providerSlots.map((slot) => slot.room).filter(Boolean))];
-        const timeLabels = [...new Set(providerSlots.map((slot) => {
-          const previewStart = copyTimeToDate(templateStart, slot.startSource);
-          const previewEnd = copyTimeToDate(templateStart, slot.endSource);
-          return formatEventTime(previewStart, previewEnd);
-        }))];
-        const sessions = getNextWeeklySessionStarts(templateStart).map((sessionStart) => {
+        const displayLocation = scheduleTemplate ? getScheduleTemplateLocation(scheduleTemplate) : (roomLabels.length > 1 ? 'Multiple rooms' : roomLabels[0] || event.location || 'She-Na Center');
+        const sessionStarts = getSessionStartsForEvent(event, scheduleTemplate, providerSlots);
+        const weeklySchedule = getWeeklyScheduleLabel(event, scheduleTemplate, templateStart);
+        const templateDescription = scheduleTemplate?.description || event.description || 'More details will be added soon.';
+        const sessions = sessionStarts.map((sessionStart) => {
           const dateKey = toDateKey(sessionStart);
           const options = providerSlots.map((slot) => {
             const optionStart = copyTimeToDate(sessionStart, slot.startSource);
@@ -794,9 +1219,9 @@ export default function EventsPage({ embedInDashboard = false }) {
               id: optionId,
               templateId: event.id,
               eventTemplateId: event.id,
-              title: event.title || 'Untitled Event',
-              category: event.category || (eventType === 'appointment' ? 'Appointment' : 'Workshop'),
-              description: event.description || 'More details will be added soon.',
+              title: displayTitle,
+              category: displayCategory,
+              description: templateDescription,
               date: formatSessionDate(optionStart || sessionStart),
               dateKey,
               selectedDate: dateKey,
@@ -806,17 +1231,19 @@ export default function EventsPage({ embedInDashboard = false }) {
               selectedTimeSlot: formatEventTime(optionStart || sessionStart, optionEnd),
               providerId: slot.providerId,
               providerName: slot.providerName,
+              providerSpecialty: slot.providerSpecialty,
+              providerAvatar: slot.providerAvatar,
               room: slot.room,
               location: slot.room,
               participants,
               capacity: slot.capacity,
               availableSpots,
-              availableSpotsLabel: availableSpots === null ? 'Spots available' : `${availableSpots} spots available`,
+              availableSpotsLabel: formatAvailableSpots(availableSpots),
               tone: getEventTone(eventType, index),
               imageUrl,
               eventType,
               instructor: slot.providerName,
-              weeklySchedule: formatWeeklySchedule(templateStart),
+              weeklySchedule,
               isRegistering: registeringId === optionId,
             };
           });
@@ -824,6 +1251,7 @@ export default function EventsPage({ embedInDashboard = false }) {
           return {
             id: `${event.id}__${dateKey}`,
             date: formatSessionDate(sessionStart),
+            tabLabel: formatSessionTabDate(sessionStart),
             dateKey,
             startDate: sessionStart,
             options,
@@ -833,20 +1261,20 @@ export default function EventsPage({ embedInDashboard = false }) {
 
         return {
           id: event.id,
-          title: event.title || 'Untitled Event',
-          category: event.category || (eventType === 'appointment' ? 'Appointment' : 'Workshop'),
-          description: event.description || 'More details will be added soon.',
+          title: displayTitle,
+          category: displayCategory,
+          description: templateDescription,
           date: formatEventDate(templateStart),
-          time: timeLabels.length > 1 ? 'Multiple time slots' : timeLabels[0] || formatEventTime(event.startTime || event.date, event.endTime),
+          time: formatSlotsTimeRange(providerSlots, sessionStarts[0] || templateStart),
           participants: sessionOptions.reduce((total, session) => total + session.participants, 0),
           capacity: sessionOptions.reduce((total, session) => total + session.capacity, 0),
-          location: roomLabels.length > 1 ? 'Multiple rooms' : roomLabels[0] || event.location || 'She-Na Center',
+          location: displayLocation,
           tone: getEventTone(eventType, index),
           imageUrl,
           eventType,
           instructor: getInstructorLabel(event),
           providerSummary: providerNames.length > 1 ? `${providerNames.length} providers available` : providerNames[0] || getInstructorLabel(event),
-          weeklySchedule: formatWeeklySchedule(templateStart),
+          weeklySchedule,
           temporalStatus: getTemporalStatus(sessions[0]?.startDate || templateStart),
           sessions,
           sessionOptions,
@@ -873,32 +1301,25 @@ export default function EventsPage({ embedInDashboard = false }) {
     return displayEvents.filter((event) => event.eventType === activeView.slice(0, -1));
   }, [activeView, displayEvents, registeredEvents]);
 
-  const stats = useMemo(() => {
-    const upcoming = displayEvents.reduce((total, event) => total + event.sessions.length, 0);
-
-    return [
-      { label: 'Total Events', value: displayEvents.length, tone: 'lavender', icon: CalendarMonthIcon },
-      { label: 'Upcoming', value: upcoming, tone: 'blush', icon: EventAvailableIcon },
-      { label: 'Registered', value: registeredEvents.length, tone: 'peach', icon: PersonIcon },
-    ];
-  }, [displayEvents, registeredEvents.length]);
-
   const categoryCards = useMemo(() => {
     return [
       {
         type: VIEW_WORKSHOPS,
         title: 'Workshops',
         color: 'lavender',
+        icon: VolunteerActivismIcon,
       },
       {
         type: VIEW_APPOINTMENTS,
         title: 'Appointments',
         color: 'blush',
+        icon: CalendarMonthIcon,
       },
       {
         type: VIEW_REGISTERED,
         title: 'Registered Events',
         color: 'peach',
+        icon: PersonIcon,
       },
     ];
   }, []);
@@ -1053,14 +1474,6 @@ export default function EventsPage({ embedInDashboard = false }) {
           <h1>Events</h1>
           <p>All your sessions in one place</p>
         </div>
-      </section>
-
-      <section className="events-summary-row" aria-label="Events summary">
-        <div className="events-stats">
-          {stats.map((item) => (
-            <StatCard icon={item.icon} label={item.label} value={item.value} tone={item.tone} key={item.label} />
-          ))}
-        </div>
         <button className="events-suggest-pill" type="button" onClick={openSuggestionModal}>
           <AddCircleOutlineIcon fontSize="small" />
           Suggest a Workshop
@@ -1087,12 +1500,6 @@ export default function EventsPage({ embedInDashboard = false }) {
       </section>
 
         <section className="events-list-panel">
-          <div className="events-list-heading">
-            <div>
-              <h2>{sectionTitle}</h2>
-            </div>
-          </div>
-
           <div className="events-grid-shell">
             <section className="events-grid" aria-label={sectionTitle}>
               {activeView === VIEW_REGISTERED
