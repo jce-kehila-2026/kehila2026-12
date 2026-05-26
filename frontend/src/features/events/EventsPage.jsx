@@ -767,7 +767,7 @@ function EventCard({
         <CardDescriptionPanel description={event.description} isOpen={isDescriptionOpen} />
 
         <button
-          className="events-card__action"
+          className={`events-card__action${hasRegisteredSessions ? ' events-card__action--more' : ''}`}
           type="button"
           onClick={() => onOpenSessions(event.id)}
         >
