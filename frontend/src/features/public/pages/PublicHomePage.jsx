@@ -119,7 +119,7 @@ function PublicHomePageContent() {
         <ArticlesPreviewSection coverage={publicHomeDoc.pressCoverage} />
         <EventsPreviewSection events={content.events} isLoading={loading} hasError={error} />
         <CommunitySupportCta onDonationClick={() => setIsDonationModalOpen(true)} />
-        <TeamSection />
+        <TeamSection members={publicHomeDoc.teamMembers} />
         <MedicalPartnersSection />
         <ContactSection contact={content.contact} organization={content.organization} />
       </main>

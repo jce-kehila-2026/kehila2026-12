@@ -1,21 +1,79 @@
-import { useMemo, useRef } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { TEAM_MEMBERS } from '../constants/teamMembers';
 import PublicSectionHeading from './PublicSectionHeading';
 import TeamSectionMemberCard from './TeamSectionMemberCard';
-import useInViewOnce from '../hooks/useInViewOnce';
 import { usePublicLocale } from '../context/PublicLocaleContext';
 import { localizeTeamStaff } from '../i18n/publicHomeContentLocalization';
 
-const PRIMARY_ROW_COUNT = 4;
 const TEAM_CARD_STAGGER_MS = 100;
 
-export default function TeamSection() {
-  const rowsRef = useRef(null);
-  const cardsInView = useInViewOnce(rowsRef, { threshold: 0.12, rootMargin: '0px 0px -4% 0px' });
-  const { locale, t } = usePublicLocale();
-  const localizedMembers = useMemo(() => localizeTeamStaff(TEAM_MEMBERS, locale), [locale]);
-  const primaryRow = localizedMembers.slice(0, PRIMARY_ROW_COUNT);
-  const secondaryRow = localizedMembers.slice(PRIMARY_ROW_COUNT);
+function adaptAdminMember(member) {
+  if (!member || typeof member !== 'object') return member;
+  return {
+    id: member.id,
+    name: member.name || '',
+    role: member.role || '',
+    description: member.bio || member.description || '',
+    photo: member.imageUrl || member.photo || '',
+    fallbackPhoto: member.fallbackPhoto || '',
+    email: member.email || '',
+  };
+}
+
+export default function TeamSection({ members }) {
+  const scrollerRef = useRef(null);
+  const [canScrollPrev, setCanScrollPrev] = useState(false);
+  const [canScrollNext, setCanScrollNext] = useState(false);
+  const { locale, t, direction } = usePublicLocale();
+
+  const source = useMemo(() => {
+    if (Array.isArray(members) && members.length > 0) {
+      return members
+        .slice()
+        .sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
+        .map(adaptAdminMember);
+    }
+    return TEAM_MEMBERS;
+  }, [members]);
+
+  const localizedMembers = useMemo(() => localizeTeamStaff(source, locale), [source, locale]);
+
+  const updateBoundaries = useCallback(() => {
+    const el = scrollerRef.current;
+    if (!el) return;
+    const maxScroll = el.scrollWidth - el.clientWidth;
+    if (maxScroll <= 1) {
+      setCanScrollPrev(false);
+      setCanScrollNext(false);
+      return;
+    }
+    const absScroll = Math.abs(el.scrollLeft);
+    setCanScrollPrev(absScroll > 1);
+    setCanScrollNext(absScroll < maxScroll - 1);
+  }, []);
+
+  useEffect(() => {
+    const el = scrollerRef.current;
+    if (!el) return undefined;
+    updateBoundaries();
+    el.addEventListener('scroll', updateBoundaries, { passive: true });
+    window.addEventListener('resize', updateBoundaries);
+    return () => {
+      el.removeEventListener('scroll', updateBoundaries);
+      window.removeEventListener('resize', updateBoundaries);
+    };
+  }, [updateBoundaries, localizedMembers.length]);
+
+  function scrollByCards(delta) {
+    const el = scrollerRef.current;
+    if (!el) return;
+    const card = el.querySelector('.public-team-section__card');
+    const step = card ? card.getBoundingClientRect().width + 24 : el.clientWidth * 0.8;
+    const dir = direction === 'rtl' ? -delta : delta;
+    el.scrollBy({ left: dir * step, behavior: 'smooth' });
+  }
 
   return (
     <section
@@ -32,32 +90,41 @@ export default function TeamSection() {
           subtitle={t('teamSubtitle')}
         />
 
-        <div className="public-team-section__rows" ref={rowsRef}>
-          <div className="public-team-section__row public-team-section__row--primary">
-            {primaryRow.map((member, index) => (
+        <div className="public-stories-slider">
+          <button
+            type="button"
+            className="public-stories-slider__arrow public-stories-slider__arrow--prev"
+            onClick={() => scrollByCards(-1)}
+            disabled={!canScrollPrev}
+            aria-label="Previous"
+          >
+            <ChevronRightIcon />
+          </button>
+
+          <div className="public-stories-slider__track" ref={scrollerRef}>
+            {localizedMembers.map((member, index) => (
               <TeamSectionMemberCard
                 member={member}
                 key={member.id}
                 revealIndex={index}
-                revealVisible={cardsInView}
+                revealVisible
                 staggerMs={TEAM_CARD_STAGGER_MS}
               />
             ))}
           </div>
 
-          <div className="public-team-section__row public-team-section__row--secondary">
-            {secondaryRow.map((member, index) => (
-              <TeamSectionMemberCard
-                member={member}
-                key={member.id}
-                revealIndex={index + PRIMARY_ROW_COUNT}
-                revealVisible={cardsInView}
-                staggerMs={TEAM_CARD_STAGGER_MS}
-              />
-            ))}
-          </div>
+          <button
+            type="button"
+            className="public-stories-slider__arrow public-stories-slider__arrow--next"
+            onClick={() => scrollByCards(1)}
+            disabled={!canScrollNext}
+            aria-label="Next"
+          >
+            <ChevronLeftIcon />
+          </button>
         </div>
       </div>
     </section>
   );
 }
+
