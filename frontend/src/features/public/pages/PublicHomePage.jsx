@@ -120,7 +120,7 @@ function PublicHomePageContent() {
         <EventsPreviewSection events={content.events} isLoading={loading} hasError={error} />
         <CommunitySupportCta onDonationClick={() => setIsDonationModalOpen(true)} />
         <TeamSection members={publicHomeDoc.teamMembers} />
-        <MedicalPartnersSection />
+        <MedicalPartnersSection partners={publicHomeDoc.partners} />
         <ContactSection contact={content.contact} organization={content.organization} />
       </main>
       <PublicFooter organization={content.organization} contact={content.contact} />

@@ -9,12 +9,14 @@ import InfoIcon from '@mui/icons-material/Info';
 import AutoStoriesIcon from '@mui/icons-material/AutoStories';
 import NewspaperIcon from '@mui/icons-material/Newspaper';
 import GroupsIcon from '@mui/icons-material/Groups';
+import HandshakeIcon from '@mui/icons-material/Handshake';
 import PreviewIcon from '@mui/icons-material/Preview';
 import PublicHomePageHomeTab from './PublicHomePageHomeTab';
 import PublicHomePageLearnTogetherTab from './PublicHomePageLearnTogetherTab';
 import PublicHomePageInspirationStoriesTab from './PublicHomePageInspirationStoriesTab';
 import PublicHomePagePressCoverageTab from './PublicHomePagePressCoverageTab';
 import PublicHomePageTeamTab from './PublicHomePageTeamTab';
+import PartnersManagementPage from './PartnersManagementPage';
 
 const TABS = [
   { key: 'home', label: 'Home', icon: <HomeIcon />, Component: PublicHomePageHomeTab },
@@ -36,6 +38,12 @@ const TABS = [
     label: 'Team',
     icon: <GroupsIcon />,
     Component: PublicHomePageTeamTab,
+  },
+  {
+    key: 'partners',
+    label: 'Partners',
+    icon: <HandshakeIcon />,
+    Component: PartnersManagementPage,
   },
 ];
 

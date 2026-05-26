@@ -99,7 +99,7 @@ function ThemedApp() {
               <Route path="cms" element={<CMSPage />} />
               <Route path="users" element={<UserManagementPage />} />
               <Route path="roles" element={<Navigate to="/admin/users?tab=roles" replace />} />
-              <Route path="audit-log" element={<AuditLogPage />} />
+<Route path="audit-log" element={<AuditLogPage />} />
             </Route>
 
             <Route path="*" element={<Navigate to="/public" replace />} />
