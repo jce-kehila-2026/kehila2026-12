@@ -12,6 +12,7 @@ import {
   mergeHero,
   mergeStatistics,
 } from '../../public/services/publicPagesService';
+import { BookOpen, HandHeart, Heart, Megaphone, Sparkles, UsersRound } from 'lucide-react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
@@ -31,6 +32,38 @@ const LIMITS = {
   statDescription: 120,
   statValueMax: 999999999,
 };
+
+const STAT_ICON_COMPONENTS = {
+  'hands-heart': HandHeart,
+  megaphone: Megaphone,
+  'users-round': UsersRound,
+  'book-open': BookOpen,
+  heart: Heart,
+  sparkles: Sparkles,
+};
+
+const STAT_ICON_LABELS = {
+  'hands-heart': 'Hands & Heart',
+  megaphone: 'Megaphone',
+  'users-round': 'Users',
+  'book-open': 'Book',
+  heart: 'Heart',
+  sparkles: 'Sparkles',
+};
+
+function StatIconGlyph({ iconKey, size = 20 }) {
+  const Icon = STAT_ICON_COMPONENTS[iconKey];
+  if (!Icon) return null;
+  return (
+    <Icon
+      size={size}
+      strokeWidth={1.75}
+      absoluteStrokeWidth
+      aria-hidden="true"
+      style={{ flexShrink: 0, color: '#7f22d9' }}
+    />
+  );
+}
 
 const SEED_HERO = {
   title: 'את לא לבד במסע שלך',
@@ -388,10 +421,16 @@ export default function PublicHomePageHomeTab() {
                 <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1.5 }}>
                   Statistic #{index + 1}
                 </Typography>
-                <Stack
-                  direction={{ xs: 'column', md: 'row' }}
-                  spacing={2}
-                  alignItems="flex-start"
+                <Box
+                  sx={{
+                    display: 'grid',
+                    gap: 2,
+                    alignItems: 'flex-start',
+                    gridTemplateColumns: {
+                      xs: 'minmax(0, 1fr)',
+                      md: '130px minmax(0, 1.1fr) minmax(0, 1.6fr) 170px',
+                    },
+                  }}
                 >
                   <TextField
                     label="Value"
@@ -403,10 +442,10 @@ export default function PublicHomePageHomeTab() {
                     error={shouldShowError(`stat.${index}.value`)}
                     helperText={
                       (shouldShowError(`stat.${index}.value`) && errors[`stat.${index}.value`]) ||
-                      'Whole number, e.g. 2500'
+                      'e.g. 2500'
                     }
                     required
-                    sx={{ width: { xs: '100%', md: 140 } }}
+                    fullWidth
                   />
                   <TextField
                     label="Title"
@@ -438,15 +477,26 @@ export default function PublicHomePageHomeTab() {
                     onChange={(e) => setStatField(index, 'icon', e.target.value)}
                     error={shouldShowError(`stat.${index}.icon`)}
                     helperText={shouldShowError(`stat.${index}.icon`) && errors[`stat.${index}.icon`]}
-                    sx={{ width: { xs: '100%', md: 180 } }}
+                    fullWidth
+                    SelectProps={{
+                      renderValue: (selected) => (
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <StatIconGlyph iconKey={selected} />
+                          <span>{STAT_ICON_LABELS[selected] || selected}</span>
+                        </Box>
+                      ),
+                    }}
                   >
                     {STATISTIC_ICON_KEYS.map((key) => (
                       <MenuItem key={key} value={key}>
-                        {key}
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+                          <StatIconGlyph iconKey={key} />
+                          <span>{STAT_ICON_LABELS[key] || key}</span>
+                        </Box>
                       </MenuItem>
                     ))}
                   </TextField>
-                </Stack>
+                </Box>
               </Paper>
             ))}
           </Stack>
