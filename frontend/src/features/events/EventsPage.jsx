@@ -178,7 +178,6 @@ const participantNavItems = [
   { key: 'home', label: 'Home', icon: HomeRoundedIcon, path: '/home' },
   { key: 'calendar', label: 'Calendar', icon: CalendarMonthIcon, path: '/calendar' },
   { key: 'events', label: 'Events', icon: EventAvailableIcon, path: '/events' },
-  { key: 'resources', label: 'Resources', icon: MenuBookIcon, path: '/home' },
   { key: 'community', label: 'Community', icon: Diversity3Icon, path: '/home' },
   { key: 'messages', label: 'Messages', icon: ChatBubbleOutlineIcon, path: '/home', badge: 3 },
   { key: 'settings', label: 'Settings', icon: SettingsIcon, path: '/home' },
@@ -768,7 +767,7 @@ function EventCard({
         <CardDescriptionPanel description={event.description} isOpen={isDescriptionOpen} />
 
         <button
-          className="events-card__action"
+          className={`events-card__action${hasRegisteredSessions ? ' events-card__action--more' : ''}`}
           type="button"
           onClick={() => onOpenSessions(event.id)}
         >

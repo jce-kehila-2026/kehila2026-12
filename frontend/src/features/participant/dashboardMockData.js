@@ -60,24 +60,3 @@ export const moodOptions = [
   { key: 'tired', label: 'Tired', emoji: '-_-' },
   { key: 'sad', label: 'Sad', emoji: ':(' },
 ];
-
-export const resourceGuides = [
-  {
-    title: 'Preparing for an Appointment',
-    category: 'Care planning',
-    duration: '5 min read',
-    description: 'Questions to bring, notes to prepare, and ways to make the session feel easier.',
-  },
-  {
-    title: 'When a Difficult Feeling Shows Up',
-    category: 'Self support',
-    duration: '7 min read',
-    description: 'Small steps for pausing, naming what is happening, and choosing the next gentle action.',
-  },
-  {
-    title: 'Building a Weekly Recovery Routine',
-    category: 'Daily life',
-    duration: '10 min read',
-    description: 'A flexible structure for balancing rest, responsibilities, support, and movement.',
-  },
-];

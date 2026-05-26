@@ -11,7 +11,6 @@ import FavoriteOutlinedIcon from '@mui/icons-material/FavoriteOutlined';
 import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
 import LogoutIcon from '@mui/icons-material/Logout';
 import MailOutlineOutlinedIcon from '@mui/icons-material/MailOutlineOutlined';
-import MenuBookOutlinedIcon from '@mui/icons-material/MenuBookOutlined';
 import MoodOutlinedIcon from '@mui/icons-material/MoodOutlined';
 import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNoneOutlined';
 import PlayArrowRoundedIcon from '@mui/icons-material/PlayArrowRounded';
@@ -30,7 +29,7 @@ import { getParticipantData } from '../profile/services/participantService';
 import CommunityPage from './community/CommunityPage';
 import WorkshopFeed from './WorkshopFeed';
 import { useAdmin } from '../admin/context/AdminContext';
-import { communityHighlights, moodOptions, recommendations, resourceGuides } from './dashboardMockData';
+import { communityHighlights, moodOptions, recommendations } from './dashboardMockData';
 import './ParticipantHome.css';
 
 const overviewIconMap = {
@@ -44,7 +43,6 @@ const participantNavItems = [
   { key: 'home', label: 'Home', icon: HomeOutlinedIcon },
   { key: 'calendar', label: 'Calendar', icon: CalendarMonthOutlinedIcon },
   { key: 'events', label: 'Events', icon: EventAvailableOutlinedIcon, path: '/events' },
-  { key: 'resources', label: 'Resources', icon: MenuBookOutlinedIcon },
   { key: 'community', label: 'Community', icon: Diversity3OutlinedIcon },
   { key: 'messages', label: 'Messages', icon: ChatBubbleOutlineOutlinedIcon, badge: 3 },
   { key: 'profile', label: 'Settings', icon: SettingsOutlinedIcon },
@@ -294,10 +292,10 @@ function CommunityHighlights() {
   );
 }
 
-function Recommendations({ onOpenResources }) {
+function Recommendations() {
   return (
     <DashboardCard className="dashboard-card--recommendations">
-      <SectionHeading eyebrow="Based on your journey" title="Recommended For You" action="Open resources" onAction={onOpenResources} />
+      <SectionHeading eyebrow="Based on your journey" title="Recommended For You" />
       <div className="recommendation-row">
         {recommendations.map((item) => (
           <article className={`recommendation-card recommendation-card--${item.tone}`} key={item.title}>
@@ -313,12 +311,12 @@ function Recommendations({ onOpenResources }) {
   );
 }
 
-function MotivationPanel({ item, onClose, onOpenResources }) {
+function MotivationPanel({ item, onClose }) {
   if (!item) return null;
 
   return (
     <DashboardCard className="dashboard-card--motivation">
-      <SectionHeading eyebrow="Daily motivation" title={item.title} action="Open resources" onAction={onOpenResources} />
+      <SectionHeading eyebrow="Daily motivation" title={item.title} />
       <p>{item.description}</p>
       <div className="motivation-actions">
         <span>{item.category} - {item.duration}</span>
@@ -328,32 +326,8 @@ function MotivationPanel({ item, onClose, onOpenResources }) {
   );
 }
 
-function ResourceLibrary() {
-  return (
-    <section className="participant-content participant-content--single">
-      <div className="participant-panel participant-panel--wide">
-        <div className="participant-section-heading">
-          <span>Care tools</span>
-          <h2>Resources</h2>
-        </div>
-        <div className="resources-grid">
-          {[...resourceGuides, ...recommendations].map((resource) => (
-            <article className={`resource-card resource-card--${resource.tone || 'violet'}`} key={resource.title}>
-              <span>{resource.category}</span>
-              <h3>{resource.title}</h3>
-              <p>{resource.description}</p>
-              <small>{resource.duration}</small>
-            </article>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
 function HomeDashboard({ displayName, navigate, setActiveView, overviewCards, scheduleItems, weekDays, weekActivities, weekLabel, loading }) {
   const [motivation, setMotivation] = useState(null);
-  const openResources = () => setActiveView('resources');
   const openDailyMotivation = () => {
     const todayIndex = new Date().getDate() % recommendations.length;
     setMotivation(recommendations[todayIndex]);
@@ -362,7 +336,6 @@ function HomeDashboard({ displayName, navigate, setActiveView, overviewCards, sc
     if (card.target === 'events') navigate('/events');
     if (card.target === 'appointments') navigate('/events');
     if (card.target === 'calendar') setActiveView('calendar');
-    if (card.target === 'resources') setActiveView('resources');
   };
 
   return (
@@ -370,13 +343,13 @@ function HomeDashboard({ displayName, navigate, setActiveView, overviewCards, sc
       <div className="dashboard-primary">
         <HeroSection displayName={displayName} onExplore={() => navigate('/events')} onDailyMotivation={openDailyMotivation} />
         <OverviewGrid cards={overviewCards} onCardAction={handleOverviewAction} />
-        <MotivationPanel item={motivation} onClose={() => setMotivation(null)} onOpenResources={openResources} />
+        <MotivationPanel item={motivation} onClose={() => setMotivation(null)} />
         {loading && <p className="dashboard-loading-state">Refreshing your live schedule...</p>}
         <div className="dashboard-two-column">
           <UpcomingSchedule items={scheduleItems} onViewCalendar={() => setActiveView('calendar')} />
           <WeeklyCalendarPreview days={weekDays} activities={weekActivities} weekLabel={weekLabel} />
         </div>
-        <Recommendations onOpenResources={openResources} />
+        <Recommendations />
       </div>
       <aside className="dashboard-rail">
         <MoodCheckIn />
@@ -644,8 +617,6 @@ export default function ParticipantHome({ initialView = 'home' }) {
             </section>
           )}
 
-          {activeView === 'resources' && <ResourceLibrary />}
-
           {activeView === 'community' && (
             <CommunityPage
               personalDetails={{
@@ -668,7 +639,7 @@ export default function ParticipantHome({ initialView = 'home' }) {
             </section>
           )}
 
-          {!['home', 'calendar', 'events', 'workshops', 'appointments', 'resources', 'community', 'profile'].includes(activeView) && (
+          {!['home', 'calendar', 'events', 'workshops', 'appointments', 'community', 'profile'].includes(activeView) && (
             <section className="participant-content participant-content--single">
               <div className="participant-panel participant-panel--wide participant-placeholder-view">
                 <MoodOutlinedIcon />
