@@ -28,7 +28,6 @@ import AddIcon from '@mui/icons-material/Add';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import HandshakeIcon from '@mui/icons-material/Handshake';
-import PreviewIcon from '@mui/icons-material/Preview';
 
 const LIMITS = {
   name: 80,
@@ -275,21 +274,9 @@ export default function PartnersManagementPage() {
             Manage the partner cards shown in the "השותפים שלנו" section on the public home page.
           </Typography>
         </Box>
-        <Box sx={{ display: 'flex', gap: 1, flexShrink: 0 }}>
-          <Button
-            variant="outlined"
-            startIcon={<PreviewIcon />}
-            component="a"
-            href="/public#medical-partners"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Preview
-          </Button>
-          <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate}>
-            Add Partner
-          </Button>
-        </Box>
+        <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate} sx={{ flexShrink: 0 }}>
+          Add Partner
+        </Button>
       </Box>
 
       <Paper sx={{ p: 3 }}>
