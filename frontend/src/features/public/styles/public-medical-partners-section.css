@@ -108,23 +108,35 @@
   line-height: 1.8;
 }
 
-.public-homepage .public-section--medical-partners .medical-partners__grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  grid-auto-rows: 1fr;
+.public-homepage .public-section--medical-partners .medical-partners__scroll-track {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
   align-items: stretch;
   gap: var(--public-grid-gap, clamp(20px, 2.4vw, 28px));
-  width: min(100%, var(--public-grid-max, 1280px));
-  max-width: 100%;
-  margin-inline: auto;
+  width: 100%;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  padding-block-end: 8px; /* room for the scrollbar (hidden but some browsers need space) */
+  /* hide scrollbar cross-browser */
+  scrollbar-width: none;
 }
+
+.public-homepage .public-section--medical-partners .medical-partners__scroll-track::-webkit-scrollbar {
+  display: none;
+}
+
+/* In RTL the flex row already starts from the right — no extra change needed */
 
 .public-homepage .public-section--medical-partners .medical-partners__card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  height: 100%;
-  padding-block-start: max(0px, calc(clamp(16px, 1.8vw, 22px) - 20px));
+  flex: 0 0 clamp(240px, 26vw, 300px);
+  scroll-snap-align: start;
+  padding-block-start: clamp(16px, 1.8vw, 22px);
   padding-block-end: clamp(26px, 2.8vw, 32px);
   padding-inline: clamp(18px, 2vw, 26px);
   text-align: center;
@@ -192,59 +204,6 @@
   overflow: hidden;
 }
 
-.public-homepage .public-section--medical-partners .medical-partners__more {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-block-start: auto;
-  padding-block: 0.48rem;
-  padding-inline: 0.95rem 0.8rem;
-  color: var(--mp-purple);
-  font-family: inherit;
-  font-size: 0.84rem;
-  font-weight: 700;
-  background: var(--mp-pink-soft);
-  border: 1px solid rgba(217, 70, 161, 0.28);
-  border-radius: 999px;
-  cursor: pointer;
-  transition:
-    color 300ms ease,
-    background 300ms ease,
-    border-color 300ms ease,
-    box-shadow 300ms ease,
-    transform 300ms ease;
-}
-
-.public-homepage .public-section--medical-partners .medical-partners__more-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.35rem;
-  height: 1.35rem;
-  color: var(--mp-purple);
-  background: #ffffff;
-  border-radius: 50%;
-  box-shadow: 0 2px 8px rgba(91, 30, 140, 0.1);
-}
-
-.public-homepage .public-section--medical-partners .medical-partners__more-icon svg {
-  width: 0.85rem;
-  height: 0.85rem;
-}
-
-.public-homepage .public-section--medical-partners .medical-partners__more:hover,
-.public-homepage .public-section--medical-partners .medical-partners__more:focus-visible {
-  color: #ffffff;
-  background: linear-gradient(135deg, var(--mp-pink) 0%, var(--mp-purple-mid) 100%);
-  border-color: transparent;
-  box-shadow: 0 10px 22px rgba(217, 70, 161, 0.28);
-  transform: translateY(-2px);
-}
-
-.public-homepage .public-section--medical-partners .medical-partners__more:hover .medical-partners__more-icon,
-.public-homepage .public-section--medical-partners .medical-partners__more:focus-visible .medical-partners__more-icon {
-  color: var(--mp-pink);
-}
 
 @media (max-width: 640px) {
   .public-homepage .public-section.public-section--medical-partners {
@@ -253,9 +212,21 @@
   }
 }
 
+.public-homepage .public-section--medical-partners .medical-partner-logo-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(138, 45, 168, 0.15), rgba(217, 70, 161, 0.15));
+  color: var(--mp-purple);
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .public-homepage .public-section--medical-partners .medical-partners__card,
-  .public-homepage .public-section--medical-partners .medical-partners__more {
+  .public-homepage .public-section--medical-partners .medical-partners__card {
     transition: none;
   }
 

@@ -1,6 +1,10 @@
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../../firebase';
 import heroWomenSupport from '../../../assets/images/hero-women-support.png';
+import assutaLogo from '../../../assets/images/assuta.png';
+import ichilovLogo from '../../../assets/images/ichilov.png';
+import barzilaiLogo from '../../../assets/images/barzilai-logo.jpg';
+import shamirLogo from '../../../assets/images/shamir.png';
 import {
   isKnownAboutUsIconKey,
   DEFAULT_ABOUT_US_ICON_KEY,
@@ -543,6 +547,59 @@ export function mergeLearnTogether(learnTogether) {
   };
 }
 
+export const DEFAULT_PARTNERS = [
+  {
+    id: 'seed-partner-assuta',
+    name: 'אסותא אשדוד',
+    logoUrl: assutaLogo,
+    description: 'בית חולים פרטי המעניק ליווי רפואי מתקדם ושירותי בריאות מקיפים לנשים ולמשפחותיהן.',
+    order: 0,
+  },
+  {
+    id: 'seed-partner-ichilov',
+    name: 'סוראסקי איכילוב',
+    logoUrl: ichilovLogo,
+    description: 'מרכז רפואי מוביל המציע מגוון שירותים אונקולוגיים וליווי מקצועי לאורך הטיפול.',
+    order: 1,
+  },
+  {
+    id: 'seed-partner-barzilai',
+    name: 'ברזילי',
+    logoUrl: barzilaiLogo,
+    description: 'בית חולים ממשלתי עם מחלקה אונקולוגית מתקדמת ושירותי תמיכה לנשים.',
+    order: 2,
+  },
+  {
+    id: 'seed-partner-assaf',
+    name: 'אסף הרופא',
+    logoUrl: shamirLogo,
+    description: 'מרכז רפואי גדול עם מומחיות בטיפולים אונקולוגיים ותמיכה הוליסטית.',
+    order: 3,
+  },
+];
+
+function mergePartner(partner, index) {
+  const safe = partner && typeof partner === 'object' ? partner : {};
+  const orderRaw = typeof safe.order === 'number' ? safe.order : Number(safe.order);
+  const order = Number.isFinite(orderRaw) ? orderRaw : index;
+  return {
+    id: safeString(safe.id) || `partner-${index}`,
+    name: safeString(safe.name),
+    logoUrl: safeString(safe.logoUrl) || (DEFAULT_PARTNERS.find((d) => d.id === safeString(safe.id))?.logoUrl ?? ''),
+    description: safeString(safe.description),
+    order,
+  };
+}
+
+export function mergePartners(value) {
+  if (!Array.isArray(value) || value.length === 0) {
+    return DEFAULT_PARTNERS.map((p) => ({ ...p }));
+  }
+  return value
+    .map((partner, index) => mergePartner(partner, index))
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+}
+
 export function mergeHero(hero) {
   const safeHero = hero && typeof hero === 'object' ? hero : {};
   return {
@@ -600,6 +657,7 @@ export function getDefaultPublicHomeDoc() {
     pressCoverage: DEFAULT_PRESS_COVERAGE.map((p) => ({ ...p })),
     statistics: DEFAULT_STATISTICS.map((s) => ({ ...s })),
     teamMembers: DEFAULT_TEAM_MEMBERS.map((m) => ({ ...m })),
+    partners: DEFAULT_PARTNERS.map((p) => ({ ...p })),
     updatedAt: null,
     updatedBy: '',
   };
@@ -621,6 +679,7 @@ export async function getPublicHomeDoc() {
       pressCoverage: mergePressCoverage(data.pressCoverage),
       statistics: mergeStatistics(data.statistics),
       teamMembers: mergeTeamMembers(data.teamMembers),
+      partners: mergePartners(data.partners),
     };
   } catch (error) {
     console.warn('[publicPagesService] Failed to load public_pages/home, using defaults.', error);
