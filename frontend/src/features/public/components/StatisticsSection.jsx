@@ -1,5 +1,5 @@
-import { useRef } from 'react';
-import { BookOpen, HandHeart, Megaphone, UsersRound } from 'lucide-react';
+import { useMemo, useRef } from 'react';
+import { BookOpen, HandHeart, Heart, Megaphone, Sparkles, UsersRound } from 'lucide-react';
 import EmptyState from './EmptyState';
 import ErrorState from './ErrorState';
 import LoadingState from './LoadingState';
@@ -16,11 +16,44 @@ const STATISTIC_ICON_PROPS = {
 };
 
 const STATISTIC_ICONS = {
+  'hands-heart': HandHeart,
+  megaphone: Megaphone,
+  'users-round': UsersRound,
+  'book-open': BookOpen,
+  heart: Heart,
+  sparkles: Sparkles,
+  // legacy id-based keys (back-compat with content service fallbacks)
   women: HandHeart,
   events: Megaphone,
   volunteers: UsersRound,
   stories: BookOpen,
 };
+
+function formatStatisticDisplayValue(value) {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    const formatted = new Intl.NumberFormat('en-US').format(Math.max(0, Math.floor(value)));
+    // Leading LRM (‎) keeps the `+` rendered before the number (AnimatedCounter
+    // would otherwise swap a bare "+N" prefix to a "N+" suffix).
+    return `‎+${formatted}`;
+  }
+  if (typeof value === 'string' && value.trim()) {
+    return value;
+  }
+  return '';
+}
+
+function adaptStatisticForRender(statistic) {
+  if (!statistic || typeof statistic !== 'object') return statistic;
+  const label = statistic.title || statistic.label || '';
+  const note = statistic.description || statistic.note || '';
+  return {
+    ...statistic,
+    label,
+    note,
+    value: formatStatisticDisplayValue(statistic.value),
+    iconKey: statistic.icon || statistic.id,
+  };
+}
 
 function StatisticsDivider({ modifier = '' }) {
   const className = ['public-statistics__divider', modifier].filter(Boolean).join(' ');
@@ -59,7 +92,7 @@ function StatisticsGrid({
   return (
     <div className={gridClasses} aria-label={ariaLabel}>
       {statistics.map((statistic, index) => {
-        const Icon = STATISTIC_ICONS[statistic.id] || BookOpen;
+        const Icon = STATISTIC_ICONS[statistic.iconKey] || STATISTIC_ICONS[statistic.id] || BookOpen;
         const tone = index % 2 === 0 ? 'pink' : 'purple';
 
         return (
@@ -93,11 +126,15 @@ function StatisticsGrid({
   );
 }
 
-export { StatisticsGrid, StatisticsDivider };
+export { StatisticsGrid, StatisticsDivider, adaptStatisticForRender };
 
 export default function StatisticsSection({ statistics = [], isLoading = false, hasError = false }) {
   const { locale, t } = usePublicLocale();
-  const localizedStatistics = localizeStatistics(statistics, locale);
+  const adaptedStatistics = useMemo(
+    () => (Array.isArray(statistics) ? statistics.map(adaptStatisticForRender) : []),
+    [statistics],
+  );
+  const localizedStatistics = localizeStatistics(adaptedStatistics, locale);
   const hasStatistics = localizedStatistics.length > 0;
   const sectionRef = useRef(null);
   const countersInView = useInViewOnce(sectionRef);

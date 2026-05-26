@@ -7,7 +7,7 @@ import { getLocalizedHero } from '../i18n/publicHomeTranslations';
 import EmptyState from './EmptyState';
 import ErrorState from './ErrorState';
 import LoadingState from './LoadingState';
-import { StatisticsGrid } from './StatisticsSection';
+import { StatisticsGrid, adaptStatisticForRender } from './StatisticsSection';
 
 function revealHeroElements(root) {
   if (!root) return;
@@ -26,7 +26,14 @@ export default function HeroSection({
 }) {
   const { locale, t } = usePublicLocale();
   const localizedHero = useMemo(() => getLocalizedHero(hero, locale, t), [hero, locale, t]);
-  const localizedStatistics = useMemo(() => localizeStatistics(statistics, locale), [statistics, locale]);
+  const adaptedStatistics = useMemo(
+    () => (Array.isArray(statistics) ? statistics.map(adaptStatisticForRender) : []),
+    [statistics],
+  );
+  const localizedStatistics = useMemo(
+    () => localizeStatistics(adaptedStatistics, locale),
+    [adaptedStatistics, locale],
+  );
   const backgroundImageUrl = localizedHero.backgroundImageUrl || heroWomenSupport;
   const hasStatistics = localizedStatistics.length > 0;
   const showStatisticsLoading = isLoading && !hasStatistics;

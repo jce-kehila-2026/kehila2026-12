@@ -259,6 +259,73 @@ export const DEFAULT_INSPIRATIONAL_STORIES = [
   },
 ];
 
+export const STATISTICS_MAX = 4;
+
+export const STATISTIC_ICON_KEYS = [
+  'hands-heart',
+  'megaphone',
+  'users-round',
+  'book-open',
+  'heart',
+  'sparkles',
+];
+
+export const DEFAULT_STATISTICS = [
+  {
+    id: 'community_women',
+    icon: 'hands-heart',
+    value: 2500,
+    title: 'נשים בקהילה',
+    description: 'מרחב תמיכה חי, מכיל ונגיש.',
+  },
+  {
+    id: 'annual_events',
+    icon: 'megaphone',
+    value: 120,
+    title: 'אירועים שנתיים',
+    description: 'סדנאות, הרצאות ומפגשי קהילה.',
+  },
+  {
+    id: 'volunteers',
+    icon: 'users-round',
+    value: 85,
+    title: 'מתנדבים',
+    description: 'נשים ואנשי מקצוע שמלווים באהבה.',
+  },
+  {
+    id: 'success_stories',
+    icon: 'book-open',
+    value: 1500,
+    title: 'סיפורי הצלחה',
+    description: 'רגעים של תקווה, חוסן ושינוי.',
+  },
+];
+
+function isKnownStatisticIcon(value) {
+  return typeof value === 'string' && STATISTIC_ICON_KEYS.includes(value);
+}
+
+function mergeStatistic(stat, index) {
+  const safe = stat && typeof stat === 'object' ? stat : {};
+  const fallback = DEFAULT_STATISTICS[index] || DEFAULT_STATISTICS[0];
+  const rawValue = typeof safe.value === 'number' ? safe.value : Number(safe.value);
+  const value = Number.isFinite(rawValue) && rawValue >= 0 ? Math.floor(rawValue) : fallback.value;
+  return {
+    id: safeString(safe.id) || fallback.id,
+    icon: isKnownStatisticIcon(safe.icon) ? safe.icon : fallback.icon,
+    value,
+    title: safeString(safe.title) || fallback.title,
+    description: safeString(safe.description),
+  };
+}
+
+export function mergeStatistics(value) {
+  if (!Array.isArray(value) || value.length === 0) {
+    return DEFAULT_STATISTICS.map((s) => ({ ...s }));
+  }
+  return value.slice(0, STATISTICS_MAX).map((stat, index) => mergeStatistic(stat, index));
+}
+
 export const DEFAULT_PRESS_COVERAGE = [
   {
     id: 'seed-press-1',
@@ -468,6 +535,7 @@ export function getDefaultPublicHomeDoc() {
     },
     inspirationalStories: DEFAULT_INSPIRATIONAL_STORIES.map((s) => ({ ...s })),
     pressCoverage: DEFAULT_PRESS_COVERAGE.map((p) => ({ ...p })),
+    statistics: DEFAULT_STATISTICS.map((s) => ({ ...s })),
     updatedAt: null,
     updatedBy: '',
   };
@@ -487,6 +555,7 @@ export async function getPublicHomeDoc() {
       learnTogether: mergeLearnTogether(data.learnTogether),
       inspirationalStories: mergeInspirationalStories(data.inspirationalStories),
       pressCoverage: mergePressCoverage(data.pressCoverage),
+      statistics: mergeStatistics(data.statistics),
     };
   } catch (error) {
     console.warn('[publicPagesService] Failed to load public_pages/home, using defaults.', error);
