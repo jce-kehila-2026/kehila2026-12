@@ -1,3 +1,6 @@
+import { useRef } from 'react';
+import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import PublicSectionHeading from './PublicSectionHeading';
 import { usePublicLocale } from '../context/PublicLocaleContext';
 import '../styles/public-medical-partners-section.css';
@@ -12,8 +15,16 @@ function CardDivider() {
   );
 }
 
+const SCROLL_AMOUNT = 320;
+
 export default function MedicalPartnersSection({ partners = [] }) {
   const { t } = usePublicLocale();
+  const trackRef = useRef(null);
+
+  function scroll(direction) {
+    if (!trackRef.current) return;
+    trackRef.current.scrollBy({ left: direction * SCROLL_AMOUNT, behavior: 'smooth' });
+  }
 
   return (
     <section
@@ -39,27 +50,47 @@ export default function MedicalPartnersSection({ partners = [] }) {
           subtitle={t('medicalSubtitle')}
         />
 
-        <div className="medical-partners__scroll-track stagger-children">
-          {partners.map((partner) => (
-            <article className="medical-partners__card reveal" key={partner.id}>
-              <div className="medical-partner-logo-wrap">
-                {partner.logoUrl ? (
-                  <img
-                    className="medical-partner-logo"
-                    src={partner.logoUrl}
-                    alt={`${t('medicalLogoAlt')} ${partner.name}`}
-                    loading="lazy"
-                    decoding="async"
-                  />
-                ) : (
-                  <span className="medical-partner-logo-placeholder">{partner.name.slice(0, 2)}</span>
-                )}
-              </div>
-              <h3 className="medical-partners__name">{partner.name}</h3>
-              <CardDivider />
-              <p className="medical-partners__excerpt">{partner.description}</p>
-            </article>
-          ))}
+        <div className="medical-partners__carousel">
+          <button
+            type="button"
+            className="medical-partners__nav-btn medical-partners__nav-btn--prev"
+            onClick={() => scroll(1)}
+            aria-label="הקודם"
+          >
+            <ChevronRightIcon />
+          </button>
+
+          <div className="medical-partners__scroll-track stagger-children" ref={trackRef}>
+            {partners.map((partner) => (
+              <article className="medical-partners__card reveal" key={partner.id}>
+                <div className="medical-partner-logo-wrap">
+                  {partner.logoUrl ? (
+                    <img
+                      className="medical-partner-logo"
+                      src={partner.logoUrl}
+                      alt={`${t('medicalLogoAlt')} ${partner.name}`}
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  ) : (
+                    <span className="medical-partner-logo-placeholder">{partner.name.slice(0, 2)}</span>
+                  )}
+                </div>
+                <h3 className="medical-partners__name">{partner.name}</h3>
+                <CardDivider />
+                <p className="medical-partners__excerpt">{partner.description}</p>
+              </article>
+            ))}
+          </div>
+
+          <button
+            type="button"
+            className="medical-partners__nav-btn medical-partners__nav-btn--next"
+            onClick={() => scroll(-1)}
+            aria-label="הבא"
+          >
+            <ChevronLeftIcon />
+          </button>
         </div>
       </div>
     </section>
