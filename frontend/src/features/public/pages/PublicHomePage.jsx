@@ -109,7 +109,7 @@ function PublicHomePageContent() {
         ) : null}
         <HeroSection
           hero={publicHomeDoc.hero}
-          statistics={content.statistics}
+          statistics={publicHomeDoc.statistics}
           isLoading={loading}
           hasError={Boolean(error)}
           onJoinClick={() => setIsJoinModalOpen(true)}
