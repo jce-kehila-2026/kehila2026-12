@@ -121,7 +121,7 @@ function PublicHomePageContent() {
         <CommunitySupportCta onDonationClick={() => setIsDonationModalOpen(true)} />
         <TeamSection members={publicHomeDoc.teamMembers} />
         <MedicalPartnersSection partners={publicHomeDoc.partners} />
-        <ContactSection contact={content.contact} organization={content.organization} />
+        <ContactSection contact={publicHomeDoc.contact} organization={content.organization} />
       </main>
       <PublicFooter organization={content.organization} contact={content.contact} />
       <JoinCommunityModal isOpen={isJoinModalOpen} onClose={() => setIsJoinModalOpen(false)} />

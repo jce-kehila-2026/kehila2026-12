@@ -547,6 +547,40 @@ export function mergeLearnTogether(learnTogether) {
   };
 }
 
+export const DEFAULT_CONTACT = {
+  title: 'אנחנו כאן בשבילך',
+  description: 'אפשר לפנות אלינו להצטרפות, תמיכה, התנדבות או שיתוף פעולה.',
+  email: 'info@she-na.org.il',
+  phone: '03-1234567',
+  linkedinUrl: '',
+  instagramUrl: '',
+  facebookUrl: '',
+};
+
+export function mergeContact(value) {
+  const safe = value && typeof value === 'object' ? value : {};
+  const linkedinUrl = safeString(safe.linkedinUrl);
+  const instagramUrl = safeString(safe.instagramUrl);
+  const facebookUrl = safeString(safe.facebookUrl);
+
+  const socialLinks = [
+    linkedinUrl && { id: 'linkedin', label: 'LinkedIn', href: linkedinUrl },
+    instagramUrl && { id: 'instagram', label: 'Instagram', href: instagramUrl },
+    facebookUrl && { id: 'facebook', label: 'Facebook', href: facebookUrl },
+  ].filter(Boolean);
+
+  return {
+    title: safeString(safe.title) || DEFAULT_CONTACT.title,
+    description: safeString(safe.description) || DEFAULT_CONTACT.description,
+    email: safeString(safe.email) || DEFAULT_CONTACT.email,
+    phone: safeString(safe.phone) || DEFAULT_CONTACT.phone,
+    linkedinUrl,
+    instagramUrl,
+    facebookUrl,
+    socialLinks,
+  };
+}
+
 export const DEFAULT_PARTNERS = [
   {
     id: 'seed-partner-assuta',
@@ -658,6 +692,7 @@ export function getDefaultPublicHomeDoc() {
     statistics: DEFAULT_STATISTICS.map((s) => ({ ...s })),
     teamMembers: DEFAULT_TEAM_MEMBERS.map((m) => ({ ...m })),
     partners: DEFAULT_PARTNERS.map((p) => ({ ...p })),
+    contact: { ...DEFAULT_CONTACT },
     updatedAt: null,
     updatedBy: '',
   };
@@ -680,6 +715,7 @@ export async function getPublicHomeDoc() {
       statistics: mergeStatistics(data.statistics),
       teamMembers: mergeTeamMembers(data.teamMembers),
       partners: mergePartners(data.partners),
+      contact: mergeContact(data.contact),
     };
   } catch (error) {
     console.warn('[publicPagesService] Failed to load public_pages/home, using defaults.', error);
