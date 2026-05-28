@@ -1495,12 +1495,12 @@
   inset: 0;
   border: 0;
   background:
-    radial-gradient(circle at 70% 14%, rgba(236, 111, 162, 0.18), transparent 28rem),
-    radial-gradient(circle at 20% 86%, rgba(159, 107, 208, 0.22), transparent 26rem),
-    rgba(35, 20, 95, 0.42);
+    radial-gradient(circle at 68% 12%, rgba(236, 111, 162, 0.22), transparent 28rem),
+    radial-gradient(circle at 20% 86%, rgba(159, 107, 208, 0.24), transparent 26rem),
+    linear-gradient(135deg, rgba(55, 31, 93, 0.42), rgba(108, 70, 146, 0.32));
   cursor: pointer;
-  backdrop-filter: blur(18px) saturate(1.12);
-  -webkit-backdrop-filter: blur(18px) saturate(1.12);
+  backdrop-filter: blur(20px) saturate(1.16);
+  -webkit-backdrop-filter: blur(20px) saturate(1.16);
   animation: eventsBookingBackdropIn 180ms ease both;
 }
 
@@ -1512,16 +1512,20 @@
   border: 1px solid rgba(255, 255, 255, 0.62);
   border-radius: 28px;
   background:
-    linear-gradient(142deg, rgba(255, 255, 255, 0.72), rgba(255, 244, 251, 0.5) 48%, rgba(241, 233, 255, 0.52)),
-    radial-gradient(circle at 10% 8%, rgba(255, 205, 230, 0.32), transparent 14rem),
-    radial-gradient(circle at 90% 10%, rgba(205, 177, 255, 0.38), transparent 15rem);
+    radial-gradient(circle at 18% 10%, rgba(255, 255, 255, 0.92), transparent 12rem),
+    radial-gradient(circle at 90% 6%, rgba(216, 190, 255, 0.48), transparent 15rem),
+    radial-gradient(circle at 14% 92%, rgba(255, 202, 224, 0.36), transparent 13rem),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.78), rgba(255, 243, 250, 0.58) 48%, rgba(239, 230, 255, 0.62));
   box-shadow:
-    0 34px 86px rgba(35, 20, 95, 0.26),
-    0 16px 40px rgba(236, 111, 162, 0.14),
-    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+    0 36px 92px rgba(35, 20, 95, 0.24),
+    0 18px 44px rgba(236, 111, 162, 0.16),
+    0 0 54px rgba(207, 181, 255, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.94),
+    inset 0 -1px 0 rgba(159, 107, 208, 0.1);
   padding: 20px;
   direction: ltr;
   text-align: left;
+  font-family: "Plus Jakarta Sans", "Inter", system-ui, sans-serif;
   backdrop-filter: blur(28px) saturate(1.16);
   -webkit-backdrop-filter: blur(28px) saturate(1.16);
   animation: eventsBookingDialogIn 220ms cubic-bezier(0.2, 0.78, 0.2, 1) both;
@@ -1562,7 +1566,7 @@
 
 .events-booking-modal .events-card__calendar-grid button {
   min-height: 48px;
-  border-radius: 15px;
+  border-radius: 999px;
   font-size: 0.88rem;
 }
 
@@ -1628,6 +1632,28 @@
   animation: eventsBookingSwap 260ms ease both;
 }
 
+.events-card__booking-view--calendar {
+  position: relative;
+  isolation: isolate;
+  padding-block-start: 18px;
+}
+
+.events-card__booking-view--calendar::before {
+  content: "";
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 50%;
+  width: 160px;
+  height: 5px;
+  border-radius: 999px;
+  background:
+    linear-gradient(90deg, rgba(236, 111, 162, 0), rgba(166, 105, 232, 0.9), rgba(236, 111, 162, 0));
+  box-shadow:
+    0 0 22px rgba(166, 105, 232, 0.5),
+    0 8px 30px rgba(236, 111, 162, 0.18);
+  transform: translateX(-50%);
+}
+
 .events-card__booking-view--providers {
   gap: 10px;
 }
@@ -1638,6 +1664,63 @@
   justify-content: space-between;
   gap: 10px;
   text-align: left;
+}
+
+.events-card__booking-view--calendar .events-card__booking-header {
+  position: relative;
+  min-height: 70px;
+  justify-content: center;
+  padding-inline: 76px;
+  text-align: center;
+}
+
+.events-card__booking-view--calendar .events-card__booking-header::before,
+.events-card__booking-view--calendar .events-card__booking-header::after {
+  position: absolute;
+  inset-block-start: 50%;
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.68);
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.95), transparent 2.8rem),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.58), rgba(241, 230, 255, 0.38));
+  color: #6b38a1;
+  font-size: 1.72rem;
+  font-weight: 700;
+  line-height: 1;
+  box-shadow:
+    0 14px 30px rgba(123, 63, 161, 0.13),
+    0 0 24px rgba(207, 181, 255, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  transform: translateY(-50%);
+  transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
+}
+
+.events-card__booking-view--calendar .events-card__booking-header::before {
+  content: "\2039";
+  inset-inline-start: 6px;
+}
+
+.events-card__booking-view--calendar .events-card__booking-header::after {
+  content: "\203A";
+  inset-inline-end: 6px;
+}
+
+.events-card__booking-view--calendar .events-card__booking-header:hover::before,
+.events-card__booking-view--calendar .events-card__booking-header:hover::after {
+  box-shadow:
+    0 18px 36px rgba(123, 63, 161, 0.18),
+    0 0 32px rgba(236, 111, 162, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92);
+}
+
+.events-card__booking-view--calendar .events-card__booking-header > div {
+  display: grid;
+  justify-items: center;
+  text-align: center;
 }
 
 .events-card__booking-header h4,
@@ -1652,11 +1735,34 @@
   line-height: 1.1;
 }
 
+.events-card__booking-view--calendar .events-card__booking-header h4 {
+  color: #2a155f;
+  font-size: 1.34rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-align: center;
+  text-shadow: 0 8px 24px rgba(123, 63, 161, 0.14);
+}
+
+.events-card__booking-view--calendar .events-card__booking-header strong {
+  margin-block-start: 4px;
+  color: rgba(95, 45, 134, 0.76);
+  font-size: 0.74rem;
+  font-weight: 900;
+}
+
 .events-card__booking-header p {
   margin-block-start: 4px;
   color: rgba(35, 20, 95, 0.62);
   font-size: 0.64rem;
   font-weight: 800;
+}
+
+.events-card__booking-view--calendar .events-card__booking-header p {
+  color: rgba(95, 45, 134, 0.56);
+  font-size: 0.64rem;
+  font-weight: 800;
+  text-align: center;
 }
 
 .events-card__change-date {
@@ -1702,34 +1808,38 @@
 .events-card__calendar {
   width: 100%;
   justify-self: center;
-  border: 1px solid rgba(255, 255, 255, 0.56);
-  border-radius: 18px;
+  border: 1px solid rgba(255, 255, 255, 0.64);
+  border-radius: 26px;
   background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.5), rgba(247, 236, 255, 0.3)),
-    radial-gradient(circle at 18% 12%, rgba(255, 255, 255, 0.68), transparent 7rem);
+    radial-gradient(circle at 18% 10%, rgba(255, 255, 255, 0.86), transparent 8rem),
+    radial-gradient(circle at 86% 0%, rgba(207, 181, 255, 0.32), transparent 11rem),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.54), rgba(255, 242, 249, 0.36) 52%, rgba(241, 230, 255, 0.38));
   box-shadow:
-    0 16px 34px rgba(123, 63, 161, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.78);
-  padding: 10px;
-  backdrop-filter: blur(18px) saturate(1.12);
-  -webkit-backdrop-filter: blur(18px) saturate(1.12);
+    0 20px 42px rgba(123, 63, 161, 0.12),
+    0 0 34px rgba(236, 111, 162, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.84),
+    inset 0 -1px 0 rgba(159, 107, 208, 0.08);
+  padding: 16px;
+  backdrop-filter: blur(22px) saturate(1.16);
+  -webkit-backdrop-filter: blur(22px) saturate(1.16);
 }
 
 .events-card__calendar-weekdays,
 .events-card__calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 4px;
+  gap: 6px;
 }
 
 .events-card__calendar-weekdays {
-  margin-block-end: 8px;
+  margin-block-end: 10px;
 }
 
 .events-card__calendar-weekdays span {
-  color: rgba(35, 20, 95, 0.42);
-  font-size: 0.52rem;
+  color: rgba(70, 42, 119, 0.48);
+  font-size: 0.58rem;
   font-weight: 900;
+  letter-spacing: 0.04em;
   text-align: center;
 }
 
@@ -1737,42 +1847,60 @@
   aspect-ratio: 1;
   min-height: 36px;
   min-width: 0;
-  border: 1px solid transparent;
-  border-radius: 12px;
-  background: rgba(255, 255, 255, 0.24);
-  color: rgba(35, 20, 95, 0.24);
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 999px;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.22), rgba(241, 230, 255, 0.12));
+  color: rgba(75, 55, 106, 0.26);
   cursor: not-allowed;
   font: inherit;
   font-size: 0.72rem;
   font-weight: 900;
+  text-align: center;
   padding: 0;
-  transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease, color 180ms ease;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.38);
+  transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease, color 180ms ease, border-color 180ms ease;
 }
 
 .events-card__calendar-grid button.is-available {
-  border-color: rgba(255, 255, 255, 0.72);
+  border-color: rgba(255, 255, 255, 0.76);
   background:
-    radial-gradient(circle at 28% 18%, rgba(255, 255, 255, 0.76), transparent 3rem),
-    linear-gradient(135deg, rgba(255, 205, 228, 0.8), rgba(224, 208, 255, 0.62));
-  color: #7b3fa1;
+    radial-gradient(circle at 28% 18%, rgba(255, 255, 255, 0.82), transparent 2.8rem),
+    linear-gradient(145deg, rgba(255, 226, 239, 0.72), rgba(226, 210, 255, 0.64));
+  color: #6b38a1;
   cursor: pointer;
   box-shadow:
-    0 12px 24px rgba(236, 111, 162, 0.16),
-    0 0 22px rgba(205, 177, 255, 0.28),
-    inset 0 1px 0 rgba(255, 255, 255, 0.82);
+    0 10px 22px rgba(123, 63, 161, 0.12),
+    0 0 24px rgba(236, 111, 162, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.86);
 }
 
-.events-card__calendar-grid button.is-available:hover,
-.events-card__calendar-grid button.is-selected {
+.events-card__calendar-grid button.is-available:hover {
   transform: translateY(-1px);
   background:
-    radial-gradient(circle at 24% 16%, rgba(255, 255, 255, 0.82), transparent 3.2rem),
-    linear-gradient(135deg, rgba(236, 111, 162, 0.9), rgba(159, 107, 208, 0.84));
+    radial-gradient(circle at 24% 16%, rgba(255, 255, 255, 0.86), transparent 3rem),
+    linear-gradient(145deg, rgba(255, 210, 232, 0.86), rgba(214, 194, 255, 0.76));
+  color: #5f2d86;
+  box-shadow:
+    0 14px 28px rgba(123, 63, 161, 0.16),
+    0 0 30px rgba(236, 111, 162, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.events-card__calendar-grid button.is-selected {
+  transform: translateY(-2px) scale(1.04);
+  border-color: rgba(255, 255, 255, 0.86);
+  background:
+    radial-gradient(circle at 26% 18%, rgba(255, 255, 255, 0.88), transparent 3.2rem),
+    linear-gradient(135deg, rgba(236, 111, 162, 0.94), rgba(159, 107, 208, 0.92));
   color: #fff;
   box-shadow:
-    0 16px 28px rgba(123, 63, 161, 0.22),
-    0 0 28px rgba(236, 111, 162, 0.28),
-    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+    0 18px 32px rgba(123, 63, 161, 0.26),
+    0 0 34px rgba(236, 111, 162, 0.34),
+    0 0 16px rgba(207, 181, 255, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.78);
 }
 
 .events-card__provider-list {
@@ -2566,6 +2694,25 @@
     gap: 10px;
   }
 
+  .events-card__booking-view--calendar .events-card__booking-header {
+    align-items: center;
+    flex-direction: row;
+    justify-content: center;
+    min-height: 64px;
+    padding-inline: 54px;
+  }
+
+  .events-card__booking-view--calendar .events-card__booking-header::before,
+  .events-card__booking-view--calendar .events-card__booking-header::after {
+    width: 38px;
+    height: 38px;
+    font-size: 1.42rem;
+  }
+
+  .events-card__booking-view--calendar .events-card__booking-header h4 {
+    font-size: 1.12rem;
+  }
+
   .events-card__calendar {
     padding: 10px;
   }
@@ -2577,7 +2724,7 @@
 
   .events-card__calendar-grid button {
     min-height: 42px;
-    border-radius: 12px;
+    border-radius: 999px;
     font-size: 0.78rem;
   }
 
