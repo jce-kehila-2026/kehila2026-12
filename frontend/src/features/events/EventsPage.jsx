@@ -11,7 +11,6 @@ import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined';
 import GroupsRoundedIcon from '@mui/icons-material/GroupsRounded';
 import HomeRoundedIcon from '@mui/icons-material/HomeRounded';
-import LocationOnOutlinedIcon from '@mui/icons-material/LocationOnOutlined';
 import LogoutIcon from '@mui/icons-material/Logout';
 import MenuBookIcon from '@mui/icons-material/MenuBookOutlined';
 import PersonIcon from '@mui/icons-material/Person';
@@ -38,6 +37,7 @@ const VIEW_WORKSHOPS = 'workshops';
 const VIEW_APPOINTMENTS = 'appointments';
 const VIEW_REGISTERED = 'registered';
 const UPCOMING_SESSION_COUNT = 4;
+const CALENDAR_WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 const ENGLISH_SCHEDULE_TEMPLATES = [
   {
@@ -265,6 +265,54 @@ function formatSessionTabDate(value) {
   }).format(date);
 }
 
+function formatAvailableSpots(availableSpots) {
+  if (availableSpots === null) return 'Spots available';
+  if (availableSpots === 1) return '1 spot left';
+  return `${availableSpots} spots left`;
+}
+
+function getCalendarTitle(sessions) {
+  const dates = sessions.map((session) => toDate(session.startDate)).filter(Boolean);
+  if (!dates.length) return 'Upcoming dates';
+
+  const firstDate = dates[0];
+  return new Intl.DateTimeFormat('en', {
+    month: 'long',
+    year: 'numeric',
+  }).format(firstDate);
+}
+
+function buildBookingCalendar(sessions) {
+  const dates = sessions.map((session) => toDate(session.startDate)).filter(Boolean);
+  if (!dates.length) return { title: 'Upcoming dates', days: [] };
+
+  const firstDate = new Date(dates[0]);
+  const lastDate = new Date(dates[dates.length - 1]);
+  const startDate = new Date(firstDate);
+  startDate.setDate(firstDate.getDate() - firstDate.getDay());
+  startDate.setHours(12, 0, 0, 0);
+
+  const endDate = new Date(lastDate);
+  endDate.setDate(lastDate.getDate() + (6 - lastDate.getDay()));
+  endDate.setHours(12, 0, 0, 0);
+
+  const days = [];
+  const cursor = new Date(startDate);
+  while (cursor.getTime() <= endDate.getTime()) {
+    days.push({
+      id: toDateKey(cursor),
+      dateKey: toDateKey(cursor),
+      dayNumber: cursor.getDate(),
+    });
+    cursor.setDate(cursor.getDate() + 1);
+  }
+
+  return {
+    title: getCalendarTitle(sessions),
+    days,
+  };
+}
+
 function copyTimeToDate(dateValue, timeSource) {
   const date = toDate(dateValue);
   const time = getTimeParts(timeSource);
@@ -435,12 +483,6 @@ function getWeeklyScheduleLabel(event, scheduleTemplate, fallbackStart) {
   }
 
   return formatWeeklySchedule(fallbackStart);
-}
-
-function formatAvailableSpots(availableSpots) {
-  if (availableSpots === null) return 'Spots available';
-  if (availableSpots === 1) return '1 spot left';
-  return `${availableSpots} spots left`;
 }
 
 function formatSlotsTimeRange(providerSlots, dateSource) {
@@ -736,7 +778,7 @@ function CardDescriptionPanel({ description, isOpen }) {
 function EventCard({
   event,
   registeredSessionIds,
-  onOpenSessions,
+  onOpenBooking,
 }) {
   const typeLabel = event.eventType === 'appointment' ? 'Appointment' : 'Workshop';
   const hasRegisteredSessions = event.sessionOptions.some((session) => registeredSessionIds.has(session.id));
@@ -769,7 +811,8 @@ function EventCard({
         <button
           className={`events-card__action${hasRegisteredSessions ? ' events-card__action--more' : ''}`}
           type="button"
-          onClick={() => onOpenSessions(event.id)}
+          onClick={() => onOpenBooking(event.id)}
+          aria-haspopup="dialog"
         >
           {hasRegisteredSessions ? 'Choose More Dates' : 'View Dates'}
           <ArrowForwardIcon fontSize="small" />
@@ -779,160 +822,160 @@ function EventCard({
   );
 }
 
-function SessionSelectionModal({
+function EventBookingModal({
   event,
   registeredSessionIds,
   onRegisterSession,
   onClose,
 }) {
-  const [selectedDateKey, setSelectedDateKey] = useState(event?.sessions[0]?.dateKey || '');
+  const [selectedDateKey, setSelectedDateKey] = useState('');
 
   useEffect(() => {
-    setSelectedDateKey(event?.sessions[0]?.dateKey || '');
-  }, [event]);
+    setSelectedDateKey('');
+  }, [event?.id]);
 
   if (!event) return null;
 
-  const selectedSession = event.sessions.find((session) => session.dateKey === selectedDateKey) || event.sessions[0];
+  const selectedSession = event.sessions.find((session) => session.dateKey === selectedDateKey) || null;
   const selectedOptions = selectedSession?.options || [];
+  const bookingCalendar = buildBookingCalendar(event.sessions);
+  const sessionsByDateKey = new Map(event.sessions.map((session) => [session.dateKey, session]));
 
   return (
-    <div className="session-modal" role="presentation">
-      <div className="session-modal__backdrop" onClick={onClose} />
+    <div className="events-booking-modal" role="presentation">
+      <button className="events-booking-modal__backdrop" type="button" aria-label="Close booking calendar" onClick={onClose} />
       <section
-        className="session-modal__dialog"
+        className="events-booking-modal__dialog"
         role="dialog"
         aria-modal="true"
-        aria-labelledby="session-modal-title"
+        aria-labelledby="events-booking-modal-title"
         dir="ltr"
       >
-        <button className="session-modal__close" type="button" onClick={onClose} aria-label="Close session picker">
-          <CloseIcon />
+        <button className="events-booking-modal__close" type="button" onClick={onClose} aria-label="Close booking calendar">
+          <CloseIcon fontSize="small" />
         </button>
 
-        <header className="session-modal__header">
-          <span className="session-modal__mark">
-            <EventAvailableIcon />
-          </span>
-          <div>
-            <h2 id="session-modal-title">Choose Your Session</h2>
-            <p>Select your preferred date, therapist, and time</p>
-          </div>
-        </header>
+        {event.sessions.length > 0 ? (
+          <div className="events-card__booking-inner">
+            {!selectedSession ? (
+              <section className="events-card__booking-view events-card__booking-view--calendar">
+                <header className="events-card__booking-header">
+                  <div>
+                    <h4 id="events-booking-modal-title">{bookingCalendar.title}</h4>
+                    <strong>{event.title}</strong>
+                    <p>Only available dates are highlighted</p>
+                    <p>Select a date to view time and provider options</p>
+                  </div>
+                </header>
 
-        <section className="session-summary-card" aria-label="Selected activity">
-          <img src={event.imageUrl} alt="" />
-          <div>
-            <div className="session-summary-card__title-row">
-              <h3>{event.title}</h3>
-              <span>Weekly Program</span>
-            </div>
-            <div className="session-summary-card__meta">
-              <span>
-                <CalendarMonthIcon fontSize="small" />
-                {event.weeklySchedule}
-              </span>
-              <span>
-                <AccessTimeIcon fontSize="small" />
-                {event.time}
-              </span>
-              <span>
-                <LocationOnOutlinedIcon fontSize="small" />
-                {event.location}
-              </span>
-            </div>
-          </div>
-        </section>
+                <div className="events-card__calendar" aria-label={`Available calendar dates for ${event.title}`}>
+                  <div className="events-card__calendar-weekdays" aria-hidden="true">
+                    {CALENDAR_WEEKDAYS.map((weekday) => (
+                      <span key={weekday}>{weekday}</span>
+                    ))}
+                  </div>
 
-        <section className="session-modal__booking">
-          <h3>Available Sessions</h3>
+                  <div className="events-card__calendar-grid">
+                    {bookingCalendar.days.map((day) => {
+                      const session = sessionsByDateKey.get(day.dateKey);
+                      const isAvailable = Boolean(session);
+                      const isSelected = selectedDateKey === day.dateKey;
 
-          {event.sessions.length > 0 ? (
-            <>
-              <div className="session-date-tabs" aria-label="Session dates">
-                {event.sessions.map((session) => (
-                  <button
-                    className={session.dateKey === selectedSession?.dateKey ? 'is-active' : ''}
-                    type="button"
-                    onClick={() => setSelectedDateKey(session.dateKey)}
-                    aria-pressed={session.dateKey === selectedSession?.dateKey}
-                    key={session.id}
-                  >
-                    <CalendarMonthIcon fontSize="small" />
-                    {session.tabLabel}
-                  </button>
-                ))}
-              </div>
-
-              <div className="session-modal__options">
-                {selectedOptions.map((option) => {
-                  const isRegistered = registeredSessionIds.has(option.id);
-                  const isFull = option.capacity > 0 && option.participants >= option.capacity && !isRegistered;
-                  const actionDisabled = option.isRegistering || isFull || isRegistered;
-
-                  return (
-                    <article
-                      className={`session-option${isRegistered ? ' is-registered' : ''}`}
-                      key={option.id}
-                    >
-                      <div className="session-option__provider">
-                        {option.providerAvatar ? (
-                          <img src={option.providerAvatar} alt="" />
-                        ) : (
-                          <span>{option.providerName.slice(0, 2).toUpperCase()}</span>
-                        )}
-                        <div>
-                          <strong>{option.providerName}</strong>
-                          <small>{option.providerSpecialty}</small>
-                        </div>
-                      </div>
-
-                      <div className="session-option__details">
-                        <span>
-                          <AccessTimeIcon fontSize="small" />
-                          {option.time}
-                        </span>
-                        <span>
-                          <LocationOnOutlinedIcon fontSize="small" />
-                          {option.room}
-                        </span>
-                      </div>
-
-                      <div className="session-option__action">
-                        <small>{option.availableSpotsLabel}</small>
+                      return (
                         <button
+                          className={[
+                            isAvailable ? 'is-available' : '',
+                            isSelected ? 'is-selected' : '',
+                          ].filter(Boolean).join(' ')}
                           type="button"
-                          onClick={() => onRegisterSession(event, option)}
-                          disabled={actionDisabled}
+                          onClick={() => setSelectedDateKey(day.dateKey)}
+                          disabled={!isAvailable}
+                          aria-label={session ? `Choose ${session.date}` : 'Unavailable date'}
+                          aria-pressed={isSelected}
+                          key={day.id}
                         >
-                          {option.isRegistering
-                            ? 'Please wait...'
-                            : isRegistered
-                              ? 'Registered'
-                              : isFull
-                                ? 'Fully Booked'
-                                : 'Register'}
+                          {day.dayNumber}
                         </button>
-                      </div>
-                    </article>
-                  );
-                })}
-              </div>
-            </>
-          ) : (
-            <p className="session-modal__empty">Upcoming dates will appear soon.</p>
-          )}
-        </section>
+                      );
+                    })}
+                  </div>
+                </div>
+              </section>
+            ) : (
+              <section className="events-card__booking-view events-card__booking-view--providers">
+                <header className="events-card__booking-header events-card__booking-header--providers">
+                  <div>
+                    <p>{selectedSession.date}</p>
+                    <h4>Select time and provider</h4>
+                    <strong>{event.title}</strong>
+                  </div>
+                  <button
+                    className="events-card__change-date"
+                    type="button"
+                    onClick={() => setSelectedDateKey('')}
+                  >
+                    Change date
+                  </button>
+                </header>
 
-        <aside className="session-modal__notice">
-          <span>
-            <AutoAwesomeIcon />
-          </span>
-          <div>
-            <strong>You can register for any week separately.</strong>
-            <p>Each session is independent.</p>
+                {selectedOptions.length === 0 ? (
+                  <p className="events-card__booking-empty">No available sessions for this date.</p>
+                ) : (
+                  <div className="events-card__provider-list">
+                    {selectedOptions.map((option) => {
+                      const isRegistered = registeredSessionIds.has(option.id);
+                      const isFull = option.capacity > 0 && option.participants >= option.capacity && !isRegistered;
+                      const actionDisabled = option.isRegistering || isFull || isRegistered;
+                      const availableSpots = option.capacity > 0 ? Math.max(0, option.capacity - option.participants) : null;
+
+                      return (
+                        <article
+                          className={`events-card__provider-option${isRegistered ? ' is-registered' : ''}`}
+                          key={option.id}
+                        >
+                          {option.providerAvatar ? (
+                            <img src={option.providerAvatar} alt="" />
+                          ) : (
+                            <span className="events-card__provider-avatar">
+                              {option.providerName.slice(0, 2).toUpperCase()}
+                            </span>
+                          )}
+
+                          <div className="events-card__provider-copy">
+                            <strong>{option.providerName}</strong>
+                            <span>{option.providerSpecialty}</span>
+                          </div>
+
+                          <div className="events-card__provider-meta">
+                            <time>{option.time}</time>
+                            <span>{option.room}</span>
+                            <small>{formatAvailableSpots(availableSpots)}</small>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => onRegisterSession(event, option)}
+                            disabled={actionDisabled}
+                          >
+                            {option.isRegistering
+                              ? 'Wait...'
+                              : isRegistered
+                                ? 'Registered'
+                                : isFull
+                                  ? 'Full'
+                                  : 'Register'}
+                          </button>
+                        </article>
+                      );
+                    })}
+                  </div>
+                )}
+              </section>
+            )}
           </div>
-        </aside>
+        ) : (
+          <p className="events-card__booking-empty">Upcoming dates will appear soon.</p>
+        )}
       </section>
     </div>
   );
@@ -965,6 +1008,12 @@ function RegisteredSessionCard({ session, onCancelRegistration }) {
           <CalendarMonthIcon fontSize="small" />
           Registered for {session.date}
         </span>
+        <div className="events-card__registered-meta">
+          <span>
+            <AccessTimeIcon fontSize="small" />
+            {session.time}
+          </span>
+        </div>
         <CardDescriptionPanel description={session.description} isOpen={isDescriptionOpen} />
 
         <button
@@ -1100,7 +1149,6 @@ export default function EventsPage({ embedInDashboard = false }) {
   const [loadingEvents, setLoadingEvents] = useState(true);
   const [eventsError, setEventsError] = useState('');
   const [registeringId, setRegisteringId] = useState(null);
-  const [sessionModalEventId, setSessionModalEventId] = useState(null);
   const [suggestions, setSuggestions] = useState([]);
   const [suggestionForm, setSuggestionForm] = useState(emptySuggestionForm);
   const [suggestionErrors, setSuggestionErrors] = useState({});
@@ -1108,6 +1156,7 @@ export default function EventsPage({ embedInDashboard = false }) {
   const [suggestionSubmitError, setSuggestionSubmitError] = useState('');
   const [isSubmittingSuggestion, setIsSubmittingSuggestion] = useState(false);
   const [isSuggestionModalOpen, setIsSuggestionModalOpen] = useState(false);
+  const [bookingEventId, setBookingEventId] = useState(null);
 
   const displayName = useMemo(() => {
     if (currentUser?.displayName) return currentUser.displayName.split(' ')[0];
@@ -1164,21 +1213,21 @@ export default function EventsPage({ embedInDashboard = false }) {
   }, [refreshRegistrationData]);
 
   useEffect(() => {
-    setSessionModalEventId(null);
+    setBookingEventId(null);
   }, [activeView]);
 
   useEffect(() => {
-    if (!sessionModalEventId) return undefined;
+    if (!bookingEventId) return undefined;
 
     function handleKeyDown(event) {
       if (event.key === 'Escape') {
-        setSessionModalEventId(null);
+        setBookingEventId(null);
       }
     }
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [sessionModalEventId]);
+  }, [bookingEventId]);
 
   const displayEvents = useMemo(
     () =>
@@ -1212,8 +1261,6 @@ export default function EventsPage({ embedInDashboard = false }) {
             const optionEnd = copyTimeToDate(sessionStart, slot.endSource);
             const optionId = buildSessionId(event.id, optionStart || sessionStart, slot.providerId, slot.slotId);
             const participants = counts[optionId] ?? 0;
-            const availableSpots = slot.capacity > 0 ? Math.max(0, slot.capacity - participants) : null;
-
             return {
               id: optionId,
               templateId: event.id,
@@ -1236,8 +1283,6 @@ export default function EventsPage({ embedInDashboard = false }) {
               location: slot.room,
               participants,
               capacity: slot.capacity,
-              availableSpots,
-              availableSpotsLabel: formatAvailableSpots(availableSpots),
               tone: getEventTone(eventType, index),
               imageUrl,
               eventType,
@@ -1300,6 +1345,11 @@ export default function EventsPage({ embedInDashboard = false }) {
     return displayEvents.filter((event) => event.eventType === activeView.slice(0, -1));
   }, [activeView, displayEvents, registeredEvents]);
 
+  const activeBookingEvent = useMemo(
+    () => displayEvents.find((event) => event.id === bookingEventId) || null,
+    [bookingEventId, displayEvents],
+  );
+
   const categoryCards = useMemo(() => {
     return [
       {
@@ -1330,18 +1380,6 @@ export default function EventsPage({ embedInDashboard = false }) {
   }, [activeView]);
 
   const registeredSessionIds = useMemo(() => new Set(Object.keys(registeredMap)), [registeredMap]);
-  const activeSessionEvent = useMemo(
-    () => displayEvents.find((event) => event.id === sessionModalEventId) || null,
-    [displayEvents, sessionModalEventId],
-  );
-
-  function openSessionModal(eventId) {
-    setSessionModalEventId(eventId);
-  }
-
-  function closeSessionModal() {
-    setSessionModalEventId(null);
-  }
 
   async function handleRegisterSession(event, session) {
     if (!currentUser?.email || registeringId) return;
@@ -1420,6 +1458,14 @@ export default function EventsPage({ embedInDashboard = false }) {
     setSuggestionErrors({});
     setSuggestionSubmitError('');
     setIsSubmittingSuggestion(false);
+  }
+
+  function openBookingModal(eventId) {
+    setBookingEventId(eventId);
+  }
+
+  function closeBookingModal() {
+    setBookingEventId(null);
   }
 
   function updateSuggestionField(fieldName, value) {
@@ -1513,7 +1559,7 @@ export default function EventsPage({ embedInDashboard = false }) {
                   <EventCard
                     event={event}
                     registeredSessionIds={registeredSessionIds}
-                    onOpenSessions={openSessionModal}
+                    onOpenBooking={openBookingModal}
                     key={event.id}
                   />
                 ))}
@@ -1542,12 +1588,12 @@ export default function EventsPage({ embedInDashboard = false }) {
         />
       )}
 
-      {activeSessionEvent && (
-        <SessionSelectionModal
-          event={activeSessionEvent}
+      {activeBookingEvent && (
+        <EventBookingModal
+          event={activeBookingEvent}
           registeredSessionIds={registeredSessionIds}
           onRegisterSession={handleRegisterSession}
-          onClose={closeSessionModal}
+          onClose={closeBookingModal}
         />
       )}
     </>

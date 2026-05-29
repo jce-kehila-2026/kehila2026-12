@@ -853,7 +853,7 @@
 .events-grid {
   width: 100%;
   display: grid;
-  grid-template-columns: repeat(3, 280px);
+  grid-template-columns: repeat(3, 326px);
   justify-content: center;
   justify-items: center;
   align-items: start;
@@ -893,7 +893,7 @@
 
 .events-card {
   width: 100%;
-  max-width: 280px;
+  max-width: 326px;
   overflow: hidden;
   position: relative;
   display: flex;
@@ -961,8 +961,8 @@
 
 .events-card__image {
   position: relative;
-  height: 138px;
-  margin: 10px 10px 0;
+  height: 112px;
+  margin: 9px 9px 0;
   overflow: hidden;
   border-radius: 20px;
   border: 1px solid rgba(255, 255, 255, 0.54);
@@ -1124,7 +1124,7 @@
   flex-direction: column;
   align-items: flex-start;
   direction: ltr;
-  padding: 12px 14px 14px;
+  padding: 10px 12px 12px;
   text-align: left;
 }
 
@@ -1136,7 +1136,7 @@
 .events-card h3 {
   margin: 0;
   color: #24105f;
-  font-size: 1.08rem;
+  font-size: 1rem;
   line-height: 1.08;
   width: 100%;
   font-weight: 800;
@@ -1172,8 +1172,8 @@
   gap: 6px;
   align-self: flex-start;
   direction: ltr;
-  margin-block-start: 8px;
-  min-height: 28px;
+  margin-block-start: 7px;
+  min-height: 26px;
   border: 1px solid rgba(255, 255, 255, 0.72);
   border-radius: 999px;
   background:
@@ -1195,6 +1195,28 @@
 .events-card__schedule svg {
   flex: 0 0 auto;
   color: #8b51b7;
+}
+
+.events-card__registered-meta {
+  width: 100%;
+  display: grid;
+  gap: 6px;
+  margin-block-start: 8px;
+}
+
+.events-card__registered-meta span {
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 6px;
+  color: rgba(35, 20, 95, 0.68);
+  font-size: 0.72rem;
+  font-weight: 800;
+  text-align: left;
+}
+
+.events-card__registered-meta svg {
+  color: #ec5f97;
 }
 
 .events-card--rose .events-card__schedule svg,
@@ -1220,7 +1242,7 @@
   display: grid;
   justify-items: start;
   direction: ltr;
-  margin-block-start: 8px;
+  margin-block-start: 7px;
 }
 
 .events-card__read-button {
@@ -1355,12 +1377,12 @@
   position: relative;
   overflow: hidden;
   width: 100%;
-  min-height: 36px;
+  min-height: 34px;
   align-items: center;
   justify-content: center;
   gap: 6px;
   direction: ltr;
-  margin-block-start: 10px;
+  margin-block-start: 9px;
   align-self: center;
   border: 1px solid rgba(255, 255, 255, 0.66);
   border-radius: 999px;
@@ -1407,6 +1429,11 @@
 
 .events-card__action svg {
   transform: none;
+  transition: transform 220ms ease;
+}
+
+.events-card__action[aria-expanded="true"] svg {
+  transform: rotate(90deg);
 }
 
 .events-card__action:hover {
@@ -1454,379 +1481,535 @@
     0 12px 24px rgba(123, 63, 161, 0.1);
 }
 
-.session-modal {
+.events-booking-modal {
   position: fixed;
   inset: 0;
-  z-index: 80;
+  z-index: 90;
   display: grid;
   place-items: center;
-  padding: 28px;
+  padding: 24px;
 }
 
-.session-modal__backdrop {
+.events-booking-modal__backdrop {
   position: absolute;
   inset: 0;
+  border: 0;
   background:
-    radial-gradient(circle at 70% 18%, rgba(236, 111, 162, 0.18), transparent 28rem),
-    radial-gradient(circle at 18% 78%, rgba(159, 107, 208, 0.22), transparent 26rem),
-    rgba(34, 24, 58, 0.42);
-  backdrop-filter: blur(18px) saturate(1.14);
-  -webkit-backdrop-filter: blur(18px) saturate(1.14);
-  animation: sessionBackdropIn 180ms ease both;
+    radial-gradient(circle at 68% 12%, rgba(236, 111, 162, 0.22), transparent 28rem),
+    radial-gradient(circle at 20% 86%, rgba(159, 107, 208, 0.24), transparent 26rem),
+    linear-gradient(135deg, rgba(55, 31, 93, 0.42), rgba(108, 70, 146, 0.32));
+  cursor: pointer;
+  backdrop-filter: blur(20px) saturate(1.16);
+  -webkit-backdrop-filter: blur(20px) saturate(1.16);
+  animation: eventsBookingBackdropIn 180ms ease both;
 }
 
-.session-modal__dialog {
+.events-booking-modal__dialog {
   position: relative;
-  width: min(1080px, 100%);
-  max-height: min(85vh, 820px);
-  overflow: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 22px;
-  border: 1px solid rgba(255, 255, 255, 0.48);
-  border-radius: 32px;
+  width: min(620px, calc(100vw - 32px));
+  max-height: min(86vh, 760px);
+  overflow-y: auto;
+  border: 1px solid rgba(255, 255, 255, 0.62);
+  border-radius: 28px;
   background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.76), rgba(255, 235, 248, 0.48)),
-    radial-gradient(circle at 88% 8%, rgba(205, 177, 255, 0.44), transparent 18rem),
-    radial-gradient(circle at 10% 94%, rgba(255, 199, 222, 0.34), transparent 17rem);
+    radial-gradient(circle at 18% 10%, rgba(255, 255, 255, 0.92), transparent 12rem),
+    radial-gradient(circle at 90% 6%, rgba(216, 190, 255, 0.48), transparent 15rem),
+    radial-gradient(circle at 14% 92%, rgba(255, 202, 224, 0.36), transparent 13rem),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.78), rgba(255, 243, 250, 0.58) 48%, rgba(239, 230, 255, 0.62));
   box-shadow:
-    0 40px 96px rgba(47, 28, 84, 0.26),
-    0 14px 42px rgba(236, 111, 162, 0.14),
-    inset 0 1px 0 rgba(255, 255, 255, 0.88);
-  backdrop-filter: blur(32px) saturate(1.16);
-  -webkit-backdrop-filter: blur(32px) saturate(1.16);
-  padding: 32px;
-  animation: sessionDialogIn 220ms cubic-bezier(0.2, 0.78, 0.2, 1) both;
+    0 36px 92px rgba(35, 20, 95, 0.24),
+    0 18px 44px rgba(236, 111, 162, 0.16),
+    0 0 54px rgba(207, 181, 255, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.94),
+    inset 0 -1px 0 rgba(159, 107, 208, 0.1);
+  padding: 20px;
+  direction: ltr;
+  text-align: left;
+  font-family: "Plus Jakarta Sans", "Inter", system-ui, sans-serif;
+  backdrop-filter: blur(28px) saturate(1.16);
+  -webkit-backdrop-filter: blur(28px) saturate(1.16);
+  animation: eventsBookingDialogIn 220ms cubic-bezier(0.2, 0.78, 0.2, 1) both;
 }
 
-.session-modal__close {
+.events-booking-modal__close {
   position: absolute;
-  inset-block-start: 24px;
-  right: 24px;
-  z-index: 1;
-  width: 48px;
-  height: 48px;
+  top: 14px;
+  right: 14px;
+  z-index: 2;
+  width: 38px;
+  height: 38px;
   display: inline-grid;
   place-items: center;
-  border: 1px solid rgba(255, 255, 255, 0.56);
+  border: 1px solid rgba(255, 255, 255, 0.62);
   border-radius: 999px;
   background:
-    radial-gradient(circle at 26% 18%, rgba(255, 255, 255, 0.9), transparent 2.8rem),
-    rgba(255, 255, 255, 0.66);
+    radial-gradient(circle at 24% 18%, rgba(255, 255, 255, 0.9), transparent 2.6rem),
+    rgba(255, 255, 255, 0.72);
   color: #5f2d86;
   cursor: pointer;
-  box-shadow: 0 14px 26px rgba(123, 63, 161, 0.14);
-  backdrop-filter: blur(18px) saturate(1.12);
-  -webkit-backdrop-filter: blur(18px) saturate(1.12);
+  box-shadow: 0 12px 24px rgba(123, 63, 161, 0.14);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 
-.session-modal__header {
-  display: flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 24px;
-  padding-inline-end: 72px;
+.events-booking-modal .events-card__booking-inner {
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+  padding: 0;
+}
+
+.events-booking-modal .events-card__calendar-grid {
+  gap: 7px;
+}
+
+.events-booking-modal .events-card__calendar-grid button {
+  min-height: 48px;
+  border-radius: 999px;
+  font-size: 0.88rem;
+}
+
+.events-booking-modal .events-card__provider-option {
+  grid-template-columns: 48px minmax(0, 1fr) auto;
+  min-height: 92px;
+  padding: 11px;
+}
+
+.events-booking-modal .events-card__provider-option img,
+.events-booking-modal .events-card__provider-avatar {
+  width: 48px;
+  height: 48px;
+}
+
+.events-booking-modal .events-card__provider-meta {
+  padding-inline-start: 56px;
+}
+
+.events-card__booking {
+  width: calc(100% - 24px);
+  max-height: 0;
+  margin-inline: 12px;
+  overflow: hidden;
+  opacity: 0;
+  direction: ltr;
+  text-align: left;
+  transition: max-height 320ms ease, opacity 220ms ease, margin-block-start 260ms ease;
+}
+
+.events-card__booking :where(h4, p, span, small, strong, time, button) {
+  direction: ltr;
   text-align: left;
 }
 
-.session-modal__mark {
-  width: 76px;
-  height: 76px;
-  display: inline-grid;
-  place-items: center;
-  flex: 0 0 auto;
-  border-radius: 24px;
-  background:
-    linear-gradient(145deg, rgba(255, 172, 210, 0.94), rgba(166, 109, 219, 0.94)),
-    radial-gradient(circle at 28% 18%, rgba(255, 255, 255, 0.46), transparent 4rem);
-  color: #fff;
-  box-shadow:
-    0 20px 36px rgba(123, 63, 161, 0.22),
-    0 0 34px rgba(236, 111, 162, 0.18),
-    inset 0 1px 0 rgba(255, 255, 255, 0.42);
-}
-
-.session-modal__mark svg {
-  width: 34px;
-  height: 34px;
-}
-
-.session-modal__header h2,
-.session-modal__header p,
-.session-summary-card h3,
-.session-modal__booking h3,
-.session-modal__notice p {
-  margin: 0;
-}
-
-.session-modal__header h2 {
-  color: #24105f;
-  font-size: 2rem;
-  line-height: 1.1;
-}
-
-.session-modal__header p {
+.events-card__booking.is-open {
+  max-height: 920px;
   margin-block-start: 8px;
-  color: rgba(35, 20, 95, 0.66);
-  font-weight: 700;
+  opacity: 1;
 }
 
-.session-summary-card {
-  display: grid;
-  grid-template-columns: 200px minmax(0, 1fr);
-  gap: 24px;
-  align-items: center;
-  min-height: 150px;
-  border: 1px solid rgba(255, 255, 255, 0.54);
-  border-radius: 24px;
-  background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.62), rgba(255, 244, 250, 0.42)),
-    radial-gradient(circle at 96% 0%, rgba(205, 177, 255, 0.2), transparent 14rem);
-  box-shadow:
-    0 18px 40px rgba(123, 63, 161, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.86);
-  backdrop-filter: blur(18px) saturate(1.12);
-  -webkit-backdrop-filter: blur(18px) saturate(1.12);
-  padding: 16px;
-}
-
-.session-summary-card img {
-  width: 100%;
-  height: 118px;
-  display: block;
-  object-fit: cover;
+.events-card__booking-inner {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.58);
   border-radius: 20px;
-  box-shadow: 0 16px 30px rgba(75, 19, 107, 0.12);
+  background:
+    linear-gradient(142deg, rgba(255, 255, 255, 0.64), rgba(255, 244, 251, 0.36) 48%, rgba(241, 233, 255, 0.42)),
+    radial-gradient(circle at 10% 8%, rgba(255, 205, 230, 0.28), transparent 12rem),
+    radial-gradient(circle at 90% 10%, rgba(205, 177, 255, 0.34), transparent 13rem);
+  box-shadow:
+    0 22px 48px rgba(123, 63, 161, 0.16),
+    0 0 32px rgba(236, 111, 162, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.86);
+  backdrop-filter: blur(22px) saturate(1.14);
+  -webkit-backdrop-filter: blur(22px) saturate(1.14);
+  padding: 12px;
 }
 
-.session-summary-card__title-row {
+.events-card__booking-view {
+  display: grid;
+  gap: 10px;
+  animation: eventsBookingSwap 260ms ease both;
+}
+
+.events-card__booking-view--calendar {
+  position: relative;
+  isolation: isolate;
+  padding-block-start: 18px;
+}
+
+.events-card__booking-view--calendar::before {
+  content: "";
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 50%;
+  width: 160px;
+  height: 5px;
+  border-radius: 999px;
+  background:
+    linear-gradient(90deg, rgba(236, 111, 162, 0), rgba(166, 105, 232, 0.9), rgba(236, 111, 162, 0));
+  box-shadow:
+    0 0 22px rgba(166, 105, 232, 0.5),
+    0 8px 30px rgba(236, 111, 162, 0.18);
+  transform: translateX(-50%);
+}
+
+.events-card__booking-view--providers {
+  gap: 10px;
+}
+
+.events-card__booking-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-}
-
-.session-summary-card h3 {
-  color: #24105f;
-  font-size: 1.38rem;
-  line-height: 1.15;
-}
-
-.session-summary-card__title-row span {
-  flex: 0 0 auto;
-  border-radius: 999px;
-  background:
-    linear-gradient(135deg, rgba(255, 226, 240, 0.72), rgba(235, 221, 255, 0.68));
-  color: #7b3fa1;
-  font-size: 0.78rem;
-  font-weight: 900;
-  padding: 8px 12px;
-}
-
-.session-summary-card__meta {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  margin-block-start: 20px;
-}
-
-.session-summary-card__meta span {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.58);
-  background: rgba(255, 255, 255, 0.52);
-  color: rgba(35, 20, 95, 0.72);
-  font-size: 0.86rem;
-  font-weight: 800;
-  padding: 10px 14px;
-}
-
-.session-summary-card__meta svg {
-  color: #ec5f97;
-}
-
-.session-modal__booking {
-  display: grid;
-  gap: 16px;
-}
-
-.session-modal__booking h3 {
-  color: #24105f;
-  font-size: 1.12rem;
-  line-height: 1.2;
-}
-
-.session-date-tabs {
-  display: flex;
   gap: 10px;
-  overflow-x: auto;
-  padding: 4px 2px 10px;
-  scrollbar-width: thin;
+  text-align: left;
 }
 
-.session-date-tabs button {
-  min-width: 160px;
-  min-height: 52px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  border: 1px solid rgba(255, 255, 255, 0.56);
-  border-radius: 16px;
-  background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.58), rgba(247, 235, 255, 0.36));
-  color: rgba(35, 20, 95, 0.72);
-  cursor: pointer;
-  font: inherit;
-  font-size: 0.86rem;
-  font-weight: 900;
-  padding-inline: 16px;
-  box-shadow:
-    0 14px 28px rgba(123, 63, 161, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.82);
-  transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease, color 180ms ease;
-}
-
-.session-date-tabs button:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 18px 34px rgba(123, 63, 161, 0.13);
-}
-
-.session-date-tabs button.is-active {
-  border-color: rgba(255, 255, 255, 0.72);
-  background:
-    linear-gradient(135deg, rgba(255, 191, 216, 0.96), rgba(236, 111, 162, 0.94));
-  color: #fff;
-  box-shadow:
-    0 18px 34px rgba(236, 111, 162, 0.24),
-    0 0 28px rgba(236, 111, 162, 0.22),
-    inset 0 1px 0 rgba(255, 255, 255, 0.52);
-}
-
-.session-modal__options {
-  display: grid;
-  gap: 0;
-  overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.54);
-  border-radius: 24px;
-  background: rgba(255, 255, 255, 0.44);
-  box-shadow:
-    0 18px 40px rgba(123, 63, 161, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.74);
-  backdrop-filter: blur(22px) saturate(1.12);
-  -webkit-backdrop-filter: blur(22px) saturate(1.12);
-}
-
-.session-option {
-  display: grid;
-  grid-template-columns: minmax(260px, 1fr) minmax(250px, 0.9fr) minmax(180px, 0.64fr);
-  align-items: center;
-  gap: 24px;
-  min-height: 104px;
-  padding: 18px 22px;
-  border: 0;
-  border-block-end: 1px solid rgba(123, 63, 161, 0.09);
-  border-radius: 0;
-  background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.46), rgba(255, 244, 250, 0.24));
-  box-shadow: none;
-  transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
-}
-
-.session-option:last-child {
-  border-block-end: 0;
-}
-
-.session-option:hover {
+.events-card__booking-view--calendar .events-card__booking-header {
   position: relative;
-  z-index: 1;
-  transform: translateY(-2px);
-  background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.76), rgba(247, 235, 255, 0.48));
-  box-shadow:
-    0 18px 34px rgba(123, 63, 161, 0.12),
-    0 0 26px rgba(236, 111, 162, 0.12);
-}
-
-.session-option.is-registered {
-  background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.72), rgba(232, 250, 239, 0.58)),
-    radial-gradient(circle at 0% 50%, rgba(22, 138, 69, 0.12), transparent 10rem);
-}
-
-.session-option__provider {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  min-width: 0;
-}
-
-.session-option__provider img,
-.session-option__provider > span {
-  width: 68px;
-  height: 68px;
-  display: inline-grid;
-  place-items: center;
-  flex: 0 0 auto;
-  border-radius: 999px;
-  border: 5px solid rgba(255, 226, 240, 0.9);
-  background: linear-gradient(135deg, #ffbfd8, #cdb1ff);
-  color: #fff;
-  font-weight: 900;
-  object-fit: cover;
-  box-shadow: 0 12px 24px rgba(123, 63, 161, 0.12);
-}
-
-.session-option__provider div,
-.session-option__details {
-  min-width: 0;
-  display: grid;
-  gap: 6px;
-}
-
-.session-option__provider strong {
-  color: #24105f;
-  font-size: 1.04rem;
-  line-height: 1.2;
-}
-
-.session-option__provider small {
-  color: #ec5f97;
-  font-size: 0.82rem;
-  font-weight: 800;
-}
-
-.session-option__details span {
-  display: inline-flex;
-  align-items: center;
-  justify-content: flex-start;
-  gap: 8px;
-  color: rgba(35, 20, 95, 0.68);
-  font-size: 0.92rem;
-  font-weight: 800;
-}
-
-.session-option__details svg {
-  color: #ec5f97;
-}
-
-.session-option__action {
-  display: grid;
-  justify-items: stretch;
-  gap: 10px;
-}
-
-.session-option__action small {
-  color: rgba(35, 20, 95, 0.66);
-  font-size: 0.78rem;
-  font-weight: 900;
+  min-height: 70px;
+  justify-content: center;
+  padding-inline: 76px;
   text-align: center;
 }
 
-.session-option button {
-  min-height: 44px;
+.events-card__booking-view--calendar .events-card__booking-header::before,
+.events-card__booking-view--calendar .events-card__booking-header::after {
+  position: absolute;
+  inset-block-start: 50%;
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.68);
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.95), transparent 2.8rem),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.58), rgba(241, 230, 255, 0.38));
+  color: #6b38a1;
+  font-size: 1.72rem;
+  font-weight: 700;
+  line-height: 1;
+  box-shadow:
+    0 14px 30px rgba(123, 63, 161, 0.13),
+    0 0 24px rgba(207, 181, 255, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  transform: translateY(-50%);
+  transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
+}
+
+.events-card__booking-view--calendar .events-card__booking-header::before {
+  content: "\2039";
+  inset-inline-start: 6px;
+}
+
+.events-card__booking-view--calendar .events-card__booking-header::after {
+  content: "\203A";
+  inset-inline-end: 6px;
+}
+
+.events-card__booking-view--calendar .events-card__booking-header:hover::before,
+.events-card__booking-view--calendar .events-card__booking-header:hover::after {
+  box-shadow:
+    0 18px 36px rgba(123, 63, 161, 0.18),
+    0 0 32px rgba(236, 111, 162, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92);
+}
+
+.events-card__booking-view--calendar .events-card__booking-header > div {
+  display: grid;
+  justify-items: center;
+  text-align: center;
+}
+
+.events-card__booking-header h4,
+.events-card__booking-header p {
+  margin: 0;
+}
+
+.events-card__booking-header h4 {
+  color: #24105f;
+  font-size: 0.98rem;
+  font-weight: 900;
+  line-height: 1.1;
+}
+
+.events-card__booking-view--calendar .events-card__booking-header h4 {
+  color: #2a155f;
+  font-size: 1.34rem;
+  font-weight: 900;
+  letter-spacing: 0;
+  text-align: center;
+  text-shadow: 0 8px 24px rgba(123, 63, 161, 0.14);
+}
+
+.events-card__booking-view--calendar .events-card__booking-header strong {
+  margin-block-start: 4px;
+  color: rgba(95, 45, 134, 0.76);
+  font-size: 0.74rem;
+  font-weight: 900;
+}
+
+.events-card__booking-header p {
+  margin-block-start: 4px;
+  color: rgba(35, 20, 95, 0.62);
+  font-size: 0.64rem;
+  font-weight: 800;
+}
+
+.events-card__booking-view--calendar .events-card__booking-header p {
+  color: rgba(95, 45, 134, 0.56);
+  font-size: 0.64rem;
+  font-weight: 800;
+  text-align: center;
+}
+
+.events-card__change-date {
+  flex: 0 0 auto;
+  border: 1px solid rgba(255, 255, 255, 0.62);
+  border-radius: 999px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.62), rgba(244, 233, 255, 0.42));
+  color: #7b3fa1;
+  font-size: 0.62rem;
+  font-weight: 900;
+  padding: 7px 10px;
+  box-shadow:
+    0 10px 20px rgba(123, 63, 161, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.82);
+}
+
+.events-card__change-date {
+  cursor: pointer;
+  font: inherit;
+  text-align: center;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.events-card__change-date:hover {
+  transform: translateY(-1px);
+  box-shadow:
+    0 14px 26px rgba(123, 63, 161, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.86);
+}
+
+.events-card__booking-header--providers {
+  align-items: flex-start;
+}
+
+.events-card__booking-header--providers p {
+  margin-block-start: 0;
+  margin-block-end: 4px;
+  color: #7b3fa1;
+  font-size: 0.68rem;
+}
+
+.events-card__calendar {
+  width: 100%;
+  justify-self: center;
+  border: 1px solid rgba(255, 255, 255, 0.64);
+  border-radius: 26px;
+  background:
+    radial-gradient(circle at 18% 10%, rgba(255, 255, 255, 0.86), transparent 8rem),
+    radial-gradient(circle at 86% 0%, rgba(207, 181, 255, 0.32), transparent 11rem),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.54), rgba(255, 242, 249, 0.36) 52%, rgba(241, 230, 255, 0.38));
+  box-shadow:
+    0 20px 42px rgba(123, 63, 161, 0.12),
+    0 0 34px rgba(236, 111, 162, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.84),
+    inset 0 -1px 0 rgba(159, 107, 208, 0.08);
+  padding: 16px;
+  backdrop-filter: blur(22px) saturate(1.16);
+  -webkit-backdrop-filter: blur(22px) saturate(1.16);
+}
+
+.events-card__calendar-weekdays,
+.events-card__calendar-grid {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.events-card__calendar-weekdays {
+  margin-block-end: 10px;
+}
+
+.events-card__calendar-weekdays span {
+  color: rgba(70, 42, 119, 0.48);
+  font-size: 0.58rem;
+  font-weight: 900;
+  letter-spacing: 0.04em;
+  text-align: center;
+}
+
+.events-card__calendar-grid button {
+  aspect-ratio: 1;
+  min-height: 36px;
+  min-width: 0;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 999px;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.22), rgba(241, 230, 255, 0.12));
+  color: rgba(75, 55, 106, 0.26);
+  cursor: not-allowed;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-align: center;
+  padding: 0;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.38);
+  transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease, color 180ms ease, border-color 180ms ease;
+}
+
+.events-card__calendar-grid button.is-available {
+  border-color: rgba(255, 255, 255, 0.76);
+  background:
+    radial-gradient(circle at 28% 18%, rgba(255, 255, 255, 0.82), transparent 2.8rem),
+    linear-gradient(145deg, rgba(255, 226, 239, 0.72), rgba(226, 210, 255, 0.64));
+  color: #6b38a1;
+  cursor: pointer;
+  box-shadow:
+    0 10px 22px rgba(123, 63, 161, 0.12),
+    0 0 24px rgba(236, 111, 162, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.86);
+}
+
+.events-card__calendar-grid button.is-available:hover {
+  transform: translateY(-1px);
+  background:
+    radial-gradient(circle at 24% 16%, rgba(255, 255, 255, 0.86), transparent 3rem),
+    linear-gradient(145deg, rgba(255, 210, 232, 0.86), rgba(214, 194, 255, 0.76));
+  color: #5f2d86;
+  box-shadow:
+    0 14px 28px rgba(123, 63, 161, 0.16),
+    0 0 30px rgba(236, 111, 162, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.events-card__calendar-grid button.is-selected {
+  transform: translateY(-2px) scale(1.04);
+  border-color: rgba(255, 255, 255, 0.86);
+  background:
+    radial-gradient(circle at 26% 18%, rgba(255, 255, 255, 0.88), transparent 3.2rem),
+    linear-gradient(135deg, rgba(236, 111, 162, 0.94), rgba(159, 107, 208, 0.92));
+  color: #fff;
+  box-shadow:
+    0 18px 32px rgba(123, 63, 161, 0.26),
+    0 0 34px rgba(236, 111, 162, 0.34),
+    0 0 16px rgba(207, 181, 255, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.78);
+}
+
+.events-card__provider-list {
+  display: grid;
+  gap: 8px;
+}
+
+.events-card__provider-option {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+  min-height: 86px;
+  border: 1px solid rgba(255, 255, 255, 0.58);
+  border-radius: 17px;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.58), rgba(255, 244, 250, 0.34)),
+    radial-gradient(circle at 50% 0%, rgba(205, 177, 255, 0.2), transparent 8rem);
+  color: rgba(35, 20, 95, 0.72);
+  padding: 9px;
+  box-shadow:
+    0 16px 34px rgba(123, 63, 161, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.72);
+  backdrop-filter: blur(18px) saturate(1.12);
+  -webkit-backdrop-filter: blur(18px) saturate(1.12);
+  animation: eventsProviderIn 240ms ease both;
+}
+
+.events-card__provider-option img,
+.events-card__provider-avatar {
+  width: 42px;
+  height: 42px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(255, 191, 216, 0.94), rgba(205, 177, 255, 0.9));
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 900;
+  object-fit: cover;
+  box-shadow:
+    0 10px 20px rgba(123, 63, 161, 0.14),
+    0 0 0 4px rgba(255, 255, 255, 0.42);
+}
+
+.events-card__provider-copy {
+  min-width: 0;
+  display: grid;
+  gap: 3px;
+  text-align: left;
+}
+
+.events-card__provider-option strong,
+.events-card__provider-option span,
+.events-card__provider-option time,
+.events-card__provider-option small {
+  min-width: 0;
+  display: block;
+  overflow: hidden;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.events-card__provider-option strong {
+  color: #24105f;
+  font-size: 0.88rem;
+  line-height: 1.12;
+  font-weight: 900;
+}
+
+.events-card__provider-option span {
+  color: rgba(224, 76, 136, 0.88);
+  font-size: 0.66rem;
+  font-weight: 900;
+}
+
+.events-card__provider-meta {
+  min-width: 0;
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px 8px;
+  align-items: center;
+  justify-content: flex-start;
+  padding-inline-start: 50px;
+}
+
+.events-card__provider-option time,
+.events-card__provider-option small,
+.events-card__provider-meta > span {
+  display: inline-flex;
+  max-width: 100%;
+  align-items: center;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.42);
+  color: rgba(35, 20, 95, 0.62);
+  font-size: 0.6rem;
+  font-weight: 900;
+  padding: 4px 7px;
+}
+
+.events-card__provider-meta > span {
+  color: rgba(35, 20, 95, 0.56);
+}
+
+.events-card__provider-option button {
+  justify-self: end;
+  min-height: 32px;
   border: 0;
   border-radius: 999px;
   background:
@@ -1834,83 +2017,76 @@
   color: #fff;
   cursor: pointer;
   font: inherit;
+  font-size: 0.66rem;
   font-weight: 900;
+  text-align: center;
+  padding: 0 10px;
   box-shadow:
     0 14px 26px rgba(123, 63, 161, 0.18),
-    inset 0 1px 0 rgba(255, 255, 255, 0.38);
-  padding-inline: 20px;
-  transition: transform 180ms ease, box-shadow 180ms ease, filter 180ms ease;
+    inset 0 1px 0 rgba(255, 255, 255, 0.36);
+  transition: transform 180ms ease, box-shadow 180ms ease;
 }
 
-.session-option button:hover:not(:disabled) {
-  transform: translateY(-2px);
-  filter: saturate(1.08);
+.events-card__provider-option button:hover:not(:disabled) {
+  transform: translateY(-1px);
   box-shadow:
-    0 18px 34px rgba(123, 63, 161, 0.24),
-    0 0 26px rgba(236, 111, 162, 0.2);
+    0 18px 32px rgba(123, 63, 161, 0.24),
+    0 0 22px rgba(236, 111, 162, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.42);
 }
 
-.session-option button:disabled {
+.events-card__provider-option button:disabled {
   cursor: default;
   opacity: 0.72;
   box-shadow: none;
 }
 
-.session-option.is-registered button {
+.events-card__provider-option.is-registered {
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.58), rgba(232, 250, 239, 0.48));
+}
+
+.events-card__provider-option.is-registered button {
   background: rgba(22, 138, 69, 0.14);
   color: #168a45;
 }
 
-.session-modal__notice {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.58);
-  border-radius: 22px;
-  background:
-    linear-gradient(135deg, rgba(255, 255, 255, 0.56), rgba(247, 235, 255, 0.42)),
-    radial-gradient(circle at 92% 0%, rgba(236, 111, 162, 0.14), transparent 10rem);
-  box-shadow:
-    0 16px 32px rgba(123, 63, 161, 0.08),
-    inset 0 1px 0 rgba(255, 255, 255, 0.78);
-  padding: 18px;
-}
-
-.session-modal__notice > span {
-  width: 52px;
-  height: 52px;
-  display: inline-grid;
-  place-items: center;
-  flex: 0 0 auto;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.76);
-  color: #9f6bd0;
-  box-shadow: 0 12px 24px rgba(123, 63, 161, 0.1);
-}
-
-.session-modal__notice strong {
-  color: #5f2d86;
-  font-size: 0.95rem;
-}
-
-.session-modal__notice p {
-  margin-block-start: 5px;
-  color: rgba(35, 20, 95, 0.62);
-  font-size: 0.86rem;
-  font-weight: 700;
-}
-
-.session-modal__empty {
+.events-card__booking-empty,
+.events-card__booking-hint {
   margin: 0;
   border-radius: 18px;
-  background: rgba(255, 255, 255, 0.58);
-  color: rgba(35, 20, 95, 0.68);
+  background: rgba(255, 255, 255, 0.38);
+  color: rgba(35, 20, 95, 0.58);
+  font-size: 0.82rem;
   font-weight: 800;
-  padding: 18px;
+  line-height: 1.35;
+  padding: 16px;
   text-align: left;
 }
 
-@keyframes sessionBackdropIn {
+@keyframes eventsBookingSwap {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes eventsProviderIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes eventsBookingBackdropIn {
   from {
     opacity: 0;
   }
@@ -1919,7 +2095,7 @@
   }
 }
 
-@keyframes sessionDialogIn {
+@keyframes eventsBookingDialogIn {
   from {
     opacity: 0;
     transform: translateY(10px) scale(0.96);
@@ -2352,7 +2528,7 @@
 
 @media (max-width: 1240px) {
   .events-grid {
-    grid-template-columns: repeat(2, 320px);
+    grid-template-columns: repeat(2, minmax(0, 326px));
   }
 }
 
@@ -2469,43 +2645,6 @@
     height: 190px;
   }
 
-  .session-modal {
-    padding: 16px;
-  }
-
-  .session-modal__dialog {
-    gap: 18px;
-    max-height: calc(100vh - 32px);
-    padding: 24px;
-  }
-
-  .session-modal__header {
-    padding-inline-end: 64px;
-  }
-
-  .session-summary-card {
-    grid-template-columns: 150px minmax(0, 1fr);
-    gap: 16px;
-  }
-
-  .session-summary-card img {
-    height: 112px;
-  }
-
-  .session-modal__options {
-    border-radius: 20px;
-  }
-
-  .session-option {
-    grid-template-columns: 1fr;
-    gap: 14px;
-  }
-
-  .session-option__action {
-    grid-template-columns: 1fr auto;
-    align-items: center;
-  }
-
   .events-suggest-pill {
     width: auto;
     align-self: flex-start;
@@ -2545,39 +2684,51 @@
     margin: 12px 12px 0;
   }
 
-  .session-modal__header {
-    align-items: flex-start;
-    flex-direction: column;
-    gap: 14px;
-    padding-inline-end: 58px;
+  .events-card__booking-inner {
+    padding: 14px;
   }
 
-  .session-modal__header h2 {
+  .events-card__booking-header {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .events-card__booking-view--calendar .events-card__booking-header {
+    align-items: center;
+    flex-direction: row;
+    justify-content: center;
+    min-height: 64px;
+    padding-inline: 54px;
+  }
+
+  .events-card__booking-view--calendar .events-card__booking-header::before,
+  .events-card__booking-view--calendar .events-card__booking-header::after {
+    width: 38px;
+    height: 38px;
     font-size: 1.42rem;
   }
 
-  .session-modal__dialog {
-    border-radius: 28px;
-    padding: 18px;
+  .events-card__booking-view--calendar .events-card__booking-header h4 {
+    font-size: 1.12rem;
   }
 
-  .session-summary-card {
-    grid-template-columns: 1fr;
+  .events-card__calendar {
+    padding: 10px;
   }
 
-  .session-summary-card__title-row,
-  .session-summary-card__meta,
-  .session-modal__notice,
-  .session-option__provider {
-    align-items: flex-start;
-    flex-direction: column;
+  .events-card__calendar-weekdays,
+  .events-card__calendar-grid {
+    gap: 4px;
   }
 
-  .session-date-tabs button {
-    min-width: 140px;
+  .events-card__calendar-grid button {
+    min-height: 42px;
+    border-radius: 999px;
+    font-size: 0.78rem;
   }
 
-  .session-option__action {
+  .events-card__provider-list {
     grid-template-columns: 1fr;
   }
 
