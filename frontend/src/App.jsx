@@ -25,8 +25,11 @@ import CalendarPage from './features/calendar/CalendarPage';
 import ParticipantHome from './features/participant/ParticipantHome';
 import AppointmentPage from './features/appointments/pages/AppointmentPage';
 import PublicHomePage from './features/public/pages/PublicHomePage';
+import AccessibilityStatementPage from './features/public/pages/AccessibilityStatementPage';
 import { useAdmin } from './features/admin/context/AdminContext';
 import { getPostLoginPath } from './features/admin/services/authRoleService';
+import { AccessibilityProvider } from './context/AccessibilityContext';
+import AccessibilityWidget from './components/AccessibilityWidget';
 
 // Emotion caches for RTL and LTR
 const cacheRtl = createCache({ key: 'muirtl', stylisPlugins: [prefixer, rtlPlugin] });
@@ -50,61 +53,65 @@ function ThemedApp() {
     <CacheProvider value={cache}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
-        <AdminProvider>
-          <Routes>
-            <Route path="/" element={<RoleRedirect />} />
-            <Route path="/public" element={<PublicHomePage />} />
-            <Route path="/login" element={<LoginPage />} />
-            <Route path="/profile" element={<ProfilePage />} />
-            <Route
-              path="/home"
-              element={
-                <AuthenticatedRoute>
-                  <ParticipantHome />
-                </AuthenticatedRoute>
-              }
-            />
-            <Route
-              path="/calendar"
-              element={
-                <AuthenticatedRoute>
-                  <ParticipantHome initialView="calendar" />
-                </AuthenticatedRoute>
-              }
-            />
-            <Route path="/appointments" element={<AppointmentPage />} />
-            <Route
-              path="/events"
-              element={
-                <AuthenticatedRoute>
-                  <ParticipantHome initialView="events" />
-                </AuthenticatedRoute>
-              }
-            />
+        <AccessibilityProvider>
+          <AccessibilityWidget />
+          <AdminProvider>
+            <Routes>
+              <Route path="/" element={<RoleRedirect />} />
+              <Route path="/public" element={<PublicHomePage />} />
+              <Route path="/accessibility" element={<AccessibilityStatementPage />} />
+              <Route path="/login" element={<LoginPage />} />
+              <Route path="/profile" element={<ProfilePage />} />
+              <Route
+                path="/home"
+                element={
+                  <AuthenticatedRoute>
+                    <ParticipantHome />
+                  </AuthenticatedRoute>
+                }
+              />
+              <Route
+                path="/calendar"
+                element={
+                  <AuthenticatedRoute>
+                    <ParticipantHome initialView="calendar" />
+                  </AuthenticatedRoute>
+                }
+              />
+              <Route path="/appointments" element={<AppointmentPage />} />
+              <Route
+                path="/events"
+                element={
+                  <AuthenticatedRoute>
+                    <ParticipantHome initialView="events" />
+                  </AuthenticatedRoute>
+                }
+              />
 
-            <Route
-              path="/admin"
-              element={
-                <ProtectedRoute requiredRole="admin">
-                  <AdminLayout />
-                </ProtectedRoute>
-              }
-            >
-              <Route index element={<Navigate to="dashboard" replace />} />
-              <Route path="dashboard" element={<DashboardPage />} />
-              <Route path="events" element={<AdminEventsPage />} />
-              <Route path="events/:eventId" element={<EventDetailPage />} />
-              <Route path="appointments" element={<div>Appointments Page</div>} />
-              <Route path="calendar" element={<Navigate to="/home" replace />} />
-              <Route path="cms" element={<CMSPage />} />
-              <Route path="users" element={<UserManagementPage />} />
-              <Route path="roles" element={<Navigate to="/admin/users?tab=roles" replace />} />
-<Route path="audit-log" element={<AuditLogPage />} />
-            </Route>
+              <Route
+                path="/admin"
+                element={
+                  <ProtectedRoute requiredRole="admin">
+                    <AdminLayout />
+                  </ProtectedRoute>
+                }
+              >
+                <Route index element={<Navigate to="dashboard" replace />} />
+                <Route path="dashboard" element={<DashboardPage />} />
+                <Route path="events" element={<AdminEventsPage />} />
+                <Route path="events/:eventId" element={<EventDetailPage />} />
+                <Route path="appointments" element={<div>Appointments Page</div>} />
+                <Route path="calendar" element={<Navigate to="/home" replace />} />
+                <Route path="cms" element={<CMSPage />} />
+                <Route path="users" element={<UserManagementPage />} />
+                <Route path="roles" element={<Navigate to="/admin/users?tab=roles" replace />} />
+                <Route path="audit-log" element={<AuditLogPage />} />
+              </Route>
 
-            <Route path="*" element={<Navigate to="/public" replace />} />
-          </Routes>
-        </AdminProvider>
+              <Route path="*" element={<Navigate to="/public" replace />} />
+            </Routes>
+          </AdminProvider>
+        </AccessibilityProvider>
       </ThemeProvider>
     </CacheProvider>
   );
