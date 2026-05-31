@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import footerLogo from '../../../assets/logo2.png';
 import { PUBLIC_DONATION_TARGET } from '../constants/publicDonationLink';
 import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
@@ -93,6 +94,7 @@ export default function PublicFooter({ organization, contact = {} }) {
         <div className="public-footer__legal">
           <a href="#contact">{t('footerPrivacy')}</a>
           <a href="#contact">{t('footerTerms')}</a>
+          <Link to="/accessibility">{t('footerAccessibility')}</Link>
         </div>
       </div>
     </footer>
