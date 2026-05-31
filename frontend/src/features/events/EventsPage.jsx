@@ -190,6 +190,14 @@ function toDate(value) {
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
+const CANCELLATION_WINDOW_MS = 48 * 60 * 60 * 1000;
+const CANCELLATION_CLOSED_MESSAGE = 'Booking can no longer be cancelled (less than 48h remaining)';
+
+function canCancelSessionBooking(session, now = new Date()) {
+  const startDate = toDate(session?.startDate || session?.eventDate);
+  return Boolean(startDate && startDate.getTime() - now.getTime() > CANCELLATION_WINDOW_MS);
+}
+
 function formatEventDate(value) {
   const date = toDate(value);
   if (!date) return 'To be scheduled';
@@ -827,6 +835,7 @@ function EventBookingModal({
   event,
   registeredSessionIds,
   onRegisterSession,
+  onCancelSession,
   onClose,
 }) {
   const [selectedDateKey, setSelectedDateKey] = useState('');
@@ -961,7 +970,8 @@ function EventBookingModal({
                       {selectedOptions.map((option) => {
                         const isRegistered = registeredSessionIds.has(option.id);
                         const isFull = option.capacity > 0 && option.participants >= option.capacity && !isRegistered;
-                        const actionDisabled = option.isRegistering || isFull || isRegistered;
+                        const canCancelBooking = isRegistered && canCancelSessionBooking(option);
+                        const actionDisabled = option.isRegistering || (isRegistered ? !canCancelBooking : isFull);
 
                         return (
                           <article
@@ -988,19 +998,24 @@ function EventBookingModal({
                               {option.time}
                             </time>
 
-                            <button
-                              type="button"
-                              onClick={() => onRegisterSession(event, option)}
-                              disabled={actionDisabled}
-                            >
-                              {option.isRegistering
-                                ? 'Wait...'
-                                : isRegistered
-                                  ? 'Registered'
-                                  : isFull
-                                    ? 'Full'
-                                    : 'Register'}
-                            </button>
+                            <div className="events-card__session-action">
+                              <button
+                                type="button"
+                                onClick={() => (isRegistered ? onCancelSession(option) : onRegisterSession(event, option))}
+                                disabled={actionDisabled}
+                              >
+                                {option.isRegistering
+                                  ? 'Wait...'
+                                  : isRegistered
+                                    ? 'Cancel Booking'
+                                    : isFull
+                                      ? 'Full'
+                                      : 'Register'}
+                              </button>
+                              {isRegistered && !canCancelBooking && (
+                                <small>{CANCELLATION_CLOSED_MESSAGE}</small>
+                              )}
+                            </div>
                           </article>
                         );
                       })}
@@ -1464,6 +1479,11 @@ export default function EventsPage({ embedInDashboard = false }) {
     const registrationId = registeredMap[session.id];
     if (!registrationId) return;
 
+    if (!canCancelSessionBooking(session)) {
+      setEventsError(CANCELLATION_CLOSED_MESSAGE);
+      return;
+    }
+
     setRegisteringId(session.id);
     setEventsError('');
 
@@ -1630,6 +1650,7 @@ export default function EventsPage({ embedInDashboard = false }) {
           event={activeBookingEvent}
           registeredSessionIds={registeredSessionIds}
           onRegisterSession={handleRegisterSession}
+          onCancelSession={handleCancelSession}
           onClose={closeBookingModal}
         />
       )}

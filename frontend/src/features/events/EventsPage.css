@@ -1533,11 +1533,11 @@
 
 .events-booking-modal__close {
   position: absolute;
-  top: 14px;
-  right: 14px;
+  top: 22px;
+  right: 22px;
   z-index: 2;
-  width: 32px;
-  height: 32px;
+  width: 34px;
+  height: 34px;
   display: inline-grid;
   place-items: center;
   border: 0;
@@ -1551,6 +1551,12 @@
 .events-booking-modal__close:hover {
   color: #d94f92;
   transform: scale(1.08);
+}
+
+.events-booking-modal__close svg {
+  width: 22px;
+  height: 22px;
+  display: block;
 }
 
 .events-booking-modal .events-card__booking-inner {
@@ -1998,9 +2004,9 @@
 .events-card__session-option {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(190px, max-content) minmax(96px, auto);
+  grid-template-columns: minmax(210px, 1fr) minmax(168px, max-content) minmax(112px, auto);
   align-items: center;
-  gap: 14px;
+  gap: 10px;
   min-height: 82px;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.62);
@@ -2033,15 +2039,15 @@
 .events-card__session-provider {
   min-width: 0;
   display: grid;
-  grid-template-columns: 50px minmax(0, 1fr);
+  grid-template-columns: 44px minmax(0, 1fr);
   align-items: center;
-  gap: 11px;
+  gap: 10px;
 }
 
 .events-card__session-provider img,
 .events-card__session-avatar {
-  width: 50px;
-  height: 50px;
+  width: 44px;
+  height: 44px;
   display: inline-grid;
   place-items: center;
   border-radius: 999px;
@@ -2078,19 +2084,23 @@
   color: rgba(224, 76, 136, 0.88);
   font-size: 0.72rem;
   font-weight: 900;
+  overflow: visible;
+  text-overflow: clip;
+  white-space: normal;
+  line-height: 1.2;
 }
 
 .events-card__session-time {
-  min-width: 190px;
+  min-width: 168px;
   display: inline-flex;
   align-items: center;
   justify-self: start;
-  gap: 7px;
+  gap: 6px;
   border-radius: 999px;
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.62), rgba(244, 233, 255, 0.44));
   color: rgba(35, 20, 95, 0.72);
-  font-size: 0.78rem;
+  font-size: 0.74rem;
   font-weight: 900;
   padding: 8px 11px;
   text-align: left;
@@ -2106,10 +2116,26 @@
   color: rgba(224, 76, 136, 0.84);
 }
 
+.events-card__session-action {
+  display: grid;
+  justify-items: end;
+  gap: 6px;
+  justify-self: end;
+}
+
+.events-card__session-action small {
+  max-width: 168px;
+  color: rgba(95, 45, 134, 0.58);
+  font-size: 0.58rem;
+  font-weight: 800;
+  line-height: 1.25;
+  text-align: right;
+}
+
 .events-card__session-option button {
   justify-self: end;
   min-height: 38px;
-  min-width: 96px;
+  min-width: 112px;
   border: 0;
   border-radius: 999px;
   background:
@@ -2156,8 +2182,20 @@
 }
 
 .events-card__session-option.is-registered button {
-  background: rgba(22, 138, 69, 0.14);
-  color: #168a45;
+  border: 1px solid rgba(159, 107, 208, 0.28);
+  background:
+    radial-gradient(circle at 24% 14%, rgba(255, 255, 255, 0.82), transparent 3rem),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.58), rgba(244, 233, 255, 0.4));
+  color: #7b3fa1;
+  box-shadow:
+    0 12px 24px rgba(123, 63, 161, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.82);
+}
+
+.events-card__session-option.is-registered button:disabled {
+  border-color: rgba(123, 63, 161, 0.12);
+  background: rgba(255, 255, 255, 0.38);
+  color: rgba(95, 45, 134, 0.48);
 }
 
 .events-card__provider-list {
@@ -3035,6 +3073,17 @@
   .events-card__session-option button {
     justify-self: stretch;
     width: 100%;
+  }
+
+  .events-card__session-action {
+    justify-items: stretch;
+    justify-self: stretch;
+    width: 100%;
+  }
+
+  .events-card__session-action small {
+    max-width: none;
+    text-align: left;
   }
 
   .events-card__provider-list {
