@@ -1536,20 +1536,21 @@
   top: 14px;
   right: 14px;
   z-index: 2;
-  width: 38px;
-  height: 38px;
+  width: 32px;
+  height: 32px;
   display: inline-grid;
   place-items: center;
-  border: 1px solid rgba(255, 255, 255, 0.62);
-  border-radius: 999px;
-  background:
-    radial-gradient(circle at 24% 18%, rgba(255, 255, 255, 0.9), transparent 2.6rem),
-    rgba(255, 255, 255, 0.72);
+  border: 0;
+  background: transparent;
   color: #5f2d86;
   cursor: pointer;
-  box-shadow: 0 12px 24px rgba(123, 63, 161, 0.14);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  padding: 0;
+  transition: color 180ms ease, transform 180ms ease;
+}
+
+.events-booking-modal__close:hover {
+  color: #d94f92;
+  transform: scale(1.08);
 }
 
 .events-booking-modal .events-card__booking-inner {
@@ -1636,6 +1637,11 @@
   position: relative;
   isolation: isolate;
   padding-block-start: 18px;
+}
+
+.events-card__booking-view--calendar.is-exiting {
+  pointer-events: none;
+  animation: eventsCalendarOut 180ms ease both;
 }
 
 .events-card__booking-view--calendar::before {
@@ -1787,11 +1793,34 @@
   transition: transform 180ms ease, box-shadow 180ms ease;
 }
 
+.events-card__change-date--back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-block-start: 10px;
+  border: 0;
+  background: transparent;
+  color: #7b3fa1;
+  font-size: 0.68rem;
+  padding: 0;
+  box-shadow: none;
+}
+
+.events-card__change-date--back svg {
+  width: 16px;
+  height: 16px;
+}
+
 .events-card__change-date:hover {
   transform: translateY(-1px);
   box-shadow:
     0 14px 26px rgba(123, 63, 161, 0.14),
     inset 0 1px 0 rgba(255, 255, 255, 0.86);
+}
+
+.events-card__change-date--back:hover {
+  color: #d94f92;
+  box-shadow: none;
 }
 
 .events-card__booking-header--providers {
@@ -1901,6 +1930,234 @@
     0 0 34px rgba(236, 111, 162, 0.34),
     0 0 16px rgba(207, 181, 255, 0.42),
     inset 0 1px 0 rgba(255, 255, 255, 0.78);
+}
+
+.events-card__session-panel {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.68);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(255, 255, 255, 0.9), transparent 10rem),
+    radial-gradient(circle at 92% 18%, rgba(207, 181, 255, 0.34), transparent 11rem),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.62), rgba(255, 242, 249, 0.46) 52%, rgba(241, 230, 255, 0.44));
+  box-shadow:
+    0 22px 48px rgba(123, 63, 161, 0.14),
+    0 0 38px rgba(236, 111, 162, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.88);
+  padding: 14px;
+  backdrop-filter: blur(24px) saturate(1.16);
+  -webkit-backdrop-filter: blur(24px) saturate(1.16);
+  animation: eventsSessionPanelIn 260ms cubic-bezier(0.2, 0.78, 0.2, 1) both;
+}
+
+.events-card__session-panel::before {
+  content: "";
+  position: absolute;
+  inset-inline: 18px;
+  inset-block-start: 0;
+  height: 1px;
+  background:
+    linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.86), rgba(236, 111, 162, 0.24), transparent);
+}
+
+.events-card__session-panel-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  margin-block-end: 12px;
+}
+
+.events-card__session-panel-header p,
+.events-card__session-panel-header h4 {
+  margin: 0;
+  text-align: left;
+}
+
+.events-card__session-panel-header p {
+  color: rgba(95, 45, 134, 0.62);
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.events-card__session-panel-header h4 {
+  margin-block-start: 3px;
+  color: #24105f;
+  font-size: 1.08rem;
+  font-weight: 900;
+  line-height: 1.1;
+}
+
+.events-card__session-list {
+  display: grid;
+  gap: 9px;
+}
+
+.events-card__session-option {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(190px, max-content) minmax(96px, auto);
+  align-items: center;
+  gap: 14px;
+  min-height: 82px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.62);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 14% 12%, rgba(255, 255, 255, 0.86), transparent 6rem),
+    linear-gradient(135deg, rgba(255, 249, 238, 0.54), rgba(239, 229, 255, 0.36));
+  color: rgba(35, 20, 95, 0.72);
+  padding: 11px 12px 11px 18px;
+  box-shadow:
+    0 14px 28px rgba(123, 63, 161, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(18px) saturate(1.12);
+  -webkit-backdrop-filter: blur(18px) saturate(1.12);
+  animation: eventsSessionCardIn 240ms ease both;
+}
+
+.events-card__session-option::before {
+  content: "";
+  position: absolute;
+  inset-block: 14px;
+  inset-inline-start: 0;
+  width: 5px;
+  border-radius: 0 999px 999px 0;
+  background:
+    linear-gradient(180deg, rgba(236, 111, 162, 0.94), rgba(159, 107, 208, 0.88));
+  box-shadow: 0 0 18px rgba(236, 111, 162, 0.28);
+}
+
+.events-card__session-provider {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: 50px minmax(0, 1fr);
+  align-items: center;
+  gap: 11px;
+}
+
+.events-card__session-provider img,
+.events-card__session-avatar {
+  width: 50px;
+  height: 50px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 999px;
+  background:
+    linear-gradient(135deg, rgba(255, 191, 216, 0.98), rgba(205, 177, 255, 0.94));
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 900;
+  object-fit: cover;
+  box-shadow:
+    0 12px 22px rgba(123, 63, 161, 0.14),
+    0 0 0 4px rgba(255, 255, 255, 0.5);
+}
+
+.events-card__session-provider strong,
+.events-card__session-provider span {
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.events-card__session-provider strong {
+  color: #24105f;
+  font-size: 1rem;
+  font-weight: 900;
+  line-height: 1.15;
+}
+
+.events-card__session-provider span {
+  margin-block-start: 4px;
+  color: rgba(224, 76, 136, 0.88);
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.events-card__session-time {
+  min-width: 190px;
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  gap: 7px;
+  border-radius: 999px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, 0.62), rgba(244, 233, 255, 0.44));
+  color: rgba(35, 20, 95, 0.72);
+  font-size: 0.78rem;
+  font-weight: 900;
+  padding: 8px 11px;
+  text-align: left;
+  white-space: nowrap;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.78),
+    0 8px 18px rgba(123, 63, 161, 0.08);
+}
+
+.events-card__session-time svg {
+  width: 17px;
+  height: 17px;
+  color: rgba(224, 76, 136, 0.84);
+}
+
+.events-card__session-option button {
+  justify-self: end;
+  min-height: 38px;
+  min-width: 96px;
+  border: 0;
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 24% 14%, rgba(255, 255, 255, 0.52), transparent 3rem),
+    linear-gradient(135deg, rgba(236, 111, 162, 0.98), rgba(159, 107, 208, 0.96));
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 900;
+  text-align: center;
+  padding: 0 16px;
+  box-shadow:
+    0 16px 30px rgba(123, 63, 161, 0.22),
+    0 0 20px rgba(236, 111, 162, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.events-card__session-option button:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow:
+    0 20px 36px rgba(123, 63, 161, 0.28),
+    0 0 24px rgba(236, 111, 162, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.46);
+}
+
+.events-card__session-option button:disabled {
+  cursor: default;
+  opacity: 0.76;
+  box-shadow: none;
+}
+
+.events-card__session-option.is-registered {
+  background:
+    radial-gradient(circle at 14% 12%, rgba(255, 255, 255, 0.82), transparent 6rem),
+    linear-gradient(135deg, rgba(239, 255, 244, 0.62), rgba(239, 229, 255, 0.36));
+}
+
+.events-card__session-option.is-registered::before {
+  background:
+    linear-gradient(180deg, rgba(59, 181, 112, 0.9), rgba(134, 214, 163, 0.82));
+  box-shadow: 0 0 16px rgba(59, 181, 112, 0.22);
+}
+
+.events-card__session-option.is-registered button {
+  background: rgba(22, 138, 69, 0.14);
+  color: #168a45;
 }
 
 .events-card__provider-list {
@@ -2075,10 +2332,43 @@
   }
 }
 
+@keyframes eventsCalendarOut {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-10px) scale(0.98);
+  }
+}
+
 @keyframes eventsProviderIn {
   from {
     opacity: 0;
     transform: translateY(10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes eventsSessionPanelIn {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes eventsSessionCardIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.98);
   }
   to {
     opacity: 1;
@@ -2726,6 +3016,25 @@
     min-height: 42px;
     border-radius: 999px;
     font-size: 0.78rem;
+  }
+
+  .events-card__session-panel {
+    padding: 11px;
+  }
+
+  .events-card__session-option {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 12px 12px 12px 18px;
+  }
+
+  .events-card__session-time {
+    justify-self: start;
+  }
+
+  .events-card__session-option button {
+    justify-self: stretch;
+    width: 100%;
   }
 
   .events-card__provider-list {

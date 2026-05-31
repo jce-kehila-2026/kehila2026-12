@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutlineOutlined';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
@@ -17,6 +17,7 @@ import PersonIcon from '@mui/icons-material/Person';
 import SendOutlinedIcon from '@mui/icons-material/SendOutlined';
 import SettingsIcon from '@mui/icons-material/Settings';
 import AccessTimeIcon from '@mui/icons-material/AccessTime';
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivismOutlined';
@@ -829,10 +830,49 @@ function EventBookingModal({
   onClose,
 }) {
   const [selectedDateKey, setSelectedDateKey] = useState('');
+  const [isCalendarExiting, setIsCalendarExiting] = useState(false);
+  const dateSelectionTimeoutRef = useRef(null);
 
   useEffect(() => {
+    if (dateSelectionTimeoutRef.current) {
+      clearTimeout(dateSelectionTimeoutRef.current);
+      dateSelectionTimeoutRef.current = null;
+    }
     setSelectedDateKey('');
+    setIsCalendarExiting(false);
   }, [event?.id]);
+
+  useEffect(() => () => {
+    if (dateSelectionTimeoutRef.current) {
+      clearTimeout(dateSelectionTimeoutRef.current);
+    }
+  }, []);
+
+  const handleDateSelection = useCallback((dateKey) => {
+    if (!dateKey || isCalendarExiting) return;
+
+    setIsCalendarExiting(true);
+
+    if (dateSelectionTimeoutRef.current) {
+      clearTimeout(dateSelectionTimeoutRef.current);
+    }
+
+    dateSelectionTimeoutRef.current = setTimeout(() => {
+      setSelectedDateKey(dateKey);
+      setIsCalendarExiting(false);
+      dateSelectionTimeoutRef.current = null;
+    }, 180);
+  }, [isCalendarExiting]);
+
+  const handleChangeDate = useCallback(() => {
+    if (dateSelectionTimeoutRef.current) {
+      clearTimeout(dateSelectionTimeoutRef.current);
+      dateSelectionTimeoutRef.current = null;
+    }
+
+    setIsCalendarExiting(false);
+    setSelectedDateKey('');
+  }, []);
 
   if (!event) return null;
 
@@ -858,7 +898,7 @@ function EventBookingModal({
         {event.sessions.length > 0 ? (
           <div className="events-card__booking-inner">
             {!selectedSession ? (
-              <section className="events-card__booking-view events-card__booking-view--calendar">
+              <section className={`events-card__booking-view events-card__booking-view--calendar${isCalendarExiting ? ' is-exiting' : ''}`}>
                 <header className="events-card__booking-header">
                   <div>
                     <h4 id="events-booking-modal-title">{bookingCalendar.title}</h4>
@@ -879,19 +919,14 @@ function EventBookingModal({
                     {bookingCalendar.days.map((day) => {
                       const session = sessionsByDateKey.get(day.dateKey);
                       const isAvailable = Boolean(session);
-                      const isSelected = selectedDateKey === day.dateKey;
 
                       return (
                         <button
-                          className={[
-                            isAvailable ? 'is-available' : '',
-                            isSelected ? 'is-selected' : '',
-                          ].filter(Boolean).join(' ')}
+                          className={isAvailable ? 'is-available' : ''}
                           type="button"
-                          onClick={() => setSelectedDateKey(day.dateKey)}
-                          disabled={!isAvailable}
+                          onClick={() => handleDateSelection(day.dateKey)}
+                          disabled={!isAvailable || isCalendarExiting}
                           aria-label={session ? `Choose ${session.date}` : 'Unavailable date'}
-                          aria-pressed={isSelected}
                           key={day.id}
                         >
                           {day.dayNumber}
@@ -903,73 +938,75 @@ function EventBookingModal({
               </section>
             ) : (
               <section className="events-card__booking-view events-card__booking-view--providers">
-                <header className="events-card__booking-header events-card__booking-header--providers">
-                  <div>
-                    <p>{selectedSession.date}</p>
-                    <h4>Select time and provider</h4>
-                    <strong>{event.title}</strong>
-                  </div>
-                  <button
-                    className="events-card__change-date"
-                    type="button"
-                    onClick={() => setSelectedDateKey('')}
-                  >
-                    Change date
-                  </button>
-                </header>
+                <section className="events-card__session-panel events-card__session-panel--standalone" aria-live="polite">
+                  <header className="events-card__session-panel-header">
+                    <div>
+                      <h4 id="events-booking-modal-title">{selectedSession.date}</h4>
+                      <p>Available Sessions</p>
+                      <button
+                        className="events-card__change-date events-card__change-date--back"
+                        type="button"
+                        onClick={handleChangeDate}
+                      >
+                        <ArrowBackIcon fontSize="small" />
+                        Back to calendar
+                      </button>
+                    </div>
+                  </header>
 
-                {selectedOptions.length === 0 ? (
-                  <p className="events-card__booking-empty">No available sessions for this date.</p>
-                ) : (
-                  <div className="events-card__provider-list">
-                    {selectedOptions.map((option) => {
-                      const isRegistered = registeredSessionIds.has(option.id);
-                      const isFull = option.capacity > 0 && option.participants >= option.capacity && !isRegistered;
-                      const actionDisabled = option.isRegistering || isFull || isRegistered;
-                      const availableSpots = option.capacity > 0 ? Math.max(0, option.capacity - option.participants) : null;
+                  {selectedOptions.length === 0 ? (
+                    <p className="events-card__booking-empty">No available sessions for this date.</p>
+                  ) : (
+                    <div className="events-card__session-list">
+                      {selectedOptions.map((option) => {
+                        const isRegistered = registeredSessionIds.has(option.id);
+                        const isFull = option.capacity > 0 && option.participants >= option.capacity && !isRegistered;
+                        const actionDisabled = option.isRegistering || isFull || isRegistered;
 
-                      return (
-                        <article
-                          className={`events-card__provider-option${isRegistered ? ' is-registered' : ''}`}
-                          key={option.id}
-                        >
-                          {option.providerAvatar ? (
-                            <img src={option.providerAvatar} alt="" />
-                          ) : (
-                            <span className="events-card__provider-avatar">
-                              {option.providerName.slice(0, 2).toUpperCase()}
-                            </span>
-                          )}
-
-                          <div className="events-card__provider-copy">
-                            <strong>{option.providerName}</strong>
-                            <span>{option.providerSpecialty}</span>
-                          </div>
-
-                          <div className="events-card__provider-meta">
-                            <time>{option.time}</time>
-                            <span>{option.room}</span>
-                            <small>{formatAvailableSpots(availableSpots)}</small>
-                          </div>
-
-                          <button
-                            type="button"
-                            onClick={() => onRegisterSession(event, option)}
-                            disabled={actionDisabled}
+                        return (
+                          <article
+                            className={`events-card__session-option${isRegistered ? ' is-registered' : ''}`}
+                            key={option.id}
                           >
-                            {option.isRegistering
-                              ? 'Wait...'
-                              : isRegistered
-                                ? 'Registered'
-                                : isFull
-                                  ? 'Full'
-                                  : 'Register'}
-                          </button>
-                        </article>
-                      );
-                    })}
-                  </div>
-                )}
+                            <div className="events-card__session-provider">
+                              {option.providerAvatar ? (
+                                <img src={option.providerAvatar} alt="" />
+                              ) : (
+                                <span className="events-card__session-avatar">
+                                  {option.providerName.slice(0, 2).toUpperCase()}
+                                </span>
+                              )}
+
+                              <div>
+                                <strong>{option.providerName}</strong>
+                                <span>{option.providerSpecialty}</span>
+                              </div>
+                            </div>
+
+                            <time className="events-card__session-time">
+                              <AccessTimeIcon fontSize="small" />
+                              {option.time}
+                            </time>
+
+                            <button
+                              type="button"
+                              onClick={() => onRegisterSession(event, option)}
+                              disabled={actionDisabled}
+                            >
+                              {option.isRegistering
+                                ? 'Wait...'
+                                : isRegistered
+                                  ? 'Registered'
+                                  : isFull
+                                    ? 'Full'
+                                    : 'Register'}
+                            </button>
+                          </article>
+                        );
+                      })}
+                    </div>
+                  )}
+                </section>
               </section>
             )}
           </div>
