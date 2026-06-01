@@ -457,16 +457,27 @@ function getEventWeeklyDayIndex(event, scheduleTemplate) {
 function getSessionStartsForEvent(event, scheduleTemplate, providerSlots = null) {
   const fallbackStart = event.startTime || event.date;
   const eventDayIndex = getEventWeeklyDayIndex(event, scheduleTemplate);
+  const disabledDateKeys = new Set(getDisabledDateKeys(event));
+  const filterDisabledDates = (dates) => dates.filter((date) => !disabledDateKeys.has(toDateKey(date)));
 
   if (Number.isInteger(eventDayIndex)) {
     const slots = providerSlots || getProviderSlots(event);
-    return getNextWeeklySessionStartsByDay(
+    return filterDisabledDates(getNextWeeklySessionStartsByDay(
       eventDayIndex,
       getFirstProviderSlotStartSource(slots, getFirstSlotStartSource(scheduleTemplate, fallbackStart)),
-    );
+    ));
   }
 
-  return getNextWeeklySessionStarts(fallbackStart);
+  return filterDisabledDates(getNextWeeklySessionStarts(fallbackStart));
+}
+
+function getDisabledDateKeys(event) {
+  return [
+    event.disabledDates,
+    event.disabledDateKeys,
+    event.closedDates,
+    event.blockedDates,
+  ].find((items) => Array.isArray(items) && items.length) || [];
 }
 
 function buildSessionIdsForEvents(eventList) {
@@ -791,6 +802,7 @@ function EventCard({
 }) {
   const typeLabel = event.eventType === 'appointment' ? 'Appointment' : 'Workshop';
   const hasRegisteredSessions = event.sessionOptions.some((session) => registeredSessionIds.has(session.id));
+  const registrationClosed = event.registrationOpen === false;
   const [isDescriptionOpen, setIsDescriptionOpen] = useState(false);
 
   return (
@@ -821,9 +833,10 @@ function EventCard({
           className={`events-card__action${hasRegisteredSessions ? ' events-card__action--more' : ''}`}
           type="button"
           onClick={() => onOpenBooking(event.id)}
+          disabled={registrationClosed}
           aria-haspopup="dialog"
         >
-          {hasRegisteredSessions ? 'Choose More Dates' : 'View Dates'}
+          {registrationClosed ? 'Registration Closed' : hasRegisteredSessions ? 'Choose More Dates' : 'View Dates'}
           <ArrowForwardIcon fontSize="small" />
         </button>
       </div>
@@ -1370,6 +1383,7 @@ export default function EventsPage({ embedInDashboard = false }) {
           eventType,
           instructor: getInstructorLabel(event),
           providerSummary: providerNames.length > 1 ? `${providerNames.length} providers available` : providerNames[0] || getInstructorLabel(event),
+          registrationOpen: event.registrationOpen !== false,
           weeklySchedule,
           temporalStatus: getTemporalStatus(sessions[0]?.startDate || templateStart),
           sessions,
@@ -1437,6 +1451,11 @@ export default function EventsPage({ embedInDashboard = false }) {
     if (!currentUser?.email || registeringId) return;
 
     if (!event || !session || registeredMap[session.id]) return;
+
+    if (event.registrationOpen === false) {
+      setEventsError('Registration is closed for this event.');
+      return;
+    }
 
     setRegisteringId(session.id);
     setEventsError('');

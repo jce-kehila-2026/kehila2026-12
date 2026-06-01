@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
+import ArrowForward from '@mui/icons-material/ArrowForward';
 import CalendarMonth from '@mui/icons-material/CalendarMonth';
 import Category from '@mui/icons-material/Category';
 import CheckCircle from '@mui/icons-material/CheckCircle';
@@ -27,31 +28,79 @@ import {
 } from '../services/registrationService';
 import './EventsPage.css';
 
-const EVENT_CATEGORIES = [
-  'Workshop',
-  'Support Group',
-  'Therapy Session',
-  'Community Activity',
-  'Awareness Event',
-  'Appointment',
-  'Other',
+const STATUS_OPTIONS = ['published', 'draft', 'hidden', 'archived', 'cancelled'];
+
+const WEEKDAY_OPTIONS = [
+  { label: 'Sunday', value: 0 },
+  { label: 'Monday', value: 1 },
+  { label: 'Tuesday', value: 2 },
+  { label: 'Wednesday', value: 3 },
+  { label: 'Thursday', value: 4 },
+  { label: 'Friday', value: 5 },
+  { label: 'Saturday', value: 6 },
 ];
 
-const STATUS_OPTIONS = ['published', 'draft', 'cancelled'];
+const EVENT_FORM_STEPS = [
+  {
+    title: 'Basic Information',
+    description: 'Event title, type and summary',
+  },
+  {
+    title: 'Scheduling',
+    description: 'Date, time and recurring options',
+  },
+  {
+    title: 'Event Setup',
+    description: 'Location, capacity, image and settings',
+  },
+  {
+    title: 'Review & Publish',
+    description: 'Review and publish your event',
+  },
+];
 
-const initialForm = {
-  title: '',
-  type: 'workshop',
-  category: 'Workshop',
-  description: '',
-  imageUrl: '',
-  date: '',
-  startTime: '',
-  endTime: '',
-  location: '',
-  maxParticipants: '',
-  status: 'published',
-};
+function createEmptySlot() {
+  return {
+    id: '',
+    startTime: '',
+    endTime: '',
+    room: '',
+    capacity: '1',
+  };
+}
+
+function createEmptyProvider() {
+  return {
+    id: '',
+    name: '',
+    specialty: '',
+    room: '',
+    avatarUrl: '',
+    slots: [createEmptySlot()],
+  };
+}
+
+function createInitialForm(type = 'workshop') {
+  return {
+    title: '',
+    type,
+    description: '',
+    imageUrl: '',
+    recurrence: 'weekly',
+    weeklyDayIndex: '',
+    registrationOpen: true,
+    disabledDates: '',
+    date: '',
+    startTime: '',
+    endTime: '',
+    location: '',
+    maxParticipants: '',
+    status: 'published',
+    providers: [createEmptyProvider()],
+  };
+}
+
+const initialForm = createInitialForm();
 
 function toDate(value) {
   if (!value) return null;
@@ -65,6 +114,22 @@ function pad(value) {
   return String(value).padStart(2, '0');
 }
 
+function parseTimeString(value) {
+  if (typeof value !== 'string') return null;
+  const match = value.trim().match(/^(\d{1,2}):(\d{2})/);
+  if (!match) return null;
+  return {
+    hours: Number(match[1]),
+    minutes: Number(match[2]),
+  };
+}
+
+function normalizeTimeString(value) {
+  const time = parseTimeString(value);
+  if (!time) return '';
+  return `${pad(time.hours)}:${pad(time.minutes)}`;
+}
+
 function dateInputValue(value) {
   const date = toDate(value);
   if (!date) return '';
@@ -72,6 +137,7 @@ function dateInputValue(value) {
 }
 
 function timeInputValue(value) {
+  if (typeof value === 'string') return normalizeTimeString(value);
   const date = toDate(value);
   if (!date) return '';
   return `${pad(date.getHours())}:${pad(date.getMinutes())}`;
@@ -89,11 +155,37 @@ function formatDate(value) {
 }
 
 function formatTimeRange(startValue, endValue) {
+  const startTime = typeof startValue === 'string' ? normalizeTimeString(startValue) : '';
+  const endTime = typeof endValue === 'string' ? normalizeTimeString(endValue) : '';
+  if (startTime) return endTime ? `${startTime} - ${endTime}` : startTime;
+
   const start = toDate(startValue);
   const end = toDate(endValue);
   if (!start) return 'Time TBD';
   const formatter = new Intl.DateTimeFormat('en', { hour: '2-digit', minute: '2-digit', hour12: false });
   return end ? `${formatter.format(start)} - ${formatter.format(end)}` : formatter.format(start);
+}
+
+function getWeekdayName(value) {
+  const day = WEEKDAY_OPTIONS.find((option) => option.value === Number(value));
+  return day?.label || '';
+}
+
+function getWeekdayIndex(value) {
+  const numeric = Number(value);
+  if (Number.isInteger(numeric) && numeric >= 0 && numeric <= 6) return String(numeric);
+  const normalized = String(value || '').trim().toLowerCase();
+  const option = WEEKDAY_OPTIONS.find((day) => day.label.toLowerCase() === normalized);
+  return option ? String(option.value) : '';
+}
+
+function slugifyIdentifier(value, fallback = 'item') {
+  return String(value || fallback)
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9\u0590-\u05ff]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 80) || fallback;
 }
 
 function inferType(event) {
@@ -110,23 +202,160 @@ function normalizeStatus(status) {
 }
 
 function eventToForm(event) {
+  const recurringDayIndex = getWeekdayIndex(
+    event.weeklyDayIndex ?? event.dayIndex ?? event.recurringDayIndex ?? event.dayOfWeekIndex ?? event.weeklyDay
+  );
+  const isRecurring = event.isRecurringTemplate || event.recurrence === 'weekly' || recurringDayIndex !== '';
+
   return {
     title: event.title || '',
     type: inferType(event),
-    category: event.category || 'Workshop',
     description: event.description || '',
     imageUrl: event.imageUrl || event.thumbnailUrl || event.coverImageUrl || '',
+    recurrence: isRecurring ? 'weekly' : 'one-time',
+    weeklyDayIndex: recurringDayIndex,
+    registrationOpen: event.registrationOpen !== false,
+    disabledDates: Array.isArray(event.disabledDates) ? event.disabledDates.join(', ') : '',
     date: dateInputValue(event.startTime || event.date),
     startTime: timeInputValue(event.startTime || event.date),
     endTime: timeInputValue(event.endTime),
     location: event.location || '',
     maxParticipants: event.maxParticipants || event.capacity || '',
     status: normalizeStatus(event.status),
+    providers: normalizeProvidersForForm(event),
   };
 }
 
 function getEventImage(event) {
   return event.imageUrl || event.thumbnailUrl || event.coverImageUrl || '';
+}
+
+function normalizeSlotForForm(slot = {}, provider = {}, event = {}, index = 0) {
+  const startTime = timeInputValue(slot.startTime || slot.start || slot.from || provider.startTime || event.startTime || event.date);
+  const endTime = timeInputValue(slot.endTime || slot.end || slot.to || provider.endTime || event.endTime);
+  const room = slot.room || slot.location || provider.room || provider.location || event.room || event.location || '';
+  return {
+    id: slot.id || `${slugifyIdentifier(provider.id || provider.name || provider.providerName, 'provider')}-${startTime || `slot-${index + 1}`}`,
+    startTime,
+    endTime,
+    room,
+    capacity: String(slot.capacity || slot.maxParticipants || slot.availableSpots || provider.capacity || event.maxParticipants || event.capacity || 1),
+  };
+}
+
+function normalizeProvidersForForm(event) {
+  const providerEntries = [
+    event.providers,
+    event.therapists,
+    event.providerSlots,
+    event.sessionProviders,
+  ].find((items) => Array.isArray(items) && items.length) || [];
+
+  if (providerEntries.length) {
+    return providerEntries.map((provider, providerIndex) => {
+      const name = provider.name || provider.providerName || provider.therapistName || provider.instructorName || provider.therapist || provider.instructor || '';
+      const providerSlots = [
+        provider.slots,
+        provider.timeSlots,
+        provider.availableSlots,
+      ].find((items) => Array.isArray(items) && items.length) || [provider];
+
+      return {
+        id: provider.id || provider.uid || slugifyIdentifier(name, `provider-${providerIndex + 1}`),
+        name,
+        specialty: provider.specialty || provider.role || provider.title || provider.category || event.category || '',
+        room: provider.room || provider.location || event.room || event.location || '',
+        avatarUrl: provider.avatarUrl || provider.photoUrl || provider.imageUrl || provider.profileImage || '',
+        slots: providerSlots.map((slot, slotIndex) => normalizeSlotForForm(slot, provider, event, slotIndex)),
+      };
+    });
+  }
+
+  const looseSlots = [
+    event.timeSlots,
+    event.slots,
+    event.availableSlots,
+  ].find((items) => Array.isArray(items) && items.length) || [];
+
+  if (looseSlots.length) {
+    return [{
+      ...createEmptyProvider(),
+      name: event.provider || event.therapist || event.instructor || event.facilitator || '',
+      specialty: event.category || '',
+      room: event.room || event.location || '',
+      slots: looseSlots.map((slot, slotIndex) => normalizeSlotForForm(slot, {}, event, slotIndex)),
+    }];
+  }
+
+  return [{
+    ...createEmptyProvider(),
+    name: event.provider || event.therapist || event.instructor || event.facilitator || '',
+    specialty: event.category || '',
+    room: event.room || event.location || '',
+    slots: [normalizeSlotForForm({}, {}, event, 0)],
+  }];
+}
+
+function parseDisabledDates(value) {
+  return String(value || '')
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function buildProvidersPayload(providers) {
+  return providers
+    .map((provider, providerIndex) => {
+      const name = String(provider.name || '').trim();
+      const providerId = slugifyIdentifier(provider.id || name, `provider-${providerIndex + 1}`);
+      const slots = (provider.slots || [])
+        .map((slot, slotIndex) => {
+          const startTime = normalizeTimeString(slot.startTime);
+          const endTime = normalizeTimeString(slot.endTime);
+          if (!startTime) return null;
+
+          return {
+            id: String(slot.id || '').trim() || `${providerId}-${startTime.replace(':', '')}`,
+            startTime,
+            endTime,
+            room: String(slot.room || '').trim() || String(provider.room || '').trim(),
+            capacity: Number(slot.capacity) || 1,
+          };
+        })
+        .filter(Boolean);
+
+      if (!name && slots.length === 0) return null;
+
+      return {
+        id: providerId,
+        name: name || `Provider ${providerIndex + 1}`,
+        specialty: String(provider.specialty || '').trim(),
+        room: String(provider.room || '').trim(),
+        avatarUrl: String(provider.avatarUrl || '').trim(),
+        slots,
+      };
+    })
+    .filter(Boolean);
+}
+
+function getFirstProviderSlot(providers) {
+  return providers.flatMap((provider) => provider.slots || []).find((slot) => slot.startTime) || null;
+}
+
+function getLastProviderSlot(providers) {
+  return [...providers.flatMap((provider) => provider.slots || [])].reverse().find((slot) => slot.endTime || slot.startTime) || null;
+}
+
+function formatScheduleDate(event) {
+  if (event?.isRecurringTemplate || event?.recurrence === 'weekly') {
+    const dayName = event.weeklyDay || getWeekdayName(event.weeklyDayIndex);
+    return dayName ? `Every ${dayName}` : 'Weekly schedule';
+  }
+  return formatDate(event.startTime || event.date);
+}
+
+function formatScheduleTime(event) {
+  return formatTimeRange(event.startTime || event.date, event.endTime);
 }
 
 function getParticipantName(registration) {
@@ -180,6 +409,7 @@ export default function EventsPage() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editingEvent, setEditingEvent] = useState(null);
   const [form, setForm] = useState(initialForm);
+  const [activeFormStep, setActiveFormStep] = useState(0);
   const [activeTab, setActiveTab] = useState(searchParams.get('type') === 'appointments' ? 'appointment' : 'workshop');
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -227,6 +457,28 @@ export default function EventsPage() {
     return () => window.clearTimeout(timeout);
   }, [toast]);
 
+  useEffect(() => {
+    if (!drawerOpen) return undefined;
+
+    const originalBodyOverflow = document.body.style.overflow;
+    const originalDocumentOverflow = document.documentElement.style.overflow;
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+
+    function handleKeyDown(event) {
+      if (event.key === 'Escape') {
+        closeDrawer();
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = originalBodyOverflow;
+      document.documentElement.style.overflow = originalDocumentOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [drawerOpen]);
+
   const typedEvents = useMemo(
     () => events.map((event) => ({ ...event, eventType: inferType(event), status: normalizeStatus(event.status) })),
     [events]
@@ -237,6 +489,9 @@ export default function EventsPage() {
   const selectedEventCapacity = Number(selectedEvent?.maxParticipants || selectedEvent?.capacity) || 0;
   const selectedEventRegistered = selectedEvent ? (counts[selectedEvent.id] ?? registrations.length) : 0;
   const selectedEventProgress = selectedEventCapacity ? Math.min(100, (selectedEventRegistered / selectedEventCapacity) * 100) : 0;
+  const currentFormStep = EVENT_FORM_STEPS[activeFormStep];
+  const isLastFormStep = activeFormStep === EVENT_FORM_STEPS.length - 1;
+  const descriptionCount = form.description.length;
 
   const filteredEvents = useMemo(() => {
     const search = searchTerm.trim().toLowerCase();
@@ -290,6 +545,78 @@ export default function EventsPage() {
     setForm((current) => ({ ...current, [field]: value }));
   }
 
+  function goToNextFormStep() {
+    setActiveFormStep((current) => Math.min(EVENT_FORM_STEPS.length - 1, current + 1));
+  }
+
+  function goToPreviousFormStep() {
+    setActiveFormStep((current) => Math.max(0, current - 1));
+  }
+
+  function updateProvider(providerIndex, field, value) {
+    setForm((current) => ({
+      ...current,
+      providers: current.providers.map((provider, index) =>
+        index === providerIndex ? { ...provider, [field]: value } : provider
+      ),
+    }));
+  }
+
+  function addProvider() {
+    setForm((current) => ({
+      ...current,
+      providers: [...current.providers, createEmptyProvider()],
+    }));
+  }
+
+  function removeProvider(providerIndex) {
+    setForm((current) => ({
+      ...current,
+      providers: current.providers.length > 1
+        ? current.providers.filter((_, index) => index !== providerIndex)
+        : [createEmptyProvider()],
+    }));
+  }
+
+  function updateProviderSlot(providerIndex, slotIndex, field, value) {
+    setForm((current) => ({
+      ...current,
+      providers: current.providers.map((provider, index) => {
+        if (index !== providerIndex) return provider;
+        return {
+          ...provider,
+          slots: provider.slots.map((slot, nextSlotIndex) =>
+            nextSlotIndex === slotIndex ? { ...slot, [field]: value } : slot
+          ),
+        };
+      }),
+    }));
+  }
+
+  function addProviderSlot(providerIndex) {
+    setForm((current) => ({
+      ...current,
+      providers: current.providers.map((provider, index) =>
+        index === providerIndex
+          ? { ...provider, slots: [...provider.slots, createEmptySlot()] }
+          : provider
+      ),
+    }));
+  }
+
+  function removeProviderSlot(providerIndex, slotIndex) {
+    setForm((current) => ({
+      ...current,
+      providers: current.providers.map((provider, index) => {
+        if (index !== providerIndex) return provider;
+        const nextSlots = provider.slots.length > 1
+          ? provider.slots.filter((_, nextSlotIndex) => nextSlotIndex !== slotIndex)
+          : [createEmptySlot()];
+        return { ...provider, slots: nextSlots };
+      }),
+    }));
+  }
+
   function changeTab(nextTab) {
     setActiveTab(nextTab);
     setSearchParams(nextTab === 'appointment' ? { type: 'appointments' } : { type: 'workshops' });
@@ -299,11 +626,8 @@ export default function EventsPage() {
     const type = activeTab;
     setParticipantsDrawerOpen(false);
     setEditingEvent(null);
-    setForm({
-      ...initialForm,
-      type,
-      category: type === 'appointment' ? 'Appointment' : 'Workshop',
-    });
+    setForm(createInitialForm(type));
+    setActiveFormStep(0);
     setDrawerOpen(true);
   }
 
@@ -311,13 +635,15 @@ export default function EventsPage() {
     setParticipantsDrawerOpen(false);
     setEditingEvent(event);
     setForm(eventToForm(event));
+    setActiveFormStep(0);
     setDrawerOpen(true);
   }
 
   function closeDrawer() {
     setDrawerOpen(false);
     setEditingEvent(null);
-    setForm(initialForm);
+    setForm(createInitialForm());
+    setActiveFormStep(0);
   }
 
   async function openParticipants(event) {
@@ -348,10 +674,29 @@ export default function EventsPage() {
 
   async function handleSave(event) {
     event.preventDefault();
-    const startDate = composeDateTime(form.date, form.startTime);
-    const endDate = composeDateTime(form.date, form.endTime);
+    const isRecurring = form.recurrence === 'weekly';
+    const providersPayload = buildProvidersPayload(form.providers);
+    const firstSlot = getFirstProviderSlot(providersPayload);
+    const lastSlot = getLastProviderSlot(providersPayload);
+    const startDate = isRecurring ? null : composeDateTime(form.date, form.startTime);
+    const endDate = isRecurring ? null : composeDateTime(form.date, form.endTime);
 
-    if (!startDate) {
+    if (!form.title.trim()) {
+      setToast('Please add an event title.');
+      return;
+    }
+
+    if (isRecurring && form.weeklyDayIndex === '') {
+      setToast('Please choose the weekly day.');
+      return;
+    }
+
+    if (isRecurring && !firstSlot) {
+      setToast('Please add at least one provider time slot.');
+      return;
+    }
+
+    if (!isRecurring && !startDate) {
       setToast('Please add a valid date and start time.');
       return;
     }
@@ -359,13 +704,19 @@ export default function EventsPage() {
     const payload = {
       title: form.title.trim(),
       type: form.type,
-      category: form.category,
-      startTime: startDate,
-      endTime: endDate,
+      recurrence: form.recurrence,
+      isRecurringTemplate: isRecurring,
+      weeklyDay: isRecurring ? getWeekdayName(form.weeklyDayIndex) : '',
+      weeklyDayIndex: isRecurring ? Number(form.weeklyDayIndex) : null,
+      startTime: isRecurring ? firstSlot.startTime : startDate,
+      endTime: isRecurring ? (lastSlot.endTime || lastSlot.startTime) : endDate,
       location: form.location.trim(),
       description: form.description.trim(),
       imageUrl: form.imageUrl.trim(),
       maxParticipants: Number(form.maxParticipants) || 0,
+      registrationOpen: form.registrationOpen,
+      disabledDates: parseDisabledDates(form.disabledDates),
+      providers: providersPayload,
       status: form.status,
     };
 
@@ -611,8 +962,8 @@ export default function EventsPage() {
                           </td>
                           <td>
                             <div className="admin-events-meta">
-                              <span><CalendarMonth /> {formatDate(event.startTime || event.date)}</span>
-                              <span><Schedule /> {formatTimeRange(event.startTime || event.date, event.endTime)}</span>
+                              <span><CalendarMonth /> {formatScheduleDate(event)}</span>
+                              <span><Schedule /> {formatScheduleTime(event)}</span>
                             </div>
                           </td>
                           <td>
@@ -669,106 +1020,369 @@ export default function EventsPage() {
           </section>
         </main>
 
-        <aside className={`admin-events-drawer${drawerOpen ? ' is-open' : ''}`} aria-label="Edit event drawer">
+        <aside className={`admin-events-drawer${drawerOpen ? ' is-open' : ''}`} aria-label="Event wizard modal">
           <form onSubmit={handleSave}>
-            <header>
-              <h2>{editingEvent ? 'Edit Event' : 'Add Event'}</h2>
-              <button type="button" onClick={closeDrawer} aria-label="Close event drawer">
+            <header className="admin-events-modal-header">
+              <div>
+                <h2>{editingEvent ? 'Edit Event' : 'Add New Event'}</h2>
+                <p>{editingEvent ? 'Update this workshop or appointment' : 'Create a new workshop or appointment'}</p>
+              </div>
+              <button type="button" onClick={closeDrawer} aria-label="Close event modal">
                 <Close />
               </button>
             </header>
 
-            <div className="admin-events-form-grid">
-              <label>
-                Event Title <b>*</b>
-                <input value={form.title} onChange={(event) => updateForm('title', event.target.value)} required />
-              </label>
-              <label>
-                Type <b>*</b>
-                <select value={form.type} onChange={(event) => updateForm('type', event.target.value)} required>
-                  <option value="workshop">Workshop</option>
-                  <option value="appointment">Appointment</option>
-                </select>
-              </label>
-              <label>
-                Category
-                <select value={form.category} onChange={(event) => updateForm('category', event.target.value)}>
-                  {EVENT_CATEGORIES.map((categoryName) => (
-                    <option key={categoryName} value={categoryName}>{categoryName}</option>
+            <div className="admin-events-modal-body">
+              <aside className="admin-events-modal-sidebar" aria-label="Event form steps">
+                <ol className="admin-events-stepper">
+                  {EVENT_FORM_STEPS.map((step, index) => (
+                    <li className={index === activeFormStep ? 'is-active' : ''} key={step.title}>
+                      <button type="button" onClick={() => setActiveFormStep(index)}>
+                        <span>{index + 1}</span>
+                        <strong>{step.title}</strong>
+                        <small>{step.description}</small>
+                      </button>
+                    </li>
                   ))}
-                </select>
-              </label>
-              <label className="admin-events-span-2">
-                Description
-                <textarea
-                  rows="5"
-                  value={form.description}
-                  onChange={(event) => updateForm('description', event.target.value)}
-                />
-              </label>
-              <section className="admin-events-image-section admin-events-span-2">
-                <div>
-                  <label>
-                    Event Image URL
-                    <input
-                      type="url"
-                      placeholder="https://example.com/event-photo.jpg"
-                      value={form.imageUrl}
-                      onChange={(event) => updateForm('imageUrl', event.target.value)}
-                    />
-                  </label>
-                  <p>This image appears on the event card and public event pages.</p>
-                </div>
-                <div className="admin-events-image-preview">
-                  {form.imageUrl ? (
-                    <img src={form.imageUrl} alt="Event preview" />
-                  ) : (
-                    <span><Category /> Image preview</span>
-                  )}
-                </div>
-              </section>
-              <label>
-                Date
-                <input type="date" value={form.date} onChange={(event) => updateForm('date', event.target.value)} required />
-              </label>
-              <label>
-                Start Time
-                <input type="time" value={form.startTime} onChange={(event) => updateForm('startTime', event.target.value)} required />
-              </label>
-              <label>
-                End Time
-                <input type="time" value={form.endTime} onChange={(event) => updateForm('endTime', event.target.value)} />
-              </label>
-              <label>
-                Location
-                <input value={form.location} onChange={(event) => updateForm('location', event.target.value)} required />
-              </label>
-              <label>
-                Capacity
-                <input
-                  type="number"
-                  min="1"
-                  value={form.maxParticipants}
-                  onChange={(event) => updateForm('maxParticipants', event.target.value)}
-                  required
-                />
-              </label>
-              <label>
-                Status
-                <select value={form.status} onChange={(event) => updateForm('status', event.target.value)}>
-                  {STATUS_OPTIONS.map((status) => (
-                    <option key={status} value={status}>{status[0].toUpperCase() + status.slice(1)}</option>
-                  ))}
-                </select>
-              </label>
-            </div>
+                </ol>
 
-            <footer>
-              <button className="admin-events-cancel-btn" type="button" onClick={closeDrawer}>Cancel</button>
-              <button className="admin-events-save-btn" type="submit" disabled={saving}>
-                {saving ? 'Saving...' : 'Save Changes'}
-              </button>
-            </footer>
+                <div className="admin-events-modal-tip-card">
+                  <CalendarMonth />
+                  <strong>All set?</strong>
+                  <p>You can save as draft and publish later.</p>
+                </div>
+              </aside>
+
+              <section className="admin-events-modal-content">
+                <section className="admin-events-wizard-card">
+                  <header className="admin-events-wizard-heading">
+                    <span>{activeFormStep + 1}</span>
+                    <div>
+                      <h3>{currentFormStep.title}</h3>
+                      <p>
+                        {activeFormStep === 0
+                          ? "Let's start with the basics about your event."
+                          : currentFormStep.description}
+                      </p>
+                    </div>
+                  </header>
+
+                  {activeFormStep === 0 && (
+                    <div className="admin-events-wizard-fields admin-events-wizard-fields--basic">
+                      <label>
+                        <span className="admin-events-field-label">Event Title <b>*</b></span>
+                        <input
+                          value={form.title}
+                          onChange={(event) => updateForm('title', event.target.value)}
+                          placeholder="Enter event title"
+                          required
+                        />
+                      </label>
+
+                      <div className="admin-events-type-field">
+                        <span className="admin-events-field-label">Event Type <b>*</b></span>
+                        <div className="admin-events-type-cards" role="group" aria-label="Event Type">
+                          {[
+                            { value: 'workshop', label: 'Workshop', icon: Groups },
+                            { value: 'appointment', label: 'Appointment', icon: CalendarMonth },
+                          ].map((typeOption) => {
+                            const Icon = typeOption.icon;
+                            return (
+                              <button
+                                className={form.type === typeOption.value ? 'is-selected' : ''}
+                                type="button"
+                                onClick={() => updateForm('type', typeOption.value)}
+                                key={typeOption.value}
+                              >
+                                <Icon fontSize="small" />
+                                {typeOption.label}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+
+                      <label className="admin-events-span-2">
+                        <span className="admin-events-field-label">Short Description <b>*</b></span>
+                        <textarea
+                          rows="4"
+                          maxLength="120"
+                          value={form.description}
+                          onChange={(event) => updateForm('description', event.target.value)}
+                          placeholder="A short summary about your event..."
+                        />
+                        <small>{descriptionCount}/120</small>
+                      </label>
+
+                      <div className="admin-events-wizard-tip admin-events-span-2">
+                        <Tune fontSize="small" />
+                        <span>Tip: A clear title and description help more people discover your event.</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {activeFormStep === 1 && (
+                    <div className="admin-events-wizard-fields">
+                      <label>
+                        Schedule Type
+                        <select value={form.recurrence} onChange={(event) => updateForm('recurrence', event.target.value)}>
+                          <option value="weekly">Weekly recurring</option>
+                          <option value="one-time">One-time event</option>
+                        </select>
+                      </label>
+                      <label>
+                        <span className="admin-events-field-label">
+                          Weekly Day {form.recurrence === 'weekly' ? <b>*</b> : null}
+                        </span>
+                        <select
+                          value={form.weeklyDayIndex}
+                          onChange={(event) => updateForm('weeklyDayIndex', event.target.value)}
+                          required={form.recurrence === 'weekly'}
+                          disabled={form.recurrence !== 'weekly'}
+                        >
+                          <option value="">Choose day</option>
+                          {WEEKDAY_OPTIONS.map((day) => (
+                            <option key={day.value} value={day.value}>{day.label}</option>
+                          ))}
+                        </select>
+                      </label>
+                      <label>
+                        <span className="admin-events-field-label">
+                          Date {form.recurrence !== 'weekly' ? <b>*</b> : null}
+                        </span>
+                        <input
+                          type="date"
+                          value={form.date}
+                          onChange={(event) => updateForm('date', event.target.value)}
+                          required={form.recurrence !== 'weekly'}
+                          disabled={form.recurrence === 'weekly'}
+                        />
+                      </label>
+                      <label>
+                        <span className="admin-events-field-label">
+                          Start Time {form.recurrence !== 'weekly' ? <b>*</b> : null}
+                        </span>
+                        <input
+                          type="time"
+                          value={form.startTime}
+                          onChange={(event) => updateForm('startTime', event.target.value)}
+                          required={form.recurrence !== 'weekly'}
+                          disabled={form.recurrence === 'weekly'}
+                        />
+                      </label>
+                      <section className="admin-events-provider-section admin-events-span-2">
+                        <header>
+                          <div>
+                            <h3>Providers & Time Slots</h3>
+                            <p>These slots control the participant booking calendar.</p>
+                          </div>
+                          <button type="button" onClick={addProvider}>Add Provider</button>
+                        </header>
+                        <div className="admin-events-provider-list">
+                          {form.providers.map((provider, providerIndex) => (
+                            <article className="admin-events-provider-card" key={`${providerIndex}-${provider.id || 'provider'}`}>
+                              <div className="admin-events-provider-card__header">
+                                <strong>Provider {providerIndex + 1}</strong>
+                                <button type="button" onClick={() => removeProvider(providerIndex)}>Remove</button>
+                              </div>
+                              <div className="admin-events-provider-fields">
+                                <label>
+                                  <span className="admin-events-field-label">Provider Name <b>*</b></span>
+                                  <input
+                                    value={provider.name}
+                                    onChange={(event) => updateProvider(providerIndex, 'name', event.target.value)}
+                                    placeholder="Margarita"
+                                  />
+                                </label>
+                                <label>
+                                  Specialty
+                                  <input
+                                    value={provider.specialty}
+                                    onChange={(event) => updateProvider(providerIndex, 'specialty', event.target.value)}
+                                    placeholder="Reflexology Therapist"
+                                  />
+                                </label>
+                                <label>
+                                  Default Room
+                                  <input
+                                    value={provider.room}
+                                    onChange={(event) => updateProvider(providerIndex, 'room', event.target.value)}
+                                    placeholder="Treatment Room #1"
+                                  />
+                                </label>
+                                <label>
+                                  Avatar URL
+                                  <input
+                                    type="url"
+                                    value={provider.avatarUrl}
+                                    onChange={(event) => updateProvider(providerIndex, 'avatarUrl', event.target.value)}
+                                    placeholder="https://example.com/avatar.jpg"
+                                  />
+                                </label>
+                              </div>
+                              <div className="admin-events-slot-list">
+                                <div className="admin-events-slot-list__title">
+                                  <span>Time slots</span>
+                                  <button type="button" onClick={() => addProviderSlot(providerIndex)}>Add Slot</button>
+                                </div>
+                                {provider.slots.map((slot, slotIndex) => (
+                                  <div className="admin-events-slot-row" key={`${slotIndex}-${slot.id || 'slot'}`}>
+                                    <label>
+                                      <span className="admin-events-field-label">Start <b>*</b></span>
+                                      <input
+                                        type="time"
+                                        value={slot.startTime}
+                                        onChange={(event) => updateProviderSlot(providerIndex, slotIndex, 'startTime', event.target.value)}
+                                      />
+                                    </label>
+                                    <label>
+                                      End
+                                      <input
+                                        type="time"
+                                        value={slot.endTime}
+                                        onChange={(event) => updateProviderSlot(providerIndex, slotIndex, 'endTime', event.target.value)}
+                                      />
+                                    </label>
+                                    <label>
+                                      Room
+                                      <input
+                                        value={slot.room}
+                                        onChange={(event) => updateProviderSlot(providerIndex, slotIndex, 'room', event.target.value)}
+                                        placeholder={provider.room || 'Room'}
+                                      />
+                                    </label>
+                                    <label>
+                                      Capacity
+                                      <input
+                                        type="number"
+                                        min="1"
+                                        value={slot.capacity}
+                                        onChange={(event) => updateProviderSlot(providerIndex, slotIndex, 'capacity', event.target.value)}
+                                      />
+                                    </label>
+                                    <button type="button" onClick={() => removeProviderSlot(providerIndex, slotIndex)}>Remove</button>
+                                  </div>
+                                ))}
+                              </div>
+                            </article>
+                          ))}
+                        </div>
+                      </section>
+                    </div>
+                  )}
+
+                  {activeFormStep === 2 && (
+                    <div className="admin-events-wizard-fields">
+                      <label>
+                        <span className="admin-events-field-label">Location <b>*</b></span>
+                        <input value={form.location} onChange={(event) => updateForm('location', event.target.value)} placeholder="She-Na Center" required />
+                      </label>
+                      <label>
+                        Capacity
+                        <input
+                          type="number"
+                          min="1"
+                          value={form.maxParticipants}
+                          onChange={(event) => updateForm('maxParticipants', event.target.value)}
+                          placeholder="20"
+                        />
+                      </label>
+                      <label className="admin-events-span-2">
+                        Disabled Dates
+                        <input
+                          placeholder="2026-06-03, 2026-06-10"
+                          value={form.disabledDates}
+                          onChange={(event) => updateForm('disabledDates', event.target.value)}
+                        />
+                        <small>Comma-separated dates that should not appear in the participant booking calendar.</small>
+                      </label>
+                      <section className="admin-events-image-section admin-events-span-2">
+                        <div>
+                          <label>
+                            Event Image URL
+                            <input
+                              type="url"
+                              placeholder="https://example.com/event-photo.jpg"
+                              value={form.imageUrl}
+                              onChange={(event) => updateForm('imageUrl', event.target.value)}
+                            />
+                          </label>
+                          <p>This image appears on the event card and public event pages.</p>
+                        </div>
+                        <div className="admin-events-image-preview">
+                          {form.imageUrl ? (
+                            <img src={form.imageUrl} alt="Event preview" />
+                          ) : (
+                            <span><Category /> Image preview</span>
+                          )}
+                        </div>
+                      </section>
+                      <label>
+                        Registration
+                        <select
+                          value={form.registrationOpen ? 'open' : 'closed'}
+                          onChange={(event) => updateForm('registrationOpen', event.target.value === 'open')}
+                        >
+                          <option value="open">Open</option>
+                          <option value="closed">Closed</option>
+                        </select>
+                      </label>
+                      <label>
+                        Status
+                        <select value={form.status} onChange={(event) => updateForm('status', event.target.value)}>
+                          {STATUS_OPTIONS.map((status) => (
+                            <option key={status} value={status}>{status[0].toUpperCase() + status.slice(1)}</option>
+                          ))}
+                        </select>
+                      </label>
+                    </div>
+                  )}
+
+                  {activeFormStep === 3 && (
+                    <div className="admin-events-review-grid">
+                      <article><span>Title</span><strong>{form.title || 'Untitled event'}</strong></article>
+                      <article><span>Type</span><strong>{form.type}</strong></article>
+                      <article><span>Schedule</span><strong>{form.recurrence === 'weekly' ? `Every ${getWeekdayName(form.weeklyDayIndex) || 'TBD'}` : form.date || 'Date TBD'}</strong></article>
+                      <article><span>Registration</span><strong>{form.registrationOpen ? 'Open' : 'Closed'}</strong></article>
+                      <article><span>Status</span><strong>{form.status}</strong></article>
+                      <article className="admin-events-span-2">
+                        <span>Providers</span>
+                        <strong>{form.providers.map((provider) => provider.name).filter(Boolean).join(', ') || 'No providers added'}</strong>
+                      </article>
+                    </div>
+                  )}
+                </section>
+
+                <footer className="admin-events-wizard-footer">
+                  <div className="admin-events-progress-dots" aria-label="Form progress">
+                    {EVENT_FORM_STEPS.map((step, index) => (
+                      <button
+                        className={index === activeFormStep ? 'is-active' : ''}
+                        type="button"
+                        onClick={() => setActiveFormStep(index)}
+                        aria-label={step.title}
+                        key={step.title}
+                      />
+                    ))}
+                  </div>
+                  <div className="admin-events-wizard-actions">
+                    <button className="admin-events-cancel-btn" type="button" onClick={activeFormStep === 0 ? closeDrawer : goToPreviousFormStep}>
+                      {activeFormStep === 0 ? 'Cancel' : 'Back'}
+                    </button>
+                    {isLastFormStep ? (
+                      <button className="admin-events-save-btn" type="submit" disabled={saving}>
+                        {saving ? 'Saving...' : editingEvent ? 'Save Changes' : 'Publish Event'}
+                      </button>
+                    ) : (
+                      <button className="admin-events-save-btn" type="button" onClick={goToNextFormStep}>
+                        Next Step
+                        <ArrowForward fontSize="small" />
+                      </button>
+                    )}
+                  </div>
+                </footer>
+              </section>
+            </div>
           </form>
         </aside>
 
@@ -799,8 +1413,8 @@ export default function EventsPage() {
                     </span>
                   </div>
                   <div className="admin-events-participant-summary__meta">
-                    <span><CalendarMonth /> {formatDate(selectedEvent.startTime || selectedEvent.date)}</span>
-                    <span><Schedule /> {formatTimeRange(selectedEvent.startTime || selectedEvent.date, selectedEvent.endTime)}</span>
+                    <span><CalendarMonth /> {formatScheduleDate(selectedEvent)}</span>
+                    <span><Schedule /> {formatScheduleTime(selectedEvent)}</span>
                   </div>
                   <div className="admin-events-participant-summary__capacity">
                     <strong>{selectedEventRegistered} / {selectedEventCapacity || '-'}</strong>
@@ -914,8 +1528,22 @@ export default function EventsPage() {
         </aside>
       </div>
 
-      {drawerOpen ? <button className="admin-events-backdrop" type="button" onClick={closeDrawer} aria-label="Close edit drawer" /> : null}
-      {participantsDrawerOpen ? <button className="admin-events-backdrop" type="button" onClick={closeParticipantsDrawer} aria-label="Close participants drawer" /> : null}
+      {drawerOpen ? (
+        <button
+          className="admin-events-backdrop admin-events-backdrop--modal"
+          type="button"
+          onClick={closeDrawer}
+          aria-label="Close event modal"
+        />
+      ) : null}
+      {participantsDrawerOpen ? (
+        <button
+          className="admin-events-backdrop admin-events-backdrop--participants"
+          type="button"
+          onClick={closeParticipantsDrawer}
+          aria-label="Close participants drawer"
+        />
+      ) : null}
       {toast ? <div className="admin-events-toast" role="status">{toast}</div> : null}
     </section>
   );

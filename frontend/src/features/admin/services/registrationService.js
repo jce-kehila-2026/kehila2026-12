@@ -10,6 +10,7 @@
 
 import {
   collection,
+  collectionGroup,
   getCountFromServer,
   getDocs,
   getDoc,
@@ -28,6 +29,128 @@ function emailKey(email) {
   return 'email_' + email.trim().toLowerCase().replace(/[^a-z0-9]/g, '_').slice(0, 80);
 }
 
+function keyPart(value, fallback = 'registration') {
+  return String(value || fallback)
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]/g, '_')
+    .replace(/^_+|_+$/g, '')
+    .slice(0, 100) || fallback;
+}
+
+function chunk(items, size = 10) {
+  const chunks = [];
+  for (let index = 0; index < items.length; index += size) {
+    chunks.push(items.slice(index, index + size));
+  }
+  return chunks;
+}
+
+function getRegistrationPathContext(snapshot) {
+  const parts = snapshot.ref.path.split('/');
+  const ownerCollection = parts[0] || '';
+  const ownerId = parts[1] || '';
+  const registrationId = parts[3] || snapshot.id;
+
+  if (ownerCollection === 'events') {
+    return {
+      source: 'event',
+      eventId: ownerId,
+      userId: '',
+      registrationId: snapshot.id,
+    };
+  }
+
+  if (ownerCollection === 'users') {
+    return {
+      source: 'user',
+      eventId: registrationId,
+      userId: ownerId,
+      registrationId,
+    };
+  }
+
+  return {
+    source: ownerCollection,
+    eventId: registrationId,
+    userId: '',
+    registrationId,
+  };
+}
+
+function normalizeRegistrationSnapshot(snapshot, fallbackEventId = '') {
+  const data = snapshot.data() || {};
+  const context = getRegistrationPathContext(snapshot);
+  const eventId = data.eventId || context.eventId || fallbackEventId;
+  const userId = data.userId || data.uid || context.userId || '';
+
+  return {
+    id: context.source === 'event' ? snapshot.id : (userId || snapshot.id),
+    eventId,
+    userId,
+    registrationSource: context.source,
+    rosterEventId: context.source === 'event' ? context.eventId : '',
+    ...data,
+  };
+}
+
+function getRegistrationUniqueKey(registration) {
+  return [
+    registration.eventId || '',
+    registration.userId ||
+      registration.uid ||
+      registration.participantEmail ||
+      registration.userEmail ||
+      registration.email ||
+      registration.id ||
+      '',
+  ].join('__');
+}
+
+async function getRegistrationsMatchingField(fieldName, values) {
+  if (!values.length) return [];
+
+  const docs = [];
+  const groups = chunk([...new Set(values.filter(Boolean))]);
+
+  for (const group of groups) {
+    try {
+      const snap = await getDocs(
+        query(collectionGroup(db, 'registrations'), where(fieldName, 'in', group), limit(500))
+      );
+      docs.push(...snap.docs);
+    } catch (error) {
+      console.warn(`Could not read registrations by ${fieldName}:`, error);
+    }
+  }
+
+  return docs;
+}
+
+function mergeRegistrationSnapshots(snapshots, fallbackEventId = '') {
+  const map = new Map();
+
+  snapshots.forEach((snapshot) => {
+    const registration = normalizeRegistrationSnapshot(snapshot, fallbackEventId);
+    const key = getRegistrationUniqueKey(registration);
+    const existing = map.get(key) || {};
+    const keepExistingRosterId = existing.rosterEventId && existing.rosterEventId === fallbackEventId;
+    map.set(key, {
+      ...existing,
+      ...registration,
+      id: keepExistingRosterId ? existing.id : registration.id,
+      registrationSource: keepExistingRosterId ? existing.registrationSource : registration.registrationSource,
+      rosterEventId: keepExistingRosterId ? existing.rosterEventId : (registration.rosterEventId || existing.rosterEventId),
+      userId: existing.userId || registration.userId || null,
+      participantName: existing.participantName || registration.participantName || registration.userName || '',
+      participantEmail: existing.participantEmail || registration.participantEmail || registration.userEmail || '',
+      participantPhone: existing.participantPhone || registration.participantPhone || registration.userPhone || '',
+    });
+  });
+
+  return Array.from(map.values());
+}
+
 // Look up a user UID by email. Returns null if no account exists.
 async function findUidByEmail(email) {
   if (!email) return null;
@@ -41,14 +164,17 @@ async function findUidByEmail(email) {
  * Returns the same shape as before: { id, eventId, participantName, participantEmail, registeredAt, checkedIn, ... }
  */
 export async function getRegistrationsByEvent(eventId) {
-  const snap = await getDocs(
-    query(collection(db, 'events', eventId, 'registrations'), limit(200))
+  const [directSnap, templateDocs, parentDocs] = await Promise.all([
+    getDocs(query(collection(db, 'events', eventId, 'registrations'), limit(200))),
+    getRegistrationsMatchingField('eventTemplateId', [eventId]),
+    getRegistrationsMatchingField('parentEventId', [eventId]),
+  ]);
+
+  const docs = mergeRegistrationSnapshots(
+    [...directSnap.docs, ...templateDocs, ...parentDocs],
+    eventId
   );
-  const docs = snap.docs.map((d) => ({
-    id: d.id,
-    eventId,
-    ...d.data(),
-  }));
+
   return docs.sort((a, b) => {
     const aTime = a.registeredAt?.toDate?.() ?? new Date(0);
     const bTime = b.registeredAt?.toDate?.() ?? new Date(0);
@@ -64,9 +190,11 @@ export async function getRegistrationsByEvent(eventId) {
  */
 export async function getRegistrationCounts(eventIds) {
   if (!eventIds.length) return {};
+  const ids = [...new Set(eventIds.filter(Boolean))];
+  const aggregateSets = Object.fromEntries(ids.map((id) => [id, new Set()]));
 
-  const entries = await Promise.all(
-    eventIds.map(async (eid) => {
+  const directEntries = await Promise.all(
+    ids.map(async (eid) => {
       try {
         const snap = await getCountFromServer(
           collection(db, 'events', eid, 'registrations')
@@ -78,7 +206,24 @@ export async function getRegistrationCounts(eventIds) {
     })
   );
 
-  return Object.fromEntries(entries);
+  const directCounts = Object.fromEntries(directEntries);
+  const [templateDocs, parentDocs] = await Promise.all([
+    getRegistrationsMatchingField('eventTemplateId', ids),
+    getRegistrationsMatchingField('parentEventId', ids),
+  ]);
+
+  mergeRegistrationSnapshots([...templateDocs, ...parentDocs]).forEach((registration) => {
+    const templateId = registration.eventTemplateId || registration.parentEventId;
+    if (!aggregateSets[templateId]) return;
+    aggregateSets[templateId].add(getRegistrationUniqueKey(registration));
+  });
+
+  return Object.fromEntries(
+    ids.map((eventId) => [
+      eventId,
+      Math.max(directCounts[eventId] || 0, aggregateSets[eventId]?.size || 0),
+    ])
+  );
 }
 
 /**
@@ -118,10 +263,17 @@ export async function addRegistration(data) {
 
   const uid = callerUid || (await findUidByEmail(participantEmail));
   const eventRosterKey = uid || emailKey(participantEmail || `unknown_${Date.now()}`);
+  const templateEventId = eventTemplateId || parentEventId || '';
+  const templateRosterKey = templateEventId && templateEventId !== eventId
+    ? `${eventRosterKey}__${keyPart(eventId, 'session')}`
+    : eventRosterKey;
 
   const eventRosterRef = doc(db, 'events', eventId, 'registrations', eventRosterKey);
 
   const eventRosterDoc = {
+    registrationKey: eventRosterKey,
+    sessionRegistrationKey: eventRosterKey,
+    templateRosterKey,
     userId: uid || null,
     userName: participantName || '',
     userEmail: participantEmail || '',
@@ -139,6 +291,7 @@ export async function addRegistration(data) {
     eventCoverUrl: eventCoverUrl || '',
     eventTemplateId: eventTemplateId || parentEventId || '',
     parentEventId: parentEventId || '',
+    sessionEventId: eventId,
     eventType: eventType || '',
     selectedDate: selectedDate || '',
     providerId: providerId || '',
@@ -156,11 +309,26 @@ export async function addRegistration(data) {
   const batch = writeBatch(db);
   batch.set(eventRosterRef, eventRosterDoc, { merge: true });
 
+  if (templateEventId && templateEventId !== eventId) {
+    batch.set(
+      doc(db, 'events', templateEventId, 'registrations', templateRosterKey),
+      {
+        ...eventRosterDoc,
+        eventTemplateId: templateEventId,
+        parentEventId: templateEventId,
+      },
+      { merge: true }
+    );
+  }
+
   if (uid) {
     const userMirrorRef = doc(db, 'users', uid, 'registrations', eventId);
     batch.set(
       userMirrorRef,
       {
+        registrationKey: eventRosterKey,
+        sessionRegistrationKey: eventRosterKey,
+        templateRosterKey,
         eventId,
         eventTitle: eventTitle || '',
         eventDate: eventDate || null,
@@ -168,6 +336,7 @@ export async function addRegistration(data) {
         eventCoverUrl: eventCoverUrl || '',
         eventTemplateId: eventTemplateId || parentEventId || '',
         parentEventId: parentEventId || '',
+        sessionEventId: eventId,
         eventType: eventType || '',
         selectedDate: selectedDate || '',
         providerId: providerId || '',
@@ -211,13 +380,28 @@ export async function removeRegistration(regId, participantName, eventId) {
 
   const rosterRef = doc(db, 'events', eventId, 'registrations', regId);
   const rosterSnap = await getDoc(rosterRef);
-  const uid = rosterSnap.exists() ? rosterSnap.data().userId : null;
+  const registration = rosterSnap.exists() ? rosterSnap.data() : {};
+  const uid = registration.userId || null;
+  const sessionEventId = registration.sessionEventId || registration.eventId || eventId;
+  const templateEventId = registration.eventTemplateId || registration.parentEventId || '';
+  const sessionRegistrationKey = registration.sessionRegistrationKey || registration.registrationKey || uid || regId;
+  const templateRosterKey = registration.templateRosterKey || (
+    templateEventId && templateEventId !== sessionEventId
+      ? `${sessionRegistrationKey}__${keyPart(sessionEventId, 'session')}`
+      : sessionRegistrationKey
+  );
 
   // Counters are not maintained from the client (see note in addRegistration).
   const batch = writeBatch(db);
   batch.delete(rosterRef);
+  if (sessionEventId && sessionEventId !== eventId) {
+    batch.delete(doc(db, 'events', sessionEventId, 'registrations', sessionRegistrationKey));
+  }
+  if (templateEventId && templateEventId !== eventId) {
+    batch.delete(doc(db, 'events', templateEventId, 'registrations', templateRosterKey));
+  }
   if (uid) {
-    batch.delete(doc(db, 'users', uid, 'registrations', eventId));
+    batch.delete(doc(db, 'users', uid, 'registrations', sessionEventId || eventId));
   }
   await batch.commit();
 
@@ -238,7 +422,16 @@ export async function checkInRegistration(regId, eventId) {
 
   const rosterRef = doc(db, 'events', eventId, 'registrations', regId);
   const rosterSnap = await getDoc(rosterRef);
-  const uid = rosterSnap.exists() ? rosterSnap.data().userId : null;
+  const registration = rosterSnap.exists() ? rosterSnap.data() : {};
+  const uid = registration.userId || null;
+  const sessionEventId = registration.sessionEventId || registration.eventId || eventId;
+  const templateEventId = registration.eventTemplateId || registration.parentEventId || '';
+  const sessionRegistrationKey = registration.sessionRegistrationKey || registration.registrationKey || uid || regId;
+  const templateRosterKey = registration.templateRosterKey || (
+    templateEventId && templateEventId !== sessionEventId
+      ? `${sessionRegistrationKey}__${keyPart(sessionEventId, 'session')}`
+      : sessionRegistrationKey
+  );
 
   const batch = writeBatch(db);
   batch.set(
@@ -246,9 +439,23 @@ export async function checkInRegistration(regId, eventId) {
     { checkedIn: true, checkedInAt: serverTimestamp() },
     { merge: true }
   );
+  if (sessionEventId && sessionEventId !== eventId) {
+    batch.set(
+      doc(db, 'events', sessionEventId, 'registrations', sessionRegistrationKey),
+      { checkedIn: true, checkedInAt: serverTimestamp() },
+      { merge: true }
+    );
+  }
+  if (templateEventId && templateEventId !== eventId) {
+    batch.set(
+      doc(db, 'events', templateEventId, 'registrations', templateRosterKey),
+      { checkedIn: true, checkedInAt: serverTimestamp() },
+      { merge: true }
+    );
+  }
   if (uid) {
     batch.set(
-      doc(db, 'users', uid, 'registrations', eventId),
+      doc(db, 'users', uid, 'registrations', sessionEventId || eventId),
       { checkedIn: true, checkedInAt: serverTimestamp() },
       { merge: true }
     );
