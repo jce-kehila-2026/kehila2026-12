@@ -607,10 +607,10 @@
 .admin-events-drawer {
   position: fixed;
   top: 50%;
-  left: calc((100vw - var(--admin-sidebar-width, 260px)) / 2);
-  z-index: 42;
+  left: 50%;
+  z-index: 10000;
   display: none;
-  width: min(1280px, calc(100vw - var(--admin-modal-offset, 320px)));
+  width: min(1280px, calc(100vw - 320px));
   max-width: calc(100vw - 32px);
   height: min(760px, 88vh);
   max-height: 88vh;
@@ -1635,11 +1635,11 @@
 }
 
 .admin-events-backdrop--modal {
-  z-index: 41;
+  z-index: 9999;
   display: block;
-  background: rgba(25, 19, 43, 0.38);
-  backdrop-filter: blur(10px) saturate(0.96);
-  -webkit-backdrop-filter: blur(10px) saturate(0.96);
+  background: rgba(36, 16, 79, 0.38);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
 }
 
 .admin-events-toast {
