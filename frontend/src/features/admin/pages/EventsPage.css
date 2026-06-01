@@ -606,11 +606,14 @@
 
 .admin-events-drawer {
   position: fixed;
-  inset: 50% auto auto 50%;
+  top: 50%;
+  left: calc(280px + ((100vw - 280px) / 2));
   z-index: 42;
   display: none;
-  width: min(1120px, 90vw);
+  width: min(1280px, calc(100vw - 320px));
+  max-width: calc(100vw - 32px);
   height: min(760px, 88vh);
+  max-height: 88vh;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.55);
   border-radius: 28px;
@@ -1029,7 +1032,9 @@
 .admin-events-drawer form {
   display: flex;
   height: 100%;
+  min-height: 0;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .admin-events-modal-header {
@@ -1037,8 +1042,9 @@
   align-items: center;
   justify-content: space-between;
   gap: 14px;
-  flex: 0 0 auto;
-  padding: 26px 32px 18px;
+  flex: 0 0 88px;
+  min-height: 88px;
+  padding: 0 32px;
   border-bottom: 1px solid rgba(180, 140, 255, 0.16);
 }
 
@@ -1072,7 +1078,9 @@
   display: grid;
   min-height: 0;
   flex: 1 1 auto;
-  grid-template-columns: 280px minmax(0, 1fr);
+  grid-template-columns: 260px minmax(0, 1fr);
+  column-gap: 32px;
+  overflow: hidden;
 }
 
 .admin-events-modal-sidebar {
@@ -1081,7 +1089,7 @@
   flex-direction: column;
   justify-content: space-between;
   gap: 20px;
-  padding: 32px 24px;
+  padding: 28px 22px;
   border-right: 1px solid rgba(180, 140, 255, 0.18);
   background:
     radial-gradient(circle at 20% 4%, rgba(233, 75, 147, 0.12), transparent 28%),
@@ -1090,7 +1098,7 @@
 
 .admin-events-stepper {
   display: grid;
-  gap: 10px;
+  gap: 8px;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -1121,7 +1129,7 @@
   align-items: center;
   border: 1px solid transparent;
   border-radius: 14px;
-  padding: 12px 12px;
+  padding: 10px 11px;
   color: #251947;
   background: transparent;
   text-align: left;
@@ -1157,14 +1165,14 @@
 
 .admin-events-stepper strong {
   align-self: end;
-  font-size: 0.86rem;
+  font-size: 0.82rem;
   line-height: 1.2;
 }
 
 .admin-events-stepper small {
   align-self: start;
   color: #5d6388;
-  font-size: 0.74rem;
+  font-size: 0.7rem;
   line-height: 1.35;
   font-weight: 700;
 }
@@ -1203,13 +1211,15 @@
   display: flex;
   min-height: 0;
   flex-direction: column;
-  gap: 18px;
-  overflow-y: auto;
-  padding: 40px 44px 28px;
+  gap: 0;
+  overflow: hidden;
+  padding: 28px 40px 0 0;
 }
 
 .admin-events-wizard-card {
-  min-height: 560px;
+  min-height: 0;
+  flex: 1 1 auto;
+  overflow-y: auto;
   padding: 32px;
   border: 1px solid rgba(109, 60, 207, 0.12);
   border-radius: 22px;
@@ -1255,7 +1265,7 @@
 .admin-events-wizard-fields {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 24px 26px;
+  gap: 24px 20px;
 }
 
 .admin-events-wizard-fields label,
@@ -1282,7 +1292,7 @@
 .admin-events-wizard-fields select,
 .admin-events-wizard-fields textarea {
   width: 100%;
-  min-height: 52px;
+  min-height: 56px;
   box-sizing: border-box;
   border: 1px solid rgba(102, 112, 140, 0.18);
   border-radius: 13px;
@@ -1295,7 +1305,7 @@
 }
 
 .admin-events-wizard-fields textarea {
-  min-height: 94px;
+  min-height: 140px;
   padding: 16px;
   resize: vertical;
 }
@@ -1556,8 +1566,10 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
+  flex: 0 0 92px;
   gap: 18px;
-  margin-top: auto;
+  min-height: 92px;
+  padding: 0;
 }
 
 .admin-events-progress-dots {
@@ -1683,7 +1695,8 @@
 
 @media (max-width: 980px) {
   .admin-events-drawer {
-    width: min(1120px, 94vw);
+    left: 50%;
+    width: 94vw;
     height: min(760px, 92vh);
   }
 
@@ -1693,6 +1706,7 @@
 
   .admin-events-modal-body {
     grid-template-columns: 1fr;
+    column-gap: 0;
   }
 
   .admin-events-modal-sidebar {
