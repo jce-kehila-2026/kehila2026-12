@@ -1268,6 +1268,10 @@
   gap: 24px 20px;
 }
 
+.admin-events-wizard-fields--basic {
+  row-gap: 30px;
+}
+
 .admin-events-wizard-fields label,
 .admin-events-type-field {
   display: grid;
@@ -1283,9 +1287,17 @@
   font-weight: 800;
 }
 
+.admin-events-field-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  line-height: 1.2;
+}
+
 .admin-events-wizard-fields b,
 .admin-events-type-field b {
-  color: var(--admin-pink);
+  color: #e85d8c;
+  line-height: 1;
 }
 
 .admin-events-wizard-fields input,

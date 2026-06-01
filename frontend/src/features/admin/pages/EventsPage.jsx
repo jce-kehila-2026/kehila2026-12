@@ -28,16 +28,6 @@ import {
 } from '../services/registrationService';
 import './EventsPage.css';
 
-const EVENT_CATEGORIES = [
-  'Workshop',
-  'Support Group',
-  'Therapy Session',
-  'Community Activity',
-  'Awareness Event',
-  'Appointment',
-  'Other',
-];
-
 const STATUS_OPTIONS = ['published', 'draft', 'hidden', 'archived', 'cancelled'];
 
 const WEEKDAY_OPTIONS = [
@@ -53,37 +43,20 @@ const WEEKDAY_OPTIONS = [
 const EVENT_FORM_STEPS = [
   {
     title: 'Basic Information',
-    description: 'Event title, type and category',
+    description: 'Event title, type and summary',
   },
   {
-    title: 'Date & Time',
-    description: 'When does it take place?',
+    title: 'Scheduling',
+    description: 'Date, time and recurring options',
   },
   {
-    title: 'Location & Capacity',
-    description: 'Where and how many people?',
+    title: 'Event Setup',
+    description: 'Location, capacity, image and settings',
   },
   {
-    title: 'Details',
-    description: 'Description, image and tags',
-  },
-  {
-    title: 'Settings',
-    description: 'Registration and visibility',
-  },
-  {
-    title: 'Review',
+    title: 'Review & Publish',
     description: 'Review and publish your event',
   },
-];
-
-const SUBCATEGORY_OPTIONS = [
-  'Wellness',
-  'Therapy',
-  'Movement',
-  'Support Circle',
-  'Creative',
-  'Education',
 ];
 
 function createEmptySlot() {
@@ -111,8 +84,6 @@ function createInitialForm(type = 'workshop') {
   return {
     title: '',
     type,
-    category: type === 'appointment' ? 'Appointment' : 'Workshop',
-    subcategory: '',
     description: '',
     imageUrl: '',
     recurrence: 'weekly',
@@ -239,8 +210,6 @@ function eventToForm(event) {
   return {
     title: event.title || '',
     type: inferType(event),
-    category: event.category || 'Workshop',
-    subcategory: event.subcategory || '',
     description: event.description || '',
     imageUrl: event.imageUrl || event.thumbnailUrl || event.coverImageUrl || '',
     recurrence: isRecurring ? 'weekly' : 'one-time',
@@ -491,6 +460,11 @@ export default function EventsPage() {
   useEffect(() => {
     if (!drawerOpen) return undefined;
 
+    const originalBodyOverflow = document.body.style.overflow;
+    const originalDocumentOverflow = document.documentElement.style.overflow;
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+
     function handleKeyDown(event) {
       if (event.key === 'Escape') {
         closeDrawer();
@@ -498,7 +472,11 @@ export default function EventsPage() {
     }
 
     window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
+    return () => {
+      document.body.style.overflow = originalBodyOverflow;
+      document.documentElement.style.overflow = originalDocumentOverflow;
+      window.removeEventListener('keydown', handleKeyDown);
+    };
   }, [drawerOpen]);
 
   const typedEvents = useMemo(
@@ -726,8 +704,6 @@ export default function EventsPage() {
     const payload = {
       title: form.title.trim(),
       type: form.type,
-      category: form.category,
-      subcategory: form.subcategory.trim(),
       recurrence: form.recurrence,
       isRecurringTemplate: isRecurring,
       weeklyDay: isRecurring ? getWeekdayName(form.weeklyDayIndex) : '',
@@ -1092,9 +1068,9 @@ export default function EventsPage() {
                   </header>
 
                   {activeFormStep === 0 && (
-                    <div className="admin-events-wizard-fields">
+                    <div className="admin-events-wizard-fields admin-events-wizard-fields--basic">
                       <label>
-                        Event Title <b>*</b>
+                        <span className="admin-events-field-label">Event Title <b>*</b></span>
                         <input
                           value={form.title}
                           onChange={(event) => updateForm('title', event.target.value)}
@@ -1104,7 +1080,7 @@ export default function EventsPage() {
                       </label>
 
                       <div className="admin-events-type-field">
-                        <span>Event Type <b>*</b></span>
+                        <span className="admin-events-field-label">Event Type <b>*</b></span>
                         <div className="admin-events-type-cards" role="group" aria-label="Event Type">
                           {[
                             { value: 'workshop', label: 'Workshop', icon: Groups },
@@ -1115,15 +1091,7 @@ export default function EventsPage() {
                               <button
                                 className={form.type === typeOption.value ? 'is-selected' : ''}
                                 type="button"
-                                onClick={() => {
-                                  setForm((current) => ({
-                                    ...current,
-                                    type: typeOption.value,
-                                    category: current.category === 'Workshop' || current.category === 'Appointment'
-                                      ? (typeOption.value === 'appointment' ? 'Appointment' : 'Workshop')
-                                      : current.category,
-                                  }));
-                                }}
+                                onClick={() => updateForm('type', typeOption.value)}
                                 key={typeOption.value}
                               >
                                 <Icon fontSize="small" />
@@ -1134,28 +1102,8 @@ export default function EventsPage() {
                         </div>
                       </div>
 
-                      <label>
-                        Category <b>*</b>
-                        <select value={form.category} onChange={(event) => updateForm('category', event.target.value)} required>
-                          <option value="">Select category</option>
-                          {EVENT_CATEGORIES.map((categoryName) => (
-                            <option key={categoryName} value={categoryName}>{categoryName}</option>
-                          ))}
-                        </select>
-                      </label>
-
-                      <label>
-                        Subcategory <span>Optional</span>
-                        <select value={form.subcategory} onChange={(event) => updateForm('subcategory', event.target.value)}>
-                          <option value="">Select subcategory</option>
-                          {SUBCATEGORY_OPTIONS.map((subcategory) => (
-                            <option key={subcategory} value={subcategory}>{subcategory}</option>
-                          ))}
-                        </select>
-                      </label>
-
                       <label className="admin-events-span-2">
-                        Short Description <b>*</b>
+                        <span className="admin-events-field-label">Short Description <b>*</b></span>
                         <textarea
                           rows="4"
                           maxLength="120"
@@ -1183,7 +1131,9 @@ export default function EventsPage() {
                         </select>
                       </label>
                       <label>
-                        Weekly Day {form.recurrence === 'weekly' ? <b>*</b> : null}
+                        <span className="admin-events-field-label">
+                          Weekly Day {form.recurrence === 'weekly' ? <b>*</b> : null}
+                        </span>
                         <select
                           value={form.weeklyDayIndex}
                           onChange={(event) => updateForm('weeklyDayIndex', event.target.value)}
@@ -1197,7 +1147,9 @@ export default function EventsPage() {
                         </select>
                       </label>
                       <label>
-                        Date {form.recurrence !== 'weekly' ? <b>*</b> : null}
+                        <span className="admin-events-field-label">
+                          Date {form.recurrence !== 'weekly' ? <b>*</b> : null}
+                        </span>
                         <input
                           type="date"
                           value={form.date}
@@ -1207,7 +1159,9 @@ export default function EventsPage() {
                         />
                       </label>
                       <label>
-                        Start Time
+                        <span className="admin-events-field-label">
+                          Start Time {form.recurrence !== 'weekly' ? <b>*</b> : null}
+                        </span>
                         <input
                           type="time"
                           value={form.startTime}
@@ -1233,7 +1187,7 @@ export default function EventsPage() {
                               </div>
                               <div className="admin-events-provider-fields">
                                 <label>
-                                  Provider Name <b>*</b>
+                                  <span className="admin-events-field-label">Provider Name <b>*</b></span>
                                   <input
                                     value={provider.name}
                                     onChange={(event) => updateProvider(providerIndex, 'name', event.target.value)}
@@ -1274,7 +1228,7 @@ export default function EventsPage() {
                                 {provider.slots.map((slot, slotIndex) => (
                                   <div className="admin-events-slot-row" key={`${slotIndex}-${slot.id || 'slot'}`}>
                                     <label>
-                                      Start <b>*</b>
+                                      <span className="admin-events-field-label">Start <b>*</b></span>
                                       <input
                                         type="time"
                                         value={slot.startTime}
@@ -1320,7 +1274,7 @@ export default function EventsPage() {
                   {activeFormStep === 2 && (
                     <div className="admin-events-wizard-fields">
                       <label>
-                        Location
+                        <span className="admin-events-field-label">Location <b>*</b></span>
                         <input value={form.location} onChange={(event) => updateForm('location', event.target.value)} placeholder="She-Na Center" required />
                       </label>
                       <label>
@@ -1342,11 +1296,6 @@ export default function EventsPage() {
                         />
                         <small>Comma-separated dates that should not appear in the participant booking calendar.</small>
                       </label>
-                    </div>
-                  )}
-
-                  {activeFormStep === 3 && (
-                    <div className="admin-events-wizard-fields">
                       <section className="admin-events-image-section admin-events-span-2">
                         <div>
                           <label>
@@ -1368,11 +1317,6 @@ export default function EventsPage() {
                           )}
                         </div>
                       </section>
-                    </div>
-                  )}
-
-                  {activeFormStep === 4 && (
-                    <div className="admin-events-wizard-fields">
                       <label>
                         Registration
                         <select
@@ -1394,11 +1338,10 @@ export default function EventsPage() {
                     </div>
                   )}
 
-                  {activeFormStep === 5 && (
+                  {activeFormStep === 3 && (
                     <div className="admin-events-review-grid">
                       <article><span>Title</span><strong>{form.title || 'Untitled event'}</strong></article>
                       <article><span>Type</span><strong>{form.type}</strong></article>
-                      <article><span>Category</span><strong>{form.category || 'Not selected'}</strong></article>
                       <article><span>Schedule</span><strong>{form.recurrence === 'weekly' ? `Every ${getWeekdayName(form.weeklyDayIndex) || 'TBD'}` : form.date || 'Date TBD'}</strong></article>
                       <article><span>Registration</span><strong>{form.registrationOpen ? 'Open' : 'Closed'}</strong></article>
                       <article><span>Status</span><strong>{form.status}</strong></article>

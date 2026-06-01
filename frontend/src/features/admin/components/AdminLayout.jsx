@@ -6,8 +6,8 @@ import Sidebar from './Sidebar';
 import TopBar from './TopBar';
 import ImpersonationBanner from './ImpersonationBanner';
 
-const DRAWER_WIDTH = 260;
-const COLLAPSED_DRAWER_WIDTH = 88;
+const DRAWER_WIDTH = 270;
+const COLLAPSED_DRAWER_WIDTH = 92;
 
 const ROUTE_TITLES = {
   '/admin/dashboard': 'Dashboard',
