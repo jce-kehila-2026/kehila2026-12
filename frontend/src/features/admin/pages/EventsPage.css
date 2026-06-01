@@ -607,10 +607,10 @@
 .admin-events-drawer {
   position: fixed;
   top: 50%;
-  left: calc(280px + ((100vw - 280px) / 2));
+  left: calc((100vw - var(--admin-sidebar-width, 260px)) / 2);
   z-index: 42;
   display: none;
-  width: min(1280px, calc(100vw - 320px));
+  width: min(1280px, calc(100vw - var(--admin-modal-offset, 320px)));
   max-width: calc(100vw - 32px);
   height: min(760px, 88vh);
   max-height: 88vh;

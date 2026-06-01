@@ -34,12 +34,15 @@ export default function TopBar({ title, drawerWidth = 260 }) {
         borderBottom: '1px solid rgba(109, 60, 207, 0.12)',
         boxShadow: '0 10px 35px rgba(51, 29, 95, 0.06)',
         backdropFilter: 'blur(16px)',
+        transition: 'width 300ms ease-in-out, margin-right 300ms ease-in-out',
       }}
     >
       <Toolbar sx={{ justifyContent: 'space-between' }}>
-        <Typography variant="h6" sx={{ fontSize: '1.1rem', fontWeight: 600 }}>
-          {title || 'Dashboard'}
-        </Typography>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, minWidth: 0 }}>
+          <Typography variant="h6" sx={{ fontSize: '1.1rem', fontWeight: 600, minWidth: 0 }}>
+            {title || 'Dashboard'}
+          </Typography>
+        </Box>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
           {/* Direction Toggle */}
