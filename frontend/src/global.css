@@ -47,3 +47,53 @@ textarea {
 :where(small, time) {
   font-weight: 300;
 }
+
+/* ── Accessibility modifier classes ───────────────────────────────────────── */
+
+body.a11y-high-contrast {
+  background-color: #000 !important;
+  color: #ff0 !important;
+}
+
+body.a11y-high-contrast *:not(script):not(style) {
+  background-color: #000 !important;
+  color: #ff0 !important;
+  border-color: #ff0 !important;
+}
+
+body.a11y-high-contrast a,
+body.a11y-high-contrast button {
+  color: #0ff !important;
+  outline: 2px solid #0ff !important;
+}
+
+body.a11y-high-contrast img,
+body.a11y-high-contrast video,
+body.a11y-high-contrast svg {
+  filter: invert(1) contrast(1.5) !important;
+}
+
+body.a11y-grayscale {
+  filter: grayscale(100%);
+}
+
+body.a11y-highlight-links a {
+  text-decoration: underline 3px solid #005fcc !important;
+  color: #005fcc !important;
+  font-weight: 700 !important;
+  outline: 2px dashed #005fcc;
+  outline-offset: 2px;
+}
+
+body.a11y-readable-font,
+body.a11y-readable-font * {
+  font-family: Arial, Helvetica, sans-serif !important;
+}
+
+body.a11y-stop-animations *,
+body.a11y-stop-animations *::before,
+body.a11y-stop-animations *::after {
+  animation: none !important;
+  transition: none !important;
+  scroll-behavior: auto !important;
+}

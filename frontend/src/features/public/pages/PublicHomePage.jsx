@@ -109,7 +109,7 @@ function PublicHomePageContent() {
         ) : null}
         <HeroSection
           hero={publicHomeDoc.hero}
-          statistics={content.statistics}
+          statistics={publicHomeDoc.statistics}
           isLoading={loading}
           hasError={Boolean(error)}
           onJoinClick={() => setIsJoinModalOpen(true)}
@@ -119,9 +119,9 @@ function PublicHomePageContent() {
         <ArticlesPreviewSection coverage={publicHomeDoc.pressCoverage} />
         <EventsPreviewSection events={content.events} isLoading={loading} hasError={error} />
         <CommunitySupportCta onDonationClick={() => setIsDonationModalOpen(true)} />
-        <TeamSection />
-        <MedicalPartnersSection />
-        <ContactSection contact={content.contact} organization={content.organization} />
+        <TeamSection members={publicHomeDoc.teamMembers} />
+        <MedicalPartnersSection partners={publicHomeDoc.partners} />
+        <ContactSection contact={publicHomeDoc.contact} organization={content.organization} />
       </main>
       <PublicFooter organization={content.organization} contact={content.contact} />
       <JoinCommunityModal isOpen={isJoinModalOpen} onClose={() => setIsJoinModalOpen(false)} />

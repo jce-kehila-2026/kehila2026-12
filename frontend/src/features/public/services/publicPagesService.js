@@ -1,6 +1,10 @@
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../../firebase';
 import heroWomenSupport from '../../../assets/images/hero-women-support.png';
+import assutaLogo from '../../../assets/images/assuta.png';
+import ichilovLogo from '../../../assets/images/ichilov.png';
+import barzilaiLogo from '../../../assets/images/barzilai-logo.jpg';
+import shamirLogo from '../../../assets/images/shamir.png';
 import {
   isKnownAboutUsIconKey,
   DEFAULT_ABOUT_US_ICON_KEY,
@@ -259,6 +263,73 @@ export const DEFAULT_INSPIRATIONAL_STORIES = [
   },
 ];
 
+export const STATISTICS_MAX = 4;
+
+export const STATISTIC_ICON_KEYS = [
+  'hands-heart',
+  'megaphone',
+  'users-round',
+  'book-open',
+  'heart',
+  'sparkles',
+];
+
+export const DEFAULT_STATISTICS = [
+  {
+    id: 'community_women',
+    icon: 'hands-heart',
+    value: 2500,
+    title: 'נשים בקהילה',
+    description: 'מרחב תמיכה חי, מכיל ונגיש.',
+  },
+  {
+    id: 'annual_events',
+    icon: 'megaphone',
+    value: 120,
+    title: 'אירועים שנתיים',
+    description: 'סדנאות, הרצאות ומפגשי קהילה.',
+  },
+  {
+    id: 'volunteers',
+    icon: 'users-round',
+    value: 85,
+    title: 'מתנדבים',
+    description: 'נשים ואנשי מקצוע שמלווים באהבה.',
+  },
+  {
+    id: 'success_stories',
+    icon: 'book-open',
+    value: 1500,
+    title: 'סיפורי הצלחה',
+    description: 'רגעים של תקווה, חוסן ושינוי.',
+  },
+];
+
+function isKnownStatisticIcon(value) {
+  return typeof value === 'string' && STATISTIC_ICON_KEYS.includes(value);
+}
+
+function mergeStatistic(stat, index) {
+  const safe = stat && typeof stat === 'object' ? stat : {};
+  const fallback = DEFAULT_STATISTICS[index] || DEFAULT_STATISTICS[0];
+  const rawValue = typeof safe.value === 'number' ? safe.value : Number(safe.value);
+  const value = Number.isFinite(rawValue) && rawValue >= 0 ? Math.floor(rawValue) : fallback.value;
+  return {
+    id: safeString(safe.id) || fallback.id,
+    icon: isKnownStatisticIcon(safe.icon) ? safe.icon : fallback.icon,
+    value,
+    title: safeString(safe.title) || fallback.title,
+    description: safeString(safe.description),
+  };
+}
+
+export function mergeStatistics(value) {
+  if (!Array.isArray(value) || value.length === 0) {
+    return DEFAULT_STATISTICS.map((s) => ({ ...s }));
+  }
+  return value.slice(0, STATISTICS_MAX).map((stat, index) => mergeStatistic(stat, index));
+}
+
 export const DEFAULT_PRESS_COVERAGE = [
   {
     id: 'seed-press-1',
@@ -289,6 +360,69 @@ export const DEFAULT_PRESS_COVERAGE = [
     articleUrl: '',
   },
 ];
+
+const TEAM_UNSPLASH_PARAMS = 'auto=format&fit=crop&w=256&h=256&q=85&crop=faces';
+
+export const DEFAULT_TEAM_MEMBERS = [
+  {
+    id: 'seed-team-sarah',
+    name: 'ד"ר שרה כהן',
+    role: 'מנהלת רפואית ומייסדת',
+    bio: 'רופאה מומחית באונקולוגיה עם ניסיון של 15 שנה בליווי נשים.',
+    imageUrl: `https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?${TEAM_UNSPLASH_PARAMS}`,
+    email: 'sarah@she-na.org.il',
+    order: 0,
+  },
+  {
+    id: 'seed-team-rachel',
+    name: 'רחל לוי',
+    role: 'מנהלת תמיכה רגשית',
+    bio: 'פסיכולוגית קלינית המתמחה בטיפול בטראומה וליווי נשים.',
+    imageUrl: `https://images.unsplash.com/photo-1580489944761-15a19d654956?${TEAM_UNSPLASH_PARAMS}`,
+    email: 'rachel@she-na.org.il',
+    order: 1,
+  },
+  {
+    id: 'seed-team-michal',
+    name: 'מיכל אברהם',
+    role: 'רכזת קהילה ופעילויות',
+    bio: 'עובדת סוציאלית ומנחת קבוצות תמיכה וחוויות משמעותיות.',
+    imageUrl: `https://images.unsplash.com/photo-1594744803329-e58b31de8bf5?${TEAM_UNSPLASH_PARAMS}`,
+    email: 'michal@she-na.org.il',
+    order: 2,
+  },
+  {
+    id: 'seed-team-naomi',
+    name: 'נעמי דוד',
+    role: 'יועצת תזונה ואורח חיים',
+    bio: 'תזונאית קלינית שמלווה נשים ביצירת הרגלי חיים בריאים.',
+    imageUrl: `https://images.unsplash.com/photo-1438761681033-6461ffad8d80?${TEAM_UNSPLASH_PARAMS}`,
+    email: 'naomi@she-na.org.il',
+    order: 3,
+  },
+];
+
+function mergeTeamMember(member, index) {
+  const safe = member && typeof member === 'object' ? member : {};
+  const orderRaw = typeof safe.order === 'number' ? safe.order : Number(safe.order);
+  const order = Number.isFinite(orderRaw) ? orderRaw : index;
+  return {
+    id: safeString(safe.id) || `team-${index}`,
+    name: safeString(safe.name),
+    role: safeString(safe.role),
+    bio: safeString(safe.bio),
+    imageUrl: safeString(safe.imageUrl),
+    email: safeString(safe.email),
+    order,
+  };
+}
+
+export function mergeTeamMembers(value) {
+  if (!Array.isArray(value)) return DEFAULT_TEAM_MEMBERS.map((m) => ({ ...m }));
+  return value
+    .map((member, index) => mergeTeamMember(member, index))
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+}
 
 function mergePressCoverageItem(item, index) {
   const safe = item && typeof item === 'object' ? item : {};
@@ -413,6 +547,93 @@ export function mergeLearnTogether(learnTogether) {
   };
 }
 
+export const DEFAULT_CONTACT = {
+  title: 'אנחנו כאן בשבילך',
+  description: 'אפשר לפנות אלינו להצטרפות, תמיכה, התנדבות או שיתוף פעולה.',
+  email: 'info@she-na.org.il',
+  phone: '03-1234567',
+  linkedinUrl: '',
+  instagramUrl: '',
+  facebookUrl: '',
+};
+
+export function mergeContact(value) {
+  const safe = value && typeof value === 'object' ? value : {};
+  const linkedinUrl = safeString(safe.linkedinUrl);
+  const instagramUrl = safeString(safe.instagramUrl);
+  const facebookUrl = safeString(safe.facebookUrl);
+
+  const socialLinks = [
+    linkedinUrl && { id: 'linkedin', label: 'LinkedIn', href: linkedinUrl },
+    instagramUrl && { id: 'instagram', label: 'Instagram', href: instagramUrl },
+    facebookUrl && { id: 'facebook', label: 'Facebook', href: facebookUrl },
+  ].filter(Boolean);
+
+  return {
+    title: safeString(safe.title) || DEFAULT_CONTACT.title,
+    description: safeString(safe.description) || DEFAULT_CONTACT.description,
+    email: safeString(safe.email) || DEFAULT_CONTACT.email,
+    phone: safeString(safe.phone) || DEFAULT_CONTACT.phone,
+    linkedinUrl,
+    instagramUrl,
+    facebookUrl,
+    socialLinks,
+  };
+}
+
+export const DEFAULT_PARTNERS = [
+  {
+    id: 'seed-partner-assuta',
+    name: 'אסותא אשדוד',
+    logoUrl: assutaLogo,
+    description: 'בית חולים פרטי המעניק ליווי רפואי מתקדם ושירותי בריאות מקיפים לנשים ולמשפחותיהן.',
+    order: 0,
+  },
+  {
+    id: 'seed-partner-ichilov',
+    name: 'סוראסקי איכילוב',
+    logoUrl: ichilovLogo,
+    description: 'מרכז רפואי מוביל המציע מגוון שירותים אונקולוגיים וליווי מקצועי לאורך הטיפול.',
+    order: 1,
+  },
+  {
+    id: 'seed-partner-barzilai',
+    name: 'ברזילי',
+    logoUrl: barzilaiLogo,
+    description: 'בית חולים ממשלתי עם מחלקה אונקולוגית מתקדמת ושירותי תמיכה לנשים.',
+    order: 2,
+  },
+  {
+    id: 'seed-partner-assaf',
+    name: 'אסף הרופא',
+    logoUrl: shamirLogo,
+    description: 'מרכז רפואי גדול עם מומחיות בטיפולים אונקולוגיים ותמיכה הוליסטית.',
+    order: 3,
+  },
+];
+
+function mergePartner(partner, index) {
+  const safe = partner && typeof partner === 'object' ? partner : {};
+  const orderRaw = typeof safe.order === 'number' ? safe.order : Number(safe.order);
+  const order = Number.isFinite(orderRaw) ? orderRaw : index;
+  return {
+    id: safeString(safe.id) || `partner-${index}`,
+    name: safeString(safe.name),
+    logoUrl: safeString(safe.logoUrl) || (DEFAULT_PARTNERS.find((d) => d.id === safeString(safe.id))?.logoUrl ?? ''),
+    description: safeString(safe.description),
+    order,
+  };
+}
+
+export function mergePartners(value) {
+  if (!Array.isArray(value) || value.length === 0) {
+    return DEFAULT_PARTNERS.map((p) => ({ ...p }));
+  }
+  return value
+    .map((partner, index) => mergePartner(partner, index))
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
+}
+
 export function mergeHero(hero) {
   const safeHero = hero && typeof hero === 'object' ? hero : {};
   return {
@@ -468,6 +689,10 @@ export function getDefaultPublicHomeDoc() {
     },
     inspirationalStories: DEFAULT_INSPIRATIONAL_STORIES.map((s) => ({ ...s })),
     pressCoverage: DEFAULT_PRESS_COVERAGE.map((p) => ({ ...p })),
+    statistics: DEFAULT_STATISTICS.map((s) => ({ ...s })),
+    teamMembers: DEFAULT_TEAM_MEMBERS.map((m) => ({ ...m })),
+    partners: DEFAULT_PARTNERS.map((p) => ({ ...p })),
+    contact: { ...DEFAULT_CONTACT },
     updatedAt: null,
     updatedBy: '',
   };
@@ -487,6 +712,10 @@ export async function getPublicHomeDoc() {
       learnTogether: mergeLearnTogether(data.learnTogether),
       inspirationalStories: mergeInspirationalStories(data.inspirationalStories),
       pressCoverage: mergePressCoverage(data.pressCoverage),
+      statistics: mergeStatistics(data.statistics),
+      teamMembers: mergeTeamMembers(data.teamMembers),
+      partners: mergePartners(data.partners),
+      contact: mergeContact(data.contact),
     };
   } catch (error) {
     console.warn('[publicPagesService] Failed to load public_pages/home, using defaults.', error);

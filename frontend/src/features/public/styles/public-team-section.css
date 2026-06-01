@@ -1,4 +1,25 @@
 /* SHE-NA team — Figma-aligned member cards */
+
+/* Horizontal slider — uniform card width per breakpoint */
+.public-stories-slider__track > .public-team-section__card {
+  flex: 0 0 calc((100% - var(--public-grid-gap, 28px) * 2) / 3);
+  min-width: 260px;
+  scroll-snap-align: start;
+}
+
+@media (max-width: 1100px) {
+  .public-stories-slider__track > .public-team-section__card {
+    flex: 0 0 calc((100% - var(--public-grid-gap, 28px)) / 2);
+  }
+}
+
+@media (max-width: 640px) {
+  .public-stories-slider__track > .public-team-section__card {
+    flex: 0 0 86%;
+    min-width: 0;
+  }
+}
+
 .public-section.public-section--team-section {
   --team-pink: #ec3c97;
   --team-purple: #5b1e8c;
@@ -58,16 +79,17 @@
   min-width: min(100%, 260px);
 }
 
-/* Card */
+/* Card — uniform height via flex-column + fixed dimensions */
 .public-team-section__card {
   position: relative;
   z-index: 1;
-  display: grid;
-  justify-items: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   gap: 0;
-  min-height: auto;
-  height: 100%;
-  padding-block: clamp(26px, 2.8vw, 32px) clamp(22px, 2.4vw, 28px);
+  height: 360px;
+  box-sizing: border-box;
+  padding-block: clamp(24px, 2.6vw, 30px) clamp(18px, 2vw, 24px);
   padding-inline: clamp(18px, 2vw, 24px);
   overflow: visible;
   text-align: center;
@@ -209,7 +231,8 @@
   align-items: center;
   justify-content: center;
   min-height: 36px;
-  margin-block-start: clamp(16px, 1.8vw, 20px);
+  margin-block-start: auto;
+  padding-block-start: 12px;
 }
 
 .public-team-section__email-trigger {
