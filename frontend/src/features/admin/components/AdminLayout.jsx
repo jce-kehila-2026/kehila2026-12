@@ -1,27 +1,14 @@
 import { useState } from 'react';
-import { useLocation } from 'react-router-dom';
 import { Outlet } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Sidebar from './Sidebar';
-import TopBar from './TopBar';
 import ImpersonationBanner from './ImpersonationBanner';
+import './AdminLayout.css';
 
 const DRAWER_WIDTH = 270;
-const COLLAPSED_DRAWER_WIDTH = 92;
-
-const ROUTE_TITLES = {
-  '/admin/dashboard': 'Dashboard',
-  '/admin/events': 'Events Management',
-  '/admin/appointments': 'Appointments',
-  '/admin/cms': 'Content Management',
-  '/admin/users': 'User Management',
-  '/admin/roles': 'Role Management',
-  '/admin/audit-log': 'Audit Log',
-};
+const COLLAPSED_DRAWER_WIDTH = 88;
 
 export default function AdminLayout() {
-  const location = useLocation();
-  const title = ROUTE_TITLES[location.pathname] || 'Dashboard';
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const drawerWidth = sidebarCollapsed ? COLLAPSED_DRAWER_WIDTH : DRAWER_WIDTH;
 
@@ -29,12 +16,16 @@ export default function AdminLayout() {
     <>
       <ImpersonationBanner />
       <Box
+        className="admin-layout"
         sx={{
           '--admin-sidebar-width': `${drawerWidth}px`,
           '--admin-modal-offset': sidebarCollapsed ? '140px' : '320px',
           display: 'flex',
-          flexDirection: 'row-reverse',
+          flexDirection: 'row',
+          direction: 'ltr',
           minHeight: '100vh',
+          background:
+            'radial-gradient(circle at 18% 10%, rgba(252, 231, 243, 0.72), transparent 28%), radial-gradient(circle at 85% 5%, rgba(167, 139, 250, 0.24), transparent 34%), linear-gradient(135deg, #faf7ff 0%, #ffffff 46%, #fbf7ff 100%)',
         }}
       >
         <Sidebar
@@ -43,25 +34,22 @@ export default function AdminLayout() {
           onToggleSidebar={() => setSidebarCollapsed((current) => !current)}
         />
         <Box
+          className="admin-content-frame"
           sx={{
             flexGrow: 1,
             display: 'flex',
             flexDirection: 'column',
             minWidth: 0,
+            direction: 'ltr',
             transition: 'all 300ms ease-in-out',
           }}
         >
-          <TopBar
-            title={title}
-            drawerWidth={drawerWidth}
-            sidebarCollapsed={sidebarCollapsed}
-          />
           <Box
             component="main"
+            className="admin-main"
             sx={{
               flexGrow: 1,
-              p: { xs: 2, sm: 3, md: 4 },
-              mt: '64px',
+              p: { xs: 2, sm: 3, md: '32px' },
               minWidth: 0,
               transition: 'padding 300ms ease-in-out',
             }}

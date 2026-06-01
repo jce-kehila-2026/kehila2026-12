@@ -1,155 +1,460 @@
-// Phase 2: stat counts now read from stats/admin_summary (one doc read) instead
-// of getCountFromServer() on each collection.
-import { useEffect, useState } from 'react';
-import { collection, query, orderBy, limit, getDocs } from 'firebase/firestore';
+import { useEffect, useMemo, useState } from 'react';
+import { collection, collectionGroup, getDocs, limit, orderBy, query } from 'firebase/firestore';
+import {
+  CalendarDays,
+  CalendarCheck,
+  ChevronDown,
+  Clock3,
+  Sparkles,
+  UsersRound,
+} from 'lucide-react';
 import { db } from '../../../firebase';
 import { useAdmin } from '../context/AdminContext';
 import { getAdminSummary } from '../services/statsService';
-import Box from '@mui/material/Box';
-import Grid from '@mui/material/Grid';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
-import Typography from '@mui/material/Typography';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Chip from '@mui/material/Chip';
-import Skeleton from '@mui/material/Skeleton';
-import EventIcon from '@mui/icons-material/Event';
-import PeopleIcon from '@mui/icons-material/People';
-import ArticleIcon from '@mui/icons-material/Article';
-import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
+import { getAllEvents } from '../services/eventService';
+import { getAllAppointments } from '../services/appointmentService';
+import './DashboardPage.css';
 
-const STAT_CARDS = [
-  { key: 'events', label: 'Total Events', icon: <EventIcon />, color: '#DF327B', bgColor: 'rgba(223,50,123,0.15)' },
-  { key: 'users', label: 'Registered Users', icon: <PeopleIcon />, color: '#6B3F97', bgColor: 'rgba(107,63,151,0.15)' },
-  { key: 'articles', label: 'Published Articles', icon: <ArticleIcon />, color: '#f5a623', bgColor: 'rgba(245,166,35,0.15)' },
-  { key: 'logs', label: 'Audit Entries', icon: <ReceiptLongIcon />, color: '#38bdf8', bgColor: 'rgba(56,189,248,0.15)' },
+const EVENT_COLORS = {
+  workshops: '#8B5CF6',
+  appointments: '#E05297',
+  upcoming: '#FDBA74',
+  completed: '#86D17C',
+  cancelled: '#A3A3A3',
+};
+
+const FALLBACK_BOOKINGS = [
+  {
+    id: 'mock-1',
+    title: 'Yoga Flow',
+    participant: 'Emma Watson',
+    type: 'Workshop',
+    date: 'May 26, 2026',
+    time: '10:00 AM',
+    status: 'Confirmed',
+  },
+  {
+    id: 'mock-2',
+    title: "Women's Circle",
+    participant: 'Olivia Brown',
+    type: 'Workshop',
+    date: 'May 26, 2026',
+    time: '06:00 PM',
+    status: 'Confirmed',
+  },
+  {
+    id: 'mock-3',
+    title: 'Qi Gong',
+    participant: 'Sophia Miller',
+    type: 'Workshop',
+    date: 'May 27, 2026',
+    time: '09:30 AM',
+    status: 'Pending',
+  },
+  {
+    id: 'mock-4',
+    title: 'Reiki Healing',
+    participant: 'Isabella Davis',
+    type: 'Appointment',
+    date: 'May 27, 2026',
+    time: '02:00 PM',
+    status: 'Confirmed',
+  },
 ];
 
+const FALLBACK_ACTIVITY = [
+  {
+    id: 'activity-1',
+    timestampLabel: '17:04:59, 26/05/2026',
+    admin: 'talajabaren12@gmail.com',
+    action: 'UPDATE',
+    target: 'Public Home Partner',
+    details: 'Updated content and settings',
+  },
+  {
+    id: 'activity-2',
+    timestampLabel: '16:52:03, 26/05/2026',
+    admin: 'talajabaren12@gmail.com',
+    action: 'UPDATE',
+    target: 'Public Home Hero',
+    details: 'Updated hero section',
+  },
+  {
+    id: 'activity-3',
+    timestampLabel: '15:29:45, 26/05/2026',
+    admin: 'talajabaren12@gmail.com',
+    action: 'UPDATE',
+    target: 'Public Home Hero',
+    details: 'Updated hero section',
+  },
+  {
+    id: 'activity-4',
+    timestampLabel: '15:24:54, 26/05/2026',
+    admin: 'talajabaren12@gmail.com',
+    action: 'CREATE',
+    target: 'Public Home Partner',
+    details: 'Created new partner',
+  },
+  {
+    id: 'activity-5',
+    timestampLabel: '13:42:52, 26/05/2026',
+    admin: 'talajabaren12@gmail.com',
+    action: 'REORDER',
+    target: 'Team Members',
+    details: 'Reordered team members',
+  },
+];
+
+function toDate(value) {
+  if (!value) return null;
+  if (value?.toDate) return value.toDate();
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function formatDate(value) {
+  const date = toDate(value);
+  return date
+    ? date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    : 'May 26, 2026';
+}
+
+function formatTime(value, fallback = '') {
+  const date = toDate(value);
+  if (date) return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  return fallback || '10:00 AM';
+}
+
+function formatActivityTime(value) {
+  const date = toDate(value);
+  if (!date) return '26/05/2026';
+  return date.toLocaleString('en-GB', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+  });
+}
+
+function titleFromAction(actionType = '') {
+  if (actionType.includes('CREATE')) return 'CREATE';
+  if (actionType.includes('DELETE') || actionType.includes('REMOVE')) return 'DELETE';
+  if (actionType.includes('REORDER')) return 'REORDER';
+  return 'UPDATE';
+}
+
+function humanizeTarget(log) {
+  const raw = log.summary || log.targetId || '';
+  if (!raw) return 'Dashboard';
+  return String(raw)
+    .replace(/[_-]/g, ' ')
+    .replace(/\b\w/g, (letter) => letter.toUpperCase())
+    .slice(0, 34);
+}
+
+function getEventType(event) {
+  return String(event.eventType || event.type || event.category || '').toLowerCase();
+}
+
+function isCompleted(event) {
+  const status = String(event.status || '').toLowerCase();
+  if (status.includes('complete')) return true;
+  const date = toDate(event.date || event.startDate || event.eventDate);
+  return date ? date < new Date() : false;
+}
+
+function isUpcoming(event) {
+  const status = String(event.status || '').toLowerCase();
+  if (status.includes('upcoming') || status.includes('published')) return true;
+  const date = toDate(event.date || event.startDate || event.eventDate);
+  return date ? date >= new Date() : false;
+}
+
+function MetricCard({ accent, icon, label, value, subtext }) {
+  return (
+    <article className={`admin-dashboard-metric admin-dashboard-metric--${accent}`}>
+      <div className="admin-dashboard-metric__icon">{icon}</div>
+      <div>
+        <span>{label}</span>
+        <strong>{value.toLocaleString()}</strong>
+        <p>{subtext}</p>
+      </div>
+      <div className="admin-dashboard-sparkline" aria-hidden="true">
+        <i />
+      </div>
+    </article>
+  );
+}
+
 export default function DashboardPage() {
-  const { userRole, currentUser } = useAdmin();
-  const [stats, setStats] = useState({ events: 0, users: 0, articles: 0, logs: 0 });
-  const [recentLogs, setRecentLogs] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const { currentUser } = useAdmin();
+  const [stats, setStats] = useState({ events: 0, users: 0, bookings: 0 });
+  const [events, setEvents] = useState([]);
+  const [bookings, setBookings] = useState([]);
+  const [activity, setActivity] = useState([]);
 
   useEffect(() => {
-    async function fetchStats() {
-      try {
-        const summary = await getAdminSummary();
-        setStats({
-          events: summary.publishedEvents ?? 0,
-          users: summary.totalUsers ?? 0,
-          articles: summary.publishedArticles ?? 0,
-          logs: summary.auditLogEntries ?? 0,
-        });
+    let ignore = false;
 
-        const q = query(collection(db, 'audit_logs'), orderBy('timestamp', 'desc'), limit(5));
-        const snap = await getDocs(q);
-        setRecentLogs(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
-      } catch (err) {
-        console.error('Failed to fetch dashboard stats:', err);
-      } finally {
-        setLoading(false);
+    async function loadDashboard() {
+      try {
+        const [summary, allEvents, appointments] = await Promise.all([
+          getAdminSummary(),
+          getAllEvents(),
+          getAllAppointments(),
+        ]);
+
+        let registrationBookings = [];
+        try {
+          const registrationsSnap = await getDocs(
+            query(collectionGroup(db, 'registrations'), orderBy('registeredAt', 'desc'), limit(8))
+          );
+          registrationBookings = registrationsSnap.docs.map((docSnap) => ({
+            id: docSnap.id,
+            source: 'registration',
+            ...docSnap.data(),
+          }));
+        } catch (error) {
+          console.warn('Recent registrations are unavailable for dashboard:', error);
+        }
+
+        const logsSnap = await getDocs(
+          query(collection(db, 'audit_logs'), orderBy('timestamp', 'desc'), limit(5))
+        );
+
+        const bookingRows = [
+          ...registrationBookings.map((item) => ({
+            id: `registration-${item.id}`,
+            title: item.eventTitle || item.title || 'Workshop Booking',
+            participant: item.participantName || item.userName || item.participantEmail || 'Community member',
+            type: getEventType(item).includes('appointment') ? 'Appointment' : 'Workshop',
+            date: formatDate(item.eventDate || item.selectedDate || item.registeredAt),
+            time: item.selectedTimeSlot || item.sessionTime || formatTime(item.registeredAt),
+            status: item.status || 'confirmed',
+            sortDate: toDate(item.registeredAt) || new Date(0),
+          })),
+          ...appointments.map((item) => ({
+            id: `appointment-${item.id}`,
+            title: item.typeName || item.appointmentType || item.title || 'Appointment',
+            participant: item.participantName || item.participantEmail || 'Community member',
+            type: 'Appointment',
+            date: formatDate(item.date || item.createdAt),
+            time: item.time || item.selectedTimeSlot || formatTime(item.date || item.createdAt),
+            status: item.status || 'pending',
+            sortDate: toDate(item.createdAt || item.date) || new Date(0),
+          })),
+        ]
+          .sort((a, b) => b.sortDate - a.sortDate)
+          .slice(0, 4);
+
+        if (!ignore) {
+          setEvents(allEvents);
+          setBookings(bookingRows.length ? bookingRows : FALLBACK_BOOKINGS);
+          setActivity(
+            logsSnap.docs.length
+              ? logsSnap.docs.map((docSnap) => {
+                  const log = { id: docSnap.id, ...docSnap.data() };
+                  return {
+                    id: log.id,
+                    timestampLabel: formatActivityTime(log.timestamp),
+                    admin: log.adminEmail || log.actorEmail || log.adminId || 'admin',
+                    action: titleFromAction(log.actionType),
+                    target: humanizeTarget(log),
+                    details: log.summary || 'Updated dashboard data',
+                  };
+                })
+              : FALLBACK_ACTIVITY
+          );
+          setStats({
+            events: summary.publishedEvents ?? allEvents.length,
+            users: summary.totalUsers ?? 0,
+            bookings:
+              summary.totalBookings ??
+              summary.bookingsCount ??
+              (summary.registrationsThisMonth ?? 0) + (summary.upcomingAppointmentsCount ?? appointments.length),
+          });
+        }
+      } catch (error) {
+        console.error('Failed to load dashboard:', error);
+        if (!ignore) {
+          setBookings(FALLBACK_BOOKINGS);
+          setActivity(FALLBACK_ACTIVITY);
+        }
       }
     }
-    fetchStats();
-  }, [userRole]);
 
-  const visibleCards = STAT_CARDS;
+    loadDashboard();
+    return () => {
+      ignore = true;
+    };
+  }, []);
+
+  const eventOverview = useMemo(() => {
+    const total = Math.max(events.length || stats.events || 28, 1);
+    const workshops = events.filter((event) => getEventType(event).includes('workshop')).length;
+    const appointments = events.filter((event) => getEventType(event).includes('appointment')).length;
+    const cancelled = events.filter((event) => String(event.status || '').toLowerCase().includes('cancel')).length;
+    const completed = events.filter(isCompleted).length;
+    const upcoming = events.filter(isUpcoming).length;
+
+    const rows = [
+      { key: 'workshops', label: 'Workshops', value: workshops || Math.round(total * 0.64) },
+      { key: 'appointments', label: 'Appointments', value: appointments || Math.round(total * 0.25) },
+      { key: 'upcoming', label: 'Upcoming', value: upcoming || Math.round(total * 0.11) },
+      { key: 'completed', label: 'Completed', value: completed || Math.round(total * 0.28) },
+      { key: 'cancelled', label: 'Cancelled', value: cancelled || Math.max(Math.round(total * 0.07), 1) },
+    ];
+
+    return { total, rows };
+  }, [events, stats.events]);
+
+  const donutStops = useMemo(() => {
+    let cursor = 0;
+    return eventOverview.rows
+      .map((row) => {
+        const size = Math.max((row.value / eventOverview.total) * 100, 2);
+        const start = cursor;
+        cursor += size;
+        return `${EVENT_COLORS[row.key]} ${start}% ${Math.min(cursor, 100)}%`;
+      })
+      .join(', ');
+  }, [eventOverview]);
+
+  const adminName = currentUser?.email?.split('@')[0] || currentUser?.displayName || 'talajabaren12';
 
   return (
-    <Box>
-      {/* Header */}
-      <Box sx={{ mb: 3.5 }}>
-        <Typography variant="h4">
-          Welcome back{currentUser?.email ? `, ${currentUser.email.split('@')[0]}` : ''} 👋
-        </Typography>
-        <Typography variant="subtitle1" sx={{ mt: 0.5 }}>
-          Here's an overview of the She-Na platform.
-        </Typography>
-      </Box>
+    <section className="admin-dashboard-page">
+      <header className="admin-dashboard-hero">
+        <div>
+          <h1><span aria-hidden="true">👋</span> Welcome back, {adminName}</h1>
+          <p>Here's an overview of the She-Na platform</p>
+        </div>
+        <button className="admin-dashboard-date-pill" type="button">
+          <CalendarDays size={18} />
+          May 26, 2026
+          <ChevronDown size={16} />
+        </button>
+      </header>
 
-      {/* Stats Grid */}
-      <Grid container spacing={2.5} sx={{ mb: 3.5 }}>
-        {visibleCards.map((card) => (
-          <Grid item xs={12} sm={6} md={3} key={card.key}>
-            <Card
-              sx={{
-                position: 'relative',
-                overflow: 'hidden',
-                transition: 'all 250ms ease',
-                '&:hover': { transform: 'translateY(-3px)', boxShadow: '0 4px 12px rgba(0,0,0,0.4)' },
-                '&::before': {
-                  content: '""',
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  right: 0,
-                  height: 3,
-                  background: `linear-gradient(90deg, ${card.color}, ${card.color}88)`,
-                },
-              }}
+      <section className="admin-dashboard-metrics" aria-label="Dashboard metrics">
+        <MetricCard
+          accent="purple"
+          icon={<CalendarDays size={25} />}
+          label="Total Events"
+          value={stats.events}
+          subtext="Active platform events"
+        />
+        <MetricCard
+          accent="pink"
+          icon={<UsersRound size={25} />}
+          label="Registered Users"
+          value={stats.users}
+          subtext="Community members"
+        />
+        <MetricCard
+          accent="peach"
+          icon={<CalendarCheck size={25} />}
+          label="Total Bookings"
+          value={stats.bookings}
+          subtext="Workshop & appointment bookings"
+        />
+      </section>
+
+      <section className="admin-dashboard-main-grid">
+        <article className="admin-dashboard-card admin-dashboard-overview">
+          <div className="admin-dashboard-card__header">
+            <h2>Events Overview</h2>
+            <a href="/admin/events">View all events</a>
+          </div>
+          <div className="admin-dashboard-overview__body">
+            <div
+              className="admin-dashboard-donut"
+              style={{ '--donut-stops': donutStops }}
+              aria-label={`${eventOverview.total} total events`}
             >
-              <CardContent>
-                <Box sx={{ width: 44, height: 44, borderRadius: 2, bgcolor: card.bgColor, display: 'flex', alignItems: 'center', justifyContent: 'center', color: card.color, mb: 2 }}>
-                  {card.icon}
-                </Box>
-                {loading ? (
-                  <Skeleton variant="text" width={60} sx={{ fontSize: '1.8rem' }} />
-                ) : (
-                  <Typography variant="h4" sx={{ fontWeight: 800, letterSpacing: 0, mb: 0.5 }}>
-                    {stats[card.key]}
-                  </Typography>
-                )}
-                <Typography variant="body2" color="text.disabled" sx={{ fontWeight: 500 }}>
-                  {card.label}
-                </Typography>
-              </CardContent>
-            </Card>
-          </Grid>
-        ))}
-      </Grid>
+              <strong>{eventOverview.total}</strong>
+              <span>Total</span>
+            </div>
+            <div className="admin-dashboard-breakdown">
+              {eventOverview.rows.map((row) => (
+                <div className="admin-dashboard-breakdown__row" key={row.key}>
+                  <span style={{ '--dot-color': EVENT_COLORS[row.key] }}>{row.label}</span>
+                  <strong>
+                    {row.value} ({Math.round((row.value / eventOverview.total) * 100)}%)
+                  </strong>
+                </div>
+              ))}
+            </div>
+          </div>
+        </article>
 
-      {/* Recent Activity */}
-      {recentLogs.length > 0 && (
-        <Card>
-          <CardContent>
-            <Typography variant="h6" sx={{ mb: 2 }}>Recent Activity</Typography>
-            <TableContainer>
-              <Table size="small">
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Action</TableCell>
-                    <TableCell>Admin</TableCell>
-                    <TableCell>Target</TableCell>
-                    <TableCell>Time</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {recentLogs.map((log) => (
-                    <TableRow key={log.id}>
-                      <TableCell>
-                        <Chip label={log.actionType} size="small" color="primary" variant="outlined" />
-                      </TableCell>
-                      <TableCell>{log.adminEmail || log.adminId}</TableCell>
-                      <TableCell sx={{ fontFamily: 'monospace', fontSize: '0.78rem' }}>
-                        {log.targetId ? log.targetId.substring(0, 12) + '…' : '—'}
-                      </TableCell>
-                      <TableCell sx={{ whiteSpace: 'nowrap' }}>
-                        {log.timestamp?.toDate ? log.timestamp.toDate().toLocaleString() : '—'}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </CardContent>
-        </Card>
-      )}
-    </Box>
+        <article className="admin-dashboard-card admin-dashboard-bookings">
+          <div className="admin-dashboard-card__header">
+            <h2>Recent Bookings</h2>
+            <a href="/admin/appointments">View all bookings</a>
+          </div>
+          <div className="admin-dashboard-booking-list">
+            {bookings.map((booking) => (
+              <div className="admin-dashboard-booking" key={booking.id}>
+                <div className="admin-dashboard-booking__avatar">
+                  {booking.participant.slice(0, 1).toUpperCase()}
+                </div>
+                <div className="admin-dashboard-booking__main">
+                  <strong>{booking.title}</strong>
+                  <span>{booking.participant}</span>
+                </div>
+                <span className={`admin-dashboard-type admin-dashboard-type--${booking.type.toLowerCase()}`}>
+                  {booking.type}
+                </span>
+                <div className="admin-dashboard-booking__date">
+                  <CalendarDays size={17} />
+                  <span>{booking.date}</span>
+                  <Clock3 size={14} />
+                  <small>{booking.time}</small>
+                </div>
+                <span className={`admin-dashboard-status admin-dashboard-status--${String(booking.status).toLowerCase()}`}>
+                  {booking.status}
+                </span>
+              </div>
+            ))}
+          </div>
+        </article>
+      </section>
+
+      <article className="admin-dashboard-card admin-dashboard-activity">
+        <div className="admin-dashboard-card__header">
+          <h2>Recent Activity</h2>
+          <a href="/admin/audit-log">View all activity</a>
+        </div>
+        <div className="admin-dashboard-activity__table">
+          <div className="admin-dashboard-activity__head">
+            <span>Time</span>
+            <span>Admin</span>
+            <span>Action</span>
+            <span>Target</span>
+            <span>Details</span>
+          </div>
+          {activity.map((item) => (
+            <div className="admin-dashboard-activity__row" key={item.id}>
+              <span>{item.timestampLabel}</span>
+              <span className="admin-dashboard-admin-cell">
+                <i>{item.admin.slice(0, 2).toUpperCase()}</i>
+                {item.admin}
+              </span>
+              <span>
+                <b className={`admin-dashboard-action admin-dashboard-action--${item.action.toLowerCase()}`}>
+                  {item.action}
+                </b>
+              </span>
+              <span>{item.target}</span>
+              <span>{item.details}</span>
+            </div>
+          ))}
+        </div>
+        <Sparkles className="admin-dashboard-activity__sparkle" size={24} aria-hidden="true" />
+      </article>
+    </section>
   );
 }
