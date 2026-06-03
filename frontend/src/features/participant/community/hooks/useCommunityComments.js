@@ -151,7 +151,7 @@ export default function useCommunityComments({
           return {
             ...post,
             comments: allComments,
-            commentsCount: allComments.filter(isCommunityContentVisible).length,
+            commentsCount: allComments.length,
           };
         });
       }).catch(() => {});

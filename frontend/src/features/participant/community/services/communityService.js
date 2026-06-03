@@ -305,10 +305,7 @@ export async function addCommunityPostComment(postId, commentData = {}) {
 export async function deleteCommunityComment(postId, commentId) {
   const batch = writeBatch(db);
 
-  batch.update(doc(db, POSTS_COL, postId, 'comments', commentId), {
-    status: 'deleted',
-    updatedAt: serverTimestamp(),
-  });
+  batch.delete(doc(db, POSTS_COL, postId, 'comments', commentId));
   batch.update(doc(db, POSTS_COL, postId), {
     commentsCount: increment(-1),
   });
@@ -324,9 +321,7 @@ export async function getPostComments(postId, limitCount = 50) {
     limit(limitCount),
   );
   const snapshot = await getDocs(q);
-  return snapshot.docs
-    .map((docSnap) => firestoreCommentToLocal(docSnap, postId))
-    .filter(isCommunityContentVisible);
+  return snapshot.docs.map((docSnap) => firestoreCommentToLocal(docSnap, postId));
 }
 
 // ── Reports ──────────────────────────────────────────────────────────────────
