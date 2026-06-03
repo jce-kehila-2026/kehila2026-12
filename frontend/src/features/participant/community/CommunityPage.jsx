@@ -111,7 +111,7 @@ export default function CommunityPage({
     lastActivityDate,
     isCommunityStreakAtRisk,
     registerCommunityActivity,
-  } = useCommunityStreak();
+  } = useCommunityStreak({ localUserId });
   const {
     posts,
     updatePostById,

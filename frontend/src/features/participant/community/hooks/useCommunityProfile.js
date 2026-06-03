@@ -1,14 +1,8 @@
 import { useEffect, useState } from 'react';
 import {
-  getInitialCommunityPreferences,
-  getInitialCommunityUserProfile,
-  serializeCommunityPreferences,
-  serializeCommunityUserProfile,
-} from '../communityInteractionHelpers';
-import {
-  saveStoredCommunityPreferences,
-  saveStoredCommunityUserProfile,
-} from '../services/communityStorageService';
+  getCommunityProfile,
+  updateCommunityProfile,
+} from '../services/communityService';
 import { getCurrentCommunityUserId } from '../utils/communityModerationUtils';
 import {
   getCommunityBirthday,
@@ -16,22 +10,65 @@ import {
   hasRequiredCommunityPersonalDetails,
 } from '../utils/communityProfileUtils';
 
+const isRealUserId = (uid) => Boolean(uid) && uid !== 'current-user';
+
+const defaultProfile = {
+  id: 'current-user',
+  displayName: '',
+  avatarUrl: '',
+  birthday: '',
+  showBirthday: false,
+  allowAnonymousPosting: true,
+  communityJoinedAt: new Date(),
+  profileCompleted: false,
+  role: 'participant',
+  status: 'active',
+};
+
+const defaultPreferences = {
+  birthdayVisibilityCompleted: false,
+  showBirthday: false,
+};
+
 export default function useCommunityProfile({ personalDetails = {} } = {}) {
-  const [communityUserProfile, setCommunityUserProfile] = useState(getInitialCommunityUserProfile);
-  const [communityPreferences, setCommunityPreferences] = useState(getInitialCommunityPreferences);
+  const [communityUserProfile, setCommunityUserProfile] = useState(defaultProfile);
+  const [communityPreferences, setCommunityPreferences] = useState(defaultPreferences);
   const [profileSuccessMessage, setProfileSuccessMessage] = useState('');
 
-  useEffect(() => {
-    if (!communityPreferences.birthdayVisibilityCompleted) return;
-
-    saveStoredCommunityPreferences(serializeCommunityPreferences(communityPreferences));
-  }, [communityPreferences]);
+  const uid = personalDetails?.uid ?? null;
 
   useEffect(() => {
-    if (!communityUserProfile.profileCompleted) return;
+    if (!isRealUserId(uid)) return;
+    let cancelled = false;
 
-    saveStoredCommunityUserProfile(serializeCommunityUserProfile(communityUserProfile));
-  }, [communityUserProfile]);
+    getCommunityProfile(uid).then((profile) => {
+      if (cancelled || !profile) return;
+
+      if (profile.communityProfileCompleted && profile.communityDisplayName) {
+        setCommunityUserProfile({
+          id: uid,
+          displayName: profile.communityDisplayName,
+          avatarUrl: '',
+          birthday: profile.communityBirthday ?? '',
+          showBirthday: Boolean(profile.showBirthdayInCommunity),
+          allowAnonymousPosting: profile.allowAnonymousPosting !== false,
+          communityJoinedAt: profile.communityJoinedAt ?? new Date(),
+          profileCompleted: true,
+          role: 'participant',
+          status: 'active',
+        });
+      }
+
+      if (profile.communityProfileCompleted) {
+        setCommunityPreferences({
+          birthdayVisibilityCompleted: true,
+          showBirthday: Boolean(profile.showBirthdayInCommunity),
+        });
+      }
+    }).catch(() => {});
+
+    return () => { cancelled = true; };
+  }, [uid]);
 
   const displayName = getExistingDisplayName(personalDetails);
   const birthDate = getCommunityBirthday(personalDetails);
@@ -60,37 +97,51 @@ export default function useCommunityProfile({ personalDetails = {} } = {}) {
     : [];
 
   const handleBirthdayPreferenceSave = (showBirthday) => {
-    setCommunityPreferences({
-      birthdayVisibilityCompleted: true,
-      showBirthday,
-    });
-    setCommunityUserProfile({
-      ...communityUserProfile,
+    const resolvedDisplayName = displayName || communityUserProfile.displayName;
+    const resolvedBirthday = birthDate || communityUserProfile.birthday || '';
+    const resolvedJoinedAt = communityUserProfile.communityJoinedAt || new Date();
+    const resolvedAllowAnon = communityUserProfile.allowAnonymousPosting !== false;
+
+    const nextProfile = {
       id: localUserId,
-      displayName: displayName || communityUserProfile.displayName,
-      birthday: birthDate || communityUserProfile.birthday || '',
+      displayName: resolvedDisplayName,
+      avatarUrl: communityUserProfile.avatarUrl ?? '',
+      birthday: resolvedBirthday,
       showBirthday,
-      allowAnonymousPosting: communityUserProfile.allowAnonymousPosting !== false,
+      allowAnonymousPosting: resolvedAllowAnon,
       profileCompleted: true,
-      communityJoinedAt: communityUserProfile.communityJoinedAt || new Date(),
-    });
+      communityJoinedAt: resolvedJoinedAt,
+      role: communityUserProfile.role ?? 'participant',
+      status: communityUserProfile.status ?? 'active',
+    };
+
+    setCommunityPreferences({ birthdayVisibilityCompleted: true, showBirthday });
+    setCommunityUserProfile(nextProfile);
     setProfileSuccessMessage('Community preference saved.');
+
+    if (isRealUserId(uid)) {
+      updateCommunityProfile(uid, {
+        communityDisplayName: resolvedDisplayName,
+        communityBirthday: resolvedBirthday,
+        showBirthdayInCommunity: showBirthday,
+        allowAnonymousPosting: resolvedAllowAnon,
+        communityProfileCompleted: true,
+        communityJoinedAt: resolvedJoinedAt,
+      }).catch(() => {});
+    }
   };
 
   const handleBirthdayVisibilityChange = (showBirthday) => {
-    setCommunityPreferences({
-      birthdayVisibilityCompleted: true,
-      showBirthday,
-    });
+    setCommunityPreferences({ birthdayVisibilityCompleted: true, showBirthday });
     setCommunityUserProfile((currentProfile) => {
       if (!currentProfile.profileCompleted) return currentProfile;
-
-      return {
-        ...currentProfile,
-        showBirthday,
-      };
+      return { ...currentProfile, showBirthday };
     });
     setProfileSuccessMessage('Birthday privacy updated.');
+
+    if (isRealUserId(uid)) {
+      updateCommunityProfile(uid, { showBirthdayInCommunity: showBirthday }).catch(() => {});
+    }
   };
 
   return {

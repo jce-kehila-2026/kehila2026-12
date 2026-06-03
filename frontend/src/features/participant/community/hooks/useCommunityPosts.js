@@ -1,10 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { communityPosts } from '../communityMockData';
-import {
-  getInitialPosts,
-  isCommunityContentVisible,
-  serializeCommunityPost,
-} from '../communityInteractionHelpers';
+import { isCommunityContentVisible } from '../communityInteractionHelpers';
 import { COMMUNITY_POST_STATUS } from '../communityModels';
 import {
   createCommunityPost,
@@ -14,7 +9,6 @@ import {
   toggleCommunityPostSupport,
   updateCommunityPost,
 } from '../services/communityService';
-import { saveStoredCommunityPosts } from '../services/communityStorageService';
 import {
   getPostReportedAtTime,
   isPostOwnedByCurrentUser,
@@ -23,6 +17,12 @@ import {
 } from '../utils/communityModerationUtils';
 
 const normalizeEditablePostText = (value = '') => String(value).replace(/\r\n/g, '\n').trim();
+
+const enrichWithUserState = (posts, userId) => posts.map((post) => ({
+  ...post,
+  isLiked: Array.isArray(post.likedBy) && post.likedBy.includes(userId),
+  isSupported: Array.isArray(post.supportedBy) && post.supportedBy.includes(userId),
+}));
 
 export default function useCommunityPosts({
   allowAnonymousPosting,
@@ -49,7 +49,7 @@ export default function useCommunityPosts({
 }) {
   const editFeedbackTimersRef = useRef({});
   const postSuccessTimerRef = useRef(null);
-  const [posts, setPosts] = useState(() => getInitialPosts(communityPosts));
+  const [posts, setPosts] = useState([]);
   const [isRefreshingFeed, setIsRefreshingFeed] = useState(false);
   const [refreshFeedback, setRefreshFeedback] = useState('');
   const [editFeedbackByPostId, setEditFeedbackByPostId] = useState({});
@@ -66,9 +66,9 @@ export default function useCommunityPosts({
     }
 
     try {
-      const loadedPosts = await getCommunityPosts();
+      const { posts: loadedPosts } = await getCommunityPosts();
       if (Array.isArray(loadedPosts)) {
-        setPosts(loadedPosts);
+        setPosts(enrichWithUserState(loadedPosts, localUserId));
       }
       setRelativeTimeNow(new Date());
       if (showFeedback) {
@@ -90,19 +90,18 @@ export default function useCommunityPosts({
     let ignoreResult = false;
 
     getCommunityPosts()
-      .then((loadedPosts) => {
+      .then(({ posts: loadedPosts }) => {
         if (!ignoreResult && Array.isArray(loadedPosts)) {
-          setPosts(loadedPosts);
+          setPosts(enrichWithUserState(loadedPosts, localUserId));
           setRelativeTimeNow(new Date());
         }
       })
-      .catch(() => {
-        // Keep the existing local fallback state if the placeholder service fails.
-      });
+      .catch(() => {});
 
     return () => {
       ignoreResult = true;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -126,10 +125,6 @@ export default function useCommunityPosts({
       window.clearTimeout(timerId);
     };
   }, [refreshFeedback]);
-
-  useEffect(() => {
-    saveStoredCommunityPosts(posts.map(serializeCommunityPost));
-  }, [posts]);
 
   useEffect(() => {
     setReportVisibilityNow(Date.now());
@@ -258,10 +253,10 @@ export default function useCommunityPosts({
     try {
       newPost = await createCommunityPost({
         authorId: localUserId,
+        authorDisplayName: author,
         author,
         content,
         isAnonymous,
-        attachment: postAttachment,
       });
     } catch {
       clearPostSuccessTimer();
@@ -283,9 +278,7 @@ export default function useCommunityPosts({
     const postToUpdate = posts.find((post) => post.id === postId);
     const shouldIncreaseStreak = postToUpdate ? !postToUpdate.isSupported : false;
 
-    toggleCommunityPostSupport(postId, localUserId).catch(() => {
-      // Keep the optimistic local UI update; the local adapter has no remote side effect yet.
-    });
+    toggleCommunityPostSupport(postId, localUserId).catch(() => {});
 
     updatePostById(postId, (post) => {
       const wasSupported = Boolean(post.isSupported);
@@ -311,9 +304,7 @@ export default function useCommunityPosts({
     const postToUpdate = posts.find((post) => post.id === postId);
     const shouldIncreaseStreak = postToUpdate ? !postToUpdate.isLiked : false;
 
-    toggleCommunityPostLike(postId, localUserId).catch(() => {
-      // Keep the optimistic local UI update; the placeholder service has no remote side effect yet.
-    });
+    toggleCommunityPostLike(postId, localUserId).catch(() => {});
 
     updatePostById(postId, (post) => {
       const wasLiked = post.isLiked;
@@ -369,11 +360,7 @@ export default function useCommunityPosts({
     const updatedAt = new Date().toISOString();
 
     try {
-      await updateCommunityPost(editingPostId, {
-        content,
-        body: content,
-        updatedAt,
-      });
+      await updateCommunityPost(editingPostId, { content });
     } catch {
       setTemporaryEditFeedback(editingPostId, {
         type: 'error',
@@ -413,9 +400,7 @@ export default function useCommunityPosts({
 
     const updatedAt = new Date().toISOString();
 
-    deleteCommunityPost(confirmingDeletePostId).catch(() => {
-      // Keep the existing local-only delete flow responsive.
-    });
+    deleteCommunityPost(confirmingDeletePostId).catch(() => {});
 
     updatePostById(confirmingDeletePostId, (post) => ({
       ...post,

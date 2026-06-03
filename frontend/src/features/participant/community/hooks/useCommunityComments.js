@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import {
   createCommunityComment,
   deleteCommunityComment,
+  getPostComments,
 } from '../services/communityService';
 import {
   isCommunityContentVisible,
@@ -21,6 +22,7 @@ export default function useCommunityComments({
   const [expandedCommentPostIds, setExpandedCommentPostIds] = useState({});
   const [openCommentPostIds, setOpenCommentPostIds] = useState({});
   const [pendingCommentDeletion, setPendingCommentDeletion] = useState(null);
+  const [fetchedCommentPostIds, setFetchedCommentPostIds] = useState({});
 
   const localUserName = communityDisplayName || 'Current User';
 
@@ -124,10 +126,36 @@ export default function useCommunityComments({
   };
 
   const handleToggleCommentsExpanded = (postId) => {
+    const isOpening = !expandedCommentPostIds[postId];
+
     setExpandedCommentPostIds((currentPostIds) => ({
       ...currentPostIds,
       [postId]: !currentPostIds[postId],
     }));
+
+    if (isOpening && !fetchedCommentPostIds[postId]) {
+      setFetchedCommentPostIds((prev) => ({ ...prev, [postId]: true }));
+
+      getPostComments(postId).then((fetchedComments) => {
+        updatePostById(postId, (post) => {
+          const enriched = fetchedComments.map((c) => ({
+            ...c,
+            isLocalCurrentUser: c.authorId === localUserId,
+          }));
+          const fetchedIds = new Set(enriched.map((c) => c.id));
+          const localOnly = Array.isArray(post.comments)
+            ? post.comments.filter((c) => !fetchedIds.has(c.id))
+            : [];
+          const allComments = [...enriched, ...localOnly];
+
+          return {
+            ...post,
+            comments: allComments,
+            commentsCount: allComments.filter(isCommunityContentVisible).length,
+          };
+        });
+      }).catch(() => {});
+    }
   };
 
   const handleOpenCommentComposer = (postId) => {
@@ -170,9 +198,7 @@ export default function useCommunityComments({
       return;
     }
 
-    deleteCommunityComment(postId, commentId).catch(() => {
-      // Keep the existing local-only delete flow responsive.
-    });
+    deleteCommunityComment(postId, commentId).catch(() => {});
 
     updatePostById(postId, (post) => {
       const currentComments = Array.isArray(post.comments) ? post.comments : [];

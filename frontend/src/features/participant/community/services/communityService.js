@@ -1,75 +1,300 @@
 import {
-  createBirthdayWishModel,
-  createCommunityStreakModel,
-  createCommunityUserProfileModel,
-} from '../communityModels';
-import { communityPosts } from '../communityMockData';
-import {
-  createCommentModel,
-  createPostModel,
-  getInitialCommunityUserProfile,
-  getInitialPosts,
-} from '../communityInteractionHelpers';
-import { loadStoredFollowedAuthors } from './communityStorageService';
+  addDoc,
+  arrayRemove,
+  arrayUnion,
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  increment,
+  limit,
+  orderBy,
+  query,
+  serverTimestamp,
+  setDoc,
+  startAfter,
+  updateDoc,
+  where,
+  writeBatch,
+} from 'firebase/firestore';
+import { db } from '../../../../firebase';
+import { formatRelativeCommunityTime } from '../utils/communityDateUtils';
+import { isCommunityContentVisible } from '../utils/communityModerationUtils';
 
-// Local Community adapter.
-// This module is the main Community API surface. It currently returns local/mock
-// data and local model objects, and can later be replaced internally with
-// Firestore calls without changing component imports.
+const POSTS_COL = 'community_posts';
+const USERS_COL = 'users';
 
-export async function getCommunityPosts() {
-  return getInitialPosts(communityPosts);
-}
+const tsToDate = (ts) => {
+  if (!ts) return new Date();
+  if (typeof ts.toDate === 'function') return ts.toDate();
+  if (ts instanceof Date) return ts;
+  return new Date();
+};
 
-export async function createCommunityPost(postData = {}) {
-  return createPostModel({
-    author: postData.author ?? postData.authorDisplayName ?? 'Current User',
-    authorId: postData.authorId ?? postData.userId ?? null,
-    content: postData.content ?? '',
-    isAnonymous: Boolean(postData.isAnonymous),
-    attachment: postData.attachment ?? null,
-  });
-}
+const getInitials = (name) => {
+  if (!name || typeof name !== 'string') return 'CU';
+  const parts = name.trim().split(/\s+/);
+  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
+  return name.slice(0, 2).toUpperCase();
+};
 
-export async function updateCommunityPost(postId, updates = {}) {
+const firestorePostToLocal = (docSnap) => {
+  const data = docSnap.data();
+  const isAnon = Boolean(data.isAnonymous);
+  const displayName = isAnon ? 'Anonymous User' : (data.authorDisplayName ?? 'Unknown');
+  const createdAt = tsToDate(data.createdAt);
+  const updatedAt = tsToDate(data.updatedAt);
+
   return {
-    success: true,
-    postId,
-    updates,
+    id: docSnap.id,
+    authorId: data.authorId ?? null,
+    author: displayName,
+    authorDisplayName: displayName,
+    authorAvatarUrl: data.authorAvatarUrl ?? '',
+    isAnonymous: isAnon,
+    content: data.content ?? '',
+    title: data.title ?? null,
+    createdAt: createdAt.toISOString(),
+    updatedAt: updatedAt.toISOString(),
+    likesCount: data.likesCount ?? 0,
+    likedBy: Array.isArray(data.likedBy) ? data.likedBy : [],
+    isLiked: false,
+    supportCount: data.supportCount ?? 0,
+    supportedBy: Array.isArray(data.supportedBy) ? data.supportedBy : [],
+    isSupported: false,
+    commentsCount: data.commentsCount ?? 0,
+    status: data.status ?? 'active',
+    reportsCount: data.reportsCount ?? 0,
+    reportedBy: Array.isArray(data.reportedBy) ? data.reportedBy : [],
+    reports: Array.isArray(data.reports) ? data.reports : [],
+    hiddenByAdmin: Boolean(data.hiddenByAdmin),
+    tone: data.tone ?? 'pink',
+    body: data.content ?? '',
+    likes: data.likesCount ?? 0,
+    support: data.supportCount ?? 0,
+    initials: isAnon ? 'AU' : getInitials(displayName),
+    time: formatRelativeCommunityTime(createdAt),
+    topic: 'Community share',
+    previewComments: [],
+    comments: [],
   };
+};
+
+const firestoreCommentToLocal = (docSnap, postId) => {
+  const data = docSnap.data();
+  const createdAt = tsToDate(data.createdAt);
+
+  return {
+    id: docSnap.id,
+    postId,
+    authorId: data.authorId ?? null,
+    userId: data.authorId ?? null,
+    author: data.authorDisplayName ?? 'Unknown',
+    authorDisplayName: data.authorDisplayName ?? 'Unknown',
+    content: data.content ?? '',
+    text: data.content ?? '',
+    createdAt: createdAt.toISOString(),
+    updatedAt: tsToDate(data.updatedAt).toISOString(),
+    status: data.status ?? 'active',
+    reportsCount: data.reportsCount ?? 0,
+    reportedBy: Array.isArray(data.reportedBy) ? data.reportedBy : [],
+    hiddenByAdmin: Boolean(data.hiddenByAdmin),
+    initials: getInitials(data.authorDisplayName),
+    isLocalCurrentUser: false,
+    time: formatRelativeCommunityTime(createdAt),
+  };
+};
+
+// ── Posts ────────────────────────────────────────────────────────────────────
+
+export async function getCommunityPosts(lastDoc = null, pageSize = 20) {
+  const colRef = collection(db, POSTS_COL);
+  const q = lastDoc
+    ? query(colRef, orderBy('createdAt', 'desc'), startAfter(lastDoc), limit(pageSize))
+    : query(colRef, orderBy('createdAt', 'desc'), limit(pageSize));
+
+  const snapshot = await getDocs(q);
+  const posts = snapshot.docs
+    .map(firestorePostToLocal)
+    .filter(isCommunityContentVisible);
+  const newLastDoc = snapshot.docs[snapshot.docs.length - 1] ?? null;
+
+  return { posts, lastDoc: newLastDoc };
+}
+
+export async function createCommunityPost({
+  authorId,
+  authorDisplayName,
+  author,
+  content,
+  isAnonymous,
+  tone = 'pink',
+} = {}) {
+  const displayName = isAnonymous
+    ? 'Anonymous User'
+    : (authorDisplayName || author || 'Current User');
+
+  const postData = {
+    authorId: authorId ?? null,
+    authorDisplayName: displayName,
+    authorAvatarUrl: '',
+    isAnonymous: Boolean(isAnonymous),
+    content: content ?? '',
+    title: null,
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+    likesCount: 0,
+    likedBy: [],
+    supportCount: 0,
+    supportedBy: [],
+    commentsCount: 0,
+    status: 'active',
+    reportsCount: 0,
+    reportedBy: [],
+    reports: [],
+    hiddenByAdmin: false,
+    tone,
+  };
+
+  const docRef = await addDoc(collection(db, POSTS_COL), postData);
+  const now = new Date();
+
+  return {
+    id: docRef.id,
+    authorId: authorId ?? null,
+    author: displayName,
+    authorDisplayName: displayName,
+    authorAvatarUrl: '',
+    isAnonymous: Boolean(isAnonymous),
+    content: content ?? '',
+    title: null,
+    createdAt: now.toISOString(),
+    updatedAt: now.toISOString(),
+    likesCount: 0,
+    likedBy: [],
+    isLiked: false,
+    supportCount: 0,
+    supportedBy: [],
+    isSupported: false,
+    commentsCount: 0,
+    status: 'active',
+    reportsCount: 0,
+    reportedBy: [],
+    reports: [],
+    hiddenByAdmin: false,
+    tone,
+    body: content ?? '',
+    likes: 0,
+    support: 0,
+    initials: isAnonymous ? 'AU' : getInitials(displayName),
+    time: formatRelativeCommunityTime(now),
+    topic: 'Community share',
+    previewComments: [],
+    comments: [],
+  };
+}
+
+export async function updateCommunityPost(postId, { content } = {}) {
+  await updateDoc(doc(db, POSTS_COL, postId), {
+    content,
+    updatedAt: serverTimestamp(),
+  });
+  return { success: true, postId };
 }
 
 export async function deleteCommunityPost(postId) {
-  return {
-    success: true,
-    postId,
-  };
+  await updateDoc(doc(db, POSTS_COL, postId), {
+    status: 'deleted',
+    updatedAt: serverTimestamp(),
+  });
+  return { success: true, postId };
 }
 
+// ── Likes & Support ──────────────────────────────────────────────────────────
+
 export async function toggleCommunityPostLike(postId, userId) {
-  return {
-    success: true,
-    postId,
-    userId,
-  };
+  const postRef = doc(db, POSTS_COL, postId);
+  const snap = await getDoc(postRef);
+  if (!snap.exists()) return { success: false };
+
+  const likedBy = snap.data().likedBy ?? [];
+  const isCurrentlyLiked = likedBy.includes(userId);
+
+  await updateDoc(postRef, {
+    likedBy: isCurrentlyLiked ? arrayRemove(userId) : arrayUnion(userId),
+    likesCount: increment(isCurrentlyLiked ? -1 : 1),
+  });
+
+  return { success: true, postId, userId, liked: !isCurrentlyLiked };
 }
 
 export async function toggleCommunityPostSupport(postId, userId) {
-  return {
-    success: true,
-    postId,
-    userId,
-  };
+  const postRef = doc(db, POSTS_COL, postId);
+  const snap = await getDoc(postRef);
+  if (!snap.exists()) return { success: false };
+
+  const supportedBy = snap.data().supportedBy ?? [];
+  const isCurrentlySupported = supportedBy.includes(userId);
+
+  await updateDoc(postRef, {
+    supportedBy: isCurrentlySupported ? arrayRemove(userId) : arrayUnion(userId),
+    supportCount: increment(isCurrentlySupported ? -1 : 1),
+  });
+
+  return { success: true, postId, userId, supported: !isCurrentlySupported };
 }
 
-export async function createCommunityComment(postId, commentData = {}) {
+// ── Comments ─────────────────────────────────────────────────────────────────
+
+export async function createCommunityComment(postId, {
+  authorId,
+  authorDisplayName,
+  author,
+  content,
+} = {}) {
+  const displayName = authorDisplayName || author || 'Current User';
+  const batch = writeBatch(db);
+
+  const commentsRef = collection(db, POSTS_COL, postId, 'comments');
+  const commentRef = doc(commentsRef);
+
+  batch.set(commentRef, {
+    authorId: authorId ?? null,
+    authorDisplayName: displayName,
+    content: content ?? '',
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+    status: 'active',
+    reportsCount: 0,
+    reportedBy: [],
+    hiddenByAdmin: false,
+  });
+
+  batch.update(doc(db, POSTS_COL, postId), {
+    commentsCount: increment(1),
+  });
+
+  await batch.commit();
+
+  const now = new Date();
   return {
-    ...createCommentModel(
-      commentData.content ?? '',
-      commentData.author ?? commentData.authorDisplayName ?? 'Current User',
-      commentData.authorId ?? commentData.userId ?? 'current-user',
-    ),
+    id: commentRef.id,
     postId,
+    authorId: authorId ?? null,
+    userId: authorId ?? null,
+    author: displayName,
+    authorDisplayName: displayName,
+    content: content ?? '',
+    text: content ?? '',
+    createdAt: now.toISOString(),
+    updatedAt: now.toISOString(),
+    status: 'active',
+    reportsCount: 0,
+    reportedBy: [],
+    hiddenByAdmin: false,
+    initials: getInitials(displayName),
+    isLocalCurrentUser: true,
+    time: formatRelativeCommunityTime(now),
   };
 }
 
@@ -78,73 +303,181 @@ export async function addCommunityPostComment(postId, commentData = {}) {
 }
 
 export async function deleteCommunityComment(postId, commentId) {
-  return {
-    success: true,
-    postId,
-    commentId,
-  };
-}
+  const batch = writeBatch(db);
 
-export async function getTodayCommunityBirthdays() {
-  return [];
-}
-
-export async function sendBirthdayWish(wishData = {}) {
-  return createBirthdayWishModel({
-    id: wishData.id ?? `birthday-wish-${Date.now()}`,
-    ...wishData,
+  batch.update(doc(db, POSTS_COL, postId, 'comments', commentId), {
+    status: 'deleted',
+    updatedAt: serverTimestamp(),
   });
-}
-
-export async function getCommunityStreak(userId) {
-  return createCommunityStreakModel({
-    userId,
+  batch.update(doc(db, POSTS_COL, postId), {
+    commentsCount: increment(-1),
   });
+
+  await batch.commit();
+  return { success: true, postId, commentId };
 }
 
-export async function updateCommunityStreak(userId, streakData = {}) {
-  return createCommunityStreakModel({
-    userId,
-    ...streakData,
-    updatedAt: streakData.updatedAt ?? new Date(),
-  });
+export async function getPostComments(postId, limitCount = 50) {
+  const q = query(
+    collection(db, POSTS_COL, postId, 'comments'),
+    orderBy('createdAt', 'asc'),
+    limit(limitCount),
+  );
+  const snapshot = await getDocs(q);
+  return snapshot.docs
+    .map((docSnap) => firestoreCommentToLocal(docSnap, postId))
+    .filter(isCommunityContentVisible);
 }
 
-export async function getCommunityProfile() {
-  return getInitialCommunityUserProfile();
-}
-
-export async function updateCommunityProfile(profileData = {}) {
-  return createCommunityUserProfileModel(profileData);
-}
-
-export async function getFollowedAuthors() {
-  return loadStoredFollowedAuthors();
-}
-
-export async function followCommunityAuthor(currentFollowedAuthors = [], authorKey) {
-  if (!authorKey) return currentFollowedAuthors;
-  if (currentFollowedAuthors.includes(authorKey)) return currentFollowedAuthors;
-
-  return [...currentFollowedAuthors, authorKey];
-}
-
-export async function unfollowCommunityAuthor(currentFollowedAuthors = [], authorKeys = []) {
-  const keysToRemove = Array.isArray(authorKeys) ? authorKeys : [authorKeys];
-  return currentFollowedAuthors.filter((authorKey) => !keysToRemove.includes(authorKey));
-}
+// ── Reports ──────────────────────────────────────────────────────────────────
 
 export async function reportCommunityPost(postId, reportData = {}) {
   const reporterUserId = typeof reportData === 'string'
     ? reportData
-    : reportData.reporterUserId ?? reportData.userId ?? null;
+    : (reportData.reporterUserId ?? reportData.userId ?? null);
+  const reason = typeof reportData === 'string' ? '' : (reportData.reason ?? '');
+  const postOwnerId = typeof reportData === 'string' ? null : (reportData.postOwnerId ?? null);
+  const createdAt = reportData.createdAt ?? new Date().toISOString();
+  const reportId = reportData.id ?? `report-${postId}-${reporterUserId}-${Date.now()}`;
 
-  return {
-    success: true,
+  const reportRecord = {
+    id: reportId,
     postId,
     reporterUserId,
-    reason: typeof reportData === 'string' ? '' : reportData.reason ?? '',
-    postOwnerId: typeof reportData === 'string' ? null : reportData.postOwnerId ?? null,
-    createdAt: typeof reportData === 'string' ? new Date() : reportData.createdAt ?? new Date(),
+    postOwnerId,
+    reason,
+    createdAt,
   };
+
+  await updateDoc(doc(db, POSTS_COL, postId), {
+    reportedBy: arrayUnion(reporterUserId),
+    reportsCount: increment(1),
+    reports: arrayUnion(reportRecord),
+    status: 'reported',
+  });
+
+  return { success: true, postId, reporterUserId, reason, postOwnerId, createdAt };
+}
+
+// ── Community Profile (users/{uid}) ──────────────────────────────────────────
+
+export async function getCommunityProfile(uid) {
+  if (!uid) return null;
+  const snap = await getDoc(doc(db, USERS_COL, uid));
+  if (!snap.exists()) return null;
+
+  const data = snap.data();
+  return {
+    communityDisplayName: data.communityDisplayName ?? '',
+    communityBirthday: data.communityBirthday ?? '',
+    showBirthdayInCommunity: Boolean(data.showBirthdayInCommunity),
+    allowAnonymousPosting: data.allowAnonymousPosting !== false,
+    communityProfileCompleted: Boolean(data.communityProfileCompleted),
+    communityJoinedAt: data.communityJoinedAt ? tsToDate(data.communityJoinedAt) : new Date(),
+    communityFollowedAuthors: Array.isArray(data.communityFollowedAuthors)
+      ? data.communityFollowedAuthors
+      : [],
+    communityGuidelinesAcceptedVersion: data.communityGuidelinesAcceptedVersion ?? null,
+  };
+}
+
+export async function updateCommunityProfile(uid, profileData = {}) {
+  if (!uid) return;
+  await setDoc(doc(db, USERS_COL, uid), profileData, { merge: true });
+  return { success: true };
+}
+
+// ── Streak (users/{uid}) ──────────────────────────────────────────────────────
+
+export async function getCommunityStreak(uid) {
+  if (!uid) return null;
+  const snap = await getDoc(doc(db, USERS_COL, uid));
+  if (!snap.exists()) return null;
+
+  const data = snap.data();
+  return {
+    communityStreakCount: data.communityStreakCount ?? 0,
+    communityLastActivityDate: data.communityLastActivityDate ?? null,
+  };
+}
+
+export async function updateCommunityStreak(uid, { communityStreakCount, communityLastActivityDate } = {}) {
+  if (!uid) return;
+  await setDoc(doc(db, USERS_COL, uid), {
+    communityStreakCount,
+    communityLastActivityDate,
+  }, { merge: true });
+}
+
+// ── Follows (users/{uid}) ─────────────────────────────────────────────────────
+
+export async function getFollowedAuthors(uid) {
+  if (!uid) return [];
+  const snap = await getDoc(doc(db, USERS_COL, uid));
+  if (!snap.exists()) return [];
+
+  const data = snap.data();
+  return Array.isArray(data.communityFollowedAuthors) ? data.communityFollowedAuthors : [];
+}
+
+export async function followCommunityAuthor(uid, authorUid) {
+  if (!uid || !authorUid) return;
+  await updateDoc(doc(db, USERS_COL, uid), {
+    communityFollowedAuthors: arrayUnion(authorUid),
+  });
+}
+
+export async function unfollowCommunityAuthor(uid, authorUid) {
+  if (!uid || !authorUid) return;
+  await updateDoc(doc(db, USERS_COL, uid), {
+    communityFollowedAuthors: arrayRemove(authorUid),
+  });
+}
+
+// ── Birthdays ─────────────────────────────────────────────────────────────────
+
+export async function getTodayCommunityBirthdays() {
+  const today = new Date();
+  const monthStr = String(today.getMonth() + 1).padStart(2, '0');
+  const dayStr = String(today.getDate()).padStart(2, '0');
+  const todaySuffix = `-${monthStr}-${dayStr}`;
+
+  const q = query(
+    collection(db, USERS_COL),
+    where('showBirthdayInCommunity', '==', true),
+    limit(50),
+  );
+  const snapshot = await getDocs(q);
+
+  return snapshot.docs
+    .map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }))
+    .filter((user) => {
+      const birthday = user.communityBirthday;
+      return typeof birthday === 'string' && birthday.endsWith(todaySuffix);
+    })
+    .map((user) => ({
+      id: user.id,
+      name: user.communityDisplayName || user.displayName || 'Community Member',
+      birthday: user.communityBirthday,
+    }));
+}
+
+export async function sendBirthdayWish(wishData = {}) {
+  return { success: true, ...wishData };
+}
+
+// ── Guidelines ────────────────────────────────────────────────────────────────
+
+export async function getCommunityGuidelinesAccepted(uid) {
+  if (!uid) return null;
+  const snap = await getDoc(doc(db, USERS_COL, uid));
+  if (!snap.exists()) return null;
+  return snap.data().communityGuidelinesAcceptedVersion ?? null;
+}
+
+export async function saveCommunityGuidelinesAccepted(uid, version) {
+  if (!uid) return;
+  await setDoc(doc(db, USERS_COL, uid), {
+    communityGuidelinesAcceptedVersion: version,
+  }, { merge: true });
 }

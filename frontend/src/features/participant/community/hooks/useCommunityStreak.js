@@ -1,29 +1,44 @@
 import { useEffect, useRef, useState } from 'react';
 import {
   getDayDifference,
-  getInitialStreakState,
   getTodayKey,
   isStreakAtRiskForDate,
+  INITIAL_COMMUNITY_STREAK_COUNT,
+  INITIAL_LAST_ACTIVITY_DATE,
 } from '../communityInteractionHelpers';
-import { saveStoredCommunityStreak } from '../services/communityStorageService';
+import {
+  getCommunityStreak,
+  updateCommunityStreak,
+} from '../services/communityService';
 
-export default function useCommunityStreak() {
-  const [initialStreakState] = useState(getInitialStreakState);
-  const [communityStreakCount, setCommunityStreakCount] = useState(initialStreakState.streakCount);
-  const [lastActivityDate, setLastActivityDate] = useState(initialStreakState.lastActivityDate);
-  const communityStreakCountRef = useRef(initialStreakState.streakCount);
-  const lastActivityDateRef = useRef(initialStreakState.lastActivityDate);
-  const [isCommunityStreakAtRisk, setIsCommunityStreakAtRisk] = useState(
-    () => isStreakAtRiskForDate(initialStreakState.lastActivityDate),
-  );
+const isRealUserId = (uid) => Boolean(uid) && uid !== 'current-user';
+
+export default function useCommunityStreak({ localUserId } = {}) {
+  const [communityStreakCount, setCommunityStreakCount] = useState(INITIAL_COMMUNITY_STREAK_COUNT);
+  const [lastActivityDate, setLastActivityDate] = useState(INITIAL_LAST_ACTIVITY_DATE);
+  const communityStreakCountRef = useRef(INITIAL_COMMUNITY_STREAK_COUNT);
+  const lastActivityDateRef = useRef(INITIAL_LAST_ACTIVITY_DATE);
+  const [isCommunityStreakAtRisk, setIsCommunityStreakAtRisk] = useState(false);
 
   useEffect(() => {
-    saveStoredCommunityStreak({
-      streakCount: communityStreakCount,
-      lastActivityDate,
-      updatedAt: new Date(),
-    });
-  }, [communityStreakCount, lastActivityDate]);
+    if (!isRealUserId(localUserId)) return;
+    let cancelled = false;
+
+    getCommunityStreak(localUserId).then((streakData) => {
+      if (cancelled || !streakData) return;
+
+      const count = streakData.communityStreakCount ?? 0;
+      const date = streakData.communityLastActivityDate ?? null;
+
+      communityStreakCountRef.current = count;
+      lastActivityDateRef.current = date;
+      setCommunityStreakCount(count);
+      setLastActivityDate(date);
+      setIsCommunityStreakAtRisk(isStreakAtRiskForDate(date));
+    }).catch(() => {});
+
+    return () => { cancelled = true; };
+  }, [localUserId]);
 
   const registerCommunityActivity = () => {
     const todayKey = getTodayKey();
@@ -42,6 +57,13 @@ export default function useCommunityStreak() {
     setCommunityStreakCount(nextStreakCount);
     setLastActivityDate(todayKey);
     setIsCommunityStreakAtRisk(false);
+
+    if (isRealUserId(localUserId)) {
+      updateCommunityStreak(localUserId, {
+        communityStreakCount: nextStreakCount,
+        communityLastActivityDate: todayKey,
+      }).catch(() => {});
+    }
   };
 
   return {

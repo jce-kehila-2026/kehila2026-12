@@ -1,7 +1,3 @@
-import Diversity3OutlinedIcon from '@mui/icons-material/Diversity3Outlined';
-import SelfImprovementOutlinedIcon from '@mui/icons-material/SelfImprovementOutlined';
-import VolunteerActivismOutlinedIcon from '@mui/icons-material/VolunteerActivismOutlined';
-
 export const communityPosts = [
   {
     author: 'Maya',
@@ -67,12 +63,6 @@ export const communityPosts = [
       { author: 'Rina', initials: 'RI', time: 'Mon', text: 'That is a real win.' },
     ],
   },
-];
-
-export const supportCircles = [
-  { title: 'New Members Circle', meta: '12 members', icon: Diversity3OutlinedIcon },
-  { title: 'Mindful Mornings', meta: 'Weekly reflection', icon: SelfImprovementOutlinedIcon },
-  { title: 'Care Partners', meta: 'Shared encouragement', icon: VolunteerActivismOutlinedIcon },
 ];
 
 export const birthdayMessages = [
