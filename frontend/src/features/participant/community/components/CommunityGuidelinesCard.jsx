@@ -1,7 +1,21 @@
+import { useEffect, useState } from 'react';
 import VolunteerActivismOutlinedIcon from '@mui/icons-material/VolunteerActivismOutlined';
 import { communityGuidelines } from '../communityMockData';
+import { getCommunitySettingsGuidelines } from '../services/communityService';
 
 export default function CommunityGuidelinesCard({ onReadFullGuidelines }) {
+  const [guidelines, setGuidelines] = useState(communityGuidelines);
+
+  useEffect(() => {
+    let cancelled = false;
+    getCommunitySettingsGuidelines().then((data) => {
+      if (!cancelled && Array.isArray(data?.shortGuidelines) && data.shortGuidelines.length > 0) {
+        setGuidelines(data.shortGuidelines);
+      }
+    }).catch(() => {});
+    return () => { cancelled = true; };
+  }, []);
+
   return (
     <section className="guidelines-card" aria-labelledby="community-guidelines-title">
       <div className="guidelines-card__heading">
@@ -15,7 +29,7 @@ export default function CommunityGuidelinesCard({ onReadFullGuidelines }) {
       </div>
       <p className="guidelines-card__intro">A quick reminder for keeping this space warm and supportive.</p>
       <ul>
-        {communityGuidelines.map((rule) => (
+        {guidelines.map((rule) => (
           <li key={rule}>{rule}</li>
         ))}
       </ul>

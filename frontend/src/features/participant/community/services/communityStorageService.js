@@ -28,6 +28,9 @@ export const getAcceptedGuidelinesVersion = () => (
   safeLoadStringFromStorage(COMMUNITY_GUIDELINES_ACCEPTED_KEY)
 );
 
-export const saveAcceptedGuidelinesVersion = () => {
-  safeSaveStringToStorage(COMMUNITY_GUIDELINES_ACCEPTED_KEY, COMMUNITY_GUIDELINES_VERSION);
+export const saveAcceptedGuidelinesVersion = (version) => {
+  safeSaveStringToStorage(
+    COMMUNITY_GUIDELINES_ACCEPTED_KEY,
+    version ?? COMMUNITY_GUIDELINES_VERSION,
+  );
 };
