@@ -7,6 +7,7 @@ import {
 } from '../communityGuidelinesStorage';
 import {
   getCommunityGuidelinesAccepted,
+  getCommunitySettingsGuidelines,
   saveCommunityGuidelinesAccepted,
 } from '../services/communityService';
 
@@ -15,27 +16,41 @@ export default function useCommunityGuidelines() {
     () => getAcceptedGuidelinesVersion() !== COMMUNITY_GUIDELINES_VERSION,
   );
   const [showFullGuidelinesModal, setShowFullGuidelinesModal] = useState(false);
+  const [liveVersion, setLiveVersion] = useState(COMMUNITY_GUIDELINES_VERSION);
 
-  // Verify acceptance against Firestore on mount (cross-device sync).
   useEffect(() => {
+    let cancelled = false;
     const uid = auth.currentUser?.uid;
-    if (!uid) return;
 
-    getCommunityGuidelinesAccepted(uid).then((firestoreVersion) => {
-      if (firestoreVersion === COMMUNITY_GUIDELINES_VERSION) {
-        saveAcceptedGuidelinesVersion();
-        setShowGuidelinesModal(false);
+    Promise.all([
+      getCommunitySettingsGuidelines().catch(() => null),
+      uid ? getCommunityGuidelinesAccepted(uid).catch(() => null) : Promise.resolve(null),
+    ]).then(([settings, firestoreAccepted]) => {
+      if (cancelled) return;
+
+      const version = settings?.version ?? COMMUNITY_GUIDELINES_VERSION;
+      setLiveVersion(version);
+
+      const localAccepted = getAcceptedGuidelinesVersion();
+      const bestAccepted = firestoreAccepted || localAccepted;
+
+      if (bestAccepted && bestAccepted !== localAccepted) {
+        saveAcceptedGuidelinesVersion(bestAccepted);
       }
-    }).catch(() => {});
+
+      setShowGuidelinesModal(bestAccepted !== version);
+    });
+
+    return () => { cancelled = true; };
   }, []);
 
   const handleGuidelinesContinue = () => {
-    saveAcceptedGuidelinesVersion();
+    saveAcceptedGuidelinesVersion(liveVersion);
     setShowGuidelinesModal(false);
 
     const uid = auth.currentUser?.uid;
     if (uid) {
-      saveCommunityGuidelinesAccepted(uid, COMMUNITY_GUIDELINES_VERSION).catch(() => {});
+      saveCommunityGuidelinesAccepted(uid, liveVersion).catch(() => {});
     }
   };
 

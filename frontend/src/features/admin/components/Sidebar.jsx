@@ -13,6 +13,7 @@ import DashboardIcon from '@mui/icons-material/Dashboard';
 import EventIcon from '@mui/icons-material/Event';
 import PeopleIcon from '@mui/icons-material/People';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+import ForumOutlinedIcon from '@mui/icons-material/ForumOutlined';
 import HomeWorkOutlinedIcon from '@mui/icons-material/HomeWorkOutlined';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
@@ -56,6 +57,13 @@ const NAV_ITEMS = [
     icon: <HomeWorkOutlinedIcon />,
     id: 'nav-public-home-page',
     active: (pathname) => pathname.startsWith('/admin/cms'),
+  },
+  {
+    label: 'Community',
+    path: '/admin/community',
+    icon: <ForumOutlinedIcon />,
+    id: 'nav-community',
+    active: (pathname) => pathname.startsWith('/admin/community'),
   },
   {
     label: 'Audit Log',

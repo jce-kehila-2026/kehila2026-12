@@ -17,7 +17,7 @@ import {
   where,
   writeBatch,
 } from 'firebase/firestore';
-import { db } from '../../../../firebase';
+import { auth, db } from '../../../../firebase';
 import { formatRelativeCommunityTime } from '../utils/communityDateUtils';
 import { isCommunityContentVisible } from '../utils/communityModerationUtils';
 
@@ -134,8 +134,14 @@ export async function createCommunityPost({
     ? 'Anonymous User'
     : (authorDisplayName || author || 'Current User');
 
+  // Fall back to auth.currentUser.uid so the Firestore rule (authorId == auth.uid) always passes,
+  // even when localUserId hasn't resolved from personalDetails yet.
+  const resolvedAuthorId = (authorId && authorId !== 'current-user')
+    ? authorId
+    : (auth.currentUser?.uid ?? null);
+
   const postData = {
-    authorId: authorId ?? null,
+    authorId: resolvedAuthorId,
     authorDisplayName: displayName,
     authorAvatarUrl: '',
     isAnonymous: Boolean(isAnonymous),
@@ -161,7 +167,7 @@ export async function createCommunityPost({
 
   return {
     id: docRef.id,
-    authorId: authorId ?? null,
+    authorId: resolvedAuthorId,
     author: displayName,
     authorDisplayName: displayName,
     authorAvatarUrl: '',
@@ -475,4 +481,12 @@ export async function saveCommunityGuidelinesAccepted(uid, version) {
   await setDoc(doc(db, USERS_COL, uid), {
     communityGuidelinesAcceptedVersion: version,
   }, { merge: true });
+}
+
+// ── Community Settings ────────────────────────────────────────────────────────
+
+export async function getCommunitySettingsGuidelines() {
+  const snap = await getDoc(doc(db, 'community_settings', 'guidelines'));
+  if (!snap.exists()) return null;
+  return snap.data();
 }
