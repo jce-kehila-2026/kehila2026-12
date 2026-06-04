@@ -13,6 +13,13 @@ service cloud.firestore {
       return request.auth != null && request.auth.uid == uid;
     }
 
+    // Admin aggregate screens use collectionGroup('registrations') across
+    // registration subcollections. Keep this admin-only so participant access
+    // to user mirrors stays constrained by the /users/{uid} rules below.
+    match /{path=**}/registrations/{registrationId} {
+      allow read: if isAdmin();
+    }
+
     // ── Users (top-level) ───────────────────────────────────
     // Anyone signed in can read user docs (needed for name resolution).
     // A user can write their own doc; admins can write any user doc.
@@ -23,6 +30,9 @@ service cloud.firestore {
 
       // Per-user subcollections — the owner has full access. Admins also have access.
       match /registrations/{eventId} {
+        allow read, write: if isSelf(uid) || isAdmin();
+      }
+      match /bookings/{bookingId} {
         allow read, write: if isSelf(uid) || isAdmin();
       }
       match /appointments/{apptId} {
@@ -56,19 +66,46 @@ service cloud.firestore {
         allow read: if request.auth != null;
         allow create: if isAdmin() ||
           (request.auth != null
-            && rosterKey == request.auth.uid
-            && request.resource.data.userId == request.auth.uid);
+            && request.resource.data.userId == request.auth.uid
+            && request.resource.data.eventId == eventId
+            && (
+              rosterKey == request.auth.uid
+              || request.resource.data.bookingId == rosterKey
+            ));
         allow update: if isAdmin() ||
           (request.auth != null
-            && rosterKey == request.auth.uid
             && resource.data.userId == request.auth.uid
-            && request.resource.data.userId == request.auth.uid);
+            && request.resource.data.userId == request.auth.uid
+            && request.resource.data.eventId == eventId
+            && (
+              rosterKey == request.auth.uid
+              || request.resource.data.bookingId == rosterKey
+            ));
         allow delete: if isAdmin() ||
-          (request.auth != null && rosterKey == request.auth.uid);
+          (request.auth != null
+            && (
+              rosterKey == request.auth.uid
+              || resource.data.userId == request.auth.uid
+            ));
       }
     }
 
     // ── Appointments (flat, used by admin queries) ──────────
+    match /bookings/{bookingId} {
+      allow read: if isAdmin()
+        || (request.auth != null && resource.data.userId == request.auth.uid);
+      allow create: if isAdmin()
+        || (request.auth != null
+          && request.resource.data.userId == request.auth.uid
+          && request.resource.data.bookingId == bookingId);
+      allow update: if isAdmin()
+        || (request.auth != null
+          && resource.data.userId == request.auth.uid
+          && request.resource.data.userId == request.auth.uid
+          && request.resource.data.bookingId == bookingId);
+      allow delete: if isAdmin();
+    }
+
     match /appointments/{appointmentId} {
       // Admins see everything. Participants see appointments where they are
       // the user (userId field or legacy participantId).

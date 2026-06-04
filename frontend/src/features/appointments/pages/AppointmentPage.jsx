@@ -10,12 +10,10 @@ import { APPOINTMENT_TYPE_OPTIONS, WELLNESS } from "../appointmentTypeMeta";
 import { auth } from "../../../firebase";
 import {
   cancelAppointment,
+  getAppointmentProviderOptions,
   getParticipantAppointments,
+  appointmentProviderMatchesType,
 } from "../services/appointmentService";
-import {
-  getAvailableTherapists,
-  therapistTypeForFilter,
-} from "../services/therapistService";
 import appointmentsHeroImage from "../../../assets/appointments-hero.png";
 
 const appointmentsCacheRtl = createCache({
@@ -38,18 +36,39 @@ function normalizeAppointmentStatus(raw) {
   return "pending";
 }
 
+function toDate(value) {
+  if (!value) return null;
+  if (value.toDate) return value.toDate();
+  if (value instanceof Date) return value;
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function toDateKey(value) {
+  if (typeof value === "string" && /^\d{4}-\d{2}-\d{2}/.test(value)) {
+    return value.slice(0, 10);
+  }
+  const date = toDate(value);
+  if (!date) return "";
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
 function mapAppointmentDocToCard(docRow) {
-  const rawType = docRow.type || "";
+  const rawType = docRow.appointmentType || docRow.type || docRow.eventTitle || "";
   const typeKey = rawType === "massageTherapy" ? "massage" : rawType;
   const opt =
     APPOINTMENT_TYPE_OPTIONS.find((o) => o.key === typeKey) ||
+    APPOINTMENT_TYPE_OPTIONS.find((o) => o.match.some((match) => String(rawType).toLowerCase().includes(match))) ||
     APPOINTMENT_TYPE_OPTIONS[0];
   const typeLabel = opt.label;
   return {
-    id: docRow.id,
-    dateIso: docRow.date,
-    time: docRow.time,
-    provider: docRow.therapistName,
+    id: docRow.bookingId || docRow.id,
+    dateIso: docRow.selectedDate || docRow.dateKey || toDateKey(docRow.startAt || docRow.eventDate || docRow.date),
+    time: docRow.selectedTime || docRow.selectedTimeSlot || docRow.sessionTime || docRow.time,
+    provider: docRow.providerName || docRow.therapistName || "Provider",
     appointmentType: typeLabel,
     durationMins: opt.durationMins,
     status: normalizeAppointmentStatus(docRow.status),
@@ -62,7 +81,7 @@ function mapAppointmentDocToCard(docRow) {
 function AppointmentPage({ embedInDashboard = false, locale = "en" } = {}) {
   const [selectedType, setSelectedType] = useState(null);
   const [myAppointments, setMyAppointments] = useState([]);
-  const [therapists, setTherapists] = useState([]);
+  const [appointmentProviders, setAppointmentProviders] = useState([]);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
@@ -73,24 +92,11 @@ function AppointmentPage({ embedInDashboard = false, locale = "en" } = {}) {
     let cancelled = false;
     (async () => {
       try {
-        const list = await getAvailableTherapists();
-        // Temporary: debug Firestore therapists loading
-        console.log(
-          "[Appointments] therapists loaded from Firestore collection `therapists` (status available):",
-          list
-        );
-        if (!cancelled) setTherapists(list);
-        if (!cancelled && list.length === 0) {
-          console.error(
-            "[Appointments] No therapists loaded. Check: (1) Firestore collection name is `therapists`, (2) security rules allow reads, (3) documents exist, (4) each document has status `available` (case-insensitive)."
-          );
-        }
+        const list = await getAppointmentProviderOptions();
+        if (!cancelled) setAppointmentProviders(list);
       } catch (e) {
-        console.error(
-          "[Appointments] Failed to load therapists from Firestore collection `therapists`:",
-          e
-        );
-        if (!cancelled) setTherapists([]);
+        console.error("[Appointments] Failed to load appointment event slots:", e);
+        if (!cancelled) setAppointmentProviders([]);
       }
     })();
     return () => {
@@ -134,27 +140,12 @@ function AppointmentPage({ embedInDashboard = false, locale = "en" } = {}) {
   const appointmentsCache = locale === "he" ? appointmentsCacheRtl : appointmentsCacheLtr;
 
   const filteredProviderOptions = useMemo(() => {
-    // Temporary: debug therapist filtering (strict therapist.type match)
-    console.log("[Appointments] selected appointment type (UI key):", selectedType);
-
     if (!selectedType) return [];
-
-    const typeKeyForTherapist = therapistTypeForFilter(selectedType);
-    console.log(
-      "[Appointments] therapist.type compared to (must equal):",
-      typeKeyForTherapist
+    const exactMatches = appointmentProviders.filter((provider) =>
+      appointmentProviderMatchesType(provider, selectedType)
     );
-
-    const filtered = therapists.filter((t) => t.type === typeKeyForTherapist);
-    console.log("[Appointments] filtered therapists after type filter:", filtered);
-
-    return filtered.map((t) => ({
-      id: t.id,
-      name: t.name,
-      specialty: t.specialty,
-      availableTimes: t.availableTimes,
-    }));
-  }, [selectedType, therapists]);
+    return exactMatches.length ? exactMatches : appointmentProviders;
+  }, [appointmentProviders, selectedType]);
 
   const handleCancel = async (id) => {
     const row = myAppointments.find((a) => a.id === id);

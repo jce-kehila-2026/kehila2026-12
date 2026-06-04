@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { collection, collectionGroup, getDocs, limit, orderBy, query } from 'firebase/firestore';
+import { collection, getCountFromServer, getDocs, limit, orderBy, query } from 'firebase/firestore';
 import {
   CalendarDays,
   CalendarCheck,
@@ -22,45 +22,6 @@ const EVENT_COLORS = {
   completed: '#86D17C',
   cancelled: '#A3A3A3',
 };
-
-const FALLBACK_BOOKINGS = [
-  {
-    id: 'mock-1',
-    title: 'Yoga Flow',
-    participant: 'Emma Watson',
-    type: 'Workshop',
-    date: 'May 26, 2026',
-    time: '10:00 AM',
-    status: 'Confirmed',
-  },
-  {
-    id: 'mock-2',
-    title: "Women's Circle",
-    participant: 'Olivia Brown',
-    type: 'Workshop',
-    date: 'May 26, 2026',
-    time: '06:00 PM',
-    status: 'Confirmed',
-  },
-  {
-    id: 'mock-3',
-    title: 'Qi Gong',
-    participant: 'Sophia Miller',
-    type: 'Workshop',
-    date: 'May 27, 2026',
-    time: '09:30 AM',
-    status: 'Pending',
-  },
-  {
-    id: 'mock-4',
-    title: 'Reiki Healing',
-    participant: 'Isabella Davis',
-    type: 'Appointment',
-    date: 'May 27, 2026',
-    time: '02:00 PM',
-    status: 'Confirmed',
-  },
-];
 
 const FALLBACK_ACTIVITY = [
   {
@@ -200,24 +161,29 @@ export default function DashboardPage() {
 
     async function loadDashboard() {
       try {
-        const [summary, allEvents, appointments] = await Promise.all([
+        const [summary, allEvents, legacyAppointments] = await Promise.all([
           getAdminSummary(),
           getAllEvents(),
           getAllAppointments(),
         ]);
 
-        let registrationBookings = [];
+        let centralBookings = [];
+        let centralBookingsCount = 0;
         try {
-          const registrationsSnap = await getDocs(
-            query(collectionGroup(db, 'registrations'), orderBy('registeredAt', 'desc'), limit(8))
+          const countSnap = await getCountFromServer(collection(db, 'bookings'));
+          centralBookingsCount = countSnap.data().count || 0;
+          const bookingsSnap = await getDocs(
+            query(collection(db, 'bookings'), orderBy('registeredAt', 'desc'), limit(50))
           );
-          registrationBookings = registrationsSnap.docs.map((docSnap) => ({
-            id: docSnap.id,
-            source: 'registration',
-            ...docSnap.data(),
-          }));
+          centralBookings = bookingsSnap.docs
+            .slice(0, 8)
+            .map((docSnap) => ({
+              id: docSnap.id,
+              source: 'booking',
+              ...docSnap.data(),
+            }));
         } catch (error) {
-          console.warn('Recent registrations are unavailable for dashboard:', error);
+          console.warn('Recent bookings are unavailable for dashboard:', error);
         }
 
         const logsSnap = await getDocs(
@@ -225,17 +191,17 @@ export default function DashboardPage() {
         );
 
         const bookingRows = [
-          ...registrationBookings.map((item) => ({
-            id: `registration-${item.id}`,
+          ...centralBookings.map((item) => ({
+            id: `booking-${item.bookingId || item.id}`,
             title: item.eventTitle || item.title || 'Workshop Booking',
-            participant: item.participantName || item.userName || item.participantEmail || 'Community member',
+            participant: item.userName || item.participantName || item.userEmail || item.participantEmail || 'Community member',
             type: getEventType(item).includes('appointment') ? 'Appointment' : 'Workshop',
-            date: formatDate(item.eventDate || item.selectedDate || item.registeredAt),
-            time: item.selectedTimeSlot || item.sessionTime || formatTime(item.registeredAt),
+            date: formatDate(item.startAt || item.eventDate || item.selectedDate || item.dateKey || item.registeredAt),
+            time: item.selectedTime || item.selectedTimeSlot || item.sessionTime || formatTime(item.startAt || item.registeredAt),
             status: item.status || 'confirmed',
             sortDate: toDate(item.registeredAt) || new Date(0),
           })),
-          ...appointments.map((item) => ({
+          ...legacyAppointments.map((item) => ({
             id: `appointment-${item.id}`,
             title: item.typeName || item.appointmentType || item.title || 'Appointment',
             participant: item.participantName || item.participantEmail || 'Community member',
@@ -251,7 +217,7 @@ export default function DashboardPage() {
 
         if (!ignore) {
           setEvents(allEvents);
-          setBookings(bookingRows.length ? bookingRows : FALLBACK_BOOKINGS);
+          setBookings(bookingRows);
           setActivity(
             logsSnap.docs.length
               ? logsSnap.docs.map((docSnap) => {
@@ -273,13 +239,13 @@ export default function DashboardPage() {
             bookings:
               summary.totalBookings ??
               summary.bookingsCount ??
-              (summary.registrationsThisMonth ?? 0) + (summary.upcomingAppointmentsCount ?? appointments.length),
+              centralBookingsCount,
           });
         }
       } catch (error) {
         console.error('Failed to load dashboard:', error);
         if (!ignore) {
-          setBookings(FALLBACK_BOOKINGS);
+          setBookings([]);
           setActivity(FALLBACK_ACTIVITY);
         }
       }
@@ -292,7 +258,7 @@ export default function DashboardPage() {
   }, []);
 
   const eventOverview = useMemo(() => {
-    const total = Math.max(events.length || stats.events || 28, 1);
+    const total = Math.max(events.length || stats.events || 0, 1);
     const workshops = events.filter((event) => getEventType(event).includes('workshop')).length;
     const appointments = events.filter((event) => getEventType(event).includes('appointment')).length;
     const cancelled = events.filter((event) => String(event.status || '').toLowerCase().includes('cancel')).length;
@@ -300,11 +266,11 @@ export default function DashboardPage() {
     const upcoming = events.filter(isUpcoming).length;
 
     const rows = [
-      { key: 'workshops', label: 'Workshops', value: workshops || Math.round(total * 0.64) },
-      { key: 'appointments', label: 'Appointments', value: appointments || Math.round(total * 0.25) },
-      { key: 'upcoming', label: 'Upcoming', value: upcoming || Math.round(total * 0.11) },
-      { key: 'completed', label: 'Completed', value: completed || Math.round(total * 0.28) },
-      { key: 'cancelled', label: 'Cancelled', value: cancelled || Math.max(Math.round(total * 0.07), 1) },
+      { key: 'workshops', label: 'Workshops', value: workshops },
+      { key: 'appointments', label: 'Appointments', value: appointments },
+      { key: 'upcoming', label: 'Upcoming', value: upcoming },
+      { key: 'completed', label: 'Completed', value: completed },
+      { key: 'cancelled', label: 'Cancelled', value: cancelled },
     ];
 
     return { total, rows };

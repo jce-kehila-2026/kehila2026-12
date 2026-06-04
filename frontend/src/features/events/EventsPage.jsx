@@ -1328,6 +1328,8 @@ export default function EventsPage({ embedInDashboard = false }) {
             const participants = counts[optionId] ?? 0;
             return {
               id: optionId,
+              slotId: optionId,
+              eventId: event.id,
               templateId: event.id,
               eventTemplateId: event.id,
               title: displayTitle,
@@ -1452,6 +1454,11 @@ export default function EventsPage({ embedInDashboard = false }) {
 
     if (!event || !session || registeredMap[session.id]) return;
 
+    if (event.isScheduleTemplate) {
+      setEventsError('This schedule is not ready for registration yet. Please choose an admin-published event.');
+      return;
+    }
+
     if (event.registrationOpen === false) {
       setEventsError('Registration is closed for this event.');
       return;
@@ -1462,18 +1469,23 @@ export default function EventsPage({ embedInDashboard = false }) {
 
     try {
       const newRegistrationId = await addRegistration({
-        eventId: session.id,
+        eventId: event.id,
+        slotId: session.id,
         uid: currentUser.uid,
         participantName: currentUser.displayName || currentUser.email.split('@')[0],
         participantEmail: currentUser.email,
         eventTitle: event.title,
         eventDate: session.startDate || null,
+        dateKey: session.selectedDate,
+        startAt: session.startDate || null,
+        endAt: session.endDate || null,
         eventLocation: session.room || event.location || '',
         eventCoverUrl: event.imageUrl || '',
         eventTemplateId: event.id,
         parentEventId: event.id,
         eventType: event.eventType,
         selectedDate: session.selectedDate,
+        selectedTime: session.selectedTimeSlot,
         providerId: session.providerId,
         providerName: session.providerName,
         selectedTimeSlot: session.selectedTimeSlot,
@@ -1483,7 +1495,11 @@ export default function EventsPage({ embedInDashboard = false }) {
         recurringSchedule: event.weeklySchedule,
       });
       setRegisteredMap((current) => ({ ...current, [session.id]: newRegistrationId }));
-      setCounts((current) => ({ ...current, [session.id]: (current[session.id] ?? 0) + 1 }));
+      setCounts((current) => ({
+        ...current,
+        [event.id]: (current[event.id] ?? 0) + 1,
+        [session.id]: (current[session.id] ?? 0) + 1,
+      }));
     } catch (error) {
       console.error('Registration action failed:', error);
       setEventsError('Could not register for this session. Please try again.');
@@ -1507,13 +1523,18 @@ export default function EventsPage({ embedInDashboard = false }) {
     setEventsError('');
 
     try {
-      await removeRegistration(registrationId, currentUser.displayName || currentUser.email, session.id);
+      const realEventId = session.eventId || session.eventTemplateId || session.templateId || session.parentEventId || session.id;
+      await removeRegistration(registrationId, currentUser.displayName || currentUser.email, realEventId);
       setRegisteredMap((current) => {
         const next = { ...current };
         delete next[session.id];
         return next;
       });
-      setCounts((current) => ({ ...current, [session.id]: Math.max(0, (current[session.id] ?? 1) - 1) }));
+      setCounts((current) => ({
+        ...current,
+        [realEventId]: Math.max(0, (current[realEventId] ?? 1) - 1),
+        [session.id]: Math.max(0, (current[session.id] ?? 1) - 1),
+      }));
     } catch (error) {
       console.error('Cancel session registration failed:', error);
       setEventsError('Could not cancel this session registration. Please try again.');

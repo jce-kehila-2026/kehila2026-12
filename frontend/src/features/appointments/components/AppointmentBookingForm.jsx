@@ -20,35 +20,18 @@ import {
 import { ThemeProvider, createTheme, useTheme } from "@mui/material/styles";
 import { auth } from "../../../firebase";
 import { WELLNESS } from "../appointmentTypeMeta";
-import {
-  checkDuplicateAppointment,
-  createAppointment,
-} from "../services/appointmentService";
-
-/**
- * Default bookable times (every 15 min, 08:00–18:00). Override via `timeSlotOptions` prop when wiring availability.
- */
-function buildDefaultTimeSlotStrings() {
-  const out = [];
-  for (let h = 8; h <= 18; h += 1) {
-    for (const m of [0, 15, 30, 45]) {
-      if (h === 18 && m > 0) break;
-      out.push(`${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`);
-    }
-  }
-  return out;
-}
+import { createAppointment } from "../services/appointmentService";
 
 function providerDisplayName(p) {
   if (!p) return "";
-  return p.name ?? "";
+  return p.displayName ?? p.name ?? "";
 }
 
 /**
  * Section 2 — book appointment (therapist, date, time, notes, CTA). Light wellness UI only.
- * @param {string | null} selectedAppointmentTypeKey — appointment type card key; filters therapists
- * @param {{ id: string, name: string, specialty?: string, availableTimes?: string[] }[]} providerOptions — therapists matching the selected type
- * @param {string[]} [timeSlotOptions] — optional HH:mm list; defaults to generated slots
+ * @param {string | null} selectedAppointmentTypeKey — appointment type card key; filters event providers
+ * @param {{ id: string, name: string, specialty?: string, slots?: Object[] }[]} providerOptions — event providers matching the selected type
+ * @param {string[]} [timeSlotOptions] — legacy optional HH:mm list
  * @param {() => void | Promise<void>} [onBookingComplete] — refresh list after successful book
  */
 function AppointmentBookingForm({
@@ -69,7 +52,7 @@ function AppointmentBookingForm({
 
   const [providerId, setProviderId] = useState("");
   const [date, setDate] = useState(() => new Date());
-  const [selectedTime, setSelectedTime] = useState("");
+  const [selectedSlotId, setSelectedSlotId] = useState("");
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
   const [snackbar, setSnackbar] = useState({
@@ -92,7 +75,7 @@ function AppointmentBookingForm({
   }, [selectedAppointmentTypeKey, providerOptions]);
 
   useEffect(() => {
-    setSelectedTime("");
+    setSelectedSlotId("");
   }, [providerId]);
 
   const therapistSelectDisabled =
@@ -105,21 +88,34 @@ function AppointmentBookingForm({
 
   const slotOptions = useMemo(() => {
     if (!providerId) return [];
-    const fromTherapist = selectedProvider?.availableTimes;
-    if (Array.isArray(fromTherapist) && fromTherapist.length > 0) {
-      return fromTherapist;
+    const dateKey = date && !Number.isNaN(date.getTime?.()) ? format(date, "yyyy-MM-dd") : "";
+    const fromProviderSlots = Array.isArray(selectedProvider?.slots)
+      ? selectedProvider.slots.filter((slot) => !dateKey || slot.dateKey === dateKey)
+      : [];
+    if (fromProviderSlots.length > 0) {
+      return fromProviderSlots;
     }
     if (Array.isArray(timeSlotOptions) && timeSlotOptions.length > 0) {
-      return timeSlotOptions;
+      return timeSlotOptions.map((time) => ({
+        id: time,
+        selectedTime: time,
+        selectedTimeSlot: time,
+        dateKey,
+      }));
     }
     return [];
-  }, [providerId, selectedProvider, timeSlotOptions]);
+  }, [date, providerId, selectedProvider, timeSlotOptions]);
 
   useEffect(() => {
-    if (selectedTime && slotOptions.length > 0 && !slotOptions.includes(selectedTime)) {
-      setSelectedTime("");
+    if (selectedSlotId && !slotOptions.some((slot) => slot.id === selectedSlotId)) {
+      setSelectedSlotId("");
     }
-  }, [selectedTime, slotOptions]);
+  }, [selectedSlotId, slotOptions]);
+
+  const selectedSlot = useMemo(
+    () => slotOptions.find((slot) => slot.id === selectedSlotId) || null,
+    [selectedSlotId, slotOptions]
+  );
 
   const fieldSx = useMemo(
     () => ({
@@ -316,7 +312,7 @@ function AppointmentBookingForm({
       showMessage("Please select a date.", "error");
       return;
     }
-    if (!selectedTime) {
+    if (!selectedSlotId || !selectedSlot) {
       showMessage("Please select a time.", "error");
       return;
     }
@@ -325,39 +321,27 @@ function AppointmentBookingForm({
       return;
     }
 
-    const therapist = providerOptions.find((p) => p.id === providerId);
-    const therapistName = therapist?.name?.trim() || "";
-    if (!therapistName) {
+    const provider = providerOptions.find((p) => p.id === providerId);
+    const providerName = provider?.name?.trim() || "";
+    if (!providerName) {
       showMessage("Please select a therapist.", "error");
       return;
     }
 
-    const dateStr = format(date, "yyyy-MM-dd");
-
     setSaving(true);
     try {
-      const isDuplicate = await checkDuplicateAppointment(
-        dateStr,
-        selectedTime,
-        therapistName
-      );
-      if (isDuplicate) {
-        showMessage("This appointment time is already booked.", "error");
-        return;
-      }
-
       await createAppointment({
+        ...selectedSlot,
         type: selectedAppointmentTypeKey,
-        therapistName,
-        date: dateStr,
-        time: selectedTime,
+        appointmentType: selectedAppointmentTypeKey,
+        providerName,
         notes: notes.trim(),
         status: "pending",
       });
 
       setProviderId("");
       setDate(new Date());
-      setSelectedTime("");
+      setSelectedSlotId("");
       setNotes("");
       showMessage("Appointment booked successfully", "success");
 
@@ -455,7 +439,7 @@ function AppointmentBookingForm({
                     if (providerOptions.length === 0) {
                       return (
                         <Typography component="span" sx={placeholderTypographySx}>
-                          No therapists available for this type
+                          No providers available for this type
                         </Typography>
                       );
                     }
@@ -528,14 +512,15 @@ function AppointmentBookingForm({
               <TextField
                 fullWidth
                 select
-                value={selectedTime}
-                onChange={(e) => setSelectedTime(e.target.value)}
+                value={selectedSlotId}
+                onChange={(e) => setSelectedSlotId(e.target.value)}
                 sx={timeFieldLtrSx}
                 SelectProps={{
                   inputProps: { dir: "ltr" },
                   displayEmpty: true,
                   renderValue: (v) => {
-                    if (!v) {
+                    const slot = slotOptions.find((item) => item.id === v);
+                    if (!slot) {
                       return (
                         <Typography component="span" sx={placeholderTypographySx}>
                           Choose a time
@@ -554,8 +539,8 @@ function AppointmentBookingForm({
                           direction: "ltr",
                           unicodeBidi: "plaintext",
                         }}
-                      >
-                        {v}
+                    >
+                        {slot.selectedTime || slot.selectedTimeSlot || v}
                       </Typography>
                     );
                   },
@@ -565,13 +550,18 @@ function AppointmentBookingForm({
                 <MenuItem value="" sx={{ direction: "ltr", textAlign: "left", justifyContent: "flex-start" }}>
                   <em>Choose a time</em>
                 </MenuItem>
+                {slotOptions.length === 0 && (
+                  <MenuItem disabled value="" sx={{ direction: "ltr", textAlign: "left", justifyContent: "flex-start" }}>
+                    <em>No times available for this date</em>
+                  </MenuItem>
+                )}
                 {slotOptions.map((slot) => (
                   <MenuItem
-                    key={slot}
-                    value={slot}
+                    key={slot.id}
+                    value={slot.id}
                     sx={{ direction: "ltr", textAlign: "left", justifyContent: "flex-start" }}
                   >
-                    {slot}
+                    {slot.selectedTime || slot.selectedTimeSlot || slot.id}
                   </MenuItem>
                 ))}
               </TextField>
