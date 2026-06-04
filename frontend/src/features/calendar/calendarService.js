@@ -1,10 +1,11 @@
 // Phase 2: Calendar data now reads from per-user subcollections instead of
 // scanning top-level collections by userId/email.
 //   - Notes:        users/{uid}/calendar_notes/{noteId}
-//   - Registrations: users/{uid}/registrations/{eventId}
+//   - Bookings:     users/{uid}/bookings/{bookingId}
+//   - Registrations: users/{uid}/registrations/{eventId} (legacy fallback)
 //   - Appointments: users/{uid}/appointments/{apptId}   (mirror of /appointments)
 // The top-level /events collection is still used for display details — joined
-// in-memory by event id from the user's registration mirror.
+// in-memory by event id from the user's booking mirror.
 
 import { addDoc, collection, doc, getDoc, getDocs, query, limit, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../firebase';
@@ -61,20 +62,76 @@ function addMinutes(time, minutesToAdd) {
   return toTimeKey(date);
 }
 
+function isCancelled(data) {
+  return String(data?.status || '').trim().toLowerCase() === 'cancelled';
+}
+
+function isGeneratedSessionId(value) {
+  return String(value || '').includes('__');
+}
+
+function getBookingIdentityKeys(data, docId = '') {
+  const slotKey = data?.slotId || (isGeneratedSessionId(docId) ? docId : '');
+  const keys = [
+    data?.bookingId,
+    data?.registrationKey,
+    data?.sessionRegistrationKey,
+    slotKey,
+    docId,
+  ].filter(Boolean);
+
+  if (!slotKey && data?.eventId) {
+    keys.push(data.eventId);
+  }
+
+  return [...new Set(keys)];
+}
+
 function normalizeEvent(docData) {
-  const date = toDate(docData.date || docData.startAt || docData.startDate || docData.startTime);
-  const startTime = normalizeTime(docData.startTime || docData.time || date, '10:00');
+  const date = toDate(docData.selectedDate || docData.dateKey || docData.date || docData.startAt || docData.startDate || docData.startTime || docData.eventDate);
+  const startTime = normalizeTime(
+    docData.selectedTime || docData.selectedTimeSlot || docData.sessionTime || docData.startAt || docData.startTime || docData.time || date,
+    '10:00'
+  );
   const endTime = normalizeTime(docData.endTime || docData.endAt, addMinutes(startTime, 60));
 
   return {
-    id: docData.id,
-    title: docData.title || 'She-Na Event',
+    id: docData.slotId || docData.bookingId || docData.id,
+    title: docData.eventTitle || docData.title || 'She-Na Event',
     type: 'registration',
-    date: docData.dateKey || toDateKey(date),
+    date: docData.dateKey || docData.selectedDate || toDateKey(date),
     startTime,
     endTime,
-    location: docData.location || '',
-    description: docData.description || '',
+    location: docData.eventLocation || docData.room || docData.location || '',
+    description: docData.description || docData.eventDescription || docData.notes || '',
+    registered: true,
+  };
+}
+
+function isAppointmentBooking(docData) {
+  return String(docData.eventType || docData.type || docData.category || '')
+    .toLowerCase()
+    .includes('appointment');
+}
+
+function normalizeBookingAppointment(docData) {
+  const date = toDate(docData.selectedDate || docData.dateKey || docData.startAt || docData.eventDate);
+  const startTime = normalizeTime(
+    docData.selectedTime || docData.selectedTimeSlot || docData.sessionTime || docData.startAt || date,
+    '09:00'
+  );
+  const endTime = normalizeTime(docData.endTime || docData.endAt, addMinutes(startTime, 60));
+  const appointmentType = docData.appointmentType || docData.eventTitle || docData.title || 'Appointment';
+
+  return {
+    id: docData.bookingId || docData.id,
+    title: docData.title || `${appointmentType} Appointment`,
+    type: 'appointment',
+    date: docData.dateKey || docData.selectedDate || toDateKey(date),
+    startTime,
+    endTime,
+    location: docData.eventLocation || docData.room || docData.location || '',
+    description: docData.description || docData.notes || `${docData.providerName || 'Provider'} appointment.`,
     registered: true,
   };
 }
@@ -128,34 +185,63 @@ export async function getCalendarData(user) {
     return { events: [], appointments: [], notes: [] };
   }
 
-  const [registrations, appointments, notes] = await Promise.all([
+  const [bookings, legacyRegistrations, appointments, notes] = await Promise.all([
+    getUserSubcollection(uid, 'bookings'),
     getUserSubcollection(uid, 'registrations'),
     getUserSubcollection(uid, 'appointments'),
     getUserSubcollection(uid, 'calendar_notes'),
   ]);
 
-  // Hydrate registration mirrors with the latest event doc (in case denorm is stale).
-  const eventsFromRegs = await Promise.all(
-    registrations.map(async (reg) => {
+  const activeBookings = bookings.filter((booking) => !isCancelled(booking));
+  const appointmentBookings = activeBookings.filter(isAppointmentBooking);
+  const eventBookings = activeBookings.filter((booking) => !isAppointmentBooking(booking));
+  const bookingIdentityKeys = new Set(
+    activeBookings.flatMap((booking) => getBookingIdentityKeys(booking, booking.id))
+  );
+  const legacyOnlyRegistrations = legacyRegistrations
+    .filter((registration) => !isCancelled(registration))
+    .filter((registration) => (
+      !getBookingIdentityKeys(registration, registration.id).some((key) => bookingIdentityKeys.has(key))
+    ));
+  const registrationSources = [...eventBookings, ...legacyOnlyRegistrations];
+
+  // Hydrate booking mirrors with the latest event doc (in case denorm is stale).
+  const eventsFromBookings = await Promise.all(
+    registrationSources.map(async (booking) => {
       try {
-        const eventSnap = await getDoc(doc(db, 'events', reg.eventId || reg.id));
+        const eventSnap = await getDoc(doc(db, 'events', booking.eventId || booking.id));
         if (eventSnap.exists()) {
-          return { id: eventSnap.id, ...eventSnap.data() };
+          return {
+            id: eventSnap.id,
+            ...eventSnap.data(),
+            ...booking,
+            title: booking.eventTitle || eventSnap.data().title,
+          };
         }
       } catch (_) {}
       // Fallback to embedded snapshot if the source event was deleted.
       return {
-        id: reg.eventId || reg.id,
-        title: reg.eventTitle,
-        date: reg.eventDate,
-        location: reg.eventLocation,
+        id: booking.eventId || booking.id,
+        bookingId: booking.bookingId,
+        slotId: booking.slotId,
+        eventTitle: booking.eventTitle,
+        selectedDate: booking.selectedDate,
+        dateKey: booking.dateKey,
+        selectedTime: booking.selectedTime,
+        startAt: booking.startAt || booking.eventDate,
+        endAt: booking.endAt,
+        eventLocation: booking.eventLocation,
+        room: booking.room,
       };
     })
   );
 
   return {
-    events: eventsFromRegs.map(normalizeEvent).filter((event) => event.date),
-    appointments: appointments.map(normalizeAppointment).filter((appointment) => appointment.date),
+    events: eventsFromBookings.map(normalizeEvent).filter((event) => event.date),
+    appointments: [
+      ...appointmentBookings.map(normalizeBookingAppointment),
+      ...appointments.filter((appointment) => !isCancelled(appointment)).map(normalizeAppointment),
+    ].filter((appointment) => appointment.date),
     notes: notes.map(normalizeNote).filter((note) => note.date),
   };
 }

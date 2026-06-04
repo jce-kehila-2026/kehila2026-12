@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { collectionGroup, getDocs, limit, orderBy, query } from 'firebase/firestore';
+import { collection, getDocs, limit, orderBy, query } from 'firebase/firestore';
 import {
   CalendarDays,
   Edit3,
@@ -11,16 +11,6 @@ import {
 import { db } from '../../../firebase';
 import { getAllAppointments } from '../services/appointmentService';
 import './AppointmentsPage.css';
-
-const FALLBACK_BOOKINGS = [
-  { id: '1', participantName: 'Dema Dabbagh', participantEmail: 'demadabbagh84@gmail.com', eventType: 'Appointment', eventName: 'Reflexology', providerName: 'Michal', eventDate: '2026-05-26', eventTime: '10:00', registeredAt: '2026-05-20T14:14:00', status: 'approved' },
-  { id: '2', participantName: 'Nour Rawashdeh', participantEmail: 'nour.rw98@gmail.com', eventType: 'Workshop', eventName: 'Yoga', providerName: 'She-Na Team', eventDate: '2026-05-26', eventTime: '12:30', registeredAt: '2026-05-21T09:30:00', status: 'pending' },
-  { id: '3', participantName: 'Sara Al Omari', participantEmail: 'sara.omari@gmail.com', eventType: 'Workshop', eventName: 'Qi Gong', providerName: 'Margarita', eventDate: '2026-05-26', eventTime: '17:00', registeredAt: '2026-05-22T11:05:00', status: 'approved' },
-  { id: '4', participantName: 'Lina Eddin', participantEmail: 'lina.eddin@gmail.com', eventType: 'Appointment', eventName: 'Recovery Check-in', providerName: 'Stav', eventDate: '2026-05-27', eventTime: '11:00', registeredAt: '2026-05-23T16:44:00', status: 'completed' },
-  { id: '5', participantName: 'Maya Abed', participantEmail: 'maya.abed@gmail.com', eventType: 'Workshop', eventName: "Women's Circle", providerName: 'She-Na Team', eventDate: '2026-05-27', eventTime: '14:00', registeredAt: '2026-05-24T08:10:00', status: 'pending' },
-  { id: '6', participantName: 'Joud Odeh', participantEmail: 'joud.odeh@gmail.com', eventType: 'Appointment', eventName: 'Wellness Support', providerName: 'Margarita', eventDate: '2026-05-27', eventTime: '16:30', registeredAt: '2026-05-24T18:21:00', status: 'cancelled' },
-  { id: '7', participantName: 'Reem Khoury', participantEmail: 'reem.khoury@gmail.com', eventType: 'Workshop', eventName: 'Qi Gong', providerName: 'She-Na Team', eventDate: '2026-05-28', eventTime: '09:30', registeredAt: '2026-05-25T12:02:00', status: 'approved' },
-];
 
 function getInitials(name = 'Participant') {
   return name
@@ -38,14 +28,25 @@ function toDate(value) {
   return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
 
+function toDateKey(value) {
+  if (!value) return '';
+  if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}/.test(value)) return value.slice(0, 10);
+  const date = toDate(value);
+  if (!date) return '';
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
 function formatDate(dateValue) {
   const date = toDate(dateValue);
-  if (!date) return 'May 26, 2026';
+  if (!date) return 'Date TBD';
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
 function formatTime(timeValue) {
-  if (!timeValue) return '10:00 AM';
+  if (!timeValue) return 'Time TBD';
   if (timeValue?.toDate) {
     return timeValue.toDate().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
   }
@@ -58,7 +59,7 @@ function formatTime(timeValue) {
 
 function formatRegisteredAt(value) {
   const date = toDate(value);
-  if (!date) return { date: 'May 20, 2026', time: '02:14 PM' };
+  if (!date) return { date: 'Not recorded', time: '' };
   return {
     date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
     time: date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
@@ -84,20 +85,20 @@ function normalizeAppointment(item) {
   };
 }
 
-function normalizeRegistration(item, index) {
+function normalizeBooking(item, index) {
   const eventType = String(item.eventType || item.type || '').toLowerCase().includes('appointment')
     ? 'Appointment'
     : 'Workshop';
   return {
-    id: `registration-${item.id || index}`,
+    id: `booking-${item.bookingId || item.id || index}`,
     participantName: item.participantName || item.userName || item.name || 'Community Participant',
     participantEmail: item.participantEmail || item.userEmail || item.email || 'participant@she-na.org',
     eventType,
     eventName: item.eventTitle || item.title || item.appointmentType || (eventType === 'Workshop' ? 'Workshop' : 'Appointment'),
     providerName: item.providerName || item.provider || (eventType === 'Workshop' ? 'She-Na Team' : 'Michal'),
-    eventDate: item.eventDate || item.selectedDate || item.date || item.registeredAt || '2026-05-26',
-    eventTime: item.sessionTime || item.selectedTimeSlot || item.time || '10:00',
-    registeredAt: item.registeredAt || item.createdAt || '2026-05-20T14:14:00',
+    eventDate: item.startAt || item.eventDate || item.selectedDate || item.dateKey || item.date || item.registeredAt,
+    eventTime: item.selectedTime || item.selectedTimeSlot || item.sessionTime || item.time || item.startAt,
+    registeredAt: item.registeredAt || item.createdAt,
     status: normalizeStatus(item.status || 'approved'),
   };
 }
@@ -139,7 +140,7 @@ function MiniCalendar({ onSelectDate }) {
 }
 
 export default function AppointmentsPage() {
-  const [bookings, setBookings] = useState(FALLBACK_BOOKINGS);
+  const [bookings, setBookings] = useState([]);
   const [search, setSearch] = useState('');
   const [type, setType] = useState('All Types');
   const [status, setStatus] = useState('All Statuses');
@@ -151,17 +152,18 @@ export default function AppointmentsPage() {
     let ignore = false;
     Promise.all([
       getAllAppointments().catch(() => []),
-      getDocs(query(collectionGroup(db, 'registrations'), orderBy('registeredAt', 'desc'), limit(100)))
-        .then((snap) => snap.docs.map((docSnap, index) => ({ id: docSnap.id || index, ...docSnap.data() })))
+      getDocs(query(collection(db, 'bookings'), orderBy('registeredAt', 'desc'), limit(250)))
+        .then((snap) => snap.docs
+          .map((docSnap, index) => ({ id: docSnap.id || index, ...docSnap.data() })))
         .catch(() => []),
     ])
-      .then(([appointmentItems, registrationItems]) => {
+      .then(([appointmentItems, bookingItems]) => {
         if (ignore) return;
         const rows = [
-          ...registrationItems.map(normalizeRegistration),
+          ...bookingItems.map(normalizeBooking),
           ...appointmentItems.map(normalizeAppointment),
         ];
-        if (rows.length) setBookings(rows);
+        setBookings(rows);
       })
       .catch((error) => console.error('Failed to load bookings:', error));
     return () => {
@@ -176,7 +178,7 @@ export default function AppointmentsPage() {
       const matchesType = type === 'All Types' || item.eventType === type;
       const matchesStatus = status === 'All Statuses' || item.status === status.toLowerCase();
       const matchesProvider = provider === 'All Providers' || item.providerName === provider;
-      const matchesDate = !selectedDate || String(item.eventDate).includes(selectedDate);
+      const matchesDate = !selectedDate || toDateKey(item.eventDate) === selectedDate;
       return matchesSearch && matchesType && matchesStatus && matchesProvider && matchesDate;
     });
   }, [bookings, provider, search, selectedDate, status, type]);

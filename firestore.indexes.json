@@ -2,10 +2,14 @@
   "indexes": [],
   "fieldOverrides": [
     {
-      "collectionGroup": "audit_logs",
-      "fieldPath": "expiresAt",
-      "ttl": true,
-      "indexes": []
+      "collectionGroup": "registrations",
+      "fieldPath": "registeredAt",
+      "indexes": [
+        {
+          "order": "DESCENDING",
+          "queryScope": "COLLECTION_GROUP"
+        }
+      ]
     }
   ]
 }
