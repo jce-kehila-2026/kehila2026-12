@@ -10,7 +10,6 @@ import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlin
 import FavoriteOutlinedIcon from '@mui/icons-material/FavoriteOutlined';
 import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
 import LogoutIcon from '@mui/icons-material/Logout';
-import MailOutlineOutlinedIcon from '@mui/icons-material/MailOutlineOutlined';
 import MoodOutlinedIcon from '@mui/icons-material/MoodOutlined';
 import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNoneOutlined';
 import PlayArrowRoundedIcon from '@mui/icons-material/PlayArrowRounded';
@@ -44,7 +43,6 @@ const participantNavItems = [
   { key: 'calendar', label: 'Calendar', icon: CalendarMonthOutlinedIcon },
   { key: 'events', label: 'Events', icon: EventAvailableOutlinedIcon, path: '/events' },
   { key: 'community', label: 'Community', icon: Diversity3OutlinedIcon },
-  { key: 'messages', label: 'Messages', icon: ChatBubbleOutlineOutlinedIcon, badge: 3 },
   { key: 'profile', label: 'Settings', icon: SettingsOutlinedIcon },
 ];
 
@@ -541,7 +539,7 @@ export default function ParticipantHome({ initialView = 'home' }) {
             <VolunteerActivismOutlinedIcon />
             <strong>Need Support?</strong>
             <span>We are here for you.</span>
-            <button type="button" onClick={() => setActiveView('messages')}>
+            <button type="button" onClick={() => setActiveView('community')}>
               Contact Us
             </button>
           </div>
@@ -562,9 +560,6 @@ export default function ParticipantHome({ initialView = 'home' }) {
               <button type="button" aria-label="Notifications">
                 <NotificationsNoneOutlinedIcon />
                 <span>3</span>
-              </button>
-              <button type="button" aria-label="Messages">
-                <MailOutlineOutlinedIcon />
               </button>
               <div className="participant-profile">
                 <strong>{displayInitials}</strong>
