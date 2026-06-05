@@ -393,13 +393,13 @@ export default function ParticipantHome({ initialView = 'home' }) {
 
   useEffect(() => { loadNotifications(); }, [loadNotifications]);
 
-  async function handleBellClick() {
+  function handleBellClick() {
     if (notifOpen) {
       setNotifOpen(false);
       return;
     }
-    await loadNotifications();
     setNotifOpen(true);
+    loadNotifications(); // refresh in background, don't block opening
   }
 
   async function handleMarkAllRead() {
