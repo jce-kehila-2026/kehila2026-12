@@ -3,17 +3,21 @@ import CampaignOutlinedIcon from '@mui/icons-material/CampaignOutlined';
 import AddIcon from '@mui/icons-material/Add';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
 import ArchiveOutlinedIcon from '@mui/icons-material/ArchiveOutlined';
+import ForwardToInboxOutlinedIcon from '@mui/icons-material/ForwardToInboxOutlined';
 import CloseIcon from '@mui/icons-material/Close';
 import EventNoteOutlinedIcon from '@mui/icons-material/EventNoteOutlined';
 import NotificationsActiveOutlinedIcon from '@mui/icons-material/NotificationsActiveOutlined';
 import NewReleasesOutlinedIcon from '@mui/icons-material/NewReleasesOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import GroupOutlinedIcon from '@mui/icons-material/GroupOutlined';
+import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
 import { useAdmin } from '../context/AdminContext';
 import {
   createUpdate,
   fetchUpdates,
   archiveUpdate,
   deleteUpdate,
+  fetchParticipantEmails,
 } from '../services/updatesService';
 import './UpdatesPage.css';
 
@@ -44,6 +48,8 @@ const BLANK_FORM = { title: '', body: '', type: 'general' };
 
 export default function UpdatesPage() {
   const { currentUser } = useAdmin();
+
+  // ── Compose state ────────────────────────────────────────
   const [updates, setUpdates] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
@@ -53,6 +59,13 @@ export default function UpdatesPage() {
   const [showArchived, setShowArchived] = useState(false);
   const modalRef = useRef(null);
 
+  // ── Email modal state ────────────────────────────────────
+  const [emailTarget, setEmailTarget] = useState(null); // the update being emailed
+  const [emailLoading, setEmailLoading] = useState(false);
+  const [emailList, setEmailList] = useState([]);
+  const [emailFetchError, setEmailFetchError] = useState('');
+
+  // ── Data loading ─────────────────────────────────────────
   const loadUpdates = useCallback(async () => {
     setLoading(true);
     try {
@@ -67,15 +80,19 @@ export default function UpdatesPage() {
 
   useEffect(() => { loadUpdates(); }, [loadUpdates]);
 
-  // Close modal on Escape
+  // ── Escape closes any open modal ─────────────────────────
   useEffect(() => {
     function onKey(e) {
-      if (e.key === 'Escape') setShowModal(false);
+      if (e.key === 'Escape') {
+        setShowModal(false);
+        setEmailTarget(null);
+      }
     }
-    if (showModal) window.addEventListener('keydown', onKey);
+    if (showModal || emailTarget) window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [showModal]);
+  }, [showModal, emailTarget]);
 
+  // ── Compose handlers ─────────────────────────────────────
   function openModal() {
     setForm(BLANK_FORM);
     setError('');
@@ -124,6 +141,35 @@ export default function UpdatesPage() {
     }
   }
 
+  // ── Email handlers ───────────────────────────────────────
+  async function handleEmailClick(update) {
+    setEmailTarget(update);
+    setEmailList([]);
+    setEmailFetchError('');
+    setEmailLoading(true);
+    try {
+      const emails = await fetchParticipantEmails();
+      setEmailList(emails);
+    } catch (err) {
+      console.error('Failed to fetch participant emails:', err);
+      setEmailFetchError('Could not load participant emails. Please try again.');
+    } finally {
+      setEmailLoading(false);
+    }
+  }
+
+  function handleProceedEmail() {
+    if (!emailTarget || emailList.length === 0) return;
+    const bcc = emailList.join(',');
+    const subject = encodeURIComponent(`She-Na Update: ${emailTarget.title}`);
+    const body = encodeURIComponent(
+      `Hello,\n\n${emailTarget.body}\n\nBest regards,\nShe-Na Team`
+    );
+    window.location.href = `mailto:?bcc=${bcc}&subject=${subject}&body=${body}`;
+    setEmailTarget(null);
+  }
+
+  // ── Render ───────────────────────────────────────────────
   const visibleUpdates = updates.filter((u) => showArchived || u.active !== false);
 
   return (
@@ -204,11 +250,21 @@ export default function UpdatesPage() {
                 {!archived && (
                   <button
                     type="button"
+                    className="updates-page__action-btn updates-page__action-btn--email"
+                    onClick={() => handleEmailClick(update)}
+                  >
+                    <ForwardToInboxOutlinedIcon fontSize="small" />
+                    Send Email
+                  </button>
+                )}
+                {!archived && (
+                  <button
+                    type="button"
                     className="updates-page__action-btn updates-page__action-btn--archive"
-                    title="Archive"
                     onClick={() => handleArchive(update.id)}
                   >
                     <ArchiveOutlinedIcon fontSize="small" />
+                    Archive
                   </button>
                 )}
                 <button
@@ -315,6 +371,109 @@ export default function UpdatesPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* Email Confirmation Modal */}
+      {emailTarget && (
+        <div
+          className="updates-modal-overlay"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Send as Email"
+          onClick={(e) => { if (e.target === e.currentTarget) setEmailTarget(null); }}
+        >
+          <div className="updates-modal">
+            <div className="updates-modal__header">
+              <div className="updates-email-modal__title">
+                <ForwardToInboxOutlinedIcon style={{ fontSize: 20, color: '#6d35b8' }} />
+                <h2>Send as Email</h2>
+              </div>
+              <button
+                type="button"
+                className="updates-modal__close"
+                aria-label="Close"
+                onClick={() => setEmailTarget(null)}
+              >
+                <CloseIcon fontSize="small" />
+              </button>
+            </div>
+
+            <div className="updates-modal__form">
+              {/* Update preview */}
+              <div className="updates-email-modal__preview">
+                <p className="updates-email-modal__preview-label">Update</p>
+                <p className="updates-email-modal__preview-title">{emailTarget.title}</p>
+                <p className="updates-email-modal__preview-body">{emailTarget.body}</p>
+              </div>
+
+              {/* Info / status */}
+              <div className="updates-email-modal__info">
+                {emailLoading && (
+                  <div className="updates-email-modal__status">
+                    <span className="updates-email-modal__spinner" />
+                    Fetching participant emails…
+                  </div>
+                )}
+
+                {!emailLoading && emailFetchError && (
+                  <p className="updates-modal__error">{emailFetchError}</p>
+                )}
+
+                {!emailLoading && !emailFetchError && (
+                  <>
+                    <div className="updates-email-modal__count">
+                      <GroupOutlinedIcon style={{ fontSize: 18 }} />
+                      <span>
+                        <strong>{emailList.length}</strong> participant email{emailList.length !== 1 ? 's' : ''} found
+                      </span>
+                    </div>
+
+                    {emailList.length > 100 && (
+                      <div className="updates-email-modal__warning">
+                        <WarningAmberOutlinedIcon style={{ fontSize: 16 }} />
+                        <span>
+                          Large recipient list ({emailList.length}). Some email clients may truncate
+                          the BCC field. Consider splitting into batches.
+                        </span>
+                      </div>
+                    )}
+
+                    {emailList.length === 0 && (
+                      <p className="updates-email-modal__note">
+                        No participant accounts found. Make sure participants have an email saved
+                        in their profile.
+                      </p>
+                    )}
+
+                    <p className="updates-email-modal__note">
+                      This will open your default email client with all participant emails in the
+                      <strong> BCC</strong> field to protect privacy.
+                    </p>
+                  </>
+                )}
+              </div>
+
+              <div className="updates-modal__footer">
+                <button
+                  type="button"
+                  className="updates-modal__cancel"
+                  onClick={() => setEmailTarget(null)}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  className="updates-modal__submit updates-email-modal__proceed"
+                  disabled={emailLoading || emailList.length === 0 || !!emailFetchError}
+                  onClick={handleProceedEmail}
+                >
+                  <ForwardToInboxOutlinedIcon style={{ fontSize: 17 }} />
+                  {emailLoading ? 'Loading…' : 'Open Email Client'}
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}

@@ -10,6 +10,7 @@ import {
   orderBy,
   serverTimestamp,
 } from 'firebase/firestore';
+
 import { db } from '../../../firebase';
 
 const UPDATES_COL = 'updates';
@@ -86,4 +87,23 @@ export async function markAllAsRead(uid) {
   return updateDoc(doc(db, 'users', uid), {
     lastSeenUpdatesAt: serverTimestamp(),
   });
+}
+
+/**
+ * Fetch email addresses for all users with role === 'participant'.
+ * Filtered client-side to avoid a composite index on (role, email).
+ * Returns a deduplicated array of non-empty email strings.
+ */
+export async function fetchParticipantEmails() {
+  const snap = await getDocs(collection(db, 'users'));
+  const seen = new Set();
+  const emails = [];
+  for (const d of snap.docs) {
+    const { role, email } = d.data();
+    if (role === 'participant' && email && !seen.has(email)) {
+      seen.add(email);
+      emails.push(email);
+    }
+  }
+  return emails;
 }
