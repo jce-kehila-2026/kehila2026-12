@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
 import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
 import ChatBubbleOutlineOutlinedIcon from '@mui/icons-material/ChatBubbleOutlineOutlined';
@@ -10,7 +10,6 @@ import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlin
 import FavoriteOutlinedIcon from '@mui/icons-material/FavoriteOutlined';
 import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
 import LogoutIcon from '@mui/icons-material/Logout';
-import MailOutlineOutlinedIcon from '@mui/icons-material/MailOutlineOutlined';
 import MoodOutlinedIcon from '@mui/icons-material/MoodOutlined';
 import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNoneOutlined';
 import PlayArrowRoundedIcon from '@mui/icons-material/PlayArrowRounded';
@@ -30,6 +29,8 @@ import CommunityPage from './community/CommunityPage';
 import WorkshopFeed from './WorkshopFeed';
 import { useAdmin } from '../admin/context/AdminContext';
 import { communityHighlights, moodOptions, recommendations } from './dashboardMockData';
+import NotificationsDropdown from './NotificationsDropdown';
+import { countUnread, fetchUpdates, getLastSeenAt, markAllAsRead } from '../admin/services/updatesService';
 import './ParticipantHome.css';
 
 const overviewIconMap = {
@@ -44,7 +45,6 @@ const participantNavItems = [
   { key: 'calendar', label: 'Calendar', icon: CalendarMonthOutlinedIcon },
   { key: 'events', label: 'Events', icon: EventAvailableOutlinedIcon, path: '/events' },
   { key: 'community', label: 'Community', icon: Diversity3OutlinedIcon },
-  { key: 'messages', label: 'Messages', icon: ChatBubbleOutlineOutlinedIcon, badge: 3 },
   { key: 'profile', label: 'Settings', icon: SettingsOutlinedIcon },
 ];
 
@@ -368,6 +368,52 @@ export default function ParticipantHome({ initialView = 'home' }) {
   const [loadingDashboard, setLoadingDashboard] = useState(false);
   const [participantProfile, setParticipantProfile] = useState(null);
   const [loadingParticipantProfile, setLoadingParticipantProfile] = useState(false);
+
+  // ── Notifications ────────────────────────────────────────────────────────
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [updates, setUpdates] = useState([]);
+  const [lastSeenAt, setLastSeenAt] = useState(null);
+  const notifBellRef = useRef(null);
+
+  const unreadCount = useMemo(() => countUnread(lastSeenAt, updates), [lastSeenAt, updates]);
+
+  const loadNotifications = useCallback(async () => {
+    if (!currentUser) return;
+    try {
+      const [data, seen] = await Promise.all([
+        fetchUpdates(true),
+        getLastSeenAt(effectiveUID || currentUser.uid),
+      ]);
+      setUpdates(data);
+      setLastSeenAt(seen);
+    } catch (err) {
+      console.error('Failed to load notifications:', err);
+    }
+  }, [currentUser, effectiveUID]);
+
+  useEffect(() => { loadNotifications(); }, [loadNotifications]);
+
+  async function handleBellClick() {
+    if (notifOpen) {
+      setNotifOpen(false);
+      return;
+    }
+    await loadNotifications();
+    setNotifOpen(true);
+  }
+
+  async function handleMarkAllRead() {
+    if (!currentUser) return;
+    try {
+      await markAllAsRead(effectiveUID || currentUser.uid);
+      // Optimistically stamp lastSeenAt to now so badge clears immediately
+      setLastSeenAt({ toMillis: () => Date.now() });
+    } catch (err) {
+      console.error('Failed to mark as read:', err);
+    }
+  }
+  // ────────────────────────────────────────────────────────────────────────
+
   const displayName = useMemo(() => {
     if (currentUser?.displayName) return currentUser.displayName.split(' ')[0];
     if (currentUser?.email) return currentUser.email.split('@')[0];
@@ -541,7 +587,7 @@ export default function ParticipantHome({ initialView = 'home' }) {
             <VolunteerActivismOutlinedIcon />
             <strong>Need Support?</strong>
             <span>We are here for you.</span>
-            <button type="button" onClick={() => setActiveView('messages')}>
+            <button type="button" onClick={() => setActiveView('community')}>
               Contact Us
             </button>
           </div>
@@ -559,13 +605,26 @@ export default function ParticipantHome({ initialView = 'home' }) {
               <strong>{new Intl.DateTimeFormat('en', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }).format(new Date())}</strong>
             </div>
             <div className="participant-topbar__actions">
-              <button type="button" aria-label="Notifications">
-                <NotificationsNoneOutlinedIcon />
-                <span>3</span>
-              </button>
-              <button type="button" aria-label="Messages">
-                <MailOutlineOutlinedIcon />
-              </button>
+              <div className="participant-notif-wrap" ref={notifBellRef}>
+                <button
+                  type="button"
+                  aria-label="Notifications"
+                  aria-expanded={notifOpen}
+                  className={notifOpen ? 'is-active' : ''}
+                  onClick={handleBellClick}
+                >
+                  <NotificationsNoneOutlinedIcon />
+                  {unreadCount > 0 && <span>{unreadCount > 99 ? '99+' : unreadCount}</span>}
+                </button>
+                {notifOpen && (
+                  <NotificationsDropdown
+                    updates={updates}
+                    lastSeenAt={lastSeenAt}
+                    onMarkAllRead={handleMarkAllRead}
+                    onClose={() => setNotifOpen(false)}
+                  />
+                )}
+              </div>
               <div className="participant-profile">
                 <strong>{displayInitials}</strong>
                 <span>

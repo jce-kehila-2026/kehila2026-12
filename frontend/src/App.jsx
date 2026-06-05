@@ -21,6 +21,7 @@ import CMSPage from './features/admin/pages/CMSPage';
 import UserManagementPage from './features/admin/pages/UserManagementPage';
 import AuditLogPage from './features/admin/pages/AuditLogPage';
 import CommunityModerationPage from './features/admin/pages/CommunityModerationPage';
+import UpdatesPage from './features/admin/pages/UpdatesPage';
 import ProfilePage from './features/profile/pages/ProfilePage';
 import CalendarPage from './features/calendar/CalendarPage';
 import ParticipantHome from './features/participant/ParticipantHome';
@@ -107,6 +108,7 @@ function ThemedApp() {
                 <Route path="users" element={<UserManagementPage />} />
                 <Route path="roles" element={<Navigate to="/admin/users?tab=roles" replace />} />
                 <Route path="community" element={<CommunityModerationPage />} />
+                <Route path="updates" element={<UpdatesPage />} />
                 <Route path="audit-log" element={<AuditLogPage />} />
               </Route>
 
