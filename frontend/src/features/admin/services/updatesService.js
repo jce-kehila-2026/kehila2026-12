@@ -7,7 +7,6 @@ import {
   getDocs,
   getDoc,
   query,
-  where,
   orderBy,
   serverTimestamp,
 } from 'firebase/firestore';
@@ -34,13 +33,13 @@ export async function createUpdate(data, adminUser) {
 
 /**
  * Fetch all updates, most recent first.
- * @param {boolean} onlyActive – if true, only returns documents where active === true
+ * Active filtering is done client-side to avoid a composite index requirement.
+ * @param {boolean} onlyActive – if true, filters out archived (active === false) docs
  */
 export async function fetchUpdates(onlyActive = true) {
-  const constraints = [orderBy('createdAt', 'desc')];
-  if (onlyActive) constraints.unshift(where('active', '==', true));
-  const snap = await getDocs(query(collection(db, UPDATES_COL), ...constraints));
-  return snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  const snap = await getDocs(query(collection(db, UPDATES_COL), orderBy('createdAt', 'desc')));
+  const all = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  return onlyActive ? all.filter((u) => u.active !== false) : all;
 }
 
 /**
