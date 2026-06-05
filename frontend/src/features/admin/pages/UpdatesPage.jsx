@@ -251,20 +251,20 @@ export default function UpdatesPage() {
                   <button
                     type="button"
                     className="updates-page__action-btn updates-page__action-btn--email"
-                    title="Send as email to participants"
                     onClick={() => handleEmailClick(update)}
                   >
                     <ForwardToInboxOutlinedIcon fontSize="small" />
+                    Send Email
                   </button>
                 )}
                 {!archived && (
                   <button
                     type="button"
                     className="updates-page__action-btn updates-page__action-btn--archive"
-                    title="Archive"
                     onClick={() => handleArchive(update.id)}
                   >
                     <ArchiveOutlinedIcon fontSize="small" />
+                    Archive
                   </button>
                 )}
                 <button

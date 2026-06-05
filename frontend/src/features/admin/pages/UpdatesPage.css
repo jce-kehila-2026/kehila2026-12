@@ -259,17 +259,27 @@
 }
 
 .updates-page__action-btn {
-  width: 34px;
   height: 34px;
+  padding: 0 12px;
+  gap: 6px;
   border-radius: 10px;
   border: 1px solid var(--glass-border);
   background: rgba(255, 255, 255, 0.62);
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   transition: background 0.16s, color 0.16s;
   color: rgba(36, 16, 79, 0.5);
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+/* Delete stays icon-only */
+.updates-page__action-btn--delete {
+  width: 34px;
+  padding: 0;
 }
 
 .updates-page__action-btn--email:hover {
