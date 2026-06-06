@@ -1,5 +1,11 @@
 /** Local fallback quotes — stable, short, uplifting for wellness journeys. */
+export const DAILY_MOTIVATION_DEFAULT_FALLBACK = {
+  text: 'Every small step forward is still progress.',
+  author: 'She-Na',
+};
+
 export const DAILY_MOTIVATION_FALLBACK_QUOTES = [
+  DAILY_MOTIVATION_DEFAULT_FALLBACK,
   { text: 'You are stronger than you think, braver than you feel, and more loved than you know.', author: 'She-Na' },
   { text: 'Healing is not linear — every gentle step forward still counts.', author: 'She-Na' },
   { text: 'Your courage today is planting hope for tomorrow.', author: 'She-Na' },
@@ -36,6 +42,26 @@ export const DAILY_MOTIVATION_FALLBACK_QUOTES = [
 ];
 
 export const DAILY_MOTIVATION_STORAGE_KEY = 'shena-participant-daily-motivation';
+
+export const DAILY_MOTIVATION_MAX_LENGTH = 130;
+
+const UNSUITABLE_QUOTE_PATTERNS = [
+  /\b(god|jesus|christ|allah|bible|quran|prayer|pray|church|mosque|temple|sinful|devil|hell)\b/i,
+  /\b(cancer|chemo|chemotherapy|tumor|diagnosis|hospice|medication|prescription)\b/i,
+  /\b(suicid|kill yourself|worthless|hopeless|give up|never win|you'll fail|cannot succeed)\b/i,
+];
+
+/**
+ * Filters out harsh, religious, medical, or negative quotes from external APIs.
+ * @param {string} text
+ * @returns {boolean}
+ */
+export function isQuoteSuitable(text) {
+  const normalized = String(text || '').trim();
+  if (!normalized || normalized.length > DAILY_MOTIVATION_MAX_LENGTH) return false;
+
+  return !UNSUITABLE_QUOTE_PATTERNS.some((pattern) => pattern.test(normalized));
+}
 
 /**
  * @returns {string} YYYY-MM-DD in local timezone
