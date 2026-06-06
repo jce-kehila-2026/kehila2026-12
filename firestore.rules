@@ -41,6 +41,12 @@ service cloud.firestore {
       match /calendar_notes/{noteId} {
         allow read, write: if isSelf(uid) || isAdmin();
       }
+      match /dashboard_notes/{noteId} {
+        allow read: if request.auth != null && request.auth.uid == uid;
+        allow create: if request.auth != null && request.auth.uid == uid;
+        allow update, delete: if request.auth != null && request.auth.uid == uid;
+        allow read, create, update, delete: if isAdmin();
+      }
     }
 
     // Admin lookup table (legacy, kept for role resolution).
