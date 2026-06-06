@@ -23,9 +23,7 @@ import AuditLogPage from './features/admin/pages/AuditLogPage';
 import CommunityModerationPage from './features/admin/pages/CommunityModerationPage';
 import UpdatesPage from './features/admin/pages/UpdatesPage';
 import ProfilePage from './features/profile/pages/ProfilePage';
-import CalendarPage from './features/calendar/CalendarPage';
 import ParticipantHome from './features/participant/ParticipantHome';
-import AppointmentPage from './features/appointments/pages/AppointmentPage';
 import PublicHomePage from './features/public/pages/PublicHomePage';
 import AccessibilityStatementPage from './features/public/pages/AccessibilityStatementPage';
 import { useAdmin } from './features/admin/context/AdminContext';
@@ -80,7 +78,7 @@ function ThemedApp() {
                   </AuthenticatedRoute>
                 }
               />
-              <Route path="/appointments" element={<AppointmentPage />} />
+              <Route path="/appointments" element={<Navigate to="/home" replace />} />
               <Route
                 path="/events"
                 element={

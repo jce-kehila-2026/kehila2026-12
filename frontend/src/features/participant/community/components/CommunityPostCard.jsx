@@ -72,7 +72,10 @@ export default function CommunityPostCard({
   };
 
   return (
-    <article className={`community-page-post community-page-post--${post.tone}${isReportedByCurrentUser ? ' is-reported-by-user' : ''}`}>
+    <article
+      id={`community-post-${post.id}`}
+      className={`community-page-post community-page-post--${post.tone}${isReportedByCurrentUser ? ' is-reported-by-user' : ''}`}
+    >
       {isReportedByCurrentUser && (
         <div className="community-page-post__reported-overlay" aria-live="polite">
           <span>You reported this post</span>

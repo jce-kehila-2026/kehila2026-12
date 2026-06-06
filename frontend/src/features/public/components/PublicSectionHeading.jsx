@@ -1,4 +1,4 @@
-function PublicSectionHeadingDivider() {
+export function PublicSectionHeadingDivider() {
   return (
     <div className="public-section-heading__divider public-section-heading__divider--title" aria-hidden="true">
       <span className="public-section-heading__divider-line" />
