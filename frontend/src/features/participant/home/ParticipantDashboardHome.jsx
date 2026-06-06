@@ -1,7 +1,6 @@
 import { useEffect, useId, useMemo, useRef, useState, useCallback } from 'react';
 import {
   ArrowRight,
-  Bell,
   CalendarDays,
   CalendarSync,
   Check,
@@ -20,11 +19,9 @@ import {
 } from 'lucide-react';
 import heroWellnessBanner from '../../../assets/hero-wellness-banner.png';
 import communityHighlightFallback from '../../../assets/images/support-groups.jpeg';
-import sheNaLogo from '../../../assets/she-na-logo.png';
-import DarkModeToggle from '../../profile/components/DarkModeToggle';
-import ParticipantLanguageSwitcher from '../components/ParticipantLanguageSwitcher';
+import { auth } from '../../../firebase';
 import useDailyMotivation from './useDailyMotivation';
-import { initialReminderNotes } from './participantDashboardMockData';
+import { createCalendarNote } from '../../calendar/calendarService';
 import {
   buildCalendarMonthCells,
   CALENDAR_WEEKDAY_LABELS,
@@ -35,7 +32,7 @@ import {
   formatReminderTimeDisplay,
   getCalendarMonthLabel,
   getInitialCalendarView,
-  hasValidReminderDateTime,
+  getSyncValidationError,
   isReminderDateSelectable,
   parseReminderTimeParts,
   REMINDER_PERIOD_OPTIONS,
@@ -44,10 +41,11 @@ import {
   shouldSyncToCalendar,
   stepReminderHour,
   stepReminderMinute,
-  SYNC_VALIDATION_MESSAGE,
   toDateInputValue,
 } from './participantNotesModel';
 import { useParticipantDashboardHomeData } from './useParticipantDashboardHomeData';
+import { createParticipantNote, updateParticipantNote } from './participantNotesService';
+import { useParticipantNotes } from './useParticipantNotes';
 import useLatestCommunityPost from '../community/hooks/useLatestCommunityPost';
 import './ParticipantDashboardHome.css';
 
@@ -161,11 +159,11 @@ function buildEndedCountdown(displayMode) {
 }
 
 function useCountdownRing(targetDate, displayMode = 'appointment') {
-  const targetMs = targetDate.getTime();
+  const targetMs = targetDate?.getTime?.() ?? NaN;
   const [, setTick] = useState(0);
 
   useEffect(() => {
-    if (targetMs - new Date().getTime() <= 0) {
+    if (!Number.isFinite(targetMs) || targetMs - new Date().getTime() <= 0) {
       return undefined;
     }
 
@@ -177,6 +175,10 @@ function useCountdownRing(targetDate, displayMode = 'appointment') {
       window.clearInterval(intervalId);
     };
   }, [targetMs]);
+
+  if (!Number.isFinite(targetMs)) {
+    return buildEndedCountdown(displayMode);
+  }
 
   const remainingMs = targetMs - Date.now();
 
@@ -311,45 +313,7 @@ function CircularCountdownRing({ variant, targetDate, countdown }) {
   );
 }
 
-function DashboardHeader({
-  displayName,
-  darkMode,
-  onDarkModeChange,
-  locale,
-  onLocaleChange,
-  notificationsBell = null,
-}) {
-  return (
-    <header className="pd-home__header">
-      <div className="pd-home__header-copy">
-        <h1>Welcome back, {displayName}</h1>
-      </div>
-
-      <div className="pd-home__header-actions">
-        {notificationsBell ?? (
-          <button type="button" className="pd-header-icon-btn" aria-label="Notifications">
-            <Bell size={18} strokeWidth={2.2} />
-          </button>
-        )}
-
-        <ParticipantLanguageSwitcher locale={locale} onChange={onLocaleChange} />
-
-        <DarkModeToggle
-          darkMode={darkMode}
-          onChange={onDarkModeChange}
-          compact
-          ariaLabel="Toggle dark mode"
-        />
-
-        <span className="pd-home__header-divider" aria-hidden="true" />
-
-        <img src={sheNaLogo} alt="She-Na" className="pd-home__header-logo" />
-      </div>
-    </header>
-  );
-}
-
-function HeroBanner({ displayName, dailyQuote, onViewJourney }) {
+function HeroBanner({ displayName, dailyQuote }) {
   return (
     <section className="pd-home__hero" aria-label="Welcome banner">
       <img
@@ -359,16 +323,21 @@ function HeroBanner({ displayName, dailyQuote, onViewJourney }) {
       />
       <div className="pd-home__hero-overlay" aria-hidden="true" />
       <div className="pd-home__hero-content">
-        <h2 className="pd-home__hero-title">Keep going, {displayName}</h2>
+        <h2 className="pd-home__hero-title">
+          Keep going
+          {displayName ? (
+            <>
+              ,{' '}
+              <span className="pd-home__hero-name">{displayName}</span>
+            </>
+          ) : null}
+        </h2>
         {dailyQuote?.text ? (
-          <blockquote className="pd-home__hero-quote">
+          <blockquote className="pd-home__hero-quote" aria-live="polite">
             <p>&ldquo;{dailyQuote.text}&rdquo;</p>
-            {dailyQuote.author ? <cite>{dailyQuote.author}</cite> : null}
+            {dailyQuote.author ? <cite>— {dailyQuote.author}</cite> : null}
           </blockquote>
         ) : null}
-        <button type="button" className="pd-home__hero-cta" onClick={onViewJourney}>
-          View My Journey
-        </button>
       </div>
     </section>
   );
@@ -1092,59 +1061,128 @@ function NotesScheduleModal({
   );
 }
 
-function NotesCard() {
+function NotesCard({ userId }) {
   const titleInputId = useId();
   const datePickerId = useId();
   const timePickerId = useId();
+  const noteInputRef = useRef(null);
+  const draftTitleRef = useRef('');
+  const isSavingRef = useRef(false);
   const [draftTitle, setDraftTitle] = useState('');
   const [draftDate, setDraftDate] = useState('');
   const [draftTime, setDraftTime] = useState('');
-  const [syncEnabled, setSyncEnabled] = useState(true);
+  const [syncEnabled, setSyncEnabled] = useState(false);
   const [syncHint, setSyncHint] = useState('');
   const [scheduleOpen, setScheduleOpen] = useState(false);
-  const [notes, setNotes] = useState(initialReminderNotes);
+  const [isSaving, setIsSaving] = useState(false);
+  const { notes } = useParticipantNotes(userId);
 
   const clearSyncHint = () => {
     if (syncHint) setSyncHint('');
   };
 
-  const addNote = () => {
-    const title = draftTitle.trim();
-    if (!title) return;
+  const handleAddNote = useCallback(async (titleFromInput) => {
+    console.log('handleAddNote called');
+
+    const title = String(
+      titleFromInput ?? noteInputRef.current?.value ?? draftTitleRef.current ?? '',
+    ).trim();
+
+    console.log('handleAddNote title:', title);
+
+    if (!title || isSavingRef.current) return;
+
+    const participantId = auth.currentUser?.uid || userId;
+    if (!participantId) {
+      console.error('[Dashboard notes] Cannot save — no participant id');
+      setSyncHint('Unable to save note. Please sign in again.');
+      return;
+    }
 
     const date = draftDate.trim();
     const time = draftTime.trim();
     const willSync = shouldSyncToCalendar(syncEnabled, date, time);
+    const validationError = getSyncValidationError(syncEnabled, date, time);
 
-    if (syncEnabled && !hasValidReminderDateTime(date, time)) {
-      setSyncHint(SYNC_VALIDATION_MESSAGE);
-    } else {
-      setSyncHint('');
+    if (validationError) {
+      setSyncHint(validationError);
+      return;
     }
 
-    // TODO(Firestore): when willSync is true, call createCalendarNote(user, { title, date, time, content: '' })
+    setSyncHint('');
+    isSavingRef.current = true;
+    setIsSaving(true);
 
-    setNotes((current) => [
-      {
-        id: `note-${Date.now()}`,
+    try {
+      console.log('[Dashboard notes] Saving for participant:', participantId);
+      const noteId = await createParticipantNote(participantId, {
         title,
-        date,
-        time,
+        date: willSync ? date : '',
+        time: willSync ? time : '',
         done: false,
         syncToCalendar: willSync,
-      },
-      ...current,
-    ]);
+      });
+      console.log('[Dashboard notes] Saved note id:', noteId);
 
-    setDraftTitle('');
-    setDraftDate('');
-    setDraftTime('');
+      if (willSync) {
+        try {
+          await createCalendarNote({ uid: participantId }, { title, date, time, content: '' });
+        } catch (calendarError) {
+          console.error('[Dashboard notes] Calendar sync failed (note was saved):', calendarError);
+        }
+      }
+
+      draftTitleRef.current = '';
+      setDraftTitle('');
+      setDraftDate('');
+      setDraftTime('');
+    } catch (error) {
+      console.error('[Dashboard notes] Failed to create note:', error?.code, error?.message, error);
+      setSyncHint('Unable to save note right now.');
+    } finally {
+      isSavingRef.current = false;
+      setIsSaving(false);
+    }
+  }, [draftDate, draftTime, syncEnabled, userId]);
+
+  const handleAddNoteClick = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const value = noteInputRef.current?.value ?? draftTitleRef.current ?? draftTitle;
+    console.log('Add button clicked', value);
+    void handleAddNote(value);
   };
 
-  const toggleNote = (id) => {
-    setNotes((current) =>
-      current.map((note) => (note.id === id ? { ...note, done: !note.done } : note)),
-    );
+  const handleNoteInputKeyDown = (event) => {
+    if (event.key !== 'Enter' && event.code !== 'NumpadEnter') return;
+
+    console.log('Enter pressed');
+    console.log('draftTitle:', event.currentTarget.value);
+
+    event.preventDefault();
+    event.stopPropagation();
+    void handleAddNote(event.currentTarget.value);
+  };
+
+  const handleNoteFormSubmit = (event) => {
+    event.preventDefault();
+
+    const field = event.currentTarget.elements.namedItem('noteTitle');
+    const value = field instanceof HTMLInputElement ? field.value : noteInputRef.current?.value ?? '';
+
+    void handleAddNote(value);
+  };
+
+  const toggleNote = async (id) => {
+    const note = notes.find((entry) => entry.id === id);
+    const participantId = auth.currentUser?.uid || userId;
+    if (!note || !participantId) return;
+
+    try {
+      await updateParticipantNote(participantId, id, { done: !note.done });
+    } catch (error) {
+      console.error('[Dashboard notes] Failed to update note:', error);
+    }
   };
 
   const handleSyncToggle = () => {
@@ -1159,24 +1197,36 @@ function NotesCard() {
       <div className="pd-card__surface">
         <CardHeading icon={NotebookPen} label="My Notes &amp; Reminders" accent="purple" />
 
-        <div className="pd-notes__composer">
+        <form className="pd-notes__composer" noValidate onSubmit={handleNoteFormSubmit}>
           <label className="visually-hidden" htmlFor={titleInputId}>
             Note title
           </label>
           <div className="pd-notes__input-row">
             <input
+              ref={noteInputRef}
               id={titleInputId}
+              name="noteTitle"
               type="text"
               value={draftTitle}
               placeholder="Write a note..."
+              autoComplete="off"
               onChange={(event) => {
+                draftTitleRef.current = event.target.value;
                 setDraftTitle(event.target.value);
                 clearSyncHint();
               }}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter') addNote();
-              }}
+              onKeyDown={handleNoteInputKeyDown}
             />
+            <button
+              type="button"
+              className="pd-notes__add-btn"
+              aria-label="Add note"
+              disabled={isSaving}
+              onClick={handleAddNoteClick}
+            >
+              <Plus size={15} strokeWidth={2.5} aria-hidden="true" />
+              <span>Add</span>
+            </button>
             <button
               type="button"
               className={`pd-notes__schedule-btn${draftDate || draftTime ? ' has-schedule' : ''}`}
@@ -1194,7 +1244,7 @@ function NotesCard() {
               {syncHint}
             </p>
           ) : null}
-        </div>
+        </form>
 
         <NotesScheduleModal
           open={scheduleOpen}
@@ -1414,15 +1464,9 @@ function CommunityCardSection({ post, isLoading, hasError, relativeTime, onViewP
 
 export default function ParticipantDashboardHome({
   userId,
-  displayName = 'Dema',
-  darkMode = false,
-  onDarkModeChange,
-  locale = 'en',
-  onLocaleChange,
-  onViewJourney,
+  displayName = '',
   onNavigateToView,
   onViewCommunity,
-  notificationsBell = null,
 }) {
   const { appointment, event, isLoading, appointmentError, eventError } = useParticipantDashboardHomeData(userId);
   const {
@@ -1434,12 +1478,12 @@ export default function ParticipantDashboardHome({
   const { quote: dailyQuote } = useDailyMotivation();
 
   const goToEventsView = useCallback(() => {
-    onNavigateToView('events');
+    onNavigateToView?.('events');
   }, [onNavigateToView]);
 
   const goToAppointments = useCallback(() => {
-    goToEventsView();
-  }, [goToEventsView]);
+    onNavigateToView?.('calendar');
+  }, [onNavigateToView]);
 
   const goToEvents = useCallback(() => {
     goToEventsView();
@@ -1458,15 +1502,7 @@ export default function ParticipantDashboardHome({
 
   return (
     <div className="pd-home">
-      <DashboardHeader
-        displayName={displayName}
-        darkMode={darkMode}
-        onDarkModeChange={onDarkModeChange}
-        locale={locale}
-        onLocaleChange={onLocaleChange}
-        notificationsBell={notificationsBell}
-      />
-      <HeroBanner displayName={displayName} dailyQuote={dailyQuote} onViewJourney={onViewJourney} />
+      <HeroBanner displayName={displayName} dailyQuote={dailyQuote} />
 
       <section className="pd-home__row" aria-label="Upcoming appointment and event">
         {appointment ? (
@@ -1500,7 +1536,7 @@ export default function ParticipantDashboardHome({
       </section>
 
       <section className="pd-home__row" aria-label="Notes and community">
-        <NotesCard />
+        <NotesCard userId={userId} />
         <CommunityCardSection
           post={latestCommunityPost}
           isLoading={isCommunityLoading}
