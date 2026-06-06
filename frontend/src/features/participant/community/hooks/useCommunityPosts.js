@@ -278,7 +278,7 @@ export default function useCommunityPosts({
     const postToUpdate = posts.find((post) => post.id === postId);
     const shouldIncreaseStreak = postToUpdate ? !postToUpdate.isSupported : false;
 
-    toggleCommunityPostSupport(postId, localUserId).catch(() => {});
+    toggleCommunityPostSupport(postId, localUserId, { actorName: localUserName }).catch(() => {});
 
     updatePostById(postId, (post) => {
       const wasSupported = Boolean(post.isSupported);
@@ -304,7 +304,7 @@ export default function useCommunityPosts({
     const postToUpdate = posts.find((post) => post.id === postId);
     const shouldIncreaseStreak = postToUpdate ? !postToUpdate.isLiked : false;
 
-    toggleCommunityPostLike(postId, localUserId).catch(() => {});
+    toggleCommunityPostLike(postId, localUserId, { actorName: localUserName }).catch(() => {});
 
     updatePostById(postId, (post) => {
       const wasLiked = post.isLiked;

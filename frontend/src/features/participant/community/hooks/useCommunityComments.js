@@ -80,7 +80,8 @@ export default function useCommunityComments({
       });
       return;
     }
-    if (!posts.some((post) => post.id === postId)) return;
+    const targetPost = posts.find((post) => post.id === postId);
+    if (!targetPost) return;
 
     let newComment;
 
@@ -90,6 +91,8 @@ export default function useCommunityComments({
         author: localUserName,
         authorDisplayName: localUserName,
         content,
+        postAuthorId: targetPost.authorId,
+        postExcerpt: targetPost.content ?? targetPost.body ?? '',
       });
     } catch {
       setCommentFeedback(postId, {

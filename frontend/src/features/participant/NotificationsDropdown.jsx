@@ -4,14 +4,22 @@ import EventNoteOutlinedIcon from '@mui/icons-material/EventNoteOutlined';
 import NotificationsActiveOutlinedIcon from '@mui/icons-material/NotificationsActiveOutlined';
 import NewReleasesOutlinedIcon from '@mui/icons-material/NewReleasesOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import ChatBubbleOutlineOutlinedIcon from '@mui/icons-material/ChatBubbleOutlineOutlined';
+import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined';
+import VolunteerActivismOutlinedIcon from '@mui/icons-material/VolunteerActivismOutlined';
 import DoneAllIcon from '@mui/icons-material/DoneAll';
 import './NotificationsDropdown.css';
 
 const TYPE_META = {
+  // Admin announcements
   general: { label: 'General', Icon: InfoOutlinedIcon, color: '#7b3fa1' },
   event_change: { label: 'Event Change', Icon: EventNoteOutlinedIcon, color: '#ec168c' },
   new_event: { label: 'New Event', Icon: NewReleasesOutlinedIcon, color: '#059669' },
   reminder: { label: 'Reminder', Icon: NotificationsActiveOutlinedIcon, color: '#d97706' },
+  // Auto-generated community activity
+  comment: { label: 'Comment', Icon: ChatBubbleOutlineOutlinedIcon, color: '#ec168c' },
+  like: { label: 'Like', Icon: FavoriteBorderOutlinedIcon, color: '#e11d48' },
+  support: { label: 'Support', Icon: VolunteerActivismOutlinedIcon, color: '#7b3fa1' },
 };
 
 function relativeTime(ts) {
@@ -88,7 +96,7 @@ export default function NotificationsDropdown({ updates, lastSeenAt, onMarkAllRe
           const unread = isUnread(update, lastSeenAt);
           return (
             <div
-              key={update.id}
+              key={`${update.kind ?? 'update'}-${update.id}`}
               className={`notif-dropdown__item${unread ? ' is-unread' : ''}`}
             >
               {unread && <span className="notif-dropdown__unread-dot" style={{ '--dot-color': meta.color }} />}

@@ -30,7 +30,13 @@ import WorkshopFeed from './WorkshopFeed';
 import { useAdmin } from '../admin/context/AdminContext';
 import { communityHighlights, moodOptions, recommendations } from './dashboardMockData';
 import NotificationsDropdown from './NotificationsDropdown';
-import { countUnread, fetchUpdates, getLastSeenAt, markAllAsRead } from '../admin/services/updatesService';
+import {
+  countUnread,
+  fetchActivityNotifications,
+  fetchUpdates,
+  getLastSeenAt,
+  markAllAsRead,
+} from '../admin/services/updatesService';
 import './ParticipantHome.css';
 
 const overviewIconMap = {
@@ -370,21 +376,37 @@ export default function ParticipantHome({ initialView = 'home' }) {
   const [loadingParticipantProfile, setLoadingParticipantProfile] = useState(false);
 
   // ── Notifications ────────────────────────────────────────────────────────
+  // The bell shows a unified feed: admin announcements + auto-generated
+  // community activity (comments/likes/support on this user's posts).
   const [notifOpen, setNotifOpen] = useState(false);
-  const [updates, setUpdates] = useState([]);
+  const [announcements, setAnnouncements] = useState([]);
+  const [activity, setActivity] = useState([]);
   const [lastSeenAt, setLastSeenAt] = useState(null);
   const notifBellRef = useRef(null);
 
-  const unreadCount = useMemo(() => countUnread(lastSeenAt, updates), [lastSeenAt, updates]);
+  const notifications = useMemo(
+    () => [...announcements, ...activity].sort(
+      (a, b) => (b.createdAt?.toMillis?.() ?? 0) - (a.createdAt?.toMillis?.() ?? 0),
+    ),
+    [announcements, activity],
+  );
+
+  const unreadCount = useMemo(
+    () => countUnread(lastSeenAt, notifications),
+    [lastSeenAt, notifications],
+  );
 
   const loadNotifications = useCallback(async () => {
     if (!currentUser) return;
+    const uid = effectiveUID || currentUser.uid;
     try {
-      const [data, seen] = await Promise.all([
+      const [data, activityItems, seen] = await Promise.all([
         fetchUpdates(true),
-        getLastSeenAt(effectiveUID || currentUser.uid),
+        fetchActivityNotifications(uid),
+        getLastSeenAt(uid),
       ]);
-      setUpdates(data);
+      setAnnouncements(data);
+      setActivity(activityItems);
       setLastSeenAt(seen);
     } catch (err) {
       console.error('Failed to load notifications:', err);
@@ -618,7 +640,7 @@ export default function ParticipantHome({ initialView = 'home' }) {
                 </button>
                 {notifOpen && (
                   <NotificationsDropdown
-                    updates={updates}
+                    updates={notifications}
                     lastSeenAt={lastSeenAt}
                     onMarkAllRead={handleMarkAllRead}
                     onClose={() => setNotifOpen(false)}
