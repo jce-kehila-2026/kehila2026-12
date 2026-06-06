@@ -1,9 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
-import ChatBubbleOutlineOutlinedIcon from '@mui/icons-material/ChatBubbleOutlineOutlined';
-import MailOutlineOutlinedIcon from '@mui/icons-material/MailOutlineOutlined';
 import Diversity3OutlinedIcon from '@mui/icons-material/Diversity3Outlined';
-import EventNoteOutlinedIcon from '@mui/icons-material/EventNoteOutlined';
 import EventAvailableOutlinedIcon from '@mui/icons-material/EventAvailableOutlined';
 import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
 import LogoutIcon from '@mui/icons-material/Logout';
@@ -11,18 +8,19 @@ import MoodOutlinedIcon from '@mui/icons-material/MoodOutlined';
 import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNoneOutlined';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import VolunteerActivismOutlinedIcon from '@mui/icons-material/VolunteerActivismOutlined';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import CalendarPage from '../calendar/CalendarPage';
-import AppointmentPage from '../appointments/pages/AppointmentPage';
 import EventsPage from '../events/EventsPage';
 import ProfilePage from '../profile/pages/ProfilePage';
 import { getParticipantData, updateParticipantData } from '../profile/services/participantService';
+import { getParticipantFirstName, getParticipantFullName } from './utils/participantProfileUtils';
 import { countUnread, fetchUpdates, getLastSeenAt, markAllAsRead } from '../admin/services/updatesService';
 import CommunityPage from './community/CommunityPage';
 import WorkshopFeed from './WorkshopFeed';
 import { useAdmin } from '../admin/context/AdminContext';
 import ParticipantDashboardHome from './home/ParticipantDashboardHome';
 import ParticipantSidebarProfile from './components/ParticipantSidebarProfile';
+import ParticipantHeader from './components/ParticipantHeader';
 import NotificationsDropdown from './NotificationsDropdown';
 import {
   getParticipantLocaleDirection,
@@ -37,13 +35,16 @@ import './ParticipantHome.css';
 const participantNavItems = [
   { key: 'home', label: 'Home', icon: HomeOutlinedIcon, path: '/home' },
   { key: 'calendar', label: 'Calendar', icon: CalendarMonthOutlinedIcon, path: '/calendar' },
-  { key: 'appointments', label: 'Appointments', icon: EventNoteOutlinedIcon },
   { key: 'events', label: 'Events', icon: EventAvailableOutlinedIcon, path: '/events' },
   { key: 'community', label: 'Community', icon: Diversity3OutlinedIcon },
   { key: 'profile', label: 'Settings', icon: SettingsOutlinedIcon },
 ];
 
 const PARTICIPANT_SIDEBAR_COLLAPSED_KEY = 'shena-participant-sidebar-collapsed';
+
+function normalizeParticipantView(view) {
+  return view === 'appointments' ? 'home' : view;
+}
 
 function getStoredSidebarCollapsed() {
   try {
@@ -139,21 +140,16 @@ export default function ParticipantHome({ initialView = 'home' }) {
     </div>
   );
 
-  const displayName = useMemo(() => {
-    const profileName = participantProfile?.fullName || participantProfile?.firstName;
-    if (profileName) return profileName.split(' ')[0];
-    if (currentUser?.displayName) return currentUser.displayName.split(' ')[0];
-    if (currentUser?.email) return currentUser.email.split('@')[0];
-    return 'Dema';
-  }, [currentUser, participantProfile]);
+  const displayName = useMemo(
+    () => getParticipantFirstName(participantProfile, currentUser),
+    [currentUser, participantProfile],
+  );
 
   const fullName = useMemo(() => {
-    if (participantProfile?.fullName) return participantProfile.fullName;
-    if (currentUser?.displayName) return currentUser.displayName;
-    return 'Dema';
+    const resolved = getParticipantFullName(participantProfile, currentUser);
+    return resolved || 'Participant';
   }, [currentUser, participantProfile]);
 
-  const displayInitials = displayName.slice(0, 2).toUpperCase();
   const avatarUrl = participantProfile?.avatarUrl || '';
   const layoutDirection = getParticipantLocaleDirection(locale);
   const layoutLang = getParticipantLocaleLang(locale);
@@ -188,8 +184,15 @@ export default function ParticipantHome({ initialView = 'home' }) {
 
   const navigateParticipantView = useCallback(
     (viewKey) => {
-      const item = participantNavItems.find((nav) => nav.key === viewKey);
-      setActiveView(viewKey);
+      const nextView = normalizeParticipantView(viewKey);
+      if (viewKey === 'appointments') {
+        setActiveView('home');
+        navigate('/home', { replace: true });
+        return;
+      }
+
+      const item = participantNavItems.find((nav) => nav.key === nextView);
+      setActiveView(nextView);
       if (item?.path) {
         navigate(item.path);
       }
@@ -210,8 +213,18 @@ export default function ParticipantHome({ initialView = 'home' }) {
   }, []);
 
   useEffect(() => {
-    setActiveView(initialView);
-  }, [initialView]);
+    if (location.pathname === '/appointments') {
+      setActiveView('home');
+      navigate('/home', { replace: true });
+      return;
+    }
+
+    setActiveView(normalizeParticipantView(initialView));
+  }, [initialView, location.pathname, navigate]);
+
+  useEffect(() => {
+    setActiveView((current) => normalizeParticipantView(current));
+  }, []);
 
   useEffect(() => {
     let ignore = false;
@@ -301,60 +314,38 @@ export default function ParticipantHome({ initialView = 'home' }) {
         </aside>
 
         <section
-          className={`participant-main${activeView === 'community' ? ' participant-main--community' : ''}${activeView === 'events' ? ' participant-main--events' : ''}${activeView === 'home' ? ' participant-main--dashboard-home' : ''}`}
+          className={`participant-main${activeView === 'community' ? ' participant-main--community' : ''}${activeView === 'events' ? ' participant-main--events' : ''}${activeView === 'home' || activeView === 'calendar' ? ' participant-main--dashboard-home' : ''}`}
           id="home"
         >
-          {activeView !== 'home' && (
-            <header className={`participant-topbar${activeView === 'community' ? ' participant-header-sticky' : ''}`}>
-              <div>
-                <p>Good morning, {displayName}</p>
-                <strong>
-                  {new Intl.DateTimeFormat('en', {
-                    weekday: 'long',
-                    month: 'long',
-                    day: 'numeric',
-                    year: 'numeric',
-                  }).format(new Date())}
-                </strong>
-              </div>
-              <div className="participant-topbar__actions">
-                {notificationsBell}
-                <button type="button" aria-label="Messages">
-                  <MailOutlineOutlinedIcon />
-                </button>
-                <div className="participant-profile">
-                  <strong>{displayInitials}</strong>
-                  <span>
-                    {displayName}
-                    <small>Participant</small>
-                  </span>
-                </div>
-              </div>
-            </header>
-          )}
+          <ParticipantHeader
+            displayName={displayName}
+            title={
+              activeView === 'calendar'
+                ? 'My Schedule'
+                : activeView === 'events'
+                  ? 'Upcoming Activities'
+                  : undefined
+            }
+            darkMode={darkMode}
+            onDarkModeChange={setDarkMode}
+            locale={locale}
+            onLocaleChange={handleLocaleChange}
+            notificationsBell={notificationsBell}
+            className={activeView === 'community' ? 'participant-header-sticky' : ''}
+          />
 
           {activeView === 'home' && (
             <ParticipantDashboardHome
               userId={effectiveUID || currentUser?.uid}
               displayName={displayName}
-              darkMode={darkMode}
-              onDarkModeChange={setDarkMode}
-              locale={locale}
-              onLocaleChange={handleLocaleChange}
               onNavigateToView={navigateParticipantView}
-              onViewJourney={() => navigateParticipantView('calendar')}
               onViewCommunity={handleViewCommunity}
-              notificationsBell={notificationsBell}
             />
           )}
 
           {activeView === 'calendar' && (
-            <section className="participant-content participant-content--single">
+            <section className="participant-content participant-content--single participant-content--calendar">
               <div className="participant-panel participant-panel--wide">
-                <div className="participant-section-heading">
-                  <span>My schedule</span>
-                  <h2>Calendar</h2>
-                </div>
                 <CalendarPage variant="embedded" />
               </div>
             </section>
@@ -373,14 +364,6 @@ export default function ParticipantHome({ initialView = 'home' }) {
                   <h2>Workshops</h2>
                 </div>
                 <WorkshopFeed />
-              </div>
-            </section>
-          )}
-
-          {activeView === 'appointments' && (
-            <section className="participant-content participant-content--single">
-              <div className="participant-panel participant-panel--wide">
-                <AppointmentPage embedInDashboard />
               </div>
             </section>
           )}
@@ -415,7 +398,7 @@ export default function ParticipantHome({ initialView = 'home' }) {
             </section>
           )}
 
-          {!['home', 'calendar', 'events', 'workshops', 'appointments', 'community', 'profile'].includes(activeView) && (
+          {!['home', 'calendar', 'events', 'workshops', 'community', 'profile'].includes(activeView) && (
             <section className="participant-content participant-content--single">
               <div className="participant-panel participant-panel--wide participant-placeholder-view">
                 <MoodOutlinedIcon />
