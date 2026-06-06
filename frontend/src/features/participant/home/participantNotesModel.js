@@ -26,7 +26,8 @@
 
 
 
-export const SYNC_VALIDATION_MESSAGE = 'Please choose date and time to sync this reminder.';
+export const SYNC_VALIDATION_MESSAGE =
+  'Please select a date and time to add this note to your calendar.';
 
 
 
@@ -57,6 +58,32 @@ export function hasValidReminderDateTime(date, time) {
 export function shouldSyncToCalendar(syncEnabled, date, time) {
 
   return syncEnabled && hasValidReminderDateTime(date, time);
+
+}
+
+
+
+/**
+
+ * Returns a validation message when sync is on but date/time are incomplete.
+
+ * @param {boolean} syncEnabled
+
+ * @param {string} date
+
+ * @param {string} time
+
+ * @returns {string|null}
+
+ */
+
+export function getSyncValidationError(syncEnabled, date, time) {
+
+  if (!syncEnabled) return null;
+
+  if (hasValidReminderDateTime(date, time)) return null;
+
+  return SYNC_VALIDATION_MESSAGE;
 
 }
 

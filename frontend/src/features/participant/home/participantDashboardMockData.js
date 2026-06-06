@@ -1,5 +1,4 @@
 import therapistPhoto from '../../../assets/images/hero-women-support.png';
-import { toDateInputValue } from './participantNotesModel';
 
 /** @typedef {import('./participantDashboardModel').DashboardAppointmentRaw} DashboardAppointmentRaw */
 /** @typedef {import('./participantDashboardModel').DashboardEventRaw} DashboardEventRaw */
@@ -12,10 +11,7 @@ import { toDateInputValue } from './participantNotesModel';
 export const MOCK_APPOINTMENT_STARTS_AT = '2026-06-10T14:45:00';
 export const MOCK_EVENT_STARTS_AT = '2026-06-12T18:00:00';
 
-const reminderDate = new Date(MOCK_APPOINTMENT_STARTS_AT);
-
-/**
- * Temporary mock appointment builder — used by seeds/dev tooling only.
+/** * Temporary mock appointment builder — used by seeds/dev tooling only.
  * Dashboard home reads real Firestore data via participantDashboardService.
  * @returns {DashboardAppointmentRaw}
  */
@@ -46,23 +42,3 @@ export function buildMockUpcomingEventRaw() {
     startsAt: MOCK_EVENT_STARTS_AT,
   };
 }
-
-/** @type {import('./participantNotesModel').DashboardNote[]} */
-export const initialReminderNotes = [
-  {
-    id: 'note-1',
-    title: 'Bring water bottle to reflexology session',
-    date: toDateInputValue(reminderDate),
-    time: '09:00',
-    done: false,
-    syncToCalendar: true,
-  },
-  {
-    id: 'note-2',
-    title: 'Journal three things I am grateful for',
-    date: '',
-    time: '',
-    done: false,
-    syncToCalendar: false,
-  },
-];
