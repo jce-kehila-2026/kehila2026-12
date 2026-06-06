@@ -40,6 +40,8 @@ export default function CommunityPage({
   personalDetails = {},
   isPersonalDetailsLoading = false,
   onGoToSettings,
+  focusPostId = null,
+  onFocusPostHandled,
 }) {
   const postInputRef = useRef(null);
   const reportModalRef = useRef(null);
@@ -220,6 +222,45 @@ export default function CommunityPage({
   );
   const sortedVisiblePosts = sortFeedPosts(filteredPosts);
   const emptyFeedMessage = getEmptyFeedMessage(activeFeedTab, followedAuthors.length);
+
+  useEffect(() => {
+    if (!focusPostId) return undefined;
+
+    setActiveFeedTab('all');
+
+    const tryScrollToPost = () => {
+      const postElement = document.getElementById(`community-post-${focusPostId}`);
+      if (!postElement) return false;
+
+      postElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      postElement.classList.add('community-page-post--focused');
+      window.setTimeout(() => {
+        postElement.classList.remove('community-page-post--focused');
+      }, 2600);
+      onFocusPostHandled?.();
+      return true;
+    };
+
+    if (tryScrollToPost()) {
+      return undefined;
+    }
+
+    const retryTimer = window.setInterval(() => {
+      if (tryScrollToPost()) {
+        window.clearInterval(retryTimer);
+      }
+    }, 200);
+
+    const timeoutTimer = window.setTimeout(() => {
+      window.clearInterval(retryTimer);
+      onFocusPostHandled?.();
+    }, 8000);
+
+    return () => {
+      window.clearInterval(retryTimer);
+      window.clearTimeout(timeoutTimer);
+    };
+  }, [focusPostId, sortedVisiblePosts, onFocusPostHandled]);
 
   useEffect(() => {
     if (!allowAnonymousPosting && postAnonymously) {

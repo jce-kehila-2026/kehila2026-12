@@ -2656,6 +2656,13 @@
     rgba(255, 255, 255, 0.9);
 }
 
+.community-page-post--focused {
+  outline: 2px solid rgba(236, 22, 140, 0.55);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 6px rgba(236, 22, 140, 0.12);
+  transition: outline-color 0.25s ease, box-shadow 0.25s ease;
+}
+
 .community-circle-item {
   gap: 10px;
   border: 1px solid var(--community-card-border);

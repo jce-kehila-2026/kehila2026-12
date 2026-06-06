@@ -8,6 +8,7 @@ import {
   getDocs,
   increment,
   limit,
+  onSnapshot,
   orderBy,
   query,
   serverTimestamp,
@@ -38,12 +39,14 @@ const getInitials = (name) => {
   return name.slice(0, 2).toUpperCase();
 };
 
-const firestorePostToLocal = (docSnap) => {
+export const mapFirestoreCommunityPost = (docSnap) => {
   const data = docSnap.data();
   const isAnon = Boolean(data.isAnonymous);
   const displayName = isAnon ? 'Anonymous User' : (data.authorDisplayName ?? 'Unknown');
   const createdAt = tsToDate(data.createdAt);
   const updatedAt = tsToDate(data.updatedAt);
+  const attachment = data.attachment ?? null;
+  const imageUrl = data.imageUrl ?? data.postImageUrl ?? '';
 
   return {
     id: docSnap.id,
@@ -51,6 +54,8 @@ const firestorePostToLocal = (docSnap) => {
     author: displayName,
     authorDisplayName: displayName,
     authorAvatarUrl: data.authorAvatarUrl ?? '',
+    attachment,
+    imageUrl,
     isAnonymous: isAnon,
     content: data.content ?? '',
     title: data.title ?? null,
@@ -115,11 +120,43 @@ export async function getCommunityPosts(lastDoc = null, pageSize = 20) {
 
   const snapshot = await getDocs(q);
   const posts = snapshot.docs
-    .map(firestorePostToLocal)
+    .map(mapFirestoreCommunityPost)
     .filter(isCommunityContentVisible);
   const newLastDoc = snapshot.docs[snapshot.docs.length - 1] ?? null;
 
   return { posts, lastDoc: newLastDoc };
+}
+
+/**
+ * Live listener for the newest visible community post (createdAt DESC).
+ * Reuses the same collection + mapper as the Community feed.
+ *
+ * @param {(post: ReturnType<typeof mapFirestoreCommunityPost>|null) => void} onUpdate
+ * @param {(error: Error) => void} [onError]
+ * @returns {import('firebase/firestore').Unsubscribe}
+ */
+export function subscribeToLatestCommunityPost(onUpdate, onError) {
+  const q = query(
+    collection(db, POSTS_COL),
+    orderBy('createdAt', 'desc'),
+    limit(10),
+  );
+
+  return onSnapshot(
+    q,
+    (snapshot) => {
+      const latestPost = snapshot.docs
+        .map(mapFirestoreCommunityPost)
+        .filter(isCommunityContentVisible)[0] ?? null;
+
+      onUpdate(latestPost);
+    },
+    (error) => {
+      console.error('[Community] Latest post listener failed:', error);
+      onError?.(error);
+      onUpdate(null);
+    },
+  );
 }
 
 export async function createCommunityPost({
