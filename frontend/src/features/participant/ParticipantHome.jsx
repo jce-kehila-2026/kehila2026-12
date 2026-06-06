@@ -14,14 +14,13 @@ import EventsPage from '../events/EventsPage';
 import ProfilePage from '../profile/pages/ProfilePage';
 import { getParticipantData, updateParticipantData } from '../profile/services/participantService';
 import { getParticipantFirstName, getParticipantFullName } from './utils/participantProfileUtils';
-import { countUnread, fetchUpdates, getLastSeenAt, markAllAsRead } from '../admin/services/updatesService';
-import CommunityPage from './community/CommunityPage';
-import WorkshopFeed from './WorkshopFeed';
-import { useAdmin } from '../admin/context/AdminContext';
-import ParticipantDashboardHome from './home/ParticipantDashboardHome';
-import ParticipantSidebarProfile from './components/ParticipantSidebarProfile';
-import ParticipantHeader from './components/ParticipantHeader';
-import NotificationsDropdown from './NotificationsDropdown';
+import {
+  countUnread,
+  fetchActivityNotifications,
+  fetchUpdates,
+  getLastSeenAt,
+  markAllAsRead,
+} from '../admin/services/updatesService';
 import {
   getParticipantLocaleDirection,
   getParticipantLocaleLang,
@@ -30,6 +29,13 @@ import {
   profileLanguageToLocale,
   storeParticipantLocale,
 } from './i18n/participantLocale';
+import CommunityPage from './community/CommunityPage';
+import WorkshopFeed from './WorkshopFeed';
+import { useAdmin } from '../admin/context/AdminContext';
+import ParticipantDashboardHome from './home/ParticipantDashboardHome';
+import ParticipantSidebarProfile from './components/ParticipantSidebarProfile';
+import ParticipantHeader from './components/ParticipantHeader';
+import NotificationsDropdown from './NotificationsDropdown';
 import './ParticipantHome.css';
 
 const participantNavItems = [
@@ -64,8 +70,9 @@ function storeSidebarCollapsed(collapsed) {
 
 export default function ParticipantHome({ initialView = 'home' }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const { currentUser, effectiveUID, userRole, logout } = useAdmin();
-  const [activeView, setActiveView] = useState(initialView);
+  const [activeView, setActiveView] = useState(() => normalizeParticipantView(initialView));
   const [communityFocusPostId, setCommunityFocusPostId] = useState(null);
   const [darkMode, setDarkMode] = useState(false);
   const [locale, setLocale] = useState(getStoredParticipantLocale);
@@ -73,21 +80,38 @@ export default function ParticipantHome({ initialView = 'home' }) {
   const [loadingParticipantProfile, setLoadingParticipantProfile] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(getStoredSidebarCollapsed);
 
+  // ── Notifications ────────────────────────────────────────────────────────
+  // The bell shows a unified feed: admin announcements + auto-generated
+  // community activity (comments/likes/support on this user's posts).
   const [notifOpen, setNotifOpen] = useState(false);
-  const [updates, setUpdates] = useState([]);
+  const [announcements, setAnnouncements] = useState([]);
+  const [activity, setActivity] = useState([]);
   const [lastSeenAt, setLastSeenAt] = useState(null);
   const notifBellRef = useRef(null);
 
-  const unreadCount = useMemo(() => countUnread(lastSeenAt, updates), [lastSeenAt, updates]);
+  const notifications = useMemo(
+    () => [...announcements, ...activity].sort(
+      (a, b) => (b.createdAt?.toMillis?.() ?? 0) - (a.createdAt?.toMillis?.() ?? 0),
+    ),
+    [announcements, activity],
+  );
+
+  const unreadCount = useMemo(
+    () => countUnread(lastSeenAt, notifications),
+    [lastSeenAt, notifications],
+  );
 
   const loadNotifications = useCallback(async () => {
     if (!currentUser) return;
+    const uid = effectiveUID || currentUser.uid;
     try {
-      const [data, seen] = await Promise.all([
+      const [data, activityItems, seen] = await Promise.all([
         fetchUpdates(true),
-        getLastSeenAt(effectiveUID || currentUser.uid),
+        fetchActivityNotifications(uid),
+        getLastSeenAt(uid),
       ]);
-      setUpdates(data);
+      setAnnouncements(data);
+      setActivity(activityItems);
       setLastSeenAt(seen);
     } catch (err) {
       console.error('Failed to load notifications:', err);
@@ -131,7 +155,7 @@ export default function ParticipantHome({ initialView = 'home' }) {
       </button>
       {notifOpen ? (
         <NotificationsDropdown
-          updates={updates}
+          updates={notifications}
           lastSeenAt={lastSeenAt}
           onMarkAllRead={handleMarkAllRead}
           onClose={() => setNotifOpen(false)}

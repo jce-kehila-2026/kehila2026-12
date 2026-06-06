@@ -24,6 +24,49 @@ import { isCommunityContentVisible } from '../utils/communityModerationUtils';
 
 const POSTS_COL = 'community_posts';
 const USERS_COL = 'users';
+const ACTIVITY_NOTIFICATIONS_COL = 'activity_notifications';
+
+const makeExcerpt = (text, max = 80) => {
+  const clean = (text ?? '').replace(/\s+/g, ' ').trim();
+  if (clean.length <= max) return clean;
+  return `${clean.slice(0, max - 1).trimEnd()}…`;
+};
+
+/**
+ * Best-effort: write an activity notification into the recipient's
+ * users/{recipientId}/activity_notifications subcollection. Fire-and-forget —
+ * it never throws into the caller, so engagement actions still succeed even if
+ * the notification write is denied or fails. Skips self-notifications.
+ */
+async function createActivityNotification({
+  recipientId,
+  actorId,
+  actorName,
+  type,
+  postId,
+  postExcerpt = '',
+  commentExcerpt = '',
+} = {}) {
+  // The security rule requires actorId == request.auth.uid, so always attribute
+  // to the authenticated user rather than the (possibly unresolved) community id.
+  const resolvedActorId = auth.currentUser?.uid ?? actorId;
+  if (!recipientId || !resolvedActorId || recipientId === resolvedActorId) return;
+
+  try {
+    await addDoc(collection(db, USERS_COL, recipientId, ACTIVITY_NOTIFICATIONS_COL), {
+      recipientId,
+      actorId: resolvedActorId,
+      actorName: actorName || 'Someone',
+      type,
+      postId: postId ?? null,
+      postExcerpt,
+      commentExcerpt,
+      createdAt: serverTimestamp(),
+    });
+  } catch {
+    // Notifications are non-critical; swallow errors.
+  }
+}
 
 const tsToDate = (ts) => {
   if (!ts) return new Date();
@@ -255,12 +298,13 @@ export async function deleteCommunityPost(postId) {
 
 // ── Likes & Support ──────────────────────────────────────────────────────────
 
-export async function toggleCommunityPostLike(postId, userId) {
+export async function toggleCommunityPostLike(postId, userId, { actorName } = {}) {
   const postRef = doc(db, POSTS_COL, postId);
   const snap = await getDoc(postRef);
   if (!snap.exists()) return { success: false };
 
-  const likedBy = snap.data().likedBy ?? [];
+  const postData = snap.data();
+  const likedBy = postData.likedBy ?? [];
   const isCurrentlyLiked = likedBy.includes(userId);
 
   await updateDoc(postRef, {
@@ -268,21 +312,47 @@ export async function toggleCommunityPostLike(postId, userId) {
     likesCount: increment(isCurrentlyLiked ? -1 : 1),
   });
 
+  // Notify the post owner only when newly liking (not when un-liking).
+  // Reuses the snapshot above, so no extra read.
+  if (!isCurrentlyLiked) {
+    createActivityNotification({
+      recipientId: postData.authorId,
+      actorId: userId,
+      actorName,
+      type: 'like',
+      postId,
+      postExcerpt: makeExcerpt(postData.content),
+    });
+  }
+
   return { success: true, postId, userId, liked: !isCurrentlyLiked };
 }
 
-export async function toggleCommunityPostSupport(postId, userId) {
+export async function toggleCommunityPostSupport(postId, userId, { actorName } = {}) {
   const postRef = doc(db, POSTS_COL, postId);
   const snap = await getDoc(postRef);
   if (!snap.exists()) return { success: false };
 
-  const supportedBy = snap.data().supportedBy ?? [];
+  const postData = snap.data();
+  const supportedBy = postData.supportedBy ?? [];
   const isCurrentlySupported = supportedBy.includes(userId);
 
   await updateDoc(postRef, {
     supportedBy: isCurrentlySupported ? arrayRemove(userId) : arrayUnion(userId),
     supportCount: increment(isCurrentlySupported ? -1 : 1),
   });
+
+  // Notify the post owner only when newly supporting (not when removing support).
+  if (!isCurrentlySupported) {
+    createActivityNotification({
+      recipientId: postData.authorId,
+      actorId: userId,
+      actorName,
+      type: 'support',
+      postId,
+      postExcerpt: makeExcerpt(postData.content),
+    });
+  }
 
   return { success: true, postId, userId, supported: !isCurrentlySupported };
 }
@@ -294,6 +364,8 @@ export async function createCommunityComment(postId, {
   authorDisplayName,
   author,
   content,
+  postAuthorId,
+  postExcerpt = '',
 } = {}) {
   const displayName = authorDisplayName || author || 'Current User';
   const batch = writeBatch(db);
@@ -318,6 +390,17 @@ export async function createCommunityComment(postId, {
   });
 
   await batch.commit();
+
+  // Best-effort: notify the post owner of the new comment (skips self-comments).
+  createActivityNotification({
+    recipientId: postAuthorId,
+    actorId: authorId,
+    actorName: displayName,
+    type: 'comment',
+    postId,
+    postExcerpt,
+    commentExcerpt: makeExcerpt(content),
+  });
 
   const now = new Date();
   return {

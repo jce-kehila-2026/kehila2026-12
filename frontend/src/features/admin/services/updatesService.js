@@ -8,6 +8,7 @@ import {
   getDoc,
   query,
   orderBy,
+  limit,
   serverTimestamp,
 } from 'firebase/firestore';
 
@@ -68,6 +69,57 @@ export function countUnread(lastSeenAt, updates) {
   if (!lastSeenAt) return updates.filter((u) => u.active !== false).length;
   const seenMs = lastSeenAt.toMillis ? lastSeenAt.toMillis() : lastSeenAt;
   return updates.filter((u) => u.active !== false && u.createdAt?.toMillis?.() > seenMs).length;
+}
+
+const ACTIVITY_VERB = {
+  comment: 'commented on your post',
+  like: 'liked your post',
+  support: 'supported your post',
+};
+const ACTIVITY_TITLE = {
+  comment: 'New comment',
+  like: 'New like',
+  support: 'New support',
+};
+
+/**
+ * Map a stored activity_notifications doc into the same display shape the
+ * NotificationsDropdown uses for admin announcements, so both render in one
+ * unified feed.
+ */
+function activityDocToItem(docSnap) {
+  const data = docSnap.data();
+  const actor = data.actorName || 'Someone';
+  let body = `${actor} ${ACTIVITY_VERB[data.type] ?? 'interacted with your post'}`;
+  if (data.type === 'comment' && data.commentExcerpt) {
+    body += `: "${data.commentExcerpt}"`;
+  } else if (data.postExcerpt) {
+    body += `: "${data.postExcerpt}"`;
+  }
+  return {
+    id: docSnap.id,
+    kind: 'activity',
+    type: data.type,
+    title: ACTIVITY_TITLE[data.type] ?? 'New activity',
+    body,
+    createdAt: data.createdAt,
+    active: true,
+  };
+}
+
+/**
+ * Fetch the most recent activity notifications for a participant from their
+ * own users/{uid}/activity_notifications subcollection. A single capped query —
+ * scoped to the user's own data, so reads stay minimal and no index is needed.
+ */
+export async function fetchActivityNotifications(uid, max = 20) {
+  if (!uid) return [];
+  const snap = await getDocs(query(
+    collection(db, 'users', uid, 'activity_notifications'),
+    orderBy('createdAt', 'desc'),
+    limit(max),
+  ));
+  return snap.docs.map(activityDocToItem);
 }
 
 /**
