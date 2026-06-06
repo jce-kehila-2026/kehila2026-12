@@ -558,7 +558,12 @@
   gap: 14px;
 }
 
-.participant-topbar__actions > button {
+.participant-notif-wrap {
+  position: relative;
+}
+
+.participant-topbar__actions > button,
+.participant-notif-wrap > button {
   position: relative;
   width: 42px;
   height: 42px;
@@ -572,7 +577,14 @@
   box-shadow: 0 12px 28px rgba(75, 19, 107, 0.08);
 }
 
-.participant-topbar__actions > button span {
+.participant-notif-wrap > button.is-active {
+  background: rgba(236, 22, 140, 0.08);
+  border-color: rgba(236, 22, 140, 0.22);
+  color: #ec168c;
+}
+
+.participant-topbar__actions > button span,
+.participant-notif-wrap > button span {
   position: absolute;
   top: -6px;
   right: -4px;

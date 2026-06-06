@@ -15,6 +15,7 @@ import PeopleIcon from '@mui/icons-material/People';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import ForumOutlinedIcon from '@mui/icons-material/ForumOutlined';
 import HomeWorkOutlinedIcon from '@mui/icons-material/HomeWorkOutlined';
+import CampaignOutlinedIcon from '@mui/icons-material/CampaignOutlined';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import KeyboardDoubleArrowRightRoundedIcon from '@mui/icons-material/KeyboardDoubleArrowRightRounded';
@@ -64,6 +65,13 @@ const NAV_ITEMS = [
     icon: <ForumOutlinedIcon />,
     id: 'nav-community',
     active: (pathname) => pathname.startsWith('/admin/community'),
+  },
+  {
+    label: 'Updates',
+    path: '/admin/updates',
+    icon: <CampaignOutlinedIcon />,
+    id: 'nav-updates',
+    active: (pathname) => pathname.startsWith('/admin/updates'),
   },
   {
     label: 'Audit Log',

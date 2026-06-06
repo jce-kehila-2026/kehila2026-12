@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
 import ChatBubbleOutlineOutlinedIcon from '@mui/icons-material/ChatBubbleOutlineOutlined';
 import MailOutlineOutlinedIcon from '@mui/icons-material/MailOutlineOutlined';
@@ -17,11 +17,13 @@ import AppointmentPage from '../appointments/pages/AppointmentPage';
 import EventsPage from '../events/EventsPage';
 import ProfilePage from '../profile/pages/ProfilePage';
 import { getParticipantData, updateParticipantData } from '../profile/services/participantService';
+import { countUnread, fetchUpdates, getLastSeenAt, markAllAsRead } from '../admin/services/updatesService';
 import CommunityPage from './community/CommunityPage';
 import WorkshopFeed from './WorkshopFeed';
 import { useAdmin } from '../admin/context/AdminContext';
 import ParticipantDashboardHome from './home/ParticipantDashboardHome';
 import ParticipantSidebarProfile from './components/ParticipantSidebarProfile';
+import NotificationsDropdown from './NotificationsDropdown';
 import {
   getParticipantLocaleDirection,
   getParticipantLocaleLang,
@@ -38,7 +40,6 @@ const participantNavItems = [
   { key: 'appointments', label: 'Appointments', icon: EventNoteOutlinedIcon },
   { key: 'events', label: 'Events', icon: EventAvailableOutlinedIcon, path: '/events' },
   { key: 'community', label: 'Community', icon: Diversity3OutlinedIcon },
-  { key: 'messages', label: 'Messages', icon: ChatBubbleOutlineOutlinedIcon, badge: 3 },
   { key: 'profile', label: 'Settings', icon: SettingsOutlinedIcon },
 ];
 
@@ -70,6 +71,73 @@ export default function ParticipantHome({ initialView = 'home' }) {
   const [participantProfile, setParticipantProfile] = useState(null);
   const [loadingParticipantProfile, setLoadingParticipantProfile] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(getStoredSidebarCollapsed);
+
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [updates, setUpdates] = useState([]);
+  const [lastSeenAt, setLastSeenAt] = useState(null);
+  const notifBellRef = useRef(null);
+
+  const unreadCount = useMemo(() => countUnread(lastSeenAt, updates), [lastSeenAt, updates]);
+
+  const loadNotifications = useCallback(async () => {
+    if (!currentUser) return;
+    try {
+      const [data, seen] = await Promise.all([
+        fetchUpdates(true),
+        getLastSeenAt(effectiveUID || currentUser.uid),
+      ]);
+      setUpdates(data);
+      setLastSeenAt(seen);
+    } catch (err) {
+      console.error('Failed to load notifications:', err);
+    }
+  }, [currentUser, effectiveUID]);
+
+  useEffect(() => {
+    loadNotifications();
+  }, [loadNotifications]);
+
+  const handleBellClick = useCallback(() => {
+    if (notifOpen) {
+      setNotifOpen(false);
+      return;
+    }
+    setNotifOpen(true);
+    loadNotifications();
+  }, [notifOpen, loadNotifications]);
+
+  const handleMarkAllRead = useCallback(async () => {
+    if (!currentUser) return;
+    try {
+      await markAllAsRead(effectiveUID || currentUser.uid);
+      setLastSeenAt({ toMillis: () => Date.now() });
+    } catch (err) {
+      console.error('Failed to mark as read:', err);
+    }
+  }, [currentUser, effectiveUID]);
+
+  const notificationsBell = (
+    <div className="participant-notif-wrap" ref={notifBellRef}>
+      <button
+        type="button"
+        aria-label="Notifications"
+        aria-expanded={notifOpen}
+        className={notifOpen ? 'is-active' : ''}
+        onClick={handleBellClick}
+      >
+        <NotificationsNoneOutlinedIcon />
+        {unreadCount > 0 && <span>{unreadCount > 99 ? '99+' : unreadCount}</span>}
+      </button>
+      {notifOpen ? (
+        <NotificationsDropdown
+          updates={updates}
+          lastSeenAt={lastSeenAt}
+          onMarkAllRead={handleMarkAllRead}
+          onClose={() => setNotifOpen(false)}
+        />
+      ) : null}
+    </div>
+  );
 
   const displayName = useMemo(() => {
     const profileName = participantProfile?.fullName || participantProfile?.firstName;
@@ -221,7 +289,7 @@ export default function ParticipantHome({ initialView = 'home' }) {
             <VolunteerActivismOutlinedIcon />
             <strong>Need Support?</strong>
             <span>We are here for you.</span>
-            <button type="button" onClick={() => setActiveView('messages')}>
+            <button type="button" onClick={() => setActiveView('community')}>
               Contact Us
             </button>
           </div>
@@ -240,13 +308,17 @@ export default function ParticipantHome({ initialView = 'home' }) {
             <header className={`participant-topbar${activeView === 'community' ? ' participant-header-sticky' : ''}`}>
               <div>
                 <p>Good morning, {displayName}</p>
-                <strong>{new Intl.DateTimeFormat('en', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }).format(new Date())}</strong>
+                <strong>
+                  {new Intl.DateTimeFormat('en', {
+                    weekday: 'long',
+                    month: 'long',
+                    day: 'numeric',
+                    year: 'numeric',
+                  }).format(new Date())}
+                </strong>
               </div>
               <div className="participant-topbar__actions">
-                <button type="button" aria-label="Notifications">
-                  <NotificationsNoneOutlinedIcon />
-                  <span>3</span>
-                </button>
+                {notificationsBell}
                 <button type="button" aria-label="Messages">
                   <MailOutlineOutlinedIcon />
                 </button>
@@ -272,6 +344,7 @@ export default function ParticipantHome({ initialView = 'home' }) {
               onNavigateToView={navigateParticipantView}
               onViewJourney={() => navigateParticipantView('calendar')}
               onViewCommunity={handleViewCommunity}
+              notificationsBell={notificationsBell}
             />
           )}
 

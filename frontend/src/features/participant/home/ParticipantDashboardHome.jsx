@@ -311,7 +311,14 @@ function CircularCountdownRing({ variant, targetDate, countdown }) {
   );
 }
 
-function DashboardHeader({ displayName, darkMode, onDarkModeChange, locale, onLocaleChange }) {
+function DashboardHeader({
+  displayName,
+  darkMode,
+  onDarkModeChange,
+  locale,
+  onLocaleChange,
+  notificationsBell = null,
+}) {
   return (
     <header className="pd-home__header">
       <div className="pd-home__header-copy">
@@ -319,10 +326,11 @@ function DashboardHeader({ displayName, darkMode, onDarkModeChange, locale, onLo
       </div>
 
       <div className="pd-home__header-actions">
-        <button type="button" className="pd-header-icon-btn" aria-label="Notifications">
-          <Bell size={18} strokeWidth={2.2} />
-          <span className="pd-header-icon-btn__badge">2</span>
-        </button>
+        {notificationsBell ?? (
+          <button type="button" className="pd-header-icon-btn" aria-label="Notifications">
+            <Bell size={18} strokeWidth={2.2} />
+          </button>
+        )}
 
         <ParticipantLanguageSwitcher locale={locale} onChange={onLocaleChange} />
 
@@ -1414,6 +1422,7 @@ export default function ParticipantDashboardHome({
   onViewJourney,
   onNavigateToView,
   onViewCommunity,
+  notificationsBell = null,
 }) {
   const { appointment, event, isLoading, appointmentError, eventError } = useParticipantDashboardHomeData(userId);
   const {
@@ -1455,6 +1464,7 @@ export default function ParticipantDashboardHome({
         onDarkModeChange={onDarkModeChange}
         locale={locale}
         onLocaleChange={onLocaleChange}
+        notificationsBell={notificationsBell}
       />
       <HeroBanner displayName={displayName} dailyQuote={dailyQuote} onViewJourney={onViewJourney} />
 
