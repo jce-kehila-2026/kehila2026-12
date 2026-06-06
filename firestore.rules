@@ -54,6 +54,21 @@ service cloud.firestore {
       match /calendar_notes/{noteId} {
         allow read, write: if isSelf(uid) || isAdmin();
       }
+
+      // Activity notifications (auto-generated when others engage with this
+      // user's community posts). The owner reads/clears their own feed; any
+      // signed-in user may create one addressed to this user, but only
+      // attributed to themselves and only for the supported activity types.
+      // Self-notifications and edits are disallowed.
+      match /activity_notifications/{notificationId} {
+        allow read, delete: if isSelf(uid) || isAdmin();
+        allow create: if request.auth != null
+          && request.auth.uid != uid
+          && request.resource.data.recipientId == uid
+          && request.resource.data.actorId == request.auth.uid
+          && request.resource.data.type in ['comment', 'like', 'support'];
+        allow update: if false;
+      }
     }
 
     // Admin lookup table (legacy, kept for role resolution).
