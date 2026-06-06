@@ -12,6 +12,19 @@ service cloud.firestore {
     function isSelf(uid) {
       return request.auth != null && request.auth.uid == uid;
     }
+    // A signed-in non-author may touch ONLY engagement/aggregate fields on a
+    // post (likes, supports, comment count, reports). `status` may only move to
+    // 'reported' via this path so it can't be used to hide/delete others' posts.
+    function isCommunityEngagementUpdate() {
+      let changed = request.resource.data.diff(resource.data).affectedKeys();
+      return changed.hasOnly([
+        'likedBy', 'likesCount',
+        'supportedBy', 'supportCount',
+        'commentsCount',
+        'reportedBy', 'reportsCount', 'reports', 'status'
+      ])
+      && (!changed.hasAny(['status']) || request.resource.data.status == 'reported');
+    }
 
     // Admin aggregate screens use collectionGroup('registrations') across
     // registration subcollections. Keep this admin-only so participant access
@@ -192,8 +205,12 @@ service cloud.firestore {
         && request.resource.data.authorId == request.auth.uid;
 
       // Author can edit their own post; admins can hide/restore/dismiss reports.
+      // Any signed-in user may update engagement/aggregate fields (like, support,
+      // comment count, report) on posts they don't own.
       allow update: if request.auth != null
-        && (resource.data.authorId == request.auth.uid || isAdmin());
+        && (resource.data.authorId == request.auth.uid
+            || isAdmin()
+            || isCommunityEngagementUpdate());
 
       // Hard delete: admin only. Soft delete (status='deleted') uses update above.
       allow delete: if isAdmin()
