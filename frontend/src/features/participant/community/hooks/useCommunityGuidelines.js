@@ -12,9 +12,13 @@ import {
 } from '../services/communityService';
 
 export default function useCommunityGuidelines() {
-  const [showGuidelinesModal, setShowGuidelinesModal] = useState(
-    () => getAcceptedGuidelinesVersion() !== COMMUNITY_GUIDELINES_VERSION,
-  );
+  // Start hidden and only reveal once the authoritative check (Firestore +
+  // live version) resolves in the effect below. Seeding this from the
+  // local-only guess caused a flash: the modal would render at first paint,
+  // then hide a moment later when the async check confirmed acceptance.
+  // Keeping it false means the modal can only go false→true (show once), never
+  // true→false (the flash). Do not reintroduce the localStorage-based default.
+  const [showGuidelinesModal, setShowGuidelinesModal] = useState(false);
   const [showFullGuidelinesModal, setShowFullGuidelinesModal] = useState(false);
   const [liveVersion, setLiveVersion] = useState(COMMUNITY_GUIDELINES_VERSION);
 
