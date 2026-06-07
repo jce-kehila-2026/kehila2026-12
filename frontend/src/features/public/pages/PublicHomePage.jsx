@@ -2,8 +2,6 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import PublicNavbar from '../components/PublicNavbar';
 import HeroSection from '../components/HeroSection';
 import LearnTogetherSection from '../components/LearnTogetherSection';
-import InspirationStoriesSection from '../components/InspirationStoriesSection';
-import ArticlesPreviewSection from '../components/ArticlesPreviewSection';
 import EventsPreviewSection from '../components/EventsPreviewSection';
 import TeamSection from '../components/TeamSection';
 import MedicalPartnersSection from '../components/MedicalPartnersSection';
@@ -34,12 +32,10 @@ function PublicHomePageContent() {
       content.supportAreas?.length || 0,
       content.statistics?.length || 0,
       content.teamMembers?.length || 0,
-      content.articles?.length || 0,
       content.events?.length || 0,
       publicHomeDoc.learnTogether?.cards?.length || 0,
     ].join(':'),
     [
-      content.articles?.length,
       content.events?.length,
       content.statistics?.length,
       content.supportAreas?.length,
@@ -111,8 +107,6 @@ function PublicHomePageContent() {
           onJoinClick={() => setIsJoinModalOpen(true)}
         />
         <LearnTogetherSection learnTogether={publicHomeDoc.learnTogether} />
-        <InspirationStoriesSection stories={publicHomeDoc.inspirationalStories} />
-        <ArticlesPreviewSection coverage={publicHomeDoc.pressCoverage} />
         <EventsPreviewSection events={content.events} isLoading={loading} hasError={error} />
         <TeamSection members={publicHomeDoc.teamMembers} />
         <MedicalPartnersSection partners={publicHomeDoc.partners} />

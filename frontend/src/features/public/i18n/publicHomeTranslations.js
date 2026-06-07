@@ -12,13 +12,13 @@ export const PUBLIC_LANGUAGE_OPTIONS = [
 const NAV_LINK_KEYS = [
   { key: 'navHome', href: '#home' },
   { key: 'navLearnTogether', href: '#support' },
-  { key: 'navStories', href: '#stories' },
+  { key: 'navStories', href: '/public/stories-articles' },
   { key: 'navDonations', href: '__donation__' },
   { key: 'navContact', href: '#contact' },
 ];
 
 const NAVBAR_LINK_KEYS = [
-  { key: 'navbarStories', href: '#stories' },
+  { key: 'navbarStories', href: '/public/stories-articles' },
   { key: 'navDonations', href: '__donation__' },
   { key: 'navContact', href: '#contact' },
 ];
@@ -30,13 +30,18 @@ const NAVBAR_HOME_MENU_KEYS = [
   { key: 'navOurPartners', href: '#medical-partners' },
 ];
 
+const NAVBAR_STORIES_MENU_KEYS = [
+  { key: 'navbarStoriesMenuStories', href: '#stories' },
+  { key: 'navbarStoriesMenuArticles', href: '#articles' },
+];
+
 export const publicHomeTranslations = {
   he: {
     navHome: 'הבית',
-    navSimpleHome: 'בית',
+    navSimpleHome: 'עמוד הבית',
     navLearnTogether: 'מי אנחנו',
-    navStories: 'סיפורי השראה',
-    navbarStories: 'סיפורים',
+    navStories: 'סיפורים ומאמרים',
+    navbarStories: 'סיפורים ומאמרים',
     navDonations: 'תרומות',
     navContact: 'צרי קשר',
     navAboutUs: 'מי אנחנו',
@@ -44,6 +49,9 @@ export const publicHomeTranslations = {
     navOurTeam: 'הצוות שלנו',
     navOurPartners: 'השותפים שלנו',
     navHomeMenuLabel: 'תפריט הבית',
+    navbarStoriesMenuLabel: 'תפריט סיפורים ומאמרים',
+    navbarStoriesMenuStories: 'סיפורים',
+    navbarStoriesMenuArticles: 'מאמרים',
     navJoin: 'להצטרף',
     navPersonalArea: 'איזור אישי',
     navVolunteer: 'להתנדב',
@@ -64,8 +72,8 @@ export const publicHomeTranslations = {
     navHome: 'الرئيسية',
     navSimpleHome: 'الرئيسية',
     navLearnTogether: 'من نحن',
-    navStories: 'قصص ملهمة',
-    navbarStories: 'قصص',
+    navStories: 'قصص ومقالات',
+    navbarStories: 'قصص ومقالات',
     navDonations: 'تبرعات',
     navContact: 'تواصلي معنا',
     navAboutUs: 'من نحن',
@@ -73,6 +81,9 @@ export const publicHomeTranslations = {
     navOurTeam: 'فريقنا',
     navOurPartners: 'شركاؤنا',
     navHomeMenuLabel: 'قائمة الرئيسية',
+    navbarStoriesMenuLabel: 'قائمة القصص والمقالات',
+    navbarStoriesMenuStories: 'قصص',
+    navbarStoriesMenuArticles: 'مقالات',
     navJoin: 'انضمّي',
     navPersonalArea: 'المنطقة الشخصية',
     navVolunteer: 'تطوّعي',
@@ -93,8 +104,8 @@ export const publicHomeTranslations = {
     navHome: 'Home',
     navSimpleHome: 'Home',
     navLearnTogether: 'About Us',
-    navStories: 'Inspiration Stories',
-    navbarStories: 'Stories',
+    navStories: 'Stories & Articles',
+    navbarStories: 'Stories & Articles',
     navDonations: 'Donate',
     navContact: 'Contact',
     navAboutUs: 'About Us',
@@ -102,6 +113,9 @@ export const publicHomeTranslations = {
     navOurTeam: 'Our Team',
     navOurPartners: 'Our Partners',
     navHomeMenuLabel: 'Home menu',
+    navbarStoriesMenuLabel: 'Stories and articles menu',
+    navbarStoriesMenuStories: 'Stories',
+    navbarStoriesMenuArticles: 'Articles',
     navJoin: 'Join',
     navPersonalArea: 'Personal Area',
     navVolunteer: 'Volunteer',
@@ -181,6 +195,13 @@ export function getPublicNavbarLinks(t, donationHref) {
 
 export function getPublicNavbarHomeMenu(t) {
   return NAVBAR_HOME_MENU_KEYS.map(({ key, href }) => ({
+    label: t(key),
+    href,
+  }));
+}
+
+export function getPublicNavbarStoriesMenu(t) {
+  return NAVBAR_STORIES_MENU_KEYS.map(({ key, href }) => ({
     label: t(key),
     href,
   }));

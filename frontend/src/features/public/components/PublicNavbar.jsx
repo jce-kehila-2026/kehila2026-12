@@ -6,8 +6,14 @@ import { PUBLIC_DONATION_TARGET } from '../constants/publicDonationLink';
 import { useAdmin } from '../../admin/context/AdminContext';
 import { getPostLoginPath } from '../../admin/services/authRoleService';
 import { usePublicLocale } from '../context/PublicLocaleContext';
-import { getPublicNavbarHomeMenu, getPublicNavbarLinks } from '../i18n/publicHomeTranslations';
+import {
+  getPublicNavbarHomeMenu,
+  getPublicNavbarLinks,
+  getPublicNavbarStoriesMenu,
+} from '../i18n/publicHomeTranslations';
 import PublicLanguageSwitcher from './PublicLanguageSwitcher';
+
+const STORIES_ARTICLES_PATH = '/public/stories-articles';
 
 export default function PublicNavbar({
   organization,
@@ -17,10 +23,13 @@ export default function PublicNavbar({
 }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isHomeMenuOpen, setIsHomeMenuOpen] = useState(false);
+  const [isStoriesMenuOpen, setIsStoriesMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState('');
   const homeMenuRef = useRef(null);
+  const storiesMenuRef = useRef(null);
   const homeMenuId = useId();
+  const storiesMenuId = useId();
   const location = useLocation();
   const { currentUser, userRole } = useAdmin();
   const { t } = usePublicLocale();
@@ -29,7 +38,10 @@ export default function PublicNavbar({
   const personalAreaHref = currentUser ? getPostLoginPath(userRole) : '/home';
   const publicLinks = useMemo(() => getPublicNavbarLinks(t, PUBLIC_DONATION_TARGET), [t]);
   const homeMenuLinks = useMemo(() => getPublicNavbarHomeMenu(t), [t]);
+  const storiesMenuLinks = useMemo(() => getPublicNavbarStoriesMenu(t), [t]);
   const resolveHomepageHref = (href) => (location.pathname === '/public' ? href : `/public${href}`);
+  const resolveStoriesHref = (href) =>
+    location.pathname === STORIES_ARTICLES_PATH ? href : `${STORIES_ARTICLES_PATH}${href}`;
 
   useEffect(() => {
     function handleScroll() {
@@ -62,19 +74,23 @@ export default function PublicNavbar({
   }, []);
 
   useEffect(() => {
-    if (!showHomeDropdown || !isHomeMenuOpen) {
+    if ((!showHomeDropdown || !isHomeMenuOpen) && !isStoriesMenuOpen) {
       return undefined;
     }
 
     function handlePointerDown(event) {
-      if (!homeMenuRef.current?.contains(event.target)) {
+      if (isHomeMenuOpen && !homeMenuRef.current?.contains(event.target)) {
         setIsHomeMenuOpen(false);
+      }
+      if (isStoriesMenuOpen && !storiesMenuRef.current?.contains(event.target)) {
+        setIsStoriesMenuOpen(false);
       }
     }
 
     function handleKeyDown(event) {
       if (event.key === 'Escape') {
         setIsHomeMenuOpen(false);
+        setIsStoriesMenuOpen(false);
       }
     }
 
@@ -85,11 +101,12 @@ export default function PublicNavbar({
       document.removeEventListener('mousedown', handlePointerDown);
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isHomeMenuOpen, showHomeDropdown]);
+  }, [isHomeMenuOpen, isStoriesMenuOpen, showHomeDropdown]);
 
   function closeMenu() {
     setIsMenuOpen(false);
     setIsHomeMenuOpen(false);
+    setIsStoriesMenuOpen(false);
   }
 
   function handleVolunteerClick(event) {
@@ -145,7 +162,10 @@ export default function PublicNavbar({
                   aria-haspopup="menu"
                   aria-expanded={isHomeMenuOpen}
                   aria-controls={homeMenuId}
-                  onClick={() => setIsHomeMenuOpen((currentValue) => !currentValue)}
+                  onClick={() => {
+                    setIsStoriesMenuOpen(false);
+                    setIsHomeMenuOpen((currentValue) => !currentValue);
+                  }}
                 >
                   <span>{t('navHome')}</span>
                   <ChevronDown aria-hidden="true" strokeWidth={2.25} />
@@ -166,6 +186,46 @@ export default function PublicNavbar({
               </a>
             )}
             {publicLinks.map((link) => {
+              if (link.href === STORIES_ARTICLES_PATH) {
+                return (
+                  <div
+                    className={`public-navbar__dropdown${isStoriesMenuOpen ? ' public-navbar__dropdown--open' : ''}`}
+                    ref={storiesMenuRef}
+                    key={link.href}
+                  >
+                    <button
+                      className="public-navbar__dropdown-trigger"
+                      type="button"
+                      aria-label={t('navbarStoriesMenuLabel')}
+                      aria-haspopup="menu"
+                      aria-expanded={isStoriesMenuOpen}
+                      aria-controls={storiesMenuId}
+                      onClick={() => {
+                        setIsHomeMenuOpen(false);
+                        setIsStoriesMenuOpen((currentValue) => !currentValue);
+                      }}
+                    >
+                      <span>{link.label}</span>
+                      <ChevronDown aria-hidden="true" strokeWidth={2.25} />
+                    </button>
+                    <ul
+                      className="public-navbar__dropdown-menu"
+                      id={storiesMenuId}
+                      role="menu"
+                      hidden={!isStoriesMenuOpen}
+                    >
+                      {storiesMenuLinks.map((menuLink) => (
+                        <li key={menuLink.href} role="none">
+                          <a href={resolveStoriesHref(menuLink.href)} role="menuitem" onClick={closeMenu}>
+                            {menuLink.label}
+                          </a>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                );
+              }
+
               const isContactLink = link.href === '#contact';
               const isActive = isContactLink && activeSection === 'contact';
               const href = link.href.startsWith('#') ? resolveHomepageHref(link.href) : link.href;
