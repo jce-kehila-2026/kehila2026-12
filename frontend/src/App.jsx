@@ -25,6 +25,7 @@ import UpdatesPage from './features/admin/pages/UpdatesPage';
 import ProfilePage from './features/profile/pages/ProfilePage';
 import ParticipantHome from './features/participant/ParticipantHome';
 import PublicHomePage from './features/public/pages/PublicHomePage';
+import PublicDonationsPage from './features/public/pages/PublicDonationsPage';
 import AccessibilityStatementPage from './features/public/pages/AccessibilityStatementPage';
 import { useAdmin } from './features/admin/context/AdminContext';
 import { getPostLoginPath } from './features/admin/services/authRoleService';
@@ -59,6 +60,7 @@ function ThemedApp() {
             <Routes>
               <Route path="/" element={<RoleRedirect />} />
               <Route path="/public" element={<PublicHomePage />} />
+              <Route path="/public/donations" element={<PublicDonationsPage />} />
               <Route path="/accessibility" element={<AccessibilityStatementPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/profile" element={<ProfilePage />} />

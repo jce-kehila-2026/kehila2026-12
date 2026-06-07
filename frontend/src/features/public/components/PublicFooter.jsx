@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import footerLogo from '../../../assets/logo2.png';
 import { PUBLIC_DONATION_TARGET } from '../constants/publicDonationLink';
 import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
@@ -15,6 +15,7 @@ function hasValue(value) {
 
 export default function PublicFooter({ organization, contact = {} }) {
   const { t } = usePublicLocale();
+  const location = useLocation();
   const organizationName = organization?.name || 'SHE-NA';
   const currentYear = new Date().getFullYear();
   const email = hasValue(contact.email) ? contact.email : organization?.email;
@@ -22,6 +23,8 @@ export default function PublicFooter({ organization, contact = {} }) {
   const address = hasValue(contact.address) ? contact.address : organization?.address;
   const socialLinks = Array.isArray(contact.socialLinks) ? contact.socialLinks.filter(Boolean) : [];
   const footerLinks = getPublicNavLinks(t, PUBLIC_DONATION_TARGET).filter((link) => link.href !== '#contact');
+  const resolveHomepageHref = (href) =>
+    href.startsWith('#') && location.pathname !== '/public' ? `/public${href}` : href;
 
   return (
     <footer className="public-footer" id="contact">
@@ -37,7 +40,7 @@ export default function PublicFooter({ organization, contact = {} }) {
           <h2>{t('footerQuickLinks')}</h2>
           <nav className="public-footer__links" aria-label={t('footerNavAria')}>
             {footerLinks.map((link) => (
-              <a href={link.href} key={link.href}>
+              <a href={resolveHomepageHref(link.href)} key={link.href}>
                 {link.label}
               </a>
             ))}

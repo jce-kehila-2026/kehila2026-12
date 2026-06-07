@@ -33,6 +33,7 @@ const NAVBAR_HOME_MENU_KEYS = [
 export const publicHomeTranslations = {
   he: {
     navHome: 'הבית',
+    navSimpleHome: 'בית',
     navLearnTogether: 'מי אנחנו',
     navStories: 'סיפורי השראה',
     navbarStories: 'סיפורים',
@@ -61,6 +62,7 @@ export const publicHomeTranslations = {
   },
   ar: {
     navHome: 'الرئيسية',
+    navSimpleHome: 'الرئيسية',
     navLearnTogether: 'من نحن',
     navStories: 'قصص ملهمة',
     navbarStories: 'قصص',
@@ -89,6 +91,7 @@ export const publicHomeTranslations = {
   },
   en: {
     navHome: 'Home',
+    navSimpleHome: 'Home',
     navLearnTogether: 'About Us',
     navStories: 'Inspiration Stories',
     navbarStories: 'Stories',

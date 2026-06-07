@@ -5,13 +5,11 @@ import LearnTogetherSection from '../components/LearnTogetherSection';
 import InspirationStoriesSection from '../components/InspirationStoriesSection';
 import ArticlesPreviewSection from '../components/ArticlesPreviewSection';
 import EventsPreviewSection from '../components/EventsPreviewSection';
-import CommunitySupportCta from '../components/CommunitySupportCta';
 import TeamSection from '../components/TeamSection';
 import MedicalPartnersSection from '../components/MedicalPartnersSection';
 import PublicFooter from '../components/PublicFooter';
 import JoinCommunityModal from '../components/JoinCommunityModal';
 import VolunteerModal from '../components/VolunteerModal';
-import DonationModal from '../components/DonationModal';
 import EmptyState from '../components/EmptyState';
 import ErrorState from '../components/ErrorState';
 import useRevealOnScroll from '../hooks/useRevealOnScroll';
@@ -30,7 +28,6 @@ function PublicHomePageContent() {
   const [error, setError] = useState(null);
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
   const [isVolunteerModalOpen, setIsVolunteerModalOpen] = useState(false);
-  const [isDonationModalOpen, setIsDonationModalOpen] = useState(false);
   const revealRefreshKey = useMemo(
     () => [
       loading ? 'loading' : 'ready',
@@ -117,14 +114,12 @@ function PublicHomePageContent() {
         <InspirationStoriesSection stories={publicHomeDoc.inspirationalStories} />
         <ArticlesPreviewSection coverage={publicHomeDoc.pressCoverage} />
         <EventsPreviewSection events={content.events} isLoading={loading} hasError={error} />
-        <CommunitySupportCta onDonationClick={() => setIsDonationModalOpen(true)} />
         <TeamSection members={publicHomeDoc.teamMembers} />
         <MedicalPartnersSection partners={publicHomeDoc.partners} />
       </main>
       <PublicFooter organization={content.organization} contact={content.contact} />
       <JoinCommunityModal isOpen={isJoinModalOpen} onClose={() => setIsJoinModalOpen(false)} />
       <VolunteerModal isOpen={isVolunteerModalOpen} onClose={() => setIsVolunteerModalOpen(false)} />
-      <DonationModal isOpen={isDonationModalOpen} onClose={() => setIsDonationModalOpen(false)} />
     </div>
   );
 }

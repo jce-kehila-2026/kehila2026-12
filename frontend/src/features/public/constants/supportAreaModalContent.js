@@ -145,7 +145,7 @@ export function resolveSupportAreaActionPath(actionHref = '') {
     '#events': '/events',
     '#stories': '/public#stories',
     '#contact': '/public#contact',
-    '#donate': '/public#donate',
+    '#donate': '/public/donations',
   };
 
   if (routeByHash[href]) {

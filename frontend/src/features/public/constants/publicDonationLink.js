@@ -1,7 +1,7 @@
-/** In-page donation/support section anchor. */
-export const PUBLIC_DONATION_TARGET = '#donate';
+/** Standalone public donation page. */
+export const PUBLIC_DONATION_TARGET = '/public/donations';
 
-const LEGACY_DONATION_HREFS = new Set(['#donate', '/donate', '/public/donate']);
+const LEGACY_DONATION_HREFS = new Set(['#donate', '/donate', '/public/donate', '/public#donate']);
 
 export function resolvePublicDonationHref(href) {
   if (typeof href !== 'string' || !href.trim()) {

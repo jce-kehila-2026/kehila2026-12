@@ -1,5 +1,6 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 import sheNaLogo from '../../../assets/she-na-logo.png';
 import { PUBLIC_DONATION_TARGET } from '../constants/publicDonationLink';
 import { useAdmin } from '../../admin/context/AdminContext';
@@ -8,13 +9,19 @@ import { usePublicLocale } from '../context/PublicLocaleContext';
 import { getPublicNavbarHomeMenu, getPublicNavbarLinks } from '../i18n/publicHomeTranslations';
 import PublicLanguageSwitcher from './PublicLanguageSwitcher';
 
-export default function PublicNavbar({ organization, onJoinClick, onVolunteerClick }) {
+export default function PublicNavbar({
+  organization,
+  onJoinClick,
+  onVolunteerClick,
+  showHomeDropdown = true,
+}) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isHomeMenuOpen, setIsHomeMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState('');
   const homeMenuRef = useRef(null);
   const homeMenuId = useId();
+  const location = useLocation();
   const { currentUser, userRole } = useAdmin();
   const { t } = usePublicLocale();
   const organizationName = organization?.name || 'SHE-NA';
@@ -22,6 +29,7 @@ export default function PublicNavbar({ organization, onJoinClick, onVolunteerCli
   const personalAreaHref = currentUser ? getPostLoginPath(userRole) : '/home';
   const publicLinks = useMemo(() => getPublicNavbarLinks(t, PUBLIC_DONATION_TARGET), [t]);
   const homeMenuLinks = useMemo(() => getPublicNavbarHomeMenu(t), [t]);
+  const resolveHomepageHref = (href) => (location.pathname === '/public' ? href : `/public${href}`);
 
   useEffect(() => {
     function handleScroll() {
@@ -54,7 +62,7 @@ export default function PublicNavbar({ organization, onJoinClick, onVolunteerCli
   }, []);
 
   useEffect(() => {
-    if (!isHomeMenuOpen) {
+    if (!showHomeDropdown || !isHomeMenuOpen) {
       return undefined;
     }
 
@@ -77,7 +85,7 @@ export default function PublicNavbar({ organization, onJoinClick, onVolunteerCli
       document.removeEventListener('mousedown', handlePointerDown);
       document.removeEventListener('keydown', handleKeyDown);
     };
-  }, [isHomeMenuOpen]);
+  }, [isHomeMenuOpen, showHomeDropdown]);
 
   function closeMenu() {
     setIsMenuOpen(false);
@@ -102,7 +110,7 @@ export default function PublicNavbar({ organization, onJoinClick, onVolunteerCli
         <div className="public-navbar__bar">
           <a
             className="public-navbar__brand"
-            href="#home"
+            href={resolveHomepageHref('#home')}
             aria-label={`${organizationName} ${t('brandHomeAria')}`}
             onClick={closeMenu}
           >
@@ -125,40 +133,47 @@ export default function PublicNavbar({ organization, onJoinClick, onVolunteerCli
 
         <div className={`public-navbar__menu${isMenuOpen ? ' public-navbar__menu--open' : ''}`} id="public-navigation">
           <nav className="public-navbar__links" aria-label={t('navAriaLabel')}>
-            <div
-              className={`public-navbar__dropdown${isHomeMenuOpen ? ' public-navbar__dropdown--open' : ''}`}
-              ref={homeMenuRef}
-            >
-              <button
-                className="public-navbar__dropdown-trigger"
-                type="button"
-                aria-label={t('navHomeMenuLabel')}
-                aria-haspopup="menu"
-                aria-expanded={isHomeMenuOpen}
-                aria-controls={homeMenuId}
-                onClick={() => setIsHomeMenuOpen((currentValue) => !currentValue)}
+            {showHomeDropdown ? (
+              <div
+                className={`public-navbar__dropdown${isHomeMenuOpen ? ' public-navbar__dropdown--open' : ''}`}
+                ref={homeMenuRef}
               >
-                <span>{t('navHome')}</span>
-                <ChevronDown aria-hidden="true" strokeWidth={2.25} />
-              </button>
-              <ul className="public-navbar__dropdown-menu" id={homeMenuId} role="menu" hidden={!isHomeMenuOpen}>
-                {homeMenuLinks.map((link) => (
-                  <li key={link.href} role="none">
-                    <a href={link.href} role="menuitem" onClick={closeMenu}>
-                      {link.label}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-            </div>
+                <button
+                  className="public-navbar__dropdown-trigger"
+                  type="button"
+                  aria-label={t('navHomeMenuLabel')}
+                  aria-haspopup="menu"
+                  aria-expanded={isHomeMenuOpen}
+                  aria-controls={homeMenuId}
+                  onClick={() => setIsHomeMenuOpen((currentValue) => !currentValue)}
+                >
+                  <span>{t('navHome')}</span>
+                  <ChevronDown aria-hidden="true" strokeWidth={2.25} />
+                </button>
+                <ul className="public-navbar__dropdown-menu" id={homeMenuId} role="menu" hidden={!isHomeMenuOpen}>
+                  {homeMenuLinks.map((link) => (
+                    <li key={link.href} role="none">
+                      <a href={resolveHomepageHref(link.href)} role="menuitem" onClick={closeMenu}>
+                        {link.label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : (
+              <a href="/public" onClick={closeMenu}>
+                {t('navSimpleHome')}
+              </a>
+            )}
             {publicLinks.map((link) => {
               const isContactLink = link.href === '#contact';
               const isActive = isContactLink && activeSection === 'contact';
+              const href = link.href.startsWith('#') ? resolveHomepageHref(link.href) : link.href;
 
               return (
                 <a
                   key={link.href}
-                  href={link.href}
+                  href={href}
                   className={isActive ? 'public-navbar__link--active' : undefined}
                   aria-current={isActive ? 'page' : undefined}
                   onClick={closeMenu}
