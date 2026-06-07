@@ -8,7 +8,6 @@ import EventsPreviewSection from '../components/EventsPreviewSection';
 import CommunitySupportCta from '../components/CommunitySupportCta';
 import TeamSection from '../components/TeamSection';
 import MedicalPartnersSection from '../components/MedicalPartnersSection';
-import ContactSection from '../components/ContactSection';
 import PublicFooter from '../components/PublicFooter';
 import JoinCommunityModal from '../components/JoinCommunityModal';
 import VolunteerModal from '../components/VolunteerModal';
@@ -121,7 +120,6 @@ function PublicHomePageContent() {
         <CommunitySupportCta onDonationClick={() => setIsDonationModalOpen(true)} />
         <TeamSection members={publicHomeDoc.teamMembers} />
         <MedicalPartnersSection partners={publicHomeDoc.partners} />
-        <ContactSection contact={publicHomeDoc.contact} organization={content.organization} />
       </main>
       <PublicFooter organization={content.organization} contact={content.contact} />
       <JoinCommunityModal isOpen={isJoinModalOpen} onClose={() => setIsJoinModalOpen(false)} />
