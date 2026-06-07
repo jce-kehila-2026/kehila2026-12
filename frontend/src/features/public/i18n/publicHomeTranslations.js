@@ -17,13 +17,32 @@ const NAV_LINK_KEYS = [
   { key: 'navContact', href: '#contact' },
 ];
 
+const NAVBAR_LINK_KEYS = [
+  { key: 'navbarStories', href: '#stories' },
+  { key: 'navDonations', href: '__donation__' },
+  { key: 'navContact', href: '#contact' },
+];
+
+const NAVBAR_HOME_MENU_KEYS = [
+  { key: 'navAboutUs', href: '#support' },
+  { key: 'navUpcomingEvents', href: '#events' },
+  { key: 'navOurTeam', href: '#team' },
+  { key: 'navOurPartners', href: '#medical-partners' },
+];
+
 export const publicHomeTranslations = {
   he: {
     navHome: 'הבית',
     navLearnTogether: 'מי אנחנו',
     navStories: 'סיפורי השראה',
+    navbarStories: 'סיפורים',
     navDonations: 'תרומות',
     navContact: 'צרי קשר',
+    navAboutUs: 'מי אנחנו',
+    navUpcomingEvents: 'פעילויות קרובות',
+    navOurTeam: 'הצוות שלנו',
+    navOurPartners: 'השותפים שלנו',
+    navHomeMenuLabel: 'תפריט הבית',
     navJoin: 'להצטרף',
     navPersonalArea: 'איזור אישי',
     navVolunteer: 'להתנדב',
@@ -44,8 +63,14 @@ export const publicHomeTranslations = {
     navHome: 'الرئيسية',
     navLearnTogether: 'من نحن',
     navStories: 'قصص ملهمة',
+    navbarStories: 'قصص',
     navDonations: 'تبرعات',
     navContact: 'تواصلي معنا',
+    navAboutUs: 'من نحن',
+    navUpcomingEvents: 'الفعاليات القريبة',
+    navOurTeam: 'فريقنا',
+    navOurPartners: 'شركاؤنا',
+    navHomeMenuLabel: 'قائمة الرئيسية',
     navJoin: 'انضمّي',
     navPersonalArea: 'المنطقة الشخصية',
     navVolunteer: 'تطوّعي',
@@ -66,8 +91,14 @@ export const publicHomeTranslations = {
     navHome: 'Home',
     navLearnTogether: 'About Us',
     navStories: 'Inspiration Stories',
+    navbarStories: 'Stories',
     navDonations: 'Donate',
     navContact: 'Contact',
+    navAboutUs: 'About Us',
+    navUpcomingEvents: 'Upcoming Activities',
+    navOurTeam: 'Our Team',
+    navOurPartners: 'Our Partners',
+    navHomeMenuLabel: 'Home menu',
     navJoin: 'Join',
     navPersonalArea: 'Personal Area',
     navVolunteer: 'Volunteer',
@@ -135,6 +166,20 @@ export function getPublicNavLinks(t, donationHref) {
   return NAV_LINK_KEYS.map(({ key, href }) => ({
     label: t(key),
     href: href === '__donation__' ? donationHref : href,
+  }));
+}
+
+export function getPublicNavbarLinks(t, donationHref) {
+  return NAVBAR_LINK_KEYS.map(({ key, href }) => ({
+    label: t(key),
+    href: href === '__donation__' ? donationHref : href,
+  }));
+}
+
+export function getPublicNavbarHomeMenu(t) {
+  return NAVBAR_HOME_MENU_KEYS.map(({ key, href }) => ({
+    label: t(key),
+    href,
   }));
 }
 

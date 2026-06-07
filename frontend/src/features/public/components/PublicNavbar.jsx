@@ -1,22 +1,27 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useId, useMemo, useRef, useState } from 'react';
+import { ChevronDown } from 'lucide-react';
 import sheNaLogo from '../../../assets/she-na-logo.png';
 import { PUBLIC_DONATION_TARGET } from '../constants/publicDonationLink';
 import { useAdmin } from '../../admin/context/AdminContext';
 import { getPostLoginPath } from '../../admin/services/authRoleService';
 import { usePublicLocale } from '../context/PublicLocaleContext';
-import { getPublicNavLinks } from '../i18n/publicHomeTranslations';
+import { getPublicNavbarHomeMenu, getPublicNavbarLinks } from '../i18n/publicHomeTranslations';
 import PublicLanguageSwitcher from './PublicLanguageSwitcher';
 
 export default function PublicNavbar({ organization, onJoinClick, onVolunteerClick }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isHomeMenuOpen, setIsHomeMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
   const [activeSection, setActiveSection] = useState('');
+  const homeMenuRef = useRef(null);
+  const homeMenuId = useId();
   const { currentUser, userRole } = useAdmin();
   const { t } = usePublicLocale();
   const organizationName = organization?.name || 'SHE-NA';
   const menuButtonLabel = isMenuOpen ? t('closeMenu') : t('openMenu');
   const personalAreaHref = currentUser ? getPostLoginPath(userRole) : '/home';
-  const publicLinks = useMemo(() => getPublicNavLinks(t, PUBLIC_DONATION_TARGET), [t]);
+  const publicLinks = useMemo(() => getPublicNavbarLinks(t, PUBLIC_DONATION_TARGET), [t]);
+  const homeMenuLinks = useMemo(() => getPublicNavbarHomeMenu(t), [t]);
 
   useEffect(() => {
     function handleScroll() {
@@ -48,8 +53,35 @@ export default function PublicNavbar({ organization, onJoinClick, onVolunteerCli
     return () => observer.disconnect();
   }, []);
 
+  useEffect(() => {
+    if (!isHomeMenuOpen) {
+      return undefined;
+    }
+
+    function handlePointerDown(event) {
+      if (!homeMenuRef.current?.contains(event.target)) {
+        setIsHomeMenuOpen(false);
+      }
+    }
+
+    function handleKeyDown(event) {
+      if (event.key === 'Escape') {
+        setIsHomeMenuOpen(false);
+      }
+    }
+
+    document.addEventListener('mousedown', handlePointerDown);
+    document.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      document.removeEventListener('mousedown', handlePointerDown);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [isHomeMenuOpen]);
+
   function closeMenu() {
     setIsMenuOpen(false);
+    setIsHomeMenuOpen(false);
   }
 
   function handleVolunteerClick(event) {
@@ -93,6 +125,32 @@ export default function PublicNavbar({ organization, onJoinClick, onVolunteerCli
 
         <div className={`public-navbar__menu${isMenuOpen ? ' public-navbar__menu--open' : ''}`} id="public-navigation">
           <nav className="public-navbar__links" aria-label={t('navAriaLabel')}>
+            <div
+              className={`public-navbar__dropdown${isHomeMenuOpen ? ' public-navbar__dropdown--open' : ''}`}
+              ref={homeMenuRef}
+            >
+              <button
+                className="public-navbar__dropdown-trigger"
+                type="button"
+                aria-label={t('navHomeMenuLabel')}
+                aria-haspopup="menu"
+                aria-expanded={isHomeMenuOpen}
+                aria-controls={homeMenuId}
+                onClick={() => setIsHomeMenuOpen((currentValue) => !currentValue)}
+              >
+                <span>{t('navHome')}</span>
+                <ChevronDown aria-hidden="true" strokeWidth={2.25} />
+              </button>
+              <ul className="public-navbar__dropdown-menu" id={homeMenuId} role="menu" hidden={!isHomeMenuOpen}>
+                {homeMenuLinks.map((link) => (
+                  <li key={link.href} role="none">
+                    <a href={link.href} role="menuitem" onClick={closeMenu}>
+                      {link.label}
+                    </a>
+                  </li>
+                ))}
+              </ul>
+            </div>
             {publicLinks.map((link) => {
               const isContactLink = link.href === '#contact';
               const isActive = isContactLink && activeSection === 'contact';
