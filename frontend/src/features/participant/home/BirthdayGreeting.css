@@ -1,0 +1,114 @@
+.birthday-greeting {
+  --section-heading-pink: #ec3c97;
+  --section-heading-purple: #5b1e8c;
+  --pd-purple-deep: #4b136b;
+  --pd-muted: rgba(75, 19, 107, 0.62);
+  --pd-pink: #ec168c;
+
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin: 0 0 20px;
+  padding: 0 4px;
+  animation: birthday-greeting-fade-in 560ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.birthday-greeting__content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: min(100%, 560px);
+  text-align: center;
+}
+
+.birthday-greeting .public-section-heading__divider--title {
+  width: min(100%, 420px);
+  gap: 16px;
+  margin: 0 0 clamp(10px, 1.4vw, 14px);
+}
+
+.birthday-greeting .public-section-heading__divider-line {
+  flex: 1;
+  min-width: 48px;
+}
+
+.birthday-greeting .public-section-heading__divider-heart {
+  font-size: 0.85rem;
+}
+
+.birthday-greeting__icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 0 clamp(8px, 1.2vw, 10px);
+  color: var(--section-heading-pink);
+}
+
+.birthday-greeting__title {
+  margin: 0;
+  color: var(--pd-purple-deep);
+  font-family: 'Nunito', 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-size: clamp(1.35rem, 2.2vw, 1.75rem);
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+}
+
+.birthday-greeting__subtitle {
+  max-width: 520px;
+  margin: clamp(6px, 1vw, 8px) 0 0;
+  padding: 0 clamp(8px, 2vw, 16px);
+  color: var(--pd-muted);
+  font-family: 'Nunito', 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-size: clamp(0.78rem, 1vw, 0.86rem);
+  font-weight: 500;
+  line-height: 1.5;
+  letter-spacing: 0.01em;
+}
+
+@keyframes birthday-greeting-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.participant-home--dark .birthday-greeting__title {
+  color: #f8fafc;
+}
+
+.participant-home--dark .birthday-greeting__subtitle {
+  color: rgba(249, 168, 212, 0.72);
+}
+
+.participant-home--dark .birthday-greeting__icon {
+  color: #f9a8d4;
+}
+
+.participant-home--dark .birthday-greeting .public-section-heading__divider-heart {
+  color: #f9a8d4;
+}
+
+.participant-home--dark .birthday-greeting .public-section-heading__divider-line {
+  background: linear-gradient(90deg, transparent, rgba(249, 168, 212, 0.32));
+}
+
+.participant-home--dark .birthday-greeting .public-section-heading__divider-line:last-child {
+  background: linear-gradient(270deg, transparent, rgba(249, 168, 212, 0.32));
+}
+
+@media (max-width: 520px) {
+  .birthday-greeting .public-section-heading__divider--title {
+    width: min(100%, 320px);
+    gap: 12px;
+  }
+
+  .birthday-greeting .public-section-heading__divider-line {
+    min-width: 32px;
+  }
+}
