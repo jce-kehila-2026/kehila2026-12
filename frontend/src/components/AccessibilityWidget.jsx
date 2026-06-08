@@ -43,7 +43,8 @@ function defaultTop() {
 }
 
 // Labels are resolved from the active locale at render time (see TOGGLE_KEYS).
-const TOGGLE_KEYS = ['highContrast', 'grayscale', 'highlightLinks', 'readableFont', 'stopAnimations'];
+const TOGGLE_KEYS = ['grayscale', 'highlightLinks', 'readableFont', 'stopAnimations'];
+const CONTRAST_OPTIONS = ['none', 'dark', 'light'];
 
 export default function AccessibilityWidget() {
   const [open, setOpen] = useState(false);
@@ -52,7 +53,7 @@ export default function AccessibilityWidget() {
     return saved !== null ? saved : defaultTop();
   });
 
-  const { prefs, setTextScale, toggle, reset } = useAccessibility();
+  const { prefs, setTextScale, toggle, setContrastScheme, reset } = useAccessibility();
   const containerRef = useRef(null);
   const triggerRef = useRef(null);
   const dialogRef = useRef(null);
@@ -352,6 +353,43 @@ export default function AccessibilityWidget() {
                   {b.label}
                 </button>
               ))}
+            </div>
+          </div>
+
+          <hr style={{ margin: '0.1rem 0 0.25rem', borderColor: '#eee' }} />
+
+          {/* Contrast scheme — mutually exclusive (radio), unlike the toggles below. */}
+          <div style={{ padding: '0.1rem 0.75rem 0.35rem', direction: dir }}>
+            <span style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: '#111', marginBottom: '0.35rem' }}>
+              {t.contrastLabel}
+            </span>
+            <div role="radiogroup" aria-label={t.contrastLabel} style={{ display: 'flex', gap: '0.35rem' }}>
+              {CONTRAST_OPTIONS.map((scheme) => {
+                const selected = prefs.contrastScheme === scheme;
+                const label = scheme === 'dark' ? t.contrastDark : scheme === 'light' ? t.contrastLight : t.contrastOff;
+                return (
+                  <button
+                    key={scheme}
+                    type="button"
+                    role="radio"
+                    aria-checked={selected}
+                    onClick={() => setContrastScheme(scheme)}
+                    style={{
+                      flex: 1,
+                      padding: '0.4rem 0',
+                      borderRadius: '8px',
+                      border: selected ? '2px solid #ec168c' : '2px solid #e2e2e2',
+                      backgroundColor: selected ? '#fde7f3' : '#f5f5f5',
+                      color: '#111',
+                      cursor: 'pointer',
+                      fontSize: '0.8rem',
+                      fontWeight: selected ? 700 : 400,
+                    }}
+                  >
+                    {label}
+                  </button>
+                );
+              })}
             </div>
           </div>
 

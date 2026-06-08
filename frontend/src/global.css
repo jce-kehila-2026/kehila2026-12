@@ -94,6 +94,36 @@ body.a11y-high-contrast button svg:not(.a11y-widget *) {
   color: #0ff !important;
 }
 
+/* High-contrast light scheme: maximal contrast on a white background (black
+   text/borders, dark-blue links). Mirrors the dark scheme but inverted; the
+   widget subtree is exempt so its controls stay stable. Raster media is left
+   untouched since it already sits on white. */
+body.a11y-contrast-light {
+  background-color: #fff !important;
+  color: #000 !important;
+}
+
+body.a11y-contrast-light *:not(script):not(style):not(.a11y-widget):not(.a11y-widget *) {
+  background-color: #fff !important;
+  color: #000 !important;
+  border-color: #000 !important;
+}
+
+body.a11y-contrast-light a:not(.a11y-widget):not(.a11y-widget *),
+body.a11y-contrast-light button:not(.a11y-widget):not(.a11y-widget *) {
+  color: #0000cc !important;
+  outline: 2px solid #0000cc !important;
+}
+
+body.a11y-contrast-light svg:not(.a11y-widget *) {
+  fill: currentColor !important;
+}
+
+body.a11y-contrast-light a svg:not(.a11y-widget *),
+body.a11y-contrast-light button svg:not(.a11y-widget *) {
+  color: #0000cc !important;
+}
+
 /* Grayscale via a viewport-level click-through overlay instead of a `filter`
    on <body>. A non-`none` filter on an ancestor turns it into the containing
    block for position:fixed descendants, which re-anchored the floating widget

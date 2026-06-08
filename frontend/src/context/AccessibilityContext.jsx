@@ -7,9 +7,13 @@ export const TEXT_SCALE_MAX = 160;
 export const TEXT_SCALE_DEFAULT = 100;
 export const TEXT_SCALE_STEP = 5;
 
+// Contrast schemes: 'none' (default), 'dark' (white/yellow on black — the
+// classic high-contrast scheme) and 'light' (black on white, strong borders).
+export const CONTRAST_SCHEMES = ['none', 'dark', 'light'];
+
 const DEFAULT_PREFS = {
   textScale: TEXT_SCALE_DEFAULT, // percentage applied to <html> font-size
-  highContrast: false,
+  contrastScheme: 'none',
   grayscale: false,
   highlightLinks: false,
   readableFont: false,
@@ -38,7 +42,7 @@ function getSystemDefaults() {
       defaults.stopAnimations = true;
     }
     if (window.matchMedia('(prefers-contrast: more)').matches) {
-      defaults.highContrast = true;
+      defaults.contrastScheme = 'dark';
     }
   } catch {
     // matchMedia unavailable — fall back to plain defaults.
@@ -56,8 +60,14 @@ function loadPrefs() {
         saved.textScale = TEXT_SCALE_DEFAULT + saved.textLevel * 12;
         delete saved.textLevel;
       }
+      // migrate old highContrast boolean to the contrastScheme selector
+      if ('highContrast' in saved && !('contrastScheme' in saved)) {
+        saved.contrastScheme = saved.highContrast ? 'dark' : 'none';
+        delete saved.highContrast;
+      }
       const merged = { ...DEFAULT_PREFS, ...saved };
       merged.textScale = clampTextScale(merged.textScale);
+      if (!CONTRAST_SCHEMES.includes(merged.contrastScheme)) merged.contrastScheme = 'none';
       return merged;
     }
   } catch {
@@ -72,7 +82,8 @@ function applyPrefs(prefs) {
     prefs.textScale === TEXT_SCALE_DEFAULT ? '' : `${prefs.textScale}%`;
 
   const cl = document.body.classList;
-  cl.toggle('a11y-high-contrast', prefs.highContrast);
+  cl.toggle('a11y-high-contrast', prefs.contrastScheme === 'dark');
+  cl.toggle('a11y-contrast-light', prefs.contrastScheme === 'light');
   cl.toggle('a11y-grayscale', prefs.grayscale);
   cl.toggle('a11y-highlight-links', prefs.highlightLinks);
   cl.toggle('a11y-readable-font', prefs.readableFont);
@@ -99,12 +110,18 @@ export function AccessibilityProvider({ children }) {
   const toggle = useCallback((key) =>
     setPrefs((p) => ({ ...p, [key]: !p[key] })), []);
 
+  const setContrastScheme = useCallback((scheme) =>
+    setPrefs((p) => ({
+      ...p,
+      contrastScheme: CONTRAST_SCHEMES.includes(scheme) ? scheme : 'none',
+    })), []);
+
   const reset = useCallback(() => {
     setPrefs({ ...DEFAULT_PREFS });
   }, []);
 
   return (
-    <AccessibilityContext.Provider value={{ prefs, setTextScale, toggle, reset }}>
+    <AccessibilityContext.Provider value={{ prefs, setTextScale, toggle, setContrastScheme, reset }}>
       {children}
     </AccessibilityContext.Provider>
   );
