@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import createCache from "@emotion/cache";
 import { CacheProvider } from "@emotion/react";
 import { prefixer } from "stylis";
@@ -179,6 +179,7 @@ function ProfilePage({
   locale: localeFromParent,
   onLocaleChange,
   embedInDashboard = false,
+  onParticipantProfileSync,
 } = {}) {
   const user = auth.currentUser;
   const participantId = user?.uid;
@@ -276,6 +277,19 @@ function ProfilePage({
     setLocale(lang);
     setSelectedLanguage(lang);
   }, [profile?.language, setLocale]);
+
+  const handleProfileUpdated = useCallback((updatedProfile) => {
+    setProfile(updatedProfile);
+    onParticipantProfileSync?.(updatedProfile);
+  }, [onParticipantProfileSync]);
+
+  const handleAvatarUpdated = useCallback((patch) => {
+    setProfile((prev) => {
+      const nextProfile = { ...(prev || {}), ...patch };
+      onParticipantProfileSync?.(nextProfile);
+      return nextProfile;
+    });
+  }, [onParticipantProfileSync]);
 
   const loadingTheme = useMemo(
     () => createTheme({ ...parentTheme, direction: "ltr" }),
@@ -409,9 +423,7 @@ function ProfilePage({
                     participantId={participantId}
                     isEditing={isEditing}
                     onEdit={() => setIsEditing(true)}
-                    onAvatarUpdated={(patch) =>
-                      setProfile((prev) => ({ ...prev, ...patch }))
-                    }
+                    onAvatarUpdated={handleAvatarUpdated}
                     darkMode={darkMode}
                     t={t}
                   />
@@ -428,7 +440,7 @@ function ProfilePage({
                     <PersonalDetailsForm
                       participantId={participantId}
                       profile={profile}
-                      onProfileUpdated={setProfile}
+                      onProfileUpdated={handleProfileUpdated}
                       isEditing={isEditing}
                       onFinishEditing={() => setIsEditing(false)}
                       onLogout={handleLogout}
