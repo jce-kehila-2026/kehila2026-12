@@ -41,6 +41,7 @@ export default function AccessibilityWidget() {
   const { prefs, setTextScale, toggle, reset } = useAccessibility();
   const containerRef = useRef(null);
   const triggerRef = useRef(null);
+  const dialogRef = useRef(null);
 
   // drag state held in refs so pointer handlers are stable
   const dragRef = useRef({ active: false, startY: 0, startTop: 0, moved: false });
@@ -83,6 +84,52 @@ export default function AccessibilityWidget() {
     document.addEventListener('keydown', onKey);
     return () => document.removeEventListener('keydown', onKey);
   }, [open, close]);
+
+  // Focus management: move focus into the panel on open, trap Tab within it,
+  // and return focus to the trigger on close (unless the user moved focus to
+  // another element, e.g. by clicking outside onto a focusable control).
+  useEffect(() => {
+    if (!open) return undefined;
+    const dialog = dialogRef.current;
+    if (!dialog) return undefined;
+
+    const getFocusable = () => Array.from(
+      dialog.querySelectorAll(
+        'a[href], button:not([disabled]), input:not([disabled]), [tabindex]:not([tabindex="-1"])',
+      ),
+    ).filter((el) => el.offsetParent !== null);
+
+    (getFocusable()[0] ?? dialog).focus();
+
+    function onKeyDown(e) {
+      if (e.key !== 'Tab') return;
+      const items = getFocusable();
+      if (items.length === 0) {
+        e.preventDefault();
+        dialog.focus();
+        return;
+      }
+      const first = items[0];
+      const last = items[items.length - 1];
+      const active = document.activeElement;
+      if (e.shiftKey && (active === first || !dialog.contains(active))) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && (active === last || !dialog.contains(active))) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
+
+    dialog.addEventListener('keydown', onKeyDown);
+    return () => {
+      dialog.removeEventListener('keydown', onKeyDown);
+      const active = document.activeElement;
+      if (!active || active === document.body || dialog.contains(active)) {
+        triggerRef.current?.focus();
+      }
+    };
+  }, [open]);
 
   function onPointerDown(e) {
     // Only drag with primary button / single touch
@@ -150,9 +197,11 @@ export default function AccessibilityWidget() {
     >
       {open && (
         <div
+          ref={dialogRef}
           role="dialog"
           aria-label="סרגל נגישות"
           aria-modal="false"
+          tabIndex={-1}
           style={{
             position: 'absolute',
             ...(openAbove
