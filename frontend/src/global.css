@@ -8,6 +8,8 @@
 html,
 body,
 #root {
+  width: 100%;
+  max-width: 100%;
   min-height: 100%;
 }
 
@@ -19,6 +21,32 @@ body {
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+html,
+body,
+#root {
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  html,
+  body,
+  #root {
+    overflow-x: clip;
+  }
+
+  .accessibility-widget {
+    left: 8px !important;
+    width: 44px !important;
+  }
+
+  .accessibility-widget__trigger {
+    width: 44px !important;
+    height: 44px !important;
+    border-width: 2px !important;
+    font-size: 1.3rem !important;
+  }
 }
 
 button,

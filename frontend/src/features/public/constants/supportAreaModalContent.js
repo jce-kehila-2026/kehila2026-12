@@ -143,9 +143,9 @@ export function resolveSupportAreaActionPath(actionHref = '') {
   const routeByHash = {
     '#join': '/events',
     '#events': '/events',
-    '#stories': '/public#stories',
+    '#stories': '/public/stories-articles',
     '#contact': '/public#contact',
-    '#donate': '/public#donate',
+    '#donate': '/public/donations',
   };
 
   if (routeByHash[href]) {

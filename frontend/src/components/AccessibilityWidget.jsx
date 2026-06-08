@@ -46,7 +46,7 @@ function defaultTop() {
 const TOGGLE_KEYS = ['grayscale', 'highlightLinks', 'readableFont', 'stopAnimations'];
 const CONTRAST_OPTIONS = ['none', 'dark', 'light'];
 
-export default function AccessibilityWidget() {
+export default function AccessibilityWidget({ lang = document.documentElement.lang || 'he' }) {
   const [open, setOpen] = useState(false);
   const [top, setTop] = useState(() => {
     const saved = getSavedTop();
@@ -89,7 +89,7 @@ export default function AccessibilityWidget() {
 
   const t = getAccessibilityWidgetStrings(locale);
   const dir = getParticipantLocaleDirection(locale);
-  const lang = getParticipantLocaleLang(locale);
+  const widgetLang = getParticipantLocaleLang(locale);
 
   const close = useCallback(() => setOpen(false), []);
 
@@ -230,22 +230,22 @@ export default function AccessibilityWidget() {
   );
 
   return (
-    <div
-      ref={containerRef}
-      className="a11y-widget"
-      lang={lang}
-      style={{
-        position: 'fixed',
-        top: `${top}px`,
-        left: `${LEFT_OFFSET}px`,
-        // Always-on-top: above app modals/overlays (which go up to z-index
-        // 10000) so the accessibility controls stay reachable at all times.
-        zIndex: 2147483647,
-        direction: dir,
-        fontFamily: 'Arial, Helvetica, sans-serif',
-        width: `${BTN_SIZE}px`,
-      }}
-    >
+     <div
+    ref={containerRef}
+    className="accessibility-widget a11y-widget"
+    lang={widgetLang}
+    style={{
+      position: 'fixed',
+      top: `${top}px`,
+      left: `${LEFT_OFFSET}px`,
+      // Always-on-top: above app modals/overlays (which go up to z-index
+      // 10000) so the accessibility controls stay reachable at all times.
+      zIndex: 2147483647,
+      direction: dir,
+      fontFamily: 'Arial, Helvetica, sans-serif',
+      width: `${BTN_SIZE}px`,
+    }}
+  >
       {open && (
         <div
           ref={dialogRef}
@@ -477,6 +477,7 @@ export default function AccessibilityWidget() {
 
       <button
         ref={triggerRef}
+        className="accessibility-widget__trigger"
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}

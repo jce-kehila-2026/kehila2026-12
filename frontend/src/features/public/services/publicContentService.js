@@ -125,7 +125,7 @@ const FALLBACK_SUPPORT_AREAS = [
     title: 'סיפורי השראה',
     description: 'סיפורים אמיתיים של נשים שמצאו תקווה, כוח ומשמעות בתוך המסע.',
     imageUrl: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=1200&q=80',
-    readMoreUrl: '#stories',
+    readMoreUrl: '/public/stories-articles',
     isVisible: true,
     active: true,
   },
