@@ -103,6 +103,14 @@ export default function AccessibilityWidget() {
     dragRef.current.active = false;
   }
 
+  // If the gesture is cancelled (e.g. interrupted by the OS, or a touch turns
+  // into a scroll), end the drag and clear `moved` — otherwise active stays
+  // true and a stale `moved` would swallow the next click.
+  function onPointerCancel() {
+    dragRef.current.active = false;
+    dragRef.current.moved = false;
+  }
+
   function onClickTrigger() {
     if (dragRef.current.moved) {
       dragRef.current.moved = false;
@@ -296,6 +304,7 @@ export default function AccessibilityWidget() {
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}
+        onPointerCancel={onPointerCancel}
         onClick={onClickTrigger}
         aria-label="סרגל נגישות"
         aria-expanded={open}

@@ -16,6 +16,16 @@ const DEFAULT_PREFS = {
   stopAnimations: false,
 };
 
+// Coerce any stored/migrated value into a valid scale. The legacy
+// textLevel→textScale migration (100 + level*12) and corrupt storage can both
+// yield out-of-range or non-numeric values, which would otherwise be applied
+// verbatim to <html> font-size.
+function clampTextScale(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return TEXT_SCALE_DEFAULT;
+  return Math.max(TEXT_SCALE_MIN, Math.min(TEXT_SCALE_MAX, n));
+}
+
 function loadPrefs() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -26,7 +36,9 @@ function loadPrefs() {
         saved.textScale = TEXT_SCALE_DEFAULT + saved.textLevel * 12;
         delete saved.textLevel;
       }
-      return { ...DEFAULT_PREFS, ...saved };
+      const merged = { ...DEFAULT_PREFS, ...saved };
+      merged.textScale = clampTextScale(merged.textScale);
+      return merged;
     }
   } catch {
     // ignore corrupt storage
@@ -62,10 +74,7 @@ export function AccessibilityProvider({ children }) {
   }, [prefs]);
 
   const setTextScale = useCallback((scale) =>
-    setPrefs((p) => ({
-      ...p,
-      textScale: Math.max(TEXT_SCALE_MIN, Math.min(TEXT_SCALE_MAX, scale)),
-    })), []);
+    setPrefs((p) => ({ ...p, textScale: clampTextScale(scale) })), []);
 
   const toggle = useCallback((key) =>
     setPrefs((p) => ({ ...p, [key]: !p[key] })), []);
