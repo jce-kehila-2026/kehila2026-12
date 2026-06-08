@@ -70,4 +70,12 @@ export function storeParticipantLocale(locale) {
   } catch {
     // Ignore storage failures.
   }
+
+  // Notify same-tab listeners (the `storage` event only fires cross-tab) so
+  // globally-mounted UI like the accessibility widget can react immediately.
+  try {
+    window.dispatchEvent(new CustomEvent('shena:locale-change', { detail: locale }));
+  } catch {
+    // Ignore environments without window/CustomEvent.
+  }
 }
