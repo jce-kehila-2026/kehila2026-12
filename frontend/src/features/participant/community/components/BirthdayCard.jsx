@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import CakeOutlinedIcon from '@mui/icons-material/CakeOutlined';
-import { birthdayMessages, communityBirthdayUsers } from '../communityMockData';
+import { birthdayMessages } from '../communityMockData';
 
 const getBirthdayMonthDay = (birthday) => {
   if (typeof birthday !== 'string') return null;
@@ -40,10 +40,7 @@ const getTodaysBirthdayUsers = (users = [], today = new Date()) => users.filter(
 });
 
 export default function BirthdayCard({ birthdayUsers = [] }) {
-  const todaysBirthdayUsers = getTodaysBirthdayUsers([
-    ...birthdayUsers,
-    ...communityBirthdayUsers,
-  ]);
+  const todaysBirthdayUsers = getTodaysBirthdayUsers(birthdayUsers);
   const birthdayUser = todaysBirthdayUsers[0];
   const [selectedMessage, setSelectedMessage] = useState('');
   const [showCustomMessage, setShowCustomMessage] = useState(false);
