@@ -251,6 +251,11 @@
   color: rgba(75, 19, 107, 0.58);
   font-size: 0.78rem;
   font-weight: 700;
+  display: block;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .participant-brand {
