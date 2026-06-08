@@ -288,7 +288,7 @@ export default function AccessibilityWidget() {
               <span style={{
                 fontSize: '0.78rem',
                 fontWeight: 700,
-                color: prefs.textScale === TEXT_SCALE_DEFAULT ? '#888' : '#1a56a0',
+                color: prefs.textScale === TEXT_SCALE_DEFAULT ? '#888' : '#ec168c',
                 minWidth: '38px',
                 textAlign: 'left',
               }}>
@@ -308,7 +308,7 @@ export default function AccessibilityWidget() {
               aria-valuemax={TEXT_SCALE_MAX}
               aria-valuenow={prefs.textScale}
               aria-valuetext={`${prefs.textScale}%`}
-              style={{ width: '100%', accentColor: '#1a56a0', cursor: 'pointer' }}
+              style={{ width: '100%', accentColor: '#ec168c', cursor: 'pointer' }}
             />
             <div dir="ltr" style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.7rem', color: '#999', marginTop: '0.15rem' }}>
               <span>80%</span>
@@ -332,8 +332,8 @@ export default function AccessibilityWidget() {
                   gap: '0.5rem',
                   padding: '0.45rem 0.75rem',
                   borderRadius: '8px',
-                  border: active ? '2px solid #1a56a0' : '2px solid transparent',
-                  backgroundColor: active ? '#dbeafe' : '#f5f5f5',
+                  border: active ? '2px solid #ec168c' : '2px solid transparent',
+                  backgroundColor: active ? '#fde7f3' : '#f5f5f5',
                   color: '#111',
                   cursor: 'pointer',
                   fontSize: '0.85rem',
@@ -344,7 +344,7 @@ export default function AccessibilityWidget() {
               >
                 <span>{t.toggles[key]}</span>
                 {active && (
-                  <span aria-hidden="true" style={{ fontSize: '0.75rem', color: '#1a56a0' }}>✓</span>
+                  <span aria-hidden="true" style={{ fontSize: '0.75rem', color: '#ec168c' }}>✓</span>
                 )}
               </button>
             );
@@ -407,9 +407,9 @@ export default function AccessibilityWidget() {
           width: `${BTN_SIZE}px`,
           height: `${BTN_SIZE}px`,
           borderRadius: '50%',
-          border: '3px solid #1a56a0',
+          border: '3px solid #ec168c',
           backgroundColor: '#fff',
-          color: '#1a56a0',
+          color: '#ec168c',
           cursor: 'grab',
           display: 'flex',
           alignItems: 'center',
