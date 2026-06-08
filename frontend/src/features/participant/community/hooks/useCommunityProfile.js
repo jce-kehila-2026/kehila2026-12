@@ -38,6 +38,16 @@ export default function useCommunityProfile({ personalDetails = {} } = {}) {
   const uid = personalDetails?.uid ?? null;
 
   useEffect(() => {
+    if (!profileSuccessMessage) return undefined;
+
+    const timerId = window.setTimeout(() => {
+      setProfileSuccessMessage('');
+    }, 3500);
+
+    return () => window.clearTimeout(timerId);
+  }, [profileSuccessMessage]);
+
+  useEffect(() => {
     if (!isRealUserId(uid)) return;
     let cancelled = false;
 
