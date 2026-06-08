@@ -148,8 +148,8 @@ export default function AccessibilityWidget() {
           style={{
             position: 'absolute',
             ...(openAbove
-              ? { bottom: `${BTN_SIZE + 8}px` }
-              : { top: `${BTN_SIZE + 8}px` }),
+              ? { bottom: `${BTN_SIZE + PANEL_GAP}px` }
+              : { top: `${BTN_SIZE + PANEL_GAP}px` }),
             left: 0,
             backgroundColor: '#fff',
             border: '2px solid #333',
@@ -157,6 +157,10 @@ export default function AccessibilityWidget() {
             boxShadow: '0 4px 24px rgba(0,0,0,0.25)',
             padding: '0.75rem',
             minWidth: '220px',
+            maxHeight: `${maxPanelHeight}px`,
+            overflowY: 'auto',
+            overscrollBehavior: 'contain',
+            boxSizing: 'border-box',
             display: 'flex',
             flexDirection: 'column',
             gap: '0.35rem',
