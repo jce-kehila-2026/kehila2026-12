@@ -11,6 +11,7 @@ import {
   getPublicNavbarLinks,
   getPublicNavbarStoriesMenu,
 } from '../i18n/publicHomeTranslations';
+import { scrollTargetBelowPublicNavbar } from '../utils/publicSectionScroll';
 import PublicLanguageSwitcher from './PublicLanguageSwitcher';
 
 const STORIES_ARTICLES_PATH = '/public/stories-articles';
@@ -121,6 +122,29 @@ export default function PublicNavbar({
     onJoinClick?.();
   }
 
+  function handleCurrentPageSectionClick(event, href, expectedPath) {
+    if (location.pathname !== expectedPath) {
+      closeMenu();
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+    closeMenu();
+
+    const targetId = decodeURIComponent(href.slice(1));
+    window.history.pushState(null, '', `${location.pathname}${location.search}${href}`);
+
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        const target = document.getElementById(targetId);
+        if (!target) return;
+
+        scrollTargetBelowPublicNavbar(target, 'smooth');
+      });
+    });
+  }
+
   return (
     <header className={`public-navbar${isScrolled ? ' public-navbar--scrolled' : ''}`}>
       <div className="public-navbar__inner">
@@ -173,7 +197,11 @@ export default function PublicNavbar({
                 <ul className="public-navbar__dropdown-menu" id={homeMenuId} role="menu" hidden={!isHomeMenuOpen}>
                   {homeMenuLinks.map((link) => (
                     <li key={link.href} role="none">
-                      <a href={resolveHomepageHref(link.href)} role="menuitem" onClick={closeMenu}>
+                      <a
+                        href={resolveHomepageHref(link.href)}
+                        role="menuitem"
+                        onClick={(event) => handleCurrentPageSectionClick(event, link.href, '/public')}
+                      >
                         {link.label}
                       </a>
                     </li>
@@ -216,7 +244,13 @@ export default function PublicNavbar({
                     >
                       {storiesMenuLinks.map((menuLink) => (
                         <li key={menuLink.href} role="none">
-                          <a href={resolveStoriesHref(menuLink.href)} role="menuitem" onClick={closeMenu}>
+                          <a
+                            href={resolveStoriesHref(menuLink.href)}
+                            role="menuitem"
+                            onClick={(event) =>
+                              handleCurrentPageSectionClick(event, menuLink.href, STORIES_ARTICLES_PATH)
+                            }
+                          >
                             {menuLink.label}
                           </a>
                         </li>

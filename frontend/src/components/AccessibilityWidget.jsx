@@ -118,6 +118,7 @@ export default function AccessibilityWidget() {
   return (
     <div
       ref={containerRef}
+      className="accessibility-widget"
       style={{
         position: 'fixed',
         top: `${top}px`,
@@ -277,6 +278,7 @@ export default function AccessibilityWidget() {
 
       <button
         ref={triggerRef}
+        className="accessibility-widget__trigger"
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}
         onPointerUp={onPointerUp}

@@ -46,7 +46,11 @@ function PublicHomePageContent() {
   );
 
   useRevealOnScroll(pageRef, revealRefreshKey);
-  usePublicHomeScrollReset(pageRef, { resetAfterLoad: true, isLoading: loading });
+  usePublicHomeScrollReset(pageRef, {
+    resetAfterLoad: true,
+    isLoading: loading,
+    preserveInitialHash: true,
+  });
 
   useEffect(() => {
     let isMounted = true;
@@ -83,7 +87,7 @@ function PublicHomePageContent() {
   }, []);
 
   return (
-    <div className="public-homepage" ref={pageRef} dir={direction} lang={lang}>
+    <div className="public-homepage public-homepage--main" ref={pageRef} dir={direction} lang={lang}>
       <a className="public-skip-link" href="#public-main">
         {t('skipToContent')}
       </a>

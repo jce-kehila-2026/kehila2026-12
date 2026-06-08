@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { scrollTargetBelowPublicNavbar } from '../utils/publicSectionScroll';
 
 function scrollToTopInstant() {
   window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
@@ -26,7 +27,7 @@ export default function usePublicHomeScrollReset(
 
     const scrollToInitialPosition = () => {
       if (preserveInitialHash && initialTarget) {
-        initialTarget.scrollIntoView({ behavior: 'instant', block: 'start' });
+        scrollTargetBelowPublicNavbar(initialTarget);
         return;
       }
 
@@ -55,6 +56,16 @@ export default function usePublicHomeScrollReset(
 
     hasAppliedPostLoadResetRef.current = true;
 
+    if (preserveInitialHash && window.location.hash) {
+      const target = document.getElementById(decodeURIComponent(window.location.hash.slice(1)));
+
+      if (target) {
+        scrollTargetBelowPublicNavbar(target);
+      }
+
+      return undefined;
+    }
+
     if (window.scrollY > 0) {
       scrollToTopInstant();
       const rafId = window.requestAnimationFrame(scrollToTopInstant);
@@ -62,7 +73,7 @@ export default function usePublicHomeScrollReset(
     }
 
     return undefined;
-  }, [isLoading, resetAfterLoad]);
+  }, [isLoading, preserveInitialHash, resetAfterLoad]);
 
   useEffect(() => {
     const root = containerRef.current;
@@ -80,8 +91,13 @@ export default function usePublicHomeScrollReset(
       if (!target) return;
 
       event.preventDefault();
-      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
       window.history.pushState(null, '', `${window.location.pathname}${window.location.search}${href}`);
+
+      window.requestAnimationFrame(() => {
+        window.requestAnimationFrame(() => {
+          scrollTargetBelowPublicNavbar(target, 'smooth');
+        });
+      });
     };
 
     root.addEventListener('click', handleAnchorClick);

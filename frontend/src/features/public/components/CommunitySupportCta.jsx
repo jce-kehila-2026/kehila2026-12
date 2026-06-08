@@ -34,7 +34,7 @@ const SUPPORT_FEATURES = [
   },
 ];
 
-export default function CommunitySupportCta({ onDonationClick }) {
+export default function CommunitySupportCta({ onDonationClick, sectionId = 'donate' }) {
   const { locale, t } = usePublicLocale();
   const features = useMemo(() => localizeDonationFeatures(SUPPORT_FEATURES, locale), [locale]);
 
@@ -46,7 +46,7 @@ export default function CommunitySupportCta({ onDonationClick }) {
   return (
     <section
       className="public-section public-section--donation-cta public-support-cta"
-      id="donate"
+      id={sectionId}
       aria-labelledby="public-support-cta-title"
     >
       <div className="public-support-cta__decor" aria-hidden="true">

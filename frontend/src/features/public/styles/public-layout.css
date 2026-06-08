@@ -13,6 +13,7 @@
   --public-card: rgba(255, 255, 255, 0.96);
   --public-shadow: 0 18px 46px rgba(58, 27, 84, 0.12);
   --public-navbar-offset: 96px;
+  --public-anchor-gap: 0px;
   width: 100%;
   max-width: 100%;
   min-height: 100vh;
@@ -24,7 +25,7 @@
   text-align: start;
   font-family: "Assistant", "Segoe UI", Arial, sans-serif;
   scroll-behavior: smooth;
-  scroll-padding-top: calc(var(--public-navbar-offset) + 12px);
+  scroll-padding-top: calc(var(--public-navbar-offset) + var(--public-anchor-gap));
 }
 
 .public-homepage[lang="he"] {
@@ -54,6 +55,10 @@
 .public-homepage article,
 .public-homepage div {
   min-width: 0;
+}
+
+.public-homepage :is(section[id], footer[id]) {
+  scroll-margin-top: calc(var(--public-navbar-offset) + var(--public-anchor-gap));
 }
 
 .public-homepage img {

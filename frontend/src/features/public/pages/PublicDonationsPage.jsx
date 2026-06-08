@@ -37,7 +37,12 @@ function PublicDonationsPageContent() {
   }, []);
 
   return (
-    <div className="public-homepage public-donations-page" ref={pageRef} dir={direction} lang={lang}>
+    <div
+      className="public-homepage public-standalone-page public-donations-page"
+      ref={pageRef}
+      dir={direction}
+      lang={lang}
+    >
       <a className="public-skip-link" href="#public-main">
         {t('skipToContent')}
       </a>
@@ -48,7 +53,10 @@ function PublicDonationsPageContent() {
         showHomeDropdown={false}
       />
       <main id="public-main">
-        <CommunitySupportCta onDonationClick={() => setIsDonationModalOpen(true)} />
+        <CommunitySupportCta
+          sectionId="donations"
+          onDonationClick={() => setIsDonationModalOpen(true)}
+        />
       </main>
       <PublicFooter organization={content.organization} contact={content.contact} />
       <JoinCommunityModal isOpen={isJoinModalOpen} onClose={() => setIsJoinModalOpen(false)} />

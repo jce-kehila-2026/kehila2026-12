@@ -17,6 +17,7 @@ function PublicStoriesArticlesPageContent() {
   const { direction, lang, t } = usePublicLocale();
   const [content, setContent] = useState(() => getFallbackPublicHomepageContent());
   const [publicHomeDoc, setPublicHomeDoc] = useState(() => getDefaultPublicHomeDoc());
+  const [isContentLoading, setIsContentLoading] = useState(true);
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
   const [isVolunteerModalOpen, setIsVolunteerModalOpen] = useState(false);
   const revealRefreshKey = useMemo(
@@ -25,20 +26,30 @@ function PublicStoriesArticlesPageContent() {
   );
 
   useRevealOnScroll(pageRef, revealRefreshKey);
-  usePublicHomeScrollReset(pageRef, { preserveInitialHash: true });
+  usePublicHomeScrollReset(pageRef, {
+    resetAfterLoad: true,
+    isLoading: isContentLoading,
+    preserveInitialHash: true,
+  });
 
   useEffect(() => {
     let isMounted = true;
 
     async function loadContent() {
-      const [homepageContent, homeDoc] = await Promise.all([
-        getPublicHomepageContent(),
-        getPublicHomeDoc(),
-      ]);
+      try {
+        const [homepageContent, homeDoc] = await Promise.all([
+          getPublicHomepageContent(),
+          getPublicHomeDoc(),
+        ]);
 
-      if (isMounted) {
-        setContent(homepageContent);
-        setPublicHomeDoc(homeDoc);
+        if (isMounted) {
+          setContent(homepageContent);
+          setPublicHomeDoc(homeDoc);
+        }
+      } finally {
+        if (isMounted) {
+          setIsContentLoading(false);
+        }
       }
     }
 
@@ -50,7 +61,12 @@ function PublicStoriesArticlesPageContent() {
   }, []);
 
   return (
-    <div className="public-homepage" ref={pageRef} dir={direction} lang={lang}>
+    <div
+      className="public-homepage public-standalone-page public-stories-articles-page"
+      ref={pageRef}
+      dir={direction}
+      lang={lang}
+    >
       <a className="public-skip-link" href="#public-main">
         {t('skipToContent')}
       </a>
