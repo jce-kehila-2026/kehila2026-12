@@ -18,12 +18,13 @@ function getInitials(name) {
 export default function ParticipantSidebarProfile({
   fullName = '',
   avatarUrl = '',
-  role = 'Participant',
+  email = 'No email available',
   isLoading = false,
   collapsed = false,
   onToggleCollapse,
 }) {
   const displayName = fullName.trim() || 'Participant';
+  const displayEmail = String(email || '').trim() || 'No email available';
   const initials = getInitials(displayName);
   const hasCustomAvatar = Boolean(String(avatarUrl || '').trim());
   const [avatarFailed, setAvatarFailed] = useState(false);
@@ -55,7 +56,7 @@ export default function ParticipantSidebarProfile({
 
         <div className="participant-sidebar-profile__copy">
           <strong>{isLoading ? 'Loading…' : displayName}</strong>
-          <small>{role}</small>
+          <small title={isLoading ? undefined : displayEmail}>{isLoading ? 'Loading…' : displayEmail}</small>
         </div>
       </div>
 
