@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
+import AccessibilityNewIcon from '@mui/icons-material/AccessibilityNew';
 import { useAccessibility } from '../context/AccessibilityContext';
 import { TEXT_SCALE_MIN, TEXT_SCALE_MAX, TEXT_SCALE_DEFAULT, TEXT_SCALE_STEP } from '../context/AccessibilityContext';
 import {
@@ -409,7 +410,6 @@ export default function AccessibilityWidget() {
           border: '3px solid #1a56a0',
           backgroundColor: '#fff',
           color: '#1a56a0',
-          fontSize: '1.6rem',
           cursor: 'grab',
           display: 'flex',
           alignItems: 'center',
@@ -419,7 +419,7 @@ export default function AccessibilityWidget() {
           userSelect: 'none',
         }}
       >
-        ♿
+        <AccessibilityNewIcon aria-hidden="true" style={{ fontSize: '1.85rem' }} />
       </button>
     </div>
   );
