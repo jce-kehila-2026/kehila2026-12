@@ -1989,14 +1989,6 @@
 
 
 
-.participant-home--dark .pd-feature-error__message {
-
-  color: rgba(226, 213, 236, 0.78);
-
-}
-
-
-
 /* Buttons */
 
 .pd-btn {
@@ -2327,13 +2319,15 @@
 
   inset: 0;
 
-  z-index: 1200;
+  z-index: 2000;
 
   display: grid;
 
   place-items: center;
 
   padding: 20px;
+
+  isolation: isolate;
 
 }
 
@@ -2344,6 +2338,8 @@
   position: absolute;
 
   inset: 0;
+
+  z-index: 0;
 
   border: 0;
 
@@ -2374,6 +2370,8 @@
   background: linear-gradient(180deg, #ffffff 0%, #fff9fc 100%);
 
   box-shadow: 0 24px 48px rgba(91, 30, 140, 0.16);
+
+  overflow: visible;
 
 }
 
@@ -2450,6 +2448,49 @@
 .pd-notes__datetime--modal {
 
   margin-top: 0;
+
+  align-items: start;
+
+}
+
+
+
+.pd-notes__datetime--modal .pd-notes-picker {
+
+  position: relative;
+
+  z-index: 1;
+
+}
+
+
+
+.pd-notes__datetime--modal .pd-notes-picker.is-open {
+
+  z-index: 2;
+
+}
+
+
+
+.pd-notes__datetime--modal .pd-notes-time__panel,
+.pd-notes__datetime--modal .pd-notes-calendar__panel {
+
+  position: relative;
+
+  top: auto;
+
+  right: auto;
+
+  left: auto;
+
+  width: 100%;
+
+  min-width: 0;
+
+  margin-top: 6px;
+
+  z-index: 2;
 
 }
 
@@ -4162,17 +4203,99 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
 
 .participant-home--dark .pd-feature-empty__headline {
-
   color: #f8fafc;
-
+  opacity: 1;
 }
 
-
-
-.participant-home--dark .pd-feature-empty__text {
-
-  color: rgba(226, 213, 236, 0.78);
-
+.participant-home--dark .pd-feature-empty__text,
+.participant-home--dark .pd-feature-error__message {
+  color: #d1d5db;
+  opacity: 1;
 }
 
+/* Dark mode: feature card content must win over card-specific light-mode colors above */
+.participant-home--dark .pd-card--feature .pd-card__decor,
+.participant-home--dark .pd-card--feature .pd-feature__watermark {
+  z-index: 0;
+  pointer-events: none;
+}
 
+.participant-home--dark .pd-card--feature > .pd-card__surface {
+  position: relative;
+  z-index: 2;
+}
+
+.participant-home--dark .pd-card--feature .pd-feature__body,
+.participant-home--dark .pd-card--feature .pd-feature__col--countdown,
+.participant-home--dark .pd-card--feature .pd-card__heading {
+  position: relative;
+  z-index: 1;
+}
+
+.participant-home--dark .pd-card--feature .pd-feature__title,
+.participant-home--dark .pd-card--feature .pd-feature__subtitle,
+.participant-home--dark .pd-card--event.pd-card--feature .pd-feature__subtitle,
+.participant-home--dark .pd-card--feature .pd-feature__detail,
+.participant-home--dark .pd-card--feature .pd-feature__detail-value,
+.participant-home--dark .pd-card--feature .pd-feature__detail-sep,
+.participant-home--dark .pd-card--feature .pd-card__heading-label,
+.participant-home--dark .pd-card--feature .pd-countdown-ring__label span,
+.participant-home--dark .pd-card--feature .pd-countdown-ring__label small,
+.participant-home--dark .pd-card--feature .pd-countdown-ring__value--days,
+.participant-home--dark .pd-card--feature .pd-countdown-ring__value--hms,
+.participant-home--dark .pd-card--feature .pd-countdown-ring__status {
+  opacity: 1;
+  visibility: visible;
+}
+
+.participant-home--dark .pd-card--feature .pd-card__heading--purple .pd-card__heading-label {
+  color: #c084fc;
+}
+
+.participant-home--dark .pd-card--feature .pd-card__heading--pink .pd-card__heading-label {
+  color: #f472b6;
+}
+
+.participant-home--dark .pd-card--feature .pd-feature__title {
+  color: #f8fafc;
+}
+
+.participant-home--dark .pd-card--feature .pd-feature__subtitle,
+.participant-home--dark .pd-card--event.pd-card--feature .pd-feature__subtitle {
+  color: #d1d5db;
+}
+
+.participant-home--dark .pd-card--feature .pd-feature__detail {
+  color: #d1d5db;
+}
+
+.participant-home--dark .pd-card--feature .pd-feature__detail-sep {
+  color: #a8b4c4;
+}
+
+.participant-home--dark .pd-card--feature .pd-feature__detail-icon {
+  color: #c084fc;
+}
+
+.participant-home--dark .pd-card--event.pd-card--feature .pd-feature__detail-icon {
+  color: #f472b6;
+}
+
+.participant-home--dark .pd-card--feature .pd-countdown-ring__inner {
+  fill: #1f2937;
+}
+
+.participant-home--dark .pd-card--feature .pd-countdown-ring__track {
+  stroke: rgba(236, 72, 153, 0.22);
+}
+
+.participant-home--dark .pd-card--feature .pd-countdown-ring__label span,
+.participant-home--dark .pd-card--feature .pd-countdown-ring__label small {
+  color: #a8b4c4;
+}
+
+.participant-home--dark .pd-card--feature .pd-countdown-ring__value--days,
+.participant-home--dark .pd-card--feature .pd-countdown-ring__value--hms,
+.participant-home--dark .pd-card--feature .pd-countdown-ring__status {
+  color: #f8fafc;
+}

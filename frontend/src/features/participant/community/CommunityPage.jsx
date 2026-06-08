@@ -413,8 +413,11 @@ export default function CommunityPage({
           {!isPersonalDetailsLoading && hasRequiredPersonalDetails && !hasCompletedCommunitySetup && (
             <CommunityBirthdayPreferenceCard onSave={handleBirthdayPreferenceSave} />
           )}
-          {profileSuccessMessage && canUseCommunity && (
-            <p className="community-profile-setup__success" aria-live="polite">{profileSuccessMessage}</p>
+          {profileSuccessMessage && canUseCommunity && createPortal(
+            <p className="community-preference-toast" role="status" aria-live="polite">
+              {profileSuccessMessage}
+            </p>,
+            document.body,
           )}
           {canUseCommunity && (
             <>

@@ -13,7 +13,7 @@ import CalendarPage from '../calendar/CalendarPage';
 import EventsPage from '../events/EventsPage';
 import ProfilePage from '../profile/pages/ProfilePage';
 import { getParticipantData, updateParticipantData } from '../profile/services/participantService';
-import { getParticipantFirstName, getParticipantFullName } from './utils/participantProfileUtils';
+import { getParticipantFirstName, getParticipantFullName, getParticipantEmail } from './utils/participantProfileUtils';
 import {
   countUnread,
   fetchActivityNotifications,
@@ -37,6 +37,7 @@ import ParticipantSidebarProfile from './components/ParticipantSidebarProfile';
 import ParticipantHeader from './components/ParticipantHeader';
 import NotificationsDropdown from './NotificationsDropdown';
 import './ParticipantHome.css';
+import './styles/participant-dark-mode.css';
 
 const participantNavItems = [
   { key: 'home', label: 'Home', icon: HomeOutlinedIcon, path: '/home' },
@@ -174,6 +175,15 @@ export default function ParticipantHome({ initialView = 'home' }) {
     return resolved || 'Participant';
   }, [currentUser, participantProfile]);
 
+  const sidebarEmail = useMemo(
+    () => getParticipantEmail(participantProfile, currentUser),
+    [currentUser, participantProfile],
+  );
+
+  const handleParticipantProfileSync = useCallback((updatedProfile) => {
+    setParticipantProfile((current) => ({ ...(current || {}), ...updatedProfile }));
+  }, []);
+
   const avatarUrl = participantProfile?.avatarUrl || '';
   const layoutDirection = getParticipantLocaleDirection(locale);
   const layoutLang = getParticipantLocaleLang(locale);
@@ -309,7 +319,7 @@ export default function ParticipantHome({ initialView = 'home' }) {
           <ParticipantSidebarProfile
             fullName={fullName}
             avatarUrl={avatarUrl}
-            role="Participant"
+            email={sidebarEmail}
             isLoading={loadingParticipantProfile}
             collapsed={sidebarCollapsed}
             onToggleCollapse={handleToggleSidebar}
@@ -360,7 +370,11 @@ export default function ParticipantHome({ initialView = 'home' }) {
                 ? 'My Schedule'
                 : activeView === 'events'
                   ? 'Upcoming Activities'
-                  : undefined
+                  : activeView === 'community'
+                    ? 'Community Space'
+                    : activeView === 'profile'
+                      ? 'Personal Details'
+                      : undefined
             }
             darkMode={darkMode}
             onDarkModeChange={setDarkMode}
@@ -374,6 +388,7 @@ export default function ParticipantHome({ initialView = 'home' }) {
             <ParticipantDashboardHome
               userId={effectiveUID || currentUser?.uid}
               displayName={displayName}
+              birthDate={participantProfile?.birthDate || participantProfile?.birthday || ''}
               onNavigateToView={navigateParticipantView}
               onViewCommunity={handleViewCommunity}
             />
@@ -429,6 +444,7 @@ export default function ParticipantHome({ initialView = 'home' }) {
                   locale={locale}
                   onLocaleChange={handleLocaleChange}
                   embedInDashboard
+                  onParticipantProfileSync={handleParticipantProfileSync}
                 />
               </div>
             </section>

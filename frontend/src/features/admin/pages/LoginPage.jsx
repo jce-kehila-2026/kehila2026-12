@@ -9,7 +9,7 @@ import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined';
 import sheNaLogo from '../../../assets/she-na-logo.png';
-import loginBgImage from '../../../assets/images/she-na-login-lilac-bg.png';
+import loginBgImage from '../../../assets/stronger-together-banner.png';
 import { auth, googleProvider } from '../../../firebase';
 import { ensureParticipantProfile, getPostLoginPath, resolveUserRole } from '../services/authRoleService';
 import './LoginPage.css';
@@ -128,22 +128,11 @@ export default function LoginPage() {
   const isLogin = authMode === 'login';
 
   return (
-    <div className="login-page">
-      <div className="login-page__bg" aria-hidden="true">
-        <div
-          className="login-page__ambient"
-          style={{ '--login-bg-image': `url(${loginBgImage})` }}
-        >
-          <div className="login-page__ambient-grade" aria-hidden="true" />
-          <div className="login-page__ambient-overlay" aria-hidden="true" />
-        </div>
-        <span className="login-page__blob login-page__blob--pink" />
-        <span className="login-page__blob login-page__blob--lavender" />
-        <span className="login-page__blob login-page__blob--soft" />
-        <span className="login-page__leaf login-page__leaf--one" />
-        <span className="login-page__leaf login-page__leaf--two" />
-        <span className="login-page__butterfly" />
-      </div>
+    <div
+      className="login-page"
+      style={{ backgroundImage: `url(${loginBgImage})` }}
+    >
+      <div className="login-page__overlay" aria-hidden="true" />
 
       <div className="login-page__canvas">
         <header className="login-page__page-header">
@@ -189,7 +178,8 @@ export default function LoginPage() {
           </div>
         </section>
 
-        <main className="login-page__login-float">
+        <aside className="login-page__login-stack">
+          <main className="login-page__login-float">
           <div className="login-page__card">
             <span className="login-page__card-leaf" aria-hidden="true" />
 
@@ -319,6 +309,7 @@ export default function LoginPage() {
             </p>
           </div>
         </main>
+        </aside>
       </div>
 
       <button type="button" className="login-page__back-btn" onClick={() => navigate('/')}>

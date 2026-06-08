@@ -30,3 +30,13 @@ export function getParticipantFullName(profile, authUser) {
     || '',
   ).trim();
 }
+
+/**
+ * @param {object|null|undefined} profile
+ * @param {{ email?: string|null }|null|undefined} authUser
+ * @returns {string}
+ */
+export function getParticipantEmail(profile, authUser) {
+  const email = String(profile?.email || authUser?.email || '').trim();
+  return email || 'No email available';
+}
