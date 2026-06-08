@@ -112,8 +112,19 @@ export default function AccessibilityWidget() {
   }
 
 
-  // Open the panel above the button when in the lower half, below when in the upper half
-  const openAbove = top > window.innerHeight / 2;
+  // Open on whichever side of the button has more room, and cap the panel's
+  // height to that space so it always stays on-screen — scrolling internally
+  // rather than overflowing the viewport (e.g. at large text scale or on short
+  // screens, where the slider + toggles + reset + link would exceed the height).
+  const PANEL_GAP = 8;
+  const VIEWPORT_PADDING = 8;
+  const spaceAbove = top;
+  const spaceBelow = window.innerHeight - (top + BTN_SIZE);
+  const openAbove = spaceAbove > spaceBelow;
+  const maxPanelHeight = Math.max(
+    160,
+    (openAbove ? spaceAbove : spaceBelow) - PANEL_GAP - VIEWPORT_PADDING,
+  );
 
   return (
     <div

@@ -75,10 +75,23 @@ body.a11y-high-contrast button:not(.a11y-widget):not(.a11y-widget *) {
   outline: 2px solid #0ff !important;
 }
 
+/* Raster media: invert so photos stay visible against the black background. */
 body.a11y-high-contrast img:not(.a11y-widget *),
-body.a11y-high-contrast video:not(.a11y-widget *),
-body.a11y-high-contrast svg:not(.a11y-widget *) {
+body.a11y-high-contrast video:not(.a11y-widget *) {
   filter: invert(1) contrast(1.5) !important;
+}
+
+/* Monochrome icons: paint them in the foreground colour rather than inverting.
+   Inverting an icon whose colour is currentColor produced arbitrary, often
+   low-contrast results (yellow -> blue ~2.4:1 on black, failing WCAG). Filling
+   with currentColor makes every icon match its surrounding text and guarantees
+   contrast — cyan inside links/buttons (set below), yellow elsewhere. */
+body.a11y-high-contrast svg:not(.a11y-widget *) {
+  fill: currentColor !important;
+}
+body.a11y-high-contrast a svg:not(.a11y-widget *),
+body.a11y-high-contrast button svg:not(.a11y-widget *) {
+  color: #0ff !important;
 }
 
 /* Grayscale via a viewport-level click-through overlay instead of a `filter`
