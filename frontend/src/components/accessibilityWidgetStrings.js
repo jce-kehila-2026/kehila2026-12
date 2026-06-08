@@ -7,6 +7,9 @@ const WIDGET_STRINGS = {
     triggerTitle: 'Drag to move, click to open the accessibility menu',
     panelTitle: 'Accessibility options',
     textSize: 'Text size',
+    decreaseTextSize: 'Decrease text size',
+    resetTextSize: 'Reset text size',
+    increaseTextSize: 'Increase text size',
     reset: 'Reset settings',
     statement: 'Accessibility statement',
     toggles: {
@@ -22,6 +25,9 @@ const WIDGET_STRINGS = {
     triggerTitle: 'גרור להזזה, לחץ לפתיחת סרגל נגישות',
     panelTitle: 'אפשרויות נגישות',
     textSize: 'גודל טקסט',
+    decreaseTextSize: 'הקטנת גודל הטקסט',
+    resetTextSize: 'איפוס גודל הטקסט',
+    increaseTextSize: 'הגדלת גודל הטקסט',
     reset: 'איפוס הגדרות',
     statement: 'הצהרת נגישות',
     toggles: {
@@ -37,6 +43,9 @@ const WIDGET_STRINGS = {
     triggerTitle: 'اسحب للتحريك، انقر لفتح قائمة إمكانية الوصول',
     panelTitle: 'خيارات إمكانية الوصول',
     textSize: 'حجم النص',
+    decreaseTextSize: 'تصغير حجم النص',
+    resetTextSize: 'إعادة ضبط حجم النص',
+    increaseTextSize: 'تكبير حجم النص',
     reset: 'إعادة ضبط الإعدادات',
     statement: 'بيان إمكانية الوصول',
     toggles: {

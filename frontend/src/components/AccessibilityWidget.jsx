@@ -314,6 +314,45 @@ export default function AccessibilityWidget() {
               <span>80%</span>
               <span>160%</span>
             </div>
+
+            {/* Discrete steppers — easier than the slider for users with limited
+                fine motor control. Order is fixed (−, reset, +) regardless of
+                direction. */}
+            <div
+              role="group"
+              aria-label={t.textSize}
+              dir="ltr"
+              style={{ display: 'flex', gap: '0.35rem', marginTop: '0.5rem' }}
+            >
+              {[
+                { key: 'dec', label: 'A−', aria: t.decreaseTextSize, font: '0.8rem', onClick: () => setTextScale(prefs.textScale - TEXT_SCALE_STEP), disabled: prefs.textScale <= TEXT_SCALE_MIN },
+                { key: 'reset', label: 'A', aria: t.resetTextSize, font: '1rem', onClick: () => setTextScale(TEXT_SCALE_DEFAULT), disabled: prefs.textScale === TEXT_SCALE_DEFAULT },
+                { key: 'inc', label: 'A+', aria: t.increaseTextSize, font: '1.2rem', onClick: () => setTextScale(prefs.textScale + TEXT_SCALE_STEP), disabled: prefs.textScale >= TEXT_SCALE_MAX },
+              ].map((b) => (
+                <button
+                  key={b.key}
+                  type="button"
+                  onClick={b.onClick}
+                  disabled={b.disabled}
+                  aria-label={b.aria}
+                  style={{
+                    flex: 1,
+                    padding: '0.35rem 0',
+                    borderRadius: '8px',
+                    border: '2px solid #e2e2e2',
+                    backgroundColor: '#f5f5f5',
+                    color: '#111',
+                    cursor: b.disabled ? 'default' : 'pointer',
+                    opacity: b.disabled ? 0.45 : 1,
+                    fontWeight: 700,
+                    fontSize: b.font,
+                    lineHeight: 1,
+                  }}
+                >
+                  {b.label}
+                </button>
+              ))}
+            </div>
           </div>
 
           <hr style={{ margin: '0.1rem 0 0.25rem', borderColor: '#eee' }} />
