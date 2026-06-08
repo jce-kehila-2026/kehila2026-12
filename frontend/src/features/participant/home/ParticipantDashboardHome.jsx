@@ -1,4 +1,5 @@
 import { useEffect, useId, useMemo, useRef, useState, useCallback } from 'react';
+import { createPortal } from 'react-dom';
 import {
   ArrowRight,
   CalendarDays,
@@ -47,6 +48,8 @@ import { useParticipantDashboardHomeData } from './useParticipantDashboardHomeDa
 import { createParticipantNote, updateParticipantNote } from './participantNotesService';
 import { useParticipantNotes } from './useParticipantNotes';
 import useLatestCommunityPost from '../community/hooks/useLatestCommunityPost';
+import BirthdayGreeting from './BirthdayGreeting';
+import useBirthdayToday from './useBirthdayToday';
 import './ParticipantDashboardHome.css';
 
 const RING_SIZE = 130;
@@ -636,9 +639,9 @@ function FeatureCardErrorState({ variant, headingIcon: HeadingIcon, headingLabel
   );
 }
 
-function usePickerDismiss(open, setOpen, rootRef) {
+function usePickerDismiss(open, setOpen, rootRef, enabled = true) {
   useEffect(() => {
-    if (!open) return undefined;
+    if (!open || !enabled) return undefined;
 
     const handlePointerDown = (event) => {
       if (!rootRef.current?.contains(event.target)) {
@@ -646,36 +649,55 @@ function usePickerDismiss(open, setOpen, rootRef) {
       }
     };
 
-    const handleEscape = (event) => {
-      if (event.key === 'Escape') setOpen(false);
-    };
-
     document.addEventListener('mousedown', handlePointerDown);
-    document.addEventListener('keydown', handleEscape);
 
     return () => {
       document.removeEventListener('mousedown', handlePointerDown);
-      document.removeEventListener('keydown', handleEscape);
     };
-  }, [open, setOpen, rootRef]);
+  }, [open, setOpen, rootRef, enabled]);
 }
 
-function NotesDatePicker({ id, value, onChange, ariaLabel }) {
-  const [open, setOpen] = useState(false);
-  const rootRef = useRef(null);
+function NotesDatePicker({
+  id,
+  value,
+  onChange,
+  ariaLabel,
+  open: controlledOpen,
+  onOpenChange,
+  pickerRef,
+  embeddedInModal = false,
+}) {
+  const internalRef = useRef(null);
+  const rootRef = pickerRef ?? internalRef;
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isControlled = controlledOpen !== undefined && onOpenChange != null;
+  const isOpen = isControlled ? controlledOpen : internalOpen;
+
+  const setOpen = useCallback(
+    (next) => {
+      const resolved = typeof next === 'function' ? next(isOpen) : next;
+      if (isControlled) {
+        onOpenChange(resolved);
+      } else {
+        setInternalOpen(resolved);
+      }
+    },
+    [isControlled, isOpen, onOpenChange],
+  );
+
+  usePickerDismiss(isOpen, setOpen, rootRef, !embeddedInModal);
+
   const initialView = getInitialCalendarView(value);
   const [viewYear, setViewYear] = useState(initialView.year);
   const [viewMonth, setViewMonth] = useState(initialView.month);
 
-  usePickerDismiss(open, setOpen, rootRef);
-
   useEffect(() => {
-    if (!open) return;
+    if (!isOpen) return;
 
     const nextView = getInitialCalendarView(value);
     setViewYear(nextView.year);
     setViewMonth(nextView.month);
-  }, [open, value]);
+  }, [isOpen, value]);
 
   const cells = useMemo(() => buildCalendarMonthCells(viewYear, viewMonth), [viewYear, viewMonth]);
   const monthLabel = getCalendarMonthLabel(viewYear, viewMonth);
@@ -706,13 +728,13 @@ function NotesDatePicker({ id, value, onChange, ariaLabel }) {
   };
 
   return (
-    <div className={`pd-notes-picker pd-notes-calendar${open ? ' is-open' : ''}`} ref={rootRef}>
+    <div className={`pd-notes-picker pd-notes-calendar${isOpen ? ' is-open' : ''}`} ref={rootRef}>
       <button
         type="button"
         id={id}
         className={`pd-notes-picker__trigger${value ? ' is-filled' : ''}`}
         aria-haspopup="dialog"
-        aria-expanded={open}
+        aria-expanded={isOpen}
         aria-label={ariaLabel}
         onClick={() => setOpen((current) => !current)}
       >
@@ -722,8 +744,14 @@ function NotesDatePicker({ id, value, onChange, ariaLabel }) {
         <CalendarDays size={15} strokeWidth={2} className="pd-notes-picker__icon" aria-hidden="true" />
       </button>
 
-      {open ? (
-        <div className="pd-notes-calendar__panel" role="dialog" aria-label={ariaLabel}>
+      {isOpen ? (
+        <div
+          className="pd-notes-calendar__panel"
+          role="dialog"
+          aria-label={ariaLabel}
+          onMouseDown={(event) => event.stopPropagation()}
+          onClick={(event) => event.stopPropagation()}
+        >
           <div className="pd-notes-calendar__nav">
             <button type="button" className="pd-notes-calendar__nav-btn" onClick={goPrevMonth} aria-label="Previous month">
               <ChevronLeft size={16} strokeWidth={2.2} aria-hidden="true" />
@@ -818,11 +846,38 @@ function TimeStepperInput({ id, label, value, onCommit, maxLength }) {
   );
 }
 
-function NotesTimePicker({ id, value, onChange, ariaLabel }) {
+function NotesTimePicker({
+  id,
+  value,
+  onChange,
+  ariaLabel,
+  open: controlledOpen,
+  onOpenChange,
+  pickerRef,
+  embeddedInModal = false,
+}) {
   const hourInputId = useId();
   const minuteInputId = useId();
-  const [open, setOpen] = useState(false);
-  const rootRef = useRef(null);
+  const internalRef = useRef(null);
+  const rootRef = pickerRef ?? internalRef;
+  const [internalOpen, setInternalOpen] = useState(false);
+  const isControlled = controlledOpen !== undefined && onOpenChange != null;
+  const isOpen = isControlled ? controlledOpen : internalOpen;
+
+  const setOpen = useCallback(
+    (next) => {
+      const resolved = typeof next === 'function' ? next(isOpen) : next;
+      if (isControlled) {
+        onOpenChange(resolved);
+      } else {
+        setInternalOpen(resolved);
+      }
+    },
+    [isControlled, isOpen, onOpenChange],
+  );
+
+  usePickerDismiss(isOpen, setOpen, rootRef, !embeddedInModal);
+
   const parsedValue = parseReminderTimeParts(value);
   const [draftHour, setDraftHour] = useState(parsedValue.hour12 ?? DEFAULT_REMINDER_TIME_PARTS.hour12);
   const [draftMinute, setDraftMinute] = useState(
@@ -830,10 +885,8 @@ function NotesTimePicker({ id, value, onChange, ariaLabel }) {
   );
   const [draftPeriod, setDraftPeriod] = useState(parsedValue.period ?? DEFAULT_REMINDER_TIME_PARTS.period);
 
-  usePickerDismiss(open, setOpen, rootRef);
-
   useEffect(() => {
-    if (!open) return;
+    if (!isOpen) return;
 
     const parts = parseReminderTimeParts(value);
     if (parts.hour12 != null && parts.minute != null && parts.period) {
@@ -870,6 +923,9 @@ function NotesTimePicker({ id, value, onChange, ariaLabel }) {
   const handlePeriodSelect = (period) => {
     setDraftPeriod(period);
     commitSelection(draftHour, draftMinute, period);
+    if (embeddedInModal) {
+      setOpen(false);
+    }
   };
 
   const handleHourCommit = (text) => {
@@ -889,13 +945,13 @@ function NotesTimePicker({ id, value, onChange, ariaLabel }) {
   };
 
   return (
-    <div className={`pd-notes-picker pd-notes-time${open ? ' is-open' : ''}`} ref={rootRef}>
+    <div className={`pd-notes-picker pd-notes-time${isOpen ? ' is-open' : ''}`} ref={rootRef}>
       <button
         type="button"
         id={id}
         className={`pd-notes-picker__trigger${value ? ' is-filled' : ''}`}
         aria-haspopup="dialog"
-        aria-expanded={open}
+        aria-expanded={isOpen}
         aria-label={ariaLabel}
         onClick={() => setOpen((current) => !current)}
       >
@@ -905,8 +961,14 @@ function NotesTimePicker({ id, value, onChange, ariaLabel }) {
         <Clock3 size={15} strokeWidth={2} className="pd-notes-picker__icon" aria-hidden="true" />
       </button>
 
-      {open ? (
-        <div className="pd-notes-time__panel" role="dialog" aria-label={ariaLabel}>
+      {isOpen ? (
+        <div
+          className="pd-notes-time__panel"
+          role="dialog"
+          aria-label={ariaLabel}
+          onMouseDown={(event) => event.stopPropagation()}
+          onClick={(event) => event.stopPropagation()}
+        >
           <div className="pd-notes-time__steppers">
             <div className="pd-notes-time__stepper">
               <span className="pd-notes-time__column-label">Hour</span>
@@ -988,7 +1050,7 @@ function NotesTimePicker({ id, value, onChange, ariaLabel }) {
 }
 
 function NotesScheduleModal({
-  open,
+  open: isModalOpen,
   onClose,
   draftDate,
   draftTime,
@@ -998,34 +1060,96 @@ function NotesScheduleModal({
   timePickerId,
 }) {
   const titleId = useId();
+  const panelRef = useRef(null);
+  const datePickerRef = useRef(null);
+  const timePickerRef = useRef(null);
+  const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
+  const [isTimePickerOpen, setIsTimePickerOpen] = useState(false);
+
+  const closeModal = useCallback(() => {
+    setIsDatePickerOpen(false);
+    setIsTimePickerOpen(false);
+    onClose();
+  }, [onClose]);
 
   useEffect(() => {
-    if (!open) return undefined;
+    if (isModalOpen) return undefined;
+    setIsDatePickerOpen(false);
+    setIsTimePickerOpen(false);
+    return undefined;
+  }, [isModalOpen]);
+
+  useEffect(() => {
+    if (!isModalOpen) return undefined;
 
     const handleKeyDown = (event) => {
-      if (event.key === 'Escape') onClose();
+      if (event.key !== 'Escape') return;
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      if (isDatePickerOpen) {
+        setIsDatePickerOpen(false);
+        return;
+      }
+
+      if (isTimePickerOpen) {
+        setIsTimePickerOpen(false);
+        return;
+      }
+
+      closeModal();
+    };
+
+    const handlePointerDown = (event) => {
+      const target = event.target;
+      if (!panelRef.current?.contains(target)) return;
+
+      if (isDatePickerOpen && datePickerRef.current && !datePickerRef.current.contains(target)) {
+        setIsDatePickerOpen(false);
+      }
+
+      if (isTimePickerOpen && timePickerRef.current && !timePickerRef.current.contains(target)) {
+        setIsTimePickerOpen(false);
+      }
     };
 
     document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [open, onClose]);
+    document.addEventListener('mousedown', handlePointerDown);
 
-  if (!open) return null;
+    return () => {
+      document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('mousedown', handlePointerDown);
+    };
+  }, [isModalOpen, isDatePickerOpen, isTimePickerOpen, closeModal]);
+
+  if (!isModalOpen) return null;
 
   const scheduleSummary = formatReminderDateTimeLabel(draftDate, draftTime);
 
-  return (
+  const modalContent = (
     <div className="pd-notes-schedule-modal" role="presentation">
-      <button type="button" className="pd-notes-schedule-modal__backdrop" aria-label="Close schedule" onClick={onClose} />
       <div
+        className="pd-notes-schedule-modal__backdrop"
+        aria-hidden="true"
+        onMouseDown={(event) => {
+          if (event.target === event.currentTarget) {
+            closeModal();
+          }
+        }}
+      />
+      <div
+        ref={panelRef}
         className="pd-notes-schedule-modal__panel"
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
+        onMouseDown={(event) => event.stopPropagation()}
+        onClick={(event) => event.stopPropagation()}
       >
         <div className="pd-notes-schedule-modal__header">
           <h4 id={titleId}>Reminder schedule</h4>
-          <button type="button" className="pd-notes-schedule-modal__close" aria-label="Close" onClick={onClose}>
+          <button type="button" className="pd-notes-schedule-modal__close" aria-label="Close" onClick={closeModal}>
             <X size={16} strokeWidth={2.2} aria-hidden="true" />
           </button>
         </div>
@@ -1038,12 +1162,26 @@ function NotesScheduleModal({
             value={draftDate}
             ariaLabel="Reminder date"
             onChange={onDateChange}
+            open={isDatePickerOpen}
+            onOpenChange={(nextOpen) => {
+              setIsDatePickerOpen(nextOpen);
+              if (nextOpen) setIsTimePickerOpen(false);
+            }}
+            pickerRef={datePickerRef}
+            embeddedInModal
           />
           <NotesTimePicker
             id={timePickerId}
             value={draftTime}
             ariaLabel="Reminder time"
             onChange={onTimeChange}
+            open={isTimePickerOpen}
+            onOpenChange={(nextOpen) => {
+              setIsTimePickerOpen(nextOpen);
+              if (nextOpen) setIsDatePickerOpen(false);
+            }}
+            pickerRef={timePickerRef}
+            embeddedInModal
           />
         </div>
 
@@ -1053,15 +1191,20 @@ function NotesScheduleModal({
           </p>
         ) : null}
 
-        <button type="button" className="pd-notes-schedule-modal__done" onClick={onClose}>
+        <button type="button" className="pd-notes-schedule-modal__done" onClick={closeModal}>
           Done
         </button>
       </div>
     </div>
   );
+
+  return typeof document !== 'undefined' ? createPortal(modalContent, document.body) : modalContent;
 }
 
+const NOTES_COMPLETION_FEEDBACK_MS = 650;
+
 function NotesCard({ userId }) {
+  const completionHideTimeoutsRef = useRef(new Map());
   const titleInputId = useId();
   const datePickerId = useId();
   const timePickerId = useId();
@@ -1075,7 +1218,21 @@ function NotesCard({ userId }) {
   const [syncHint, setSyncHint] = useState('');
   const [scheduleOpen, setScheduleOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [completingNoteIds, setCompletingNoteIds] = useState(() => new Set());
   const { notes } = useParticipantNotes(userId);
+
+  useEffect(() => {
+    const timeouts = completionHideTimeoutsRef.current;
+    return () => {
+      timeouts.forEach(clearTimeout);
+      timeouts.clear();
+    };
+  }, []);
+
+  const activeNotes = useMemo(
+    () => notes.filter((note) => !note.done || completingNoteIds.has(note.id)),
+    [notes, completingNoteIds],
+  );
 
   const clearSyncHint = () => {
     if (syncHint) setSyncHint('');
@@ -1173,17 +1330,46 @@ function NotesCard({ userId }) {
     void handleAddNote(value);
   };
 
-  const toggleNote = async (id) => {
+  const completeNote = useCallback(async (id) => {
     const note = notes.find((entry) => entry.id === id);
     const participantId = auth.currentUser?.uid || userId;
-    if (!note || !participantId) return;
+    if (!note || note.done || !participantId || completingNoteIds.has(id)) return;
+
+    setCompletingNoteIds((current) => {
+      const next = new Set(current);
+      next.add(id);
+      return next;
+    });
+
+    const existingTimeout = completionHideTimeoutsRef.current.get(id);
+    if (existingTimeout) clearTimeout(existingTimeout);
+
+    const hideTimeout = setTimeout(() => {
+      setCompletingNoteIds((current) => {
+        if (!current.has(id)) return current;
+        const next = new Set(current);
+        next.delete(id);
+        return next;
+      });
+      completionHideTimeoutsRef.current.delete(id);
+    }, NOTES_COMPLETION_FEEDBACK_MS);
+
+    completionHideTimeoutsRef.current.set(id, hideTimeout);
 
     try {
-      await updateParticipantNote(participantId, id, { done: !note.done });
+      await updateParticipantNote(participantId, id, { done: true });
     } catch (error) {
       console.error('[Dashboard notes] Failed to update note:', error);
+      clearTimeout(hideTimeout);
+      completionHideTimeoutsRef.current.delete(id);
+      setCompletingNoteIds((current) => {
+        if (!current.has(id)) return current;
+        const next = new Set(current);
+        next.delete(id);
+        return next;
+      });
     }
-  };
+  }, [completingNoteIds, notes, userId]);
 
   const handleSyncToggle = () => {
     setSyncEnabled((value) => !value);
@@ -1264,19 +1450,20 @@ function NotesCard({ userId }) {
         />
 
       <ul className="pd-notes__list">
-        {notes.map((note) => {
+        {activeNotes.map((note) => {
           const scheduleLabel = formatReminderDateTimeLabel(note.date, note.time);
+          const isCompleted = note.done || completingNoteIds.has(note.id);
 
           return (
-            <li key={note.id} className={note.done ? 'is-done' : ''}>
+            <li key={note.id} className={isCompleted ? 'is-done' : ''}>
               <button
                 type="button"
-                className={`pd-notes__check${note.done ? ' is-checked' : ''}`}
-                aria-label={note.done ? 'Mark note incomplete' : 'Mark note complete'}
-                aria-pressed={note.done}
-                onClick={() => toggleNote(note.id)}
+                className={`pd-notes__check${isCompleted ? ' is-checked' : ''}`}
+                aria-label="Mark note complete"
+                aria-pressed={isCompleted}
+                onClick={() => completeNote(note.id)}
               >
-                {note.done ? <Check size={14} strokeWidth={3} /> : null}
+                {isCompleted ? <Check size={14} strokeWidth={3} /> : null}
               </button>
               <div className="pd-notes__copy">
                 <span>{note.title}</span>
@@ -1465,10 +1652,12 @@ function CommunityCardSection({ post, isLoading, hasError, relativeTime, onViewP
 export default function ParticipantDashboardHome({
   userId,
   displayName = '',
+  birthDate = '',
   onNavigateToView,
   onViewCommunity,
 }) {
   const { appointment, event, isLoading, appointmentError, eventError } = useParticipantDashboardHomeData(userId);
+  const isBirthdayToday = useBirthdayToday(birthDate);
   const {
     post: latestCommunityPost,
     isLoading: isCommunityLoading,
@@ -1503,6 +1692,8 @@ export default function ParticipantDashboardHome({
   return (
     <div className="pd-home">
       <HeroBanner displayName={displayName} dailyQuote={dailyQuote} />
+
+      {isBirthdayToday ? <BirthdayGreeting firstName={displayName} /> : null}
 
       <section className="pd-home__row" aria-label="Upcoming appointment and event">
         {appointment ? (
