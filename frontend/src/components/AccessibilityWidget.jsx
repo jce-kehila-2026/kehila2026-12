@@ -89,7 +89,7 @@ export default function AccessibilityWidget({ lang = document.documentElement.la
 
   const t = getAccessibilityWidgetStrings(locale);
   const dir = getParticipantLocaleDirection(locale);
-  const lang = getParticipantLocaleLang(locale);
+  const widgetLang = getParticipantLocaleLang(locale);
 
   const close = useCallback(() => setOpen(false), []);
 
@@ -230,10 +230,10 @@ export default function AccessibilityWidget({ lang = document.documentElement.la
   );
 
   return (
-    <div
+     <div
     ref={containerRef}
     className="accessibility-widget a11y-widget"
-    lang={lang}
+    lang={widgetLang}
     style={{
       position: 'fixed',
       top: `${top}px`,
