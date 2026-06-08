@@ -188,9 +188,21 @@ export default function ParticipantHome({ initialView = 'home' }) {
   const layoutDirection = getParticipantLocaleDirection(locale);
   const layoutLang = getParticipantLocaleLang(locale);
 
+  // Reflect the participant language on <html lang> so globally-mounted UI
+  // (the accessibility widget) can read one consistent locale signal across
+  // both the app and the public site, which already sets it.
+  useEffect(() => {
+    document.documentElement.setAttribute('lang', layoutLang);
+  }, [layoutLang]);
+
   useEffect(() => {
     if (participantProfile?.language) {
-      setLocale(profileLanguageToLocale(participantProfile.language));
+      const nextLocale = profileLanguageToLocale(participantProfile.language);
+      setLocale(nextLocale);
+      // Persist so globally-mounted UI that reads the locale store (e.g. the
+      // accessibility widget) stays in sync with the profile-driven language,
+      // not only with explicit switches via handleLocaleChange.
+      storeParticipantLocale(nextLocale);
     }
   }, [participantProfile?.language]);
 

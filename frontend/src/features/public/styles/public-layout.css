@@ -13,6 +13,7 @@
   --public-card: rgba(255, 255, 255, 0.96);
   --public-shadow: 0 18px 46px rgba(58, 27, 84, 0.12);
   --public-navbar-offset: 96px;
+  --public-anchor-gap: 0px;
   width: 100%;
   max-width: 100%;
   min-height: 100vh;
@@ -24,7 +25,7 @@
   text-align: start;
   font-family: "Assistant", "Segoe UI", Arial, sans-serif;
   scroll-behavior: smooth;
-  scroll-padding-top: calc(var(--public-navbar-offset) + 12px);
+  scroll-padding-top: calc(var(--public-navbar-offset) + var(--public-anchor-gap));
 }
 
 .public-homepage[lang="he"] {
@@ -54,6 +55,10 @@
 .public-homepage article,
 .public-homepage div {
   min-width: 0;
+}
+
+.public-homepage :is(section[id], footer[id]) {
+  scroll-margin-top: calc(var(--public-navbar-offset) + var(--public-anchor-gap));
 }
 
 .public-homepage img {
@@ -179,7 +184,8 @@
   min-width: 0;
 }
 
-.public-navbar__links a,
+.public-navbar__links > a,
+.public-navbar__dropdown-trigger,
 .public-navbar__cta {
   color: #3f4657;
   font-weight: 800;
@@ -188,18 +194,100 @@
   white-space: nowrap;
 }
 
-.public-navbar__links a {
+.public-navbar__links > a,
+.public-navbar__dropdown-trigger {
   position: relative;
   font-size: clamp(1.04rem, 1vw, 1.16rem);
   padding-block: 10px;
   padding-inline: 2px;
 }
 
+.public-navbar__dropdown {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.public-navbar__dropdown-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  margin: 0;
+  color: #3f4657;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  font-family: inherit;
+  transition: color 180ms ease;
+}
+
+.public-navbar__dropdown-trigger:hover,
+.public-navbar__dropdown-trigger:focus-visible,
+.public-navbar__dropdown--open .public-navbar__dropdown-trigger {
+  color: #ec4899;
+  outline: none;
+}
+
+.public-navbar__dropdown-trigger svg {
+  width: 17px;
+  height: 17px;
+  transition: transform 220ms ease;
+}
+
+.public-navbar__dropdown--open .public-navbar__dropdown-trigger svg {
+  transform: rotate(180deg);
+}
+
+.public-navbar__dropdown-menu {
+  position: absolute;
+  inset-block-start: calc(100% + 7px);
+  inset-inline-start: 0;
+  z-index: 1100;
+  display: grid;
+  gap: 2px;
+  width: max-content;
+  min-width: 172px;
+  max-width: min(220px, calc(100vw - 32px));
+  margin: 0;
+  padding: 6px;
+  list-style: none;
+  background: rgba(255, 252, 254, 0.99);
+  border: 1px solid rgba(192, 38, 211, 0.16);
+  border-radius: 12px;
+  box-shadow: 0 12px 28px rgba(91, 30, 140, 0.14), 0 3px 10px rgba(236, 72, 153, 0.07);
+  backdrop-filter: blur(14px);
+}
+
+.public-navbar__dropdown-menu[hidden] {
+  display: none;
+}
+
+.public-navbar__dropdown-menu a {
+  display: flex;
+  align-items: center;
+  min-height: 36px;
+  padding: 8px 11px;
+  color: #4c315d;
+  font-size: 0.92rem;
+  font-weight: 800;
+  text-decoration: none;
+  border-radius: 8px;
+  transition: color 180ms ease, background 180ms ease, transform 180ms ease;
+}
+
+.public-navbar__dropdown-menu a:hover,
+.public-navbar__dropdown-menu a:focus-visible {
+  color: #8e24aa;
+  background: linear-gradient(135deg, rgba(252, 231, 243, 0.9), rgba(243, 232, 255, 0.9));
+  transform: translateX(-2px);
+}
+
 .public-navbar__cta {
   font-size: clamp(0.96rem, 0.9vw, 1.04rem);
 }
 
-.public-navbar__links a::after {
+.public-navbar__links > a::after,
+.public-navbar__dropdown-trigger::after {
   position: absolute;
   inset-inline: 0;
   inset-block-end: 0;
@@ -212,27 +300,32 @@
   transition: transform 0.3s ease;
 }
 
-.public-navbar__links a:hover,
-.public-navbar__links a:focus-visible {
+.public-navbar__links > a:hover,
+.public-navbar__links > a:focus-visible,
+.public-navbar__dropdown-trigger:hover,
+.public-navbar__dropdown-trigger:focus-visible {
   color: #ec4899;
 }
 
-.public-navbar__links a.public-navbar__link--active {
+.public-navbar__links > a.public-navbar__link--active {
   color: #ec4899;
 }
 
-.public-navbar__links a:hover::after,
-.public-navbar__links a:focus-visible::after,
-.public-navbar__links a.public-navbar__link--active::after {
+.public-navbar__links > a:hover::after,
+.public-navbar__links > a:focus-visible::after,
+.public-navbar__dropdown-trigger:hover::after,
+.public-navbar__dropdown-trigger:focus-visible::after,
+.public-navbar__dropdown--open .public-navbar__dropdown-trigger::after,
+.public-navbar__links > a.public-navbar__link--active::after {
   transform: scaleX(1);
 }
 
-.public-navbar__links a.public-navbar__link--active {
+.public-navbar__links > a.public-navbar__link--active {
   color: #5b1e8c;
   font-weight: 900;
 }
 
-.public-navbar__links a.public-navbar__link--active::after {
+.public-navbar__links > a.public-navbar__link--active::after {
   transform: scaleX(1);
   opacity: 1;
 }

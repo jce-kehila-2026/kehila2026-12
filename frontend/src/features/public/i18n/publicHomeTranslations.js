@@ -12,18 +12,46 @@ export const PUBLIC_LANGUAGE_OPTIONS = [
 const NAV_LINK_KEYS = [
   { key: 'navHome', href: '#home' },
   { key: 'navLearnTogether', href: '#support' },
-  { key: 'navStories', href: '#stories' },
+  { key: 'navStories', href: '/public/stories-articles' },
   { key: 'navDonations', href: '__donation__' },
   { key: 'navContact', href: '#contact' },
+];
+
+const NAVBAR_LINK_KEYS = [
+  { key: 'navbarStories', href: '/public/stories-articles' },
+  { key: 'navDonations', href: '__donation__' },
+  { key: 'navContact', href: '#contact' },
+];
+
+const NAVBAR_HOME_MENU_KEYS = [
+  { key: 'navAboutUs', href: '#support' },
+  { key: 'navUpcomingEvents', href: '#events' },
+  { key: 'navOurTeam', href: '#team' },
+  { key: 'navOurPartners', href: '#medical-partners' },
+];
+
+const NAVBAR_STORIES_MENU_KEYS = [
+  { key: 'navbarStoriesMenuStories', href: '#stories' },
+  { key: 'navbarStoriesMenuArticles', href: '#articles' },
 ];
 
 export const publicHomeTranslations = {
   he: {
     navHome: 'הבית',
+    navSimpleHome: 'עמוד הבית',
     navLearnTogether: 'מי אנחנו',
-    navStories: 'סיפורי השראה',
+    navStories: 'סיפורים ומאמרים',
+    navbarStories: 'סיפורים ומאמרים',
     navDonations: 'תרומות',
     navContact: 'צרי קשר',
+    navAboutUs: 'מי אנחנו',
+    navUpcomingEvents: 'פעילויות קרובות',
+    navOurTeam: 'הצוות שלנו',
+    navOurPartners: 'השותפים שלנו',
+    navHomeMenuLabel: 'תפריט הבית',
+    navbarStoriesMenuLabel: 'תפריט סיפורים ומאמרים',
+    navbarStoriesMenuStories: 'סיפורים',
+    navbarStoriesMenuArticles: 'מאמרים',
     navJoin: 'להצטרף',
     navPersonalArea: 'איזור אישי',
     navVolunteer: 'להתנדב',
@@ -42,10 +70,20 @@ export const publicHomeTranslations = {
   },
   ar: {
     navHome: 'الرئيسية',
+    navSimpleHome: 'الرئيسية',
     navLearnTogether: 'من نحن',
-    navStories: 'قصص ملهمة',
+    navStories: 'قصص ومقالات',
+    navbarStories: 'قصص ومقالات',
     navDonations: 'تبرعات',
     navContact: 'تواصلي معنا',
+    navAboutUs: 'من نحن',
+    navUpcomingEvents: 'الفعاليات القريبة',
+    navOurTeam: 'فريقنا',
+    navOurPartners: 'شركاؤنا',
+    navHomeMenuLabel: 'قائمة الرئيسية',
+    navbarStoriesMenuLabel: 'قائمة القصص والمقالات',
+    navbarStoriesMenuStories: 'قصص',
+    navbarStoriesMenuArticles: 'مقالات',
     navJoin: 'انضمّي',
     navPersonalArea: 'المنطقة الشخصية',
     navVolunteer: 'تطوّعي',
@@ -64,10 +102,20 @@ export const publicHomeTranslations = {
   },
   en: {
     navHome: 'Home',
+    navSimpleHome: 'Home',
     navLearnTogether: 'About Us',
-    navStories: 'Inspiration Stories',
+    navStories: 'Stories & Articles',
+    navbarStories: 'Stories & Articles',
     navDonations: 'Donate',
     navContact: 'Contact',
+    navAboutUs: 'About Us',
+    navUpcomingEvents: 'Upcoming Activities',
+    navOurTeam: 'Our Team',
+    navOurPartners: 'Our Partners',
+    navHomeMenuLabel: 'Home menu',
+    navbarStoriesMenuLabel: 'Stories and articles menu',
+    navbarStoriesMenuStories: 'Stories',
+    navbarStoriesMenuArticles: 'Articles',
     navJoin: 'Join',
     navPersonalArea: 'Personal Area',
     navVolunteer: 'Volunteer',
@@ -135,6 +183,27 @@ export function getPublicNavLinks(t, donationHref) {
   return NAV_LINK_KEYS.map(({ key, href }) => ({
     label: t(key),
     href: href === '__donation__' ? donationHref : href,
+  }));
+}
+
+export function getPublicNavbarLinks(t, donationHref) {
+  return NAVBAR_LINK_KEYS.map(({ key, href }) => ({
+    label: t(key),
+    href: href === '__donation__' ? donationHref : href,
+  }));
+}
+
+export function getPublicNavbarHomeMenu(t) {
+  return NAVBAR_HOME_MENU_KEYS.map(({ key, href }) => ({
+    label: t(key),
+    href,
+  }));
+}
+
+export function getPublicNavbarStoriesMenu(t) {
+  return NAVBAR_STORIES_MENU_KEYS.map(({ key, href }) => ({
+    label: t(key),
+    href,
   }));
 }
 

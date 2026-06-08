@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
   getCommunityProfile,
+  getTodayCommunityBirthdays,
   updateCommunityProfile,
 } from '../services/communityService';
 import { getCurrentCommunityUserId } from '../utils/communityModerationUtils';
@@ -34,8 +35,23 @@ export default function useCommunityProfile({ personalDetails = {} } = {}) {
   const [communityUserProfile, setCommunityUserProfile] = useState(defaultProfile);
   const [communityPreferences, setCommunityPreferences] = useState(defaultPreferences);
   const [profileSuccessMessage, setProfileSuccessMessage] = useState('');
+  const [communityBirthdayUsers, setCommunityBirthdayUsers] = useState([]);
 
   const uid = personalDetails?.uid ?? null;
+
+  // Load today's community birthdays from Firestore (opted-in members in the
+  // shared `users` collection — no separate birthday collection).
+  useEffect(() => {
+    let cancelled = false;
+
+    getTodayCommunityBirthdays()
+      .then((users) => {
+        if (!cancelled) setCommunityBirthdayUsers(Array.isArray(users) ? users : []);
+      })
+      .catch(() => {});
+
+    return () => { cancelled = true; };
+  }, []);
 
   useEffect(() => {
     if (!profileSuccessMessage) return undefined;
@@ -98,13 +114,24 @@ export default function useCommunityProfile({ personalDetails = {} } = {}) {
     : communityUserProfile.showBirthday;
   const allowAnonymousPosting = communityUserProfile.allowAnonymousPosting !== false;
   const localUserId = getCurrentCommunityUserId(personalDetails, communityUserProfile);
-  const visibleBirthdayUsers = showBirthdayInCommunity && communityBirthday
+  // Merge the current user's own entry (so a freshly-saved preference shows
+  // immediately, before the next fetch) with the Firestore-backed list, keeping
+  // the first occurrence of each id so the user isn't listed twice.
+  const currentUserBirthdayEntry = showBirthdayInCommunity && communityBirthday
     ? [{
       id: localUserId,
       name: communityDisplayName || 'Current User',
       birthday: communityBirthday,
     }]
     : [];
+  const seenBirthdayIds = new Set();
+  const visibleBirthdayUsers = [...currentUserBirthdayEntry, ...communityBirthdayUsers]
+    .filter((user) => {
+      const key = user.id ?? user.name;
+      if (seenBirthdayIds.has(key)) return false;
+      seenBirthdayIds.add(key);
+      return true;
+    });
 
   const handleBirthdayPreferenceSave = (showBirthday) => {
     const resolvedDisplayName = displayName || communityUserProfile.displayName;

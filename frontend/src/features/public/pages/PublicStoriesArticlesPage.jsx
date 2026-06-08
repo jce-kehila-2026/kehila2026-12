@@ -1,54 +1,34 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import PublicNavbar from '../components/PublicNavbar';
-import HeroSection from '../components/HeroSection';
-import LearnTogetherSection from '../components/LearnTogetherSection';
-import EventsPreviewSection from '../components/EventsPreviewSection';
-import TeamSection from '../components/TeamSection';
-import MedicalPartnersSection from '../components/MedicalPartnersSection';
+import InspirationStoriesSection from '../components/InspirationStoriesSection';
+import ArticlesPreviewSection from '../components/ArticlesPreviewSection';
 import PublicFooter from '../components/PublicFooter';
 import JoinCommunityModal from '../components/JoinCommunityModal';
 import VolunteerModal from '../components/VolunteerModal';
-import EmptyState from '../components/EmptyState';
-import ErrorState from '../components/ErrorState';
 import useRevealOnScroll from '../hooks/useRevealOnScroll';
 import usePublicHomeScrollReset from '../hooks/usePublicHomeScrollReset';
 import { getFallbackPublicHomepageContent, getPublicHomepageContent } from '../services/publicContentService';
-import { getPublicHomeDoc, getDefaultPublicHomeDoc } from '../services/publicPagesService';
+import { getDefaultPublicHomeDoc, getPublicHomeDoc } from '../services/publicPagesService';
 import { PublicLocaleProvider, usePublicLocale } from '../context/PublicLocaleContext';
 import '../styles/PublicHomePage.css';
 
-function PublicHomePageContent() {
+function PublicStoriesArticlesPageContent() {
   const pageRef = useRef(null);
   const { direction, lang, t } = usePublicLocale();
   const [content, setContent] = useState(() => getFallbackPublicHomepageContent());
   const [publicHomeDoc, setPublicHomeDoc] = useState(() => getDefaultPublicHomeDoc());
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [isContentLoading, setIsContentLoading] = useState(true);
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
   const [isVolunteerModalOpen, setIsVolunteerModalOpen] = useState(false);
   const revealRefreshKey = useMemo(
-    () => [
-      loading ? 'loading' : 'ready',
-      content.supportAreas?.length || 0,
-      content.statistics?.length || 0,
-      content.teamMembers?.length || 0,
-      content.events?.length || 0,
-      publicHomeDoc.learnTogether?.cards?.length || 0,
-    ].join(':'),
-    [
-      content.events?.length,
-      content.statistics?.length,
-      content.supportAreas?.length,
-      content.teamMembers?.length,
-      loading,
-      publicHomeDoc.learnTogether?.cards?.length,
-    ],
+    () => `${publicHomeDoc.inspirationalStories?.length || 0}:${publicHomeDoc.pressCoverage?.length || 0}`,
+    [publicHomeDoc.inspirationalStories?.length, publicHomeDoc.pressCoverage?.length],
   );
 
   useRevealOnScroll(pageRef, revealRefreshKey);
   usePublicHomeScrollReset(pageRef, {
     resetAfterLoad: true,
-    isLoading: loading,
+    isLoading: isContentLoading,
     preserveInitialHash: true,
   });
 
@@ -61,20 +41,14 @@ function PublicHomePageContent() {
           getPublicHomepageContent(),
           getPublicHomeDoc(),
         ]);
+
         if (isMounted) {
           setContent(homepageContent);
           setPublicHomeDoc(homeDoc);
-          setError(null);
-        }
-      } catch (loadError) {
-        if (isMounted) {
-          setContent(getFallbackPublicHomepageContent());
-          setPublicHomeDoc(getDefaultPublicHomeDoc());
-          setError(loadError);
         }
       } finally {
         if (isMounted) {
-          setLoading(false);
+          setIsContentLoading(false);
         }
       }
     }
@@ -87,7 +61,12 @@ function PublicHomePageContent() {
   }, []);
 
   return (
-    <div className="public-homepage public-homepage--main" ref={pageRef} dir={direction} lang={lang}>
+    <div
+      className="public-homepage public-standalone-page public-stories-articles-page"
+      ref={pageRef}
+      dir={direction}
+      lang={lang}
+    >
       <a className="public-skip-link" href="#public-main">
         {t('skipToContent')}
       </a>
@@ -95,25 +74,11 @@ function PublicHomePageContent() {
         organization={content.organization}
         onJoinClick={() => setIsJoinModalOpen(true)}
         onVolunteerClick={() => setIsVolunteerModalOpen(true)}
+        showHomeDropdown={false}
       />
       <main id="public-main">
-        {error ? (
-          <ErrorState message={t('errorPartialContent')} />
-        ) : null}
-        {!loading && !content ? (
-          <EmptyState message={t('emptyHomepage')} />
-        ) : null}
-        <HeroSection
-          hero={publicHomeDoc.hero}
-          statistics={publicHomeDoc.statistics}
-          isLoading={loading}
-          hasError={Boolean(error)}
-          onJoinClick={() => setIsJoinModalOpen(true)}
-        />
-        <LearnTogetherSection learnTogether={publicHomeDoc.learnTogether} />
-        <EventsPreviewSection events={content.events} isLoading={loading} hasError={error} />
-        <TeamSection members={publicHomeDoc.teamMembers} />
-        <MedicalPartnersSection partners={publicHomeDoc.partners} />
+        <InspirationStoriesSection stories={publicHomeDoc.inspirationalStories} />
+        <ArticlesPreviewSection coverage={publicHomeDoc.pressCoverage} />
       </main>
       <PublicFooter organization={content.organization} contact={content.contact} />
       <JoinCommunityModal isOpen={isJoinModalOpen} onClose={() => setIsJoinModalOpen(false)} />
@@ -122,10 +87,10 @@ function PublicHomePageContent() {
   );
 }
 
-export default function PublicHomePage() {
+export default function PublicStoriesArticlesPage() {
   return (
     <PublicLocaleProvider>
-      <PublicHomePageContent />
+      <PublicStoriesArticlesPageContent />
     </PublicLocaleProvider>
   );
 }
