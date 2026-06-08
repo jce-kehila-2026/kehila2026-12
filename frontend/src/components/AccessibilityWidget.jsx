@@ -2,10 +2,28 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useAccessibility } from '../context/AccessibilityContext';
 import { TEXT_SCALE_MIN, TEXT_SCALE_MAX, TEXT_SCALE_DEFAULT, TEXT_SCALE_STEP } from '../context/AccessibilityContext';
+import {
+  getParticipantLocaleDirection,
+  getParticipantLocaleLang,
+  getStoredParticipantLocale,
+} from '../features/participant/i18n/participantLocale';
+import { getAccessibilityWidgetStrings } from './accessibilityWidgetStrings';
 
 const STORAGE_KEY = 'shena-a11y-widget-top';
 const BTN_SIZE = 52;
 const LEFT_OFFSET = 16; // 1rem
+
+const SUPPORTED_LOCALES = ['he', 'en', 'ar'];
+
+// The widget is mounted globally, so it follows the language the page is
+// currently rendered in. Both the public site and the participant app keep the
+// <html lang> attribute in sync with the active locale, so that's the single
+// source of truth; fall back to the participant store if it isn't set yet.
+function resolveWidgetLocale() {
+  const htmlLang = (document.documentElement.getAttribute('lang') || '').slice(0, 2).toLowerCase();
+  if (SUPPORTED_LOCALES.includes(htmlLang)) return htmlLang;
+  return getStoredParticipantLocale();
+}
 
 function getSavedTop() {
   try {
@@ -23,13 +41,8 @@ function defaultTop() {
   return window.innerHeight - BTN_SIZE - 16;
 }
 
-const TOGGLE_ITEMS = [
-  { id: 'highContrast', label: 'ניגודיות גבוהה', toggleKey: 'highContrast' },
-  { id: 'grayscale', label: 'גווני אפור', toggleKey: 'grayscale' },
-  { id: 'highlightLinks', label: 'הדגשת קישורים', toggleKey: 'highlightLinks' },
-  { id: 'readableFont', label: 'פונט קריא', toggleKey: 'readableFont' },
-  { id: 'stopAnimations', label: 'עצירת הבהובים', toggleKey: 'stopAnimations' },
-];
+// Labels are resolved from the active locale at render time (see TOGGLE_KEYS).
+const TOGGLE_KEYS = ['highContrast', 'grayscale', 'highlightLinks', 'readableFont', 'stopAnimations'];
 
 export default function AccessibilityWidget() {
   const [open, setOpen] = useState(false);
@@ -45,6 +58,35 @@ export default function AccessibilityWidget() {
 
   // drag state held in refs so pointer handlers are stable
   const dragRef = useRef({ active: false, startY: 0, startTop: 0, moved: false });
+
+  // Follow the participant's chosen language (he/en/ar). The widget is mounted
+  // globally, so it reacts to same-tab changes via the custom locale event and
+  // to cross-tab changes via the storage event.
+  const [locale, setLocale] = useState(resolveWidgetLocale);
+  useEffect(() => {
+    const sync = () => setLocale(resolveWidgetLocale());
+
+    // Primary signal: <html lang> changes (set by whichever locale system owns
+    // the current page). Fallbacks: same-tab locale switches and cross-tab
+    // storage changes.
+    const observer = new MutationObserver(sync);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ['lang'] });
+    window.addEventListener('shena:locale-change', sync);
+    window.addEventListener('storage', sync);
+
+    // Catch a lang attribute that was set before this effect ran.
+    sync();
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener('shena:locale-change', sync);
+      window.removeEventListener('storage', sync);
+    };
+  }, []);
+
+  const t = getAccessibilityWidgetStrings(locale);
+  const dir = getParticipantLocaleDirection(locale);
+  const lang = getParticipantLocaleLang(locale);
 
   const close = useCallback(() => setOpen(false), []);
 
@@ -185,12 +227,13 @@ export default function AccessibilityWidget() {
     <div
       ref={containerRef}
       className="a11y-widget"
+      lang={lang}
       style={{
         position: 'fixed',
         top: `${top}px`,
         left: `${LEFT_OFFSET}px`,
         zIndex: 9999,
-        direction: 'rtl',
+        direction: dir,
         fontFamily: 'Arial, Helvetica, sans-serif',
         width: `${BTN_SIZE}px`,
       }}
@@ -199,7 +242,7 @@ export default function AccessibilityWidget() {
         <div
           ref={dialogRef}
           role="dialog"
-          aria-label="סרגל נגישות"
+          aria-label={t.triggerLabel}
           aria-modal="false"
           tabIndex={-1}
           style={{
@@ -234,13 +277,13 @@ export default function AccessibilityWidget() {
               paddingBottom: '0.4rem',
             }}
           >
-            אפשרויות נגישות
+            {t.panelTitle}
           </p>
 
           {/* Text size slider */}
-          <div style={{ padding: '0.3rem 0.75rem 0.5rem', direction: 'rtl' }}>
+          <div style={{ padding: '0.3rem 0.75rem 0.5rem', direction: dir }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.35rem' }}>
-              <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#111' }}>גודל טקסט</span>
+              <span style={{ fontSize: '0.85rem', fontWeight: 600, color: '#111' }}>{t.textSize}</span>
               <span style={{
                 fontSize: '0.78rem',
                 fontWeight: 700,
@@ -259,7 +302,7 @@ export default function AccessibilityWidget() {
               step={TEXT_SCALE_STEP}
               value={prefs.textScale}
               onChange={(e) => setTextScale(Number(e.target.value))}
-              aria-label="גודל טקסט"
+              aria-label={t.textSize}
               aria-valuemin={TEXT_SCALE_MIN}
               aria-valuemax={TEXT_SCALE_MAX}
               aria-valuenow={prefs.textScale}
@@ -274,12 +317,12 @@ export default function AccessibilityWidget() {
 
           <hr style={{ margin: '0.1rem 0 0.25rem', borderColor: '#eee' }} />
 
-          {TOGGLE_ITEMS.map((item) => {
-            const active = prefs[item.toggleKey];
+          {TOGGLE_KEYS.map((key) => {
+            const active = prefs[key];
             return (
               <button
-                key={item.id}
-                onClick={() => toggle(item.toggleKey)}
+                key={key}
+                onClick={() => toggle(key)}
                 aria-pressed={active}
                 style={{
                   display: 'flex',
@@ -294,11 +337,11 @@ export default function AccessibilityWidget() {
                   cursor: 'pointer',
                   fontSize: '0.85rem',
                   fontWeight: active ? 700 : 400,
-                  textAlign: 'right',
+                  textAlign: 'start',
                   width: '100%',
                 }}
               >
-                <span>{item.label}</span>
+                <span>{t.toggles[key]}</span>
                 {active && (
                   <span aria-hidden="true" style={{ fontSize: '0.75rem', color: '#1a56a0' }}>✓</span>
                 )}
@@ -319,11 +362,11 @@ export default function AccessibilityWidget() {
               cursor: 'pointer',
               fontSize: '0.85rem',
               fontWeight: 600,
-              textAlign: 'right',
+              textAlign: 'start',
               width: '100%',
             }}
           >
-            איפוס הגדרות
+            {t.reset}
           </button>
 
           <Link
@@ -338,12 +381,12 @@ export default function AccessibilityWidget() {
               color: '#15803d',
               fontSize: '0.85rem',
               fontWeight: 600,
-              textAlign: 'right',
+              textAlign: 'start',
               textDecoration: 'none',
               cursor: 'pointer',
             }}
           >
-            הצהרת נגישות
+            {t.statement}
           </Link>
         </div>
       )}
@@ -355,10 +398,10 @@ export default function AccessibilityWidget() {
         onPointerUp={onPointerUp}
         onPointerCancel={onPointerCancel}
         onClick={onClickTrigger}
-        aria-label="סרגל נגישות"
+        aria-label={t.triggerLabel}
         aria-expanded={open}
         aria-haspopup="dialog"
-        title="גרור להזזה, לחץ לפתיחת סרגל נגישות"
+        title={t.triggerTitle}
         style={{
           width: `${BTN_SIZE}px`,
           height: `${BTN_SIZE}px`,
