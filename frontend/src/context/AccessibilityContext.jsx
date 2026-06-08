@@ -26,6 +26,26 @@ function clampTextScale(value) {
   return Math.max(TEXT_SCALE_MIN, Math.min(TEXT_SCALE_MAX, n));
 }
 
+// On first visit (no saved prefs), seed defaults from the user's OS-level
+// accessibility settings so the experience matches their system out of the box.
+// Once the user adjusts anything, those saved choices win — we never override
+// an explicit preference with the OS value. (prefers-color-scheme has no
+// matching control yet; it would map to a future dark scheme.)
+function getSystemDefaults() {
+  const defaults = { ...DEFAULT_PREFS };
+  try {
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      defaults.stopAnimations = true;
+    }
+    if (window.matchMedia('(prefers-contrast: more)').matches) {
+      defaults.highContrast = true;
+    }
+  } catch {
+    // matchMedia unavailable — fall back to plain defaults.
+  }
+  return defaults;
+}
+
 function loadPrefs() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
@@ -43,7 +63,7 @@ function loadPrefs() {
   } catch {
     // ignore corrupt storage
   }
-  return { ...DEFAULT_PREFS };
+  return getSystemDefaults();
 }
 
 function applyPrefs(prefs) {
