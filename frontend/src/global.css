@@ -130,14 +130,15 @@ body.a11y-contrast-light button svg:not(.a11y-widget *) {
    (and fixed modals/sticky bars) to the body so they scrolled away. A
    backdrop-filter on a fixed, pointer-events:none overlay greyscales everything
    painted behind it without touching the ancestor chain, so fixed positioning
-   is preserved. The widget (z-index 9999) sits above this overlay (9998) and
-   stays in colour so its controls remain legible. */
+   is preserved. The widget sits one above this overlay (see its z-index) and
+   stays in colour so its controls remain legible, while everything else —
+   including modals — is greyscaled. */
 body.a11y-grayscale::after {
   content: '';
   position: fixed;
   inset: 0;
   pointer-events: none;
-  z-index: 9998;
+  z-index: 2147483646;
   -webkit-backdrop-filter: grayscale(100%);
   backdrop-filter: grayscale(100%);
 }

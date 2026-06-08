@@ -52,6 +52,7 @@ export default function AccessibilityWidget() {
     const saved = getSavedTop();
     return saved !== null ? saved : defaultTop();
   });
+  const [isDragging, setIsDragging] = useState(false);
 
   const { prefs, setTextScale, toggle, setContrastScheme, reset } = useAccessibility();
   const containerRef = useRef(null);
@@ -179,6 +180,7 @@ export default function AccessibilityWidget() {
     // Only drag with primary button / single touch
     if (e.button !== undefined && e.button !== 0) return;
     dragRef.current = { active: true, startY: e.clientY, startTop: top, moved: false };
+    setIsDragging(true);
     e.currentTarget.setPointerCapture(e.pointerId);
   }
 
@@ -192,6 +194,7 @@ export default function AccessibilityWidget() {
 
   function onPointerUp() {
     dragRef.current.active = false;
+    setIsDragging(false);
   }
 
   // If the gesture is cancelled (e.g. interrupted by the OS, or a touch turns
@@ -200,6 +203,7 @@ export default function AccessibilityWidget() {
   function onPointerCancel() {
     dragRef.current.active = false;
     dragRef.current.moved = false;
+    setIsDragging(false);
   }
 
   function onClickTrigger() {
@@ -234,7 +238,9 @@ export default function AccessibilityWidget() {
         position: 'fixed',
         top: `${top}px`,
         left: `${LEFT_OFFSET}px`,
-        zIndex: 9999,
+        // Always-on-top: above app modals/overlays (which go up to z-index
+        // 10000) so the accessibility controls stay reachable at all times.
+        zIndex: 2147483647,
         direction: dir,
         fontFamily: 'Arial, Helvetica, sans-serif',
         width: `${BTN_SIZE}px`,
@@ -487,7 +493,7 @@ export default function AccessibilityWidget() {
           border: '3px solid #ec168c',
           backgroundColor: '#fff',
           color: '#ec168c',
-          cursor: 'grab',
+          cursor: isDragging ? 'grabbing' : 'grab',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
