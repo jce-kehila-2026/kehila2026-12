@@ -26,6 +26,12 @@ import { WELLNESS, WELLNESS_DARK } from "../../appointments/appointmentTypeMeta"
 
 const defaultT = (key) => key;
 
+const PROFILE_DARK_FIELD = {
+  bg: "#172033",
+  border: "rgba(236, 72, 153, 0.22)",
+  borderHover: "rgba(196, 165, 245, 0.45)",
+};
+
 const CONTACT_METHOD_VALUES = ["email", "phone", "sms", "whatsapp"];
 const LANGUAGE_VALUES = ["english", "hebrew"];
 
@@ -224,18 +230,18 @@ function PersonalDetailsForm({
     () => ({
       "& .MuiOutlinedInput-root": {
         borderRadius: "14px",
-        backgroundColor: darkMode ? "#0f172a" : "#ffffff",
+        backgroundColor: darkMode ? PROFILE_DARK_FIELD.bg : "#ffffff",
         height: 58,
         paddingRight: "8px",
         transition: "box-shadow 0.2s ease, border-color 0.2s ease",
 
         "& fieldset": {
-          borderColor: darkMode ? "#475569" : "rgba(181, 123, 232, 0.22)",
+          borderColor: darkMode ? PROFILE_DARK_FIELD.border : "rgba(181, 123, 232, 0.22)",
         },
 
         "&:hover fieldset": {
           borderColor: darkMode
-            ? "rgba(196, 165, 245, 0.45)"
+            ? PROFILE_DARK_FIELD.borderHover
             : "rgba(181, 123, 232, 0.45)",
         },
 
@@ -248,14 +254,40 @@ function PersonalDetailsForm({
         },
 
         "& .MuiSelect-icon": {
-          color: darkMode ? WELLNESS_DARK.primary : "#9d5bd6",
+          color: darkMode ? "#cbd5e1" : "#9d5bd6",
+        },
+
+        "&.Mui-disabled .MuiSelect-icon": {
+          color: darkMode ? "#cbd5e1" : undefined,
+          opacity: 1,
         },
       },
 
       "& .MuiOutlinedInput-input": {
         fontSize: 17,
-        color: darkMode ? "#f1f5f9" : WELLNESS.text,
+        color: darkMode ? "#f8fafc" : WELLNESS.text,
+        WebkitTextFillColor: darkMode ? "#f8fafc" : undefined,
         paddingRight: "8px",
+      },
+
+      "& .MuiOutlinedInput-input.Mui-disabled": {
+        color: darkMode ? "#cbd5e1" : undefined,
+        WebkitTextFillColor: darkMode ? "#cbd5e1" : undefined,
+        opacity: 1,
+      },
+
+      "& .MuiOutlinedInput-root.Mui-disabled": {
+        opacity: 1,
+      },
+
+      "& .MuiOutlinedInput-root.Mui-disabled fieldset": {
+        borderColor: darkMode ? PROFILE_DARK_FIELD.border : undefined,
+      },
+
+      "& .Mui-disabled .MuiSelect-select": {
+        color: darkMode ? "#cbd5e1" : undefined,
+        WebkitTextFillColor: darkMode ? "#cbd5e1" : undefined,
+        opacity: 1,
       },
     }),
     [darkMode]
@@ -338,10 +370,10 @@ function PersonalDetailsForm({
       border: phoneHasError
         ? "1.5px solid #ef4444"
         : darkMode
-          ? "1px solid #475569"
+          ? `1px solid ${PROFILE_DARK_FIELD.border}`
           : "1px solid rgba(181, 123, 232, 0.22)",
-      backgroundColor: darkMode ? "#0f172a" : "#ffffff",
-      color: darkMode ? "#f1f5f9" : WELLNESS.text,
+      backgroundColor: darkMode ? PROFILE_DARK_FIELD.bg : "#ffffff",
+      color: darkMode ? "#f8fafc" : WELLNESS.text,
       direction: "ltr",
       textAlign: "left",
       unicodeBidi: "plaintext",
@@ -358,9 +390,9 @@ function PersonalDetailsForm({
       border: phoneHasError
         ? "1.5px solid #ef4444"
         : darkMode
-          ? "1px solid #475569"
+          ? `1px solid ${PROFILE_DARK_FIELD.border}`
           : "1px solid rgba(181, 123, 232, 0.22)",
-      backgroundColor: darkMode ? "#1e293b" : "#ffffff",
+      backgroundColor: darkMode ? PROFILE_DARK_FIELD.bg : "#ffffff",
     }),
     [darkMode, phoneHasError]
   );
@@ -369,17 +401,29 @@ function PersonalDetailsForm({
     () => ({
       "& .MuiOutlinedInput-root": {
         borderRadius: "14px",
-        backgroundColor: darkMode ? "#0f172a" : "#ffffff",
+        backgroundColor: darkMode ? PROFILE_DARK_FIELD.bg : "#ffffff",
         height: 58,
         transition: "box-shadow 0.2s ease, border-color 0.2s ease",
 
         "& fieldset": {
-          borderColor: darkMode ? "#475569" : "rgba(181, 123, 232, 0.22)",
+          borderColor: darkMode ? PROFILE_DARK_FIELD.border : "rgba(181, 123, 232, 0.22)",
+          borderWidth: "1px",
+        },
+
+        "& .MuiOutlinedInput-notchedOutline": {
+          borderColor: darkMode ? PROFILE_DARK_FIELD.border : "rgba(181, 123, 232, 0.22)",
+          borderWidth: "1px",
         },
 
         "&:hover fieldset": {
           borderColor: darkMode
-            ? "rgba(196, 165, 245, 0.45)"
+            ? PROFILE_DARK_FIELD.borderHover
+            : "rgba(181, 123, 232, 0.45)",
+        },
+
+        "&:hover .MuiOutlinedInput-notchedOutline": {
+          borderColor: darkMode
+            ? PROFILE_DARK_FIELD.borderHover
             : "rgba(181, 123, 232, 0.45)",
         },
 
@@ -390,11 +434,45 @@ function PersonalDetailsForm({
         "&.Mui-focused fieldset": {
           borderColor: darkMode ? WELLNESS_DARK.primary : WELLNESS.primary,
         },
+
+        "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+          borderColor: darkMode ? WELLNESS_DARK.primary : WELLNESS.primary,
+        },
+
+        "&.Mui-disabled fieldset": {
+          borderColor: darkMode ? PROFILE_DARK_FIELD.border : undefined,
+        },
+
+        "&.Mui-disabled .MuiOutlinedInput-notchedOutline": {
+          borderColor: darkMode ? PROFILE_DARK_FIELD.border : undefined,
+        },
       },
 
       "& input": {
         fontSize: 17,
-        color: darkMode ? "#f1f5f9" : WELLNESS.text,
+        color: darkMode ? "#f8fafc" : WELLNESS.text,
+        WebkitTextFillColor: darkMode ? "#f8fafc" : undefined,
+      },
+
+      "& .MuiOutlinedInput-input.Mui-disabled": {
+        color: darkMode ? "#cbd5e1" : undefined,
+        WebkitTextFillColor: darkMode ? "#cbd5e1" : undefined,
+        opacity: 1,
+      },
+
+      "& .MuiOutlinedInput-root.Mui-disabled": {
+        opacity: 1,
+      },
+
+      "& .MuiPickersSectionList-sectionContent": {
+        color: darkMode ? "#f8fafc" : WELLNESS.text,
+        WebkitTextFillColor: darkMode ? "#f8fafc" : undefined,
+      },
+
+      "& .Mui-disabled .MuiPickersSectionList-sectionContent": {
+        color: darkMode ? "#cbd5e1" : undefined,
+        WebkitTextFillColor: darkMode ? "#cbd5e1" : undefined,
+        opacity: 1,
       },
     }),
     [darkMode]
@@ -474,21 +552,21 @@ function PersonalDetailsForm({
                     borderColor: phoneHasError
                       ? "#ef4444 !important"
                       : darkMode
-                        ? "#475569 !important"
+                        ? `${PROFILE_DARK_FIELD.border} !important`
                         : "rgba(181, 123, 232, 0.22) !important",
                     backgroundColor: darkMode
-                      ? "#1e293b !important"
+                      ? `${PROFILE_DARK_FIELD.bg} !important`
                       : "#ffffff !important",
                     borderRight: phoneHasError
                       ? "1.5px solid #ef4444 !important"
                       : darkMode
-                        ? "1px solid #475569 !important"
+                        ? `1px solid ${PROFILE_DARK_FIELD.border} !important`
                         : "1px solid rgba(181, 123, 232, 0.22) !important",
                   },
                   "& .react-tel-input .selected-flag": {
                     pointerEvents: "auto",
                     backgroundColor: darkMode
-                      ? "#1e293b !important"
+                      ? `${PROFILE_DARK_FIELD.bg} !important`
                       : "#ffffff !important",
                   },
                   "& .react-tel-input .form-control": {
@@ -498,30 +576,30 @@ function PersonalDetailsForm({
                     borderColor: phoneHasError
                       ? "#ef4444 !important"
                       : darkMode
-                        ? "#475569 !important"
+                        ? `${PROFILE_DARK_FIELD.border} !important`
                         : "rgba(181, 123, 232, 0.22) !important",
                     borderWidth: phoneHasError ? "1.5px !important" : "1px !important",
                     backgroundColor: darkMode
-                      ? "#0f172a !important"
+                      ? `${PROFILE_DARK_FIELD.bg} !important`
                       : "#ffffff !important",
                     color: darkMode
-                      ? "#f1f5f9 !important"
+                      ? "#f8fafc !important"
                       : `${WELLNESS.text} !important`,
                   },
                   "& .react-tel-input .country-list": {
                     direction: "ltr",
                     textAlign: "left",
                     backgroundColor: darkMode
-                      ? "#0f172a !important"
+                      ? `${PROFILE_DARK_FIELD.bg} !important`
                       : "#ffffff !important",
                     color: darkMode
-                      ? "#f1f5f9 !important"
+                      ? "#f8fafc !important"
                       : `${WELLNESS.text} !important`,
                     borderColor: darkMode
-                      ? "#475569 !important"
+                      ? `${PROFILE_DARK_FIELD.border} !important`
                       : "rgba(181, 123, 232, 0.22) !important",
                     border: darkMode
-                      ? "1px solid #475569 !important"
+                      ? `1px solid ${PROFILE_DARK_FIELD.border} !important`
                       : "1px solid rgba(181, 123, 232, 0.22) !important",
                   },
                   "& .react-tel-input .country-list .country": {
@@ -638,11 +716,17 @@ function PersonalDetailsForm({
                   slotProps={{
                     openPickerButton: {
                       sx: {
-                        color: darkMode ? WELLNESS_DARK.primary : "#9d5bd6",
+                        color: darkMode ? "#cbd5e1" : "#9d5bd6",
+                        opacity: 1,
                         "&:hover": {
                           backgroundColor: darkMode
                             ? "rgba(196, 165, 245, 0.12)"
                             : "rgba(181, 123, 232, 0.1)",
+                          color: darkMode ? "#f8fafc" : "#9d5bd6",
+                        },
+                        "&.Mui-disabled": {
+                          color: darkMode ? "#cbd5e1" : undefined,
+                          opacity: 1,
                         },
                       },
                     },
