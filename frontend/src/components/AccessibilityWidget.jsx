@@ -31,7 +31,7 @@ const TOGGLE_ITEMS = [
   { id: 'stopAnimations', label: 'עצירת הבהובים', toggleKey: 'stopAnimations' },
 ];
 
-export default function AccessibilityWidget() {
+export default function AccessibilityWidget({ lang = document.documentElement.lang || 'he' }) {
   const [open, setOpen] = useState(false);
   const [top, setTop] = useState(() => {
     const saved = getSavedTop();
@@ -118,7 +118,8 @@ export default function AccessibilityWidget() {
   return (
     <div
       ref={containerRef}
-      className="accessibility-widget"
+      className="accessibility-widget a11y-widget"
+      lang={lang}
       style={{
         position: 'fixed',
         top: `${top}px`,
