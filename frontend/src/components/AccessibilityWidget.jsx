@@ -118,6 +118,7 @@ export default function AccessibilityWidget() {
   return (
     <div
       ref={containerRef}
+      className="a11y-widget"
       style={{
         position: 'fixed',
         top: `${top}px`,

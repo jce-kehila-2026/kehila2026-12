@@ -50,26 +50,34 @@ textarea {
 
 /* ── Accessibility modifier classes ───────────────────────────────────────── */
 
+/* The accessibility widget itself (root tagged `.a11y-widget`) is exempt from
+   every transform below via `:not(.a11y-widget):not(.a11y-widget *)`. Its
+   `!important` flattening would otherwise override the widget's inline styles
+   (it's the universal `*` rule that wins over inline styles), turning the
+   control panel black/yellow and destroying its active-state affordances. The
+   control surface must stay visually stable regardless of the mode it sets.
+   The rest of the app (including modals portalled to <body>) is unaffected. */
+
 body.a11y-high-contrast {
   background-color: #000 !important;
   color: #ff0 !important;
 }
 
-body.a11y-high-contrast *:not(script):not(style) {
+body.a11y-high-contrast *:not(script):not(style):not(.a11y-widget):not(.a11y-widget *) {
   background-color: #000 !important;
   color: #ff0 !important;
   border-color: #ff0 !important;
 }
 
-body.a11y-high-contrast a,
-body.a11y-high-contrast button {
+body.a11y-high-contrast a:not(.a11y-widget):not(.a11y-widget *),
+body.a11y-high-contrast button:not(.a11y-widget):not(.a11y-widget *) {
   color: #0ff !important;
   outline: 2px solid #0ff !important;
 }
 
-body.a11y-high-contrast img,
-body.a11y-high-contrast video,
-body.a11y-high-contrast svg {
+body.a11y-high-contrast img:not(.a11y-widget *),
+body.a11y-high-contrast video:not(.a11y-widget *),
+body.a11y-high-contrast svg:not(.a11y-widget *) {
   filter: invert(1) contrast(1.5) !important;
 }
 
@@ -91,7 +99,7 @@ body.a11y-grayscale::after {
   backdrop-filter: grayscale(100%);
 }
 
-body.a11y-highlight-links a {
+body.a11y-highlight-links a:not(.a11y-widget):not(.a11y-widget *) {
   text-decoration: underline 3px solid #005fcc !important;
   color: #005fcc !important;
   font-weight: 700 !important;
@@ -100,7 +108,7 @@ body.a11y-highlight-links a {
 }
 
 body.a11y-readable-font,
-body.a11y-readable-font * {
+body.a11y-readable-font *:not(.a11y-widget):not(.a11y-widget *) {
   font-family: Arial, Helvetica, sans-serif !important;
 }
 
