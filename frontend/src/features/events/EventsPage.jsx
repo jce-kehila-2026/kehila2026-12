@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import AddCircleOutlineIcon from '@mui/icons-material/AddCircleOutlineOutlined';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutlineOutlined';
@@ -25,6 +24,7 @@ import StarRoundedIcon from '@mui/icons-material/StarRounded';
 import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivismOutlined';
 import { useNavigate } from 'react-router-dom';
 import appointmentsHero from '../../assets/appointments-hero.png';
+import eventsHeroBanner from '../../assets/lasteventBanner.png';
 import { useAdmin } from '../admin/context/AdminContext';
 import { getPublishedEvents } from '../admin/services/eventService';
 import {
@@ -1008,11 +1008,14 @@ function AppointmentServiceCard({ event, isSelected, onOpenBooking }) {
 
       <div className="appointment-service-card__copy">
         <h3>{serviceLabel}</h3>
-        <p>Available with {providers.length || 1} {providers.length === 1 ? 'instructor' : 'instructors'}</p>
-        <div className="appointment-service-card__days" aria-label={`Available days for ${serviceLabel}`}>
+        <p>{event.description}</p>
+        <div className="appointment-service-card__meta" aria-label={`Available days for ${serviceLabel}`}>
           {(days.length ? days : ['Soon']).map((day) => (
             <span key={day}>{day}</span>
           ))}
+          <span className="appointment-service-card__provider-count">
+            Available with {providers.length || 1} {providers.length === 1 ? 'instructor' : 'instructors'}
+          </span>
         </div>
       </div>
 
@@ -1715,42 +1718,42 @@ function EventBookingModal({
 }
 
 function RegisteredSessionCard({ session, onCancelRegistration }) {
-  const typeLabel = session.eventType === 'appointment' ? 'Appointment' : 'Workshop';
-  const [isDescriptionOpen, setIsDescriptionOpen] = useState(false);
-
   return (
-    <article className={`events-card events-card--${session.tone}`}>
-      <div className="events-card__image">
-        <img src={session.imageUrl} alt="" />
-        <button
-          className={`events-card__about-button events-card__about-button--${session.eventType}`}
-          type="button"
-          onClick={() => setIsDescriptionOpen((current) => !current)}
-          aria-expanded={isDescriptionOpen}
-          aria-label={`About ${typeLabel.toLowerCase()}`}
-        >
-          <KeyboardArrowDownIcon fontSize="small" />
-          <span>About</span>
-        </button>
+    <article className="registered-session-card">
+      <div className="registered-session-card__media">
+        <img src={session.imageUrl || appointmentsHero} alt="" />
       </div>
 
-      <div className="events-card__body">
-        <h3 className="events-card__title">{session.title}</h3>
-        <strong className="events-card__instructor">With {session.providerName}</strong>
-        <span className="events-card__schedule">
-          <CalendarMonthIcon fontSize="small" />
-          Registered for {session.date}
-        </span>
-        <div className="events-card__registered-meta">
+      <div className="registered-session-card__content">
+        <div>
+          <h3>{session.title}</h3>
+          <p>{session.description}</p>
+        </div>
+
+        <div className="registered-session-card__meta">
+          <span>
+            <CalendarMonthIcon fontSize="small" />
+            {session.date}
+          </span>
           <span>
             <AccessTimeIcon fontSize="small" />
             {session.time}
           </span>
+          <span>
+            <EventAvailableIcon fontSize="small" />
+            {session.location}
+          </span>
+          <span>
+            <PersonIcon fontSize="small" />
+            {session.providerName}
+          </span>
         </div>
-        <CardDescriptionPanel description={session.description} isOpen={isDescriptionOpen} />
+      </div>
 
+      <div className="registered-session-card__actions">
+        <span className="registered-session-card__status">Registered</span>
         <button
-          className="events-card__action is-cancel"
+          className="registered-session-card__cancel"
           type="button"
           onClick={() => onCancelRegistration(session)}
           disabled={session.isRegistering}
@@ -1760,6 +1763,25 @@ function RegisteredSessionCard({ session, onCancelRegistration }) {
         </button>
       </div>
     </article>
+  );
+}
+
+function RegisteredEventsPanel({
+  events,
+  onCancelRegistration,
+}) {
+  return (
+    <section className="registered-tab-panel" aria-label="Registered events">
+      <div className="registered-session-list">
+        {events.map((session) => (
+          <RegisteredSessionCard
+            session={session}
+            onCancelRegistration={onCancelRegistration}
+            key={session.id}
+          />
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -2279,15 +2301,8 @@ export default function EventsPage({ embedInDashboard = false }) {
 
   const eventsContent = (
     <>
-      <section className="events-hero">
-        <div className="events-hero__content">
-          <h1>Events</h1>
-          <p>All your sessions in one place</p>
-        </div>
-        <button className="events-suggest-pill" type="button" onClick={openSuggestionModal}>
-          <AddCircleOutlineIcon fontSize="small" />
-          Suggest a Workshop
-        </button>
+      <section className="events-hero-banner" aria-label="Events wellness banner">
+        <img className="events-hero-banner__image" src={eventsHeroBanner} alt="" />
       </section>
 
       {(loadingEvents || eventsError) && (
@@ -2321,17 +2336,10 @@ export default function EventsPage({ embedInDashboard = false }) {
               onCloseBooking={closeBookingModal}
             />
           ) : activeView === VIEW_REGISTERED ? (
-            <div className="events-grid-shell">
-              <section className="events-grid" aria-label={sectionTitle}>
-                {filteredEvents.map((session) => (
-                  <RegisteredSessionCard
-                    session={session}
-                    onCancelRegistration={handleCancelSession}
-                    key={session.id}
-                  />
-                ))}
-              </section>
-            </div>
+            <RegisteredEventsPanel
+              events={filteredEvents}
+              onCancelRegistration={handleCancelSession}
+            />
           ) : (
             <WorkshopListPanel
               events={filteredEvents}

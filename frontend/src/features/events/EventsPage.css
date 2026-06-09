@@ -478,6 +478,30 @@
   text-align: right;
 }
 
+.events-hero-banner {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  height: 200px;
+  min-height: 200px;
+  max-height: 200px;
+  border-radius: 32px;
+  box-shadow: 0 12px 32px rgba(91, 30, 140, 0.07);
+  isolation: isolate;
+  flex-shrink: 0;
+  margin-block: 0 14px;
+  line-height: 0;
+}
+
+.events-hero-banner__image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  object-fit: cover;
+  object-position: center center;
+}
+
 .events-suggest-pill {
   position: relative;
   z-index: 2;
@@ -513,7 +537,7 @@
 .events-categories {
   width: min(100%, 720px);
   align-self: flex-start;
-  margin-block-start: 8px;
+  margin-block-start: 0;
   margin-left: 0;
   margin-right: auto;
   padding: 8px 10px;
@@ -850,9 +874,9 @@
 .appointment-service-card {
   position: relative;
   overflow: hidden;
-  min-height: 128px;
+  min-height: 156px;
   display: grid;
-  grid-template-columns: 174px minmax(0, 1fr) max-content;
+  grid-template-columns: 178px minmax(0, 1fr) max-content;
   align-items: center;
   column-gap: 24px;
   border: 1px solid rgba(255, 255, 255, 0.72);
@@ -894,11 +918,11 @@
 
 .appointment-service-card__media {
   width: 100%;
-  height: 96px;
+  height: 124px;
   overflow: hidden;
   justify-self: start;
   border: 1px solid rgba(255, 255, 255, 0.76);
-  border-radius: 16px;
+  border-radius: 18px;
   background: linear-gradient(145deg, rgba(255, 235, 246, 0.9), rgba(243, 232, 255, 0.82));
   box-shadow:
     0 14px 28px rgba(118, 82, 166, 0.12),
@@ -930,7 +954,7 @@
   min-width: 0;
   display: grid;
   justify-items: start;
-  gap: 6px;
+  gap: 12px;
   align-self: center;
   text-align: left;
 }
@@ -951,21 +975,26 @@
 .appointment-service-card__copy p {
   color: rgba(70, 42, 119, 0.68);
   font-size: 0.78rem;
-  font-weight: 800;
+  font-weight: 700;
+  line-height: 1.42;
+  max-width: 540px;
   text-align: left;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
-.appointment-service-card__days {
+.appointment-service-card__meta {
   display: flex;
   flex-wrap: wrap;
+  align-items: center;
   justify-content: flex-start;
   gap: 8px;
-  margin-block-start: 2px;
 }
 
-.appointment-service-card__days span {
-  min-width: 43px;
-  min-height: 24px;
+.appointment-service-card__meta span {
+  min-height: 28px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -975,8 +1004,12 @@
   color: rgba(75, 42, 119, 0.72);
   font-size: 0.68rem;
   font-weight: 900;
-  padding: 0 10px;
+  padding: 0 13px;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.86);
+}
+
+.appointment-service-card__provider-count {
+  color: rgba(70, 42, 119, 0.66) !important;
 }
 
 .appointment-service-card__action {
@@ -1258,6 +1291,195 @@
 }
 
 .workshop-list-card__action:disabled {
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+
+.registered-tab-panel {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  direction: ltr;
+  text-align: left;
+}
+
+.registered-session-list {
+  min-width: 0;
+  display: grid;
+  gap: 14px;
+}
+
+.registered-session-card {
+  position: relative;
+  min-height: 156px;
+  display: grid;
+  grid-template-columns: 178px minmax(0, 1fr) max-content;
+  align-items: center;
+  column-gap: 24px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  border-radius: 26px;
+  background:
+    radial-gradient(circle at 10% 20%, rgba(255, 255, 255, 0.9), transparent 10rem),
+    radial-gradient(circle at 88% 10%, rgba(207, 181, 255, 0.28), transparent 12rem),
+    linear-gradient(145deg, rgba(255, 255, 255, 0.84), rgba(255, 248, 252, 0.66) 58%, rgba(247, 242, 255, 0.62));
+  box-shadow:
+    0 18px 42px rgba(118, 82, 166, 0.1),
+    0 8px 20px rgba(236, 111, 162, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.94);
+  padding: 16px 22px 16px 16px;
+  backdrop-filter: blur(26px) saturate(1.14);
+  -webkit-backdrop-filter: blur(26px) saturate(1.14);
+  transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
+}
+
+.registered-session-card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(255, 255, 255, 0.86);
+  box-shadow:
+    0 24px 54px rgba(118, 82, 166, 0.15),
+    0 0 28px rgba(236, 111, 162, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.96);
+}
+
+.registered-session-card__media {
+  width: 100%;
+  height: 124px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.76);
+  border-radius: 18px;
+  background: linear-gradient(145deg, rgba(255, 235, 246, 0.9), rgba(243, 232, 255, 0.82));
+  box-shadow:
+    0 14px 28px rgba(118, 82, 166, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.88);
+}
+
+.registered-session-card__media img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.registered-session-card__content {
+  min-width: 0;
+  display: grid;
+  gap: 12px;
+  text-align: left;
+}
+
+.registered-session-card__content h3,
+.registered-session-card__content p {
+  margin: 0;
+  text-align: left;
+}
+
+.registered-session-card__content h3 {
+  color: #24105f;
+  font-size: 1.12rem;
+  font-weight: 900;
+  line-height: 1.12;
+}
+
+.registered-session-card__content p {
+  display: -webkit-box;
+  overflow: hidden;
+  color: rgba(70, 42, 119, 0.68);
+  font-size: 0.78rem;
+  font-weight: 800;
+  line-height: 1.42;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+}
+
+.registered-session-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.registered-session-card__meta span {
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 999px;
+  background: rgba(244, 238, 249, 0.72);
+  color: rgba(75, 42, 119, 0.72);
+  font-size: 0.68rem;
+  font-weight: 900;
+  padding: 0 10px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.86);
+}
+
+.registered-session-card__meta svg {
+  width: 15px;
+  height: 15px;
+  color: #d94f92;
+}
+
+.registered-session-card__actions {
+  display: grid;
+  justify-items: end;
+  gap: 14px;
+}
+
+.registered-session-card__status {
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  border-radius: 999px;
+  background: rgba(221, 248, 232, 0.76);
+  color: #168a45;
+  font-size: 0.76rem;
+  font-weight: 900;
+  padding: 0 18px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.registered-session-card__cancel {
+  min-height: 46px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  border: 1px solid rgba(236, 111, 162, 0.32);
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.86), transparent 4rem),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.62), rgba(255, 235, 245, 0.54));
+  color: #d94f92;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.8rem;
+  font-weight: 900;
+  padding: 0 22px;
+  white-space: nowrap;
+  box-shadow:
+    0 12px 24px rgba(216, 76, 136, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.88);
+  transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
+}
+
+.registered-session-card__cancel svg {
+  color: #d94f92;
+}
+
+.registered-session-card__cancel:hover:not(:disabled) {
+  transform: translateY(-2px);
+  background:
+    radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.88), transparent 4rem),
+    linear-gradient(135deg, rgba(255, 228, 241, 0.78), rgba(240, 229, 255, 0.64));
+  box-shadow:
+    0 18px 34px rgba(216, 76, 136, 0.14),
+    0 0 28px rgba(207, 181, 255, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92);
+}
+
+.registered-session-card__cancel:disabled {
   cursor: not-allowed;
   opacity: 0.62;
 }
@@ -4060,6 +4282,10 @@
     grid-template-columns: 148px minmax(0, 1fr);
   }
 
+  .registered-session-card {
+    grid-template-columns: 148px minmax(0, 1fr);
+  }
+
   .appointment-service-card::after {
     display: none;
   }
@@ -4071,6 +4297,17 @@
 
   .workshop-list-card__action {
     grid-column: 1 / -1;
+    width: 100%;
+  }
+
+  .registered-session-card__actions {
+    grid-column: 1 / -1;
+    width: 100%;
+    justify-items: stretch;
+  }
+
+  .registered-session-card__status,
+  .registered-session-card__cancel {
     width: 100%;
   }
 
@@ -4164,11 +4401,22 @@
     padding: 18px;
   }
 
+  .registered-session-card {
+    grid-template-columns: 1fr;
+    justify-items: start;
+    min-height: 0;
+    padding: 18px;
+  }
+
   .appointment-service-card__media {
     height: 156px;
   }
 
   .workshop-list-card__media {
+    height: 156px;
+  }
+
+  .registered-session-card__media {
     height: 156px;
   }
 
