@@ -20,6 +20,8 @@ import AccessTimeIcon from '@mui/icons-material/AccessTime';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
+import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
+import StarRoundedIcon from '@mui/icons-material/StarRounded';
 import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivismOutlined';
 import { useNavigate } from 'react-router-dom';
 import appointmentsHero from '../../assets/appointments-hero.png';
@@ -844,6 +846,672 @@ function EventCard({
   );
 }
 
+function getAppointmentServiceLabel(title = '') {
+  const cleanTitle = title.trim();
+  if (!cleanTitle) return 'Wellness Session';
+
+  const normalized = cleanTitle.toLowerCase();
+  if (normalized === 'yoga') return 'Yoga Therapy';
+  if (normalized.includes('massage') && !normalized.includes('therapy')) return `${cleanTitle} Therapy`;
+  if (normalized.includes('acupuncture')) return 'Acupuncture';
+  if (normalized.includes('reflexology')) return 'Reflexology';
+  return cleanTitle;
+}
+
+function getAppointmentServiceIcon(title = '') {
+  const normalized = title.toLowerCase();
+  if (normalized.includes('yoga') || normalized.includes('qi')) return VolunteerActivismIcon;
+  if (normalized.includes('reflex')) return FavoriteBorderOutlinedIcon;
+  if (normalized.includes('acupuncture') || normalized.includes('herbal')) return AutoAwesomeIcon;
+  if (normalized.includes('massage')) return EventAvailableIcon;
+  return FavoriteBorderIcon;
+}
+
+function getProviderInitials(name = 'SN') {
+  const parts = String(name).trim().split(/\s+/).filter(Boolean);
+  if (!parts.length) return 'SN';
+  return parts.slice(0, 2).map((part) => part[0]).join('').toUpperCase();
+}
+
+function getProviderRating(providerName = '') {
+  const score = [...String(providerName)].reduce((sum, char) => sum + char.charCodeAt(0), 0);
+  return score % 3 === 0 ? '4.8' : '4.9';
+}
+
+function sortSessionsByDate(left, right) {
+  const leftDate = toDate(left.startDate);
+  const rightDate = toDate(right.startDate);
+  if (!leftDate && !rightDate) return 0;
+  if (!leftDate) return 1;
+  if (!rightDate) return -1;
+  return leftDate.getTime() - rightDate.getTime();
+}
+
+function getAppointmentProviders(event) {
+  const providers = new Map();
+
+  event.sessionOptions.forEach((option) => {
+    const providerId = option.providerId || slugifyIdentifier(option.providerName || 'provider');
+    const existing = providers.get(providerId);
+    const nextDates = new Set(existing?.dateKeys || []);
+
+    if (option.selectedDate) {
+      nextDates.add(option.selectedDate);
+    }
+
+    providers.set(providerId, {
+      id: providerId,
+      name: option.providerName || 'She-Na Team',
+      specialty: option.providerSpecialty || event.category || 'Wellness Teacher',
+      avatar: option.providerAvatar || '',
+      dateKeys: nextDates,
+      sessions: (existing?.sessions || 0) + 1,
+    });
+  });
+
+  return Array.from(providers.values()).sort((left, right) => left.name.localeCompare(right.name));
+}
+
+function getAppointmentDayPills(event) {
+  const days = new Map();
+
+  event.sessionOptions.forEach((option) => {
+    const date = toDate(option.startDate);
+    if (!date) return;
+    const dayIndex = date.getDay();
+    days.set(dayIndex, new Intl.DateTimeFormat('en', { weekday: 'short' }).format(date));
+  });
+
+  return Array.from(days.entries())
+    .sort(([left], [right]) => left - right)
+    .map(([, label]) => label);
+}
+
+function getAppointmentDateOptions(event, providerId) {
+  return event.sessions
+    .filter((session) => session.options.some((option) => option.providerId === providerId))
+    .sort(sortSessionsByDate)
+    .map((session) => ({
+      dateKey: session.dateKey,
+      label: new Intl.DateTimeFormat('en', {
+        weekday: 'long',
+        month: 'long',
+        day: 'numeric',
+        year: 'numeric',
+      }).format(toDate(session.startDate) || new Date()),
+      shortLabel: session.tabLabel || session.date,
+      session,
+    }));
+}
+
+function getAppointmentTimeOptions(event, dateKey, providerId, registeredSessionIds) {
+  const session = event.sessions.find((item) => item.dateKey === dateKey);
+  if (!session) return [];
+
+  const orderedTimes = new Map();
+
+  session.options
+    .slice()
+    .sort((left, right) => {
+      const leftDate = toDate(left.startDate);
+      const rightDate = toDate(right.startDate);
+      if (!leftDate && !rightDate) return 0;
+      if (!leftDate) return 1;
+      if (!rightDate) return -1;
+      return leftDate.getTime() - rightDate.getTime();
+    })
+    .forEach((option) => {
+      const key = option.selectedTimeSlot || option.time || option.id;
+      const existing = orderedTimes.get(key);
+      const isProviderOption = option.providerId === providerId;
+      const isRegistered = registeredSessionIds.has(option.id);
+      const isFull = option.capacity > 0 && option.participants >= option.capacity && !isRegistered;
+
+      if (!existing) {
+        orderedTimes.set(key, {
+          id: `unavailable-${key}`,
+          label: option.time || option.selectedTimeSlot || 'Time TBD',
+          option: isProviderOption ? option : null,
+          unavailable: !isProviderOption,
+          isFull: isProviderOption ? isFull : false,
+          sortDate: option.startDate,
+        });
+        return;
+      }
+
+      if (isProviderOption) {
+        orderedTimes.set(key, {
+          ...existing,
+          id: option.id,
+          label: option.time || option.selectedTimeSlot || existing.label,
+          option,
+          unavailable: false,
+          isFull,
+          sortDate: option.startDate || existing.sortDate,
+        });
+      }
+    });
+
+  return Array.from(orderedTimes.values());
+}
+
+function AppointmentServiceCard({ event, isSelected, onOpenBooking }) {
+  const providers = getAppointmentProviders(event);
+  const days = getAppointmentDayPills(event);
+  const serviceLabel = getAppointmentServiceLabel(event.title);
+
+  return (
+    <article className={`appointment-service-card${isSelected ? ' is-selected' : ''}`}>
+      <div className="appointment-service-card__media">
+        <img src={event.imageUrl || appointmentsHero} alt="" />
+      </div>
+
+      <div className="appointment-service-card__copy">
+        <h3>{serviceLabel}</h3>
+        <p>Available with {providers.length || 1} {providers.length === 1 ? 'instructor' : 'instructors'}</p>
+        <div className="appointment-service-card__days" aria-label={`Available days for ${serviceLabel}`}>
+          {(days.length ? days : ['Soon']).map((day) => (
+            <span key={day}>{day}</span>
+          ))}
+        </div>
+      </div>
+
+      <button
+        className="appointment-service-card__action"
+        type="button"
+        onClick={() => onOpenBooking(event.id)}
+        disabled={event.registrationOpen === false}
+        aria-haspopup="dialog"
+      >
+        View Available Times
+        <ArrowForwardIcon fontSize="small" />
+      </button>
+    </article>
+  );
+}
+
+function AppointmentServicesPanel({
+  events,
+  selectedEvent,
+  registeredSessionIds,
+  onOpenBooking,
+  onRegisterSession,
+  onCancelSession,
+  onCloseBooking,
+}) {
+  return (
+    <section className={`appointments-tab-panel${selectedEvent ? ' has-panel' : ''}`} aria-label="Appointment services">
+      <div className="appointments-tab-panel__body">
+        <div className="appointments-tab-panel__list">
+          <div className="appointment-service-list">
+            {events.map((event) => (
+              <AppointmentServiceCard
+                event={event}
+                isSelected={selectedEvent?.id === event.id}
+                onOpenBooking={onOpenBooking}
+                key={event.id}
+              />
+            ))}
+          </div>
+
+          <article className="appointments-waitlist-card">
+            <span aria-hidden="true">
+              <FavoriteBorderOutlinedIcon fontSize="small" />
+            </span>
+            <div>
+              <h3>Can't find a suitable time?</h3>
+              <p>Join the waiting list and we'll notify you when a slot opens up.</p>
+            </div>
+            <button type="button">Join Waiting List</button>
+          </article>
+        </div>
+
+        {selectedEvent && (
+          <AppointmentBookingDrawer
+            event={selectedEvent}
+            registeredSessionIds={registeredSessionIds}
+            onRegisterSession={onRegisterSession}
+            onCancelSession={onCancelSession}
+            onClose={onCloseBooking}
+          />
+        )}
+      </div>
+    </section>
+  );
+}
+
+function AppointmentBookingDrawer({
+  event,
+  registeredSessionIds,
+  onRegisterSession,
+  onCancelSession,
+  onClose,
+}) {
+  const providers = useMemo(() => getAppointmentProviders(event), [event]);
+  const [selectedProviderId, setSelectedProviderId] = useState('');
+  const [dateIndex, setDateIndex] = useState(0);
+  const [selectedOptionId, setSelectedOptionId] = useState('');
+
+  useEffect(() => {
+    setSelectedProviderId(providers[0]?.id || '');
+    setDateIndex(0);
+    setSelectedOptionId('');
+  }, [event?.id, providers]);
+
+  const selectedProvider = providers.find((provider) => provider.id === selectedProviderId) || providers[0] || null;
+  const dateOptions = useMemo(
+    () => (selectedProvider ? getAppointmentDateOptions(event, selectedProvider.id) : []),
+    [event, selectedProvider],
+  );
+  const selectedDate = dateOptions[dateIndex] || dateOptions[0] || null;
+  const timeOptions = useMemo(
+    () => getAppointmentTimeOptions(event, selectedDate?.dateKey, selectedProvider?.id, registeredSessionIds),
+    [event, registeredSessionIds, selectedDate?.dateKey, selectedProvider?.id],
+  );
+
+  useEffect(() => {
+    setDateIndex(0);
+    setSelectedOptionId('');
+  }, [selectedProviderId]);
+
+  useEffect(() => {
+    if (!dateOptions.length) {
+      setDateIndex(0);
+      return;
+    }
+
+    setDateIndex((current) => Math.min(current, dateOptions.length - 1));
+  }, [dateOptions.length]);
+
+  useEffect(() => {
+    const currentOption = timeOptions.find((timeOption) => timeOption.option?.id === selectedOptionId);
+    if (currentOption && !currentOption.unavailable && !currentOption.isFull) return;
+
+    const firstOpenOption = timeOptions.find((timeOption) => timeOption.option && !timeOption.unavailable && !timeOption.isFull);
+    setSelectedOptionId(firstOpenOption?.option?.id || '');
+  }, [selectedOptionId, timeOptions]);
+
+  if (!event) return null;
+
+  const serviceLabel = getAppointmentServiceLabel(event.title);
+  const ServiceIcon = getAppointmentServiceIcon(event.title);
+  const selectedTime = timeOptions.find((timeOption) => timeOption.option?.id === selectedOptionId) || null;
+  const selectedOption = selectedTime?.option || null;
+  const isRegistered = selectedOption ? registeredSessionIds.has(selectedOption.id) : false;
+  const canCancelBooking = isRegistered && canCancelSessionBooking(selectedOption);
+  const confirmDisabled = !selectedOption || selectedOption.isRegistering || selectedTime?.isFull || (isRegistered && !canCancelBooking);
+
+  async function handleConfirmBooking() {
+    if (!selectedOption || confirmDisabled) return;
+
+    if (isRegistered) {
+      await onCancelSession(selectedOption);
+      return;
+    }
+
+    await onRegisterSession(event, selectedOption);
+  }
+
+  return (
+      <aside
+        className="appointment-drawer"
+        role="dialog"
+        aria-modal="false"
+        aria-labelledby="appointment-drawer-title"
+        dir="ltr"
+      >
+        <button className="appointment-drawer__close" type="button" onClick={onClose} aria-label="Close appointment booking">
+          <CloseIcon fontSize="small" />
+        </button>
+
+        <header className="appointment-drawer__header">
+          <span className="appointment-drawer__mark">
+            <ServiceIcon fontSize="small" />
+          </span>
+          <div>
+            <h2 id="appointment-drawer-title">{serviceLabel}</h2>
+            <p>Book a session</p>
+          </div>
+        </header>
+
+        <section className="appointment-booking-step">
+          <h3><span>1</span> Choose your instructor</h3>
+          <div className="appointment-instructor-grid">
+            {providers.map((provider) => {
+              const isSelected = provider.id === selectedProvider?.id;
+
+              return (
+                <button
+                  className={`appointment-instructor-card${isSelected ? ' is-selected' : ''}`}
+                  type="button"
+                  onClick={() => setSelectedProviderId(provider.id)}
+                  aria-pressed={isSelected}
+                  key={provider.id}
+                >
+                  {provider.avatar ? (
+                    <img src={provider.avatar} alt="" />
+                  ) : (
+                    <span className="appointment-instructor-card__avatar">
+                      {getProviderInitials(provider.name)}
+                    </span>
+                  )}
+                  <strong>{provider.name}</strong>
+                  <small>{provider.specialty}</small>
+                  <em>
+                    <StarRoundedIcon fontSize="small" />
+                    {getProviderRating(provider.name)}
+                  </em>
+                </button>
+              );
+            })}
+          </div>
+        </section>
+
+        <section className="appointment-booking-step">
+          <h3><span>2</span> Choose a date</h3>
+          <div className="appointment-date-selector">
+            <button
+              type="button"
+              onClick={() => setDateIndex((current) => Math.max(0, current - 1))}
+              disabled={dateIndex <= 0}
+              aria-label="Previous available date"
+            >
+              <ArrowBackIcon fontSize="small" />
+            </button>
+            <strong>
+              <CalendarMonthIcon fontSize="small" />
+              {selectedDate?.label || 'Dates coming soon'}
+            </strong>
+            <button
+              type="button"
+              onClick={() => setDateIndex((current) => Math.min(dateOptions.length - 1, current + 1))}
+              disabled={dateIndex >= dateOptions.length - 1}
+              aria-label="Next available date"
+            >
+              <ArrowForwardIcon fontSize="small" />
+            </button>
+          </div>
+        </section>
+
+        <section className="appointment-booking-step">
+          <h3><span>3</span> Available times</h3>
+          {timeOptions.length ? (
+            <div className="appointment-time-grid">
+              {timeOptions.map((timeOption) => {
+                const option = timeOption.option;
+                const isSelected = option?.id === selectedOptionId;
+                const disabled = !option || timeOption.unavailable || timeOption.isFull || option.isRegistering;
+
+                return (
+                  <button
+                    className={`${isSelected ? 'is-selected' : ''}${disabled ? ' is-disabled' : ''}`}
+                    type="button"
+                    onClick={() => option && setSelectedOptionId(option.id)}
+                    disabled={disabled}
+                    key={timeOption.id}
+                  >
+                    {timeOption.label}
+                    {disabled && <LockOutlinedIcon fontSize="small" />}
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="appointment-drawer__empty">No times are currently available for this instructor.</p>
+          )}
+          <p className="appointment-drawer__timezone">
+            <AccessTimeIcon fontSize="small" />
+            All times are displayed in your local time (GMT +3)
+          </p>
+        </section>
+
+        <div className="appointment-drawer__actions">
+          <button
+            className="appointment-drawer__confirm"
+            type="button"
+            onClick={handleConfirmBooking}
+            disabled={confirmDisabled}
+          >
+            {selectedOption?.isRegistering
+              ? 'Please wait...'
+              : isRegistered
+                ? 'Cancel Booking'
+                : 'Confirm Booking'}
+            <ArrowForwardIcon fontSize="small" />
+          </button>
+          <button className="appointment-drawer__cancel" type="button" onClick={onClose}>
+            Cancel
+          </button>
+        </div>
+      </aside>
+  );
+}
+
+function getWorkshopPrimarySession(event) {
+  return event.sessionOptions.slice().sort(sortSessionsByDate)[0] || null;
+}
+
+function getWorkshopRegisteredSession(event, registeredSessionIds) {
+  return event.sessionOptions.find((session) => registeredSessionIds.has(session.id)) || null;
+}
+
+function getWorkshopActiveSession(event, registeredSessionIds) {
+  return getWorkshopRegisteredSession(event, registeredSessionIds) || getWorkshopPrimarySession(event);
+}
+
+function getWorkshopAvailabilityLabel(session) {
+  if (!session) return 'Availability coming soon';
+  if (!session.capacity || session.capacity <= 0) return 'Open registration';
+
+  const remaining = Math.max(0, session.capacity - (session.participants || 0));
+  return `${remaining} of ${session.capacity} spots available`;
+}
+
+function WorkshopListCard({ event, registeredSessionIds, isSelected, onOpenBooking }) {
+  const session = getWorkshopActiveSession(event, registeredSessionIds);
+  const isRegistered = Boolean(session && registeredSessionIds.has(session.id));
+  const registrationClosed = event.registrationOpen === false;
+
+  return (
+    <article className={`workshop-list-card${isSelected ? ' is-selected' : ''}${isRegistered ? ' is-registered' : ''}`}>
+      <div className="workshop-list-card__media">
+        <img src={event.imageUrl || appointmentsHero} alt="" />
+      </div>
+
+      <div className="workshop-list-card__content">
+        <div>
+          <h3>{event.title}</h3>
+          <p>{event.description}</p>
+        </div>
+
+        <div className="workshop-list-card__meta">
+          <span>
+            <EventAvailableIcon fontSize="small" />
+            {session?.date || event.date || 'Date TBD'}
+          </span>
+          <span>
+            <AccessTimeIcon fontSize="small" />
+            {session?.time || event.time || 'Time TBD'}
+          </span>
+          <span>
+            <HomeRoundedIcon fontSize="small" />
+            {session?.location || event.location || 'She-Na Center'}
+          </span>
+          <span>
+            <GroupsRoundedIcon fontSize="small" />
+            {getWorkshopAvailabilityLabel(session)}
+          </span>
+        </div>
+      </div>
+
+      <button
+        className="workshop-list-card__action"
+        type="button"
+        onClick={() => onOpenBooking(event.id)}
+        disabled={registrationClosed}
+        aria-haspopup="dialog"
+      >
+        {registrationClosed ? 'Registration Closed' : isRegistered ? 'View Registration' : 'View Details / Register'}
+        <ArrowForwardIcon fontSize="small" />
+      </button>
+    </article>
+  );
+}
+
+function WorkshopDetailsPanel({
+  event,
+  registeredSessionIds,
+  onRegisterSession,
+  onCancelSession,
+  onClose,
+}) {
+  const session = getWorkshopActiveSession(event, registeredSessionIds);
+  const isRegistered = Boolean(session && registeredSessionIds.has(session.id));
+  const canCancelBooking = isRegistered && canCancelSessionBooking(session);
+  const isFull = session?.capacity > 0 && session.participants >= session.capacity && !isRegistered;
+  const registrationClosed = event.registrationOpen === false;
+  const actionDisabled = !session || session.isRegistering || registrationClosed || isFull || (isRegistered && !canCancelBooking);
+
+  async function handleWorkshopAction() {
+    if (!session || actionDisabled) return;
+
+    if (isRegistered) {
+      await onCancelSession(session);
+      return;
+    }
+
+    await onRegisterSession(event, session);
+  }
+
+  return (
+    <aside
+      className="workshop-details-panel"
+      role="dialog"
+      aria-modal="false"
+      aria-labelledby="workshop-details-title"
+      dir="ltr"
+    >
+      <button className="workshop-details-panel__close" type="button" onClick={onClose} aria-label="Close workshop details">
+        <CloseIcon fontSize="small" />
+      </button>
+
+      <div className="workshop-details-panel__image">
+        <img src={event.imageUrl || appointmentsHero} alt="" />
+      </div>
+
+      <header className="workshop-details-panel__header">
+        <span>
+          <VolunteerActivismIcon fontSize="small" />
+        </span>
+        <div>
+          <h2 id="workshop-details-title">{event.title}</h2>
+          <p>{isRegistered ? 'You are registered' : 'Workshop details'}</p>
+        </div>
+      </header>
+
+      <p className="workshop-details-panel__description">{event.description}</p>
+
+      <div className="workshop-details-panel__details">
+        <span>
+          <EventAvailableIcon fontSize="small" />
+          <strong>Date</strong>
+          {session?.date || event.date || 'Date TBD'}
+        </span>
+        <span>
+          <AccessTimeIcon fontSize="small" />
+          <strong>Time</strong>
+          {session?.time || event.time || 'Time TBD'}
+        </span>
+        <span>
+          <HomeRoundedIcon fontSize="small" />
+          <strong>Location</strong>
+          {session?.location || event.location || 'She-Na Center'}
+        </span>
+        <span>
+          <PersonIcon fontSize="small" />
+          <strong>Instructor</strong>
+          {session?.providerName || event.instructor || 'She-Na Team'}
+        </span>
+        <span>
+          <GroupsRoundedIcon fontSize="small" />
+          <strong>Spots</strong>
+          {getWorkshopAvailabilityLabel(session)}
+        </span>
+        <span>
+          <CalendarMonthIcon fontSize="small" />
+          <strong>Status</strong>
+          {isRegistered ? 'Registered' : registrationClosed ? 'Closed' : isFull ? 'Full' : 'Open'}
+        </span>
+      </div>
+
+      {isRegistered && !canCancelBooking && (
+        <p className="workshop-details-panel__notice">{CANCELLATION_CLOSED_MESSAGE}</p>
+      )}
+
+      <div className="workshop-details-panel__actions">
+        <button
+          className={`workshop-details-panel__primary${isRegistered ? ' is-cancel' : ''}`}
+          type="button"
+          onClick={handleWorkshopAction}
+          disabled={actionDisabled}
+        >
+          {session?.isRegistering
+            ? 'Please wait...'
+            : isRegistered
+              ? 'Cancel Registration'
+              : isFull
+                ? 'Workshop Full'
+                : registrationClosed
+                  ? 'Registration Closed'
+                  : 'Register'}
+          <ArrowForwardIcon fontSize="small" />
+        </button>
+        <button className="workshop-details-panel__secondary" type="button" onClick={onClose}>
+          Close
+        </button>
+      </div>
+    </aside>
+  );
+}
+
+function WorkshopListPanel({
+  events,
+  selectedEvent,
+  registeredSessionIds,
+  onOpenBooking,
+  onRegisterSession,
+  onCancelSession,
+  onCloseBooking,
+}) {
+  return (
+    <section className={`workshops-tab-panel${selectedEvent ? ' has-panel' : ''}`} aria-label="Workshop sessions">
+      <div className="workshops-tab-panel__body">
+        <div className="workshop-list">
+          {events.map((event) => (
+            <WorkshopListCard
+              event={event}
+              registeredSessionIds={registeredSessionIds}
+              isSelected={selectedEvent?.id === event.id}
+              onOpenBooking={onOpenBooking}
+              key={event.id}
+            />
+          ))}
+        </div>
+
+        {selectedEvent && (
+          <WorkshopDetailsPanel
+            event={selectedEvent}
+            registeredSessionIds={registeredSessionIds}
+            onRegisterSession={onRegisterSession}
+            onCancelSession={onCancelSession}
+            onClose={onCloseBooking}
+          />
+        )}
+      </div>
+    </section>
+  );
+}
+
 function EventBookingModal({
   event,
   registeredSessionIds,
@@ -1642,26 +2310,39 @@ export default function EventsPage({ embedInDashboard = false }) {
       </section>
 
         <section className="events-list-panel">
-          <div className="events-grid-shell">
-            <section className="events-grid" aria-label={sectionTitle}>
-              {activeView === VIEW_REGISTERED
-                ? filteredEvents.map((session) => (
+          {activeView === VIEW_APPOINTMENTS ? (
+            <AppointmentServicesPanel
+              events={filteredEvents}
+              selectedEvent={activeBookingEvent?.eventType === 'appointment' ? activeBookingEvent : null}
+              registeredSessionIds={registeredSessionIds}
+              onOpenBooking={openBookingModal}
+              onRegisterSession={handleRegisterSession}
+              onCancelSession={handleCancelSession}
+              onCloseBooking={closeBookingModal}
+            />
+          ) : activeView === VIEW_REGISTERED ? (
+            <div className="events-grid-shell">
+              <section className="events-grid" aria-label={sectionTitle}>
+                {filteredEvents.map((session) => (
                   <RegisteredSessionCard
                     session={session}
                     onCancelRegistration={handleCancelSession}
                     key={session.id}
                   />
-                ))
-                : filteredEvents.map((event) => (
-                  <EventCard
-                    event={event}
-                    registeredSessionIds={registeredSessionIds}
-                    onOpenBooking={openBookingModal}
-                    key={event.id}
-                  />
                 ))}
-            </section>
-          </div>
+              </section>
+            </div>
+          ) : (
+            <WorkshopListPanel
+              events={filteredEvents}
+              selectedEvent={activeBookingEvent?.eventType === 'workshop' ? activeBookingEvent : null}
+              registeredSessionIds={registeredSessionIds}
+              onOpenBooking={openBookingModal}
+              onRegisterSession={handleRegisterSession}
+              onCancelSession={handleCancelSession}
+              onCloseBooking={closeBookingModal}
+            />
+          )}
         </section>
 
       {!loadingEvents && filteredEvents.length === 0 && (
@@ -1685,15 +2366,6 @@ export default function EventsPage({ embedInDashboard = false }) {
         />
       )}
 
-      {activeBookingEvent && (
-        <EventBookingModal
-          event={activeBookingEvent}
-          registeredSessionIds={registeredSessionIds}
-          onRegisterSession={handleRegisterSession}
-          onCancelSession={handleCancelSession}
-          onClose={closeBookingModal}
-        />
-      )}
     </>
   );
 
