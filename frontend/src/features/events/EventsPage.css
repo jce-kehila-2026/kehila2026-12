@@ -4612,3 +4612,97 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ── Dark mode: visible Events list cards ─────────────────────────────────── */
+
+.participant-home--dark .events-main--embedded .workshop-list-card,
+.participant-home--dark .events-main--embedded .appointment-service-card,
+.participant-home--dark .events-main--embedded .registered-session-card {
+  background: #111827 !important;
+  background-image: none !important;
+  border: 1px solid rgba(236, 72, 153, 0.25) !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.participant-home--dark .events-main--embedded .workshop-list-card::before,
+.participant-home--dark .events-main--embedded .workshop-list-card::after,
+.participant-home--dark .events-main--embedded .appointment-service-card::before,
+.participant-home--dark .events-main--embedded .appointment-service-card::after,
+.participant-home--dark .events-main--embedded .registered-session-card::before,
+.participant-home--dark .events-main--embedded .registered-session-card::after {
+  display: none !important;
+  content: none !important;
+}
+
+.participant-home--dark .events-main--embedded .workshop-list-card:hover,
+.participant-home--dark .events-main--embedded .workshop-list-card.is-selected,
+.participant-home--dark .events-main--embedded .workshop-list-card.is-registered,
+.participant-home--dark .events-main--embedded .appointment-service-card:hover,
+.participant-home--dark .events-main--embedded .appointment-service-card.is-selected,
+.participant-home--dark .events-main--embedded .registered-session-card:hover {
+  background: #1f2937 !important;
+  background-image: none !important;
+  border-color: rgba(236, 72, 153, 0.35) !important;
+  box-shadow: none !important;
+}
+
+.participant-home--dark .events-main--embedded .workshop-list-card__content h3,
+.participant-home--dark .events-main--embedded .appointment-service-card__copy h3,
+.participant-home--dark .events-main--embedded .registered-session-card__content h3 {
+  color: #f8fafc !important;
+}
+
+.participant-home--dark .events-main--embedded .workshop-list-card__content p,
+.participant-home--dark .events-main--embedded .appointment-service-card__copy p,
+.participant-home--dark .events-main--embedded .registered-session-card__content p {
+  color: #cbd5e1 !important;
+}
+
+.participant-home--dark .events-main--embedded .workshop-list-card__meta span,
+.participant-home--dark .events-main--embedded .appointment-service-card__meta span,
+.participant-home--dark .events-main--embedded .registered-session-card__meta span,
+.participant-home--dark .events-main--embedded .appointment-service-card__provider-count {
+  background: rgba(236, 72, 153, 0.12) !important;
+  border: 1px solid rgba(236, 72, 153, 0.25) !important;
+  color: #94a3b8 !important;
+  box-shadow: none !important;
+}
+
+.participant-home--dark .events-main--embedded .workshop-list-card__meta svg,
+.participant-home--dark .events-main--embedded .registered-session-card__meta svg {
+  color: #f472b6;
+}
+
+.participant-home--dark .events-main--embedded .workshop-list-card__media,
+.participant-home--dark .events-main--embedded .appointment-service-card__media,
+.participant-home--dark .events-main--embedded .registered-session-card__media {
+  background: #1f2937 !important;
+  background-image: none !important;
+  border-color: rgba(236, 72, 153, 0.2) !important;
+  box-shadow: none !important;
+}
+
+.participant-home--dark .events-main--embedded .workshop-list-card__action,
+.participant-home--dark .events-main--embedded .appointment-service-card__action,
+.participant-home--dark .events-main--embedded .registered-session-card__cancel {
+  border-color: rgba(236, 72, 153, 0.35) !important;
+  background: linear-gradient(135deg, #7c3aed 0%, #a855f7 48%, #ec4899 100%) !important;
+  color: #fff !important;
+  box-shadow: 0 12px 24px rgba(124, 58, 237, 0.24) !important;
+}
+
+.participant-home--dark .events-main--embedded .workshop-list-card__action:hover:not(:disabled),
+.participant-home--dark .events-main--embedded .appointment-service-card__action:hover:not(:disabled),
+.participant-home--dark .events-main--embedded .registered-session-card__cancel:hover:not(:disabled) {
+  background: linear-gradient(135deg, #8b5cf6 0%, #c084fc 48%, #f472b6 100%) !important;
+  box-shadow: 0 16px 32px rgba(124, 58, 237, 0.32) !important;
+}
+
+.participant-home--dark .events-main--embedded .registered-session-card__status {
+  background: rgba(236, 72, 153, 0.12) !important;
+  border: 1px solid rgba(236, 72, 153, 0.25) !important;
+  color: #f8fafc !important;
+  box-shadow: none !important;
+}
