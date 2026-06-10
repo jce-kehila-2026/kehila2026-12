@@ -360,7 +360,7 @@ export default function ParticipantHome({ initialView = 'home' }) {
         </aside>
 
         <section
-          className={`participant-main${activeView === 'community' ? ' participant-main--community' : ''}${activeView === 'events' ? ' participant-main--events' : ''}${activeView === 'home' || activeView === 'calendar' ? ' participant-main--dashboard-home' : ''}`}
+          className={`participant-main${activeView === 'community' ? ' participant-main--community' : ''}${activeView === 'events' ? ' participant-main--events' : ''}${activeView === 'home' || activeView === 'calendar' ? ' participant-main--dashboard-home' : ''}${activeView === 'calendar' ? ' participant-main--calendar' : ''}`}
           id="home"
         >
           <ParticipantHeader

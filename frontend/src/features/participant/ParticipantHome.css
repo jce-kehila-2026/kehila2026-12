@@ -467,6 +467,26 @@
   padding: 0 4px 8px;
 }
 
+.participant-main--calendar {
+  height: 100vh;
+  min-height: 0;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  overflow: hidden;
+  padding-block: 18px;
+}
+
+.participant-main--calendar > .pd-home__header {
+  position: sticky;
+  top: 0;
+  z-index: 60;
+  margin: 0 0 12px 4px;
+  padding: 0 4px 10px;
+  background:
+    radial-gradient(circle at 88% 4%, rgba(236, 22, 140, 0.06), transparent 22rem),
+    linear-gradient(180deg, #fff9fc 0%, #f9f3fb 100%);
+}
+
 .participant-main--community {
   height: 100vh;
   min-height: 0;
@@ -1383,13 +1403,26 @@
 }
 
 .participant-main--dashboard-home .participant-content--calendar {
-  padding: 16px 4px 0;
+  padding: 0 4px 0;
   gap: 0;
 }
 
+.participant-main--calendar .participant-content--calendar {
+  height: 100%;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 8px;
+}
+
 .participant-main--dashboard-home .participant-content--calendar .participant-panel {
+  min-height: 0;
   padding-top: 0;
   padding-inline: 0;
+}
+
+.participant-main--calendar .participant-content--calendar .participant-panel {
+  min-height: 100%;
 }
 
 .participant-panel .calendar-page--embedded .calendar-layout {

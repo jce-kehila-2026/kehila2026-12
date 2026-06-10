@@ -16,6 +16,25 @@ const itemTypeLabels = {
   note: 'Note',
 };
 
+function getCalendarCategory(item) {
+  if (item.type === 'appointment') return 'appointment';
+  if (item.type === 'note') return 'note';
+  return 'workshop';
+}
+
+function getMiniCalendarCategories(items) {
+  const categories = [];
+
+  items.forEach((item) => {
+    const category = getCalendarCategory(item);
+    if (!categories.includes(category)) {
+      categories.push(category);
+    }
+  });
+
+  return categories;
+}
+
 function toDateKey(date) {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -209,6 +228,18 @@ export default function CalendarPage({ variant = 'standalone' }) {
     [calendarData],
   );
 
+  const miniCalendarCategoriesByDate = useMemo(() => {
+    return calendarItems.reduce((days, item) => {
+      if (!item.date) return days;
+
+      const currentItems = days[item.date] || [];
+      return {
+        ...days,
+        [item.date]: [...currentItems, item],
+      };
+    }, {});
+  }, [calendarItems]);
+
   const registeredItems = calendarItems.filter((item) => item.registered || item.type === 'appointment');
   const selectedDateItems = calendarItems.filter((item) => item.date === selectedDate);
   const selectedDateLabel = new Intl.DateTimeFormat('en', {
@@ -367,22 +398,33 @@ export default function CalendarPage({ variant = 'standalone' }) {
               </div>
 
               <div className="mini-calendar__grid">
-                {monthDays.map((day) =>
-                  day.isBlank ? (
-                    <span key={day.id} className="mini-calendar__day mini-calendar__day--blank" />
-                  ) : (
+                {monthDays.map((day) => {
+                  if (day.isBlank) {
+                    return (
+                      <span key={day.id} className="mini-calendar__day mini-calendar__day--blank" />
+                    );
+                  }
+
+                  const dayCategories = getMiniCalendarCategories(miniCalendarCategoriesByDate[day.key] || []);
+
+                  return (
                     <button
                       key={day.id}
                       type="button"
-                      className={`mini-calendar__day${selectedDate === day.key ? ' is-selected' : ''}${
-                        calendarItems.some((item) => item.date === day.key) ? ' has-item' : ''
-                      }`}
+                      className={`mini-calendar__day${selectedDate === day.key ? ' is-selected' : ''}${dayCategories.length ? ' has-item' : ''}`}
                       onClick={() => handleSelectDate(day.key)}
                     >
-                      {day.day}
+                      <span className="mini-calendar__day-number">{day.day}</span>
+                      {dayCategories.length > 0 && (
+                        <span className="mini-calendar__dots" aria-hidden="true">
+                          {dayCategories.map((category) => (
+                            <span className={`mini-calendar__dot mini-calendar__dot--${category}`} key={category} />
+                          ))}
+                        </span>
+                      )}
                     </button>
-                  ),
-                )}
+                  );
+                })}
               </div>
             </section>
 
