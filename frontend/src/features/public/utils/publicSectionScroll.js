@@ -1,47 +1,162 @@
-function getSettledNavbarHeight(targetDocumentTop) {
-  const navbar = document.querySelector('.public-navbar');
-  if (!navbar) return 0;
+const LAYOUT_STABLE_FRAMES = 2;
+const SCROLL_STABLE_FRAMES = 4;
+const POSITION_EPSILON = 0.75;
 
-  const measuredNavbar = navbar.cloneNode(true);
-  measuredNavbar.setAttribute('aria-hidden', 'true');
-  measuredNavbar.style.visibility = 'hidden';
-  measuredNavbar.style.pointerEvents = 'none';
-  measuredNavbar.style.transition = 'none';
-  measuredNavbar.querySelectorAll('.public-navbar__menu--open').forEach((menu) => {
-    menu.classList.remove('public-navbar__menu--open');
-  });
-  measuredNavbar.querySelectorAll('.public-navbar__dropdown--open').forEach((dropdown) => {
-    dropdown.classList.remove('public-navbar__dropdown--open');
-  });
-  measuredNavbar.querySelectorAll('[aria-expanded="true"]').forEach((control) => {
-    control.setAttribute('aria-expanded', 'false');
-  });
-  document.body.appendChild(measuredNavbar);
+let nextScrollRequestId = 0;
+let activeScrollRequest = null;
 
-  measuredNavbar.classList.remove('public-navbar--scrolled');
-  const unscrolledNavbarHeight = measuredNavbar.getBoundingClientRect().height;
-  measuredNavbar.classList.add('public-navbar--scrolled');
-  const scrolledNavbarHeight = measuredNavbar.getBoundingClientRect().height;
-  measuredNavbar.remove();
-
-  return targetDocumentTop - scrolledNavbarHeight > 18
-    ? scrolledNavbarHeight
-    : unscrolledNavbarHeight;
+function getNavbarHeight() {
+  const navbar = document.querySelector('[data-public-navbar]');
+  return navbar ? navbar.getBoundingClientRect().height : 0;
 }
 
-export function scrollTargetBelowPublicNavbar(target, behavior = 'auto') {
-  const targetDocumentTop = target.getBoundingClientRect().top + window.scrollY;
-  const navbarHeight = getSettledNavbarHeight(targetDocumentTop);
-  const page = target.closest('.public-homepage');
-  const configuredGap = page
-    ? parseFloat(getComputedStyle(page).getPropertyValue('--public-anchor-gap'))
-    : 0;
-  const anchorGap = Number.isFinite(configuredGap) ? configuredGap : 0;
-  const targetScrollTop = Math.floor(targetDocumentTop - navbarHeight - anchorGap);
+function getTargetScrollTop(target, navbarHeight = getNavbarHeight()) {
+  return Math.max(
+    0,
+    target.getBoundingClientRect().top + window.scrollY - navbarHeight,
+  );
+}
 
-  window.scrollTo({
-    top: Math.max(0, targetScrollTop),
-    left: 0,
-    behavior,
+function isNearlyEqual(left, right) {
+  return Math.abs(left - right) <= POSITION_EPSILON;
+}
+
+function requestNextFrame(request, callback) {
+  request.frameId = window.requestAnimationFrame(() => {
+    if (activeScrollRequest?.id !== request.id) return;
+    callback();
   });
+}
+
+function finishScrollRequest(request) {
+  if (activeScrollRequest?.id === request.id) {
+    activeScrollRequest = null;
+  }
+}
+
+function applyFinalCorrection(request) {
+  const correctedTop = getTargetScrollTop(request.target);
+
+  if (!isNearlyEqual(window.scrollY, correctedTop)) {
+    window.scrollTo({
+      top: correctedTop,
+      left: 0,
+      behavior: 'auto',
+    });
+  }
+
+  finishScrollRequest(request);
+}
+
+function waitForScrollAndNavbarToSettle(request, initialTop) {
+  let previousScrollY = window.scrollY;
+  let previousNavbarHeight = getNavbarHeight();
+  let stableScrollFrames = 0;
+  let stableNavbarFrames = 0;
+  let hasStartedMoving = isNearlyEqual(previousScrollY, initialTop);
+
+  function observe() {
+    const currentScrollY = window.scrollY;
+    const currentNavbarHeight = getNavbarHeight();
+
+    if (!isNearlyEqual(currentScrollY, previousScrollY)) {
+      hasStartedMoving = true;
+      stableScrollFrames = 0;
+    } else {
+      stableScrollFrames += 1;
+    }
+
+    if (isNearlyEqual(currentNavbarHeight, previousNavbarHeight)) {
+      stableNavbarFrames += 1;
+    } else {
+      stableNavbarFrames = 0;
+    }
+
+    previousScrollY = currentScrollY;
+    previousNavbarHeight = currentNavbarHeight;
+
+    if (
+      hasStartedMoving &&
+      stableScrollFrames >= SCROLL_STABLE_FRAMES &&
+      stableNavbarFrames >= LAYOUT_STABLE_FRAMES
+    ) {
+      applyFinalCorrection(request);
+      return;
+    }
+
+    requestNextFrame(request, observe);
+  }
+
+  requestNextFrame(request, observe);
+}
+
+function startScrollAfterLayoutSettles(request) {
+  let previousNavbarHeight = getNavbarHeight();
+  let previousTargetTop = request.target.getBoundingClientRect().top + window.scrollY;
+  let stableFrames = 0;
+
+  function observeLayout() {
+    const navbarHeight = getNavbarHeight();
+    const targetTop = request.target.getBoundingClientRect().top + window.scrollY;
+
+    if (
+      isNearlyEqual(navbarHeight, previousNavbarHeight) &&
+      isNearlyEqual(targetTop, previousTargetTop)
+    ) {
+      stableFrames += 1;
+    } else {
+      stableFrames = 0;
+    }
+
+    previousNavbarHeight = navbarHeight;
+    previousTargetTop = targetTop;
+
+    if (stableFrames < LAYOUT_STABLE_FRAMES) {
+      requestNextFrame(request, observeLayout);
+      return;
+    }
+
+    const initialTop = getTargetScrollTop(request.target, navbarHeight);
+    window.scrollTo({
+      top: initialTop,
+      left: 0,
+      behavior: request.behavior,
+    });
+    waitForScrollAndNavbarToSettle(request, initialTop);
+  }
+
+  requestNextFrame(request, observeLayout);
+}
+
+export function cancelPendingPublicSectionScroll() {
+  if (activeScrollRequest?.frameId) {
+    window.cancelAnimationFrame(activeScrollRequest.frameId);
+  }
+
+  activeScrollRequest = null;
+}
+
+export function scrollTargetBelowPublicNavbar(target, behavior = 'smooth') {
+  if (!target) return false;
+
+  cancelPendingPublicSectionScroll();
+
+  const request = {
+    id: ++nextScrollRequestId,
+    target,
+    behavior,
+    frameId: 0,
+  };
+
+  activeScrollRequest = request;
+  startScrollAfterLayoutSettles(request);
+  return true;
+}
+
+export function scrollToPublicSection(sectionId, behavior = 'smooth') {
+  return scrollTargetBelowPublicNavbar(document.getElementById(sectionId), behavior);
+}
+
+export function scrollToPublicSectionAfterMenuClose(sectionId, behavior = 'smooth') {
+  return scrollToPublicSection(sectionId, behavior);
 }
