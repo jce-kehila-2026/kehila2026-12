@@ -1,5 +1,8 @@
 import { useEffect, useRef } from 'react';
-import { scrollTargetBelowPublicNavbar } from '../utils/publicSectionScroll';
+import {
+  cancelPendingPublicSectionScroll,
+  scrollToPublicSection,
+} from '../utils/publicSectionScroll';
 
 function scrollToTopInstant() {
   window.scrollTo({ top: 0, left: 0, behavior: 'instant' });
@@ -17,33 +20,22 @@ export default function usePublicHomeScrollReset(
     }
 
     const initialHash = window.location.hash;
-    const initialTarget = initialHash
-      ? document.getElementById(decodeURIComponent(initialHash.slice(1)))
-      : null;
+    const initialTargetId = initialHash
+      ? decodeURIComponent(initialHash.slice(1))
+      : '';
 
     if (initialHash && !preserveInitialHash) {
       window.history.replaceState(null, '', `${window.location.pathname}${window.location.search}`);
     }
 
-    const scrollToInitialPosition = () => {
-      if (preserveInitialHash && initialTarget) {
-        scrollTargetBelowPublicNavbar(initialTarget);
-        return;
-      }
-
+    if (preserveInitialHash && initialTargetId) {
+      scrollToPublicSection(initialTargetId, 'auto');
+    } else {
       scrollToTopInstant();
-    };
-
-    scrollToInitialPosition();
-
-    const rafId = window.requestAnimationFrame(scrollToInitialPosition);
-    const timeoutId = window.setTimeout(scrollToInitialPosition, 0);
-    const layoutTimeoutId = window.setTimeout(scrollToInitialPosition, 120);
+    }
 
     return () => {
-      window.cancelAnimationFrame(rafId);
-      window.clearTimeout(timeoutId);
-      window.clearTimeout(layoutTimeoutId);
+      cancelPendingPublicSectionScroll();
 
       if ('scrollRestoration' in window.history) {
         window.history.scrollRestoration = 'auto';
@@ -57,13 +49,10 @@ export default function usePublicHomeScrollReset(
     hasAppliedPostLoadResetRef.current = true;
 
     if (preserveInitialHash && window.location.hash) {
-      const target = document.getElementById(decodeURIComponent(window.location.hash.slice(1)));
+      const targetId = decodeURIComponent(window.location.hash.slice(1));
+      scrollToPublicSection(targetId, 'auto');
 
-      if (target) {
-        scrollTargetBelowPublicNavbar(target);
-      }
-
-      return undefined;
+      return () => cancelPendingPublicSectionScroll();
     }
 
     if (window.scrollY > 0) {
@@ -87,17 +76,11 @@ export default function usePublicHomeScrollReset(
       if (!href || href === '#') return;
 
       const targetId = decodeURIComponent(href.slice(1));
-      const target = document.getElementById(targetId);
-      if (!target) return;
+      if (!document.getElementById(targetId)) return;
 
       event.preventDefault();
       window.history.pushState(null, '', `${window.location.pathname}${window.location.search}${href}`);
-
-      window.requestAnimationFrame(() => {
-        window.requestAnimationFrame(() => {
-          scrollTargetBelowPublicNavbar(target, 'smooth');
-        });
-      });
+      scrollToPublicSection(targetId, 'smooth');
     };
 
     root.addEventListener('click', handleAnchorClick);

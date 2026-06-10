@@ -11,7 +11,7 @@ import {
   getPublicNavbarLinks,
   getPublicNavbarStoriesMenu,
 } from '../i18n/publicHomeTranslations';
-import { scrollTargetBelowPublicNavbar } from '../utils/publicSectionScroll';
+import { scrollToPublicSectionAfterMenuClose } from '../utils/publicSectionScroll';
 import PublicLanguageSwitcher from './PublicLanguageSwitcher';
 
 const STORIES_ARTICLES_PATH = '/public/stories-articles';
@@ -133,27 +133,25 @@ export default function PublicNavbar({
     closeMenu();
 
     const targetId = decodeURIComponent(href.slice(1));
-    window.history.pushState(null, '', `${location.pathname}${location.search}${href}`);
+    const willScroll = scrollToPublicSectionAfterMenuClose(targetId);
 
-    window.requestAnimationFrame(() => {
-      window.requestAnimationFrame(() => {
-        const target = document.getElementById(targetId);
-        if (!target) return;
-
-        scrollTargetBelowPublicNavbar(target, 'smooth');
-      });
-    });
+    if (willScroll) {
+      window.history.pushState(null, '', `${location.pathname}${location.search}${href}`);
+    }
   }
 
   return (
-    <header className={`public-navbar${isScrolled ? ' public-navbar--scrolled' : ''}`}>
+    <header
+      className={`public-navbar${isScrolled ? ' public-navbar--scrolled' : ''}`}
+      data-public-navbar
+    >
       <div className="public-navbar__inner">
         <div className="public-navbar__bar">
           <a
             className="public-navbar__brand"
             href={resolveHomepageHref('#home')}
             aria-label={`${organizationName} ${t('brandHomeAria')}`}
-            onClick={closeMenu}
+            onClick={(event) => handleCurrentPageSectionClick(event, '#home', '/public')}
           >
             <img className="public-navbar__brand-image" src={sheNaLogo} alt="She-Na logo" />
           </a>
@@ -270,7 +268,14 @@ export default function PublicNavbar({
                   href={href}
                   className={isActive ? 'public-navbar__link--active' : undefined}
                   aria-current={isActive ? 'page' : undefined}
-                  onClick={closeMenu}
+                  onClick={(event) => {
+                    if (link.href.startsWith('#')) {
+                      handleCurrentPageSectionClick(event, link.href, '/public');
+                      return;
+                    }
+
+                    closeMenu();
+                  }}
                 >
                   {link.label}
                 </a>
