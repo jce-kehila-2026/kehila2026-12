@@ -19,8 +19,6 @@ import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
 
 const LIMITS = {
-  title: 80,
-  description: 200,
   email: 120,
   phone: 40,
   socialUrl: 300,
@@ -41,8 +39,6 @@ function isValidUrlOrEmpty(value) {
 function contactToForm(contact) {
   const c = contact && typeof contact === 'object' ? contact : DEFAULT_CONTACT;
   return {
-    title: c.title || DEFAULT_CONTACT.title,
-    description: c.description || DEFAULT_CONTACT.description,
     email: c.email || DEFAULT_CONTACT.email,
     phone: c.phone || DEFAULT_CONTACT.phone,
     linkedinUrl: c.linkedinUrl || '',
@@ -88,7 +84,6 @@ export default function PublicHomePageContactTab() {
 
   const errors = useMemo(() => {
     const next = {};
-    if (!form.title.trim()) next.title = 'Title is required.';
     if (form.linkedinUrl && !isValidUrlOrEmpty(form.linkedinUrl)) next.linkedinUrl = 'Enter a valid URL.';
     if (form.instagramUrl && !isValidUrlOrEmpty(form.instagramUrl)) next.instagramUrl = 'Enter a valid URL.';
     if (form.facebookUrl && !isValidUrlOrEmpty(form.facebookUrl)) next.facebookUrl = 'Enter a valid URL.';
@@ -116,8 +111,6 @@ export default function PublicHomePageContactTab() {
       const user = auth.currentUser;
       const updatedBy = user?.email || user?.uid || '';
       const contactPayload = {
-        title: form.title.trim(),
-        description: form.description.trim(),
         email: form.email.trim(),
         phone: form.phone.trim(),
         linkedinUrl: form.linkedinUrl.trim(),
@@ -171,34 +164,6 @@ export default function PublicHomePageContactTab() {
           </Typography>
 
           <Stack spacing={3}>
-            <Box>
-              <Typography variant="subtitle2" sx={{ mb: 1.5 }}>Main Text</Typography>
-              <Stack spacing={2}>
-                <TextField
-                  label="Header Title"
-                  value={form.title}
-                  onChange={(e) => setField('title', e.target.value)}
-                  onBlur={() => handleBlur('title')}
-                  inputProps={{ maxLength: LIMITS.title }}
-                  helperText={(showError('title') && errors.title) || `${form.title.length} / ${LIMITS.title}`}
-                  error={showError('title')}
-                  required
-                  fullWidth
-                />
-                <TextField
-                  label="Header Subtitle"
-                  value={form.description}
-                  onChange={(e) => setField('description', e.target.value)}
-                  onBlur={() => handleBlur('description')}
-                  inputProps={{ maxLength: LIMITS.description }}
-                  helperText={`${form.description.length} / ${LIMITS.description}`}
-                  multiline
-                  minRows={2}
-                  fullWidth
-                />
-              </Stack>
-            </Box>
-
             <Box>
               <Typography variant="subtitle2" sx={{ mb: 1.5 }}>Direct Contact</Typography>
               <Stack spacing={2} direction={{ xs: 'column', sm: 'row' }}>
