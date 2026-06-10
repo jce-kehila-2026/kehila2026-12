@@ -102,8 +102,12 @@
 .participant-home--dark .pd-feature-empty__headline,
 .participant-home--dark .pd-notes__copy span,
 .participant-home--dark .pd-community__author strong,
+/* "N Likes" / "N Comments" on the Community Highlight card: both the count
+   and the word use the same readable near-white. The heart/comment icons are
+   colored separately (.pd-community__stat svg) and stay untouched. */
+.participant-home--dark .pd-community__stat-text,
 .participant-home--dark .pd-community__stat-text strong {
-  color: var(--pd-text-dark);
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .participant-home--dark .pd-card--feature .pd-feature__subtitle,
