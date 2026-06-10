@@ -2359,9 +2359,9 @@
 
   z-index: 1;
 
-  width: min(100%, 420px);
+  width: min(100%, 376px);
 
-  padding: 20px 22px 18px;
+  padding: 18px 20px 16px;
 
   border-radius: 22px;
 
@@ -2371,7 +2371,11 @@
 
   box-shadow: 0 24px 48px rgba(91, 30, 140, 0.16);
 
-  overflow: visible;
+  max-height: calc(100vh - 40px);
+
+  overflow-y: auto;
+
+  overflow-x: hidden;
 
 }
 
@@ -2433,7 +2437,7 @@
 
 .pd-notes-schedule-modal__hint {
 
-  margin: 0 0 14px;
+  margin: 0 0 10px;
 
   color: var(--pd-muted);
 
@@ -2456,49 +2460,149 @@
 
 
 .pd-notes__datetime--modal .pd-notes-picker {
-
   position: relative;
-
+  min-width: 0;
   z-index: 1;
-
 }
-
-
 
 .pd-notes__datetime--modal .pd-notes-picker.is-open {
-
   z-index: 2;
-
 }
 
-
-
-.pd-notes__datetime--modal .pd-notes-time__panel,
-.pd-notes__datetime--modal .pd-notes-calendar__panel {
-
+/* Open pickers render in the modal flow, directly below the inputs row, as a
+   centered block spanning both grid columns (200% of one column + the 12px
+   gap). The panel lives inside a half-width column, so plain width: 100%
+   would crush it; the calc gives it the full modal content width without
+   ever exceeding it. */
+.pd-notes__datetime--modal .pd-notes-calendar__panel,
+.pd-notes__datetime--modal .pd-notes-time__panel {
   position: relative;
-
   top: auto;
-
-  right: auto;
-
   left: auto;
-
-  width: 100%;
-
+  right: auto;
+  width: calc(200% + 12px);
+  max-width: calc(200% + 12px);
   min-width: 0;
-
+  height: 226px;
   margin-top: 6px;
+  padding: 8px 10px;
+  border-radius: 14px;
+  box-sizing: border-box;
+  overflow: visible;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
 
-  z-index: 2;
+/* ── Compact calendar sized to fill the shared 226px card ──────────────── */
 
+.pd-notes__datetime--modal .pd-notes-calendar__nav {
+  margin-bottom: 4px;
+}
+
+.pd-notes__datetime--modal .pd-notes-calendar__nav-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+}
+
+.pd-notes__datetime--modal .pd-notes-calendar__month {
+  font-size: 14px;
+}
+
+.pd-notes__datetime--modal .pd-notes-calendar__weekdays {
+  margin-bottom: 4px;
+  gap: 3px;
+}
+
+.pd-notes__datetime--modal .pd-notes-calendar__weekdays span {
+  font-size: 11px;
+}
+
+.pd-notes__datetime--modal .pd-notes-calendar__grid {
+  gap: 3px;
+}
+
+.pd-notes__datetime--modal .pd-notes-calendar__day {
+  height: 24px;
+  min-height: 0;
+  aspect-ratio: auto;
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+/* ── Time picker: Hour | Minute | AM/PM, prominent centered controls ───── */
+
+.pd-notes__datetime--modal .pd-notes-time__steppers {
+  width: min(264px, 100%);
+  margin-inline: auto;
+  gap: 12px;
+}
+
+.pd-notes__datetime--modal .pd-notes-time__stepper,
+.pd-notes__datetime--modal .pd-notes-time__period {
+  gap: 6px;
+}
+
+.pd-notes__datetime--modal .pd-notes-time__column-label {
+  font-size: 11px;
+}
+
+.pd-notes__datetime--modal .pd-notes-time__step-btn {
+  width: 40px;
+  height: 30px;
+  border-radius: 10px;
+}
+
+.pd-notes__datetime--modal .pd-notes-time__step-value {
+  min-width: 56px;
+  min-height: 52px;
+  border-radius: 12px;
+  font-size: 18px;
+}
+
+.pd-notes__datetime--modal input.pd-notes-time__step-value {
+  width: 56px;
+}
+
+.pd-notes__datetime--modal .pd-notes-time__period-spacer {
+  width: 40px;
+  height: 30px;
+}
+
+.pd-notes__datetime--modal .pd-notes-time__period-btn {
+  min-height: 52px;
+  padding: 0 8px;
+  border-radius: 10px;
+  font-size: 13px;
+}
+
+/* The picker content is English; render it left-to-right even though the
+   modal inherits RTL: Hour → Minute → AM/PM, Su → Sa, "09:00 AM". */
+.pd-notes__datetime--modal .pd-notes-time__steppers,
+.pd-notes__datetime--modal .pd-notes-calendar__nav,
+.pd-notes__datetime--modal .pd-notes-calendar__weekdays,
+.pd-notes__datetime--modal .pd-notes-calendar__grid,
+.pd-notes__datetime--modal .pd-notes-picker__value {
+  direction: ltr;
+}
+
+.pd-notes__datetime--modal .pd-notes-picker__value {
+  unicode-bidi: isolate;
+}
+
+/* The time picker sits in the second grid column; pull its panel back to the
+   start of the row so it lines up with the date panel. Logical margin keeps
+   this correct in both LTR and RTL. */
+.pd-notes__datetime--modal .pd-notes-time .pd-notes-time__panel {
+  margin-inline-start: calc(-100% - 12px);
 }
 
 
 
 .pd-notes-schedule-modal__summary {
 
-  margin: 12px 0 0;
+  margin: 10px 0 0;
 
   padding: 10px 12px;
 
@@ -2514,6 +2618,12 @@
 
   line-height: 1.4;
 
+  direction: ltr;
+
+  unicode-bidi: isolate;
+
+  text-align: center;
+
 }
 
 
@@ -2522,7 +2632,7 @@
 
   width: 100%;
 
-  margin-top: 16px;
+  margin-top: 12px;
 
   min-height: 42px;
 
