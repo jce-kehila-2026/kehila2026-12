@@ -34,12 +34,22 @@ service cloud.firestore {
     }
 
     // ── Users (top-level) ───────────────────────────────────
-    // Anyone signed in can read user docs (needed for name resolution).
-    // A user can write their own doc; admins can write any user doc.
+    // Contains participant PII (name, email, phone, address) as of Phase 2, so
+    // reads are restricted to the owner and admins. Community-visible display
+    // data (name shown in the feed, birthday) is mirrored to /public_profiles.
+    // A user can write their own doc (except `role`); admins can write any.
     match /users/{uid} {
-      allow read: if request.auth != null;
-      allow create: if isSelf(uid);
-      allow update, delete: if isSelf(uid) || isAdmin();
+      allow read: if isSelf(uid) || isAdmin();
+      // A user may create their own doc but may NOT self-assign a privileged role.
+      allow create: if isSelf(uid)
+        && request.resource.data.get('role', 'participant') == 'participant';
+      // A user may update their own doc but may NOT change their own `role`
+      // (only an admin can promote/demote). This is what keeps isAdmin() —
+      // which reads users/{uid}.role — from being self-grantable.
+      allow update: if isAdmin()
+        || (isSelf(uid)
+            && request.resource.data.get('role', '') == resource.data.get('role', ''));
+      allow delete: if isSelf(uid) || isAdmin();
 
       // Per-user subcollections — the owner has full access. Admins also have access.
       match /registrations/{eventId} {
@@ -75,6 +85,22 @@ service cloud.firestore {
           && request.resource.data.type in ['comment', 'like', 'support'];
         allow update: if false;
       }
+    }
+
+    // ── Public Profiles (community-visible display data only) ───
+    // Holds ONLY non-sensitive, opt-in display fields mirrored from
+    // users/{uid}: communityDisplayName, communityBirthday, and
+    // showBirthdayInCommunity. Any signed-in user may read (the community
+    // birthday widget queries this), but only the owner may write, and only
+    // those fields — so contact PII in users/{uid} is never exposed here.
+    match /public_profiles/{uid} {
+      allow read: if request.auth != null;
+      allow create, update: if isSelf(uid)
+        && request.resource.data.keys().hasOnly([
+             'communityDisplayName', 'communityBirthday',
+             'showBirthdayInCommunity', 'updatedAt'
+           ]);
+      allow delete: if isSelf(uid) || isAdmin();
     }
 
     // Admin lookup table (legacy, kept for role resolution).
@@ -259,8 +285,27 @@ service cloud.firestore {
     }
 
     // Public join requests from the website modal.
+    // Unauthenticated by design (public form), but the payload is constrained
+    // to a fixed field set with bounded sizes and a pinned status/source so the
+    // endpoint can't be used to write arbitrary/oversized documents.
+    // NOTE: enable Firebase App Check on this project for real bot protection.
     match /joinRequests/{requestId} {
-      allow create: if true;
+      allow create: if request.resource.data.keys().hasOnly([
+            'fullName', 'address', 'birthDate', 'cancerStory',
+            'consentToReceiveInfo', 'email', 'phone', 'whatsappNote',
+            'readyToJoin', 'source', 'status', 'createdAt'
+          ])
+        && request.resource.data.fullName is string
+        && request.resource.data.fullName.size() > 0
+        && request.resource.data.fullName.size() <= 200
+        && request.resource.data.email is string
+        && request.resource.data.email.size() <= 320
+        && request.resource.data.cancerStory is string
+        && request.resource.data.cancerStory.size() <= 20000
+        && request.resource.data.phone is string
+        && request.resource.data.phone.size() <= 40
+        && request.resource.data.status == 'new'
+        && request.resource.data.source == 'public-website';
       allow read, update, delete: if isAdmin();
     }
 

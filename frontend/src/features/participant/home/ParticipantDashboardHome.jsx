@@ -1239,13 +1239,9 @@ function NotesCard({ userId }) {
   };
 
   const handleAddNote = useCallback(async (titleFromInput) => {
-    console.log('handleAddNote called');
-
     const title = String(
       titleFromInput ?? noteInputRef.current?.value ?? draftTitleRef.current ?? '',
     ).trim();
-
-    console.log('handleAddNote title:', title);
 
     if (!title || isSavingRef.current) return;
 
@@ -1271,15 +1267,13 @@ function NotesCard({ userId }) {
     setIsSaving(true);
 
     try {
-      console.log('[Dashboard notes] Saving for participant:', participantId);
-      const noteId = await createParticipantNote(participantId, {
+      await createParticipantNote(participantId, {
         title,
         date: willSync ? date : '',
         time: willSync ? time : '',
         done: false,
         syncToCalendar: willSync,
       });
-      console.log('[Dashboard notes] Saved note id:', noteId);
 
       if (willSync) {
         try {
@@ -1306,15 +1300,11 @@ function NotesCard({ userId }) {
     event.preventDefault();
     event.stopPropagation();
     const value = noteInputRef.current?.value ?? draftTitleRef.current ?? draftTitle;
-    console.log('Add button clicked', value);
     void handleAddNote(value);
   };
 
   const handleNoteInputKeyDown = (event) => {
     if (event.key !== 'Enter' && event.code !== 'NumpadEnter') return;
-
-    console.log('Enter pressed');
-    console.log('draftTitle:', event.currentTarget.value);
 
     event.preventDefault();
     event.stopPropagation();
