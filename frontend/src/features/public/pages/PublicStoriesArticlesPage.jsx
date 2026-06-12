@@ -80,7 +80,7 @@ function PublicStoriesArticlesPageContent() {
         <InspirationStoriesSection stories={publicHomeDoc.inspirationalStories} />
         <ArticlesPreviewSection coverage={publicHomeDoc.pressCoverage} />
       </main>
-      <PublicFooter organization={content.organization} contact={content.contact} />
+      <PublicFooter organization={content.organization} contact={publicHomeDoc.contact} />
       <JoinCommunityModal isOpen={isJoinModalOpen} onClose={() => setIsJoinModalOpen(false)} />
       <VolunteerModal isOpen={isVolunteerModalOpen} onClose={() => setIsVolunteerModalOpen(false)} />
     </div>

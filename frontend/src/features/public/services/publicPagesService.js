@@ -548,8 +548,6 @@ export function mergeLearnTogether(learnTogether) {
 }
 
 export const DEFAULT_CONTACT = {
-  title: 'אנחנו כאן בשבילך',
-  description: 'אפשר לפנות אלינו להצטרפות, תמיכה, התנדבות או שיתוף פעולה.',
   email: 'info@she-na.org.il',
   phone: '03-1234567',
   linkedinUrl: '',
@@ -570,8 +568,6 @@ export function mergeContact(value) {
   ].filter(Boolean);
 
   return {
-    title: safeString(safe.title) || DEFAULT_CONTACT.title,
-    description: safeString(safe.description) || DEFAULT_CONTACT.description,
     email: safeString(safe.email) || DEFAULT_CONTACT.email,
     phone: safeString(safe.phone) || DEFAULT_CONTACT.phone,
     linkedinUrl,
