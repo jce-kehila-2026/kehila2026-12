@@ -786,6 +786,15 @@
 
 
 
+.pd-card--appointment > .pd-card__surface.pd-feature__layout:not(.pd-feature__layout--empty),
+.pd-card--event > .pd-card__surface.pd-feature__layout:not(.pd-feature__layout--empty) {
+
+  grid-template-columns: minmax(0, 1fr) var(--pd-countdown-size);
+
+}
+
+
+
 /* Card heading with icon badge */
 
 .pd-card__heading {
@@ -812,6 +821,8 @@
 
 .pd-card__heading-badge {
 
+  position: relative;
+
   width: 36px;
 
   height: 36px;
@@ -824,7 +835,51 @@
 
   border-radius: 11px;
 
-  border: 1px solid rgba(255, 255, 255, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+
+  color: #ffffff;
+
+  overflow: hidden;
+
+}
+
+
+
+/* Mini public-style gloss overlay */
+.pd-card__heading-badge::before {
+
+  position: absolute;
+
+  inset: 0;
+
+  border-radius: inherit;
+
+  content: "";
+
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.34) 0%,
+    rgba(255, 255, 255, 0.06) 55%,
+    transparent 100%
+  );
+
+  pointer-events: none;
+
+}
+
+
+
+.pd-card__heading-badge svg {
+
+  position: relative;
+
+  z-index: 1;
+
+  width: 20px;
+
+  height: 20px;
+
+  color: #ffffff;
 
 }
 
@@ -832,11 +887,11 @@
 
 .pd-card__heading--purple .pd-card__heading-badge {
 
-  background: linear-gradient(145deg, #f8f2ff 0%, #ebe0ff 55%, #f3ebff 100%);
+  background: linear-gradient(145deg, #b8a0d9 0%, #8b6bb8 48%, #5b1e8c 100%);
 
-  color: #5b1e8c;
-
-  box-shadow: 0 8px 20px rgba(91, 30, 140, 0.14);
+  box-shadow:
+    0 6px 16px rgba(91, 30, 140, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.38);
 
 }
 
@@ -844,11 +899,11 @@
 
 .pd-card__heading--pink .pd-card__heading-badge {
 
-  background: linear-gradient(145deg, #fff0f7 0%, #ffe4f1 55%, #fce7f3 100%);
+  background: linear-gradient(145deg, #f9a8d4 0%, #ec4899 52%, #db2777 100%);
 
-  color: #c2185b;
-
-  box-shadow: 0 8px 20px rgba(236, 22, 140, 0.14);
+  box-shadow:
+    0 6px 16px rgba(236, 22, 140, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.38);
 
 }
 
@@ -1021,6 +1076,8 @@
 
   margin: 0;
 
+  margin-left: -10px;
+
 }
 
 
@@ -1045,7 +1102,7 @@
 
 .pd-card--feature .pd-feature__title {
 
-  margin: 6px 0 0;
+  margin: 16px 0 0;
 
   font-size: 19px;
 
@@ -1062,6 +1119,8 @@
 .pd-card--feature .pd-feature__subtitle {
 
   margin: 3px 0 0;
+
+  padding-left: 10px;
 
   font-size: 12px;
 
@@ -1086,6 +1145,8 @@
 .pd-card--feature .pd-feature__details {
 
   margin-top: 10px;
+
+  padding-left: 10px;
 
   gap: 6px;
 
@@ -1569,6 +1630,21 @@
   position: relative;
 
   z-index: 2;
+
+}
+
+
+
+.pd-card--appointment .pd-feature__col--countdown,
+.pd-card--event .pd-feature__col--countdown {
+
+  width: var(--pd-countdown-size);
+
+  min-width: var(--pd-countdown-size);
+
+  max-width: var(--pd-countdown-size);
+
+  margin: 0;
 
 }
 
@@ -4184,6 +4260,15 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
     grid-template-columns: minmax(0, 1fr) min-content;
 
     column-gap: 12px;
+
+  }
+
+
+
+  .pd-card--appointment > .pd-card__surface.pd-feature__layout:not(.pd-feature__layout--empty),
+  .pd-card--event > .pd-card__surface.pd-feature__layout:not(.pd-feature__layout--empty) {
+
+    grid-template-columns: minmax(0, 1fr) var(--pd-countdown-size);
 
   }
 
