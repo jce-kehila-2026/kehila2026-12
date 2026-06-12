@@ -45,49 +45,51 @@
 
 .login-page__back-btn {
   position: fixed;
-  bottom: clamp(18px, 3vh, 30px);
-  left: clamp(18px, 3vw, 36px);
+  bottom: 24px;
+  left: 24px;
   z-index: 20;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 10px;
-  flex-direction: row-reverse;
-  padding: 9px 18px;
-  border: 1px solid rgba(247, 37, 133, 0.12);
+  height: 56px;
+  padding: 0 24px;
+  border: 1.5px solid rgba(236, 72, 153, 0.25);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.68);
-  color: rgba(60, 9, 108, 0.82);
+  background: #ffffff;
+  color: #ec4899;
   font: inherit;
-  font-size: 0.82rem;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 700;
   letter-spacing: 0.01em;
+  line-height: 1;
+  white-space: nowrap;
   cursor: pointer;
   box-shadow:
-    0 4px 16px rgba(123, 44, 191, 0.06),
-    inset 0 1px 0 rgba(255, 255, 255, 0.75);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+    0 8px 24px rgba(236, 72, 153, 0.15),
+    0 2px 8px rgba(0, 0, 0, 0.05);
   transition:
-    transform 220ms ease,
-    box-shadow 220ms ease,
-    border-color 220ms ease,
-    background 220ms ease,
-    color 220ms ease;
+    transform 0.25s ease,
+    box-shadow 0.25s ease,
+    background 0.25s ease;
 }
 
 .login-page__back-btn:hover,
 .login-page__back-btn:focus-visible {
-  transform: translateY(-2px);
-  border-color: rgba(247, 37, 133, 0.22);
-  background: rgba(255, 255, 255, 0.82);
-  color: var(--shena-deep-purple);
+  transform: translateY(-3px);
+  background: #fff8fc;
   box-shadow:
-    0 8px 22px rgba(247, 37, 133, 0.08),
-    0 3px 12px rgba(123, 44, 191, 0.06);
+    0 14px 36px rgba(236, 72, 153, 0.22),
+    0 4px 12px rgba(0, 0, 0, 0.08);
+  outline: none;
 }
 
-.login-page__back-btn svg {
-  font-size: 0.9rem;
+.login-page__back-btn-icon {
+  flex-shrink: 0;
+  width: 20px !important;
+  height: 20px !important;
+  font-size: 20px !important;
+  color: #ec4899;
 }
 
 .login-page__hero-panel {
@@ -602,10 +604,11 @@
   }
 
   .login-page__back-btn {
-    bottom: clamp(14px, 2.5vh, 22px);
-    left: clamp(14px, 4vw, 22px);
-    padding: 8px 14px;
-    font-size: 0.78rem;
+    bottom: 24px;
+    left: 24px;
+    height: 56px;
+    padding: 0 24px;
+    font-size: 15px;
   }
 
   .login-page__card {
@@ -628,7 +631,9 @@
   }
 
   .login-page__submit:hover:not(:disabled),
-  .login-page__google:hover:not(:disabled) {
+  .login-page__google:hover:not(:disabled),
+  .login-page__back-btn:hover,
+  .login-page__back-btn:focus-visible {
     transform: none;
   }
 }

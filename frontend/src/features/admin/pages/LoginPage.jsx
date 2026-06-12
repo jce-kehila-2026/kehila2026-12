@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
 import GoogleIcon from '@mui/icons-material/Google';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
@@ -256,8 +257,8 @@ export default function LoginPage() {
       </div>
 
       <button type="button" className="login-page__back-btn" onClick={() => navigate('/')}>
-        חזרה לאתר
-        <ArrowBackIcon aria-hidden="true" />
+        <HomeOutlinedIcon className="login-page__back-btn-icon" aria-hidden="true" />
+        <span>חזרה לאתר</span>
       </button>
 
       {/* Same membership questionnaire as the public homepage "להצטרף" button.
