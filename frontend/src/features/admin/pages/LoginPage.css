@@ -212,14 +212,14 @@
   position: absolute;
   right: 6%;
   top: 58%;
-  transform: translateY(-50%);
+  transform: translateY(calc(-50% - 17px));
   width: var(--login-column-width);
 }
 
 .login-page__page-header {
   position: absolute;
-  top: 40px;
-  right: 60px;
+  top: 28px;
+  right: 36px;
   z-index: 10;
   display: flex;
   align-items: center;
