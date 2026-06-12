@@ -632,3 +632,22 @@
     transform: none;
   }
 }
+
+/* Scope for the shared JoinCommunityModal (public homepage questionnaire).
+   On the homepage these variables come from .public-homepage; here we provide
+   the exact same values so the modal renders identically. */
+.login-page__join-scope {
+  --public-purple: #4b136b;
+  --public-purple-2: #7f22d9;
+  --public-magenta: #df327b;
+  --public-pink: #ec168c;
+  --public-ink: #202637;
+  --public-muted: #606878;
+  --public-line: rgba(223, 50, 123, 0.14);
+  --public-soft: #fff7fb;
+  --public-soft-2: #f8eff9;
+  --public-card: rgba(255, 255, 255, 0.96);
+  --public-shadow: 0 18px 46px rgba(58, 27, 84, 0.12);
+
+  font-family: "Assistant", "Segoe UI", Arial, sans-serif;
+}

@@ -1,27 +1,28 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signInWithPopup, updateProfile } from 'firebase/auth';
+import { signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import GoogleIcon from '@mui/icons-material/Google';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import PersonOutlineOutlinedIcon from '@mui/icons-material/PersonOutlineOutlined';
 import sheNaLogo from '../../../assets/she-na-logo.png';
 import loginBgImage from '../../../assets/stronger-together-banner.png';
 import { auth, googleProvider } from '../../../firebase';
 import { ensureParticipantProfile, getPostLoginPath, resolveUserRole } from '../services/authRoleService';
+import JoinCommunityModal from '../../public/components/JoinCommunityModal';
+import '../../public/styles/public-sections.css';
+import '../../public/styles/join-modal.css';
 import './LoginPage.css';
 
 export default function LoginPage() {
-  const [authMode, setAuthMode] = useState('login');
-  const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
   const navigate = useNavigate();
 
   async function handleEmailLogin(event) {
@@ -46,35 +47,6 @@ export default function LoginPage() {
         'auth/too-many-requests': 'Too many attempts. Please wait a moment.',
       };
       setError(messages[err.code] || 'Login failed. Please try again.');
-    } finally {
-      setSubmitting(false);
-    }
-  }
-
-  async function handleEmailSignUp(event) {
-    event.preventDefault();
-    setError('');
-    setSubmitting(true);
-
-    const trimmedName = displayName.trim();
-    if (!trimmedName) {
-      setError('Please enter your full name.');
-      setSubmitting(false);
-      return;
-    }
-
-    try {
-      const credential = await createUserWithEmailAndPassword(auth, email, password);
-      await updateProfile(credential.user, { displayName: trimmedName });
-      await ensureParticipantProfile(credential.user, { displayName: trimmedName, email });
-      navigate('/home', { replace: true });
-    } catch (err) {
-      const messages = {
-        'auth/email-already-in-use': 'An account already exists with this email.',
-        'auth/invalid-email': 'Please enter a valid email address.',
-        'auth/weak-password': 'Password should be at least 6 characters.',
-      };
-      setError(messages[err.code] || 'Sign up failed. Please try again.');
     } finally {
       setSubmitting(false);
     }
@@ -112,11 +84,6 @@ export default function LoginPage() {
     }
   }
 
-  function toggleAuthMode() {
-    setError('');
-    setAuthMode((current) => (current === 'login' ? 'signup' : 'login'));
-  }
-
   async function syncParticipantProfile(user) {
     try {
       await ensureParticipantProfile(user);
@@ -124,8 +91,6 @@ export default function LoginPage() {
       console.error('Signed in, but participant profile sync failed:', err);
     }
   }
-
-  const isLogin = authMode === 'login';
 
   return (
     <div
@@ -183,10 +148,8 @@ export default function LoginPage() {
           <div className="login-page__card">
             <span className="login-page__card-leaf" aria-hidden="true" />
 
-            <h2 className="login-page__card-title">{isLogin ? 'התחברי למרחב שלך' : 'יצירת חשבון חדש'}</h2>
-            <p className="login-page__card-subtitle">
-              {isLogin ? 'המשיכי למרחב She-Na שלך' : 'הירשמי כקהילת She-Na והתחילי את המסע שלך'}
-            </p>
+            <h2 className="login-page__card-title">התחברי למרחב שלך</h2>
+            <p className="login-page__card-subtitle">המשיכי למרחב She-Na שלך</p>
 
             {error ? (
               <div className="login-page__error" id="login-error" role="alert">
@@ -194,30 +157,7 @@ export default function LoginPage() {
               </div>
             ) : null}
 
-            <form onSubmit={isLogin ? handleEmailLogin : handleEmailSignUp}>
-              {!isLogin ? (
-                <div className="login-page__field">
-                  <label className="login-page__label" htmlFor="signup-name">
-                    שם מלא
-                  </label>
-                  <div className="login-page__input-wrap">
-                    <span className="login-page__input-icon" aria-hidden="true">
-                      <PersonOutlineOutlinedIcon fontSize="inherit" />
-                    </span>
-                    <input
-                      id="signup-name"
-                      className="login-page__input"
-                      type="text"
-                      placeholder="הזיני את שמך המלא"
-                      value={displayName}
-                      onChange={(event) => setDisplayName(event.target.value)}
-                      required
-                      autoComplete="name"
-                    />
-                  </div>
-                </div>
-              ) : null}
-
+            <form onSubmit={handleEmailLogin}>
               <div className="login-page__field">
                 <label className="login-page__label" htmlFor="login-email">
                   אימייל
@@ -255,7 +195,7 @@ export default function LoginPage() {
                     value={password}
                     onChange={(event) => setPassword(event.target.value)}
                     required
-                    autoComplete={isLogin ? 'current-password' : 'new-password'}
+                    autoComplete="current-password"
                   />
                   <button
                     type="button"
@@ -268,20 +208,18 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              {isLogin ? (
-                <div className="login-page__row">
-                  <label className="login-page__remember">
-                    <input type="checkbox" />
-                    זכור אותי
-                  </label>
-                  <button type="button" className="login-page__link-btn">
-                    שכחת סיסמה?
-                  </button>
-                </div>
-              ) : null}
+              <div className="login-page__row">
+                <label className="login-page__remember">
+                  <input type="checkbox" />
+                  זכור אותי
+                </label>
+                <button type="button" className="login-page__link-btn">
+                  שכחת סיסמה?
+                </button>
+              </div>
 
               <button className="login-page__submit" type="submit" disabled={submitting} id="btn-login">
-                <span>{submitting ? 'אנא המתיני...' : isLogin ? 'התחברי' : 'יצירת חשבון'}</span>
+                <span>{submitting ? 'אנא המתיני...' : 'התחברי'}</span>
                 <span className="login-page__submit-arrow" aria-hidden="true">
                   <ArrowBackIcon fontSize="small" />
                 </span>
@@ -302,9 +240,14 @@ export default function LoginPage() {
             </button>
 
             <p className="login-page__footer-text">
-              {isLogin ? 'אין לך חשבון? ' : 'יש לך כבר חשבון? '}
-              <button type="button" className="login-page__footer-link" disabled={submitting} onClick={toggleAuthMode}>
-                {isLogin ? 'הירשמי כאן' : 'התחברי כאן'}
+              {'אין לך חשבון? '}
+              <button
+                type="button"
+                className="login-page__footer-link"
+                disabled={submitting}
+                onClick={() => setIsJoinModalOpen(true)}
+              >
+                הירשמי כאן
               </button>
             </p>
           </div>
@@ -316,6 +259,13 @@ export default function LoginPage() {
         חזרה לאתר
         <ArrowBackIcon aria-hidden="true" />
       </button>
+
+      {/* Same membership questionnaire as the public homepage "להצטרף" button.
+          The scope wrapper supplies the public theme variables + RTL the modal
+          styles expect, without touching the login card. */}
+      <div className="login-page__join-scope" dir="rtl">
+        <JoinCommunityModal isOpen={isJoinModalOpen} onClose={() => setIsJoinModalOpen(false)} />
+      </div>
     </div>
   );
 }
