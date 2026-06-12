@@ -434,16 +434,41 @@
 }
 
 .participant-support-card button {
-  min-height: 38px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  min-height: 40px;
   margin-top: 8px;
-  border: 0;
-  border-radius: 12px;
+  padding: 0 16px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 999px;
   background: linear-gradient(135deg, #ec168c, #f45ba5);
   color: #fff;
   cursor: pointer;
   font: inherit;
   font-size: 0.84rem;
   font-weight: 700;
+  box-shadow:
+    0 3px 10px rgba(236, 22, 140, 0.12),
+    0 2px 8px rgba(126, 34, 206, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.16);
+  transition:
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 220ms ease;
+}
+
+.participant-support-card button:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    0 6px 16px rgba(236, 22, 140, 0.14),
+    0 4px 12px rgba(126, 34, 206, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+.participant-support-card button:focus-visible {
+  outline: 2px solid rgba(236, 22, 140, 0.35);
+  outline-offset: 2px;
 }
 
 .participant-logout {
@@ -527,6 +552,7 @@
 }
 
 .participant-home--events .participant-support-card button {
+  height: 34px;
   min-height: 34px;
   margin-top: 5px;
 }

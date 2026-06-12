@@ -2836,6 +2836,12 @@
 }
 
 .participant-home--dark .community-page-post__actions button {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Icons keep their original dark-mode colors; only the label/count text is
+   lightened (the svg would otherwise inherit the button color). */
+.participant-home--dark .community-page-post__actions button svg {
   color: #cbd5e1;
 }
 
@@ -2846,11 +2852,19 @@
 .participant-home--dark .community-page-post__actions button.is-commenting {
   border-color: rgba(236, 72, 153, 0.28);
   background: rgba(236, 72, 153, 0.14);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.participant-home--dark .community-page-post__actions button:hover svg,
+.participant-home--dark .community-page-post__actions button:focus-visible svg,
+.participant-home--dark .community-page-post__actions button.is-liked svg,
+.participant-home--dark .community-page-post__actions button.is-supported svg,
+.participant-home--dark .community-page-post__actions button.is-commenting svg {
   color: #fbcfe8;
 }
 
 .participant-home--dark .community-page-post__actions button span {
-  color: #94a3b8;
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .participant-home--dark .community-page-post__anonymous-badge,
