@@ -67,7 +67,7 @@ function ProviderCard({ provider, darkMode = false }) {
         </Typography>
         <Typography
           sx={{
-            fontSize: 13,
+            fontSize: '0.8125rem',
             color: muted,
             mt: 0.2,
             lineHeight: 1.35,
@@ -78,8 +78,8 @@ function ProviderCard({ provider, darkMode = false }) {
         </Typography>
         {schedule ? (
           <Stack direction="row" alignItems="center" spacing={0.6} sx={{ mt: 0.45 }}>
-            <EventOutlinedIcon sx={{ fontSize: 18, color: iconColor, flexShrink: 0 }} />
-            <Typography sx={{ fontSize: 12.75, color: scheduleColor, lineHeight: 1.35, fontWeight: 600 }}>
+            <EventOutlinedIcon sx={{ fontSize: '1.125rem', color: iconColor, flexShrink: 0 }} />
+            <Typography sx={{ fontSize: '0.79688rem', color: scheduleColor, lineHeight: 1.35, fontWeight: 600 }}>
               {schedule}
             </Typography>
           </Stack>
@@ -91,7 +91,7 @@ function ProviderCard({ provider, darkMode = false }) {
         label={isLimited ? "Limited" : "Available"}
         sx={{
           height: 28,
-          fontSize: 11.5,
+          fontSize: '0.71875rem',
           fontWeight: 800,
           flexShrink: 0,
           alignSelf: "center",

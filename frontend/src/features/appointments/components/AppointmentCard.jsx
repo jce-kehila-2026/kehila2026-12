@@ -127,7 +127,7 @@ function AppointmentCard({ appointment, onCancel }) {
               color: typeOpt.iconColor,
             }}
           >
-            <TypeIcon sx={{ fontSize: 30 }} />
+            <TypeIcon sx={{ fontSize: '1.875rem' }} />
           </Box>
 
           <Box sx={{ flex: 1, minWidth: 0, pt: 0.15 }}>
@@ -157,7 +157,7 @@ function AppointmentCard({ appointment, onCancel }) {
             <Typography
               sx={{
                 mt: 0.65,
-                fontSize: 14,
+                fontSize: '0.875rem',
                 fontWeight: 600,
                 color: WELLNESS.muted,
                 lineHeight: 1.4,
@@ -170,7 +170,7 @@ function AppointmentCard({ appointment, onCancel }) {
             <Typography
               sx={{
                 mt: 0.5,
-                fontSize: 13.5,
+                fontSize: '0.84375rem',
                 fontWeight: 500,
                 color: "#5b5670",
                 lineHeight: 1.45,
@@ -187,7 +187,7 @@ function AppointmentCard({ appointment, onCancel }) {
                 sx={{
                   display: "inline-block",
                   mt: 1,
-                  fontSize: 12,
+                  fontSize: '0.75rem',
                   fontWeight: 600,
                   letterSpacing: "0.02em",
                   px: 1.25,
@@ -221,7 +221,7 @@ function AppointmentCard({ appointment, onCancel }) {
               px: 1.35,
               py: 0.45,
               borderRadius: "999px",
-              fontSize: 12,
+              fontSize: '0.75rem',
               fontWeight: 600,
               letterSpacing: "0.02em",
               fontFamily: '"Plus Jakarta Sans", sans-serif',
@@ -245,7 +245,7 @@ function AppointmentCard({ appointment, onCancel }) {
                 textTransform: "none",
                 borderRadius: "12px",
                 fontWeight: 600,
-                fontSize: 12.5,
+                fontSize: '0.78125rem',
                 lineHeight: 1.2,
                 fontFamily: '"Plus Jakarta Sans", sans-serif',
                 borderColor: "rgba(248, 113, 113, 0.5)",

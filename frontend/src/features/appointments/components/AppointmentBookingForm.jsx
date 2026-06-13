@@ -133,7 +133,7 @@ function AppointmentBookingForm({
       },
       "& .MuiOutlinedInput-input": {
         py: 1.15,
-        fontSize: 15,
+        fontSize: '0.9375rem',
         fontFamily: '"Plus Jakarta Sans", sans-serif',
         color: WELLNESS.text,
       },
@@ -155,7 +155,7 @@ function AppointmentBookingForm({
         "&.Mui-focused": { boxShadow: WELLNESS.focusRing },
       },
       "& input": {
-        fontSize: 15,
+        fontSize: '0.9375rem',
         fontFamily: '"Plus Jakarta Sans", sans-serif',
         color: WELLNESS.text,
       },
@@ -290,7 +290,7 @@ function AppointmentBookingForm({
 
   const labelSx = {
     fontFamily: '"Plus Jakarta Sans", sans-serif',
-    fontSize: 13,
+    fontSize: '0.8125rem',
     fontWeight: 700,
     letterSpacing: "0.02em",
     color: WELLNESS.muted,
@@ -613,7 +613,7 @@ function AppointmentBookingForm({
                 variant="contained"
                 disabled={saving}
                 onClick={handleBook}
-                startIcon={<CalendarMonthRoundedIcon sx={{ fontSize: 22 }} />}
+                startIcon={<CalendarMonthRoundedIcon sx={{ fontSize: '1.375rem' }} />}
                 sx={{
                   width: { xs: "100%", md: "auto" },
                   minHeight: 52,
@@ -623,7 +623,7 @@ function AppointmentBookingForm({
                   textTransform: "none",
                   borderRadius: "18px",
                   fontWeight: 800,
-                  fontSize: 15,
+                  fontSize: '0.9375rem',
                   fontFamily: '"Plus Jakarta Sans", sans-serif',
                   whiteSpace: "nowrap",
                   background: `linear-gradient(135deg, ${WELLNESS.primary} 0%, #e879c8 100%)`,

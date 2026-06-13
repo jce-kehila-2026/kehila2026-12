@@ -109,7 +109,7 @@ function AppointmentTypeSection({ value, onChange }) {
                       color: iconColor,
                     }}
                   >
-                    <Icon sx={{ fontSize: 32 }} />
+                    <Icon sx={{ fontSize: '2rem' }} />
                   </Box>
                   <Box sx={{ flex: 1, minWidth: 0, pr: 2.5, display: "flex", flexDirection: "column", gap: 0.75 }}>
                     <Typography
@@ -124,7 +124,7 @@ function AppointmentTypeSection({ value, onChange }) {
                     </Typography>
                     <Typography
                       sx={{
-                        fontSize: 13,
+                        fontSize: '0.8125rem',
                         lineHeight: 1.45,
                         color: WELLNESS.muted,
                         display: "-webkit-box",
@@ -140,7 +140,7 @@ function AppointmentTypeSection({ value, onChange }) {
                       <Box
                         component="span"
                         sx={{
-                          fontSize: 12,
+                          fontSize: '0.75rem',
                           fontWeight: 700,
                           px: 1.1,
                           py: 0.35,
@@ -154,7 +154,7 @@ function AppointmentTypeSection({ value, onChange }) {
                       <Box
                         component="span"
                         sx={{
-                          fontSize: 12,
+                          fontSize: '0.75rem',
                           fontWeight: 700,
                           px: 1.1,
                           py: 0.35,
