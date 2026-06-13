@@ -146,26 +146,26 @@
   .public-section--support .public-support__grid
 ) {
   grid-template-columns: minmax(0, 1fr);
-  gap: clamp(18px, 4vw, 22px);
+  gap: clamp(1.125rem, 4vw, 1.375rem);
 }
 }
 
 @media (min-width: 1121px) {
   .public-homepage--main .public-section.public-section--support {
-    padding-block: clamp(36px, 4.5vh, 52px);
+    padding-block: clamp(2.25rem, 4.5vh, 3.25rem);
   }
 
   .public-homepage--main .public-section--support .public-support__inner {
-    gap: clamp(16px, 2vh, 24px);
+    gap: clamp(1rem, 2vh, 1.5rem);
   }
 
   .public-homepage--main .public-section.public-section--events {
-    min-height: calc(100svh - 70px);
-    padding-block: clamp(36px, 4.5vh, 50px);
+    min-height: calc(100svh - 4.375rem);
+    padding-block: clamp(2.25rem, 4.5vh, 3.125rem);
   }
 
   .public-homepage--main .public-section--events .public-events__inner {
-    gap: clamp(14px, 1.8vh, 20px);
+    gap: clamp(0.875rem, 1.8vh, 1.25rem);
   }
 
   .public-homepage--main .public-section--events .public-events__heading-wrap {
@@ -173,8 +173,8 @@
   }
 
   .public-homepage--main .public-section.public-section--team-section {
-    min-height: calc(100svh - 70px);
-    padding-block: clamp(36px, 4.5vh, 50px);
+    min-height: calc(100svh - 4.375rem);
+    padding-block: clamp(2.25rem, 4.5vh, 3.125rem);
   }
 
   .public-homepage--main .public-team-section__heading {
@@ -206,29 +206,29 @@
   }
 
   .public-homepage--main .public-section.public-section--medical-partners {
-    min-height: calc(100svh - 70px);
-    padding-block: clamp(48px, 5.5vh, 62px);
+    min-height: calc(100svh - 4.375rem);
+    padding-block: clamp(3rem, 5.5vh, 3.875rem);
   }
 
   .public-homepage--main .public-section--medical-partners .medical-partners__inner {
-    gap: clamp(24px, 3vh, 34px);
+    gap: clamp(1.5rem, 3vh, 2.125rem);
   }
 }
 
 @media (min-width: 1121px) and (max-height: 900px) {
   .public-homepage--main .public-section--learn-together .public-support__media {
-    flex-basis: 180px;
-    height: 180px;
+    flex-basis: 11.25rem;
+    height: 11.25rem;
   }
 
   .public-homepage--main .public-section--learn-together .public-support__body {
-    min-height: 196px;
-    padding-block: 22px 24px;
+    min-height: 12.25rem;
+    padding-block: 1.375rem 1.5rem;
   }
 
   .public-homepage--main .public-section--events .public-event-card__media {
-    flex-basis: 190px;
-    height: 190px;
+    flex-basis: 11.875rem;
+    height: 11.875rem;
   }
 }
 
@@ -238,7 +238,7 @@
 
 @media (min-width: 1121px) {
   .public-stories-articles-page :is(#stories, #articles) {
-    min-height: calc(100svh - 70px);
+    min-height: calc(100svh - 4.375rem);
   }
 
   .public-donations-page #donations {
@@ -248,18 +248,18 @@
   .public-homepage.public-donations-page .public-section#donations {
     display: grid;
     align-items: center;
-    padding-block: clamp(24px, 3vh, 36px);
-    padding-inline: clamp(24px, 4vw, 64px);
+    padding-block: clamp(1.5rem, 3vh, 2.25rem);
+    padding-inline: clamp(1.5rem, 4vw, 4rem);
   }
 
   .public-donations-page #donations .public-support-cta__inner {
     grid-template-columns: minmax(280px, 0.8fr) minmax(0, 1.2fr);
-    gap: clamp(20px, 2.5vw, 36px);
-    width: min(100%, 1440px);
+    gap: clamp(1.25rem, 2.5vw, 2.25rem);
+    width: min(100%, 90rem);
   }
 
   .public-donations-page #donations .public-support-cta__content {
-    gap: clamp(10px, 1.4vh, 16px);
+    gap: clamp(0.625rem, 1.4vh, 1rem);
     width: 100%;
     padding-inline: 0;
   }
@@ -277,53 +277,53 @@
   }
 
   .public-donations-page #donations .public-support-cta__feature-zone {
-    gap: clamp(10px, 1.4vh, 16px);
+    gap: clamp(0.625rem, 1.4vh, 1rem);
     margin-block-start: 0;
   }
 
   .public-donations-page #donations .public-support-cta__features {
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: clamp(12px, 1.4vw, 18px);
+    gap: clamp(0.75rem, 1.4vw, 1.125rem);
   }
 
   .public-donations-page #donations .public-support-cta__feature {
     align-content: start;
-    gap: 10px;
-    min-height: 150px;
-    padding: 18px;
+    gap: 0.625rem;
+    min-height: 9.375rem;
+    padding: 1.125rem;
     border-radius: 24px;
   }
 
   .public-donations-page #donations .public-support-cta__feature-icon {
-    width: 48px;
-    height: 48px;
+    width: 3rem;
+    height: 3rem;
   }
 
   .public-donations-page #donations .public-support-cta__feature-icon-glyph {
-    width: 25px;
-    height: 25px;
+    width: 1.5625rem;
+    height: 1.5625rem;
   }
 
   .public-donations-page #donations .public-support-cta__feature-copy {
-    gap: 6px;
+    gap: 0.375rem;
   }
 
   .public-donations-page #donations .public-support-cta__visual,
   .public-donations-page #donations .public-support-cta__visual-stage {
-    min-height: clamp(320px, 30vw, 410px);
+    min-height: clamp(20rem, 30vw, 25.625rem);
   }
 
   .public-donations-page #donations .public-support-cta__image-wrap,
   .public-donations-page #donations .public-support-cta__image {
-    width: min(100%, 500px);
+    width: min(100%, 31.25rem);
   }
 
   .public-donations-page #donations .public-support-cta__image {
-    max-height: clamp(330px, 36vw, 450px);
+    max-height: clamp(20.625rem, 36vw, 28.125rem);
   }
 
   .public-homepage.public-stories-articles-page .public-section:is(#stories, #articles) {
-    padding-block: clamp(28px, 3.5vh, 42px);
+    padding-block: clamp(1.75rem, 3.5vh, 2.625rem);
   }
 
   .public-stories-articles-page :is(#stories, #articles) .public-section-heading {
@@ -344,17 +344,17 @@
 
   .public-stories-articles-page #stories .public-stories-slider__track,
   .public-stories-articles-page #articles .press-articles__track {
-    padding-block: 10px;
+    padding-block: 0.625rem;
   }
 
   .public-stories-articles-page #stories .public-story-card {
-    min-height: 360px;
-    padding-block: 26px 24px;
-    padding-inline: 24px;
+    min-height: 22.5rem;
+    padding-block: 1.625rem 1.5rem;
+    padding-inline: 1.5rem;
   }
 
   .public-stories-articles-page #stories .public-team-card__body {
-    gap: 10px;
+    gap: 0.625rem;
     margin-block-start: 16px;
   }
 
@@ -367,21 +367,21 @@
   }
 
   .public-stories-articles-page #articles .press-article-card__media {
-    height: 180px;
+    height: 11.25rem;
   }
 
   .public-stories-articles-page #articles .press-article-card__body {
-    gap: 12px;
-    padding: 18px 18px 20px;
+    gap: 0.75rem;
+    padding: 1.125rem 1.125rem 1.25rem;
   }
 
   .public-stories-articles-page #articles .press-article-card__text {
-    gap: 10px;
+    gap: 0.625rem;
   }
 
   .public-stories-articles-page #articles .press-article-card__cta {
-    min-height: 40px;
-    padding-block: 8px;
+    min-height: 2.5rem;
+    padding-block: 0.5rem;
   }
 }
 
@@ -391,28 +391,28 @@
   }
 
   .public-homepage.public-donations-page .public-section#donations {
-    padding-block: clamp(42px, 7vw, 64px);
+    padding-block: clamp(2.625rem, 7vw, 4rem);
   }
 
   .public-donations-page #donations .public-support-cta__inner {
-    gap: clamp(20px, 3vw, 30px);
+    gap: clamp(1.25rem, 3vw, 1.875rem);
   }
 
   .public-donations-page #donations .public-support-cta__content {
-    gap: clamp(12px, 2vw, 18px);
+    gap: clamp(0.75rem, 2vw, 1.125rem);
   }
 
   .public-donations-page #donations .public-support-cta__feature-zone {
-    gap: clamp(12px, 2vw, 18px);
+    gap: clamp(0.75rem, 2vw, 1.125rem);
     margin-block-start: 0;
   }
 
   .public-donations-page #donations .public-support-cta__feature {
-    padding: clamp(16px, 2vw, 22px);
+    padding: clamp(1rem, 2vw, 1.375rem);
   }
 
   .public-homepage.public-stories-articles-page .public-section:is(#stories, #articles) {
-    padding-block: clamp(42px, 7vw, 64px);
+    padding-block: clamp(2.625rem, 7vw, 4rem);
   }
 
   .public-stories-articles-page :is(#stories, #articles) .public-section-heading {
@@ -420,44 +420,44 @@
   }
 
   .public-stories-articles-page #articles .press-article-card__media {
-    height: 190px;
+    height: 11.875rem;
   }
 }
 
 @media (min-width: 641px) and (max-width: 1120px) {
   .public-stories-articles-page #stories .public-story-card {
-    min-height: 380px;
-    padding-block: 32px 28px;
-    padding-inline: 28px;
+    min-height: 23.75rem;
+    padding-block: 2rem 1.75rem;
+    padding-inline: 1.75rem;
   }
 }
 
 @media (max-width: 640px) {
   .public-homepage.public-donations-page .public-section#donations {
-    padding-block: 40px;
-    padding-inline: 18px;
+    padding-block: 2.5rem;
+    padding-inline: 1.125rem;
   }
 
   .public-donations-page #donations .public-support-cta__visual {
-    min-height: 240px;
+    min-height: 15rem;
     margin-block-start: 4px;
   }
 
   .public-donations-page #donations .public-support-cta__visual-stage {
-    min-height: 240px;
+    min-height: 15rem;
   }
 
   .public-donations-page #donations .public-support-cta__image {
-    max-height: 300px;
+    max-height: 18.75rem;
   }
 
   .public-stories-articles-page #stories .public-story-card {
     min-height: auto;
-    padding-block: 28px 24px;
+    padding-block: 1.75rem 1.5rem;
   }
 
   .public-stories-articles-page #articles .press-article-card__media {
-    height: 180px;
+    height: 11.25rem;
   }
 }
 
@@ -516,7 +516,7 @@
 @media (max-width: 1120px) {
   .public-homepage .public-team-section__card {
     height: auto;
-    min-height: 360px;
+    min-height: 22.5rem;
   }
 
   .public-homepage :is(
@@ -538,12 +538,12 @@
   }
 
   .public-homepage .public-stories-slider {
-    gap: 8px;
+    gap: 0.5rem;
   }
 
   .public-homepage .public-stories-slider__arrow {
-    width: 40px;
-    height: 40px;
+    width: 2.5rem;
+    height: 2.5rem;
   }
 }
 
@@ -597,64 +597,64 @@
   }
 
   .public-navbar {
-    min-height: 60px;
-    padding-block: 8px;
-    padding-inline: clamp(12px, 4vw, 18px);
+    min-height: 3.75rem;
+    padding-block: 0.5rem;
+    padding-inline: clamp(0.75rem, 4vw, 1.125rem);
   }
 
   .public-navbar--scrolled {
-    min-height: 56px;
+    min-height: 3.5rem;
   }
 
   .public-navbar__bar {
-    min-height: 44px;
-    gap: 10px;
+    min-height: 2.75rem;
+    gap: 0.625rem;
   }
 
   .public-navbar__brand-image {
     width: auto;
     max-width: clamp(104px, 30vw, 124px);
-    max-height: 38px;
+    max-height: 2.375rem;
   }
 
   .public-navbar__toggle {
-    width: 40px;
-    height: 40px;
-    padding: 8px;
+    width: 2.5rem;
+    height: 2.5rem;
+    padding: 0.5rem;
   }
 
   .public-navbar__toggle span {
-    margin-block: 4px;
+    margin-block: 0.25rem;
   }
 
   .public-navbar__menu {
-    max-height: calc(100dvh - 60px);
+    max-height: calc(100dvh - 3.75rem);
     padding-block-start: 10px;
     overflow-y: auto;
     overscroll-behavior: contain;
   }
 
   .public-navbar__menu--open {
-    gap: 10px;
+    gap: 0.625rem;
   }
 
   .public-navbar__links,
   .public-navbar__actions {
-    gap: 8px;
+    gap: 0.5rem;
   }
 
   .public-navbar__links > a,
   .public-navbar__dropdown-trigger {
-    min-height: 42px;
-    padding-block: 9px;
-    padding-inline: 10px;
+    min-height: 2.625rem;
+    padding-block: 0.5625rem;
+    padding-inline: 0.625rem;
     font-size: clamp(0.92rem, 3.5vw, 1rem);
   }
 
   .public-navbar__cta {
-    min-height: 44px;
-    padding-block: 10px;
-    padding-inline: 14px;
+    min-height: 2.75rem;
+    padding-block: 0.625rem;
+    padding-inline: 0.875rem;
     font-size: clamp(0.9rem, 3.4vw, 0.98rem);
   }
 
@@ -666,12 +666,12 @@
     padding-block:
       calc(var(--public-navbar-offset) + clamp(10px, 1.5vh, 16px))
       clamp(12px, 1.8vh, 18px);
-    padding-inline: clamp(14px, 4vw, 24px);
+    padding-inline: clamp(0.875rem, 4vw, 1.5rem);
     overflow: clip;
   }
 
   .public-homepage--main .public-hero__layout {
-    gap: clamp(8px, 1.2vh, 12px);
+    gap: clamp(0.5rem, 1.2vh, 0.75rem);
     justify-content: center;
     padding-block-start: 0;
     transform: translateY(clamp(-64px, -7vh, -44px));
@@ -681,12 +681,12 @@
     flex: 0 0 auto;
     align-items: center;
     justify-content: flex-start;
-    padding-block: clamp(4px, 0.8vh, 8px) 0;
+    padding-block: clamp(0.25rem, 0.8vh, 0.5rem) 0;
   }
 
   .public-homepage--main .public-hero__content {
-    gap: clamp(7px, 1vh, 10px);
-    width: min(100%, 560px);
+    gap: clamp(0.4375rem, 1vh, 0.625rem);
+    width: min(100%, 35rem);
     margin-inline: auto;
   }
 
@@ -703,8 +703,8 @@
 
   .public-homepage--main .public-hero__eyebrow {
     max-width: 100%;
-    padding-block: 7px;
-    padding-inline: 14px;
+    padding-block: 0.4375rem;
+    padding-inline: 0.875rem;
     font-size: clamp(0.82rem, 3.2vw, 0.92rem);
     text-align: center;
   }
@@ -732,23 +732,23 @@
   }
 
   .public-homepage--main .public-hero__actions {
-    width: min(100%, 320px);
-    gap: 7px;
+    width: min(100%, 20rem);
+    gap: 0.4375rem;
     margin-block-start: 2px;
     margin-inline: auto;
   }
 
   .public-homepage--main .public-hero__btn {
-    width: min(100%, 300px);
-    min-height: 44px;
+    width: min(100%, 18.75rem);
+    min-height: 2.75rem;
     margin-inline: auto;
-    padding-block: 9px;
-    padding-inline: 18px;
+    padding-block: 0.5625rem;
+    padding-inline: 1.125rem;
     font-size: clamp(0.9rem, 3.2vw, 0.98rem);
   }
 
   .public-homepage--main .public-hero__statistics {
-    width: min(100%, 520px);
+    width: min(100%, 32.5rem);
     margin-block-start: 0;
     padding-block-start: 0;
   }
@@ -756,25 +756,25 @@
   .public-homepage--main .public-hero__statistics .public-statistics__grid--hero {
     width: 100%;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px;
+    gap: 0.5rem;
   }
 
   .public-homepage--main .public-hero__statistics .public-statistics__card {
     width: 100%;
     min-width: 0;
-    gap: 4px;
-    padding: 8px 7px 7px;
+    gap: 0.25rem;
+    padding: 0.5rem 0.4375rem 0.4375rem;
     border-radius: 14px;
   }
 
   .public-homepage--main .public-hero__statistics .public-statistics__icon {
-    width: clamp(36px, 10vw, 44px);
-    height: clamp(36px, 10vw, 44px);
+    width: clamp(2.25rem, 10vw, 2.75rem);
+    height: clamp(2.25rem, 10vw, 2.75rem);
   }
 
   .public-homepage--main .public-hero__statistics .public-statistics__icon-glyph {
-    width: clamp(18px, 5vw, 22px);
-    height: clamp(18px, 5vw, 22px);
+    width: clamp(1.125rem, 5vw, 1.375rem);
+    height: clamp(1.125rem, 5vw, 1.375rem);
   }
 
   .public-homepage--main .public-hero__statistics .public-statistics__value-number,
@@ -814,24 +814,24 @@
   }
 
   .public-navbar {
-    min-height: 56px;
-    padding-block: 7px;
-    padding-inline: 12px;
+    min-height: 3.5rem;
+    padding-block: 0.4375rem;
+    padding-inline: 0.75rem;
   }
 
   .public-navbar__bar {
-    min-height: 40px;
+    min-height: 2.5rem;
   }
 
   .public-navbar__brand-image {
     max-width: clamp(96px, 28vw, 112px);
-    max-height: 34px;
+    max-height: 2.125rem;
   }
 
   .public-navbar__toggle {
-    width: 38px;
-    height: 38px;
-    padding: 8px;
+    width: 2.375rem;
+    height: 2.375rem;
+    padding: 0.5rem;
   }
 
   .public-navbar__actions-end {
@@ -843,7 +843,7 @@
     padding-block:
       calc(var(--public-navbar-offset) + clamp(8px, 1.2vh, 12px))
       clamp(10px, 1.5vh, 14px);
-    padding-inline: 14px;
+    padding-inline: 0.875rem;
   }
 
   .public-homepage--main .public-hero__background {
@@ -865,7 +865,7 @@
 
   .public-homepage--main .public-hero__statistics .public-statistics__grid--hero {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 7px;
+    gap: 0.4375rem;
   }
 
   .public-homepage--main .public-hero__statistics .public-statistics__card {
@@ -873,15 +873,15 @@
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto;
     justify-items: center;
-    gap: 3px;
-    padding: 7px 5px 6px;
+    gap: 0.1875rem;
+    padding: 0.4375rem 0.3125rem 0.375rem;
     text-align: center;
   }
 
   .public-homepage--main .public-hero__statistics .public-statistics__icon {
     grid-row: auto;
-    width: 34px;
-    height: 34px;
+    width: 2.125rem;
+    height: 2.125rem;
   }
 
   .public-homepage--main .public-hero__statistics .public-statistics__value {
@@ -900,7 +900,7 @@
   }
 
   .public-section-heading {
-    padding-inline: 8px;
+    padding-inline: 0.5rem;
   }
 
   .public-section-heading__title {
@@ -918,11 +918,11 @@
   }
 
   .public-homepage--main .public-hero {
-    padding-inline: 12px;
+    padding-inline: 0.75rem;
   }
 
   .public-homepage--main .public-hero__content {
-    gap: 9px;
+    gap: 0.5625rem;
   }
 
   .public-homepage--main .public-hero h1 {
@@ -930,15 +930,15 @@
   }
 
   .public-homepage--main .public-hero__actions {
-    gap: 8px;
+    gap: 0.5rem;
   }
 
   .public-homepage--main .public-hero__btn {
-    min-height: 42px;
+    min-height: 2.625rem;
   }
 
   .public-homepage--main .public-hero__statistics .public-statistics__card {
-    padding-inline: 4px;
+    padding-inline: 0.25rem;
   }
 }
 
@@ -950,8 +950,8 @@
   .public-homepage--main .public-hero__statistics .public-statistics__card {
     grid-template-columns: auto minmax(0, 1fr);
     justify-items: start;
-    column-gap: 8px;
-    padding: 7px 10px;
+    column-gap: 0.5rem;
+    padding: 0.4375rem 0.625rem;
     text-align: start;
   }
 

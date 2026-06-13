@@ -11,7 +11,7 @@
   z-index: 2100;
   display: grid;
   place-items: center;
-  padding: clamp(12px, 2.5vw, 28px);
+  padding: clamp(0.75rem, 2.5vw, 1.75rem);
   background: rgba(253, 246, 251, 0.45);
   backdrop-filter: blur(14px) saturate(1.15);
   -webkit-backdrop-filter: blur(14px) saturate(1.15);
@@ -24,7 +24,7 @@
   grid-template-columns: 45% 55%;
   grid-template-rows: minmax(0, 1fr);
   align-items: stretch;
-  width: min(100%, 920px);
+  width: min(100%, 57.5rem);
   max-height: 85vh;
   min-height: 0;
   overflow: hidden;
@@ -44,7 +44,7 @@
 .support-area-modal__media {
   position: relative;
   height: 100%;
-  min-height: 280px;
+  min-height: 17.5rem;
   overflow: hidden;
   background: linear-gradient(165deg, #f9eef5 0%, #efe2f7 100%);
   border-radius: 24px 0 0 24px;
@@ -73,9 +73,9 @@
   flex-direction: column;
   align-items: center;
   justify-content: flex-end;
-  gap: 6px;
+  gap: 0.375rem;
   padding-block-end: clamp(28px, 4vh, 40px);
-  padding-inline: clamp(16px, 3vw, 24px);
+  padding-inline: clamp(1rem, 3vw, 1.5rem);
   text-align: center;
   background: linear-gradient(
     180deg,
@@ -106,11 +106,11 @@
 .support-area-modal__body {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 1rem;
   min-height: 0;
   max-height: 100%;
-  padding-block: clamp(24px, 3vw, 32px);
-  padding-inline: clamp(24px, 3.5vw, 40px);
+  padding-block: clamp(1.5rem, 3vw, 2rem);
+  padding-inline: clamp(1.5rem, 3.5vw, 2.5rem);
   overflow-x: hidden;
   overflow-y: auto;
   direction: rtl;
@@ -119,7 +119,7 @@
 }
 
 .support-area-modal__body::-webkit-scrollbar {
-  width: 6px;
+  width: 0.375rem;
 }
 
 .support-area-modal__body::-webkit-scrollbar-thumb {
@@ -133,8 +133,8 @@
   right: 16px;
   z-index: 10;
   display: inline-grid;
-  width: 40px;
-  height: 40px;
+  width: 2.5rem;
+  height: 2.5rem;
   place-items: center;
   padding: 0;
   color: var(--modal-purple);
@@ -167,17 +167,17 @@
   display: grid;
   flex-shrink: 0;
   justify-items: center;
-  gap: 10px;
+  gap: 0.625rem;
   margin: 0;
   padding-block-start: 8px;
-  padding-inline: 4px 28px;
+  padding-inline: 0.25rem 1.75rem;
   text-align: center;
 }
 
 .support-area-modal__title-icon {
   display: inline-grid;
-  width: 44px;
-  height: 44px;
+  width: 2.75rem;
+  height: 2.75rem;
   place-items: center;
   color: var(--modal-pink);
   font-size: 1.35rem;
@@ -207,7 +207,7 @@
 .support-area-modal__points {
   display: grid;
   flex-shrink: 0;
-  gap: 12px;
+  gap: 0.75rem;
   width: 100%;
   max-width: 26rem;
   margin-inline: auto;
@@ -218,9 +218,9 @@
 .support-area-modal__point {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
-  padding-block: 14px;
-  padding-inline: 14px;
+  gap: 0.75rem;
+  padding-block: 0.875rem;
+  padding-inline: 0.875rem;
   background: rgba(253, 246, 251, 0.92);
   border: 1px solid rgba(247, 214, 234, 0.95);
   border-radius: 16px;
@@ -241,7 +241,7 @@
 .support-area-modal__point-content {
   display: grid;
   flex: 1;
-  gap: 3px;
+  gap: 0.1875rem;
   min-width: 0;
   text-align: start;
 }
@@ -263,8 +263,8 @@
 .support-area-modal__point-icon {
   display: inline-grid;
   flex-shrink: 0;
-  width: 58px;
-  height: 58px;
+  width: 3.625rem;
+  height: 3.625rem;
   place-items: center;
   color: #ffffff;
   font-size: 1.5rem;
@@ -275,8 +275,8 @@
 }
 
 .support-area-modal__point-icon svg {
-  width: 24px;
-  height: 24px;
+  width: 1.5rem;
+  height: 1.5rem;
 }
 
 .support-area-modal__actions {
@@ -285,7 +285,7 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 0.625rem;
   width: 100%;
   max-width: 26rem;
   margin-block-start: 4px;
@@ -297,10 +297,10 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  min-height: 42px;
-  padding-block: 10px;
-  padding-inline: 20px;
+  gap: 0.5rem;
+  min-height: 2.625rem;
+  padding-block: 0.625rem;
+  padding-inline: 1.25rem;
   border-radius: 999px;
   font-family: inherit;
   font-size: 0.88rem;
@@ -370,7 +370,7 @@
 
 @media (max-width: 860px) {
   .support-area-modal {
-    padding: 16px;
+    padding: 1rem;
   }
 
   .support-area-modal__dialog {
@@ -384,9 +384,9 @@
   .support-area-modal__media {
     flex: 0 0 auto;
     width: 100%;
-    min-height: 200px;
-    max-height: 220px;
-    height: 220px;
+    min-height: 12.5rem;
+    max-height: 13.75rem;
+    height: 13.75rem;
     border-radius: 24px 24px 0 0;
   }
 
@@ -394,13 +394,13 @@
     flex: 1 1 auto;
     max-height: none;
     min-height: 0;
-    padding-block: 20px 24px;
-    padding-inline: 20px;
+    padding-block: 1.25rem 1.5rem;
+    padding-inline: 1.25rem;
   }
 
   .support-area-modal__header {
     padding-block-start: 4px;
-    padding-inline: 4px 24px;
+    padding-inline: 0.25rem 1.5rem;
   }
 
   .support-area-modal__close {
@@ -420,9 +420,9 @@
   }
 
   .support-area-modal__media {
-    min-height: 180px;
-    max-height: 200px;
-    height: 200px;
+    min-height: 11.25rem;
+    max-height: 12.5rem;
+    height: 12.5rem;
   }
 }
 
