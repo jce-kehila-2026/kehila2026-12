@@ -74,7 +74,7 @@ function CommunitySettingsSection({ darkMode = false, participantId = "", profil
         id="community-settings-title"
         sx={{
           color: darkMode ? WELLNESS_DARK.text : WELLNESS.text,
-          fontSize: 20,
+          fontSize: '1.25rem',
           fontWeight: 800,
           lineHeight: 1.2,
           mb: 1.8,
@@ -102,7 +102,7 @@ function CommunitySettingsSection({ darkMode = false, participantId = "", profil
           <Typography
             sx={{
               color: darkMode ? WELLNESS_DARK.text : WELLNESS.text,
-              fontSize: 15,
+              fontSize: '0.9375rem',
               fontWeight: 800,
               lineHeight: 1.3,
             }}
@@ -112,7 +112,7 @@ function CommunitySettingsSection({ darkMode = false, participantId = "", profil
           <Typography
             sx={{
               color: darkMode ? WELLNESS_DARK.muted : WELLNESS.muted,
-              fontSize: 13,
+              fontSize: '0.8125rem',
               lineHeight: 1.5,
               mt: 0.45,
             }}
@@ -366,7 +366,7 @@ function ProfilePage({
                 <Box sx={{ flex: 1, minWidth: 0 }}>
                   <Typography
                     sx={{
-                      fontSize: { xs: 36, sm: 48, md: 52 },
+                      fontSize: { xs: '2.25rem', sm: '3rem', md: '3.25rem' },
                       fontWeight: 700,
                       color: darkMode ? WELLNESS_DARK.text : WELLNESS.text,
                       lineHeight: 1.1,
@@ -378,7 +378,7 @@ function ProfilePage({
                   <Typography
                     sx={{
                       color: darkMode ? WELLNESS_DARK.muted : WELLNESS.muted,
-                      fontSize: { xs: 17, sm: 20, md: 22 },
+                      fontSize: { xs: '1.0625rem', sm: '1.25rem', md: '1.375rem' },
                       mt: 0.5,
                     }}
                   >

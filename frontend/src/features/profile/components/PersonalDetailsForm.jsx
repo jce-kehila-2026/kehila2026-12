@@ -264,7 +264,7 @@ function PersonalDetailsForm({
       },
 
       "& .MuiOutlinedInput-input": {
-        fontSize: 17,
+        fontSize: '1.0625rem',
         color: darkMode ? "#f8fafc" : WELLNESS.text,
         WebkitTextFillColor: darkMode ? "#f8fafc" : undefined,
         paddingRight: "8px",
@@ -343,7 +343,7 @@ function PersonalDetailsForm({
             mt: 0.5,
             "& .MuiMenuItem-root": {
               color: WELLNESS.text,
-              fontSize: 16,
+              fontSize: '1rem',
             },
             "& .MuiMenuItem-root:hover": {
               backgroundColor: "rgba(181, 123, 232, 0.08)",
@@ -449,7 +449,7 @@ function PersonalDetailsForm({
       },
 
       "& input": {
-        fontSize: 17,
+        fontSize: '1.0625rem',
         color: darkMode ? "#f8fafc" : WELLNESS.text,
         WebkitTextFillColor: darkMode ? "#f8fafc" : undefined,
       },
@@ -483,7 +483,7 @@ function PersonalDetailsForm({
       sx={{
         mb: 0.8,
         color: labelMuted,
-        fontSize: 14,
+        fontSize: '0.875rem',
         fontWeight: 500,
       }}
     >
@@ -808,7 +808,7 @@ function PersonalDetailsForm({
                   px: 4,
                   py: 1.4,
                   fontWeight: 700,
-                  fontSize: 16,
+                  fontSize: '1rem',
                   background: `linear-gradient(135deg, ${WELLNESS.primary} 0%, #e879c8 100%)`,
                   boxShadow: "0 8px 22px rgba(181, 123, 232, 0.28)",
                   transition: "transform 0.2s ease, box-shadow 0.2s ease",
@@ -848,7 +848,7 @@ function PersonalDetailsForm({
               type="button"
               variant="outlined"
               startIcon={
-                <LogoutOutlinedIcon sx={{ color: "inherit", fontSize: 20 }} />
+                <LogoutOutlinedIcon sx={{ color: "inherit", fontSize: '1.25rem' }} />
               }
               onClick={onLogout}
               sx={{
@@ -858,7 +858,7 @@ function PersonalDetailsForm({
                 px: 2.5,
                 py: 1,
                 fontWeight: 600,
-                fontSize: 15,
+                fontSize: '0.9375rem',
                 color: "#6b4f9a",
                 borderWidth: 1.5,
                 borderColor: "rgba(181, 123, 232, 0.45)",

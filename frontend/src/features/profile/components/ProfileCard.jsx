@@ -115,7 +115,7 @@ function ProfileCard({
                 bgcolor: darkMode ? "rgba(196, 165, 245, 0.22)" : "#EAD7FF",
                 color: darkMode ? WELLNESS_DARK.primary : "#7c3aad",
                 fontWeight: 700,
-                fontSize: 40,
+                fontSize: '2.5rem',
               }}
             >
               {initials}
@@ -170,7 +170,7 @@ function ProfileCard({
                   },
                 }}
               >
-                <PhotoCameraOutlinedIcon sx={{ fontSize: 18, color: "inherit" }} />
+                <PhotoCameraOutlinedIcon sx={{ fontSize: '1.125rem', color: "inherit" }} />
                 <input
                   hidden
                   accept="image/*"

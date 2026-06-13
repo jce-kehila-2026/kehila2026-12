@@ -34,7 +34,7 @@ export default function DarkModeToggle({
         <Typography
           component="span"
           sx={{
-            fontSize: 12.5,
+            fontSize: '0.78125rem',
             fontWeight: 600,
             lineHeight: 1.2,
             letterSpacing: "0.01em",
@@ -102,7 +102,7 @@ export default function DarkModeToggle({
         >
           <BedtimeOutlinedIcon
             sx={{
-              fontSize: 18,
+              fontSize: '1.125rem',
               width: 18,
               height: 18,
               flexShrink: 0,
@@ -132,7 +132,7 @@ export default function DarkModeToggle({
         >
           <WbSunnyOutlinedIcon
             sx={{
-              fontSize: 18,
+              fontSize: '1.125rem',
               width: 18,
               height: 18,
               flexShrink: 0,
