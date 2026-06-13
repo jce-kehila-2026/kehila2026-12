@@ -838,7 +838,7 @@
 }
 
 .wellness-illustration__person svg {
-  font-size: 62px;
+  font-size: 3.875rem;
 }
 
 .wellness-illustration__leaf {
@@ -886,7 +886,7 @@
 }
 
 .dashboard-stat__icon svg {
-  font-size: 30px;
+  font-size: 1.875rem;
 }
 
 .dashboard-stat--amber {
@@ -1288,7 +1288,7 @@
 }
 
 .recommendation-card__image svg {
-  font-size: 38px;
+  font-size: 2.375rem;
 }
 
 .recommendation-card strong {

@@ -88,7 +88,7 @@
 }
 
 .community-guidelines-modal__icon svg {
-  font-size: 32px;
+  font-size: 2rem;
 }
 
 .community-guidelines-modal__copy h2,
@@ -357,7 +357,7 @@
 
 .community-right-sidebar .community-page-card__icon svg,
 .community-right-sidebar .guidelines-card__icon svg {
-  font-size: 22px;
+  font-size: 1.375rem;
 }
 
 .community-right-sidebar .community-page-card h2,
@@ -1090,7 +1090,7 @@
 }
 
 .community-profile-setup__icon svg {
-  font-size: 28px;
+  font-size: 1.75rem;
 }
 
 .community-profile-setup__heading span:not(.community-profile-setup__icon) {
@@ -1271,7 +1271,7 @@
 }
 
 .guidelines-card__icon svg {
-  font-size: 22px;
+  font-size: 1.375rem;
 }
 
 .guidelines-card__heading span:not(.guidelines-card__icon) {
@@ -1410,7 +1410,7 @@
 }
 
 .community-streak-card__icon svg {
-  font-size: 25px;
+  font-size: 1.5625rem;
 }
 
 .community-streak-card.is-at-risk .community-streak-card__icon {
@@ -1524,7 +1524,7 @@
 
 .community-streak-card__completion-badge svg {
   color: #ec4899;
-  font-size: 20px;
+  font-size: 1.25rem;
 }
 
 .community-streak-card__subtitle {
@@ -1598,7 +1598,7 @@
 }
 
 .community-streak-card__day svg {
-  font-size: 19px;
+  font-size: 1.1875rem;
   stroke-width: 3;
 }
 
@@ -1638,7 +1638,7 @@
 }
 
 .birthday-card__icon svg {
-  font-size: 24px;
+  font-size: 1.5rem;
 }
 
 .birthday-card__heading {
@@ -1849,7 +1849,7 @@
 }
 
 .community-page-card__icon svg {
-  font-size: 28px;
+  font-size: 1.75rem;
 }
 
 .community-page-card span:not(.community-page-card__icon) {
