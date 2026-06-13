@@ -44,7 +44,7 @@
 
   gap: 0;
 
-  padding: 16px 4px 32px;
+  padding: 1rem 0.25rem 2rem;
 
   color: var(--pd-text);
 
@@ -56,13 +56,13 @@
 
   position: absolute;
 
-  width: 1px;
+  width: 0.0625rem;
 
-  height: 1px;
+  height: 0.0625rem;
 
   padding: 0;
 
-  margin: -1px;
+  margin: -0.0625rem;
 
   overflow: hidden;
 
@@ -102,7 +102,7 @@
 
   flex-shrink: 0;
 
-  margin-bottom: 20px;
+  margin-bottom: 1.25rem;
 
   font-family: var(--pd-hero-font-body);
 
@@ -160,13 +160,13 @@
 
   justify-content: center;
 
-  gap: 8px;
+  gap: 0.5rem;
 
   max-width: min(100%, 38rem);
 
   height: 100%;
 
-  padding: 20px 32px;
+  padding: 1.25rem 2rem;
 
   color: #fff;
 
@@ -256,7 +256,7 @@
 
   display: block;
 
-  margin-top: 6px;
+  margin-top: 0.375rem;
 
   font-family: var(--pd-hero-font-body);
 
@@ -318,11 +318,11 @@
 
   grid-template-columns: repeat(2, minmax(0, 1fr));
 
-  gap: 20px;
+  gap: 1.25rem;
 
   align-items: stretch;
 
-  margin-bottom: 20px;
+  margin-bottom: 1.25rem;
 
 }
 
@@ -348,7 +348,7 @@
 
   min-height: 100%;
 
-  padding: 28px;
+  padding: 1.75rem;
 
   border-radius: var(--pd-radius-md);
 
@@ -436,9 +436,9 @@
 
 .pd-card__blob--a {
 
-  width: 140px;
+  width: 8.75rem;
 
-  height: 140px;
+  height: 8.75rem;
 
   top: -36px;
 
@@ -452,9 +452,9 @@
 
 .pd-card__blob--b {
 
-  width: 110px;
+  width: 6.875rem;
 
-  height: 110px;
+  height: 6.875rem;
 
   bottom: -32px;
 
@@ -544,9 +544,9 @@
 
 .pd-card__petal--a {
 
-  width: 28px;
+  width: 1.75rem;
 
-  height: 28px;
+  height: 1.75rem;
 
   bottom: 18px;
 
@@ -560,9 +560,9 @@
 
 .pd-card__petal--b {
 
-  width: 16px;
+  width: 1rem;
 
-  height: 16px;
+  height: 1rem;
 
   top: 52px;
 
@@ -650,9 +650,9 @@
 
   transform: translateY(-50%);
 
-  width: 118px;
+  width: 7.375rem;
 
-  height: 118px;
+  height: 7.375rem;
 
   opacity: 0.035;
 
@@ -772,7 +772,7 @@
 
   align-items: center;
 
-  column-gap: 12px;
+  column-gap: 0.75rem;
 
   height: 100%;
 
@@ -794,9 +794,9 @@
 
   align-items: center;
 
-  gap: 10px;
+  gap: 0.625rem;
 
-  margin: 0 0 6px;
+  margin: 0 0 0.375rem;
 
   flex-shrink: 0;
 
@@ -812,9 +812,9 @@
 
 .pd-card__heading-badge {
 
-  width: 36px;
+  width: 2.25rem;
 
-  height: 36px;
+  height: 2.25rem;
 
   flex-shrink: 0;
 
@@ -896,7 +896,7 @@
 
   height: var(--pd-feature-card-height);
 
-  padding: 18px 16px 18px 22px;
+  padding: 1.125rem 1rem 1.125rem 1.375rem;
 
   overflow: visible;
 
@@ -919,7 +919,7 @@
 
   height: var(--pd-secondary-card-height);
 
-  padding: 20px 24px;
+  padding: 1.25rem 1.5rem;
 
   overflow: visible;
 
@@ -1045,7 +1045,7 @@
 
 .pd-card--feature .pd-feature__title {
 
-  margin: 6px 0 0;
+  margin: 0.375rem 0 0;
 
   font-size: 1.1875rem;
 
@@ -1061,7 +1061,7 @@
 
 .pd-card--feature .pd-feature__subtitle {
 
-  margin: 3px 0 0;
+  margin: 0.1875rem 0 0;
 
   font-size: 0.75rem;
 
@@ -1085,9 +1085,9 @@
 
 .pd-card--feature .pd-feature__details {
 
-  margin-top: 10px;
+  margin-top: 0.625rem;
 
-  gap: 6px;
+  gap: 0.375rem;
 
 }
 
@@ -1095,7 +1095,7 @@
 
 .pd-card--feature .pd-feature__body > .pd-feature__cta {
 
-  margin-top: 10px;
+  margin-top: 0.625rem;
 
 }
 
@@ -1103,9 +1103,9 @@
 
 .pd-card--feature .pd-feature__cta {
 
-  height: 40px;
+  height: 2.5rem;
 
-  padding: 0 16px;
+  padding: 0 1rem;
 
   font-size: 0.8125rem;
 
@@ -1113,7 +1113,7 @@
 
   max-width: 168px;
 
-  min-width: 160px;
+  min-width: 10rem;
 
 }
 
@@ -1270,9 +1270,9 @@
 
   line-height: 1;
 
-  padding: 0 16px;
+  padding: 0 1rem;
 
-  gap: 3px;
+  gap: 0.1875rem;
 
 }
 
@@ -1298,7 +1298,7 @@
 
   display: block;
 
-  margin: 2px 0 0;
+  margin: 0.125rem 0 0;
 
   font-size: 2.125rem;
 
@@ -1320,7 +1320,7 @@
 
   display: block;
 
-  margin: 2px 0 0;
+  margin: 0.125rem 0 0;
 
   font-size: 1.0625rem;
 
@@ -1344,7 +1344,7 @@
 
   margin: 0;
 
-  padding: 0 6px;
+  padding: 0 0.375rem;
 
   font-size: 0.875rem;
 
@@ -1456,7 +1456,7 @@
 
   flex-direction: column;
 
-  gap: 6px;
+  gap: 0.375rem;
 
   flex: 0 0 auto;
 
@@ -1476,7 +1476,7 @@
 
   grid-template-columns: 16px minmax(0, 1fr);
 
-  gap: 8px;
+  gap: 0.5rem;
 
   align-items: start;
 
@@ -1526,7 +1526,7 @@
 
 .pd-feature__body > .pd-feature__cta {
 
-  margin-top: 8px;
+  margin-top: 0.5rem;
 
 }
 
@@ -1542,7 +1542,7 @@
 
   max-width: 168px;
 
-  min-width: 160px;
+  min-width: 10rem;
 
 }
 
@@ -1648,9 +1648,9 @@
 
   text-align: center;
 
-  gap: 4px;
+  gap: 0.25rem;
 
-  padding: 0 14px;
+  padding: 0 0.875rem;
 
 }
 
@@ -1813,7 +1813,7 @@
 
 .pd-feature-empty__headline {
 
-  margin: 6px 0 0;
+  margin: 0.375rem 0 0;
 
   font-size: 1.0625rem;
 
@@ -1831,7 +1831,7 @@
 
 .pd-feature-empty__text {
 
-  margin: 8px 0 0;
+  margin: 0.5rem 0 0;
 
   max-width: 30ch;
 
@@ -1851,7 +1851,7 @@
 
   margin-top: auto;
 
-  padding-top: 12px;
+  padding-top: 0.75rem;
 
 }
 
@@ -1973,7 +1973,7 @@
 
 .pd-feature-error__message {
 
-  margin: 10px 0 0;
+  margin: 0.625rem 0 0;
 
   max-width: 30ch;
 
@@ -1999,11 +1999,11 @@
 
   justify-content: center;
 
-  gap: 8px;
+  gap: 0.5rem;
 
-  height: 44px;
+  height: 2.75rem;
 
-  padding: 0 22px;
+  padding: 0 1.375rem;
 
   border-radius: 999px;
 
@@ -2145,7 +2145,7 @@
 
   flex-shrink: 0;
 
-  margin-top: 12px;
+  margin-top: 0.75rem;
 
   position: relative;
 
@@ -2169,7 +2169,7 @@
 
   align-items: center;
 
-  gap: 10px;
+  gap: 0.625rem;
 
 }
 
@@ -2187,7 +2187,7 @@
 
 .pd-notes__add-btn {
 
-  height: 42px;
+  height: 2.625rem;
 
   flex-shrink: 0;
 
@@ -2197,9 +2197,9 @@
 
   justify-content: center;
 
-  gap: 4px;
+  gap: 0.25rem;
 
-  padding: 0 12px;
+  padding: 0 0.75rem;
 
   border: 1px solid rgba(123, 63, 161, 0.22);
 
@@ -2247,9 +2247,9 @@
 
 .pd-notes__schedule-btn {
 
-  width: 42px;
+  width: 2.625rem;
 
-  height: 42px;
+  height: 2.625rem;
 
   flex-shrink: 0;
 
@@ -2299,9 +2299,9 @@
 
   right: 7px;
 
-  width: 7px;
+  width: 0.4375rem;
 
-  height: 7px;
+  height: 0.4375rem;
 
   border-radius: 50%;
 
@@ -2325,7 +2325,7 @@
 
   place-items: center;
 
-  padding: 20px;
+  padding: 1.25rem;
 
   isolation: isolate;
 
@@ -2359,9 +2359,9 @@
 
   z-index: 1;
 
-  width: min(100%, 376px);
+  width: min(100%, 23.5rem);
 
-  padding: 18px 20px 16px;
+  padding: 1.125rem 1.25rem 1rem;
 
   border-radius: 22px;
 
@@ -2371,7 +2371,7 @@
 
   box-shadow: 0 24px 48px rgba(91, 30, 140, 0.16);
 
-  max-height: calc(100vh - 40px);
+  max-height: calc(100vh - 2.5rem);
 
   overflow-y: auto;
 
@@ -2389,9 +2389,9 @@
 
   justify-content: space-between;
 
-  gap: 12px;
+  gap: 0.75rem;
 
-  margin-bottom: 6px;
+  margin-bottom: 0.375rem;
 
 }
 
@@ -2413,9 +2413,9 @@
 
 .pd-notes-schedule-modal__close {
 
-  width: 32px;
+  width: 2rem;
 
-  height: 32px;
+  height: 2rem;
 
   display: grid;
 
@@ -2437,7 +2437,7 @@
 
 .pd-notes-schedule-modal__hint {
 
-  margin: 0 0 10px;
+  margin: 0 0 0.625rem;
 
   color: var(--pd-muted);
 
@@ -2480,12 +2480,12 @@
   top: auto;
   left: auto;
   right: auto;
-  width: calc(200% + 12px);
+  width: calc(200% + 0.75rem);
   max-width: calc(200% + 12px);
   min-width: 0;
-  height: 226px;
-  margin-top: 6px;
-  padding: 8px 10px;
+  height: 14.125rem;
+  margin-top: 0.375rem;
+  padding: 0.5rem 0.625rem;
   border-radius: 14px;
   box-sizing: border-box;
   overflow: visible;
@@ -2497,12 +2497,12 @@
 /* ── Compact calendar sized to fill the shared 226px card ──────────────── */
 
 .pd-notes__datetime--modal .pd-notes-calendar__nav {
-  margin-bottom: 4px;
+  margin-bottom: 0.25rem;
 }
 
 .pd-notes__datetime--modal .pd-notes-calendar__nav-btn {
-  width: 26px;
-  height: 26px;
+  width: 1.625rem;
+  height: 1.625rem;
   border-radius: 8px;
 }
 
@@ -2511,8 +2511,8 @@
 }
 
 .pd-notes__datetime--modal .pd-notes-calendar__weekdays {
-  margin-bottom: 4px;
-  gap: 3px;
+  margin-bottom: 0.25rem;
+  gap: 0.1875rem;
 }
 
 .pd-notes__datetime--modal .pd-notes-calendar__weekdays span {
@@ -2520,11 +2520,11 @@
 }
 
 .pd-notes__datetime--modal .pd-notes-calendar__grid {
-  gap: 3px;
+  gap: 0.1875rem;
 }
 
 .pd-notes__datetime--modal .pd-notes-calendar__day {
-  height: 24px;
+  height: 1.5rem;
   min-height: 0;
   aspect-ratio: auto;
   border-radius: 8px;
@@ -2534,14 +2534,14 @@
 /* ── Time picker: Hour | Minute | AM/PM, prominent centered controls ───── */
 
 .pd-notes__datetime--modal .pd-notes-time__steppers {
-  width: min(264px, 100%);
+  width: min(16.5rem, 100%);
   margin-inline: auto;
-  gap: 12px;
+  gap: 0.75rem;
 }
 
 .pd-notes__datetime--modal .pd-notes-time__stepper,
 .pd-notes__datetime--modal .pd-notes-time__period {
-  gap: 6px;
+  gap: 0.375rem;
 }
 
 .pd-notes__datetime--modal .pd-notes-time__column-label {
@@ -2549,30 +2549,30 @@
 }
 
 .pd-notes__datetime--modal .pd-notes-time__step-btn {
-  width: 40px;
-  height: 30px;
+  width: 2.5rem;
+  height: 1.875rem;
   border-radius: 10px;
 }
 
 .pd-notes__datetime--modal .pd-notes-time__step-value {
-  min-width: 56px;
-  min-height: 52px;
+  min-width: 3.5rem;
+  min-height: 3.25rem;
   border-radius: 12px;
   font-size: 1.125rem;
 }
 
 .pd-notes__datetime--modal input.pd-notes-time__step-value {
-  width: 56px;
+  width: 3.5rem;
 }
 
 .pd-notes__datetime--modal .pd-notes-time__period-spacer {
-  width: 40px;
-  height: 30px;
+  width: 2.5rem;
+  height: 1.875rem;
 }
 
 .pd-notes__datetime--modal .pd-notes-time__period-btn {
-  min-height: 52px;
-  padding: 0 8px;
+  min-height: 3.25rem;
+  padding: 0 0.5rem;
   border-radius: 10px;
   font-size: 0.8125rem;
 }
@@ -2602,9 +2602,9 @@
 
 .pd-notes-schedule-modal__summary {
 
-  margin: 10px 0 0;
+  margin: 0.625rem 0 0;
 
-  padding: 10px 12px;
+  padding: 0.625rem 0.75rem;
 
   border-radius: 12px;
 
@@ -2632,9 +2632,9 @@
 
   width: 100%;
 
-  margin-top: 12px;
+  margin-top: 0.75rem;
 
-  min-height: 42px;
+  min-height: 2.625rem;
 
   border: 0;
 
@@ -2662,9 +2662,9 @@
 
   grid-template-columns: 1fr 1fr;
 
-  gap: 12px;
+  gap: 0.75rem;
 
-  margin-top: 10px;
+  margin-top: 0.625rem;
 
 }
 
@@ -2684,9 +2684,9 @@
 
   width: 100%;
 
-  min-height: 38px;
+  min-height: 2.375rem;
 
-  padding: 0 10px 0 12px;
+  padding: 0 0.625rem 0 0.75rem;
 
   display: flex;
 
@@ -2694,7 +2694,7 @@
 
   justify-content: space-between;
 
-  gap: 8px;
+  gap: 0.5rem;
 
   border: 1px solid rgba(236, 22, 140, 0.18);
 
@@ -2810,9 +2810,9 @@
 
   margin: 0;
 
-  padding: 6px;
+  padding: 0.375rem;
 
-  max-height: 168px;
+  max-height: 10.5rem;
 
   overflow-y: auto;
 
@@ -2836,7 +2836,7 @@
 
   width: 100%;
 
-  padding: 8px 10px;
+  padding: 0.5rem 0.625rem;
 
   border: none;
 
@@ -2884,7 +2884,7 @@
 
 .pd-notes-picker__menu::-webkit-scrollbar {
 
-  width: 6px;
+  width: 0.375rem;
 
 }
 
@@ -2902,7 +2902,7 @@
 
 .pd-notes-picker__menu--time {
 
-  max-height: 220px;
+  max-height: 13.75rem;
 
 }
 
@@ -2920,9 +2920,9 @@
 
   z-index: 24;
 
-  width: min(240px, calc(100vw - 48px));
+  width: min(15rem, calc(100vw - 3rem));
 
-  padding: 12px;
+  padding: 0.75rem;
 
   border-radius: 16px;
 
@@ -2946,7 +2946,7 @@
 
   grid-template-columns: 1fr 1fr 1fr;
 
-  gap: 8px;
+  gap: 0.5rem;
 
   align-items: start;
 
@@ -2963,7 +2963,7 @@
 
   align-items: center;
 
-  gap: 6px;
+  gap: 0.375rem;
 
 }
 
@@ -2991,9 +2991,9 @@
 
 .pd-notes-time__step-btn {
 
-  width: 34px;
+  width: 2.125rem;
 
-  height: 28px;
+  height: 1.75rem;
 
   display: inline-flex;
 
@@ -3049,9 +3049,9 @@
 
 .pd-notes-time__step-value {
 
-  min-width: 44px;
+  min-width: 2.75rem;
 
-  min-height: 36px;
+  min-height: 2.25rem;
 
   display: inline-flex;
 
@@ -3079,7 +3079,7 @@
 
 input.pd-notes-time__step-value {
 
-  width: 44px;
+  width: 2.75rem;
 
   padding: 0;
 
@@ -3126,7 +3126,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   flex-direction: row;
 
-  gap: 4px;
+  gap: 0.25rem;
 
   width: 100%;
 
@@ -3136,9 +3136,9 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
 .pd-notes-time__period-spacer {
 
-  width: 34px;
+  width: 2.125rem;
 
-  height: 28px;
+  height: 1.75rem;
 
   flex-shrink: 0;
 
@@ -3150,9 +3150,9 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   flex: 1;
 
-  min-height: 36px;
+  min-height: 2.25rem;
 
-  padding: 0 10px;
+  padding: 0 0.625rem;
 
   border: 1px solid rgba(236, 22, 140, 0.16);
 
@@ -3230,9 +3230,9 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   z-index: 24;
 
-  min-width: 268px;
+  min-width: 16.75rem;
 
-  padding: 12px;
+  padding: 0.75rem;
 
   border-radius: 16px;
 
@@ -3258,9 +3258,9 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   justify-content: space-between;
 
-  gap: 8px;
+  gap: 0.5rem;
 
-  margin-bottom: 10px;
+  margin-bottom: 0.625rem;
 
 }
 
@@ -3268,9 +3268,9 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
 .pd-notes-calendar__nav-btn {
 
-  width: 30px;
+  width: 1.875rem;
 
-  height: 30px;
+  height: 1.875rem;
 
   display: inline-flex;
 
@@ -3342,9 +3342,9 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   grid-template-columns: repeat(7, 1fr);
 
-  gap: 2px;
+  gap: 0.125rem;
 
-  margin-bottom: 6px;
+  margin-bottom: 0.375rem;
 
 }
 
@@ -3374,7 +3374,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   grid-template-columns: repeat(7, 1fr);
 
-  gap: 2px;
+  gap: 0.125rem;
 
 }
 
@@ -3386,7 +3386,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   aspect-ratio: 1;
 
-  min-height: 32px;
+  min-height: 2rem;
 
   border: none;
 
@@ -3480,9 +3480,9 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   width: 100%;
 
-  min-height: 44px;
+  min-height: 2.75rem;
 
-  padding: 0 14px;
+  padding: 0 0.875rem;
 
   border: 1px solid rgba(247, 214, 234, 0.6);
 
@@ -3512,7 +3512,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
 .pd-notes__hint {
 
-  margin: 6px 0 0;
+  margin: 0.375rem 0 0;
 
   font-size: 0.75rem;
 
@@ -3538,13 +3538,13 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   list-style: none;
 
-  margin: 14px 0 0;
+  margin: 0.875rem 0 0;
 
   padding: 0;
 
   display: grid;
 
-  gap: 10px;
+  gap: 0.625rem;
 
   flex: 1;
 
@@ -3562,11 +3562,11 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   grid-template-columns: auto minmax(0, 1fr);
 
-  gap: 10px;
+  gap: 0.625rem;
 
   align-items: start;
 
-  padding: 10px 12px;
+  padding: 0.625rem 0.75rem;
 
   border-radius: 14px;
 
@@ -3590,9 +3590,9 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
 .pd-notes__check {
 
-  width: 22px;
+  width: 1.375rem;
 
-  height: 22px;
+  height: 1.375rem;
 
   display: grid;
 
@@ -3642,7 +3642,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   display: block;
 
-  margin-top: 2px;
+  margin-top: 0.125rem;
 
   color: var(--pd-muted);
 
@@ -3662,11 +3662,11 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   justify-content: space-between;
 
-  gap: 12px;
+  gap: 0.75rem;
 
   margin-top: auto;
 
-  padding-top: 12px;
+  padding-top: 0.75rem;
 
   flex-shrink: 0;
 
@@ -3686,7 +3686,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   align-items: center;
 
-  gap: 8px;
+  gap: 0.5rem;
 
 }
 
@@ -3694,11 +3694,11 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
 .pd-toggle {
 
-  width: 48px;
+  width: 3rem;
 
-  height: 28px;
+  height: 1.75rem;
 
-  padding: 3px;
+  padding: 0.1875rem;
 
   border: none;
 
@@ -3716,9 +3716,9 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   display: block;
 
-  width: 22px;
+  width: 1.375rem;
 
-  height: 22px;
+  height: 1.375rem;
 
   border-radius: 50%;
 
@@ -3756,9 +3756,9 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   grid-template-columns: minmax(0, 1fr) 116px;
 
-  gap: 16px;
+  gap: 1rem;
 
-  margin-top: 12px;
+  margin-top: 0.75rem;
 
   margin-bottom: 0;
 
@@ -3780,7 +3780,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   justify-content: center;
 
-  gap: 8px;
+  gap: 0.5rem;
 
   min-width: 0;
 
@@ -3798,11 +3798,11 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   justify-content: space-between;
 
-  gap: 12px;
+  gap: 0.75rem;
 
   margin-top: auto;
 
-  padding-top: 14px;
+  padding-top: 0.875rem;
 
   flex-shrink: 0;
 
@@ -3812,13 +3812,13 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
 .pd-community__cta {
 
-  height: 40px;
+  height: 2.5rem;
 
-  min-width: 160px;
+  min-width: 10rem;
 
   max-width: 168px;
 
-  padding: 0 14px;
+  padding: 0 0.875rem;
 
   font-size: 0.8125rem;
 
@@ -3834,7 +3834,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
 .pd-community__cta .pd-btn__arrow {
 
-  margin-left: 2px;
+  margin-left: 0.125rem;
 
 }
 
@@ -3846,9 +3846,9 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   align-items: center;
 
-  gap: 10px;
+  gap: 0.625rem;
 
-  margin-bottom: 6px;
+  margin-bottom: 0.375rem;
 
   flex-shrink: 0;
 
@@ -3858,9 +3858,9 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
 .pd-community__avatar {
 
-  width: 36px;
+  width: 2.25rem;
 
-  height: 36px;
+  height: 2.25rem;
 
   display: grid;
 
@@ -3896,7 +3896,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   display: block;
 
-  margin-top: 2px;
+  margin-top: 0.125rem;
 
   color: var(--pd-muted);
 
@@ -3938,7 +3938,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   align-items: center;
 
-  gap: 10px 16px;
+  gap: 0.625rem 1rem;
 
   flex: 1;
 
@@ -3954,7 +3954,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   align-items: center;
 
-  gap: 7px;
+  gap: 0.4375rem;
 
 }
 
@@ -3992,7 +3992,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   color: var(--pd-title);
 
-  margin-right: 3px;
+  margin-right: 0.1875rem;
 
 }
 
@@ -4006,9 +4006,9 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   overflow: hidden;
 
-  width: 116px;
+  width: 7.25rem;
 
-  height: 116px;
+  height: 7.25rem;
 
   flex-shrink: 0;
 
@@ -4054,9 +4054,9 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   justify-content: center;
 
-  width: 30px;
+  width: 1.875rem;
 
-  height: 30px;
+  height: 1.875rem;
 
   border-radius: 999px;
 
@@ -4082,7 +4082,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
 .pd-community__loading {
 
-  margin: 12px 0 0;
+  margin: 0.75rem 0 0;
 
   font-size: 0.875rem;
 
@@ -4100,9 +4100,9 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   align-items: flex-start;
 
-  gap: 12px;
+  gap: 0.75rem;
 
-  margin-top: 8px;
+  margin-top: 0.5rem;
 
 }
 
@@ -4138,7 +4138,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
 .pd-card--community-empty .pd-community-empty {
 
-  min-height: 120px;
+  min-height: 7.5rem;
 
 }
 
@@ -4183,7 +4183,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
     grid-template-columns: minmax(0, 1fr) min-content;
 
-    column-gap: 12px;
+    column-gap: 0.75rem;
 
   }
 
@@ -4204,7 +4204,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   .pd-home {
 
-    padding-top: 12px;
+    padding-top: 0.75rem;
 
   }
 
@@ -4212,11 +4212,11 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   .pd-home__hero {
 
-    height: 220px;
+    height: 13.75rem;
 
-    min-height: 220px;
+    min-height: 13.75rem;
 
-    max-height: 220px;
+    max-height: 13.75rem;
 
   }
 
@@ -4224,7 +4224,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   .pd-home__hero-content {
 
-    padding: 24px;
+    padding: 1.5rem;
 
   }
 
@@ -4234,7 +4234,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
   .pd-card--notes,
   .pd-card--community {
 
-    padding: 24px;
+    padding: 1.5rem;
 
   }
 
@@ -4244,7 +4244,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
     grid-template-columns: 1fr;
 
-    gap: 16px;
+    gap: 1rem;
 
     align-items: start;
 
@@ -4280,7 +4280,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
     grid-template-columns: 1fr;
 
-    gap: 12px;
+    gap: 0.75rem;
 
   }
 
@@ -4290,9 +4290,9 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
     flex-wrap: wrap;
 
-    gap: 10px;
+    gap: 0.625rem;
 
-    margin-top: 8px;
+    margin-top: 0.5rem;
 
   }
 
@@ -4300,9 +4300,9 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   .pd-community__thumb {
 
-    width: 120px;
+    width: 7.5rem;
 
-    height: 120px;
+    height: 7.5rem;
 
     justify-self: end;
 

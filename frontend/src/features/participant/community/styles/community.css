@@ -15,7 +15,7 @@
   --community-section-gap: 16px;
   display: grid;
   grid-template-rows: minmax(0, 1fr) auto;
-  gap: 22px;
+  gap: 1.375rem;
   height: 100%;
   min-height: 0;
   min-width: 0;
@@ -32,17 +32,17 @@
   display: grid;
   place-items: center;
   background: rgba(32, 16, 51, 0.42);
-  padding: 22px;
+  padding: 1.375rem;
   backdrop-filter: blur(10px);
   overflow: auto;
 }
 
 .community-guidelines-modal__panel {
   position: relative;
-  width: min(100%, 540px);
-  max-height: min(760px, calc(100vh - 44px));
+  width: min(100%, 33.75rem);
+  max-height: min(47.5rem, calc(100vh - 2.75rem));
   display: grid;
-  gap: 18px;
+  gap: 1.125rem;
   overflow: auto;
   border: 1px solid rgba(255, 255, 255, 0.78);
   border-radius: 28px;
@@ -50,7 +50,7 @@
     radial-gradient(circle at 92% 10%, rgba(236, 22, 140, 0.12), transparent 10rem),
     linear-gradient(135deg, #fff, #fff8fc 56%, #f4e7ff);
   box-shadow: 0 30px 90px rgba(32, 16, 51, 0.26);
-  padding: 28px;
+  padding: 1.75rem;
   box-sizing: border-box;
 }
 
@@ -59,9 +59,9 @@
   position: absolute;
   top: 14px;
   right: 14px;
-  width: 34px;
-  height: 34px;
-  min-height: 34px;
+  width: 2.125rem;
+  height: 2.125rem;
+  min-height: 2.125rem;
   display: grid;
   place-items: center;
   border: 1px solid rgba(123, 63, 161, 0.12);
@@ -77,8 +77,8 @@
 }
 
 .community-guidelines-modal__icon {
-  width: 60px;
-  height: 60px;
+  width: 3.75rem;
+  height: 3.75rem;
   display: grid;
   place-items: center;
   border-radius: 20px;
@@ -103,7 +103,7 @@
 }
 
 .community-guidelines-modal__copy p {
-  margin-top: 9px;
+  margin-top: 0.5625rem;
   color: rgba(32, 16, 51, 0.66);
   font-size: 0.96rem;
   line-height: 1.6;
@@ -111,7 +111,7 @@
 
 .community-guidelines-modal__list {
   display: grid;
-  gap: 10px;
+  gap: 0.625rem;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -125,7 +125,7 @@
   font-size: 0.88rem;
   font-weight: 700;
   line-height: 1.45;
-  padding: 11px 12px 11px 38px;
+  padding: 0.6875rem 0.75rem 0.6875rem 2.375rem;
 }
 
 .community-guidelines-modal__list li::before {
@@ -133,8 +133,8 @@
   position: absolute;
   left: 16px;
   top: 19px;
-  width: 8px;
-  height: 8px;
+  width: 0.5rem;
+  height: 0.5rem;
   border-radius: 999px;
   background: #ec168c;
   box-shadow: 0 0 0 4px rgba(236, 22, 140, 0.1);
@@ -143,7 +143,7 @@
 .community-guidelines-modal__agree {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 0.625rem;
   color: #4b136b;
   cursor: pointer;
   font-size: 0.9rem;
@@ -151,14 +151,14 @@
 }
 
 .community-guidelines-modal__agree input {
-  width: 18px;
-  height: 18px;
+  width: 1.125rem;
+  height: 1.125rem;
   accent-color: #ec168c;
   cursor: pointer;
 }
 
 .community-guidelines-modal__panel > button {
-  min-height: 46px;
+  min-height: 2.875rem;
   border: 0;
   border-radius: 16px;
   background: linear-gradient(135deg, #ec168c, #f45ba5);
@@ -171,7 +171,7 @@
 }
 
 .community-guidelines-modal__panel > .community-guidelines-modal__close {
-  min-height: 34px;
+  min-height: 2.125rem;
   border: 1px solid rgba(123, 63, 161, 0.12);
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.78);
@@ -194,22 +194,22 @@
   display: grid;
   place-items: center;
   background: rgba(32, 16, 51, 0.36);
-  padding: 22px;
+  padding: 1.375rem;
   backdrop-filter: blur(10px);
 }
 
 .community-local-modal__panel {
   position: relative;
-  width: min(100%, 430px);
+  width: min(100%, 26.875rem);
   display: grid;
-  gap: 12px;
+  gap: 0.75rem;
   border: 1px solid rgba(255, 255, 255, 0.78);
   border-radius: 24px;
   background:
     radial-gradient(circle at 92% 10%, rgba(236, 22, 140, 0.1), transparent 8rem),
     #fff;
   box-shadow: 0 24px 70px rgba(32, 16, 51, 0.22);
-  padding: 24px;
+  padding: 1.5rem;
 }
 
 .community-local-modal__eyebrow {
@@ -239,7 +239,7 @@
 
 .community-local-modal__panel > button:not(.community-local-modal__close) {
   justify-self: start;
-  min-height: 38px;
+  min-height: 2.375rem;
   border: 0;
   border-radius: 999px;
   background: linear-gradient(135deg, var(--community-accent), #f45ba5);
@@ -248,14 +248,14 @@
   font: inherit;
   font-size: 0.84rem;
   font-weight: 800;
-  padding: 0 16px;
+  padding: 0 1rem;
 }
 
 .community-page-shell {
   display: grid;
   grid-template-columns: minmax(0, 760px) minmax(280px, 340px);
   justify-content: center;
-  gap: 24px;
+  gap: 1.5rem;
   align-items: start;
   min-height: 0;
   min-width: 0;
@@ -264,17 +264,17 @@
 }
 
 .community-guidelines-shortcut {
-  width: min(100%, 1124px);
+  width: min(100%, 70.25rem);
   display: flex;
   justify-content: flex-end;
   justify-self: center;
-  margin-top: 4px;
+  margin-top: 0.25rem;
   min-width: 0;
-  padding-right: 2px;
+  padding-right: 0.125rem;
 }
 
 .community-guidelines-shortcut button {
-  min-height: 21px;
+  min-height: 1.3125rem;
   border: 0;
   border-radius: 6px;
   background: transparent;
@@ -284,7 +284,7 @@
   font-size: 0.72rem;
   font-weight: 700;
   line-height: 1.15;
-  padding: 1px 0;
+  padding: 0.0625rem 0;
   text-decoration: underline;
   text-decoration-color: rgba(123, 63, 161, 0.22);
   text-decoration-thickness: 1px;
@@ -319,13 +319,13 @@
   max-height: 100%;
   overflow-y: auto;
   overscroll-behavior: contain;
-  padding-right: 4px;
+  padding-right: 0.25rem;
   scrollbar-gutter: stable;
 }
 
 .community-right-sidebar {
   align-content: start;
-  gap: 14px;
+  gap: 0.875rem;
   overflow: visible;
   padding-right: 0;
   scrollbar-gutter: auto;
@@ -344,14 +344,14 @@
 
 .community-right-sidebar .community-page-card__heading,
 .community-right-sidebar .guidelines-card__heading {
-  gap: 10px;
-  margin-bottom: 12px;
+  gap: 0.625rem;
+  margin-bottom: 0.75rem;
 }
 
 .community-right-sidebar .community-page-card__icon,
 .community-right-sidebar .guidelines-card__icon {
-  width: 42px;
-  height: 42px;
+  width: 2.625rem;
+  height: 2.625rem;
   border-radius: 14px;
 }
 
@@ -381,7 +381,7 @@
 
 .create-post-card {
   display: grid;
-  gap: 12px;
+  gap: 0.75rem;
   padding: var(--community-card-padding);
 }
 
@@ -392,14 +392,14 @@
 .create-post-card__body {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
+  gap: 0.75rem;
   min-width: 0;
 }
 
 .create-post-card__avatar {
   flex: 0 0 auto;
-  width: 44px;
-  height: 44px;
+  width: 2.75rem;
+  height: 2.75rem;
   display: grid;
   place-items: center;
   border-radius: 50%;
@@ -418,7 +418,7 @@
   min-width: 0;
   width: 100%;
   box-sizing: border-box;
-  min-height: 74px;
+  min-height: 4.625rem;
   resize: vertical;
   border: 0;
   border-radius: 15px;
@@ -428,7 +428,7 @@
   font-size: 0.94rem;
   line-height: 1.55;
   outline: none;
-  padding: 13px 15px;
+  padding: 0.8125rem 0.9375rem;
   transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
 }
 
@@ -445,27 +445,27 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 0.625rem;
   flex-wrap: wrap;
   min-width: 0;
   border-top: 1px solid var(--community-divider);
-  padding-top: 12px;
+  padding-top: 0.75rem;
 }
 
 .create-post-card__actions {
   display: flex;
   align-items: center;
-  gap: 7px;
+  gap: 0.4375rem;
   flex-wrap: wrap;
   min-width: 0;
 }
 
 .create-post-card__action {
   min-width: 0;
-  min-height: 34px;
+  min-height: 2.125rem;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 0.375rem;
   border: 1px solid var(--community-card-border);
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.78);
@@ -474,7 +474,7 @@
   font: inherit;
   font-size: 0.8rem;
   font-weight: 800;
-  padding: 0 10px;
+  padding: 0 0.625rem;
   transition: border-color 180ms ease, color 180ms ease, background 180ms ease;
 }
 
@@ -492,17 +492,17 @@
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-left: 56px;
+  gap: 0.5rem;
+  margin-left: 3.5rem;
   border: 1px solid var(--community-card-border);
   border-radius: 16px;
   background: rgba(255, 248, 252, 0.78);
-  padding: 10px;
+  padding: 0.625rem;
 }
 
 .create-post-card__voice-panel button,
 .create-post-card__attachment-preview button {
-  min-height: 32px;
+  min-height: 2rem;
   border: 1px solid var(--community-card-border);
   border-radius: 999px;
   background: #fff;
@@ -511,7 +511,7 @@
   font: inherit;
   font-size: 0.78rem;
   font-weight: 800;
-  padding: 0 11px;
+  padding: 0 0.6875rem;
 }
 
 .create-post-card__voice-panel button:hover,
@@ -540,7 +540,7 @@
 .create-post-card__voice-panel div {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 0.5rem;
 }
 
 .create-post-card__voice-panel button:disabled {
@@ -553,8 +553,8 @@
 }
 
 .create-post-card__attachment-preview img {
-  width: min(160px, 100%);
-  max-height: 120px;
+  width: min(10rem, 100%);
+  max-height: 7.5rem;
   object-fit: cover;
   border-radius: 14px;
 }
@@ -568,10 +568,10 @@
   z-index: 30;
   right: 18px;
   bottom: 82px;
-  width: min(360px, calc(100% - 36px));
-  max-height: min(440px, 70vh);
+  width: min(22.5rem, calc(100% - 2.25rem));
+  max-height: min(27.5rem, 70vh);
   display: grid;
-  gap: 12px;
+  gap: 0.75rem;
   overflow: auto;
   border: 1px solid rgba(123, 63, 161, 0.12);
   border-radius: 22px;
@@ -579,7 +579,7 @@
     radial-gradient(circle at 88% 10%, rgba(236, 22, 140, 0.12), transparent 7rem),
     rgba(255, 255, 255, 0.96);
   box-shadow: 0 22px 60px rgba(75, 19, 107, 0.18);
-  padding: 14px;
+  padding: 0.875rem;
   animation: community-emoji-popover-in 180ms ease both;
   backdrop-filter: blur(16px);
 }
@@ -588,7 +588,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 0.75rem;
   min-width: 0;
 }
 
@@ -599,8 +599,8 @@
 }
 
 .create-post-card__emoji-header button {
-  width: 30px;
-  height: 30px;
+  width: 1.875rem;
+  height: 1.875rem;
   display: grid;
   place-items: center;
   border: 1px solid var(--community-card-border);
@@ -617,12 +617,12 @@
 
 .create-post-card__emoji-groups {
   display: grid;
-  gap: 12px;
+  gap: 0.75rem;
 }
 
 .create-post-card__emoji-group {
   display: grid;
-  gap: 7px;
+  gap: 0.4375rem;
 }
 
 .create-post-card__emoji-group h3 {
@@ -637,7 +637,7 @@
 .create-post-card__emoji-grid {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 7px;
+  gap: 0.4375rem;
 }
 
 .create-post-card__emoji-grid button {
@@ -685,8 +685,8 @@
   flex: 1 1 250px;
   display: inline-flex;
   align-items: center;
-  gap: 9px;
-  min-height: 42px;
+  gap: 0.5625rem;
+  min-height: 2.625rem;
   border: 1px solid var(--community-card-border);
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.78);
@@ -695,7 +695,7 @@
   font-size: 0.82rem;
   font-weight: 700;
   max-width: 100%;
-  padding: 8px 10px;
+  padding: 0.5rem 0.625rem;
   transition: border-color 180ms ease, background 180ms ease, color 180ms ease, box-shadow 180ms ease;
 }
 
@@ -720,8 +720,8 @@
 
 .create-post-card__anonymous-icon {
   flex: 0 0 auto;
-  width: 32px;
-  height: 32px;
+  width: 2rem;
+  height: 2rem;
   display: grid;
   place-items: center;
   border-radius: 999px;
@@ -737,7 +737,7 @@
 .create-post-card__anonymous-copy {
   min-width: 0;
   display: grid;
-  gap: 2px;
+  gap: 0.125rem;
 }
 
 .create-post-card__anonymous-copy strong,
@@ -761,8 +761,8 @@
 .create-post-card__anonymous-switch {
   position: relative;
   flex: 0 0 auto;
-  width: 38px;
-  height: 22px;
+  width: 2.375rem;
+  height: 1.375rem;
   margin-left: auto;
   border-radius: 999px;
   background: rgba(123, 63, 161, 0.14);
@@ -774,8 +774,8 @@
   position: absolute;
   top: 3px;
   left: 3px;
-  width: 16px;
-  height: 16px;
+  width: 1rem;
+  height: 1rem;
   border-radius: 50%;
   background: #fff;
   box-shadow: 0 2px 8px rgba(75, 19, 107, 0.18);
@@ -791,18 +791,18 @@
 }
 
 .create-post-card__helper {
-  margin: -2px 0 0 56px;
+  margin: -0.125rem 0 0 3.5rem;
   border-radius: 12px;
   background: #fff2f9;
   color: var(--community-muted-strong);
   font-size: 0.8rem;
   font-weight: 700;
   line-height: 1.45;
-  padding: 8px 10px;
+  padding: 0.5rem 0.625rem;
 }
 
 .create-post-card__error {
-  margin: -4px 0 0 56px;
+  margin: -0.25rem 0 0 3.5rem;
   color: #b4235a;
   font-size: 0.8rem;
   font-weight: 800;
@@ -812,7 +812,7 @@
   justify-self: start;
   width: fit-content;
   max-width: 100%;
-  margin: -4px 0 0 56px;
+  margin: -0.25rem 0 0 3.5rem;
   border: 1px solid rgba(40, 122, 62, 0.14);
   border-radius: 999px;
   background: rgba(245, 255, 249, 0.94);
@@ -820,7 +820,7 @@
   font-size: 0.78rem;
   font-weight: 800;
   line-height: 1.35;
-  padding: 7px 10px;
+  padding: 0.4375rem 0.625rem;
   box-shadow: 0 12px 28px rgba(75, 19, 107, 0.09);
   animation: community-comment-toast-in 180ms ease both;
   backdrop-filter: blur(12px);
@@ -828,7 +828,7 @@
 
 .create-post-card__submit {
   flex: 0 0 auto;
-  min-height: 40px;
+  min-height: 2.5rem;
   border: 0;
   border-radius: 999px;
   background: linear-gradient(135deg, var(--community-accent), #f45ba5);
@@ -837,7 +837,7 @@
   font: inherit;
   font-size: 0.86rem;
   font-weight: 800;
-  padding: 0 20px;
+  padding: 0 1.25rem;
   box-shadow: 0 12px 24px rgba(236, 22, 140, 0.18);
   white-space: nowrap;
 }
@@ -846,7 +846,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 14px;
+  gap: 0.875rem;
   flex-wrap: wrap;
   min-width: 0;
 }
@@ -855,13 +855,13 @@
   flex: 1 1 auto;
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 0.5rem;
   flex-wrap: wrap;
   min-width: 0;
 }
 
 .community-feed-tabs button {
-  min-height: 36px;
+  min-height: 2.25rem;
   border: 1px solid var(--community-card-border);
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.78);
@@ -870,7 +870,7 @@
   font: inherit;
   font-size: 0.82rem;
   font-weight: 800;
-  padding: 0 13px;
+  padding: 0 0.8125rem;
   transition: background 180ms ease, border-color 180ms ease, color 180ms ease, box-shadow 180ms ease;
 }
 
@@ -891,10 +891,10 @@
 
 .community-feed-refresh {
   flex: 0 0 auto;
-  min-height: 38px;
+  min-height: 2.375rem;
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  gap: 0.4375rem;
   border: 1px solid rgba(236, 22, 140, 0.18);
   border-radius: 999px;
   background:
@@ -905,7 +905,7 @@
   font: inherit;
   font-size: 0.82rem;
   font-weight: 800;
-  padding: 0 14px;
+  padding: 0 0.875rem;
   box-shadow: 0 10px 22px rgba(123, 63, 161, 0.1);
   transition:
     transform 180ms ease,
@@ -945,10 +945,10 @@
 .community-feed-refresh__feedback {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  gap: 0.4375rem;
   width: fit-content;
   max-width: 100%;
-  margin: -5px 0 0;
+  margin: -0.3125rem 0 0;
   border: 1px solid rgba(40, 122, 62, 0.12);
   border-radius: 999px;
   background:
@@ -958,15 +958,15 @@
   font-size: 0.76rem;
   font-weight: 800;
   line-height: 1.35;
-  padding: 7px 10px;
+  padding: 0.4375rem 0.625rem;
   box-shadow: 0 10px 22px rgba(40, 122, 62, 0.08);
   animation: community-refresh-feedback 2600ms ease forwards;
 }
 
 .community-feed-refresh__feedback::before {
   content: '';
-  width: 7px;
-  height: 7px;
+  width: 0.4375rem;
+  height: 0.4375rem;
   border-radius: 999px;
   background: #34a853;
   box-shadow: 0 0 0 5px rgba(52, 168, 83, 0.11);
@@ -1060,7 +1060,7 @@
 
 .community-profile-setup {
   display: grid;
-  gap: 18px;
+  gap: 1.125rem;
   border: 1px solid var(--community-card-border);
   border-radius: var(--community-card-radius);
   background:
@@ -1074,14 +1074,14 @@
 .community-profile-setup__heading {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
+  gap: 0.75rem;
   min-width: 0;
 }
 
 .community-profile-setup__icon {
   flex: 0 0 auto;
-  width: 50px;
-  height: 50px;
+  width: 3.125rem;
+  height: 3.125rem;
   display: grid;
   place-items: center;
   border-radius: 16px;
@@ -1107,14 +1107,14 @@
 }
 
 .community-profile-setup h2 {
-  margin-top: 3px;
+  margin-top: 0.1875rem;
   color: var(--community-primary-text);
   font-size: 1.05rem;
   line-height: 1.3;
 }
 
 .community-profile-setup p {
-  margin-top: 7px;
+  margin-top: 0.4375rem;
   color: var(--community-muted);
   font-size: 0.9rem;
   line-height: 1.5;
@@ -1122,12 +1122,12 @@
 
 .community-profile-setup__form {
   display: grid;
-  gap: 12px;
+  gap: 0.75rem;
 }
 
 .community-profile-setup__form label:not(.community-profile-setup__check) {
   display: grid;
-  gap: 7px;
+  gap: 0.4375rem;
   color: var(--community-accent-strong);
   font-size: 0.82rem;
   font-weight: 800;
@@ -1137,7 +1137,7 @@
 .community-profile-setup__form input[type='date'] {
   width: 100%;
   box-sizing: border-box;
-  min-height: 42px;
+  min-height: 2.625rem;
   border: 1px solid var(--community-card-border);
   border-radius: 14px;
   background: var(--community-control-bg);
@@ -1145,7 +1145,7 @@
   font: inherit;
   font-size: 0.9rem;
   outline: none;
-  padding: 0 13px;
+  padding: 0 0.8125rem;
 }
 
 .community-profile-setup__form input:focus {
@@ -1157,7 +1157,7 @@
 .community-profile-setup__check {
   display: inline-flex;
   align-items: center;
-  gap: 9px;
+  gap: 0.5625rem;
   color: var(--community-accent-strong);
   cursor: pointer;
   font-size: 0.86rem;
@@ -1165,8 +1165,8 @@
 }
 
 .community-profile-setup__check input {
-  width: 17px;
-  height: 17px;
+  width: 1.0625rem;
+  height: 1.0625rem;
   accent-color: #ec168c;
   cursor: pointer;
 }
@@ -1175,7 +1175,7 @@
 .community-profile-setup__action,
 .community-profile-setup__actions button {
   min-width: 0;
-  min-height: 42px;
+  min-height: 2.625rem;
   border: 0;
   border-radius: 999px;
   background: linear-gradient(135deg, var(--community-accent), #f45ba5);
@@ -1184,14 +1184,14 @@
   font: inherit;
   font-size: 0.86rem;
   font-weight: 800;
-  padding: 0 18px;
+  padding: 0 1.125rem;
   box-shadow: 0 14px 28px rgba(236, 22, 140, 0.2);
 }
 
 .community-profile-setup__actions {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 0.625rem;
   min-width: 0;
 }
 
@@ -1210,7 +1210,7 @@
   font-size: 0.82rem;
   font-weight: 800;
   line-height: 1.35;
-  padding: 10px 16px;
+  padding: 0.625rem 1rem;
   box-shadow: 0 14px 34px rgba(75, 19, 107, 0.12);
   transform: translateX(-50%);
   animation: community-comment-toast-in 180ms ease both;
@@ -1236,7 +1236,7 @@
 }
 
 .community-empty-state p {
-  margin: 7px 0 0;
+  margin: 0.4375rem 0 0;
   color: var(--community-muted);
   font-size: 0.92rem;
   line-height: 1.6;
@@ -1244,7 +1244,7 @@
 
 .guidelines-card {
   display: grid;
-  gap: 10px;
+  gap: 0.625rem;
   overflow: hidden;
   background:
     radial-gradient(circle at 92% 10%, rgba(236, 22, 140, 0.08), transparent 7rem),
@@ -1255,14 +1255,14 @@
 .guidelines-card__heading {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 0.625rem;
   min-width: 0;
 }
 
 .guidelines-card__icon {
   flex: 0 0 auto;
-  width: 42px;
-  height: 42px;
+  width: 2.625rem;
+  height: 2.625rem;
   display: grid;
   place-items: center;
   border-radius: 14px;
@@ -1283,7 +1283,7 @@
 }
 
 .guidelines-card h2 {
-  margin: 3px 0 0;
+  margin: 0.1875rem 0 0;
   color: var(--community-primary-text);
   font-size: 0.98rem;
   line-height: 1.25;
@@ -1305,12 +1305,12 @@
   color: #201033;
   font-size: 0.74rem;
   font-weight: 800;
-  padding: 7px 9px;
+  padding: 0.4375rem 0.5625rem;
 }
 
 .guidelines-card ul {
   display: grid;
-  gap: 8px;
+  gap: 0.5rem;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -1324,7 +1324,7 @@
   font-size: 0.8rem;
   font-weight: 700;
   line-height: 1.4;
-  padding: 9px 10px 9px 30px;
+  padding: 0.5625rem 0.625rem 0.5625rem 1.875rem;
 }
 
 .guidelines-card li::before {
@@ -1332,8 +1332,8 @@
   position: absolute;
   left: 12px;
   top: 16px;
-  width: 6px;
-  height: 6px;
+  width: 0.375rem;
+  height: 0.375rem;
   border-radius: 999px;
   background: #ec168c;
   box-shadow: 0 0 0 4px rgba(236, 22, 140, 0.1);
@@ -1341,7 +1341,7 @@
 
 .guidelines-card button {
   justify-self: start;
-  min-height: 32px;
+  min-height: 2rem;
   border: 1px solid var(--community-card-border);
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.72);
@@ -1350,7 +1350,7 @@
   font: inherit;
   font-size: 0.78rem;
   font-weight: 800;
-  padding: 0 12px;
+  padding: 0 0.75rem;
 }
 
 .guidelines-card button:hover,
@@ -1365,7 +1365,7 @@
 .community-streak-card {
   display: grid;
   justify-items: center;
-  gap: 18px;
+  gap: 1.125rem;
   position: relative;
   overflow: hidden;
   background:
@@ -1373,7 +1373,7 @@
     radial-gradient(circle at 92% 10%, rgba(192, 132, 252, 0.12), transparent 8rem),
     linear-gradient(145deg, #fff, #fffcff);
   box-shadow: 0 22px 48px rgba(192, 132, 252, 0.12);
-  padding: 22px 18px 20px;
+  padding: 1.375rem 1.125rem 1.25rem;
   min-width: 0;
 }
 
@@ -1389,14 +1389,14 @@
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   justify-self: stretch;
-  gap: 12px;
+  gap: 0.75rem;
   min-width: 0;
 }
 
 .community-streak-card__icon {
   flex: 0 0 auto;
-  width: 48px;
-  height: 48px;
+  width: 3rem;
+  height: 3rem;
   display: grid;
   place-items: center;
   border-radius: 18px;
@@ -1434,7 +1434,7 @@
 
 .community-streak-card__ring {
   --streak-progress: 0%;
-  width: min(100%, 190px);
+  width: min(100%, 11.875rem);
   aspect-ratio: 1;
   display: grid;
   place-items: center;
@@ -1483,7 +1483,7 @@
   z-index: 1;
   display: grid;
   justify-items: center;
-  gap: 6px;
+  gap: 0.375rem;
 }
 
 .community-streak-card__count {
@@ -1503,12 +1503,12 @@
 }
 
 .community-streak-card__completion-badge {
-  min-height: 44px;
+  min-height: 2.75rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  margin-top: -42px;
+  gap: 0.5rem;
+  margin-top: -2.625rem;
   position: relative;
   z-index: 2;
   border-radius: 999px;
@@ -1516,7 +1516,7 @@
   color: #24113a;
   font-size: 0.84rem;
   font-weight: 800;
-  padding: 0 16px;
+  padding: 0 1rem;
   box-shadow:
     0 16px 30px rgba(192, 132, 252, 0.14),
     0 6px 18px rgba(244, 114, 182, 0.14);
@@ -1528,7 +1528,7 @@
 }
 
 .community-streak-card__subtitle {
-  margin: -2px 0 0;
+  margin: -0.125rem 0 0;
   color: #7c6597;
   font-size: 0.88rem;
   font-weight: 600;
@@ -1543,7 +1543,7 @@
   color: #9a5a00;
   font-size: 0.7rem;
   font-weight: 800;
-  padding: 5px 8px;
+  padding: 0.3125rem 0.5rem;
   white-space: nowrap;
 }
 
@@ -1552,15 +1552,15 @@
   grid-template-columns: repeat(7, minmax(0, 1fr));
   align-items: start;
   justify-self: stretch;
-  gap: 8px;
-  margin-top: 2px;
+  gap: 0.5rem;
+  margin-top: 0.125rem;
   min-width: 0;
 }
 
 .community-streak-card__day-wrap {
   display: grid;
   justify-items: center;
-  gap: 8px;
+  gap: 0.5rem;
   min-width: 0;
 }
 
@@ -1573,8 +1573,8 @@
 
 .community-streak-card__day {
   position: relative;
-  width: 26px;
-  height: 26px;
+  width: 1.625rem;
+  height: 1.625rem;
   display: grid;
   place-items: center;
   border-radius: 50%;
@@ -1608,7 +1608,7 @@
 
 .birthday-card {
   display: grid;
-  gap: 13px;
+  gap: 0.8125rem;
   overflow: hidden;
   background:
     radial-gradient(circle at 92% 8%, rgba(255, 255, 255, 0.84), transparent 7rem),
@@ -1621,14 +1621,14 @@
 .birthday-card__header {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 0.75rem;
   min-width: 0;
 }
 
 .birthday-card__icon {
   flex: 0 0 auto;
-  width: 46px;
-  height: 46px;
+  width: 2.875rem;
+  height: 2.875rem;
   display: grid;
   place-items: center;
   border-radius: 16px;
@@ -1659,7 +1659,7 @@
 }
 
 .birthday-card h2 {
-  margin-top: 3px;
+  margin-top: 0.1875rem;
   color: var(--community-primary-text);
   font-size: 1.18rem;
   line-height: 1.25;
@@ -1673,7 +1673,7 @@
 
 .birthday-card__messages {
   display: grid;
-  gap: 8px;
+  gap: 0.5rem;
 }
 
 .birthday-card__messages button,
@@ -1693,7 +1693,7 @@
   color: rgba(75, 19, 107, 0.78);
   font-size: 0.78rem;
   line-height: 1.35;
-  padding: 9px 10px;
+  padding: 0.5625rem 0.625rem;
 }
 
 .birthday-card__messages button.is-selected {
@@ -1704,11 +1704,11 @@
 }
 
 .birthday-card__custom {
-  min-height: 36px;
+  min-height: 2.25rem;
   background: rgba(255, 255, 255, 0.7);
   color: #7b3fa1;
   font-size: 0.8rem;
-  padding: 0 13px;
+  padding: 0 0.8125rem;
   text-align: center;
   box-shadow: none;
 }
@@ -1723,13 +1723,13 @@
 
 .birthday-card__custom-area {
   display: grid;
-  gap: 7px;
+  gap: 0.4375rem;
 }
 
 .birthday-card__textarea {
   width: 100%;
   box-sizing: border-box;
-  min-height: 74px;
+  min-height: 4.625rem;
   resize: vertical;
   border: 1px solid var(--community-card-border);
   border-radius: 14px;
@@ -1739,7 +1739,7 @@
   font-size: 0.82rem;
   line-height: 1.5;
   outline: none;
-  padding: 10px;
+  padding: 0.625rem;
 }
 
 .birthday-card__textarea:focus {
@@ -1749,7 +1749,7 @@
 
 .birthday-card__send {
   min-width: 0;
-  min-height: 38px;
+  min-height: 2.375rem;
   border: 0;
   border-radius: 999px;
   background: linear-gradient(135deg, var(--community-accent), #f45ba5);
@@ -1758,7 +1758,7 @@
   font: inherit;
   font-size: 0.82rem;
   font-weight: 800;
-  padding: 0 14px;
+  padding: 0 0.875rem;
   box-shadow: 0 12px 24px rgba(236, 22, 140, 0.16);
 }
 
@@ -1775,7 +1775,7 @@
   color: #4b136b;
   font-size: 0.76rem;
   font-weight: 800;
-  padding: 7px 10px;
+  padding: 0.4375rem 0.625rem;
 }
 
 .birthday-card__error {
@@ -1787,21 +1787,21 @@
 .birthday-empty-state {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 0.625rem;
   border: 1px solid var(--community-card-border);
   border-radius: var(--community-card-radius);
   background:
     radial-gradient(circle at 92% 12%, rgba(236, 22, 140, 0.08), transparent 7rem),
     rgba(255, 255, 255, 0.78);
   color: rgba(75, 19, 107, 0.7);
-  padding: 16px;
+  padding: 1rem;
   min-width: 0;
 }
 
 .birthday-empty-state__icon {
   flex: 0 0 auto;
-  width: 38px;
-  height: 38px;
+  width: 2.375rem;
+  height: 2.375rem;
   display: grid;
   place-items: center;
   border-radius: 14px;
@@ -1816,7 +1816,7 @@
 }
 
 .birthday-empty-state p {
-  margin: 3px 0 0;
+  margin: 0.1875rem 0 0;
   color: var(--community-muted-strong);
   font-size: 0.78rem;
   font-weight: 700;
@@ -1832,15 +1832,15 @@
 .community-page-card__heading {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 14px;
+  gap: 0.75rem;
+  margin-bottom: 0.875rem;
   min-width: 0;
 }
 
 .community-page-card__icon {
   flex: 0 0 auto;
-  width: 50px;
-  height: 50px;
+  width: 3.125rem;
+  height: 3.125rem;
   display: grid;
   place-items: center;
   border-radius: 16px;
@@ -1871,7 +1871,7 @@
 
 .community-page-card p,
 .community-page-post p {
-  margin: 7px 0 0;
+  margin: 0.4375rem 0 0;
   color: var(--community-muted);
   font-size: 0.92rem;
   line-height: 1.6;
@@ -1881,7 +1881,7 @@
 .community-page-post {
   position: relative;
   display: grid;
-  gap: 14px;
+  gap: 0.875rem;
   overflow: hidden;
   background: rgba(255, 255, 255, 0.94);
   box-shadow: var(--community-card-shadow);
@@ -1902,7 +1902,7 @@
   display: grid;
   place-items: center;
   background: rgba(255, 248, 252, 0.54);
-  padding: 18px;
+  padding: 1.125rem;
   text-align: center;
 }
 
@@ -1914,7 +1914,7 @@
   font-size: 0.86rem;
   font-weight: 850;
   line-height: 1.3;
-  padding: 10px 15px;
+  padding: 0.625rem 0.9375rem;
   box-shadow: 0 14px 32px rgba(75, 19, 107, 0.12);
 }
 
@@ -1927,7 +1927,7 @@
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto auto;
   align-items: center;
-  gap: 12px;
+  gap: 0.75rem;
   min-width: 0;
 }
 
@@ -1937,8 +1937,8 @@
 
 .community-page-post__avatar {
   flex: 0 0 auto;
-  width: 44px;
-  height: 44px;
+  width: 2.75rem;
+  height: 2.75rem;
   display: grid;
   place-items: center;
   border-radius: 50%;
@@ -1952,7 +1952,7 @@
 .community-page-post__author-row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 0.5rem;
   flex-wrap: wrap;
   min-width: 0;
 }
@@ -1968,7 +1968,7 @@
 .community-page-post small,
 .community-circle-item small {
   display: block;
-  margin-top: 3px;
+  margin-top: 0.1875rem;
   color: var(--community-muted-strong);
   font-size: 0.76rem;
   font-weight: 700;
@@ -1980,25 +1980,25 @@
   color: #ec168c;
   font-size: 0.7rem;
   font-weight: 800;
-  padding: 6px 10px;
+  padding: 0.375rem 0.625rem;
   white-space: nowrap;
 }
 
 .community-page-post__anonymous-badge {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 0.25rem;
   border-radius: 999px;
   background: rgba(123, 63, 161, 0.08);
   color: #7b3fa1;
   font-size: 0.68rem;
   font-weight: 800;
-  padding: 4px 8px;
+  padding: 0.25rem 0.5rem;
   white-space: nowrap;
 }
 
 .community-page-post__follow {
-  min-height: 24px;
+  min-height: 1.5rem;
   border: 1px solid rgba(123, 63, 161, 0.12);
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.72);
@@ -2007,7 +2007,7 @@
   font: inherit;
   font-size: 0.68rem;
   font-weight: 800;
-  padding: 0 9px;
+  padding: 0 0.5625rem;
 }
 
 .community-page-post__follow:hover,
@@ -2026,8 +2026,8 @@
 }
 
 .community-page-post__more {
-  width: 32px;
-  height: 32px;
+  width: 2rem;
+  height: 2rem;
   display: grid;
   place-items: center;
   border: 1px solid transparent;
@@ -2052,18 +2052,18 @@
   top: calc(100% + 8px);
   right: 0;
   z-index: 4;
-  min-width: 156px;
+  min-width: 9.75rem;
   border: 1px solid var(--community-card-border);
   border-radius: 14px;
   background: rgba(255, 255, 255, 0.96);
   box-shadow: 0 18px 38px rgba(75, 19, 107, 0.14);
-  padding: 6px;
+  padding: 0.375rem;
   animation: community-menu-pop 160ms ease both;
 }
 
 .community-page-post__menu-item {
   width: 100%;
-  min-height: 34px;
+  min-height: 2.125rem;
   display: flex;
   align-items: center;
   justify-content: flex-start;
@@ -2075,7 +2075,7 @@
   font: inherit;
   font-size: 0.78rem;
   font-weight: 800;
-  padding: 0 10px;
+  padding: 0 0.625rem;
   text-align: left;
 }
 
@@ -2094,7 +2094,7 @@
 
 .community-page-post__content {
   display: grid;
-  gap: 7px;
+  gap: 0.4375rem;
 }
 
 .community-page-post__content p {
@@ -2117,7 +2117,7 @@
   font-size: 0.76rem;
   font-weight: 800;
   line-height: 1.35;
-  padding: 7px 11px;
+  padding: 0.4375rem 0.6875rem;
   box-shadow: 0 14px 34px rgba(75, 19, 107, 0.12);
   animation: community-comment-toast-in 180ms ease both;
   backdrop-filter: blur(12px);
@@ -2134,12 +2134,12 @@
 .community-page-post__attachment img {
   display: block;
   width: 100%;
-  max-height: 320px;
+  max-height: 20rem;
   object-fit: cover;
 }
 
 .community-page-post__attachment--voice {
-  padding: 12px;
+  padding: 0.75rem;
 }
 
 .community-page-post__attachment audio {
@@ -2151,17 +2151,17 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 0.625rem;
   flex-wrap: wrap;
   border-top: 1px solid var(--community-divider);
   min-width: 0;
-  padding-top: 12px;
+  padding-top: 0.75rem;
 }
 
 .community-page-post__primary-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 0.5rem;
   flex-wrap: wrap;
   min-width: 0;
 }
@@ -2170,8 +2170,8 @@
   flex: 0 1 auto;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  min-height: 34px;
+  gap: 0.375rem;
+  min-height: 2.125rem;
   border: 1px solid transparent;
   border-radius: 999px;
   background: transparent;
@@ -2180,7 +2180,7 @@
   font: inherit;
   font-size: 0.8rem;
   font-weight: 800;
-  padding: 0 10px;
+  padding: 0 0.625rem;
   max-width: 100%;
   min-width: 0;
   transition: background 180ms ease, border-color 180ms ease, color 180ms ease;
@@ -2217,7 +2217,7 @@
   font-size: 0.76rem;
   font-weight: 800;
   line-height: 1.35;
-  padding: 6px 9px;
+  padding: 0.375rem 0.5625rem;
 }
 
 .community-page-post__report-feedback--error {
@@ -2237,15 +2237,15 @@
   background: rgba(22, 13, 34, 0.32);
   backdrop-filter: blur(4px);
   direction: ltr;
-  padding: 18px;
+  padding: 1.125rem;
   text-align: left;
   animation: community-modal-fade 160ms ease both;
 }
 
 .community-report-modal__panel {
-  width: min(100%, 440px);
+  width: min(100%, 27.5rem);
   display: grid;
-  gap: 10px;
+  gap: 0.625rem;
   border: 1px solid rgba(123, 63, 161, 0.1);
   border-radius: 16px;
   background:
@@ -2253,7 +2253,7 @@
     rgba(255, 255, 255, 0.985);
   box-shadow: 0 20px 48px rgba(42, 18, 66, 0.2);
   direction: ltr;
-  padding: 16px;
+  padding: 1rem;
   text-align: left;
   animation: community-modal-rise 180ms ease both;
 }
@@ -2262,8 +2262,8 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 12px;
-  padding-bottom: 2px;
+  gap: 0.75rem;
+  padding-bottom: 0.125rem;
 }
 
 .community-report-modal__header h3 {
@@ -2274,7 +2274,7 @@
 }
 
 .community-report-modal__header p {
-  margin: 2px 0 0;
+  margin: 0.125rem 0 0;
   color: var(--community-muted);
   font-size: 0.78rem;
   line-height: 1.35;
@@ -2282,8 +2282,8 @@
 
 .community-report-modal__close {
   flex: 0 0 auto;
-  width: 28px;
-  height: 28px;
+  width: 1.75rem;
+  height: 1.75rem;
   display: grid;
   place-items: center;
   border: 1px solid transparent;
@@ -2306,14 +2306,14 @@
 
 .community-report-modal__reasons {
   display: grid;
-  gap: 6px;
+  gap: 0.375rem;
 }
 
 .community-report-modal__reason {
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 9px;
+  gap: 0.5625rem;
   border: 1px solid rgba(123, 63, 161, 0.09);
   border-radius: 11px;
   background: rgba(255, 255, 255, 0.72);
@@ -2322,8 +2322,8 @@
   font-size: 0.78rem;
   font-weight: 750;
   line-height: 1.25;
-  min-height: 48px;
-  padding: 7px 10px;
+  min-height: 3rem;
+  padding: 0.4375rem 0.625rem;
   transition: background 180ms ease, border-color 180ms ease, color 180ms ease, box-shadow 180ms ease;
 }
 
@@ -2360,7 +2360,7 @@
   font-size: 0.78rem;
   font-weight: 800;
   line-height: 1.35;
-  padding: 7px 10px;
+  padding: 0.4375rem 0.625rem;
   animation: community-comment-toast-in 180ms ease both;
 }
 
@@ -2380,20 +2380,20 @@
   display: flex;
   flex-direction: row;
   justify-content: flex-end;
-  gap: 8px;
+  gap: 0.5rem;
   flex-wrap: wrap;
   border-top: 1px solid rgba(123, 63, 161, 0.07);
-  padding-top: 10px;
+  padding-top: 0.625rem;
 }
 
 .community-report-modal__actions button {
-  min-height: 34px;
+  min-height: 2.125rem;
   border-radius: 999px;
   cursor: pointer;
   font: inherit;
   font-size: 0.78rem;
   font-weight: 800;
-  padding: 0 14px;
+  padding: 0 0.875rem;
   transition: background 180ms ease, border-color 180ms ease, color 180ms ease, box-shadow 180ms ease, opacity 180ms ease;
 }
 
@@ -2430,31 +2430,31 @@
 
 .comments-preview {
   display: grid;
-  gap: 8px;
+  gap: 0.5rem;
   border-top: 1px solid var(--community-divider);
-  padding-top: 12px;
+  padding-top: 0.75rem;
 }
 
 .comments-preview--empty {
-  padding-top: 10px;
+  padding-top: 0.625rem;
 }
 
 .comments-preview__list {
   display: grid;
-  gap: 9px;
+  gap: 0.5625rem;
 }
 
 .comments-preview__item {
   display: flex;
   align-items: flex-start;
-  gap: 8px;
+  gap: 0.5rem;
   min-width: 0;
 }
 
 .comments-preview__avatar {
   flex: 0 0 auto;
-  width: 30px;
-  height: 30px;
+  width: 1.875rem;
+  height: 1.875rem;
   display: grid;
   place-items: center;
   border-radius: 50%;
@@ -2472,7 +2472,7 @@
   background:
     radial-gradient(circle at 8% 0%, rgba(255, 255, 255, 0.88), transparent 2.6rem),
     rgba(255, 248, 252, 0.78);
-  padding: 9px 11px;
+  padding: 0.5625rem 0.6875rem;
   box-shadow: 0 8px 20px rgba(123, 63, 161, 0.05);
 }
 
@@ -2481,15 +2481,15 @@
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 3px;
+  gap: 0.5rem;
+  margin-bottom: 0.1875rem;
 }
 
 .comments-preview__meta {
   display: flex;
   align-items: baseline;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 0.375rem;
   min-width: 0;
 }
 
@@ -2505,7 +2505,7 @@
 }
 
 .comments-preview__delete {
-  min-height: 24px;
+  min-height: 1.5rem;
   border: 1px solid transparent;
   border-radius: 999px;
   background: transparent;
@@ -2514,7 +2514,7 @@
   font: inherit;
   font-size: 0.68rem;
   font-weight: 800;
-  padding: 0 8px;
+  padding: 0 0.5rem;
   transition: background 180ms ease, border-color 180ms ease, color 180ms ease;
 }
 
@@ -2536,7 +2536,7 @@
 
 .comments-preview__view-all {
   justify-self: start;
-  min-height: 28px;
+  min-height: 1.75rem;
   border: 0;
   background: transparent;
   color: #7b3fa1;
@@ -2544,7 +2544,7 @@
   font: inherit;
   font-size: 0.78rem;
   font-weight: 800;
-  padding: 0 2px;
+  padding: 0 0.125rem;
 }
 
 .comments-preview__view-all:focus-visible {
@@ -2563,16 +2563,16 @@
 .community-comment-form {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 0.5rem;
   border-top: 1px solid var(--community-divider);
   min-width: 0;
-  padding-top: 12px;
+  padding-top: 0.75rem;
 }
 
 .community-comment-form input {
   flex: 1;
   min-width: 0;
-  min-height: 36px;
+  min-height: 2.25rem;
   box-sizing: border-box;
   border: 1px solid var(--community-card-border);
   border-radius: 999px;
@@ -2581,7 +2581,7 @@
   font: inherit;
   font-size: 0.82rem;
   outline: none;
-  padding: 0 14px;
+  padding: 0 0.875rem;
 }
 
 .community-comment-form input:focus {
@@ -2592,7 +2592,7 @@
 
 .community-comment-form button {
   flex: 0 0 auto;
-  min-height: 36px;
+  min-height: 2.25rem;
   border: 0;
   border-radius: 999px;
   background: var(--community-accent-strong);
@@ -2601,7 +2601,7 @@
   font: inherit;
   font-size: 0.8rem;
   font-weight: 800;
-  padding: 0 14px;
+  padding: 0 0.875rem;
 }
 
 .community-comment-form button:focus-visible,
@@ -2617,13 +2617,13 @@
 .community-comment-form__feedback {
   width: fit-content;
   max-width: 100%;
-  margin: -4px 0 0;
+  margin: -0.25rem 0 0;
   border-radius: 999px;
   background: rgba(255, 248, 252, 0.82);
   font-size: 0.76rem;
   font-weight: 800;
   line-height: 1.35;
-  padding: 6px 9px;
+  padding: 0.375rem 0.5625rem;
 }
 
 .community-comment-form__feedback--error {
@@ -2672,11 +2672,11 @@
 }
 
 .community-circle-item {
-  gap: 10px;
+  gap: 0.625rem;
   border: 1px solid var(--community-card-border);
   border-radius: 14px;
   background: #fff;
-  padding: 11px;
+  padding: 0.6875rem;
   min-width: 0;
 }
 
@@ -2685,8 +2685,8 @@
 }
 
 .community-circle-item > span {
-  width: 34px;
-  height: 34px;
+  width: 2.125rem;
+  height: 2.125rem;
   display: grid;
   place-items: center;
   border-radius: 12px;
@@ -3263,25 +3263,25 @@
 
 @media (max-width: 760px) {
   .community-page {
-    gap: 18px;
+    gap: 1.125rem;
   }
 
   .community-page-shell,
   .community-main-feed,
   .community-right-sidebar {
-    gap: 14px;
+    gap: 0.875rem;
   }
 
   .community-guidelines-modal {
     align-items: start;
-    padding: 14px;
+    padding: 0.875rem;
   }
 
   .community-guidelines-modal__panel {
-    max-height: calc(100dvh - 28px);
+    max-height: calc(100dvh - 1.75rem);
     border-radius: 22px;
-    gap: 14px;
-    padding: 20px;
+    gap: 0.875rem;
+    padding: 1.25rem;
   }
 
   .community-page-post__header {
@@ -3309,12 +3309,12 @@
   .community-profile-setup,
   .community-empty-state {
     border-radius: 20px;
-    padding: 18px;
+    padding: 1.125rem;
   }
 
   .create-post-card__avatar {
-    width: 42px;
-    height: 42px;
+    width: 2.625rem;
+    height: 2.625rem;
     border-radius: 50%;
   }
 
@@ -3371,7 +3371,7 @@
   .create-post-card__emoji-popover {
     right: 12px;
     bottom: 128px;
-    width: calc(100% - 24px);
+    width: calc(100% - 1.5rem);
     max-height: 58vh;
   }
 
@@ -3386,7 +3386,7 @@
 
   .create-post-card__attachment-preview img {
     width: 100%;
-    max-height: 220px;
+    max-height: 13.75rem;
   }
 
   .community-profile-setup__heading,
@@ -3407,15 +3407,15 @@
   }
 
   .community-report-modal {
-    padding: 14px;
+    padding: 0.875rem;
   }
 
   .community-report-modal__panel {
-    width: min(94vw, 440px);
-    max-height: calc(100dvh - 28px);
+    width: min(94vw, 27.5rem);
+    max-height: calc(100dvh - 1.75rem);
     overflow-y: auto;
     border-radius: 16px;
-    padding: 14px;
+    padding: 0.875rem;
   }
 
   .community-report-modal__actions {
@@ -3449,7 +3449,7 @@
   }
 
   .comments-preview__item {
-    gap: 8px;
+    gap: 0.5rem;
   }
 
   .community-comment-form {
@@ -3472,7 +3472,7 @@
   .community-profile-setup,
   .community-empty-state {
     border-radius: 18px;
-    padding: 16px;
+    padding: 1rem;
   }
 
   .community-page-post__actions,
@@ -3487,19 +3487,19 @@
   .birthday-card__icon,
   .guidelines-card__icon,
   .community-streak-card__icon {
-    width: 42px;
-    height: 42px;
+    width: 2.625rem;
+    height: 2.625rem;
     border-radius: 14px;
   }
 
   .comments-preview__avatar {
-    width: 28px;
-    height: 28px;
+    width: 1.75rem;
+    height: 1.75rem;
     border-radius: 50%;
   }
 
   .comments-preview__bubble {
-    padding: 8px 10px;
+    padding: 0.5rem 0.625rem;
   }
 
   .community-streak-card {
