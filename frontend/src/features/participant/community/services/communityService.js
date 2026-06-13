@@ -24,7 +24,19 @@ import { isCommunityContentVisible } from '../utils/communityModerationUtils';
 
 const POSTS_COL = 'community_posts';
 const USERS_COL = 'users';
+// Community-visible display data only (name + birthday). Mirrored from
+// users/{uid} so it can be read by any signed-in member without exposing the
+// contact PII stored in users/{uid}.
+const PUBLIC_PROFILES_COL = 'public_profiles';
 const ACTIVITY_NOTIFICATIONS_COL = 'activity_notifications';
+
+// The subset of community-profile fields that are safe to expose to other
+// signed-in members and that the birthday widget needs.
+const PUBLIC_PROFILE_FIELDS = [
+  'communityDisplayName',
+  'communityBirthday',
+  'showBirthdayInCommunity',
+];
 
 const makeExcerpt = (text, max = 80) => {
   const clean = (text ?? '').replace(/\s+/g, ' ').trim();
@@ -505,6 +517,19 @@ export async function getCommunityProfile(uid) {
 export async function updateCommunityProfile(uid, profileData = {}) {
   if (!uid) return;
   await setDoc(doc(db, USERS_COL, uid), profileData, { merge: true });
+
+  // Mirror only the community-visible display fields to public_profiles/{uid}
+  // (readable by any signed-in member) so the birthday widget and name display
+  // work without exposing contact PII held in users/{uid}.
+  const publicPatch = {};
+  for (const field of PUBLIC_PROFILE_FIELDS) {
+    if (field in profileData) publicPatch[field] = profileData[field];
+  }
+  if (Object.keys(publicPatch).length > 0) {
+    publicPatch.updatedAt = serverTimestamp();
+    await setDoc(doc(db, PUBLIC_PROFILES_COL, uid), publicPatch, { merge: true });
+  }
+
   return { success: true };
 }
 
@@ -564,7 +589,7 @@ export async function getTodayCommunityBirthdays() {
   const todaySuffix = `-${monthStr}-${dayStr}`;
 
   const q = query(
-    collection(db, USERS_COL),
+    collection(db, PUBLIC_PROFILES_COL),
     where('showBirthdayInCommunity', '==', true),
     limit(50),
   );
@@ -578,7 +603,7 @@ export async function getTodayCommunityBirthdays() {
     })
     .map((user) => ({
       id: user.id,
-      name: user.communityDisplayName || user.displayName || 'Community Member',
+      name: user.communityDisplayName || 'Community Member',
       birthday: user.communityBirthday,
     }));
 }
