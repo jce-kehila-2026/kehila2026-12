@@ -50,12 +50,12 @@
 }
 
 .updates-page__icon-wrap svg {
-  font-size: 24px;
+  font-size: 1.5rem;
 }
 
 .updates-page__header-text h1 {
   margin: 0;
-  font-size: clamp(20px, 1.5vw, 26px);
+  font-size: clamp(1.25rem, 1.5vw, 1.625rem);
   font-weight: 800;
   line-height: 1.15;
 }
@@ -63,7 +63,7 @@
 .updates-page__header-text p {
   margin: 4px 0 0;
   color: rgba(36, 16, 79, 0.62);
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 
 .updates-page__header-actions {
@@ -85,7 +85,7 @@
   border: none;
   background: linear-gradient(135deg, #6d35b8, #a855f7);
   color: #fff;
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 700;
   cursor: pointer;
   box-shadow: 0 8px 20px rgba(109, 53, 184, 0.28);
@@ -106,7 +106,7 @@
   border: 1px solid var(--glass-border);
   background: var(--glass);
   color: var(--primary-purple);
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 700;
   cursor: pointer;
   transition: background 0.18s;
@@ -142,21 +142,21 @@
 }
 
 .updates-page__empty-icon {
-  font-size: 48px !important;
+  font-size: 3rem !important;
   color: var(--lavender);
   opacity: 0.7;
 }
 
 .updates-page__empty h3 {
   margin: 4px 0 0;
-  font-size: 18px;
+  font-size: 1.125rem;
   font-weight: 700;
   color: var(--primary-purple);
 }
 
 .updates-page__empty p {
   margin: 0;
-  font-size: 14px;
+  font-size: 0.875rem;
   max-width: 380px;
 }
 
@@ -197,7 +197,7 @@
   gap: 5px;
   padding: 4px 10px;
   border-radius: 999px;
-  font-size: 11.5px;
+  font-size: 0.71875rem;
   font-weight: 800;
   color: var(--badge-color, #6d35b8);
   background: color-mix(in srgb, var(--badge-color, #6d35b8) 12%, transparent);
@@ -210,7 +210,7 @@
   align-items: center;
   padding: 3px 9px;
   border-radius: 999px;
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 700;
   color: #64748b;
   background: rgba(100, 116, 139, 0.1);
@@ -227,7 +227,7 @@
 
 .updates-page__card-title {
   margin: 0;
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 700;
   line-height: 1.3;
   color: var(--deep-purple);
@@ -235,7 +235,7 @@
 
 .updates-page__card-text {
   margin: 0;
-  font-size: 13.5px;
+  font-size: 0.84375rem;
   color: rgba(36, 16, 79, 0.68);
   line-height: 1.55;
   display: -webkit-box;
@@ -247,7 +247,7 @@
 .updates-page__card-meta {
   display: flex;
   gap: 12px;
-  font-size: 12px;
+  font-size: 0.75rem;
   color: rgba(36, 16, 79, 0.44);
   margin-top: 2px;
 }
@@ -271,7 +271,7 @@
   cursor: pointer;
   transition: background 0.16s, color 0.16s;
   color: rgba(36, 16, 79, 0.5);
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 600;
   white-space: nowrap;
 }
@@ -345,7 +345,7 @@
 
 .updates-modal__header h2 {
   margin: 0;
-  font-size: 18px;
+  font-size: 1.125rem;
   font-weight: 800;
   color: var(--deep-purple);
 }
@@ -385,7 +385,7 @@
 }
 
 .updates-modal__field label {
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 700;
   color: rgba(36, 16, 79, 0.72);
 }
@@ -405,7 +405,7 @@
   border: 1px solid rgba(167, 139, 250, 0.18);
   background: rgba(255, 255, 255, 0.72);
   color: rgba(36, 16, 79, 0.7);
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.16s;
@@ -433,7 +433,7 @@
   border: 1px solid rgba(167, 139, 250, 0.22);
   background: rgba(255, 255, 255, 0.86);
   color: var(--deep-purple);
-  font-size: 14px;
+  font-size: 0.875rem;
   font-family: inherit;
   outline: none;
   transition: border-color 0.18s, box-shadow 0.18s;
@@ -453,7 +453,7 @@
   background: rgba(224, 82, 151, 0.1);
   border: 1px solid rgba(224, 82, 151, 0.22);
   color: #b91c6b;
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 600;
 }
 
@@ -471,7 +471,7 @@
   border: 1px solid var(--glass-border);
   background: var(--glass);
   color: var(--primary-purple);
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 700;
   cursor: pointer;
   transition: background 0.16s;
@@ -487,7 +487,7 @@
 
 .updates-email-modal__title h2 {
   margin: 0;
-  font-size: 18px;
+  font-size: 1.125rem;
   font-weight: 800;
   color: var(--deep-purple);
 }
@@ -504,7 +504,7 @@
 
 .updates-email-modal__preview-label {
   margin: 0;
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 800;
   text-transform: uppercase;
   letter-spacing: 0.06em;
@@ -514,14 +514,14 @@
 
 .updates-email-modal__preview-title {
   margin: 0;
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 700;
   color: var(--deep-purple);
 }
 
 .updates-email-modal__preview-body {
   margin: 0;
-  font-size: 13px;
+  font-size: 0.8125rem;
   color: rgba(36, 16, 79, 0.64);
   line-height: 1.5;
   display: -webkit-box;
@@ -540,7 +540,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  font-size: 14px;
+  font-size: 0.875rem;
   color: rgba(36, 16, 79, 0.64);
   padding: 12px 0 4px;
 }
@@ -568,12 +568,12 @@
   background: rgba(109, 53, 184, 0.07);
   border: 1px solid rgba(109, 53, 184, 0.12);
   color: var(--primary-purple);
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 
 .updates-email-modal__count strong {
   font-weight: 800;
-  font-size: 16px;
+  font-size: 1rem;
 }
 
 .updates-email-modal__warning {
@@ -585,13 +585,13 @@
   background: rgba(253, 186, 116, 0.15);
   border: 1px solid rgba(253, 186, 116, 0.35);
   color: #92400e;
-  font-size: 13px;
+  font-size: 0.8125rem;
   line-height: 1.5;
 }
 
 .updates-email-modal__note {
   margin: 0;
-  font-size: 13px;
+  font-size: 0.8125rem;
   color: rgba(36, 16, 79, 0.56);
   line-height: 1.55;
 }
@@ -613,7 +613,7 @@
   border: none;
   background: linear-gradient(135deg, #6d35b8, #a855f7);
   color: #fff;
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 700;
   cursor: pointer;
   box-shadow: 0 8px 20px rgba(109, 53, 184, 0.28);
