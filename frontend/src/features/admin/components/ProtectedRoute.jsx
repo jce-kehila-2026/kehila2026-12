@@ -27,7 +27,7 @@ export default function ProtectedRoute({ children, requiredRole = 'admin' }) {
   if (userRole !== 'admin') {
     return (
       <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', textAlign: 'center', gap: 1.5 }}>
-        <LockIcon sx={{ fontSize: 56, color: 'text.disabled' }} />
+        <LockIcon sx={{ fontSize: '3.5rem', color: 'text.disabled' }} />
         <Typography variant="h5">Access Denied</Typography>
         <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 400 }}>
           You don't have permission to view this page. Contact an Admin to request access.

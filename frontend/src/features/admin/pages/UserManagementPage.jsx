@@ -51,7 +51,7 @@ const actionButtonBaseSx = {
   height: 32,
   borderRadius: 2.25,
   px: 1.25,
-  fontSize: 12.5,
+  fontSize: '0.78125rem',
   fontWeight: 850,
   letterSpacing: 0,
   border: '1px solid transparent',
@@ -130,7 +130,7 @@ function RoleChip({ role }) {
 }
 
 function getFieldIcon(label) {
-  const iconSx = { fontSize: 18 };
+  const iconSx = { fontSize: '1.125rem' };
   const map = {
     'Full Name': <PersonIcon sx={iconSx} />,
     Email: <EmailOutlinedIcon sx={iconSx} />,
@@ -182,14 +182,14 @@ function InfoCard({ label, value, icon }) {
         {icon || getFieldIcon(label)}
       </Box>
       <Box sx={{ minWidth: 0, flex: 1 }}>
-        <Typography variant="caption" color="text.secondary" fontWeight={800} sx={{ display: 'block', lineHeight: 1.1, fontSize: 13 }}>
+        <Typography variant="caption" color="text.secondary" fontWeight={800} sx={{ display: 'block', lineHeight: 1.1, fontSize: '0.8125rem' }}>
           {label}
         </Typography>
         <Typography
           fontWeight={850}
           noWrap
           title={value || '-'}
-          sx={{ color: '#17122E', fontSize: 16, mt: 0.35, lineHeight: 1.3 }}
+          sx={{ color: '#17122E', fontSize: '1rem', mt: 0.35, lineHeight: 1.3 }}
         >
           {value || '-'}
         </Typography>
@@ -370,7 +370,7 @@ export default function UserManagementPage() {
       <Stack spacing={2.8} sx={{ width: '100%', maxWidth: 'none', height: '100%', minHeight: 0 }}>
         <Stack direction={{ xs: 'column', lg: 'row' }} spacing={2} alignItems={{ lg: 'center' }} justifyContent="space-between">
           <Box>
-            <Typography variant="h3" sx={{ fontSize: { xs: 30, md: 39 }, fontWeight: 950, color: '#100B2F', lineHeight: 1.05 }}>
+            <Typography variant="h3" sx={{ fontSize: { xs: '1.875rem', md: '2.4375rem' }, fontWeight: 950, color: '#100B2F', lineHeight: 1.05 }}>
               User Management
             </Typography>
             <Typography variant="subtitle1" sx={{ mt: 0.9, color: '#4F4A70', fontWeight: 600 }}>
@@ -626,7 +626,7 @@ export default function UserManagementPage() {
                           bgcolor: '#EEE7FF',
                           color: '#6D3CCF',
                           fontWeight: 950,
-                          fontSize: 19,
+                          fontSize: '1.1875rem',
                           boxShadow: '0 10px 24px rgba(109, 60, 207, 0.12)',
                         }}
                       >
@@ -634,7 +634,7 @@ export default function UserManagementPage() {
                       </Avatar>
                       <Box sx={{ minWidth: 0 }}>
                         <Typography fontWeight={950} noWrap sx={{ color: '#17122E' }}>{getFullName(user)}</Typography>
-                        <Typography color="#5E587E" noWrap sx={{ fontSize: 13.5 }}>{user.email || 'No email provided'}</Typography>
+                        <Typography color="#5E587E" noWrap sx={{ fontSize: '0.84375rem' }}>{user.email || 'No email provided'}</Typography>
                       </Box>
                     </Stack>
 
@@ -767,12 +767,12 @@ export default function UserManagementPage() {
             <Box sx={{ p: { xs: 2, md: 2.6 }, pb: 1.8, position: 'relative', height: 228, flex: '0 0 228px', boxSizing: 'border-box', overflow: 'hidden' }}>
               <Stack spacing={1.45} alignItems="stretch" textAlign="right">
                 <Stack direction="row-reverse" spacing={1.5} alignItems="center" sx={{ width: '100%', pr: 0 }}>
-                  <Avatar src={selectedUser.avatarUrl || ''} sx={{ width: 82, height: 82, bgcolor: '#EEE7FF', color: '#6D3CCF', fontSize: 30, fontWeight: 950, boxShadow: '0 14px 30px rgba(109, 60, 207, 0.16)', flexShrink: 0 }}>
+                  <Avatar src={selectedUser.avatarUrl || ''} sx={{ width: 82, height: 82, bgcolor: '#EEE7FF', color: '#6D3CCF', fontSize: '1.875rem', fontWeight: 950, boxShadow: '0 14px 30px rgba(109, 60, 207, 0.16)', flexShrink: 0 }}>
                     {initials(selectedUser)}
                   </Avatar>
                   <Box sx={{ minWidth: 0, flex: 1 }}>
                     <Stack direction="row-reverse" spacing={0.75} alignItems="center" justifyContent="flex-start" flexWrap="nowrap" sx={{ minWidth: 0 }}>
-                      <Typography variant="h5" fontWeight={950} noWrap sx={{ fontSize: 21, textAlign: 'right', minWidth: 0, flex: 1 }}>{getFullName(selectedUser)}</Typography>
+                      <Typography variant="h5" fontWeight={950} noWrap sx={{ fontSize: '1.3125rem', textAlign: 'right', minWidth: 0, flex: 1 }}>{getFullName(selectedUser)}</Typography>
                       <Box sx={{ flexShrink: 0 }}>
                         <RoleChip role={selectedUser.role || 'participant'} />
                       </Box>
@@ -792,9 +792,9 @@ export default function UserManagementPage() {
                       </IconButton>
                       {detailsLoading ? <CircularProgress size={16} /> : null}
                     </Stack>
-                    <Typography color="text.secondary" noWrap sx={{ mt: 0.45, fontSize: 13.5, textAlign: 'right' }}>{selectedUser.email || 'No email provided'}</Typography>
+                    <Typography color="text.secondary" noWrap sx={{ mt: 0.45, fontSize: '0.84375rem', textAlign: 'right' }}>{selectedUser.email || 'No email provided'}</Typography>
                     <Stack direction="row-reverse" spacing={1.1} justifyContent="flex-start" alignItems="center" flexWrap="wrap" sx={{ mt: 0.75 }}>
-                      <Typography color="text.secondary" sx={{ fontSize: 13 }}>Joined {formatDateValue(getJoinedDate(selectedUser))}</Typography>
+                      <Typography color="text.secondary" sx={{ fontSize: '0.8125rem' }}>Joined {formatDateValue(getJoinedDate(selectedUser))}</Typography>
                     </Stack>
                   </Box>
                 </Stack>

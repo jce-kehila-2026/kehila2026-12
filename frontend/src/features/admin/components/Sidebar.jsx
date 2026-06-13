@@ -200,7 +200,7 @@ export default function Sidebar({ drawerWidth = 260, collapsed = false, onToggle
               transition: 'opacity 220ms ease-in-out, width 300ms ease-in-out',
             }}
           >
-            <Typography sx={{ color: '#24104F', fontSize: 16, fontWeight: 800, lineHeight: 1.15 }}>
+            <Typography sx={{ color: '#24104F', fontSize: '1rem', fontWeight: 800, lineHeight: 1.15 }}>
               {adminName}
             </Typography>
             <Typography
@@ -214,7 +214,7 @@ export default function Sidebar({ drawerWidth = 260, collapsed = false, onToggle
                 borderRadius: 999,
                 color: '#6D35B8',
                 background: 'rgba(167,139,250,0.18)',
-                fontSize: 11,
+                fontSize: '0.6875rem',
                 fontWeight: 800,
                 lineHeight: 1,
               }}
@@ -233,7 +233,7 @@ export default function Sidebar({ drawerWidth = 260, collapsed = false, onToggle
               background: 'linear-gradient(135deg, #6D35B8, #E05297)',
               border: '2px solid rgba(255,255,255,0.78)',
               boxShadow: '0 14px 28px rgba(109,53,184,0.16)',
-              fontSize: 14,
+              fontSize: '0.875rem',
               fontWeight: 800,
             }}
           >

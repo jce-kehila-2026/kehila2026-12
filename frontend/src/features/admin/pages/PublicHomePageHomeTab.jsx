@@ -570,7 +570,7 @@ function BackgroundPreview({ url }) {
           alignItems: 'center',
           justifyContent: 'center',
           color: 'text.secondary',
-          fontSize: 12,
+          fontSize: '0.75rem',
         }}
       >
         No image set
@@ -591,7 +591,7 @@ function BackgroundPreview({ url }) {
           alignItems: 'center',
           justifyContent: 'center',
           color: 'error.main',
-          fontSize: 12,
+          fontSize: '0.75rem',
         }}
       >
         Image failed to load
