@@ -34,7 +34,7 @@
 
 .admin-community-hero h1 {
   margin: 0;
-  font-size: clamp(22px, 1.6vw, 28px);
+  font-size: clamp(1.375rem, 1.6vw, 1.75rem);
   font-weight: 800;
   line-height: 1.12;
 }
@@ -42,7 +42,7 @@
 .admin-community-hero p {
   margin: 5px 0 0;
   color: rgba(36, 16, 79, 0.68);
-  font-size: 15px;
+  font-size: 0.9375rem;
 }
 
 .admin-community-refresh-btn {
@@ -56,7 +56,7 @@
   background: rgba(255, 255, 255, 0.76);
   color: var(--primary-purple);
   font-weight: 700;
-  font-size: 13px;
+  font-size: 0.8125rem;
   white-space: nowrap;
   cursor: pointer;
   transition: background 0.18s;
@@ -122,13 +122,13 @@
   display: block;
   margin: 3px 0 5px;
   color: rgba(36, 16, 79, 0.64);
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 700;
 }
 
 .admin-community-metric__value {
   display: block;
-  font-size: 26px;
+  font-size: 1.625rem;
   font-weight: 800;
   line-height: 1;
 }
@@ -136,7 +136,7 @@
 .admin-community-metric__sub {
   margin: 6px 0 0;
   color: rgba(36, 16, 79, 0.48);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 600;
 }
 
@@ -158,7 +158,7 @@
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.64);
   color: rgba(36, 16, 79, 0.72);
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.18s;
@@ -204,7 +204,7 @@
   padding: 32px 0;
   text-align: center;
   color: rgba(36, 16, 79, 0.54);
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 600;
 }
 
@@ -222,14 +222,14 @@
 
 .admin-community-empty h3 {
   margin: 0;
-  font-size: 18px;
+  font-size: 1.125rem;
   font-weight: 800;
   color: var(--deep-purple);
 }
 
 .admin-community-empty p {
   margin: 0;
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 
 /* ── Buttons ─────────────────────────────────────────────────────────────── */
@@ -241,7 +241,7 @@
   align-items: center;
   gap: 6px;
   border-radius: 10px;
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.16s;
@@ -308,7 +308,7 @@
 .admin-community-btn--sm {
   min-height: 28px;
   padding: 0 10px;
-  font-size: 12px;
+  font-size: 0.75rem;
   border-radius: 8px;
 }
 
@@ -316,7 +316,7 @@
   min-height: 28px;
   min-width: 28px;
   padding: 0 6px;
-  font-size: 13px;
+  font-size: 0.8125rem;
   border-radius: 8px;
 }
 
@@ -331,7 +331,7 @@
 .admin-community-btn--save {
   min-height: 42px;
   padding: 0 28px;
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 
 /* ── Badges ──────────────────────────────────────────────────────────────── */
@@ -342,7 +342,7 @@
   gap: 4px;
   padding: 4px 10px;
   border-radius: 999px;
-  font-size: 11px;
+  font-size: 0.6875rem;
   font-weight: 800;
   border: 1px solid transparent;
 }
@@ -425,14 +425,14 @@
   border-radius: 12px;
   display: grid;
   place-items: center;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 800;
   flex: 0 0 auto;
 }
 
 .admin-community-post-card__author strong {
   display: block;
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 800;
 }
 
@@ -441,7 +441,7 @@
   align-items: center;
   gap: 8px;
   margin-top: 3px;
-  font-size: 12px;
+  font-size: 0.75rem;
   color: rgba(36, 16, 79, 0.56);
   font-weight: 600;
 }
@@ -455,7 +455,7 @@
 
 .admin-community-post-card__content {
   margin: 0 0 14px;
-  font-size: 14px;
+  font-size: 0.875rem;
   line-height: 1.6;
   color: rgba(36, 16, 79, 0.88);
 }
@@ -473,7 +473,7 @@
   border-radius: 8px;
   background: rgba(167, 139, 250, 0.08);
   color: var(--primary-purple);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 700;
   cursor: pointer;
   transition: background 0.16s;
@@ -500,7 +500,7 @@
   padding: 8px 12px;
   border-radius: 8px;
   background: rgba(253, 186, 116, 0.1);
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 
 .admin-community-report-item__reason {
@@ -535,7 +535,7 @@
 .admin-community-delete-confirm svg { color: #9d174d; }
 
 .admin-community-delete-confirm span {
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 700;
   color: #9d174d;
   flex: 1 1 auto;
@@ -560,7 +560,7 @@
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.68);
   color: rgba(36, 16, 79, 0.72);
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 700;
   cursor: pointer;
   transition: all 0.16s;
@@ -583,7 +583,7 @@
   padding: 0 5px;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.28);
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 
 .admin-community-chip.is-active .admin-community-chip__count {
@@ -603,7 +603,7 @@
   padding: 10px 14px;
   border-radius: 10px;
   background: rgba(167, 139, 250, 0.08);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 800;
   color: rgba(36, 16, 79, 0.64);
   margin-bottom: 4px;
@@ -616,7 +616,7 @@
   align-items: center;
   padding: 10px 14px;
   border-bottom: 1px solid rgba(167, 139, 250, 0.12);
-  font-size: 13px;
+  font-size: 0.8125rem;
   transition: background 0.14s;
 }
 
@@ -641,7 +641,7 @@
   border-radius: 8px;
   display: grid;
   place-items: center;
-  font-size: 10px;
+  font-size: 0.625rem;
   font-weight: 800;
   flex: 0 0 auto;
   background: linear-gradient(135deg, #fce7f3, #ddd6fe);
@@ -653,7 +653,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   font-weight: 700;
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 
 .admin-community-table__content p {
@@ -661,12 +661,12 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
-  font-size: 13px;
+  font-size: 0.8125rem;
   color: rgba(36, 16, 79, 0.8);
 }
 
 .admin-community-table__date {
-  font-size: 12px;
+  font-size: 0.75rem;
   color: rgba(36, 16, 79, 0.56);
   font-weight: 600;
 }
@@ -698,7 +698,7 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 600;
   color: rgba(36, 16, 79, 0.68);
 }
@@ -716,7 +716,7 @@
   border-radius: 10px;
   background: rgba(253, 186, 116, 0.14);
   border: 1px solid rgba(253, 186, 116, 0.3);
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 600;
   color: #92400e;
 }
@@ -732,14 +732,14 @@
 
 .admin-community-guidelines-section h3 {
   margin: 0 0 16px;
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 800;
 }
 
 .admin-community-guidelines-section h3 span {
   font-weight: 600;
   color: rgba(36, 16, 79, 0.54);
-  font-size: 12px;
+  font-size: 0.75rem;
   margin-left: 6px;
 }
 
@@ -773,7 +773,7 @@
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.78);
   color: var(--deep-purple);
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 600;
   transition: border-color 0.16s;
   outline: none;
@@ -801,7 +801,7 @@
   border-radius: 10px;
   background: rgba(134, 209, 124, 0.16);
   border: 1px solid rgba(134, 209, 124, 0.32);
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 600;
   color: #166534;
 }
