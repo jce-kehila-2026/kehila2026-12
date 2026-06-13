@@ -728,7 +728,7 @@ function CardRow({
       sx={{
         display: 'flex',
         alignItems: 'center',
-        gap: 1.5,
+        gap: '0.75rem',
         p: 1.5,
         border: 1,
         borderColor: 'divider',
@@ -741,8 +741,8 @@ function CardRow({
       <DragIndicatorIcon color="action" />
       <Box
         sx={{
-          width: 64,
-          height: 48,
+          width: '4rem',
+          height: '3rem',
           borderRadius: 1.5,
           overflow: 'hidden',
           bgcolor: 'action.hover',
@@ -754,8 +754,8 @@ function CardRow({
       />
       <Box
         sx={{
-          width: 36,
-          height: 36,
+          width: '2.25rem',
+          height: '2.25rem',
           borderRadius: 1.5,
           border: 1,
           borderColor: 'divider',
@@ -834,11 +834,11 @@ function CardEditorDialog({
             <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
               Icon
             </Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, flexWrap: 'wrap' }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
               <Box
                 sx={{
-                  width: 56,
-                  height: 56,
+                  width: '3.5rem',
+                  height: '3.5rem',
                   borderRadius: 2,
                   border: 1,
                   borderColor: 'divider',
@@ -852,7 +852,7 @@ function CardEditorDialog({
               >
                 <SelectedIcon size={28} strokeWidth={1.5} />
               </Box>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem' }}>
                 {CMS_ICON_LIBRARY.map(({ key, label, Icon }) => {
                   const isSelected = key === draft.iconKey;
                   return (
@@ -862,8 +862,8 @@ function CardEditorDialog({
                         aria-pressed={isSelected}
                         size="small"
                         sx={{
-                          width: 36,
-                          height: 36,
+                          width: '2.25rem',
+                          height: '2.25rem',
                           border: 1,
                           borderRadius: 1.5,
                           borderColor: isSelected ? 'primary.main' : 'divider',
@@ -897,8 +897,8 @@ function CardEditorDialog({
               <Box
                 sx={{
                   mt: 1,
-                  width: 200,
-                  height: 120,
+                  width: '12.5rem',
+                  height: '7.5rem',
                   borderRadius: 2,
                   overflow: 'hidden',
                   bgcolor: 'action.hover',
@@ -994,8 +994,8 @@ function CardEditorDialog({
               <Box
                 sx={{
                   mt: 1,
-                  width: 200,
-                  height: 120,
+                  width: '12.5rem',
+                  height: '7.5rem',
                   borderRadius: 2,
                   overflow: 'hidden',
                   bgcolor: 'action.hover',

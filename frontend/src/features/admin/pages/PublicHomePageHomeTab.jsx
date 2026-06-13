@@ -424,7 +424,7 @@ export default function PublicHomePageHomeTab() {
                 <Box
                   sx={{
                     display: 'grid',
-                    gap: 2,
+                    gap: '1rem',
                     alignItems: 'flex-start',
                     gridTemplateColumns: {
                       xs: 'minmax(0, 1fr)',
@@ -480,7 +480,7 @@ export default function PublicHomePageHomeTab() {
                     fullWidth
                     SelectProps={{
                       renderValue: (selected) => (
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                           <StatIconGlyph iconKey={selected} />
                           <span>{STAT_ICON_LABELS[selected] || selected}</span>
                         </Box>
@@ -489,7 +489,7 @@ export default function PublicHomePageHomeTab() {
                   >
                     {STATISTIC_ICON_KEYS.map((key) => (
                       <MenuItem key={key} value={key}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25 }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
                           <StatIconGlyph iconKey={key} />
                           <span>{STAT_ICON_LABELS[key] || key}</span>
                         </Box>
@@ -514,7 +514,7 @@ export default function PublicHomePageHomeTab() {
           px: 3,
           display: 'flex',
           justifyContent: 'flex-end',
-          gap: 1.5,
+          gap: '0.75rem',
           borderTop: 1,
           borderColor: 'divider',
           zIndex: 1100,
@@ -561,8 +561,8 @@ function BackgroundPreview({ url }) {
     return (
       <Box
         sx={{
-          width: 240,
-          height: 135,
+          width: '15rem',
+          height: '8.4375rem',
           border: '1px dashed',
           borderColor: 'divider',
           borderRadius: 1,
@@ -582,8 +582,8 @@ function BackgroundPreview({ url }) {
     return (
       <Box
         sx={{
-          width: 240,
-          height: 135,
+          width: '15rem',
+          height: '8.4375rem',
           border: '1px dashed',
           borderColor: 'error.main',
           borderRadius: 1,
@@ -606,8 +606,8 @@ function BackgroundPreview({ url }) {
       alt="Hero background preview"
       onError={() => setErrored(true)}
       sx={{
-        width: 240,
-        height: 135,
+        width: '15rem',
+        height: '8.4375rem',
         objectFit: 'cover',
         borderRadius: 1,
         border: 1,

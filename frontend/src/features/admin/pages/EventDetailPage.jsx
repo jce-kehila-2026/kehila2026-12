@@ -180,7 +180,7 @@ export default function EventDetailPage() {
       sortable: false,
       filterable: false,
       renderCell: (params) => (
-        <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center' }}>
+        <Box sx={{ display: 'flex', gap: '0.25rem', alignItems: 'center' }}>
           <IconButton
             size="small"
             color="success"
@@ -208,7 +208,7 @@ export default function EventDetailPage() {
 
   return (
     <Box>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mb: 1 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: '0.75rem', mb: 1 }}>
         <IconButton onClick={() => navigate('/admin/events')} size="small">
           <ArrowBackIcon />
         </IconButton>
@@ -227,7 +227,7 @@ export default function EventDetailPage() {
         <Box
           component="form"
           onSubmit={handleSave}
-          sx={{ maxWidth: 560, display: 'flex', flexDirection: 'column', gap: 2.5 }}
+          sx={{ maxWidth: 560, display: 'flex', flexDirection: 'column', gap: '1.25rem' }}
         >
           <TextField
             label="Event Title"

@@ -267,7 +267,7 @@ export default function PartnersManagementPage() {
 
   return (
     <Box sx={{ pb: 12 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3, gap: 2 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3, gap: '1rem' }}>
         <Box>
           <Typography variant="h4">Partners Management — ניהול שותפים</Typography>
           <Typography variant="subtitle1" sx={{ mt: 0.5 }}>
@@ -291,13 +291,13 @@ export default function PartnersManagementPage() {
               <Paper
                 key={p.id}
                 variant="outlined"
-                sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 2 }}
+                sx={{ p: 2, display: 'flex', alignItems: 'center', gap: '1rem' }}
               >
                 {/* Logo preview */}
                 <Box
                   sx={{
-                    width: 56,
-                    height: 56,
+                    width: '3.5rem',
+                    height: '3.5rem',
                     flexShrink: 0,
                     borderRadius: 2,
                     overflow: 'hidden',

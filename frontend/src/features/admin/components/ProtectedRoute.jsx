@@ -11,7 +11,7 @@ export default function ProtectedRoute({ children, requiredRole = 'admin' }) {
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', gap: 2 }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', gap: '1rem' }}>
         <CircularProgress color="primary" />
         <Typography variant="body2" color="text.disabled">
           Verifying access…
@@ -26,7 +26,7 @@ export default function ProtectedRoute({ children, requiredRole = 'admin' }) {
 
   if (userRole !== 'admin') {
     return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', textAlign: 'center', gap: 1.5 }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '60vh', textAlign: 'center', gap: '0.75rem' }}>
         <LockIcon sx={{ fontSize: '3.5rem', color: 'text.disabled' }} />
         <Typography variant="h5">Access Denied</Typography>
         <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 400 }}>

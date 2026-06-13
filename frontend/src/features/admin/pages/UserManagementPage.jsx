@@ -48,7 +48,7 @@ const ROLE_STYLES = {
 };
 
 const actionButtonBaseSx = {
-  height: 32,
+  height: '2rem',
   borderRadius: 2.25,
   px: 1.25,
   fontSize: '0.78125rem',
@@ -60,8 +60,8 @@ const actionButtonBaseSx = {
   '& .MuiButton-startIcon': {
     mr: 0.75,
     '& svg': {
-      width: 15,
-      height: 15,
+      width: '0.9375rem',
+      height: '0.9375rem',
       strokeWidth: 2.2,
     },
   },
@@ -151,7 +151,7 @@ function InfoCard({ label, value, icon }) {
         px: 2,
         py: 1.35,
         width: '100%',
-        height: 86,
+        height: '5.375rem',
         flex: '0 0 86px',
         boxSizing: 'border-box',
         overflow: 'hidden',
@@ -161,7 +161,7 @@ function InfoCard({ label, value, icon }) {
         boxShadow: '0 8px 20px rgba(91, 57, 145, 0.045)',
         display: 'flex',
         alignItems: 'center',
-        gap: 1.45,
+        gap: '0.725rem',
         flexDirection: 'row-reverse',
         justifyContent: 'flex-start',
         textAlign: 'right',
@@ -169,8 +169,8 @@ function InfoCard({ label, value, icon }) {
     >
       <Box
         sx={{
-          width: 44,
-          height: 44,
+          width: '2.75rem',
+          height: '2.75rem',
           borderRadius: '50%',
           display: 'grid',
           placeItems: 'center',
@@ -318,7 +318,7 @@ export default function UserManagementPage() {
       md: 'minmax(300px, 1.45fr) 170px 150px 180px',
     },
     alignItems: 'center',
-    gap: 2,
+    gap: '1rem',
   };
 
   const actionIconSx = (tone = 'purple') => {
@@ -337,8 +337,8 @@ export default function UserManagementPage() {
     const palette = tones[tone] || tones.purple;
 
     return {
-      width: 42,
-      height: 42,
+      width: '2.625rem',
+      height: '2.625rem',
       color: palette.color,
       bgcolor: palette.bgcolor,
       border: '1px solid rgba(255, 255, 255, 0.72)',
@@ -383,7 +383,7 @@ export default function UserManagementPage() {
               startIcon={<PreviewIcon />}
               onClick={() => navigate('/home')}
               sx={{
-                height: 48,
+                height: '3rem',
                 px: 3.2,
                 borderRadius: 999,
                 borderColor: 'rgba(223, 50, 123, 0.46)',
@@ -403,7 +403,7 @@ export default function UserManagementPage() {
               variant="contained"
               startIcon={<AddIcon />}
               sx={{
-                height: 56,
+                height: '3.5rem',
                 px: 3.5,
                 borderRadius: '18px',
                 background: 'linear-gradient(135deg, #DF327B 0%, #B933C4 100%)',
@@ -451,7 +451,7 @@ export default function UserManagementPage() {
               <Chip
                 label={`${users.length} total`}
                 sx={{
-                  height: 30,
+                  height: '1.875rem',
                   bgcolor: '#F2ECFF',
                   color: '#6D3CCF',
                   fontWeight: 950,
@@ -467,9 +467,9 @@ export default function UserManagementPage() {
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
                 sx={{
-                  minWidth: { md: 330 },
+                  minWidth: { md: '20.625rem' },
                   '& .MuiOutlinedInput-root': {
-                    height: 50,
+                    height: '3.125rem',
                     borderRadius: '16px',
                     bgcolor: 'rgba(255,255,255,0.72)',
                     boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.8)',
@@ -486,12 +486,12 @@ export default function UserManagementPage() {
                   ),
                 }}
               />
-              <FormControl size="small" sx={{ minWidth: 150 }}>
+              <FormControl size="small" sx={{ minWidth: '9.375rem' }}>
                 <Select
                   value={roleFilter}
                   onChange={(event) => setRoleFilter(event.target.value)}
                   sx={{
-                    height: 50,
+                    height: '3.125rem',
                     borderRadius: '16px',
                     bgcolor: 'rgba(255,255,255,0.72)',
                     fontWeight: 750,
@@ -502,12 +502,12 @@ export default function UserManagementPage() {
                   {ROLES.map((role) => <MenuItem key={role} value={role}>{humanizeValue(role)}</MenuItem>)}
                 </Select>
               </FormControl>
-              <FormControl size="small" sx={{ minWidth: 160 }}>
+              <FormControl size="small" sx={{ minWidth: '10rem' }}>
                 <Select
                   value={sortBy}
                   onChange={(event) => setSortBy(event.target.value)}
                   sx={{
-                    height: 50,
+                    height: '3.125rem',
                     borderRadius: '16px',
                     bgcolor: 'rgba(255,255,255,0.72)',
                     fontWeight: 750,
@@ -574,7 +574,7 @@ export default function UserManagementPage() {
                 overflowX: 'hidden',
                 pr: '6px',
                 mr: '-6px',
-                '&::-webkit-scrollbar': { width: 8 },
+                '&::-webkit-scrollbar': { width: '0.5rem' },
                 '&::-webkit-scrollbar-track': { background: 'rgba(244, 238, 255, 0.45)', borderRadius: 999 },
                 '&::-webkit-scrollbar-thumb': { background: 'rgba(167, 139, 250, 0.5)', borderRadius: 999 },
               }}
@@ -621,8 +621,8 @@ export default function UserManagementPage() {
                       <Avatar
                         src={user.avatarUrl || ''}
                         sx={{
-                          width: 54,
-                          height: 54,
+                          width: '3.375rem',
+                          height: '3.375rem',
                           bgcolor: '#EEE7FF',
                           color: '#6D3CCF',
                           fontWeight: 950,
@@ -645,8 +645,8 @@ export default function UserManagementPage() {
                         disabled={saving === user.id}
                         size="small"
                         sx={{
-                          minWidth: 150,
-                          height: 42,
+                          minWidth: '9.375rem',
+                          height: '2.625rem',
                           borderRadius: 999,
                           fontWeight: 900,
                           ...(ROLE_STYLES[user.role || 'participant'] || ROLE_STYLES.participant),
@@ -702,8 +702,8 @@ export default function UserManagementPage() {
                     variant="contained"
                     disableElevation
                     sx={{
-                      minWidth: 42,
-                      height: 42,
+                      minWidth: '2.625rem',
+                      height: '2.625rem',
                       borderRadius: '14px',
                       bgcolor: '#E9D9FF',
                       color: '#6D3CCF',
@@ -739,15 +739,15 @@ export default function UserManagementPage() {
         PaperProps={{
           dir: 'ltr',
           sx: {
-            width: { xs: 'calc(100vw - 24px)', sm: 560 },
+            width: { xs: 'calc(100vw - 24px)', sm: '35rem' },
             maxWidth: 560,
             m: 0,
             position: 'fixed',
             top: '50%',
             insetInlineStart: '50%',
             transform: 'translate(-50%, -50%)',
-            height: { xs: 'auto', sm: 850 },
-            maxHeight: { xs: 'calc(100vh - 24px)', md: 850 },
+            height: { xs: 'auto', sm: '53.125rem' },
+            maxHeight: { xs: 'calc(100vh - 24px)', md: '53.125rem' },
             borderRadius: { xs: '24px', md: '34px' },
             overflow: 'hidden',
             bgcolor: 'rgba(255, 255, 255, 0.94)',
@@ -763,11 +763,11 @@ export default function UserManagementPage() {
         }}
       >
         {selectedUser ? (
-          <Box sx={{ display: 'flex', flexDirection: 'column', height: { xs: 'auto', sm: 850 }, maxHeight: { xs: 'calc(100vh - 24px)', md: 850 }, background: 'radial-gradient(circle at 50% 0%, rgba(223, 50, 123, 0.08), transparent 32%), linear-gradient(180deg, #FFFFFF 0%, #FFFBFE 100%)' }}>
-            <Box sx={{ p: { xs: 2, md: 2.6 }, pb: 1.8, position: 'relative', height: 228, flex: '0 0 228px', boxSizing: 'border-box', overflow: 'hidden' }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', height: { xs: 'auto', sm: '53.125rem' }, maxHeight: { xs: 'calc(100vh - 24px)', md: '53.125rem' }, background: 'radial-gradient(circle at 50% 0%, rgba(223, 50, 123, 0.08), transparent 32%), linear-gradient(180deg, #FFFFFF 0%, #FFFBFE 100%)' }}>
+            <Box sx={{ p: { xs: 2, md: 2.6 }, pb: 1.8, position: 'relative', height: '14.25rem', flex: '0 0 228px', boxSizing: 'border-box', overflow: 'hidden' }}>
               <Stack spacing={1.45} alignItems="stretch" textAlign="right">
                 <Stack direction="row-reverse" spacing={1.5} alignItems="center" sx={{ width: '100%', pr: 0 }}>
-                  <Avatar src={selectedUser.avatarUrl || ''} sx={{ width: 82, height: 82, bgcolor: '#EEE7FF', color: '#6D3CCF', fontSize: '1.875rem', fontWeight: 950, boxShadow: '0 14px 30px rgba(109, 60, 207, 0.16)', flexShrink: 0 }}>
+                  <Avatar src={selectedUser.avatarUrl || ''} sx={{ width: '5.125rem', height: '5.125rem', bgcolor: '#EEE7FF', color: '#6D3CCF', fontSize: '1.875rem', fontWeight: 950, boxShadow: '0 14px 30px rgba(109, 60, 207, 0.16)', flexShrink: 0 }}>
                     {initials(selectedUser)}
                   </Avatar>
                   <Box sx={{ minWidth: 0, flex: 1 }}>
@@ -781,8 +781,8 @@ export default function UserManagementPage() {
                         onClick={closeDetails}
                         aria-label="Close user details"
                         sx={{
-                          width: 30,
-                          height: 30,
+                          width: '1.875rem',
+                          height: '1.875rem',
                           bgcolor: 'rgba(109, 60, 207, 0.06)',
                           color: '#4E466B',
                           '&:hover': { bgcolor: 'rgba(109, 60, 207, 0.12)' },
