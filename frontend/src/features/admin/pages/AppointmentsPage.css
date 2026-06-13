@@ -32,7 +32,7 @@
 
 .appointments-admin-header h1 {
   margin: 0;
-  font-size: 26px;
+  font-size: 1.625rem;
   line-height: 1.1;
   font-weight: 800;
   letter-spacing: 0;
@@ -41,7 +41,7 @@
 .appointments-admin-header p {
   margin: 5px 0 0;
   color: rgba(36, 16, 79, 0.68);
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 600;
 }
 
@@ -126,13 +126,13 @@
 .appointments-stat-card p {
   margin: 0 0 5px;
   color: rgba(36, 16, 79, 0.72);
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 800;
 }
 
 .appointments-stat-card strong {
   display: block;
-  font-size: 26px;
+  font-size: 1.625rem;
   line-height: 1;
   font-weight: 800;
 }
@@ -213,7 +213,7 @@
   padding: 0 18px;
   border-bottom: 1px solid rgba(167, 139, 250, 0.13);
   color: rgba(36, 16, 79, 0.64);
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 800;
 }
 
@@ -233,7 +233,7 @@
   padding: 0 18px;
   border-bottom: 1px solid rgba(167, 139, 250, 0.13);
   color: rgba(36, 16, 79, 0.78);
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 700;
 }
 
@@ -252,7 +252,7 @@
 .appointments-avatar {
   width: 32px;
   height: 32px;
-  font-size: 12px;
+  font-size: 0.75rem;
   border-radius: 50%;
   display: grid;
   place-items: center;
@@ -277,7 +277,7 @@
 .appointments-date-time small {
   margin-top: 2px;
   color: rgba(36, 16, 79, 0.55);
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 
 .appointments-type-badge,
@@ -289,7 +289,7 @@
   display: inline-flex;
   align-items: center;
   gap: 7px;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 800;
   white-space: nowrap;
 }
@@ -374,7 +374,7 @@
   justify-content: space-between;
   border-top: 1px solid rgba(167, 139, 250, 0.13);
   color: rgba(36, 16, 79, 0.64);
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 700;
 }
 
@@ -406,7 +406,7 @@
 
 .appointments-panel-card h2 {
   margin: 0;
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 800;
 }
 
@@ -441,7 +441,7 @@
 
 .appointments-timeline-row time {
   color: rgba(36, 16, 79, 0.74);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 800;
 }
 
@@ -468,7 +468,7 @@
 .appointments-timeline-row span {
   margin-top: 2px;
   color: rgba(36, 16, 79, 0.55);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 700;
 }
 
@@ -546,7 +546,7 @@
   color: #6d35b8;
   background: rgba(255, 255, 255, 0.72);
   box-shadow: 0 12px 28px rgba(109, 53, 184, 0.08);
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 800;
 }
 
@@ -559,7 +559,7 @@
   color: #e05297;
   background: rgba(252, 231, 243, 0.82);
   font: inherit;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 800;
   cursor: pointer;
 }
@@ -570,7 +570,7 @@
   border-radius: 50%;
   color: #a78bfa;
   background: transparent;
-  font-size: 22px;
+  font-size: 1.375rem;
 }
 
 .appointments-calendar-weekdays,
@@ -583,13 +583,13 @@
 .appointments-calendar-weekdays {
   margin: 12px 0 8px;
   color: rgba(36, 16, 79, 0.72);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 800;
 }
 
 .appointments-calendar-grid {
   gap: 4px;
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 800;
 }
 
@@ -655,7 +655,7 @@
   gap: 10px;
   margin: 11px 0 0;
   align-items: center;
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 800;
 }
 

@@ -37,7 +37,7 @@
 
 .admin-dashboard-hero h1 {
   margin: 0;
-  font-size: clamp(24px, 1.7vw, 30px);
+  font-size: clamp(1.5rem, 1.7vw, 1.875rem);
   line-height: 1.12;
   font-weight: 800;
   letter-spacing: 0;
@@ -46,7 +46,7 @@
 .admin-dashboard-hero p {
   margin: 5px 0 0;
   color: rgba(36, 16, 79, 0.72);
-  font-size: 16px;
+  font-size: 1rem;
 }
 
 .admin-dashboard-date-pill,
@@ -138,7 +138,7 @@
 
 .admin-dashboard-metric strong {
   display: block;
-  font-size: 28px;
+  font-size: 1.75rem;
   line-height: 1;
   font-weight: 800;
   letter-spacing: 0;
@@ -147,7 +147,7 @@
 .admin-dashboard-metric p {
   margin: 7px 0 0;
   color: rgba(36, 16, 79, 0.5);
-  font-size: 13px;
+  font-size: 0.8125rem;
   font-weight: 600;
 }
 
@@ -215,7 +215,7 @@
 
 .admin-dashboard-card__header h2 {
   margin: 0;
-  font-size: 16px;
+  font-size: 1rem;
   font-weight: 800;
 }
 
@@ -226,7 +226,7 @@
   min-height: 30px;
   padding: 0 13px;
   text-decoration: none;
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 
 .admin-dashboard-overview__body {
@@ -266,7 +266,7 @@
 
 .admin-dashboard-donut strong {
   align-self: end;
-  font-size: 26px;
+  font-size: 1.625rem;
   line-height: 1;
   font-weight: 800;
 }
@@ -275,7 +275,7 @@
   align-self: start;
   margin-top: 5px;
   color: rgba(36, 16, 79, 0.58);
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 700;
 }
 
@@ -290,7 +290,7 @@
   justify-content: space-between;
   gap: 14px;
   border-bottom: 1px solid rgba(167, 139, 250, 0.14);
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 
 .admin-dashboard-breakdown__row span {
@@ -343,7 +343,7 @@
 .admin-dashboard-booking__avatar {
   width: 30px;
   height: 30px;
-  font-size: 12px;
+  font-size: 0.75rem;
 }
 
 .admin-dashboard-booking__main {
@@ -360,11 +360,11 @@
 
 .admin-dashboard-booking__main strong {
   margin-bottom: 3px;
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 
 .admin-dashboard-booking__main span {
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 600;
 }
 
@@ -374,7 +374,7 @@
   justify-self: start;
   border-radius: 999px;
   padding: 5px 11px;
-  font-size: 11px;
+  font-size: 0.6875rem;
   line-height: 1;
   font-weight: 800;
 }
@@ -395,7 +395,7 @@
   grid-template-columns: 18px 1fr;
   gap: 3px 8px;
   color: rgba(36, 16, 79, 0.7);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 700;
 }
 
@@ -448,13 +448,13 @@
 
 .admin-dashboard-activity__head {
   color: rgba(36, 16, 79, 0.68);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 800;
 }
 
 .admin-dashboard-activity__row {
   color: rgba(36, 16, 79, 0.82);
-  font-size: 12px;
+  font-size: 0.75rem;
   font-weight: 600;
 }
 
@@ -480,7 +480,7 @@
   width: 24px;
   height: 24px;
   flex: 0 0 auto;
-  font-size: 10px;
+  font-size: 0.625rem;
 }
 
 .admin-dashboard-action--create {
