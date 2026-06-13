@@ -856,7 +856,7 @@
 
 .pd-card__heading-label {
 
-  font-size: 11.5px;
+  font-size: 0.71875rem;
 
   font-weight: 700;
 
@@ -1047,7 +1047,7 @@
 
   margin: 6px 0 0;
 
-  font-size: 19px;
+  font-size: 1.1875rem;
 
   font-weight: 800;
 
@@ -1063,7 +1063,7 @@
 
   margin: 3px 0 0;
 
-  font-size: 12px;
+  font-size: 0.75rem;
 
   font-weight: 500;
 
@@ -1107,7 +1107,7 @@
 
   padding: 0 16px;
 
-  font-size: 13px;
+  font-size: 0.8125rem;
 
   font-weight: 600;
 
@@ -1280,7 +1280,7 @@
 
 .pd-countdown-ring__label span {
 
-  font-size: 10px;
+  font-size: 0.625rem;
 
   font-weight: 700;
 
@@ -1300,7 +1300,7 @@
 
   margin: 2px 0 0;
 
-  font-size: 34px;
+  font-size: 2.125rem;
 
   font-weight: 800;
 
@@ -1322,7 +1322,7 @@
 
   margin: 2px 0 0;
 
-  font-size: 17px;
+  font-size: 1.0625rem;
 
   font-weight: 800;
 
@@ -1346,7 +1346,7 @@
 
   padding: 0 6px;
 
-  font-size: 14px;
+  font-size: 0.875rem;
 
   font-weight: 800;
 
@@ -1368,7 +1368,7 @@
 
   margin: 0;
 
-  font-size: 12px;
+  font-size: 0.75rem;
 
   font-weight: 600;
 
@@ -1388,7 +1388,7 @@
 
   padding: 0;
 
-  font-size: 22px;
+  font-size: 1.375rem;
 
   font-weight: 800;
 
@@ -1424,7 +1424,7 @@
 
   color: rgba(91, 30, 140, 0.65);
 
-  font-size: 14px;
+  font-size: 0.875rem;
 
   font-weight: 600;
 
@@ -1482,7 +1482,7 @@
 
   width: 100%;
 
-  font-size: 13px;
+  font-size: 0.8125rem;
 
   line-height: 1.4;
 
@@ -1658,7 +1658,7 @@
 
 .pd-card--feature .pd-countdown-ring__label span {
 
-  font-size: 9px;
+  font-size: 0.5625rem;
 
   font-weight: 700;
 
@@ -1676,7 +1676,7 @@
 
   margin: 0;
 
-  font-size: 32px;
+  font-size: 2rem;
 
   font-weight: 800;
 
@@ -1694,7 +1694,7 @@
 
   margin: 0;
 
-  font-size: 17px;
+  font-size: 1.0625rem;
 
   font-weight: 800;
 
@@ -1712,7 +1712,7 @@
 
 .pd-card--feature .pd-countdown-ring__label small {
 
-  font-size: 12px;
+  font-size: 0.75rem;
 
   font-weight: 600;
 
@@ -1815,7 +1815,7 @@
 
   margin: 6px 0 0;
 
-  font-size: 17px;
+  font-size: 1.0625rem;
 
   font-weight: 800;
 
@@ -1835,7 +1835,7 @@
 
   max-width: 30ch;
 
-  font-size: 12.5px;
+  font-size: 0.78125rem;
 
   font-weight: 500;
 
@@ -1977,7 +1977,7 @@
 
   max-width: 30ch;
 
-  font-size: 13px;
+  font-size: 0.8125rem;
 
   font-weight: 500;
 
@@ -2013,7 +2013,7 @@
 
   font: inherit;
 
-  font-size: 15px;
+  font-size: 0.9375rem;
 
   font-weight: 700;
 
@@ -2211,7 +2211,7 @@
 
   font: inherit;
 
-  font-size: 13px;
+  font-size: 0.8125rem;
 
   font-weight: 600;
 
@@ -2507,7 +2507,7 @@
 }
 
 .pd-notes__datetime--modal .pd-notes-calendar__month {
-  font-size: 14px;
+  font-size: 0.875rem;
 }
 
 .pd-notes__datetime--modal .pd-notes-calendar__weekdays {
@@ -2516,7 +2516,7 @@
 }
 
 .pd-notes__datetime--modal .pd-notes-calendar__weekdays span {
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 
 .pd-notes__datetime--modal .pd-notes-calendar__grid {
@@ -2528,7 +2528,7 @@
   min-height: 0;
   aspect-ratio: auto;
   border-radius: 8px;
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 
 /* ── Time picker: Hour | Minute | AM/PM, prominent centered controls ───── */
@@ -2545,7 +2545,7 @@
 }
 
 .pd-notes__datetime--modal .pd-notes-time__column-label {
-  font-size: 11px;
+  font-size: 0.6875rem;
 }
 
 .pd-notes__datetime--modal .pd-notes-time__step-btn {
@@ -2558,7 +2558,7 @@
   min-width: 56px;
   min-height: 52px;
   border-radius: 12px;
-  font-size: 18px;
+  font-size: 1.125rem;
 }
 
 .pd-notes__datetime--modal input.pd-notes-time__step-value {
@@ -2574,7 +2574,7 @@
   min-height: 52px;
   padding: 0 8px;
   border-radius: 10px;
-  font-size: 13px;
+  font-size: 0.8125rem;
 }
 
 /* The picker content is English; render it left-to-right even though the
@@ -2706,7 +2706,7 @@
 
   font: inherit;
 
-  font-size: 13px;
+  font-size: 0.8125rem;
 
   font-weight: 600;
 
@@ -2848,7 +2848,7 @@
 
   font: inherit;
 
-  font-size: 13px;
+  font-size: 0.8125rem;
 
   font-weight: 600;
 
@@ -2973,7 +2973,7 @@
 
   display: block;
 
-  font-size: 10px;
+  font-size: 0.625rem;
 
   font-weight: 700;
 
@@ -3067,7 +3067,7 @@
 
   color: var(--pd-purple-deep);
 
-  font-size: 16px;
+  font-size: 1rem;
 
   font-weight: 700;
 
@@ -3164,7 +3164,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   font: inherit;
 
-  font-size: 12px;
+  font-size: 0.75rem;
 
   font-weight: 700;
 
@@ -3324,7 +3324,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
 .pd-notes-calendar__month {
 
-  font-size: 14px;
+  font-size: 0.875rem;
 
   font-weight: 700;
 
@@ -3354,7 +3354,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   text-align: center;
 
-  font-size: 11px;
+  font-size: 0.6875rem;
 
   font-weight: 700;
 
@@ -3398,7 +3398,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   font: inherit;
 
-  font-size: 13px;
+  font-size: 0.8125rem;
 
   font-weight: 600;
 
@@ -3494,7 +3494,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   font: inherit;
 
-  font-size: 15px;
+  font-size: 0.9375rem;
 
 }
 
@@ -3514,7 +3514,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   margin: 6px 0 0;
 
-  font-size: 12px;
+  font-size: 0.75rem;
 
   line-height: 1.4;
 
@@ -3626,7 +3626,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   display: block;
 
-  font-size: 14px;
+  font-size: 0.875rem;
 
   font-weight: 600;
 
@@ -3646,7 +3646,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   color: var(--pd-muted);
 
-  font-size: 11.5px;
+  font-size: 0.71875rem;
 
   font-weight: 600;
 
@@ -3672,7 +3672,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   color: var(--pd-purple-deep);
 
-  font-size: 13px;
+  font-size: 0.8125rem;
 
   font-weight: 700;
 
@@ -3820,7 +3820,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   padding: 0 14px;
 
-  font-size: 13px;
+  font-size: 0.8125rem;
 
   font-weight: 600;
 
@@ -3872,7 +3872,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   color: var(--pd-purple);
 
-  font-size: 12px;
+  font-size: 0.75rem;
 
   font-weight: 800;
 
@@ -3884,7 +3884,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   display: block;
 
-  font-size: 15px;
+  font-size: 0.9375rem;
 
   color: var(--pd-title);
 
@@ -3900,7 +3900,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   color: var(--pd-muted);
 
-  font-size: 13px;
+  font-size: 0.8125rem;
 
   font-weight: 500;
 
@@ -3914,7 +3914,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   color: rgba(36, 16, 63, 0.78);
 
-  font-size: 14px;
+  font-size: 0.875rem;
 
   line-height: 1.6;
 
@@ -3972,7 +3972,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
 .pd-community__stat-text {
 
-  font-size: 13px;
+  font-size: 0.8125rem;
 
   font-weight: 600;
 
@@ -3986,7 +3986,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
 .pd-community__stat-text strong {
 
-  font-size: 14px;
+  font-size: 0.875rem;
 
   font-weight: 800;
 
@@ -4084,7 +4084,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   margin: 12px 0 0;
 
-  font-size: 14px;
+  font-size: 0.875rem;
 
   color: #8a7a9c;
 
@@ -4112,7 +4112,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   margin: 0;
 
-  font-size: 18px;
+  font-size: 1.125rem;
 
   font-weight: 700;
 
@@ -4126,7 +4126,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   margin: 0;
 
-  font-size: 14px;
+  font-size: 0.875rem;
 
   line-height: 1.5;
 
@@ -4270,7 +4270,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   .pd-card--feature .pd-feature__title {
 
-    font-size: 20px;
+    font-size: 1.25rem;
 
   }
 
