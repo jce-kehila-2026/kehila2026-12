@@ -117,8 +117,8 @@ function AppointmentCard({ appointment, onCancel }) {
         <Stack direction="row" spacing={2} alignItems="flex-start" sx={{ flex: 1, minWidth: 0 }}>
           <Box
             sx={{
-              width: 56,
-              height: 56,
+              width: '3.5rem',
+              height: '3.5rem',
               borderRadius: "20px",
               flexShrink: 0,
               display: "grid",
@@ -210,7 +210,7 @@ function AppointmentCard({ appointment, onCancel }) {
           alignItems={{ xs: "stretch", sm: "flex-end" }}
           justifyContent="center"
           spacing={1.25}
-          sx={{ flexShrink: 0, alignSelf: { xs: "stretch", sm: "center" }, minWidth: { sm: 140 } }}
+          sx={{ flexShrink: 0, alignSelf: { xs: "stretch", sm: "center" }, minWidth: { sm: '8.75rem' } }}
         >
           <Box
             component="span"

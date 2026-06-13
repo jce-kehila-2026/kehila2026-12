@@ -86,8 +86,8 @@ function AppointmentTypeSection({ value, onChange }) {
                     position: "absolute",
                     top: 12,
                     right: 12,
-                    width: 22,
-                    height: 22,
+                    width: '1.375rem',
+                    height: '1.375rem',
                     borderRadius: "50%",
                     border: selected
                       ? `6px solid ${WELLNESS.primary}`
@@ -99,8 +99,8 @@ function AppointmentTypeSection({ value, onChange }) {
                 <Stack direction="row" spacing={1.75} alignItems="flex-start" sx={{ height: "100%" }}>
                   <Box
                     sx={{
-                      width: 56,
-                      height: 56,
+                      width: '3.5rem',
+                      height: '3.5rem',
                       borderRadius: "18px",
                       flexShrink: 0,
                       display: "grid",
@@ -111,7 +111,7 @@ function AppointmentTypeSection({ value, onChange }) {
                   >
                     <Icon sx={{ fontSize: '2rem' }} />
                   </Box>
-                  <Box sx={{ flex: 1, minWidth: 0, pr: 2.5, display: "flex", flexDirection: "column", gap: 0.75 }}>
+                  <Box sx={{ flex: 1, minWidth: 0, pr: 2.5, display: "flex", flexDirection: "column", gap: '0.375rem' }}>
                     <Typography
                       sx={{
                         fontWeight: 800,

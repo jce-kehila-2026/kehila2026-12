@@ -64,8 +64,8 @@ export default function DarkModeToggle({
           overflow: "hidden",
           border: `1.5px solid rgba(236, 72, 153, 0.38)`,
           bgcolor: darkMode ? "#1a1028" : "#fff9fd",
-          minWidth: 76,
-          height: 36,
+          minWidth: '4.75rem',
+          height: '2.25rem',
           p: 0,
           transition: "border-color 0.28s ease, box-shadow 0.28s ease, transform 0.22s ease",
           boxShadow: darkMode
@@ -93,7 +93,7 @@ export default function DarkModeToggle({
             justifyContent: "center",
             py: 0.75,
             px: 1.1,
-            minWidth: 36,
+            minWidth: '2.25rem',
             background: darkMode
               ? SHENA_GRADIENT
               : "linear-gradient(180deg, rgba(252, 231, 243, 0.75) 0%, #fff9fd 100%)",
@@ -103,8 +103,8 @@ export default function DarkModeToggle({
           <BedtimeOutlinedIcon
             sx={{
               fontSize: '1.125rem',
-              width: 18,
-              height: 18,
+              width: '1.125rem',
+              height: '1.125rem',
               flexShrink: 0,
               color: darkMode ? "#ffffff" : SHENA_PURPLE,
               opacity: darkMode ? 1 : 0.85,
@@ -123,7 +123,7 @@ export default function DarkModeToggle({
             justifyContent: "center",
             py: 0.75,
             px: 1.1,
-            minWidth: 36,
+            minWidth: '2.25rem',
             background: darkMode
               ? "linear-gradient(180deg, #241536 0%, #120a1c 100%)"
               : SHENA_GRADIENT,
@@ -133,8 +133,8 @@ export default function DarkModeToggle({
           <WbSunnyOutlinedIcon
             sx={{
               fontSize: '1.125rem',
-              width: 18,
-              height: 18,
+              width: '1.125rem',
+              height: '1.125rem',
               flexShrink: 0,
               color: darkMode ? "#fbcfe8" : "#ffffff",
               opacity: 1,

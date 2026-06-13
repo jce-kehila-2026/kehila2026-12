@@ -122,7 +122,7 @@ function AppointmentBookingForm({
       "& .MuiOutlinedInput-root": {
         borderRadius: "18px",
         backgroundColor: WELLNESS.card,
-        minHeight: 52,
+        minHeight: '3.25rem',
         transition: "border-color 0.22s ease, box-shadow 0.22s ease",
         "& fieldset": {
           borderColor: "rgba(181, 123, 232, 0.2)",
@@ -146,7 +146,7 @@ function AppointmentBookingForm({
       "& .MuiOutlinedInput-root": {
         borderRadius: "18px",
         backgroundColor: WELLNESS.card,
-        minHeight: 52,
+        minHeight: '3.25rem',
         "& fieldset": {
           borderColor: "rgba(181, 123, 232, 0.2)",
         },
@@ -275,7 +275,7 @@ function AppointmentBookingForm({
       "& .MuiOutlinedInput-root": {
         ...fieldSx["& .MuiOutlinedInput-root"],
         height: "auto",
-        minHeight: { xs: 120, md: 140 },
+        minHeight: { xs: '7.5rem', md: '8.75rem' },
         alignItems: "flex-start",
         paddingTop: "14px",
         paddingBottom: "14px",
@@ -616,8 +616,8 @@ function AppointmentBookingForm({
                 startIcon={<CalendarMonthRoundedIcon sx={{ fontSize: '1.375rem' }} />}
                 sx={{
                   width: { xs: "100%", md: "auto" },
-                  minHeight: 52,
-                  maxHeight: 56,
+                  minHeight: '3.25rem',
+                  maxHeight: '3.5rem',
                   py: 1.25,
                   px: { xs: 2, md: 2.75 },
                   textTransform: "none",

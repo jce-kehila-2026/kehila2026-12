@@ -89,7 +89,7 @@ function CommunitySettingsSection({ darkMode = false, participantId = "", profil
           alignItems: { xs: "flex-start", sm: "center" },
           justifyContent: "space-between",
           flexDirection: { xs: "column", sm: "row" },
-          gap: 1.5,
+          gap: '0.75rem',
           border: darkMode
             ? "1px solid rgba(196, 165, 245, 0.16)"
             : "1px solid rgba(181, 123, 232, 0.14)",
@@ -131,8 +131,8 @@ function CommunitySettingsSection({ darkMode = false, participantId = "", profil
           sx={{
             flexShrink: 0,
             alignSelf: { xs: "flex-end", sm: "center" },
-            width: 52,
-            height: 30,
+            width: '3.25rem',
+            height: '1.875rem',
             borderRadius: 999,
             border: darkMode
               ? "1px solid rgba(196, 165, 245, 0.28)"
@@ -147,8 +147,8 @@ function CommunitySettingsSection({ darkMode = false, participantId = "", profil
             transition: "background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease",
             "&::after": {
               content: '""',
-              width: 22,
-              height: 22,
+              width: '1.375rem',
+              height: '1.375rem',
               borderRadius: "50%",
               background: showBirthdayInCommunity
                 ? `linear-gradient(145deg, ${WELLNESS.primary}, #c4a5f5)`

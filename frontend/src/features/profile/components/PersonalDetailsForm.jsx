@@ -231,7 +231,7 @@ function PersonalDetailsForm({
       "& .MuiOutlinedInput-root": {
         borderRadius: "14px",
         backgroundColor: darkMode ? PROFILE_DARK_FIELD.bg : "#ffffff",
-        height: 58,
+        height: '3.625rem',
         paddingRight: "8px",
         transition: "box-shadow 0.2s ease, border-color 0.2s ease",
 
@@ -402,7 +402,7 @@ function PersonalDetailsForm({
       "& .MuiOutlinedInput-root": {
         borderRadius: "14px",
         backgroundColor: darkMode ? PROFILE_DARK_FIELD.bg : "#ffffff",
-        height: 58,
+        height: '3.625rem',
         transition: "box-shadow 0.2s ease, border-color 0.2s ease",
 
         "& fieldset": {
@@ -852,7 +852,7 @@ function PersonalDetailsForm({
               }
               onClick={onLogout}
               sx={{
-                gap: 1,
+                gap: '0.5rem',
                 textTransform: "none",
                 borderRadius: "18px",
                 px: 2.5,

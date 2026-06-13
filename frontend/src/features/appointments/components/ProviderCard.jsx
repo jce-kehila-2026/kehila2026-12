@@ -38,8 +38,8 @@ function ProviderCard({ provider, darkMode = false }) {
       <Avatar
         src={provider.avatarUrl}
         sx={{
-          width: 50,
-          height: 50,
+          width: '3.125rem',
+          height: '3.125rem',
           fontSize: "0.95rem",
           fontWeight: 800,
           flexShrink: 0,
@@ -90,7 +90,7 @@ function ProviderCard({ provider, darkMode = false }) {
         size="small"
         label={isLimited ? "Limited" : "Available"}
         sx={{
-          height: 28,
+          height: '1.75rem',
           fontSize: '0.71875rem',
           fontWeight: 800,
           flexShrink: 0,

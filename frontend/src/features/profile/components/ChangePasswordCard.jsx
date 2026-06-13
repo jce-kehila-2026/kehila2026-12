@@ -94,7 +94,7 @@ const handlePasswordChange = async () => {
 
   const inputRootBase = {
     borderRadius: "18px",
-    height: 58,
+    height: '3.625rem',
     paddingRight: "14px",
     display: "flex",
     alignItems: "center",
@@ -279,7 +279,7 @@ disabled={savingPassword}
                 display: "inline-flex",
                 alignItems: "center",
                 justifyContent: "center",
-                gap: 1,
+                gap: '0.5rem',
                 textTransform: "none",
                 borderRadius: "18px",
                 py: 1.35,
