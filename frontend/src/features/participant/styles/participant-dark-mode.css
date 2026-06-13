@@ -682,7 +682,7 @@
   border: 1px solid var(--pd-border-dark) !important;
   background-color: var(--pd-card-dark-soft) !important;
   border-radius: 14px !important;
-  height: 58px !important;
+  height: 3.625rem !important;
 }
 
 .participant-home--dark .participant-panel .react-tel-input .form-control:disabled {
@@ -715,8 +715,8 @@
 .participant-home--dark .participant-panel .MuiPickersTextField-root .MuiOutlinedInput-root,
 .participant-home--dark .participant-panel .MuiPickersOutlinedInput-root {
   border-radius: 14px !important;
-  min-height: 58px !important;
-  height: 58px !important;
+  min-height: 3.625rem !important;
+  height: 3.625rem !important;
 }
 
 .participant-home--dark .participant-panel .MuiPickersTextField-root fieldset,

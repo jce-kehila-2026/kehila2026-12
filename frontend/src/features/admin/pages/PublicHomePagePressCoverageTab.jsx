@@ -275,9 +275,9 @@ export default function PublicHomePagePressCoverageTab() {
               <Paper
                 key={p.id}
                 variant="outlined"
-                sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 2 }}
+                sx={{ p: 2, display: 'flex', alignItems: 'center', gap: '1rem' }}
               >
-                <Avatar src={p.imageUrl || undefined} variant="rounded" sx={{ width: 56, height: 56 }}>
+                <Avatar src={p.imageUrl || undefined} variant="rounded" sx={{ width: '3.5rem', height: '3.5rem' }}>
                   <ArticleIcon />
                 </Avatar>
                 <Box sx={{ flex: 1, minWidth: 0 }}>

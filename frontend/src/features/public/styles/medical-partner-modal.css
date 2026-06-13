@@ -13,12 +13,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px;
+  padding: 1.5rem;
   background: rgba(91, 30, 140, 0.25);
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   font-family: "Assistant", "Rubik", "Segoe UI", Arial, sans-serif;
-  font-size: 16px;
+  font-size: 1rem;
   line-height: 1.5;
   color: var(--mp-muted);
 }
@@ -36,7 +36,7 @@
   grid-template-columns: 42% 58%;
   grid-template-rows: minmax(0, 1fr);
   align-items: stretch;
-  width: min(1050px, 92vw);
+  width: min(65.625rem, 92vw);
   max-width: 1050px;
   max-height: 86vh;
   min-height: 0;
@@ -56,13 +56,13 @@
   right: 12px;
   z-index: 10;
   display: inline-grid;
-  width: 32px;
-  height: 32px;
+  width: 2rem;
+  height: 2rem;
   place-items: center;
   padding: 0;
   margin: 0;
   color: var(--mp-purple-mid);
-  font-size: 16px;
+  font-size: 1rem;
   line-height: 1;
   cursor: pointer;
   background: rgba(255, 255, 255, 0.92);
@@ -115,9 +115,9 @@
   flex-direction: column;
   align-items: center;
   justify-content: flex-end;
-  gap: 4px;
+  gap: 0.25rem;
   padding-block-end: 20px;
-  padding-inline: 16px;
+  padding-inline: 1rem;
   overflow: hidden;
   text-align: center;
   background: linear-gradient(
@@ -133,15 +133,15 @@
   margin: 0;
   max-width: 14rem;
   color: #ffffff;
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 600;
   line-height: 1.5;
   text-shadow: 0 1px 8px rgba(42, 12, 58, 0.25);
 }
 
 .medical-partner-modal__quote-icon {
-  width: 14px !important;
-  height: 14px !important;
+  width: 0.875rem !important;
+  height: 0.875rem !important;
   color: rgba(255, 255, 255, 0.92);
 }
 
@@ -149,11 +149,11 @@
 .medical-partner-modal__body {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 0.75rem;
   min-width: 0;
   min-height: 0;
   max-height: 100%;
-  padding: 36px 42px;
+  padding: 2.25rem 2.625rem;
   overflow-x: hidden;
   overflow-y: auto;
   direction: rtl;
@@ -161,7 +161,7 @@
 }
 
 .medical-partner-modal__body::-webkit-scrollbar {
-  width: 6px;
+  width: 0.375rem;
 }
 
 .medical-partner-modal__body::-webkit-scrollbar-thumb {
@@ -172,17 +172,17 @@
 .medical-partner-modal__header {
   display: grid;
   justify-items: center;
-  gap: 8px;
+  gap: 0.5rem;
   margin: 0;
   padding-block-start: 0;
-  padding-inline: 0 24px;
+  padding-inline: 0 1.5rem;
   text-align: center;
 }
 
 .medical-partner-modal__header h2 {
   margin: 0;
   color: var(--mp-purple);
-  font-size: 32px;
+  font-size: 2rem;
   font-weight: 800;
   line-height: 1.2;
   letter-spacing: 0;
@@ -192,7 +192,7 @@
   margin: 0;
   max-width: 100%;
   color: var(--mp-muted);
-  font-size: 18px;
+  font-size: 1.125rem;
   font-weight: 400;
   line-height: 1.6;
 }
@@ -201,7 +201,7 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 8px;
+  gap: 0.5rem;
   margin: 0;
   padding: 0;
   list-style: none;
@@ -210,11 +210,11 @@
 .medical-partner-modal__service {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding-block: 5px;
-  padding-inline: 10px;
+  gap: 0.375rem;
+  padding-block: 0.3125rem;
+  padding-inline: 0.625rem;
   color: var(--mp-purple);
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 700;
   background: #fdf6fb;
   border: 1px solid var(--mp-pink-soft);
@@ -223,20 +223,20 @@
 
 .medical-partner-modal__service-icon {
   display: inline-grid;
-  width: 22px;
-  height: 22px;
+  width: 1.375rem;
+  height: 1.375rem;
   place-items: center;
   color: var(--mp-pink);
-  font-size: 16px;
+  font-size: 1rem;
   background: #ffffff;
   border-radius: 50%;
 }
 
 .medical-partner-modal__details {
   display: grid;
-  gap: 8px;
+  gap: 0.5rem;
   margin: 0;
-  padding: 12px 14px;
+  padding: 0.75rem 0.875rem;
   list-style: none;
   background: #fdf6fb;
   border: 1px solid var(--mp-pink-soft);
@@ -247,16 +247,16 @@
 .medical-partner-modal__details li {
   display: flex;
   align-items: flex-start;
-  gap: 8px;
+  gap: 0.5rem;
   color: var(--mp-muted);
-  font-size: 14px;
+  font-size: 0.875rem;
   line-height: 1.45;
 }
 
 .medical-partner-modal__details li svg {
   flex-shrink: 0;
-  width: 16px !important;
-  height: 16px !important;
+  width: 1rem !important;
+  height: 1rem !important;
   margin-block-start: 1px;
   color: var(--mp-pink);
 }
@@ -264,7 +264,7 @@
 .medical-partner-modal__details a {
   color: var(--mp-purple);
   font-weight: 700;
-  font-size: 14px;
+  font-size: 0.875rem;
   text-decoration: none;
 }
 
@@ -276,35 +276,35 @@
 
 @media (max-width: 860px) {
   .medical-partner-modal__overlay {
-    padding: 12px;
+    padding: 0.75rem;
   }
 
   .medical-partner-modal__dialog {
     grid-template-columns: 1fr;
     grid-template-rows: auto minmax(0, 1fr);
-    width: min(1050px, 92vw);
+    width: min(65.625rem, 92vw);
     max-height: 86vh;
   }
 
   .medical-partner-modal__media {
     min-height: 0;
-    height: 200px;
+    height: 12.5rem;
   }
 
   .medical-partner-modal__body {
     max-height: none;
-    padding: 24px 20px;
+    padding: 1.5rem 1.25rem;
   }
 
   .medical-partner-modal__header h2 {
-    font-size: 26px;
+    font-size: 1.625rem;
   }
 
   .medical-partner-modal__description {
-    font-size: 16px;
+    font-size: 1rem;
   }
 
   .medical-partner-modal__service {
-    font-size: 14px;
+    font-size: 0.875rem;
   }
 }

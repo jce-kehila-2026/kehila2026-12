@@ -94,7 +94,7 @@ const handlePasswordChange = async () => {
 
   const inputRootBase = {
     borderRadius: "18px",
-    height: 58,
+    height: '3.625rem',
     paddingRight: "14px",
     display: "flex",
     alignItems: "center",
@@ -125,7 +125,7 @@ const handlePasswordChange = async () => {
           "&.Mui-focused": { boxShadow: WELLNESS_DARK.focusRing },
         },
         "& .MuiOutlinedInput-input": {
-          fontSize: 17,
+          fontSize: '1.0625rem',
           color: "#f1f5f9",
         },
       }
@@ -142,7 +142,7 @@ const handlePasswordChange = async () => {
           "&.Mui-focused": { boxShadow: WELLNESS.focusRing },
         },
         "& .MuiOutlinedInput-input": {
-          fontSize: 17,
+          fontSize: '1.0625rem',
           color: WELLNESS.text,
         },
       };
@@ -184,9 +184,9 @@ const handlePasswordChange = async () => {
         }}
       >
         {visible ? (
-          <VisibilityOffOutlinedIcon sx={{ fontSize: 20, display: "block" }} />
+          <VisibilityOffOutlinedIcon sx={{ fontSize: '1.25rem', display: "block" }} />
         ) : (
-          <VisibilityOutlinedIcon sx={{ fontSize: 20, display: "block" }} />
+          <VisibilityOutlinedIcon sx={{ fontSize: '1.25rem', display: "block" }} />
         )}
       </IconButton>
     </InputAdornment>
@@ -207,7 +207,7 @@ const handlePasswordChange = async () => {
 
           <Stack spacing={3}>
             <Box>
-              <Typography sx={{ mb: 0.8, color: labelMuted, fontSize: 14, fontWeight: 500 }}>
+              <Typography sx={{ mb: 0.8, color: labelMuted, fontSize: '0.875rem', fontWeight: 500 }}>
                 {t("currentPassword")}
               </Typography>
               <TextField
@@ -226,7 +226,7 @@ const handlePasswordChange = async () => {
               />
             </Box>
             <Box>
-              <Typography sx={{ mb: 0.8, color: labelMuted, fontSize: 14, fontWeight: 500 }}>
+              <Typography sx={{ mb: 0.8, color: labelMuted, fontSize: '0.875rem', fontWeight: 500 }}>
                 {t("newPassword")}
               </Typography>
               <TextField
@@ -245,7 +245,7 @@ const handlePasswordChange = async () => {
               />
             </Box>
             <Box>
-              <Typography sx={{ mb: 0.8, color: labelMuted, fontSize: 14, fontWeight: 500 }}>
+              <Typography sx={{ mb: 0.8, color: labelMuted, fontSize: '0.875rem', fontWeight: 500 }}>
                 {t("confirmNewPassword")}
               </Typography>
               <TextField
@@ -271,7 +271,7 @@ onChange={(e) => setConfirmPassword(e.target.value)}
               variant="contained"
               onClick={handlePasswordChange}
 disabled={savingPassword}
-              startIcon={<LockOutlinedIcon sx={{ fontSize: 20 }} />}
+              startIcon={<LockOutlinedIcon sx={{ fontSize: '1.25rem' }} />}
               sx={{
                 width: "58%",
                 maxWidth: 300,
@@ -279,12 +279,12 @@ disabled={savingPassword}
                 display: "inline-flex",
                 alignItems: "center",
                 justifyContent: "center",
-                gap: 1,
+                gap: '0.5rem',
                 textTransform: "none",
                 borderRadius: "18px",
                 py: 1.35,
                 fontWeight: 800,
-                fontSize: 16,
+                fontSize: '1rem',
                 fontFamily: '"Plus Jakarta Sans", sans-serif',
                 color: "#fff",
                 background: `linear-gradient(135deg, ${WELLNESS.primary} 0%, #e879c8 100%)`,

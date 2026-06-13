@@ -231,7 +231,7 @@ export default function UpdatesPage() {
                   className="updates-page__type-badge"
                   style={{ '--badge-color': meta.color }}
                 >
-                  <Icon style={{ fontSize: 13 }} />
+                  <Icon style={{ fontSize: '0.8125rem' }} />
                   {meta.label}
                 </span>
                 {archived && <span className="updates-page__archived-tag">Archived</span>}
@@ -317,7 +317,7 @@ export default function UpdatesPage() {
                         style={{ '--opt-color': t.color }}
                         onClick={() => setForm((f) => ({ ...f, type: t.value }))}
                       >
-                        <TIcon style={{ fontSize: 18 }} />
+                        <TIcon style={{ fontSize: '1.125rem' }} />
                         {t.label}
                       </button>
                     );
@@ -387,7 +387,7 @@ export default function UpdatesPage() {
           <div className="updates-modal">
             <div className="updates-modal__header">
               <div className="updates-email-modal__title">
-                <ForwardToInboxOutlinedIcon style={{ fontSize: 20, color: '#6d35b8' }} />
+                <ForwardToInboxOutlinedIcon style={{ fontSize: '1.25rem', color: '#6d35b8' }} />
                 <h2>Send as Email</h2>
               </div>
               <button
@@ -424,7 +424,7 @@ export default function UpdatesPage() {
                 {!emailLoading && !emailFetchError && (
                   <>
                     <div className="updates-email-modal__count">
-                      <GroupOutlinedIcon style={{ fontSize: 18 }} />
+                      <GroupOutlinedIcon style={{ fontSize: '1.125rem' }} />
                       <span>
                         <strong>{emailList.length}</strong> participant email{emailList.length !== 1 ? 's' : ''} found
                       </span>
@@ -432,7 +432,7 @@ export default function UpdatesPage() {
 
                     {emailList.length > 100 && (
                       <div className="updates-email-modal__warning">
-                        <WarningAmberOutlinedIcon style={{ fontSize: 16 }} />
+                        <WarningAmberOutlinedIcon style={{ fontSize: '1rem' }} />
                         <span>
                           Large recipient list ({emailList.length}). Some email clients may truncate
                           the BCC field. Consider splitting into batches.
@@ -469,7 +469,7 @@ export default function UpdatesPage() {
                   disabled={emailLoading || emailList.length === 0 || !!emailFetchError}
                   onClick={handleProceedEmail}
                 >
-                  <ForwardToInboxOutlinedIcon style={{ fontSize: 17 }} />
+                  <ForwardToInboxOutlinedIcon style={{ fontSize: '1.0625rem' }} />
                   {emailLoading ? 'Loading…' : 'Open Email Client'}
                 </button>
               </div>

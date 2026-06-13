@@ -122,7 +122,7 @@ function AppointmentBookingForm({
       "& .MuiOutlinedInput-root": {
         borderRadius: "18px",
         backgroundColor: WELLNESS.card,
-        minHeight: 52,
+        minHeight: '3.25rem',
         transition: "border-color 0.22s ease, box-shadow 0.22s ease",
         "& fieldset": {
           borderColor: "rgba(181, 123, 232, 0.2)",
@@ -133,7 +133,7 @@ function AppointmentBookingForm({
       },
       "& .MuiOutlinedInput-input": {
         py: 1.15,
-        fontSize: 15,
+        fontSize: '0.9375rem',
         fontFamily: '"Plus Jakarta Sans", sans-serif',
         color: WELLNESS.text,
       },
@@ -146,7 +146,7 @@ function AppointmentBookingForm({
       "& .MuiOutlinedInput-root": {
         borderRadius: "18px",
         backgroundColor: WELLNESS.card,
-        minHeight: 52,
+        minHeight: '3.25rem',
         "& fieldset": {
           borderColor: "rgba(181, 123, 232, 0.2)",
         },
@@ -155,7 +155,7 @@ function AppointmentBookingForm({
         "&.Mui-focused": { boxShadow: WELLNESS.focusRing },
       },
       "& input": {
-        fontSize: 15,
+        fontSize: '0.9375rem',
         fontFamily: '"Plus Jakarta Sans", sans-serif',
         color: WELLNESS.text,
       },
@@ -275,7 +275,7 @@ function AppointmentBookingForm({
       "& .MuiOutlinedInput-root": {
         ...fieldSx["& .MuiOutlinedInput-root"],
         height: "auto",
-        minHeight: { xs: 120, md: 140 },
+        minHeight: { xs: '7.5rem', md: '8.75rem' },
         alignItems: "flex-start",
         paddingTop: "14px",
         paddingBottom: "14px",
@@ -290,7 +290,7 @@ function AppointmentBookingForm({
 
   const labelSx = {
     fontFamily: '"Plus Jakarta Sans", sans-serif',
-    fontSize: 13,
+    fontSize: '0.8125rem',
     fontWeight: 700,
     letterSpacing: "0.02em",
     color: WELLNESS.muted,
@@ -613,17 +613,17 @@ function AppointmentBookingForm({
                 variant="contained"
                 disabled={saving}
                 onClick={handleBook}
-                startIcon={<CalendarMonthRoundedIcon sx={{ fontSize: 22 }} />}
+                startIcon={<CalendarMonthRoundedIcon sx={{ fontSize: '1.375rem' }} />}
                 sx={{
                   width: { xs: "100%", md: "auto" },
-                  minHeight: 52,
-                  maxHeight: 56,
+                  minHeight: '3.25rem',
+                  maxHeight: '3.5rem',
                   py: 1.25,
                   px: { xs: 2, md: 2.75 },
                   textTransform: "none",
                   borderRadius: "18px",
                   fontWeight: 800,
-                  fontSize: 15,
+                  fontSize: '0.9375rem',
                   fontFamily: '"Plus Jakarta Sans", sans-serif',
                   whiteSpace: "nowrap",
                   background: `linear-gradient(135deg, ${WELLNESS.primary} 0%, #e879c8 100%)`,

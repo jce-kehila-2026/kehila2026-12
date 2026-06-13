@@ -8,8 +8,8 @@
 .public-lang-switcher__trigger {
   display: inline-grid;
   place-items: center;
-  width: 38px;
-  height: 38px;
+  width: 2.375rem;
+  height: 2.375rem;
   padding: 0;
   color: #5b1e8c;
   cursor: pointer;
@@ -36,8 +36,8 @@
 }
 
 .public-lang-switcher__icon {
-  width: 17px;
-  height: 17px;
+  width: 1.0625rem;
+  height: 1.0625rem;
 }
 
 .public-lang-switcher__menu {
@@ -46,10 +46,10 @@
   inset-inline-end: 0;
   z-index: 1200;
   display: grid;
-  gap: 4px;
-  min-width: 168px;
+  gap: 0.25rem;
+  min-width: 10.5rem;
   margin: 0;
-  padding: 6px;
+  padding: 0.375rem;
   list-style: none;
   background: rgba(255, 255, 255, 0.98);
   border: 1px solid rgba(236, 72, 153, 0.12);
@@ -87,11 +87,11 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 0.625rem;
   width: 100%;
-  min-height: 40px;
-  padding-block: 9px;
-  padding-inline: 12px;
+  min-height: 2.5rem;
+  padding-block: 0.5625rem;
+  padding-inline: 0.75rem;
   color: #3f4657;
   font-size: 0.94rem;
   font-weight: 700;
@@ -122,8 +122,8 @@
 }
 
 .public-lang-switcher__check {
-  width: 15px;
-  height: 15px;
+  width: 0.9375rem;
+  height: 0.9375rem;
   flex-shrink: 0;
   color: #ec4899;
 }

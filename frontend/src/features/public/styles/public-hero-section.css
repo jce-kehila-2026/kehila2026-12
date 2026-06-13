@@ -15,7 +15,7 @@
   padding-block:
     calc(var(--public-navbar-offset) + clamp(16px, 2.2vh, 28px))
     clamp(12px, 1.6vh, 18px);
-  padding-inline: clamp(20px, 6vw, 96px);
+  padding-inline: clamp(1.25rem, 6vw, 6rem);
   overflow: hidden;
   color: #ffffff;
   direction: ltr;
@@ -73,7 +73,7 @@
 .public-hero__overlay--navbar-fade {
   z-index: 2;
   inset: 0 0 auto;
-  height: clamp(100px, 16vh, 168px);
+  height: clamp(6.25rem, 16vh, 10.5rem);
   background: linear-gradient(
     180deg,
     rgba(255, 255, 255, 0.9) 0%,
@@ -85,7 +85,7 @@
 .public-hero__overlay--stats-readability {
   z-index: 2;
   inset: auto 0 0;
-  height: clamp(160px, 26vh, 260px);
+  height: clamp(10rem, 26vh, 16.25rem);
   background: linear-gradient(
     180deg,
     transparent 0%,
@@ -101,7 +101,7 @@
   display: flex;
   flex: 1 1 auto;
   flex-direction: column;
-  gap: clamp(12px, 1.8vh, 20px);
+  gap: clamp(0.75rem, 1.8vh, 1.25rem);
   width: 100%;
   min-height: 0;
 }
@@ -114,7 +114,7 @@
   align-items: flex-start;
   width: 100%;
   min-height: 0;
-  padding-block: clamp(14px, 2.4vh, 28px) clamp(8px, 1.2vh, 14px);
+  padding-block: clamp(0.875rem, 2.4vh, 1.75rem) clamp(0.5rem, 1.2vh, 0.875rem);
 }
 
 .public-hero__content {
@@ -124,8 +124,8 @@
   flex: 0 1 auto;
   align-content: start;
   justify-items: center;
-  gap: clamp(14px, 1.9vh, 22px);
-  width: min(100%, 640px);
+  gap: clamp(0.875rem, 1.9vh, 1.375rem);
+  width: min(100%, 40rem);
   min-height: 0;
   margin-block-start: 0;
   padding-block-end: 0;
@@ -162,8 +162,8 @@
   justify-content: center;
   width: fit-content;
   margin: 0;
-  padding-block: 9px;
-  padding-inline: 18px;
+  padding-block: 0.5625rem;
+  padding-inline: 1.125rem;
   color: #ffffff;
   font-size: clamp(0.9rem, 1.1vw, 1rem);
   font-weight: 600;
@@ -206,15 +206,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 14px;
-  width: min(100%, 260px);
-  margin: clamp(2px, 0.5vh, 6px) auto;
+  gap: 0.875rem;
+  width: min(100%, 16.25rem);
+  margin: clamp(0.125rem, 0.5vh, 0.375rem) auto;
 }
 
 .public-hero__ornament-line {
   flex: 1;
-  min-width: 48px;
-  height: 1px;
+  min-width: 3rem;
+  height: 0.0625rem;
   border-radius: 999px;
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.58));
 }
@@ -247,7 +247,7 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 0.75rem;
   margin-block-start: clamp(6px, 1vh, 12px);
   margin-block-end: 0;
 }
@@ -256,9 +256,9 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 56px;
-  padding-block: 14px;
-  padding-inline: clamp(26px, 3vw, 36px);
+  min-height: 3.5rem;
+  padding-block: 0.875rem;
+  padding-inline: clamp(1.625rem, 3vw, 2.25rem);
   border: 2px solid transparent;
   border-radius: 999px;
   font-size: clamp(1rem, 1.2vw, 1.08rem);
@@ -317,7 +317,7 @@
   position: relative;
   z-index: 5;
   flex: 0 0 auto;
-  width: min(100%, 1080px);
+  width: min(100%, 67.5rem);
   margin-block-start: auto;
   margin-inline: auto;
   padding-block-start: clamp(8px, 1.2vh, 14px);
@@ -327,9 +327,9 @@
 
 .public-hero__statistics .public-state,
 .public-hero__statistics .public-section__empty {
-  width: min(100%, 520px);
+  width: min(100%, 32.5rem);
   margin-inline: auto;
-  padding: 12px 16px;
+  padding: 0.75rem 1rem;
   border: 1px solid rgba(255, 255, 255, 0.32);
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.42);
@@ -341,16 +341,16 @@
 
 .public-hero__statistics .public-statistics__grid--hero {
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: clamp(10px, 1.15vw, 14px);
+  gap: clamp(0.625rem, 1.15vw, 0.875rem);
   width: 100%;
   max-width: 1080px;
   margin-inline: auto;
 }
 
 .public-hero__statistics .public-statistics__card {
-  gap: 6px;
+  gap: 0.375rem;
   min-height: 0;
-  padding: clamp(11px, 1.22vw, 14px) clamp(9px, 1vw, 11px) clamp(10px, 1.1vw, 13px);
+  padding: clamp(0.6875rem, 1.22vw, 0.875rem) clamp(0.5625rem, 1vw, 0.6875rem) clamp(0.625rem, 1.1vw, 0.8125rem);
   border: 1px solid rgba(255, 255, 255, 0.38);
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.42);
@@ -378,8 +378,8 @@
 }
 
 .public-hero__statistics .public-statistics__icon {
-  width: clamp(40px, 3.4vw, 50px);
-  height: clamp(40px, 3.4vw, 50px);
+  width: clamp(2.5rem, 3.4vw, 3.125rem);
+  height: clamp(2.5rem, 3.4vw, 3.125rem);
   margin-block-end: 0;
 }
 
@@ -390,8 +390,8 @@
 }
 
 .public-hero__statistics .public-statistics__icon-glyph {
-  width: clamp(20px, 1.8vw, 25px);
-  height: clamp(20px, 1.8vw, 25px);
+  width: clamp(1.25rem, 1.8vw, 1.5625rem);
+  height: clamp(1.25rem, 1.8vw, 1.5625rem);
 }
 
 .public-hero__statistics .public-statistics__value-number,
@@ -441,9 +441,9 @@
 }
 
 .public-hero__statistics .public-statistics__divider--card {
-  width: min(100%, 96px);
+  width: min(100%, 6rem);
   margin-block: 0;
-  gap: 5px;
+  gap: 0.3125rem;
 }
 
 /* Staggered reveal — matches homepage .reveal pattern (public-layout.css) */
@@ -470,12 +470,12 @@
   }
 
   .public-hero__content-region {
-    padding-block: clamp(16px, 2.8vh, 34px) clamp(6px, 1vh, 12px);
+    padding-block: clamp(1rem, 2.8vh, 2.125rem) clamp(0.375rem, 1vh, 0.75rem);
   }
 
   .public-hero__btn {
-    min-height: 50px;
-    padding-block: 12px;
+    min-height: 3.125rem;
+    padding-block: 0.75rem;
   }
 
   .public-hero__support {
@@ -501,15 +501,15 @@
   }
 
   .public-hero__layout {
-    gap: clamp(8px, 1.2vh, 14px);
+    gap: clamp(0.5rem, 1.2vh, 0.875rem);
   }
 
   .public-hero__content-region {
-    padding-block: clamp(10px, 1.8vh, 20px) clamp(6px, 0.9vh, 10px);
+    padding-block: clamp(0.625rem, 1.8vh, 1.25rem) clamp(0.375rem, 0.9vh, 0.625rem);
   }
 
   .public-hero__statistics .public-statistics__card {
-    padding: clamp(9px, 1vw, 11px) clamp(8px, 0.9vw, 10px);
+    padding: clamp(0.5625rem, 1vw, 0.6875rem) clamp(0.5rem, 0.9vw, 0.625rem);
   }
 
   .public-hero__statistics .public-statistics__card-text {
@@ -520,19 +520,19 @@
 @media (max-width: 940px) {
   .public-hero {
     --hero-visible-height: auto;
-    min-height: max(100dvh, 820px);
+    min-height: max(100dvh, 51.25rem);
     height: auto;
     max-height: none;
     margin-block-end: clamp(28px, 4vh, 44px);
     overflow: visible;
-    padding-inline: clamp(18px, 5vw, 40px);
+    padding-inline: clamp(1.125rem, 5vw, 2.5rem);
     padding-block:
       calc(var(--public-navbar-offset) + clamp(40px, 6vh, 64px))
       clamp(56px, 7vh, 80px);
   }
 
   .public-hero__layout {
-    gap: clamp(24px, 4vh, 40px);
+    gap: clamp(1.5rem, 4vh, 2.5rem);
     min-height: 0;
   }
 
@@ -570,28 +570,28 @@
   }
 
   .public-hero__statistics {
-    width: min(100%, 640px);
+    width: min(100%, 40rem);
     transform: none;
   }
 
   .public-hero__statistics .public-statistics__grid--hero {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 9px;
+    gap: 0.5625rem;
   }
 }
 
 @media (max-width: 720px) {
   .public-hero {
-    min-height: max(100dvh, 780px);
+    min-height: max(100dvh, 48.75rem);
     margin-block-end: clamp(24px, 4vh, 36px);
     padding-block:
       calc(var(--public-navbar-offset) + clamp(36px, 5vh, 56px))
       clamp(48px, 6vh, 72px);
-    padding-inline: 18px;
+    padding-inline: 1.125rem;
   }
 
   .public-hero__layout {
-    gap: clamp(20px, 3.5vh, 32px);
+    gap: clamp(1.25rem, 3.5vh, 2rem);
   }
 
   .public-hero__background {
@@ -605,7 +605,7 @@
 
   .public-hero__btn {
     width: 100%;
-    min-height: 54px;
+    min-height: 3.375rem;
   }
 
   .public-hero h1 {
@@ -619,11 +619,11 @@
 
   .public-hero__statistics .public-statistics__grid--hero {
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px;
+    gap: 0.5rem;
   }
 
   .public-hero__statistics .public-statistics__card {
-    padding: 9px 8px 8px;
+    padding: 0.5625rem 0.5rem 0.5rem;
     border-radius: 14px;
   }
 
@@ -634,11 +634,11 @@
 
 @media (max-width: 420px) {
   .public-hero {
-    min-height: max(100dvh, 780px);
+    min-height: max(100dvh, 48.75rem);
   }
 
   .public-hero__eyebrow {
-    padding-inline: 14px;
+    padding-inline: 0.875rem;
     font-size: 0.86rem;
   }
 
@@ -653,7 +653,7 @@
 
   .public-hero__statistics .public-statistics__grid--hero {
     grid-template-columns: minmax(0, 1fr);
-    gap: 10px;
+    gap: 0.625rem;
   }
 }
 

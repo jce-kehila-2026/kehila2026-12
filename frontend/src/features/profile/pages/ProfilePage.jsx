@@ -74,7 +74,7 @@ function CommunitySettingsSection({ darkMode = false, participantId = "", profil
         id="community-settings-title"
         sx={{
           color: darkMode ? WELLNESS_DARK.text : WELLNESS.text,
-          fontSize: 20,
+          fontSize: '1.25rem',
           fontWeight: 800,
           lineHeight: 1.2,
           mb: 1.8,
@@ -89,7 +89,7 @@ function CommunitySettingsSection({ darkMode = false, participantId = "", profil
           alignItems: { xs: "flex-start", sm: "center" },
           justifyContent: "space-between",
           flexDirection: { xs: "column", sm: "row" },
-          gap: 1.5,
+          gap: '0.75rem',
           border: darkMode
             ? "1px solid rgba(196, 165, 245, 0.16)"
             : "1px solid rgba(181, 123, 232, 0.14)",
@@ -102,7 +102,7 @@ function CommunitySettingsSection({ darkMode = false, participantId = "", profil
           <Typography
             sx={{
               color: darkMode ? WELLNESS_DARK.text : WELLNESS.text,
-              fontSize: 15,
+              fontSize: '0.9375rem',
               fontWeight: 800,
               lineHeight: 1.3,
             }}
@@ -112,7 +112,7 @@ function CommunitySettingsSection({ darkMode = false, participantId = "", profil
           <Typography
             sx={{
               color: darkMode ? WELLNESS_DARK.muted : WELLNESS.muted,
-              fontSize: 13,
+              fontSize: '0.8125rem',
               lineHeight: 1.5,
               mt: 0.45,
             }}
@@ -131,8 +131,8 @@ function CommunitySettingsSection({ darkMode = false, participantId = "", profil
           sx={{
             flexShrink: 0,
             alignSelf: { xs: "flex-end", sm: "center" },
-            width: 52,
-            height: 30,
+            width: '3.25rem',
+            height: '1.875rem',
             borderRadius: 999,
             border: darkMode
               ? "1px solid rgba(196, 165, 245, 0.28)"
@@ -147,8 +147,8 @@ function CommunitySettingsSection({ darkMode = false, participantId = "", profil
             transition: "background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease",
             "&::after": {
               content: '""',
-              width: 22,
-              height: 22,
+              width: '1.375rem',
+              height: '1.375rem',
               borderRadius: "50%",
               background: showBirthdayInCommunity
                 ? `linear-gradient(145deg, ${WELLNESS.primary}, #c4a5f5)`
@@ -366,7 +366,7 @@ function ProfilePage({
                 <Box sx={{ flex: 1, minWidth: 0 }}>
                   <Typography
                     sx={{
-                      fontSize: { xs: 36, sm: 48, md: 52 },
+                      fontSize: { xs: '2.25rem', sm: '3rem', md: '3.25rem' },
                       fontWeight: 700,
                       color: darkMode ? WELLNESS_DARK.text : WELLNESS.text,
                       lineHeight: 1.1,
@@ -378,7 +378,7 @@ function ProfilePage({
                   <Typography
                     sx={{
                       color: darkMode ? WELLNESS_DARK.muted : WELLNESS.muted,
-                      fontSize: { xs: 17, sm: 20, md: 22 },
+                      fontSize: { xs: '1.0625rem', sm: '1.25rem', md: '1.375rem' },
                       mt: 0.5,
                     }}
                   >
