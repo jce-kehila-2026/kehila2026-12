@@ -14,7 +14,7 @@
   min-height: 0;
   display: grid;
   grid-template-rows: auto 118px minmax(220px, 1fr) minmax(156px, 0.72fr);
-  gap: 16px;
+  gap: 1rem;
   overflow: hidden;
   box-sizing: border-box;
   color: var(--deep-purple);
@@ -30,7 +30,7 @@
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  gap: 18px;
+  gap: 1.125rem;
   min-width: 0;
   margin-bottom: 0;
 }
@@ -44,7 +44,7 @@
 }
 
 .admin-dashboard-hero p {
-  margin: 5px 0 0;
+  margin: 0.3125rem 0 0;
   color: rgba(36, 16, 79, 0.72);
   font-size: 1rem;
 }
@@ -60,18 +60,18 @@
 }
 
 .admin-dashboard-date-pill {
-  min-height: 42px;
-  padding: 0 15px;
+  min-height: 2.625rem;
+  padding: 0 0.9375rem;
   display: inline-flex;
   align-items: center;
-  gap: 12px;
+  gap: 0.75rem;
   white-space: nowrap;
 }
 
 .admin-dashboard-metrics {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 16px;
+  gap: 1rem;
   min-width: 0;
   min-height: 0;
   margin-bottom: 0;
@@ -91,17 +91,17 @@
 .admin-dashboard-metric {
   position: relative;
   min-height: 0;
-  height: 118px;
-  padding: 18px;
+  height: 7.375rem;
+  padding: 1.125rem;
   display: flex;
   align-items: flex-start;
-  gap: 18px;
+  gap: 1.125rem;
   overflow: hidden;
 }
 
 .admin-dashboard-metric__icon {
-  width: 46px;
-  height: 46px;
+  width: 2.875rem;
+  height: 2.875rem;
   border-radius: 16px;
   display: grid;
   place-items: center;
@@ -132,7 +132,7 @@
 
 .admin-dashboard-metric span {
   display: block;
-  margin: 3px 0 6px;
+  margin: 0.1875rem 0 0.375rem;
   font-weight: 700;
 }
 
@@ -145,7 +145,7 @@
 }
 
 .admin-dashboard-metric p {
-  margin: 7px 0 0;
+  margin: 0.4375rem 0 0;
   color: rgba(36, 16, 79, 0.5);
   font-size: 0.8125rem;
   font-weight: 600;
@@ -156,7 +156,7 @@
   left: 22px;
   right: 22px;
   bottom: 12px;
-  height: 18px;
+  height: 1.125rem;
   opacity: 0.55;
 }
 
@@ -184,7 +184,7 @@
 .admin-dashboard-main-grid {
   display: grid;
   grid-template-columns: minmax(300px, 45fr) minmax(420px, 55fr);
-  gap: 16px;
+  gap: 1rem;
   min-width: 0;
   min-height: 0;
   margin-bottom: 0;
@@ -195,7 +195,7 @@
   position: relative;
   min-width: 0;
   min-height: 0;
-  padding: 18px;
+  padding: 1.125rem;
   overflow: hidden;
 }
 
@@ -209,8 +209,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 14px;
+  gap: 0.75rem;
+  margin-bottom: 0.875rem;
 }
 
 .admin-dashboard-card__header h2 {
@@ -223,8 +223,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 30px;
-  padding: 0 13px;
+  min-height: 1.875rem;
+  padding: 0 0.8125rem;
   text-decoration: none;
   font-size: 0.8125rem;
 }
@@ -232,14 +232,14 @@
 .admin-dashboard-overview__body {
   display: grid;
   grid-template-columns: 168px minmax(0, 1fr);
-  gap: 18px;
+  gap: 1.125rem;
   align-items: center;
-  height: calc(100% - 44px);
+  height: calc(100% - 2.75rem);
   min-height: 0;
 }
 
 .admin-dashboard-donut {
-  width: 158px;
+  width: 9.875rem;
   aspect-ratio: 1;
   border-radius: 50%;
   display: grid;
@@ -273,7 +273,7 @@
 
 .admin-dashboard-donut span {
   align-self: start;
-  margin-top: 5px;
+  margin-top: 0.3125rem;
   color: rgba(36, 16, 79, 0.58);
   font-size: 0.875rem;
   font-weight: 700;
@@ -284,11 +284,11 @@
 }
 
 .admin-dashboard-breakdown__row {
-  min-height: 35px;
+  min-height: 2.1875rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 14px;
+  gap: 0.875rem;
   border-bottom: 1px solid rgba(167, 139, 250, 0.14);
   font-size: 0.875rem;
 }
@@ -296,14 +296,14 @@
 .admin-dashboard-breakdown__row span {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
+  gap: 0.75rem;
   font-weight: 700;
 }
 
 .admin-dashboard-breakdown__row span::before {
   content: "";
-  width: 10px;
-  height: 10px;
+  width: 0.625rem;
+  height: 0.625rem;
   border-radius: 50%;
   background: var(--dot-color);
 }
@@ -315,18 +315,18 @@
 .admin-dashboard-booking-list {
   display: grid;
   gap: 0;
-  height: calc(100% - 44px);
+  height: calc(100% - 2.75rem);
   min-height: 0;
   overflow: hidden;
 }
 
 .admin-dashboard-booking {
   min-height: 0;
-  height: 45px;
+  height: 2.8125rem;
   display: grid;
   grid-template-columns: 36px minmax(106px, 1.1fr) auto minmax(126px, 0.9fr) auto;
   align-items: center;
-  gap: 9px;
+  gap: 0.5625rem;
   border-bottom: 1px solid rgba(167, 139, 250, 0.14);
 }
 
@@ -341,8 +341,8 @@
 }
 
 .admin-dashboard-booking__avatar {
-  width: 30px;
-  height: 30px;
+  width: 1.875rem;
+  height: 1.875rem;
   font-size: 0.75rem;
 }
 
@@ -359,7 +359,7 @@
 }
 
 .admin-dashboard-booking__main strong {
-  margin-bottom: 3px;
+  margin-bottom: 0.1875rem;
   font-size: 0.8125rem;
 }
 
@@ -373,7 +373,7 @@
 .admin-dashboard-action {
   justify-self: start;
   border-radius: 999px;
-  padding: 5px 11px;
+  padding: 0.3125rem 0.6875rem;
   font-size: 0.6875rem;
   line-height: 1;
   font-weight: 800;
@@ -393,7 +393,7 @@
 .admin-dashboard-booking__date {
   display: grid;
   grid-template-columns: 18px 1fr;
-  gap: 3px 8px;
+  gap: 0.1875rem 0.5rem;
   color: rgba(36, 16, 79, 0.7);
   font-size: 0.75rem;
   font-weight: 700;
@@ -433,16 +433,16 @@
   z-index: 1;
   min-height: 0;
   overflow: auto;
-  padding-right: 4px;
+  padding-right: 0.25rem;
 }
 
 .admin-dashboard-activity__head,
 .admin-dashboard-activity__row {
   display: grid;
   grid-template-columns: 1.1fr 1.55fr 0.8fr 1.35fr 1.65fr;
-  gap: 16px;
+  gap: 1rem;
   align-items: center;
-  min-height: 34px;
+  min-height: 2.125rem;
   border-bottom: 1px solid rgba(167, 139, 250, 0.14);
 }
 
@@ -470,15 +470,15 @@
   min-width: 0;
   display: inline-flex;
   align-items: center;
-  gap: 12px;
+  gap: 0.75rem;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
 .admin-dashboard-admin-cell i {
-  width: 24px;
-  height: 24px;
+  width: 1.5rem;
+  height: 1.5rem;
   flex: 0 0 auto;
   font-size: 0.625rem;
 }
@@ -535,7 +535,7 @@
 
   .admin-dashboard-booking {
     align-items: start;
-    padding: 12px 0;
+    padding: 0.75rem 0;
   }
 
   .admin-dashboard-activity__head {
