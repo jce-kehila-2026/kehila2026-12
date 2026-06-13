@@ -528,7 +528,7 @@
   border: 1px solid rgba(223, 50, 123, 0.16);
   border-radius: 50%;
   cursor: pointer;
-  font-size: 20px;
+  font-size: 1.25rem;
   box-shadow: 0 6px 16px rgba(58, 27, 84, 0.12);
   transition: transform 200ms ease, box-shadow 200ms ease, color 200ms ease;
   z-index: 2;

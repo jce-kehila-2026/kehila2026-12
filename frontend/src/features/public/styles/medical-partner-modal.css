@@ -18,7 +18,7 @@
   backdrop-filter: blur(14px);
   -webkit-backdrop-filter: blur(14px);
   font-family: "Assistant", "Rubik", "Segoe UI", Arial, sans-serif;
-  font-size: 16px;
+  font-size: 1rem;
   line-height: 1.5;
   color: var(--mp-muted);
 }
@@ -62,7 +62,7 @@
   padding: 0;
   margin: 0;
   color: var(--mp-purple-mid);
-  font-size: 16px;
+  font-size: 1rem;
   line-height: 1;
   cursor: pointer;
   background: rgba(255, 255, 255, 0.92);
@@ -133,7 +133,7 @@
   margin: 0;
   max-width: 14rem;
   color: #ffffff;
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 600;
   line-height: 1.5;
   text-shadow: 0 1px 8px rgba(42, 12, 58, 0.25);
@@ -182,7 +182,7 @@
 .medical-partner-modal__header h2 {
   margin: 0;
   color: var(--mp-purple);
-  font-size: 32px;
+  font-size: 2rem;
   font-weight: 800;
   line-height: 1.2;
   letter-spacing: 0;
@@ -192,7 +192,7 @@
   margin: 0;
   max-width: 100%;
   color: var(--mp-muted);
-  font-size: 18px;
+  font-size: 1.125rem;
   font-weight: 400;
   line-height: 1.6;
 }
@@ -214,7 +214,7 @@
   padding-block: 5px;
   padding-inline: 10px;
   color: var(--mp-purple);
-  font-size: 15px;
+  font-size: 0.9375rem;
   font-weight: 700;
   background: #fdf6fb;
   border: 1px solid var(--mp-pink-soft);
@@ -227,7 +227,7 @@
   height: 22px;
   place-items: center;
   color: var(--mp-pink);
-  font-size: 16px;
+  font-size: 1rem;
   background: #ffffff;
   border-radius: 50%;
 }
@@ -249,7 +249,7 @@
   align-items: flex-start;
   gap: 8px;
   color: var(--mp-muted);
-  font-size: 14px;
+  font-size: 0.875rem;
   line-height: 1.45;
 }
 
@@ -264,7 +264,7 @@
 .medical-partner-modal__details a {
   color: var(--mp-purple);
   font-weight: 700;
-  font-size: 14px;
+  font-size: 0.875rem;
   text-decoration: none;
 }
 
@@ -297,14 +297,14 @@
   }
 
   .medical-partner-modal__header h2 {
-    font-size: 26px;
+    font-size: 1.625rem;
   }
 
   .medical-partner-modal__description {
-    font-size: 16px;
+    font-size: 1rem;
   }
 
   .medical-partner-modal__service {
-    font-size: 14px;
+    font-size: 0.875rem;
   }
 }
