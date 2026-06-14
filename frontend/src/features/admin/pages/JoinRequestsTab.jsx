@@ -42,6 +42,7 @@ import {
   approveJoinRequest,
   rejectJoinRequest,
 } from '../services/joinRequestAdminService';
+import { isApprovalEmailConfigured, sendApprovalEmail } from '../services/approvalEmailService';
 
 const STATUS_META = {
   [JOIN_REQUEST_STATUS.NEW]: { label: 'New', color: '#B45309', bg: 'rgba(245, 158, 11, 0.16)' },
@@ -147,6 +148,7 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
   const [actionError, setActionError] = useState('');
   const [rejectReason, setRejectReason] = useState('');
   const [approveResult, setApproveResult] = useState(null); // { email, tempPassword }
+  const [emailStatus, setEmailStatus] = useState('idle'); // 'sending' | 'sent' | 'failed' | 'not-configured'
   const [copied, setCopied] = useState(false);
 
   const filtered = useMemo(() => {
@@ -171,6 +173,7 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
     setActionTarget(req);
     setActionMode('approve');
     setApproveResult(null);
+    setEmailStatus('idle');
     setActionError('');
     setDetailsOpen(false);
   }
@@ -188,6 +191,7 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
     setActionTarget(null);
     setActionError('');
     setApproveResult(null);
+    setEmailStatus('idle');
     setRejectReason('');
     setCopied(false);
   }
@@ -205,6 +209,26 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
       const result = await approveJoinRequest(actionTarget);
       setApproveResult(result);
       onChanged?.();
+
+      // Send the approval email. Failure here must NOT undo the approval —
+      // the account already exists and the password is shown as a fallback.
+      if (!isApprovalEmailConfigured()) {
+        setEmailStatus('not-configured');
+      } else {
+        setEmailStatus('sending');
+        try {
+          await sendApprovalEmail({
+            toEmail: result.email,
+            fullName: actionTarget.fullName,
+            tempPassword: result.tempPassword,
+            loginUrl: `${window.location.origin}/login`,
+          });
+          setEmailStatus('sent');
+        } catch (emailErr) {
+          console.error('Approval email failed:', emailErr);
+          setEmailStatus('failed');
+        }
+      }
     } catch (err) {
       console.error('Approve failed:', err);
       setActionError(err?.message || 'Could not approve this application. Please try again.');
@@ -679,9 +703,23 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
                   {copied ? <Typography variant="caption" color="#15803D" fontWeight={800}>Copied!</Typography> : null}
                 </Stack>
               </Box>
-              <Alert severity="info" sx={{ mt: 2, borderRadius: '14px' }}>
-                Email isn’t sent automatically yet — share these manually for now (automatic email comes next). The member will be asked to set a new password on first login.
-              </Alert>
+              {emailStatus === 'sending' ? (
+                <Alert severity="info" icon={<CircularProgress size={18} />} sx={{ mt: 2, borderRadius: '14px' }}>
+                  Sending the approval email…
+                </Alert>
+              ) : emailStatus === 'sent' ? (
+                <Alert severity="success" sx={{ mt: 2, borderRadius: '14px' }}>
+                  Approval email sent to {approveResult.email}. They’ll be asked to set a new password on first login.
+                </Alert>
+              ) : emailStatus === 'failed' ? (
+                <Alert severity="warning" sx={{ mt: 2, borderRadius: '14px' }}>
+                  Couldn’t send the email automatically — please share the email and password above manually. They’ll set a new password on first login.
+                </Alert>
+              ) : (
+                <Alert severity="info" sx={{ mt: 2, borderRadius: '14px' }}>
+                  Automatic email isn’t set up yet — share the email and password above manually. The member will be asked to set a new password on first login.
+                </Alert>
+              )}
             </DialogContent>
             <DialogActions sx={{ px: 3, pb: 2.4 }}>
               <Button onClick={resetAction} variant="contained" sx={{ borderRadius: 999, textTransform: 'none', fontWeight: 900, px: 3, background: 'linear-gradient(135deg, #7C3AED 0%, #DF327B 100%)' }}>
