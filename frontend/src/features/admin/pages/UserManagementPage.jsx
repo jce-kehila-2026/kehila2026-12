@@ -1,9 +1,11 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { collection, doc, getDoc, getDocs, limit, query, updateDoc } from 'firebase/firestore';
 import { Ban, Pencil, ShieldCheck } from 'lucide-react';
 import { db } from '../../../firebase';
 import { logAuditEvent } from '../services/auditService';
+import { listJoinRequests } from '../services/joinRequestAdminService';
+import JoinRequestsTab from './JoinRequestsTab';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -209,6 +211,9 @@ export default function UserManagementPage() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [detailsLoading, setDetailsLoading] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('users');
+  const [joinRequests, setJoinRequests] = useState([]);
+  const [joinLoading, setJoinLoading] = useState(true);
 
   useEffect(() => {
     async function fetchUsers() {
@@ -225,6 +230,22 @@ export default function UserManagementPage() {
     }
     fetchUsers();
   }, []);
+
+  const loadJoinRequests = useCallback(async () => {
+    setJoinLoading(true);
+    try {
+      const list = await listJoinRequests();
+      setJoinRequests(list);
+    } catch (err) {
+      console.error('Failed to fetch membership applications:', err);
+    } finally {
+      setJoinLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadJoinRequests();
+  }, [loadJoinRequests]);
 
   async function handleRoleChange(user, newRole) {
     const oldRole = user.role || 'participant';
@@ -352,6 +373,8 @@ export default function UserManagementPage() {
     };
   };
 
+  const pendingApplications = joinRequests.filter((req) => (req.status || 'new') === 'new').length;
+
   return (
     <Box
       dir="ltr"
@@ -421,6 +444,61 @@ export default function UserManagementPage() {
           </Stack>
         </Stack>
 
+        <Stack direction="row" spacing={1.2} sx={{ flexShrink: 0 }} role="tablist" aria-label="User management sections">
+          {[
+            { key: 'users', label: 'Users' },
+            { key: 'applications', label: 'Membership Applications' },
+          ].map((tab) => {
+            const selected = activeTab === tab.key;
+            return (
+              <Button
+                key={tab.key}
+                role="tab"
+                aria-selected={selected}
+                onClick={() => setActiveTab(tab.key)}
+                sx={{
+                  height: '2.75rem',
+                  px: 2.6,
+                  borderRadius: 999,
+                  textTransform: 'none',
+                  fontWeight: 900,
+                  fontSize: '0.95rem',
+                  color: selected ? '#fff' : '#6D3CCF',
+                  background: selected
+                    ? 'linear-gradient(135deg, #7C3AED 0%, #DF327B 100%)'
+                    : 'rgba(255,255,255,0.7)',
+                  border: '1px solid rgba(124, 58, 237, 0.16)',
+                  boxShadow: selected ? '0 14px 30px rgba(124, 58, 237, 0.22)' : 'none',
+                  '&:hover': {
+                    background: selected
+                      ? 'linear-gradient(135deg, #6F32D8 0%, #D12B72 100%)'
+                      : 'rgba(244, 238, 255, 0.9)',
+                  },
+                }}
+              >
+                {tab.label}
+                {tab.key === 'applications' && pendingApplications > 0 ? (
+                  <Box
+                    component="span"
+                    sx={{
+                      ml: 1,
+                      px: 1,
+                      py: 0.15,
+                      borderRadius: 999,
+                      fontSize: '0.75rem',
+                      fontWeight: 950,
+                      bgcolor: selected ? 'rgba(255,255,255,0.26)' : 'rgba(223, 50, 123, 0.14)',
+                      color: selected ? '#fff' : '#C52A72',
+                    }}
+                  >
+                    {pendingApplications} new
+                  </Box>
+                ) : null}
+              </Button>
+            );
+          })}
+        </Stack>
+
         <Grid
           container
           spacing={0}
@@ -428,6 +506,9 @@ export default function UserManagementPage() {
           sx={{ width: '100%', maxWidth: 'none', minHeight: 0, flex: 1, m: 0 }}
         >
           <Grid item xs={12} sx={{ width: '100%', maxWidth: 'none', flexBasis: '100%', p: 0 }}>
+            {activeTab === 'applications' ? (
+              <JoinRequestsTab requests={joinRequests} loading={joinLoading} onChanged={loadJoinRequests} />
+            ) : (
             <Box
               sx={{
                 width: '100%',
@@ -719,6 +800,7 @@ export default function UserManagementPage() {
             ) : null}
           </Box>
             </Box>
+            )}
           </Grid>
 
         </Grid>
