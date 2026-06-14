@@ -44,7 +44,7 @@
 
   gap: 0;
 
-  padding: 1rem 0.25rem 2rem;
+  padding: 16px 4px 32px;
 
   color: var(--pd-text);
 
@@ -56,13 +56,13 @@
 
   position: absolute;
 
-  width: 0.0625rem;
+  width: 1px;
 
-  height: 0.0625rem;
+  height: 1px;
 
   padding: 0;
 
-  margin: -0.0625rem;
+  margin: -1px;
 
   overflow: hidden;
 
@@ -102,7 +102,7 @@
 
   flex-shrink: 0;
 
-  margin-bottom: 1.25rem;
+  margin-bottom: 20px;
 
   font-family: var(--pd-hero-font-body);
 
@@ -160,13 +160,13 @@
 
   justify-content: center;
 
-  gap: 0.5rem;
+  gap: 8px;
 
   max-width: min(100%, 38rem);
 
   height: 100%;
 
-  padding: 1.25rem 2rem;
+  padding: 20px 32px;
 
   color: #fff;
 
@@ -256,7 +256,7 @@
 
   display: block;
 
-  margin-top: 0.375rem;
+  margin-top: 6px;
 
   font-family: var(--pd-hero-font-body);
 
@@ -318,11 +318,11 @@
 
   grid-template-columns: repeat(2, minmax(0, 1fr));
 
-  gap: 1.25rem;
+  gap: 20px;
 
   align-items: stretch;
 
-  margin-bottom: 1.25rem;
+  margin-bottom: 20px;
 
 }
 
@@ -348,7 +348,7 @@
 
   min-height: 100%;
 
-  padding: 1.75rem;
+  padding: 28px;
 
   border-radius: var(--pd-radius-md);
 
@@ -436,9 +436,9 @@
 
 .pd-card__blob--a {
 
-  width: 8.75rem;
+  width: 140px;
 
-  height: 8.75rem;
+  height: 140px;
 
   top: -36px;
 
@@ -452,9 +452,9 @@
 
 .pd-card__blob--b {
 
-  width: 6.875rem;
+  width: 110px;
 
-  height: 6.875rem;
+  height: 110px;
 
   bottom: -32px;
 
@@ -544,9 +544,9 @@
 
 .pd-card__petal--a {
 
-  width: 1.75rem;
+  width: 28px;
 
-  height: 1.75rem;
+  height: 28px;
 
   bottom: 18px;
 
@@ -560,9 +560,9 @@
 
 .pd-card__petal--b {
 
-  width: 1rem;
+  width: 16px;
 
-  height: 1rem;
+  height: 16px;
 
   top: 52px;
 
@@ -650,9 +650,9 @@
 
   transform: translateY(-50%);
 
-  width: 7.375rem;
+  width: 118px;
 
-  height: 7.375rem;
+  height: 118px;
 
   opacity: 0.035;
 
@@ -772,7 +772,7 @@
 
   align-items: center;
 
-  column-gap: 0.75rem;
+  column-gap: 12px;
 
   height: 100%;
 
@@ -786,6 +786,15 @@
 
 
 
+.pd-card--appointment > .pd-card__surface.pd-feature__layout:not(.pd-feature__layout--empty),
+.pd-card--event > .pd-card__surface.pd-feature__layout:not(.pd-feature__layout--empty) {
+
+  grid-template-columns: minmax(0, 1fr) var(--pd-countdown-size);
+
+}
+
+
+
 /* Card heading with icon badge */
 
 .pd-card__heading {
@@ -794,9 +803,9 @@
 
   align-items: center;
 
-  gap: 0.625rem;
+  gap: 10px;
 
-  margin: 0 0 0.375rem;
+  margin: 0 0 6px;
 
   flex-shrink: 0;
 
@@ -812,9 +821,11 @@
 
 .pd-card__heading-badge {
 
-  width: 2.25rem;
+  position: relative;
 
-  height: 2.25rem;
+  width: 36px;
+
+  height: 36px;
 
   flex-shrink: 0;
 
@@ -824,7 +835,51 @@
 
   border-radius: 11px;
 
-  border: 1px solid rgba(255, 255, 255, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+
+  color: #ffffff;
+
+  overflow: hidden;
+
+}
+
+
+
+/* Mini public-style gloss overlay */
+.pd-card__heading-badge::before {
+
+  position: absolute;
+
+  inset: 0;
+
+  border-radius: inherit;
+
+  content: "";
+
+  background: linear-gradient(
+    145deg,
+    rgba(255, 255, 255, 0.34) 0%,
+    rgba(255, 255, 255, 0.06) 55%,
+    transparent 100%
+  );
+
+  pointer-events: none;
+
+}
+
+
+
+.pd-card__heading-badge svg {
+
+  position: relative;
+
+  z-index: 1;
+
+  width: 20px;
+
+  height: 20px;
+
+  color: #ffffff;
 
 }
 
@@ -832,11 +887,11 @@
 
 .pd-card__heading--purple .pd-card__heading-badge {
 
-  background: linear-gradient(145deg, #f8f2ff 0%, #ebe0ff 55%, #f3ebff 100%);
+  background: linear-gradient(145deg, #b8a0d9 0%, #8b6bb8 48%, #5b1e8c 100%);
 
-  color: #5b1e8c;
-
-  box-shadow: 0 8px 20px rgba(91, 30, 140, 0.14);
+  box-shadow:
+    0 6px 16px rgba(91, 30, 140, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.38);
 
 }
 
@@ -844,11 +899,11 @@
 
 .pd-card__heading--pink .pd-card__heading-badge {
 
-  background: linear-gradient(145deg, #fff0f7 0%, #ffe4f1 55%, #fce7f3 100%);
+  background: linear-gradient(145deg, #f9a8d4 0%, #ec4899 52%, #db2777 100%);
 
-  color: #c2185b;
-
-  box-shadow: 0 8px 20px rgba(236, 22, 140, 0.14);
+  box-shadow:
+    0 6px 16px rgba(236, 22, 140, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.38);
 
 }
 
@@ -856,7 +911,7 @@
 
 .pd-card__heading-label {
 
-  font-size: 0.71875rem;
+  font-size: 11.5px;
 
   font-weight: 700;
 
@@ -896,7 +951,7 @@
 
   height: var(--pd-feature-card-height);
 
-  padding: 1.125rem 1rem 1.125rem 1.375rem;
+  padding: 18px 16px 18px 22px;
 
   overflow: visible;
 
@@ -919,7 +974,7 @@
 
   height: var(--pd-secondary-card-height);
 
-  padding: 1.25rem 1.5rem;
+  padding: 20px 24px;
 
   overflow: visible;
 
@@ -1021,6 +1076,8 @@
 
   margin: 0;
 
+  margin-left: -10px;
+
 }
 
 
@@ -1045,9 +1102,9 @@
 
 .pd-card--feature .pd-feature__title {
 
-  margin: 0.375rem 0 0;
+  margin: 16px 0 0;
 
-  font-size: 1.1875rem;
+  font-size: 19px;
 
   font-weight: 800;
 
@@ -1061,9 +1118,11 @@
 
 .pd-card--feature .pd-feature__subtitle {
 
-  margin: 0.1875rem 0 0;
+  margin: 3px 0 0;
 
-  font-size: 0.75rem;
+  padding-left: 10px;
+
+  font-size: 12px;
 
   font-weight: 500;
 
@@ -1085,9 +1144,11 @@
 
 .pd-card--feature .pd-feature__details {
 
-  margin-top: 0.625rem;
+  margin-top: 10px;
 
-  gap: 0.375rem;
+  padding-left: 10px;
+
+  gap: 6px;
 
 }
 
@@ -1095,7 +1156,7 @@
 
 .pd-card--feature .pd-feature__body > .pd-feature__cta {
 
-  margin-top: 0.625rem;
+  margin-top: 10px;
 
 }
 
@@ -1103,17 +1164,17 @@
 
 .pd-card--feature .pd-feature__cta {
 
-  height: 2.5rem;
+  height: 40px;
 
-  padding: 0 1rem;
+  padding: 0 16px;
 
-  font-size: 0.8125rem;
+  font-size: 13px;
 
   font-weight: 600;
 
   max-width: 168px;
 
-  min-width: 10rem;
+  min-width: 160px;
 
 }
 
@@ -1270,9 +1331,9 @@
 
   line-height: 1;
 
-  padding: 0 1rem;
+  padding: 0 16px;
 
-  gap: 0.1875rem;
+  gap: 3px;
 
 }
 
@@ -1280,7 +1341,7 @@
 
 .pd-countdown-ring__label span {
 
-  font-size: 0.625rem;
+  font-size: 10px;
 
   font-weight: 700;
 
@@ -1298,9 +1359,9 @@
 
   display: block;
 
-  margin: 0.125rem 0 0;
+  margin: 2px 0 0;
 
-  font-size: 2.125rem;
+  font-size: 34px;
 
   font-weight: 800;
 
@@ -1320,9 +1381,9 @@
 
   display: block;
 
-  margin: 0.125rem 0 0;
+  margin: 2px 0 0;
 
-  font-size: 1.0625rem;
+  font-size: 17px;
 
   font-weight: 800;
 
@@ -1344,9 +1405,9 @@
 
   margin: 0;
 
-  padding: 0 0.375rem;
+  padding: 0 6px;
 
-  font-size: 0.875rem;
+  font-size: 14px;
 
   font-weight: 800;
 
@@ -1368,7 +1429,7 @@
 
   margin: 0;
 
-  font-size: 0.75rem;
+  font-size: 12px;
 
   font-weight: 600;
 
@@ -1388,7 +1449,7 @@
 
   padding: 0;
 
-  font-size: 1.375rem;
+  font-size: 22px;
 
   font-weight: 800;
 
@@ -1424,7 +1485,7 @@
 
   color: rgba(91, 30, 140, 0.65);
 
-  font-size: 0.875rem;
+  font-size: 14px;
 
   font-weight: 600;
 
@@ -1456,7 +1517,7 @@
 
   flex-direction: column;
 
-  gap: 0.375rem;
+  gap: 6px;
 
   flex: 0 0 auto;
 
@@ -1476,13 +1537,13 @@
 
   grid-template-columns: 16px minmax(0, 1fr);
 
-  gap: 0.5rem;
+  gap: 8px;
 
   align-items: start;
 
   width: 100%;
 
-  font-size: 0.8125rem;
+  font-size: 13px;
 
   line-height: 1.4;
 
@@ -1526,7 +1587,7 @@
 
 .pd-feature__body > .pd-feature__cta {
 
-  margin-top: 0.5rem;
+  margin-top: 8px;
 
 }
 
@@ -1542,7 +1603,7 @@
 
   max-width: 168px;
 
-  min-width: 10rem;
+  min-width: 160px;
 
 }
 
@@ -1569,6 +1630,21 @@
   position: relative;
 
   z-index: 2;
+
+}
+
+
+
+.pd-card--appointment .pd-feature__col--countdown,
+.pd-card--event .pd-feature__col--countdown {
+
+  width: var(--pd-countdown-size);
+
+  min-width: var(--pd-countdown-size);
+
+  max-width: var(--pd-countdown-size);
+
+  margin: 0;
 
 }
 
@@ -1648,9 +1724,9 @@
 
   text-align: center;
 
-  gap: 0.25rem;
+  gap: 4px;
 
-  padding: 0 0.875rem;
+  padding: 0 14px;
 
 }
 
@@ -1658,7 +1734,7 @@
 
 .pd-card--feature .pd-countdown-ring__label span {
 
-  font-size: 0.5625rem;
+  font-size: 9px;
 
   font-weight: 700;
 
@@ -1676,7 +1752,7 @@
 
   margin: 0;
 
-  font-size: 2rem;
+  font-size: 32px;
 
   font-weight: 800;
 
@@ -1694,7 +1770,7 @@
 
   margin: 0;
 
-  font-size: 1.0625rem;
+  font-size: 17px;
 
   font-weight: 800;
 
@@ -1712,7 +1788,7 @@
 
 .pd-card--feature .pd-countdown-ring__label small {
 
-  font-size: 0.75rem;
+  font-size: 12px;
 
   font-weight: 600;
 
@@ -1813,9 +1889,9 @@
 
 .pd-feature-empty__headline {
 
-  margin: 0.375rem 0 0;
+  margin: 6px 0 0;
 
-  font-size: 1.0625rem;
+  font-size: 17px;
 
   font-weight: 800;
 
@@ -1831,11 +1907,11 @@
 
 .pd-feature-empty__text {
 
-  margin: 0.5rem 0 0;
+  margin: 8px 0 0;
 
   max-width: 30ch;
 
-  font-size: 0.78125rem;
+  font-size: 12.5px;
 
   font-weight: 500;
 
@@ -1851,7 +1927,7 @@
 
   margin-top: auto;
 
-  padding-top: 0.75rem;
+  padding-top: 12px;
 
 }
 
@@ -1973,11 +2049,11 @@
 
 .pd-feature-error__message {
 
-  margin: 0.625rem 0 0;
+  margin: 10px 0 0;
 
   max-width: 30ch;
 
-  font-size: 0.8125rem;
+  font-size: 13px;
 
   font-weight: 500;
 
@@ -1999,11 +2075,11 @@
 
   justify-content: center;
 
-  gap: 0.5rem;
+  gap: 8px;
 
-  height: 2.75rem;
+  height: 44px;
 
-  padding: 0 1.375rem;
+  padding: 0 22px;
 
   border-radius: 999px;
 
@@ -2013,7 +2089,7 @@
 
   font: inherit;
 
-  font-size: 0.9375rem;
+  font-size: 15px;
 
   font-weight: 700;
 
@@ -2145,7 +2221,7 @@
 
   flex-shrink: 0;
 
-  margin-top: 0.75rem;
+  margin-top: 12px;
 
   position: relative;
 
@@ -2169,7 +2245,7 @@
 
   align-items: center;
 
-  gap: 0.625rem;
+  gap: 10px;
 
 }
 
@@ -2187,7 +2263,7 @@
 
 .pd-notes__add-btn {
 
-  height: 2.625rem;
+  height: 42px;
 
   flex-shrink: 0;
 
@@ -2197,9 +2273,9 @@
 
   justify-content: center;
 
-  gap: 0.25rem;
+  gap: 4px;
 
-  padding: 0 0.75rem;
+  padding: 0 12px;
 
   border: 1px solid rgba(123, 63, 161, 0.22);
 
@@ -2211,7 +2287,7 @@
 
   font: inherit;
 
-  font-size: 0.8125rem;
+  font-size: 13px;
 
   font-weight: 600;
 
@@ -2247,9 +2323,9 @@
 
 .pd-notes__schedule-btn {
 
-  width: 2.625rem;
+  width: 42px;
 
-  height: 2.625rem;
+  height: 42px;
 
   flex-shrink: 0;
 
@@ -2299,9 +2375,9 @@
 
   right: 7px;
 
-  width: 0.4375rem;
+  width: 7px;
 
-  height: 0.4375rem;
+  height: 7px;
 
   border-radius: 50%;
 
@@ -2325,7 +2401,7 @@
 
   place-items: center;
 
-  padding: 1.25rem;
+  padding: 20px;
 
   isolation: isolate;
 
@@ -2359,9 +2435,9 @@
 
   z-index: 1;
 
-  width: min(100%, 23.5rem);
+  width: min(100%, 376px);
 
-  padding: 1.125rem 1.25rem 1rem;
+  padding: 18px 20px 16px;
 
   border-radius: 22px;
 
@@ -2371,7 +2447,7 @@
 
   box-shadow: 0 24px 48px rgba(91, 30, 140, 0.16);
 
-  max-height: calc(100vh - 2.5rem);
+  max-height: calc(100vh - 40px);
 
   overflow-y: auto;
 
@@ -2389,9 +2465,9 @@
 
   justify-content: space-between;
 
-  gap: 0.75rem;
+  gap: 12px;
 
-  margin-bottom: 0.375rem;
+  margin-bottom: 6px;
 
 }
 
@@ -2413,9 +2489,9 @@
 
 .pd-notes-schedule-modal__close {
 
-  width: 2rem;
+  width: 32px;
 
-  height: 2rem;
+  height: 32px;
 
   display: grid;
 
@@ -2437,7 +2513,7 @@
 
 .pd-notes-schedule-modal__hint {
 
-  margin: 0 0 0.625rem;
+  margin: 0 0 10px;
 
   color: var(--pd-muted);
 
@@ -2480,12 +2556,12 @@
   top: auto;
   left: auto;
   right: auto;
-  width: calc(200% + 0.75rem);
+  width: calc(200% + 12px);
   max-width: calc(200% + 12px);
   min-width: 0;
-  height: 14.125rem;
-  margin-top: 0.375rem;
-  padding: 0.5rem 0.625rem;
+  height: 226px;
+  margin-top: 6px;
+  padding: 8px 10px;
   border-radius: 14px;
   box-sizing: border-box;
   overflow: visible;
@@ -2497,84 +2573,84 @@
 /* ── Compact calendar sized to fill the shared 226px card ──────────────── */
 
 .pd-notes__datetime--modal .pd-notes-calendar__nav {
-  margin-bottom: 0.25rem;
+  margin-bottom: 4px;
 }
 
 .pd-notes__datetime--modal .pd-notes-calendar__nav-btn {
-  width: 1.625rem;
-  height: 1.625rem;
+  width: 26px;
+  height: 26px;
   border-radius: 8px;
 }
 
 .pd-notes__datetime--modal .pd-notes-calendar__month {
-  font-size: 0.875rem;
+  font-size: 14px;
 }
 
 .pd-notes__datetime--modal .pd-notes-calendar__weekdays {
-  margin-bottom: 0.25rem;
-  gap: 0.1875rem;
+  margin-bottom: 4px;
+  gap: 3px;
 }
 
 .pd-notes__datetime--modal .pd-notes-calendar__weekdays span {
-  font-size: 0.6875rem;
+  font-size: 11px;
 }
 
 .pd-notes__datetime--modal .pd-notes-calendar__grid {
-  gap: 0.1875rem;
+  gap: 3px;
 }
 
 .pd-notes__datetime--modal .pd-notes-calendar__day {
-  height: 1.5rem;
+  height: 24px;
   min-height: 0;
   aspect-ratio: auto;
   border-radius: 8px;
-  font-size: 0.8125rem;
+  font-size: 13px;
 }
 
 /* ── Time picker: Hour | Minute | AM/PM, prominent centered controls ───── */
 
 .pd-notes__datetime--modal .pd-notes-time__steppers {
-  width: min(16.5rem, 100%);
+  width: min(264px, 100%);
   margin-inline: auto;
-  gap: 0.75rem;
+  gap: 12px;
 }
 
 .pd-notes__datetime--modal .pd-notes-time__stepper,
 .pd-notes__datetime--modal .pd-notes-time__period {
-  gap: 0.375rem;
+  gap: 6px;
 }
 
 .pd-notes__datetime--modal .pd-notes-time__column-label {
-  font-size: 0.6875rem;
+  font-size: 11px;
 }
 
 .pd-notes__datetime--modal .pd-notes-time__step-btn {
-  width: 2.5rem;
-  height: 1.875rem;
+  width: 40px;
+  height: 30px;
   border-radius: 10px;
 }
 
 .pd-notes__datetime--modal .pd-notes-time__step-value {
-  min-width: 3.5rem;
-  min-height: 3.25rem;
+  min-width: 56px;
+  min-height: 52px;
   border-radius: 12px;
-  font-size: 1.125rem;
+  font-size: 18px;
 }
 
 .pd-notes__datetime--modal input.pd-notes-time__step-value {
-  width: 3.5rem;
+  width: 56px;
 }
 
 .pd-notes__datetime--modal .pd-notes-time__period-spacer {
-  width: 2.5rem;
-  height: 1.875rem;
+  width: 40px;
+  height: 30px;
 }
 
 .pd-notes__datetime--modal .pd-notes-time__period-btn {
-  min-height: 3.25rem;
-  padding: 0 0.5rem;
+  min-height: 52px;
+  padding: 0 8px;
   border-radius: 10px;
-  font-size: 0.8125rem;
+  font-size: 13px;
 }
 
 /* The picker content is English; render it left-to-right even though the
@@ -2602,9 +2678,9 @@
 
 .pd-notes-schedule-modal__summary {
 
-  margin: 0.625rem 0 0;
+  margin: 10px 0 0;
 
-  padding: 0.625rem 0.75rem;
+  padding: 10px 12px;
 
   border-radius: 12px;
 
@@ -2632,9 +2708,9 @@
 
   width: 100%;
 
-  margin-top: 0.75rem;
+  margin-top: 12px;
 
-  min-height: 2.625rem;
+  min-height: 42px;
 
   border: 0;
 
@@ -2662,9 +2738,9 @@
 
   grid-template-columns: 1fr 1fr;
 
-  gap: 0.75rem;
+  gap: 12px;
 
-  margin-top: 0.625rem;
+  margin-top: 10px;
 
 }
 
@@ -2684,9 +2760,9 @@
 
   width: 100%;
 
-  min-height: 2.375rem;
+  min-height: 38px;
 
-  padding: 0 0.625rem 0 0.75rem;
+  padding: 0 10px 0 12px;
 
   display: flex;
 
@@ -2694,7 +2770,7 @@
 
   justify-content: space-between;
 
-  gap: 0.5rem;
+  gap: 8px;
 
   border: 1px solid rgba(236, 22, 140, 0.18);
 
@@ -2706,7 +2782,7 @@
 
   font: inherit;
 
-  font-size: 0.8125rem;
+  font-size: 13px;
 
   font-weight: 600;
 
@@ -2810,9 +2886,9 @@
 
   margin: 0;
 
-  padding: 0.375rem;
+  padding: 6px;
 
-  max-height: 10.5rem;
+  max-height: 168px;
 
   overflow-y: auto;
 
@@ -2836,7 +2912,7 @@
 
   width: 100%;
 
-  padding: 0.5rem 0.625rem;
+  padding: 8px 10px;
 
   border: none;
 
@@ -2848,7 +2924,7 @@
 
   font: inherit;
 
-  font-size: 0.8125rem;
+  font-size: 13px;
 
   font-weight: 600;
 
@@ -2884,7 +2960,7 @@
 
 .pd-notes-picker__menu::-webkit-scrollbar {
 
-  width: 0.375rem;
+  width: 6px;
 
 }
 
@@ -2902,7 +2978,7 @@
 
 .pd-notes-picker__menu--time {
 
-  max-height: 13.75rem;
+  max-height: 220px;
 
 }
 
@@ -2920,9 +2996,9 @@
 
   z-index: 24;
 
-  width: min(15rem, calc(100vw - 3rem));
+  width: min(240px, calc(100vw - 48px));
 
-  padding: 0.75rem;
+  padding: 12px;
 
   border-radius: 16px;
 
@@ -2946,7 +3022,7 @@
 
   grid-template-columns: 1fr 1fr 1fr;
 
-  gap: 0.5rem;
+  gap: 8px;
 
   align-items: start;
 
@@ -2963,7 +3039,7 @@
 
   align-items: center;
 
-  gap: 0.375rem;
+  gap: 6px;
 
 }
 
@@ -2973,7 +3049,7 @@
 
   display: block;
 
-  font-size: 0.625rem;
+  font-size: 10px;
 
   font-weight: 700;
 
@@ -2991,9 +3067,9 @@
 
 .pd-notes-time__step-btn {
 
-  width: 2.125rem;
+  width: 34px;
 
-  height: 1.75rem;
+  height: 28px;
 
   display: inline-flex;
 
@@ -3049,9 +3125,9 @@
 
 .pd-notes-time__step-value {
 
-  min-width: 2.75rem;
+  min-width: 44px;
 
-  min-height: 2.25rem;
+  min-height: 36px;
 
   display: inline-flex;
 
@@ -3067,7 +3143,7 @@
 
   color: var(--pd-purple-deep);
 
-  font-size: 1rem;
+  font-size: 16px;
 
   font-weight: 700;
 
@@ -3079,7 +3155,7 @@
 
 input.pd-notes-time__step-value {
 
-  width: 2.75rem;
+  width: 44px;
 
   padding: 0;
 
@@ -3126,7 +3202,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   flex-direction: row;
 
-  gap: 0.25rem;
+  gap: 4px;
 
   width: 100%;
 
@@ -3136,9 +3212,9 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
 .pd-notes-time__period-spacer {
 
-  width: 2.125rem;
+  width: 34px;
 
-  height: 1.75rem;
+  height: 28px;
 
   flex-shrink: 0;
 
@@ -3150,9 +3226,9 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   flex: 1;
 
-  min-height: 2.25rem;
+  min-height: 36px;
 
-  padding: 0 0.625rem;
+  padding: 0 10px;
 
   border: 1px solid rgba(236, 22, 140, 0.16);
 
@@ -3164,7 +3240,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   font: inherit;
 
-  font-size: 0.75rem;
+  font-size: 12px;
 
   font-weight: 700;
 
@@ -3230,9 +3306,9 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   z-index: 24;
 
-  min-width: 16.75rem;
+  min-width: 268px;
 
-  padding: 0.75rem;
+  padding: 12px;
 
   border-radius: 16px;
 
@@ -3258,9 +3334,9 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   justify-content: space-between;
 
-  gap: 0.5rem;
+  gap: 8px;
 
-  margin-bottom: 0.625rem;
+  margin-bottom: 10px;
 
 }
 
@@ -3268,9 +3344,9 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
 .pd-notes-calendar__nav-btn {
 
-  width: 1.875rem;
+  width: 30px;
 
-  height: 1.875rem;
+  height: 30px;
 
   display: inline-flex;
 
@@ -3324,7 +3400,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
 .pd-notes-calendar__month {
 
-  font-size: 0.875rem;
+  font-size: 14px;
 
   font-weight: 700;
 
@@ -3342,9 +3418,9 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   grid-template-columns: repeat(7, 1fr);
 
-  gap: 0.125rem;
+  gap: 2px;
 
-  margin-bottom: 0.375rem;
+  margin-bottom: 6px;
 
 }
 
@@ -3354,7 +3430,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   text-align: center;
 
-  font-size: 0.6875rem;
+  font-size: 11px;
 
   font-weight: 700;
 
@@ -3374,7 +3450,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   grid-template-columns: repeat(7, 1fr);
 
-  gap: 0.125rem;
+  gap: 2px;
 
 }
 
@@ -3386,7 +3462,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   aspect-ratio: 1;
 
-  min-height: 2rem;
+  min-height: 32px;
 
   border: none;
 
@@ -3398,7 +3474,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   font: inherit;
 
-  font-size: 0.8125rem;
+  font-size: 13px;
 
   font-weight: 600;
 
@@ -3480,9 +3556,9 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   width: 100%;
 
-  min-height: 2.75rem;
+  min-height: 44px;
 
-  padding: 0 0.875rem;
+  padding: 0 14px;
 
   border: 1px solid rgba(247, 214, 234, 0.6);
 
@@ -3494,7 +3570,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   font: inherit;
 
-  font-size: 0.9375rem;
+  font-size: 15px;
 
 }
 
@@ -3512,9 +3588,9 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
 .pd-notes__hint {
 
-  margin: 0.375rem 0 0;
+  margin: 6px 0 0;
 
-  font-size: 0.75rem;
+  font-size: 12px;
 
   line-height: 1.4;
 
@@ -3538,13 +3614,13 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   list-style: none;
 
-  margin: 0.875rem 0 0;
+  margin: 14px 0 0;
 
   padding: 0;
 
   display: grid;
 
-  gap: 0.625rem;
+  gap: 10px;
 
   flex: 1;
 
@@ -3562,11 +3638,11 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   grid-template-columns: auto minmax(0, 1fr);
 
-  gap: 0.625rem;
+  gap: 10px;
 
   align-items: start;
 
-  padding: 0.625rem 0.75rem;
+  padding: 10px 12px;
 
   border-radius: 14px;
 
@@ -3590,9 +3666,9 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
 .pd-notes__check {
 
-  width: 1.375rem;
+  width: 22px;
 
-  height: 1.375rem;
+  height: 22px;
 
   display: grid;
 
@@ -3626,7 +3702,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   display: block;
 
-  font-size: 0.875rem;
+  font-size: 14px;
 
   font-weight: 600;
 
@@ -3642,11 +3718,11 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   display: block;
 
-  margin-top: 0.125rem;
+  margin-top: 2px;
 
   color: var(--pd-muted);
 
-  font-size: 0.71875rem;
+  font-size: 11.5px;
 
   font-weight: 600;
 
@@ -3662,17 +3738,17 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   justify-content: space-between;
 
-  gap: 0.75rem;
+  gap: 12px;
 
   margin-top: auto;
 
-  padding-top: 0.75rem;
+  padding-top: 12px;
 
   flex-shrink: 0;
 
   color: var(--pd-purple-deep);
 
-  font-size: 0.8125rem;
+  font-size: 13px;
 
   font-weight: 700;
 
@@ -3686,7 +3762,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   align-items: center;
 
-  gap: 0.5rem;
+  gap: 8px;
 
 }
 
@@ -3694,11 +3770,11 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
 .pd-toggle {
 
-  width: 3rem;
+  width: 48px;
 
-  height: 1.75rem;
+  height: 28px;
 
-  padding: 0.1875rem;
+  padding: 3px;
 
   border: none;
 
@@ -3716,9 +3792,9 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   display: block;
 
-  width: 1.375rem;
+  width: 22px;
 
-  height: 1.375rem;
+  height: 22px;
 
   border-radius: 50%;
 
@@ -3756,9 +3832,9 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   grid-template-columns: minmax(0, 1fr) 116px;
 
-  gap: 1rem;
+  gap: 16px;
 
-  margin-top: 0.75rem;
+  margin-top: 12px;
 
   margin-bottom: 0;
 
@@ -3780,7 +3856,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   justify-content: center;
 
-  gap: 0.5rem;
+  gap: 8px;
 
   min-width: 0;
 
@@ -3798,11 +3874,11 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   justify-content: space-between;
 
-  gap: 0.75rem;
+  gap: 12px;
 
   margin-top: auto;
 
-  padding-top: 0.875rem;
+  padding-top: 14px;
 
   flex-shrink: 0;
 
@@ -3812,15 +3888,15 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
 .pd-community__cta {
 
-  height: 2.5rem;
+  height: 40px;
 
-  min-width: 10rem;
+  min-width: 160px;
 
   max-width: 168px;
 
-  padding: 0 0.875rem;
+  padding: 0 14px;
 
-  font-size: 0.8125rem;
+  font-size: 13px;
 
   font-weight: 600;
 
@@ -3834,7 +3910,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
 .pd-community__cta .pd-btn__arrow {
 
-  margin-left: 0.125rem;
+  margin-left: 2px;
 
 }
 
@@ -3846,9 +3922,9 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   align-items: center;
 
-  gap: 0.625rem;
+  gap: 10px;
 
-  margin-bottom: 0.375rem;
+  margin-bottom: 6px;
 
   flex-shrink: 0;
 
@@ -3858,9 +3934,9 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
 .pd-community__avatar {
 
-  width: 2.25rem;
+  width: 36px;
 
-  height: 2.25rem;
+  height: 36px;
 
   display: grid;
 
@@ -3872,7 +3948,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   color: var(--pd-purple);
 
-  font-size: 0.75rem;
+  font-size: 12px;
 
   font-weight: 800;
 
@@ -3884,7 +3960,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   display: block;
 
-  font-size: 0.9375rem;
+  font-size: 15px;
 
   color: var(--pd-title);
 
@@ -3896,11 +3972,11 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   display: block;
 
-  margin-top: 0.125rem;
+  margin-top: 2px;
 
   color: var(--pd-muted);
 
-  font-size: 0.8125rem;
+  font-size: 13px;
 
   font-weight: 500;
 
@@ -3914,7 +3990,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   color: rgba(36, 16, 63, 0.78);
 
-  font-size: 0.875rem;
+  font-size: 14px;
 
   line-height: 1.6;
 
@@ -3938,7 +4014,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   align-items: center;
 
-  gap: 0.625rem 1rem;
+  gap: 10px 16px;
 
   flex: 1;
 
@@ -3954,7 +4030,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   align-items: center;
 
-  gap: 0.4375rem;
+  gap: 7px;
 
 }
 
@@ -3972,7 +4048,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
 .pd-community__stat-text {
 
-  font-size: 0.8125rem;
+  font-size: 13px;
 
   font-weight: 600;
 
@@ -3986,13 +4062,13 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
 .pd-community__stat-text strong {
 
-  font-size: 0.875rem;
+  font-size: 14px;
 
   font-weight: 800;
 
   color: var(--pd-title);
 
-  margin-right: 0.1875rem;
+  margin-right: 3px;
 
 }
 
@@ -4006,9 +4082,9 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   overflow: hidden;
 
-  width: 7.25rem;
+  width: 116px;
 
-  height: 7.25rem;
+  height: 116px;
 
   flex-shrink: 0;
 
@@ -4054,9 +4130,9 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   justify-content: center;
 
-  width: 1.875rem;
+  width: 30px;
 
-  height: 1.875rem;
+  height: 30px;
 
   border-radius: 999px;
 
@@ -4082,9 +4158,9 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
 .pd-community__loading {
 
-  margin: 0.75rem 0 0;
+  margin: 12px 0 0;
 
-  font-size: 0.875rem;
+  font-size: 14px;
 
   color: #8a7a9c;
 
@@ -4100,9 +4176,9 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   align-items: flex-start;
 
-  gap: 0.75rem;
+  gap: 12px;
 
-  margin-top: 0.5rem;
+  margin-top: 8px;
 
 }
 
@@ -4112,7 +4188,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   margin: 0;
 
-  font-size: 1.125rem;
+  font-size: 18px;
 
   font-weight: 700;
 
@@ -4126,7 +4202,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   margin: 0;
 
-  font-size: 0.875rem;
+  font-size: 14px;
 
   line-height: 1.5;
 
@@ -4138,7 +4214,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
 .pd-card--community-empty .pd-community-empty {
 
-  min-height: 7.5rem;
+  min-height: 120px;
 
 }
 
@@ -4183,7 +4259,16 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
     grid-template-columns: minmax(0, 1fr) min-content;
 
-    column-gap: 0.75rem;
+    column-gap: 12px;
+
+  }
+
+
+
+  .pd-card--appointment > .pd-card__surface.pd-feature__layout:not(.pd-feature__layout--empty),
+  .pd-card--event > .pd-card__surface.pd-feature__layout:not(.pd-feature__layout--empty) {
+
+    grid-template-columns: minmax(0, 1fr) var(--pd-countdown-size);
 
   }
 
@@ -4204,7 +4289,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   .pd-home {
 
-    padding-top: 0.75rem;
+    padding-top: 12px;
 
   }
 
@@ -4212,11 +4297,11 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   .pd-home__hero {
 
-    height: 13.75rem;
+    height: 220px;
 
-    min-height: 13.75rem;
+    min-height: 220px;
 
-    max-height: 13.75rem;
+    max-height: 220px;
 
   }
 
@@ -4224,7 +4309,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   .pd-home__hero-content {
 
-    padding: 1.5rem;
+    padding: 24px;
 
   }
 
@@ -4234,7 +4319,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
   .pd-card--notes,
   .pd-card--community {
 
-    padding: 1.5rem;
+    padding: 24px;
 
   }
 
@@ -4244,7 +4329,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
     grid-template-columns: 1fr;
 
-    gap: 1rem;
+    gap: 16px;
 
     align-items: start;
 
@@ -4270,7 +4355,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   .pd-card--feature .pd-feature__title {
 
-    font-size: 1.25rem;
+    font-size: 20px;
 
   }
 
@@ -4280,7 +4365,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
     grid-template-columns: 1fr;
 
-    gap: 0.75rem;
+    gap: 12px;
 
   }
 
@@ -4290,9 +4375,9 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
     flex-wrap: wrap;
 
-    gap: 0.625rem;
+    gap: 10px;
 
-    margin-top: 0.5rem;
+    margin-top: 8px;
 
   }
 
@@ -4300,9 +4385,9 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
   .pd-community__thumb {
 
-    width: 7.5rem;
+    width: 120px;
 
-    height: 7.5rem;
+    height: 120px;
 
     justify-self: end;
 

@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import {
   ArrowRight,
   CalendarDays,
+  CalendarHeart,
   CalendarSync,
   Check,
   ChevronLeft,
@@ -395,11 +396,11 @@ function CardDecor({ variant }) {
   );
 }
 
-function CardHeading({ icon: Icon, label, accent = 'purple' }) {
+function CardHeading({ icon: Icon, label, accent = 'purple', iconProps }) {
   return (
     <div className={`pd-card__heading pd-card__heading--${accent}`}>
       <span className="pd-card__heading-badge" aria-hidden="true">
-        <Icon size={20} strokeWidth={2.1} />
+        <Icon size={20} strokeWidth={2.1} {...iconProps} />
       </span>
       <span className="pd-card__heading-label">{label}</span>
     </div>
@@ -449,7 +450,12 @@ function AppointmentCard({ appointment, onView }) {
       <CardDecor variant="appointment" />
       <div className="pd-card__surface pd-feature__layout">
         <div className="pd-feature__body">
-          <CardHeading icon={CalendarDays} label="Next Appointment" accent="purple" />
+          <CardHeading
+            icon={CalendarHeart}
+            label="Next Appointment"
+            accent="purple"
+            iconProps={{ strokeWidth: 1.75, absoluteStrokeWidth: true }}
+          />
           <h3 className="pd-feature__title">{appointment.title}</h3>
           <p className="pd-feature__subtitle">{appointment.therapistName}</p>
 
@@ -569,7 +575,12 @@ function AppointmentEmptyCard({ onBook }) {
       <EmptyStatePattern variant="appointment" />
       <div className="pd-card__surface pd-feature__layout pd-feature__layout--empty">
         <div className="pd-feature__body pd-feature-empty__body">
-          <CardHeading icon={CalendarDays} label="Next Appointment" accent="purple" />
+          <CardHeading
+            icon={CalendarHeart}
+            label="Next Appointment"
+            accent="purple"
+            iconProps={{ strokeWidth: 1.75, absoluteStrokeWidth: true }}
+          />
           <h3 className="pd-feature-empty__headline">No upcoming appointments</h3>
           <p className="pd-feature-empty__text">
             Take the next step in your wellness journey and book a session with one of our therapists.
@@ -580,7 +591,7 @@ function AppointmentEmptyCard({ onBook }) {
         </div>
 
         <div className="pd-feature__col pd-feature__col--badge">
-          <EmptyStateIconBadge variant="appointment" icon={CalendarDays} />
+          <EmptyStateIconBadge variant="appointment" icon={CalendarHeart} />
         </div>
       </div>
     </article>
@@ -625,7 +636,12 @@ function FeatureCardErrorState({ variant, headingIcon: HeadingIcon, headingLabel
       <EmptyStatePattern variant={badgeVariant} />
       <div className="pd-card__surface pd-feature__layout pd-feature__layout--empty">
         <div className="pd-feature__body pd-feature-empty__body">
-          <CardHeading icon={HeadingIcon} label={headingLabel} accent={headingAccent} />
+          <CardHeading
+            icon={HeadingIcon}
+            label={headingLabel}
+            accent={headingAccent}
+            iconProps={variant === 'appointment' ? { strokeWidth: 1.75, absoluteStrokeWidth: true } : undefined}
+          />
           <p className="pd-feature-error__message" role="status">
             We couldn&apos;t load this right now.
           </p>
@@ -1691,7 +1707,7 @@ export default function ParticipantDashboardHome({
         ) : appointmentError ? (
           <FeatureCardErrorState
             variant="appointment"
-            headingIcon={CalendarDays}
+            headingIcon={CalendarHeart}
             headingLabel="Next Appointment"
             headingAccent="purple"
           />
