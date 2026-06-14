@@ -45,6 +45,30 @@
   max-height: none;
 }
 
+.pd-home__header-copy .pd-home__inspiration {
+  display: block;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  max-width: 42rem;
+  font-family: 'Nunito', 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-size: 0.92rem;
+  font-weight: 400;
+  font-style: italic;
+  line-height: 1.55;
+  letter-spacing: 0.01em;
+  color: rgba(91, 30, 140, 0.58);
+}
+
+.pd-home__header-copy .pd-home__inspiration-author {
+  font-style: normal;
+  font-weight: 500;
+  color: rgba(138, 45, 168, 0.62);
+}
+
+.pd-home__header-copy .pd-home__inspiration + .public-section-heading__divider--title {
+  margin-top: 0.75rem;
+}
+
 .pd-home__header-copy .public-section-heading__divider--title {
   width: min(100%, 23.75rem);
   gap: 1rem;
@@ -157,6 +181,14 @@
 
 .participant-home--dark .pd-home__header-copy h1 {
   color: #f8fafc;
+}
+
+.participant-home--dark .pd-home__header-copy .pd-home__inspiration {
+  color: rgba(232, 180, 220, 0.72);
+}
+
+.participant-home--dark .pd-home__header-copy .pd-home__inspiration-author {
+  color: rgba(232, 180, 220, 0.58);
 }
 
 .participant-home--dark .pd-header-icon-btn,

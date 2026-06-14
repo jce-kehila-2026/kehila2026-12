@@ -32,6 +32,7 @@ import CommunityPage from './community/CommunityPage';
 import WorkshopFeed from './WorkshopFeed';
 import { useAdmin } from '../admin/context/AdminContext';
 import ParticipantDashboardHome from './home/ParticipantDashboardHome';
+import useDailyMotivation from './home/useDailyMotivation';
 import ParticipantSidebarProfile from './components/ParticipantSidebarProfile';
 import ParticipantHeader from './components/ParticipantHeader';
 import NotificationsDropdown from './NotificationsDropdown';
@@ -79,6 +80,7 @@ export default function ParticipantHome({ initialView = 'home' }) {
   const [participantProfile, setParticipantProfile] = useState(null);
   const [loadingParticipantProfile, setLoadingParticipantProfile] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(getStoredSidebarCollapsed);
+  const { quote: dailyQuote } = useDailyMotivation();
 
   // ── Notifications ────────────────────────────────────────────────────────
   // The bell shows a unified feed: admin announcements + auto-generated
@@ -130,6 +132,11 @@ export default function ParticipantHome({ initialView = 'home' }) {
     setNotifOpen(true);
     loadNotifications();
   }, [notifOpen, loadNotifications]);
+
+  const handleOpenNotifications = useCallback(() => {
+    setNotifOpen(true);
+    loadNotifications();
+  }, [loadNotifications]);
 
   const handleMarkAllRead = useCallback(async () => {
     if (!currentUser) return;
@@ -371,6 +378,7 @@ export default function ParticipantHome({ initialView = 'home' }) {
             locale={locale}
             onLocaleChange={handleLocaleChange}
             notificationsBell={notificationsBell}
+            dailyQuote={activeView === 'home' ? dailyQuote : null}
             className={activeView === 'community' ? 'participant-header-sticky' : ''}
           />
 
@@ -381,6 +389,8 @@ export default function ParticipantHome({ initialView = 'home' }) {
               birthDate={participantProfile?.birthDate || participantProfile?.birthday || ''}
               onNavigateToView={navigateParticipantView}
               onViewCommunity={handleViewCommunity}
+              latestNotification={notifications?.[0] ?? null}
+              onOpenNotifications={handleOpenNotifications}
             />
           )}
 

@@ -64,11 +64,10 @@
   display: flex;
   flex-direction: column;
   gap: 28px;
-  border-right: 1px solid rgba(123, 63, 161, 0.1);
-  background: rgba(255, 255, 255, 0.84);
-  box-shadow: 14px 0 44px rgba(75, 19, 107, 0.07);
+  border-right: 1px solid rgba(219, 79, 159, 0.1);
+  background: #fffafb;
+  box-shadow: 4px 0 24px rgba(109, 40, 217, 0.04);
   padding: 28px 20px;
-  backdrop-filter: blur(18px);
   overflow: hidden;
   transition:
     width 300ms cubic-bezier(0.4, 0, 0.2, 1),
@@ -108,7 +107,7 @@
   gap: 10px;
   width: 100%;
   padding: 4px 2px 10px;
-  border-bottom: 1px solid rgba(123, 63, 161, 0.1);
+  border-bottom: 1px solid rgba(219, 79, 159, 0.1);
   margin-bottom: 4px;
   flex-shrink: 0;
 }
@@ -139,13 +138,13 @@
   display: grid;
   place-items: center;
   flex-shrink: 0;
-  border: 1px solid rgba(236, 72, 153, 0.28);
+  border: 1px solid rgba(219, 79, 159, 0.22);
   border-radius: 50%;
-  background: #ffffff;
+  background: #fffafb;
   color: #8a2da8;
   cursor: pointer;
   padding: 0;
-  box-shadow: 0 2px 10px rgba(91, 30, 140, 0.08);
+  box-shadow: 0 2px 8px rgba(219, 79, 159, 0.08);
   transition:
     transform 220ms ease,
     box-shadow 220ms ease,
@@ -155,10 +154,10 @@
 }
 
 .participant-sidebar-collapse-btn:hover {
-  border-color: rgba(236, 72, 153, 0.48);
+  border-color: rgba(219, 79, 159, 0.38);
   color: #5b1e8c;
-  background: #fff9fd;
-  box-shadow: 0 4px 14px rgba(236, 72, 153, 0.14);
+  background: #fdf2f8;
+  box-shadow: 0 4px 12px rgba(219, 79, 159, 0.12);
   transform: translateY(-1px);
 }
 
@@ -195,14 +194,14 @@
 .participant-sidebar-profile__avatar--loading {
   display: grid;
   place-items: center;
-  background: linear-gradient(145deg, #f8f2ff 0%, #ebe0ff 100%);
+  background: #fce8f2;
   color: #5b1e8c;
   font-size: 0.95rem;
   font-weight: 800;
 }
 
 .participant-sidebar-profile__avatar--loading {
-  background: linear-gradient(145deg, rgba(248, 242, 255, 0.8), rgba(235, 224, 255, 0.8));
+  background: rgba(252, 232, 242, 0.85);
   animation: participant-profile-pulse 1.2s ease-in-out infinite;
 }
 
@@ -308,30 +307,50 @@
   gap: 12px;
   width: 100%;
   min-height: 46px;
-  border: 0;
-  border-radius: 14px;
+  border: 1px solid transparent;
+  border-radius: 18px;
   background: transparent;
-  color: rgba(45, 23, 72, 0.7);
+  color: #8c77a8;
   cursor: pointer;
   font: inherit;
   font-size: 0.9rem;
   font-weight: 600;
   padding: 0 14px;
   text-align: left;
-  transition: transform 180ms ease, background 180ms ease, color 180ms ease, box-shadow 180ms ease;
+  transition:
+    background 200ms ease,
+    color 200ms ease,
+    box-shadow 200ms ease,
+    border-color 200ms ease;
 }
 
-.participant-nav button:hover,
+.participant-nav button:hover {
+  background: #fff5f9;
+  color: #ec168c;
+  box-shadow: 0 4px 14px rgba(236, 22, 140, 0.06);
+}
+
+.participant-nav button:hover svg {
+  color: #ec168c;
+}
+
 .participant-logout:hover {
-  background: rgba(244, 240, 250, 0.9);
-  color: #4b136b;
-  transform: translateX(2px);
+  background: #fff5f9;
+  color: #8c77a8;
+  box-shadow: 0 4px 14px rgba(236, 22, 140, 0.06);
 }
 
 .participant-nav button.is-active {
-  background: linear-gradient(135deg, #4b136b, #6c2f8f);
-  color: #fff;
-  box-shadow: 0 14px 28px rgba(75, 19, 107, 0.22);
+  background: #fff4f8;
+  border: 1px solid #f9d7e7;
+  border-radius: 20px;
+  color: #ec168c;
+  font-weight: 700;
+  box-shadow: none;
+}
+
+.participant-nav button.is-active svg {
+  color: #ec168c;
 }
 
 .participant-nav button small {
@@ -341,7 +360,7 @@
   min-width: 22px;
   height: 22px;
   border-radius: 999px;
-  background: #ec168c;
+  background: #db4f9f;
   color: #fff;
   font-size: 0.72rem;
   font-weight: 700;
@@ -404,8 +423,12 @@
 }
 
 .participant-main--dashboard-home > .pd-home__header {
-  margin: 16px 0 20px 4px;
+  margin: 16px 0 12px 4px;
   padding: 0 4px 8px;
+}
+
+.participant-main--dashboard-home > .participant-home__main {
+  min-width: 0;
 }
 
 .participant-main--calendar {
@@ -459,7 +482,7 @@
 .participant-home--events .participant-nav button,
 .participant-home--events .participant-logout {
   min-height: 40px;
-  border-radius: 12px;
+  border-radius: 18px;
 }
 
 .participant-main--events .pd-home__header {
@@ -1531,6 +1554,35 @@
 .participant-home--dark .participant-nav button,
 .participant-home--dark .participant-logout {
   color: #94a3b8;
+}
+
+.participant-home--dark .participant-nav button:hover {
+  background: rgba(255, 245, 249, 0.06);
+  color: #ec168c;
+  box-shadow: 0 4px 14px rgba(236, 22, 140, 0.08);
+}
+
+.participant-home--dark .participant-nav button:hover svg {
+  color: #ec168c;
+}
+
+.participant-home--dark .participant-logout:hover {
+  background: rgba(255, 245, 249, 0.06);
+  color: #94a3b8;
+  box-shadow: 0 4px 14px rgba(236, 22, 140, 0.08);
+}
+
+.participant-home--dark .participant-nav button.is-active {
+  background: rgba(255, 244, 248, 0.1);
+  border: 1px solid rgba(249, 215, 231, 0.28);
+  border-radius: 20px;
+  color: #ec168c;
+  font-weight: 700;
+  box-shadow: none;
+}
+
+.participant-home--dark .participant-nav button.is-active svg {
+  color: #ec168c;
 }
 
 .participant-home--dark .participant-sidebar-collapse-btn {

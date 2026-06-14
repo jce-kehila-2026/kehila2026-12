@@ -9,7 +9,6 @@ import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/material.css";
 import {
   Box,
-  Button,
   Card,
   CardContent,
   FormHelperText,
@@ -282,24 +281,29 @@ function PersonalDetailsForm({
   const fieldBorderColor = embedded
     ? darkMode
       ? PROFILE_DARK_FIELD.border
-      : "rgba(91, 30, 140, 0.12)"
+      : "rgba(219, 79, 159, 0.14)"
     : darkMode
       ? PROFILE_DARK_FIELD.border
       : "rgba(181, 123, 232, 0.22)";
   const fieldBorderHover = embedded
     ? darkMode
       ? PROFILE_DARK_FIELD.borderHover
-      : "rgba(91, 30, 140, 0.28)"
+      : "rgba(219, 79, 159, 0.24)"
     : darkMode
       ? PROFILE_DARK_FIELD.borderHover
       : "rgba(181, 123, 232, 0.45)";
-  const fieldBg = darkMode ? PROFILE_DARK_FIELD.bg : "#ffffff";
+  const fieldBg = darkMode ? PROFILE_DARK_FIELD.bg : embedded ? "#fffafb" : "#ffffff";
   const fieldTextColor = darkMode ? "#f8fafc" : WELLNESS.text;
   const fieldDisabledTextColor = darkMode ? "#cbd5e1" : undefined;
-  const iconColor = darkMode ? WELLNESS_DARK.primary : WELLNESS.primary;
+  const iconColor = darkMode ? WELLNESS_DARK.primary : embedded ? "#db4f9f" : WELLNESS.primary;
   const errorBorderColor = "#ef4444";
-  const focusBorderColor = iconColor;
-  const focusRingShadow = darkMode ? WELLNESS_DARK.focusRing : WELLNESS.focusRing;
+  const focusBorderColor = embedded && !darkMode ? "#db4f9f" : iconColor;
+  const focusRingShadow =
+    embedded && !darkMode
+      ? "0 0 0 3px rgba(219, 79, 159, 0.18)"
+      : darkMode
+        ? WELLNESS_DARK.focusRing
+        : WELLNESS.focusRing;
   const fieldTransition = "box-shadow 0.2s ease, border-color 0.2s ease";
 
   const fieldSx = useMemo(() => {
@@ -608,16 +612,21 @@ function PersonalDetailsForm({
       "& .react-tel-input .country-list .country:hover": {
         backgroundColor: darkMode
           ? "rgba(196, 165, 245, 0.12) !important"
-          : "rgba(181, 123, 232, 0.1) !important",
+          : embedded
+            ? "rgba(219, 79, 159, 0.08) !important"
+            : "rgba(181, 123, 232, 0.1) !important",
       },
       "& .react-tel-input .country-list .country.highlight": {
         backgroundColor: darkMode
           ? "rgba(196, 165, 245, 0.2) !important"
-          : "rgba(181, 123, 232, 0.16) !important",
+          : embedded
+            ? "rgba(219, 79, 159, 0.12) !important"
+            : "rgba(181, 123, 232, 0.16) !important",
       },
     }),
     [
       darkMode,
+      embedded,
       fieldBg,
       fieldBorderColor,
       fieldBorderHover,
@@ -637,7 +646,9 @@ function PersonalDetailsForm({
       "&:hover": {
         backgroundColor: darkMode
           ? "rgba(196, 165, 245, 0.12)"
-          : "rgba(181, 123, 232, 0.1)",
+          : embedded
+            ? "rgba(219, 79, 159, 0.08)"
+            : "rgba(181, 123, 232, 0.1)",
         color: iconColor,
       },
       "&.Mui-focused": {
@@ -648,7 +659,7 @@ function PersonalDetailsForm({
         opacity: 1,
       },
     }),
-    [darkMode, fieldDisabledTextColor, iconColor]
+    [darkMode, embedded, fieldDisabledTextColor, iconColor]
   );
 
   const labelMuted = darkMode ? WELLNESS_DARK.muted : WELLNESS.muted;
@@ -667,8 +678,8 @@ function PersonalDetailsForm({
 
   const menuPaperSx = useMemo(
     () => ({
-      direction: locale === "he" ? "rtl" : "ltr",
-      textAlign: locale === "he" ? "right" : "left",
+      direction: "ltr",
+      textAlign: "left",
       ...(darkMode
         ? {
             bgcolor: "#1e293b",
@@ -676,7 +687,14 @@ function PersonalDetailsForm({
             border: "1px solid rgba(196, 165, 245, 0.25)",
             borderRadius: "14px",
             boxShadow: WELLNESS_DARK.shadowCard,
-            "& .MuiMenuItem-root": { color: "#e2e8f0" },
+            "& .MuiMenuItem-root": {
+              color: "#e2e8f0",
+              justifyContent: "flex-start",
+              textAlign: "left",
+              direction: "ltr",
+              paddingLeft: "16px",
+              paddingRight: "16px",
+            },
             "& .MuiMenuItem-root:hover": {
               backgroundColor: "rgba(196, 165, 245, 0.12)",
             },
@@ -694,6 +712,11 @@ function PersonalDetailsForm({
             "& .MuiMenuItem-root": {
               color: WELLNESS.text,
               fontSize: 16,
+              justifyContent: "flex-start",
+              textAlign: "left",
+              direction: "ltr",
+              paddingLeft: "16px",
+              paddingRight: "16px",
             },
             "& .MuiMenuItem-root:hover": {
               backgroundColor: "rgba(181, 123, 232, 0.08)",
@@ -706,7 +729,32 @@ function PersonalDetailsForm({
             },
           }),
     }),
-    [locale, darkMode]
+    [darkMode]
+  );
+
+  const contactSelectSx = useMemo(
+    () => ({
+      ...fieldSx,
+      direction: "ltr",
+      unicodeBidi: "isolate",
+      "& .MuiOutlinedInput-root": {
+        ...fieldSx["& .MuiOutlinedInput-root"],
+        direction: "ltr",
+        "& .MuiSelect-icon": {
+          ...fieldSx["& .MuiOutlinedInput-root"]["& .MuiSelect-icon"],
+          right: 12,
+          left: "auto !important",
+        },
+      },
+      "& .MuiOutlinedInput-input, & .MuiSelect-select": {
+        ...fieldSx["& .MuiOutlinedInput-input, & .MuiSelect-select"],
+        textAlign: "left",
+        direction: "ltr",
+        paddingLeft: embedded ? "16px" : "18px",
+        paddingRight: "36px !important",
+      },
+    }),
+    [embedded, fieldSx]
   );
 
   const FieldLabel = ({ children }) => (
@@ -896,26 +944,60 @@ function PersonalDetailsForm({
           <TextField
             fullWidth
             select
+            className="profile-settings-form__contact-select"
             name="preferredContactMethod"
             value={formData.preferredContactMethod || "email"}
             onChange={handleChange}
-            sx={fieldSx}
+            sx={contactSelectSx}
             MenuProps={{
               PaperProps: {
+                className: "profile-settings-form__contact-menu",
                 sx: menuPaperSx,
+              },
+              MenuListProps: {
+                sx: {
+                  direction: "ltr",
+                  textAlign: "left",
+                },
               },
             }}
             error={Boolean(fieldErrors.preferredContactMethod)}
             helperText={fieldErrors.preferredContactMethod || undefined}
           >
             {contactOptions.map((option) => (
-              <MenuItem key={option.value} value={option.value}>
+              <MenuItem
+                key={option.value}
+                value={option.value}
+                sx={{
+                  justifyContent: "flex-start",
+                  textAlign: "left",
+                  direction: "ltr",
+                  pl: "16px",
+                  pr: "16px",
+                }}
+              >
                 {option.label}
               </MenuItem>
             ))}
           </TextField>
         </Grid>
       </Grid>
+
+      {hasUnsavedChanges ? (
+        <Box
+          className="profile-settings-form__save-row"
+          display="flex"
+          justifyContent="flex-end"
+        >
+          <button
+            type="submit"
+            className="ps-btn ps-btn--soft"
+            disabled={saving}
+          >
+            {saving ? t("saving") : t("saveChanges")}
+          </button>
+        </Box>
+      ) : null}
 
       <Box className={embedded ? "profile-settings-form__pref-row" : undefined} sx={{ mt: embedded ? 0 : 2 }}>
         <div className="profile-settings__setting-row">
@@ -941,25 +1023,6 @@ function PersonalDetailsForm({
           </button>
         </div>
       </Box>
-
-      {hasUnsavedChanges ? (
-        <Box
-          className="profile-settings-form__save-row"
-          display="flex"
-          justifyContent="flex-end"
-          sx={{ pt: embedded ? 1.5 : 0 }}
-        >
-          <Button
-            type="submit"
-            variant="contained"
-            className="profile-settings-form__save-btn"
-            disabled={saving}
-            sx={{ textTransform: "none" }}
-          >
-            {saving ? t("saving") : t("saveChanges")}
-          </Button>
-        </Box>
-      ) : null}
     </Stack>
   );
 
