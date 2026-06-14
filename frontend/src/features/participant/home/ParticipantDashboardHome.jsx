@@ -246,9 +246,9 @@ function CircularCountdownRing({ variant, targetDate, countdown }) {
           <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
             {variant === 'appointment' ? (
               <>
-                <stop offset="0%" stopColor="#5b1e8c" />
-                <stop offset="55%" stopColor="#8a2da8" />
-                <stop offset="100%" stopColor="#ec168c" />
+                <stop offset="0%" stopColor="#ec168c" />
+                <stop offset="50%" stopColor="#d946a1" />
+                <stop offset="100%" stopColor="#7e22ce" />
               </>
             ) : (
               <>
@@ -390,55 +390,6 @@ function HeroBanner() {
   );
 }
 
-function FeatureCardWatermark({ variant }) {
-  if (variant === 'community') {
-    return (
-      <div className="pd-feature__watermark pd-feature__watermark--community" aria-hidden="true">
-        <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path
-            d="M60 96c-20-15-34-30-34-49 0-15 12-26 27-26 9 0 17 5 21 12 4-7 12-12 21-12 15 0 27 11 27 26 0 19-14 34-34 49z"
-            stroke="currentColor"
-            strokeWidth="2.5"
-            strokeLinejoin="round"
-          />
-        </svg>
-      </div>
-    );
-  }
-
-  return (
-    <div className={`pd-feature__watermark pd-feature__watermark--${variant}`} aria-hidden="true">
-      <svg viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path
-          d="M60 18c-6 14-18 22-18 36 0 10 8 18 18 18s18-8 18-18c0-14-12-22-18-36z"
-          stroke="currentColor"
-          strokeWidth="2.5"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M60 72c-10 8-22 10-32 4 8 12 20 18 32 18s24-6 32-18c-10 6-22 4-32-4z"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinejoin="round"
-          opacity="0.7"
-        />
-        <circle cx="60" cy="58" r="6" fill="currentColor" opacity="0.5" />
-      </svg>
-    </div>
-  );
-}
-
-function CardDecor({ variant }) {
-  return (
-    <div className={`pd-card__decor pd-card__decor--${variant}`} aria-hidden="true">
-      <span className="pd-card__blob pd-card__blob--a" />
-      <span className="pd-card__blob pd-card__blob--b" />
-      <span className="pd-card__petal pd-card__petal--a" />
-      <span className="pd-card__petal pd-card__petal--b" />
-    </div>
-  );
-}
-
 function CardHeading({ icon: Icon, label, accent = 'purple', iconProps }) {
   return (
     <div className={`pd-card__heading pd-card__heading--${accent}`}>
@@ -475,9 +426,14 @@ function FeatureDetail({ icon: Icon, value }) {
   );
 }
 
-function PremiumCta({ variant, children, onClick }) {
+function PremiumCta({ variant = 'pink', children, onClick }) {
+  const className =
+    variant === 'soft'
+      ? 'pd-btn pd-btn--soft pd-community__cta'
+      : `pd-btn pd-btn--${variant} pd-feature__cta`;
+
   return (
-    <button type="button" className={`pd-btn pd-btn--${variant} pd-feature__cta`} onClick={onClick}>
+    <button type="button" className={className} onClick={onClick}>
       <span>{children}</span>
       <ArrowRight size={16} strokeWidth={2.5} className="pd-btn__arrow" aria-hidden="true" />
     </button>
@@ -488,15 +444,13 @@ function AppointmentCard({ appointment, onView }) {
   const countdown = useCountdownRing(appointment.targetDate, 'appointment');
 
   return (
-    <article className="pd-card pd-card--glass pd-card--feature pd-card--appointment">
-      <FeatureCardWatermark variant="appointment" />
-      <CardDecor variant="appointment" />
+    <article className="pd-card pd-card--dashboard-skin pd-card--feature pd-card--appointment">
       <div className="pd-card__surface pd-feature__layout">
         <div className="pd-feature__body">
           <CardHeading
             icon={CalendarHeart}
             label="Next Appointment"
-            accent="purple"
+            accent="pink"
             iconProps={{ strokeWidth: 1.75, absoluteStrokeWidth: true }}
           />
           <h3 className="pd-feature__title">{appointment.title}</h3>
@@ -507,7 +461,7 @@ function AppointmentCard({ appointment, onView }) {
             <FeatureDetail icon={MapPin} value={appointment.location} />
           </ul>
 
-          <PremiumCta variant="primary" onClick={onView}>
+          <PremiumCta variant="soft" onClick={onView}>
             View Appointment
           </PremiumCta>
         </div>
@@ -528,9 +482,7 @@ function EventCard({ event, onView }) {
   const countdown = useCountdownRing(event.targetDate, 'event');
 
   return (
-    <article className="pd-card pd-card--glass pd-card--feature pd-card--event">
-      <FeatureCardWatermark variant="event" />
-      <CardDecor variant="event" />
+    <article className="pd-card pd-card--dashboard-skin pd-card--feature pd-card--event">
       <div className="pd-card__surface pd-feature__layout">
         <div className="pd-feature__body">
           <CardHeading icon={Sparkles} label="Upcoming Event" accent="pink" />
@@ -542,7 +494,7 @@ function EventCard({ event, onView }) {
             <FeatureDetail icon={MapPin} value={event.location} />
           </ul>
 
-          <PremiumCta variant="pink" onClick={onView}>
+          <PremiumCta variant="soft" onClick={onView}>
             View Event
           </PremiumCta>
         </div>
@@ -552,42 +504,6 @@ function EventCard({ event, onView }) {
         </div>
       </div>
     </article>
-  );
-}
-
-function EmptyStatePattern({ variant }) {
-  const accent = variant === 'appointment' ? '#5b1e8c' : '#ec168c';
-  const accentSoft = variant === 'appointment' ? '#8a2da8' : '#f472b6';
-
-  return (
-    <div className={`pd-feature-empty__pattern pd-feature-empty__pattern--${variant}`} aria-hidden="true">
-      <svg viewBox="0 0 480 260" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">
-        <circle cx="392" cy="48" r="72" fill={accent} opacity="0.06" />
-        <circle cx="430" cy="196" r="48" fill={accentSoft} opacity="0.07" />
-        <circle cx="48" cy="210" r="36" fill={accentSoft} opacity="0.05" />
-        <path
-          d="M24 168c28-36 56-44 88-28s52 48 84 36 62-58 96-42"
-          stroke={accent}
-          strokeWidth="1.5"
-          fill="none"
-          opacity="0.07"
-          strokeLinecap="round"
-        />
-        <path
-          d="M320 24c10 14 24 18 38 12M338 18c8 12 20 16 32 10"
-          stroke={accentSoft}
-          strokeWidth="1.2"
-          fill="none"
-          opacity="0.08"
-          strokeLinecap="round"
-        />
-        <g opacity="0.06" fill={accent}>
-          <ellipse cx="120" cy="52" rx="10" ry="16" transform="rotate(-18 120 52)" />
-          <ellipse cx="136" cy="44" rx="10" ry="16" transform="rotate(18 136 44)" />
-          <circle cx="128" cy="58" r="5" />
-        </g>
-      </svg>
-    </div>
   );
 }
 
@@ -603,32 +519,30 @@ function EmptyStateIconBadge({ variant, icon: Icon }) {
 function FeatureCardLoadingShell({ variant, label }) {
   return (
     <article
-      className={`pd-card pd-card--glass pd-card--feature pd-card--${variant} pd-card--feature-loading`}
+      className={`pd-card pd-card--dashboard-skin pd-card--feature pd-card--${variant} pd-card--feature-loading`}
       aria-busy="true"
       aria-label={label}
-    />
+    >
+    </article>
   );
 }
 
 function AppointmentEmptyCard({ onBook }) {
   return (
-    <article className="pd-card pd-card--glass pd-card--feature pd-card--appointment pd-card--empty">
-      <FeatureCardWatermark variant="appointment" />
-      <CardDecor variant="appointment" />
-      <EmptyStatePattern variant="appointment" />
+    <article className="pd-card pd-card--dashboard-skin pd-card--feature pd-card--appointment pd-card--empty">
       <div className="pd-card__surface pd-feature__layout pd-feature__layout--empty">
         <div className="pd-feature__body pd-feature-empty__body">
           <CardHeading
             icon={CalendarHeart}
             label="Next Appointment"
-            accent="purple"
+            accent="pink"
             iconProps={{ strokeWidth: 1.75, absoluteStrokeWidth: true }}
           />
           <h3 className="pd-feature-empty__headline">No upcoming appointments</h3>
           <p className="pd-feature-empty__text">
             Take the next step in your wellness journey and book a session with one of our therapists.
           </p>
-          <PremiumCta variant="primary" onClick={onBook}>
+          <PremiumCta variant="pink" onClick={onBook}>
             Book Appointment
           </PremiumCta>
         </div>
@@ -643,10 +557,7 @@ function AppointmentEmptyCard({ onBook }) {
 
 function EventEmptyCard({ onExplore }) {
   return (
-    <article className="pd-card pd-card--glass pd-card--feature pd-card--event pd-card--empty">
-      <FeatureCardWatermark variant="event" />
-      <CardDecor variant="event" />
-      <EmptyStatePattern variant="event" />
+    <article className="pd-card pd-card--dashboard-skin pd-card--feature pd-card--event pd-card--empty">
       <div className="pd-card__surface pd-feature__layout pd-feature__layout--empty">
         <div className="pd-feature__body pd-feature-empty__body">
           <CardHeading icon={Sparkles} label="Upcoming Event" accent="pink" />
@@ -672,11 +583,8 @@ function FeatureCardErrorState({ variant, headingIcon: HeadingIcon, headingLabel
 
   return (
     <article
-      className={`pd-card pd-card--glass pd-card--feature pd-card--${variant} pd-card--empty pd-card--error`}
+      className={`pd-card pd-card--dashboard-skin pd-card--feature pd-card--${variant} pd-card--empty pd-card--error`}
     >
-      <FeatureCardWatermark variant={variant} />
-      <CardDecor variant={variant} />
-      <EmptyStatePattern variant={badgeVariant} />
       <div className="pd-card__surface pd-feature__layout pd-feature__layout--empty">
         <div className="pd-feature__body pd-feature-empty__body">
           <CardHeading
@@ -1426,11 +1334,9 @@ function NotesCard({ userId }) {
   };
 
   return (
-    <article className="pd-card pd-card--glass pd-card--notes">
-      <FeatureCardWatermark variant="notes" />
-      <CardDecor variant="notes" />
+    <article className="pd-card pd-card--dashboard-skin pd-card--notes">
       <div className="pd-card__surface">
-        <CardHeading icon={NotebookPen} label="My Notes &amp; Reminders" accent="purple" />
+        <CardHeading icon={NotebookPen} label="My Notes &amp; Reminders" accent="pink" />
 
         <form className="pd-notes__composer" noValidate onSubmit={handleNoteFormSubmit}>
           <label className="visually-hidden" htmlFor={titleInputId}>
@@ -1565,7 +1471,7 @@ function getCommunityPostImageUrl(post) {
 
 function CommunityCardLoading() {
   return (
-    <article className="pd-card pd-card--glass pd-card--community pd-card--loading" aria-busy="true">
+    <article className="pd-card pd-card--dashboard-skin pd-card--community pd-card--loading" aria-busy="true">
       <div className="pd-card__surface">
         <CardHeading icon={Users} label="Community Highlight" accent="pink" />
         <p className="pd-community__loading">Loading latest community post…</p>
@@ -1576,9 +1482,7 @@ function CommunityCardLoading() {
 
 function CommunityEmptyCard({ onVisitCommunity, title, text, ctaLabel = 'Visit Community' }) {
   return (
-    <article className="pd-card pd-card--glass pd-card--community pd-card--community-empty">
-      <FeatureCardWatermark variant="community" />
-      <CardDecor variant="community" />
+    <article className="pd-card pd-card--dashboard-skin pd-card--community pd-card--community-empty">
       <div className="pd-card__surface">
         <CardHeading icon={Users} label="Community Highlight" accent="pink" />
         <div className="pd-community-empty">
@@ -1602,9 +1506,7 @@ function CommunityCard({ post, relativeTime, onViewPost }) {
   const commentsCount = post.commentsCount ?? 0;
 
   return (
-    <article className="pd-card pd-card--glass pd-card--community">
-      <FeatureCardWatermark variant="community" />
-      <CardDecor variant="community" />
+    <article className="pd-card pd-card--dashboard-skin pd-card--community">
       <div className="pd-card__surface">
         <CardHeading icon={Users} label="Community Highlight" accent="pink" />
 
@@ -1755,7 +1657,7 @@ export default function ParticipantDashboardHome({
             variant="appointment"
             headingIcon={CalendarHeart}
             headingLabel="Next Appointment"
-            headingAccent="purple"
+            headingAccent="pink"
           />
         ) : isLoading ? (
           <FeatureCardLoadingShell variant="appointment" label="Loading appointment" />

@@ -103,6 +103,7 @@
 }
 
 .participant-home--dark .pd-card,
+.participant-home--dark .pd-card--dashboard-skin,
 .participant-home--dark .pd-card--glass,
 .participant-home--dark .pd-card--appointment,
 .participant-home--dark .pd-card--event,
@@ -137,7 +138,7 @@
   color: var(--pd-purple);
 }
 
-.participant-home--dark .pd-card--feature .pd-card__heading--pink .pd-card__heading-label {
+.participant-home--dark .pd-card__heading--pink .pd-card__heading-label {
   color: var(--pd-pink);
 }
 
@@ -187,7 +188,7 @@
 }
 
 .participant-home--dark .pd-card--feature .pd-feature__detail-icon {
-  color: #c084fc;
+  color: #f472b6;
 }
 
 .participant-home--dark .pd-card--event.pd-card--feature .pd-feature__detail-icon {
