@@ -10,8 +10,10 @@ import { createContext, useContext } from 'react';
  *   effectiveUID       – impersonatedUserUID ?? currentUser.uid
  *   isImpersonating    – boolean
  *   loading            – true while auth / role fetch is in progress
+ *   mustChangePassword – true when the signed-in member still has a temp password
  *   startImpersonation(uid, displayName) – begin impersonation session
  *   stopImpersonation()                  – end impersonation session
+ *   clearMustChangePassword()            – clear the flag after a successful change
  *   logout()                             – sign out
  */
 export const AdminContext = createContext(null);

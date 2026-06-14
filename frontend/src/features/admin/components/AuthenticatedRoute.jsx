@@ -5,7 +5,7 @@ import Typography from '@mui/material/Typography';
 import { useAdmin } from '../context/AdminContext';
 
 export default function AuthenticatedRoute({ children }) {
-  const { currentUser, loading } = useAdmin();
+  const { currentUser, loading, mustChangePassword } = useAdmin();
 
   if (loading) {
     return (
@@ -20,6 +20,10 @@ export default function AuthenticatedRoute({ children }) {
 
   if (!currentUser) {
     return <Navigate to="/login" replace />;
+  }
+
+  if (mustChangePassword) {
+    return <Navigate to="/set-password" replace />;
   }
 
   return children;
