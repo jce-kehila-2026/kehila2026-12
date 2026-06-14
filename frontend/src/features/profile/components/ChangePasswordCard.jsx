@@ -9,7 +9,6 @@ import VisibilityOutlinedIcon from "@mui/icons-material/VisibilityOutlined";
 import VisibilityOffOutlinedIcon from "@mui/icons-material/VisibilityOffOutlined";
 import {
   Box,
-  Button,
   Card,
   CardContent,
   Collapse,
@@ -177,14 +176,22 @@ function ChangePasswordCard({ darkMode = false, t = (k) => k, variant = "default
         : {
             "& .MuiOutlinedInput-root": {
               ...inputRootBase,
-              backgroundColor: "#ffffff",
-              "& fieldset": { borderColor: "rgba(181, 123, 232, 0.22)" },
-              "&:hover fieldset": { borderColor: WELLNESS.primary },
+              backgroundColor: embedded ? "#fffafb" : "#ffffff",
+              "& fieldset": {
+                borderColor: embedded ? "rgba(219, 79, 159, 0.14)" : "rgba(181, 123, 232, 0.22)",
+              },
+              "&:hover fieldset": {
+                borderColor: embedded ? "rgba(219, 79, 159, 0.24)" : WELLNESS.primary,
+              },
               "&.Mui-focused fieldset": {
-                borderColor: WELLNESS.primary,
+                borderColor: embedded ? "#db4f9f" : WELLNESS.primary,
                 borderWidth: "1.5px",
               },
-              "&.Mui-focused": { boxShadow: WELLNESS.focusRing },
+              "&.Mui-focused": {
+                boxShadow: embedded
+                  ? "0 0 0 3px rgba(219, 79, 159, 0.18)"
+                  : WELLNESS.focusRing,
+              },
             },
             "& .MuiOutlinedInput-input": {
               fontSize: inputFontSize,
@@ -219,16 +226,18 @@ function ChangePasswordCard({ darkMode = false, t = (k) => k, variant = "default
         onClick={() => setVisible((v) => !v)}
         size="small"
         sx={{
-          color: darkMode ? "#c4a5f5" : "#4b136b",
+          color: darkMode ? "#c4a5f5" : embedded ? "#db4f9f" : "#4b136b",
           borderRadius: 2,
           p: "6px",
           mr: 0.25,
           transition: "background-color 0.2s ease, color 0.2s ease",
           "&:hover": {
-            color: darkMode ? "#e9d5ff" : "#3f1059",
+            color: darkMode ? "#e9d5ff" : embedded ? "#c83f91" : "#3f1059",
             backgroundColor: darkMode
               ? "rgba(196, 165, 245, 0.16)"
-              : "rgba(75, 19, 107, 0.08)",
+              : embedded
+                ? "rgba(219, 79, 159, 0.08)"
+                : "rgba(75, 19, 107, 0.08)",
           },
         }}
       >
@@ -356,48 +365,14 @@ function ChangePasswordCard({ darkMode = false, t = (k) => k, variant = "default
           width: "100%",
         }}
       >
-        <Button
+        <button
           type="button"
-          variant="contained"
+          className="ps-btn ps-btn--soft"
           onClick={handlePasswordChange}
           disabled={!canUpdatePassword}
-          className={embedded ? "profile-settings-form__save-btn" : undefined}
-          sx={
-            embedded
-              ? { textTransform: "none" }
-              : {
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  textTransform: "none",
-                  borderRadius: "9999px",
-                  height: 46,
-                  minHeight: 46,
-                  px: "28px",
-                  fontWeight: 600,
-                  fontSize: 15,
-                  fontFamily: '"Plus Jakarta Sans", sans-serif',
-                  color: "#fff",
-                  background: "#4b136b",
-                  boxShadow: "0 4px 14px rgba(75, 19, 107, 0.18)",
-                  transition:
-                    "transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease",
-                  "&:hover": {
-                    background: "#3f1059",
-                    boxShadow: "0 6px 16px rgba(75, 19, 107, 0.24)",
-                    transform: "translateY(-1px)",
-                  },
-                  "&:disabled": {
-                    color: "rgba(255, 255, 255, 0.88)",
-                    background: "rgba(75, 19, 107, 0.45)",
-                    boxShadow: "none",
-                    transform: "none",
-                  },
-                }
-          }
         >
           {t("updatePassword")}
-        </Button>
+        </button>
       </Box>
     </Stack>
   );

@@ -35,8 +35,7 @@ const profileCacheLtr = createCache({
   stylisPlugins: [prefixer],
 });
 
-const profilePageBg =
-  "linear-gradient(145deg, #F7EEFF 0%, #FFF9FC 42%, #fdf8ff 100%)";
+const profilePageBg = "#fffafd";
 
 const SETTINGS_TABS = [
   { id: "personal", labelKey: "tabPersonalInfo", icon: PersonOutlineOutlinedIcon },
