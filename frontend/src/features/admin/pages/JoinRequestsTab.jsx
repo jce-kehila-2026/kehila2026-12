@@ -1,15 +1,23 @@
 // Membership-applications tab inside the Users page.
 //
-// Phase 1 (this file): read-only. Lists every public "טופס הצטרפות לעמותה"
-// submission so an admin can see who applied, with search, a status filter,
-// and a details drawer showing the full application (including the story).
-// Accept/Reject actions are added in a later phase.
+// Phase 1: read-only list of public "טופס הצטרפות לעמותה" submissions.
+// Phase 2 (this update): Accept / Reject actions.
+//   - Accept creates the applicant's login account with a temporary password
+//     (shown to the admin in a copy-able dialog) and marks the request approved.
+//   - Reject records an optional reason.
+//   Automatic email of the temp password is added in Phase 3; for now the admin
+//   shares it manually.
 import { useMemo, useState } from 'react';
+import Alert from '@mui/material/Alert';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
+import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
 import Dialog from '@mui/material/Dialog';
+import DialogActions from '@mui/material/DialogActions';
+import DialogContent from '@mui/material/DialogContent';
+import DialogTitle from '@mui/material/DialogTitle';
 import Fade from '@mui/material/Fade';
 import FormControl from '@mui/material/FormControl';
 import IconButton from '@mui/material/IconButton';
@@ -19,14 +27,21 @@ import Select from '@mui/material/Select';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
+import CheckCircleIcon from '@mui/icons-material/CheckCircleOutlineOutlined';
 import CloseIcon from '@mui/icons-material/Close';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
+import DoNotDisturbAltIcon from '@mui/icons-material/DoNotDisturbAlt';
 import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
 import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined';
 import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined';
 import CakeOutlinedIcon from '@mui/icons-material/CakeOutlined';
 import SearchIcon from '@mui/icons-material/Search';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
-import { JOIN_REQUEST_STATUS } from '../services/joinRequestAdminService';
+import {
+  JOIN_REQUEST_STATUS,
+  approveJoinRequest,
+  rejectJoinRequest,
+} from '../services/joinRequestAdminService';
 
 const STATUS_META = {
   [JOIN_REQUEST_STATUS.NEW]: { label: 'New', color: '#B45309', bg: 'rgba(245, 158, 11, 0.16)' },
@@ -119,11 +134,20 @@ function DetailRow({ icon, label, value }) {
   );
 }
 
-export default function JoinRequestsTab({ requests = [], loading = false }) {
+export default function JoinRequestsTab({ requests = [], loading = false, onChanged }) {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [selected, setSelected] = useState(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
+
+  // Approve/reject action state.
+  const [actionMode, setActionMode] = useState(null); // 'approve' | 'reject'
+  const [actionTarget, setActionTarget] = useState(null);
+  const [actionLoading, setActionLoading] = useState(false);
+  const [actionError, setActionError] = useState('');
+  const [rejectReason, setRejectReason] = useState('');
+  const [approveResult, setApproveResult] = useState(null); // { email, tempPassword }
+  const [copied, setCopied] = useState(false);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -143,11 +167,84 @@ export default function JoinRequestsTab({ requests = [], loading = false }) {
     setDetailsOpen(true);
   }
 
+  function startApprove(req) {
+    setActionTarget(req);
+    setActionMode('approve');
+    setApproveResult(null);
+    setActionError('');
+    setDetailsOpen(false);
+  }
+
+  function startReject(req) {
+    setActionTarget(req);
+    setActionMode('reject');
+    setRejectReason('');
+    setActionError('');
+    setDetailsOpen(false);
+  }
+
+  function resetAction() {
+    setActionMode(null);
+    setActionTarget(null);
+    setActionError('');
+    setApproveResult(null);
+    setRejectReason('');
+    setCopied(false);
+  }
+
+  function closeAction() {
+    if (actionLoading) return;
+    resetAction();
+  }
+
+  async function confirmApprove() {
+    if (!actionTarget) return;
+    setActionLoading(true);
+    setActionError('');
+    try {
+      const result = await approveJoinRequest(actionTarget);
+      setApproveResult(result);
+      onChanged?.();
+    } catch (err) {
+      console.error('Approve failed:', err);
+      setActionError(err?.message || 'Could not approve this application. Please try again.');
+    } finally {
+      setActionLoading(false);
+    }
+  }
+
+  async function confirmReject() {
+    if (!actionTarget) return;
+    setActionLoading(true);
+    setActionError('');
+    try {
+      await rejectJoinRequest(actionTarget, { reason: rejectReason });
+      onChanged?.();
+      resetAction();
+    } catch (err) {
+      console.error('Reject failed:', err);
+      setActionError(err?.message || 'Could not reject this application. Please try again.');
+    } finally {
+      setActionLoading(false);
+    }
+  }
+
+  async function copyPassword() {
+    if (!approveResult?.tempPassword) return;
+    try {
+      await navigator.clipboard.writeText(approveResult.tempPassword);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      /* clipboard unavailable — admin can select the text manually */
+    }
+  }
+
   const rowGrid = {
     display: 'grid',
     gridTemplateColumns: {
       xs: 'minmax(0, 1fr)',
-      md: 'minmax(260px, 1.5fr) 150px 130px 120px 72px',
+      md: 'minmax(240px, 1.5fr) 140px 120px 110px 150px',
     },
     alignItems: 'center',
     gap: '1rem',
@@ -263,9 +360,9 @@ export default function JoinRequestsTab({ requests = [], loading = false }) {
             flexShrink: 0,
           }}
         >
-          {['Applicant', 'Phone', 'Submitted', 'Status', ''].map((label, index) => (
+          {['Applicant', 'Phone', 'Submitted', 'Status', 'Actions'].map((label, index) => (
             <Typography
-              key={label || `col-${index}`}
+              key={label}
               variant="caption"
               sx={{
                 fontWeight: 950,
@@ -300,86 +397,126 @@ export default function JoinRequestsTab({ requests = [], loading = false }) {
                 <CircularProgress />
               </Box>
             ) : filtered.length > 0 ? (
-              filtered.map((req) => (
-                <Box
-                  key={req.id}
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => openDetails(req)}
-                  onKeyDown={(event) => {
-                    if (event.key === 'Enter' || event.key === ' ') openDetails(req);
-                  }}
-                  sx={{
-                    ...rowGrid,
-                    px: { xs: 1.7, md: 2.2 },
-                    py: 1.8,
-                    borderRadius: '22px',
-                    border: '1px solid rgba(130, 92, 206, 0.10)',
-                    bgcolor: 'rgba(255,255,255,0.72)',
-                    cursor: 'pointer',
-                    transition: 'transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease, border-color 180ms ease',
-                    '&:hover': {
-                      bgcolor: 'rgba(255, 250, 254, 0.94)',
-                      borderColor: 'rgba(124, 58, 237, 0.18)',
-                      boxShadow: '0 16px 34px rgba(91, 57, 145, 0.10)',
-                      transform: 'translateY(-2px) scale(1.002)',
-                    },
-                  }}
-                >
-                  <Stack direction="row" spacing={1.5} alignItems="center" sx={{ minWidth: 0 }}>
-                    <Avatar
-                      sx={{
-                        width: '3.375rem',
-                        height: '3.375rem',
-                        bgcolor: '#EEE7FF',
-                        color: '#6D3CCF',
-                        fontWeight: 950,
-                        fontSize: '1.1875rem',
-                        boxShadow: '0 10px 24px rgba(109, 60, 207, 0.12)',
-                      }}
-                    >
-                      {initialsOf(req.fullName)}
-                    </Avatar>
-                    <Box sx={{ minWidth: 0 }}>
-                      <Typography dir="auto" fontWeight={950} noWrap sx={{ color: '#17122E' }}>
-                        {req.fullName || 'Unnamed applicant'}
-                      </Typography>
-                      <Typography color="#5E587E" noWrap sx={{ fontSize: '0.84375rem' }}>
-                        {req.email || 'No email provided'}
-                      </Typography>
+              filtered.map((req) => {
+                const isNew = (req.status || 'new') === JOIN_REQUEST_STATUS.NEW;
+                return (
+                  <Box
+                    key={req.id}
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => openDetails(req)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') openDetails(req);
+                    }}
+                    sx={{
+                      ...rowGrid,
+                      px: { xs: 1.7, md: 2.2 },
+                      py: 1.8,
+                      borderRadius: '22px',
+                      border: '1px solid rgba(130, 92, 206, 0.10)',
+                      bgcolor: 'rgba(255,255,255,0.72)',
+                      cursor: 'pointer',
+                      transition: 'transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease, border-color 180ms ease',
+                      '&:hover': {
+                        bgcolor: 'rgba(255, 250, 254, 0.94)',
+                        borderColor: 'rgba(124, 58, 237, 0.18)',
+                        boxShadow: '0 16px 34px rgba(91, 57, 145, 0.10)',
+                        transform: 'translateY(-2px) scale(1.002)',
+                      },
+                    }}
+                  >
+                    <Stack direction="row" spacing={1.5} alignItems="center" sx={{ minWidth: 0 }}>
+                      <Avatar
+                        sx={{
+                          width: '3.375rem',
+                          height: '3.375rem',
+                          bgcolor: '#EEE7FF',
+                          color: '#6D3CCF',
+                          fontWeight: 950,
+                          fontSize: '1.1875rem',
+                          boxShadow: '0 10px 24px rgba(109, 60, 207, 0.12)',
+                        }}
+                      >
+                        {initialsOf(req.fullName)}
+                      </Avatar>
+                      <Box sx={{ minWidth: 0 }}>
+                        <Typography dir="auto" fontWeight={950} noWrap sx={{ color: '#17122E' }}>
+                          {req.fullName || 'Unnamed applicant'}
+                        </Typography>
+                        <Typography color="#5E587E" noWrap sx={{ fontSize: '0.84375rem' }}>
+                          {req.email || 'No email provided'}
+                        </Typography>
+                      </Box>
+                    </Stack>
+
+                    <Typography fontWeight={800} color="#4F4A70" noWrap dir="ltr">
+                      {req.phone || '-'}
+                    </Typography>
+
+                    <Typography fontWeight={800} color="#4F4A70">
+                      {formatDate(req.createdAt)}
+                    </Typography>
+
+                    <Box>
+                      <StatusChip status={req.status} />
                     </Box>
-                  </Stack>
 
-                  <Typography fontWeight={800} color="#4F4A70" noWrap dir="ltr">
-                    {req.phone || '-'}
-                  </Typography>
-
-                  <Typography fontWeight={800} color="#4F4A70">
-                    {formatDate(req.createdAt)}
-                  </Typography>
-
-                  <Box>
-                    <StatusChip status={req.status} />
-                  </Box>
-
-                  <Stack direction="row" justifyContent={{ xs: 'flex-start', md: 'flex-end' }} onClick={(event) => event.stopPropagation()}>
-                    <IconButton
-                      aria-label={`View ${req.fullName || 'application'}`}
-                      onClick={() => openDetails(req)}
-                      sx={{
-                        width: '2.625rem',
-                        height: '2.625rem',
-                        color: '#6D3CCF',
-                        bgcolor: 'rgba(109, 60, 207, 0.09)',
-                        border: '1px solid rgba(255, 255, 255, 0.72)',
-                        '&:hover': { bgcolor: 'rgba(109, 60, 207, 0.15)' },
-                      }}
+                    <Stack
+                      direction="row"
+                      spacing={0.75}
+                      justifyContent={{ xs: 'flex-start', md: 'flex-end' }}
+                      onClick={(event) => event.stopPropagation()}
                     >
-                      <VisibilityOutlinedIcon fontSize="small" />
-                    </IconButton>
-                  </Stack>
-                </Box>
-              ))
+                      {isNew ? (
+                        <>
+                          <IconButton
+                            aria-label={`Approve ${req.fullName || 'application'}`}
+                            onClick={() => startApprove(req)}
+                            sx={{
+                              width: '2.5rem',
+                              height: '2.5rem',
+                              color: '#15803D',
+                              bgcolor: 'rgba(34, 197, 94, 0.12)',
+                              border: '1px solid rgba(255,255,255,0.72)',
+                              '&:hover': { bgcolor: 'rgba(34, 197, 94, 0.2)' },
+                            }}
+                          >
+                            <CheckCircleIcon fontSize="small" />
+                          </IconButton>
+                          <IconButton
+                            aria-label={`Reject ${req.fullName || 'application'}`}
+                            onClick={() => startReject(req)}
+                            sx={{
+                              width: '2.5rem',
+                              height: '2.5rem',
+                              color: '#B91C1C',
+                              bgcolor: 'rgba(239, 68, 68, 0.10)',
+                              border: '1px solid rgba(255,255,255,0.72)',
+                              '&:hover': { bgcolor: 'rgba(239, 68, 68, 0.18)' },
+                            }}
+                          >
+                            <DoNotDisturbAltIcon fontSize="small" />
+                          </IconButton>
+                        </>
+                      ) : null}
+                      <IconButton
+                        aria-label={`View ${req.fullName || 'application'}`}
+                        onClick={() => openDetails(req)}
+                        sx={{
+                          width: '2.5rem',
+                          height: '2.5rem',
+                          color: '#6D3CCF',
+                          bgcolor: 'rgba(109, 60, 207, 0.09)',
+                          border: '1px solid rgba(255, 255, 255, 0.72)',
+                          '&:hover': { bgcolor: 'rgba(109, 60, 207, 0.15)' },
+                        }}
+                      >
+                        <VisibilityOutlinedIcon fontSize="small" />
+                      </IconButton>
+                    </Stack>
+                  </Box>
+                );
+              })
             ) : (
               <Box sx={{ py: 8, textAlign: 'center' }}>
                 <Typography fontWeight={900}>No applications found</Typography>
@@ -394,6 +531,7 @@ export default function JoinRequestsTab({ requests = [], loading = false }) {
         </Box>
       </Box>
 
+      {/* Details drawer */}
       <Dialog
         open={detailsOpen && Boolean(selected)}
         onClose={() => setDetailsOpen(false)}
@@ -460,10 +598,161 @@ export default function JoinRequestsTab({ requests = [], loading = false }) {
                   <DetailRow icon={<PhoneOutlinedIcon fontSize="small" />} label="WhatsApp note" value={selected.whatsappNote} />
                 ) : null}
                 <DetailRow icon={<FavoriteIcon />} label="Story" value={selected.cancerStory} />
+                {(selected.status === JOIN_REQUEST_STATUS.APPROVED || selected.status === JOIN_REQUEST_STATUS.REJECTED) ? (
+                  <DetailRow
+                    icon={selected.status === JOIN_REQUEST_STATUS.APPROVED ? <CheckCircleIcon fontSize="small" /> : <DoNotDisturbAltIcon fontSize="small" />}
+                    label={`${STATUS_META[selected.status]?.label || 'Decision'} • ${formatDate(selected.decidedAt)}`}
+                    value={[selected.decidedBy && `by ${selected.decidedBy}`, selected.rejectionReason && `Reason: ${selected.rejectionReason}`].filter(Boolean).join('\n') || '-'}
+                  />
+                ) : null}
               </Stack>
             </Box>
+
+            {(selected.status || 'new') === JOIN_REQUEST_STATUS.NEW ? (
+              <Box sx={{ p: { xs: 2, md: 2.6 }, pt: 1.8, flexShrink: 0, borderTop: '1px solid rgba(130, 92, 206, 0.08)' }}>
+                <Stack direction="row" spacing={1.2} justifyContent="flex-end">
+                  <Button
+                    onClick={() => startReject(selected)}
+                    startIcon={<DoNotDisturbAltIcon />}
+                    sx={{
+                      px: 2.4,
+                      height: '2.75rem',
+                      borderRadius: 999,
+                      fontWeight: 900,
+                      textTransform: 'none',
+                      color: '#B91C1C',
+                      border: '1px solid rgba(239, 68, 68, 0.3)',
+                      bgcolor: 'rgba(239, 68, 68, 0.06)',
+                      '&:hover': { bgcolor: 'rgba(239, 68, 68, 0.12)' },
+                    }}
+                  >
+                    Reject
+                  </Button>
+                  <Button
+                    onClick={() => startApprove(selected)}
+                    startIcon={<CheckCircleIcon />}
+                    sx={{
+                      px: 2.8,
+                      height: '2.75rem',
+                      borderRadius: 999,
+                      fontWeight: 950,
+                      textTransform: 'none',
+                      color: '#fff',
+                      background: 'linear-gradient(135deg, #16A34A 0%, #15803D 100%)',
+                      boxShadow: '0 14px 30px rgba(22, 163, 74, 0.26)',
+                      '&:hover': { background: 'linear-gradient(135deg, #15A046 0%, #137034 100%)' },
+                    }}
+                  >
+                    Approve & create account
+                  </Button>
+                </Stack>
+              </Box>
+            ) : null}
           </Box>
         ) : null}
+      </Dialog>
+
+      {/* Approve dialog: confirm, then show the temp password */}
+      <Dialog
+        open={actionMode === 'approve' && Boolean(actionTarget)}
+        onClose={closeAction}
+        PaperProps={{ sx: { borderRadius: '24px', width: { xs: 'calc(100vw - 32px)', sm: '30rem' }, maxWidth: 480 } }}
+      >
+        {approveResult ? (
+          <>
+            <DialogTitle sx={{ fontWeight: 950, color: '#15803D', display: 'flex', alignItems: 'center', gap: 1 }}>
+              <CheckCircleIcon /> Account created
+            </DialogTitle>
+            <DialogContent>
+              <Typography sx={{ mb: 1.5, color: '#4F4A70' }}>
+                A login account was created for <strong dir="auto">{actionTarget?.fullName || approveResult.email}</strong>. Share these credentials so they can sign in:
+              </Typography>
+              <Box sx={{ borderRadius: '16px', border: '1px solid rgba(130, 92, 206, 0.18)', bgcolor: 'rgba(244, 238, 255, 0.6)', p: 2 }}>
+                <Typography variant="caption" fontWeight={800} color="text.secondary">Email</Typography>
+                <Typography dir="ltr" fontWeight={850} sx={{ mb: 1.2, wordBreak: 'break-all' }}>{approveResult.email}</Typography>
+                <Typography variant="caption" fontWeight={800} color="text.secondary">Temporary password</Typography>
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <Typography dir="ltr" fontFamily="monospace" fontWeight={850} sx={{ fontSize: '1.05rem' }}>{approveResult.tempPassword}</Typography>
+                  <IconButton size="small" onClick={copyPassword} aria-label="Copy temporary password" sx={{ color: '#6D3CCF' }}>
+                    <ContentCopyIcon fontSize="small" />
+                  </IconButton>
+                  {copied ? <Typography variant="caption" color="#15803D" fontWeight={800}>Copied!</Typography> : null}
+                </Stack>
+              </Box>
+              <Alert severity="info" sx={{ mt: 2, borderRadius: '14px' }}>
+                Email isn’t sent automatically yet — share these manually for now (automatic email comes next). The member will be asked to set a new password on first login.
+              </Alert>
+            </DialogContent>
+            <DialogActions sx={{ px: 3, pb: 2.4 }}>
+              <Button onClick={resetAction} variant="contained" sx={{ borderRadius: 999, textTransform: 'none', fontWeight: 900, px: 3, background: 'linear-gradient(135deg, #7C3AED 0%, #DF327B 100%)' }}>
+                Done
+              </Button>
+            </DialogActions>
+          </>
+        ) : (
+          <>
+            <DialogTitle sx={{ fontWeight: 950, color: '#100B2F' }}>Approve application?</DialogTitle>
+            <DialogContent>
+              <Typography sx={{ color: '#4F4A70' }}>
+                This creates a login account for <strong dir="auto">{actionTarget?.fullName || actionTarget?.email}</strong> with a temporary password. You’ll see the password next, to share with them.
+              </Typography>
+              {actionError ? <Alert severity="error" sx={{ mt: 2, borderRadius: '14px' }}>{actionError}</Alert> : null}
+            </DialogContent>
+            <DialogActions sx={{ px: 3, pb: 2.4 }}>
+              <Button onClick={closeAction} disabled={actionLoading} sx={{ borderRadius: 999, textTransform: 'none', fontWeight: 800, color: '#6F6890' }}>
+                Cancel
+              </Button>
+              <Button
+                onClick={confirmApprove}
+                disabled={actionLoading}
+                variant="contained"
+                startIcon={actionLoading ? <CircularProgress size={16} color="inherit" /> : <CheckCircleIcon />}
+                sx={{ borderRadius: 999, textTransform: 'none', fontWeight: 950, px: 2.8, background: 'linear-gradient(135deg, #16A34A 0%, #15803D 100%)', '&:hover': { background: 'linear-gradient(135deg, #15A046 0%, #137034 100%)' } }}
+              >
+                {actionLoading ? 'Creating…' : 'Approve & create account'}
+              </Button>
+            </DialogActions>
+          </>
+        )}
+      </Dialog>
+
+      {/* Reject dialog */}
+      <Dialog
+        open={actionMode === 'reject' && Boolean(actionTarget)}
+        onClose={closeAction}
+        PaperProps={{ sx: { borderRadius: '24px', width: { xs: 'calc(100vw - 32px)', sm: '30rem' }, maxWidth: 480 } }}
+      >
+        <DialogTitle sx={{ fontWeight: 950, color: '#100B2F' }}>Reject application?</DialogTitle>
+        <DialogContent>
+          <Typography sx={{ color: '#4F4A70', mb: 2 }}>
+            Reject <strong dir="auto">{actionTarget?.fullName || actionTarget?.email}</strong>? No account will be created. You can add an optional reason for your records.
+          </Typography>
+          <TextField
+            label="Reason (optional)"
+            value={rejectReason}
+            onChange={(event) => setRejectReason(event.target.value)}
+            fullWidth
+            multiline
+            minRows={2}
+            sx={{ '& .MuiOutlinedInput-root': { borderRadius: '14px' } }}
+          />
+          {actionError ? <Alert severity="error" sx={{ mt: 2, borderRadius: '14px' }}>{actionError}</Alert> : null}
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 2.4 }}>
+          <Button onClick={closeAction} disabled={actionLoading} sx={{ borderRadius: 999, textTransform: 'none', fontWeight: 800, color: '#6F6890' }}>
+            Cancel
+          </Button>
+          <Button
+            onClick={confirmReject}
+            disabled={actionLoading}
+            variant="contained"
+            color="error"
+            startIcon={actionLoading ? <CircularProgress size={16} color="inherit" /> : <DoNotDisturbAltIcon />}
+            sx={{ borderRadius: 999, textTransform: 'none', fontWeight: 950, px: 2.8 }}
+          >
+            {actionLoading ? 'Rejecting…' : 'Reject'}
+          </Button>
+        </DialogActions>
       </Dialog>
     </Box>
   );

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { collection, doc, getDoc, getDocs, limit, query, updateDoc } from 'firebase/firestore';
 import { Ban, Pencil, ShieldCheck } from 'lucide-react';
@@ -231,19 +231,21 @@ export default function UserManagementPage() {
     fetchUsers();
   }, []);
 
-  useEffect(() => {
-    async function fetchJoinRequests() {
-      try {
-        const list = await listJoinRequests();
-        setJoinRequests(list);
-      } catch (err) {
-        console.error('Failed to fetch membership applications:', err);
-      } finally {
-        setJoinLoading(false);
-      }
+  const loadJoinRequests = useCallback(async () => {
+    setJoinLoading(true);
+    try {
+      const list = await listJoinRequests();
+      setJoinRequests(list);
+    } catch (err) {
+      console.error('Failed to fetch membership applications:', err);
+    } finally {
+      setJoinLoading(false);
     }
-    fetchJoinRequests();
   }, []);
+
+  useEffect(() => {
+    loadJoinRequests();
+  }, [loadJoinRequests]);
 
   async function handleRoleChange(user, newRole) {
     const oldRole = user.role || 'participant';
@@ -505,7 +507,7 @@ export default function UserManagementPage() {
         >
           <Grid item xs={12} sx={{ width: '100%', maxWidth: 'none', flexBasis: '100%', p: 0 }}>
             {activeTab === 'applications' ? (
-              <JoinRequestsTab requests={joinRequests} loading={joinLoading} />
+              <JoinRequestsTab requests={joinRequests} loading={joinLoading} onChanged={loadJoinRequests} />
             ) : (
             <Box
               sx={{
