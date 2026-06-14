@@ -40,7 +40,7 @@ export default function useCommunityProfile({ personalDetails = {} } = {}) {
   const uid = personalDetails?.uid ?? null;
 
   // Load today's community birthdays from Firestore (opted-in members in the
-  // shared `users` collection — no separate birthday collection).
+  // public_profiles collection, which holds only community-visible display data).
   useEffect(() => {
     let cancelled = false;
 

@@ -1,5 +1,5 @@
 .public-eyebrow {
-  margin-block: 0 16px;
+  margin-block: 0 1rem;
   margin-inline: 0;
   color: var(--public-pink);
   font-size: 0.96rem;
@@ -15,9 +15,9 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 62px;
-  padding-block: 16px;
-  padding-inline: 34px;
+  min-height: 3.875rem;
+  padding-block: 1rem;
+  padding-inline: 2.125rem;
   border: 1px solid transparent;
   border-radius: 999px;
   font-size: 1.08rem;
@@ -72,8 +72,8 @@
 }
 
 .public-section:not(.public-section--statistics):not(.public-section--donation-cta):not(.public-section--team-section):not(.public-section--about):not(.public-section--support):not(.public-section--medical-partners):not(.public-section--press-articles):not(.public-section--events):not(.public-contact) {
-  padding-block: clamp(70px, 8vw, 118px);
-  padding-inline: clamp(20px, 8vw, 120px);
+  padding-block: clamp(4.375rem, 8vw, 7.375rem);
+  padding-inline: clamp(1.25rem, 8vw, 7.5rem);
 }
 
 .public-section--muted,
@@ -117,8 +117,8 @@
 .public-section__empty,
 .public-state {
   margin-block-start: 28px;
-  padding-block: 22px;
-  padding-inline: 22px;
+  padding-block: 1.375rem;
+  padding-inline: 1.375rem;
   color: var(--public-muted);
   background: #ffffff;
   border: 1px dashed var(--public-line);
@@ -129,7 +129,7 @@
 .public-state {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 0.75rem;
   box-shadow: 0 12px 28px rgba(58, 27, 84, 0.08);
   text-align: start;
 }
@@ -145,8 +145,8 @@
 }
 
 .public-state__indicator {
-  width: 12px;
-  height: 12px;
+  width: 0.75rem;
+  height: 0.75rem;
   flex: 0 0 auto;
   background: var(--public-magenta);
   border-radius: 50%;

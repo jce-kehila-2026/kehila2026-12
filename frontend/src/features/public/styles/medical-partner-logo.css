@@ -4,9 +4,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 170px;
-  height: 110px;
-  margin: 0 auto 24px;
+  width: 10.625rem;
+  height: 6.875rem;
+  margin: 0 auto 1.5rem;
   padding: 0;
   background: transparent;
   border: none;
@@ -15,14 +15,14 @@
 }
 
 .medical-partner-logo-wrap--modal {
-  width: 150px;
-  height: 90px;
+  width: 9.375rem;
+  height: 5.625rem;
   margin-block-end: 16px;
 }
 
 /* Card only — Assuta logo sits visually high in its asset */
 .medical-partner-logo-wrap--assuta {
-  padding-top: 8px;
+  padding-top: 0.5rem;
 }
 
 .medical-partner-logo-wrap--assuta .medical-partner-logo {

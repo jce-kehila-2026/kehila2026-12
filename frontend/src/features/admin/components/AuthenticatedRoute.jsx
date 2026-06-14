@@ -9,7 +9,7 @@ export default function AuthenticatedRoute({ children }) {
 
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', gap: 2 }}>
+      <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', gap: '1rem' }}>
         <CircularProgress color="primary" />
         <Typography variant="body2" color="text.disabled">
           Loading your dashboard...

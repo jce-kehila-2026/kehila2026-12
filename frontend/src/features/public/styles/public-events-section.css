@@ -19,8 +19,8 @@
   width: 100%;
   max-width: none;
   margin: 0;
-  padding-block: clamp(88px, 10vw, 120px);
-  padding-inline: clamp(28px, 6vw, 96px);
+  padding-block: clamp(5.5rem, 10vw, 7.5rem);
+  padding-inline: clamp(1.75rem, 6vw, 6rem);
   background-color: var(--ev-blush);
   background-image:
     radial-gradient(ellipse 72% 52% at 10% 10%, rgba(217, 70, 161, 0.18) 0%, transparent 62%),
@@ -46,24 +46,24 @@
 }
 
 .public-homepage .public-section--events .public-events__blob--pink {
-  width: min(460px, 44vw);
-  height: min(460px, 44vw);
+  width: min(28.75rem, 44vw);
+  height: min(28.75rem, 44vw);
   inset-block-start: -10%;
   inset-inline-end: -8%;
   background: rgba(217, 70, 161, 0.32);
 }
 
 .public-homepage .public-section--events .public-events__blob--lavender {
-  width: min(400px, 38vw);
-  height: min(400px, 38vw);
+  width: min(25rem, 38vw);
+  height: min(25rem, 38vw);
   inset-block-end: -8%;
   inset-inline-start: -10%;
   background: rgba(243, 232, 248, 0.92);
 }
 
 .public-homepage .public-section--events .public-events__blob--purple {
-  width: min(320px, 30vw);
-  height: min(320px, 30vw);
+  width: min(20rem, 30vw);
+  height: min(20rem, 30vw);
   inset-block-start: 40%;
   inset-inline-start: 34%;
   background: rgba(138, 45, 168, 0.22);
@@ -79,23 +79,23 @@
 .public-homepage .public-section--events .public-events__dots--mesh {
   inset-block-start: 12%;
   inset-inline-start: 6%;
-  width: 120px;
-  height: 120px;
+  width: 7.5rem;
+  height: 7.5rem;
   opacity: 0.36;
 }
 
 .public-homepage .public-section--events .public-events__dots--one {
   inset-block-start: 18%;
   inset-inline-end: 12%;
-  width: 80px;
-  height: 80px;
+  width: 5rem;
+  height: 5rem;
 }
 
 .public-homepage .public-section--events .public-events__dots--two {
   inset-block-end: 20%;
   inset-inline-end: 22%;
-  width: 96px;
-  height: 96px;
+  width: 6rem;
+  height: 6rem;
   opacity: 0.4;
 }
 
@@ -104,8 +104,8 @@
   position: relative;
   z-index: 2;
   display: grid;
-  gap: clamp(44px, 5vw, 60px);
-  width: min(100%, 1280px);
+  gap: clamp(2.75rem, 5vw, 3.75rem);
+  width: min(100%, 80rem);
   margin-inline: auto;
 }
 
@@ -132,8 +132,8 @@
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   align-items: stretch;
-  gap: var(--public-grid-gap, clamp(20px, 2.4vw, 28px));
-  width: min(100%, var(--public-grid-max, 1280px));
+  gap: var(--public-grid-gap, clamp(1.25rem, 2.4vw, 1.75rem));
+  width: min(100%, var(--public-grid-max, 80rem));
   max-width: 100%;
   margin: 0 auto;
   padding: 0;
@@ -174,7 +174,7 @@
   position: relative;
   flex: 0 0 240px;
   width: 100%;
-  height: 240px;
+  height: 15rem;
   overflow: visible;
   border-radius: 30px 30px 0 0;
   background: var(--ev-lavender);
@@ -225,8 +225,8 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 58px;
-  height: 58px;
+  width: 3.625rem;
+  height: 3.625rem;
   color: #ffffff;
   background: linear-gradient(145deg, var(--ev-pink) 0%, var(--ev-purple-mid) 55%, var(--ev-purple) 100%);
   border: 3px solid #ffffff;
@@ -259,17 +259,17 @@
   flex: 1 1 auto;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  gap: 1rem;
   min-height: 0;
-  padding-block: 40px 28px;
-  padding-inline: clamp(20px, 2.4vw, 28px);
+  padding-block: 2.5rem 1.75rem;
+  padding-inline: clamp(1.25rem, 2.4vw, 1.75rem);
   text-align: center;
 }
 
 .public-homepage .public-section--events .public-event-card__content {
   display: grid;
   flex: 1 1 auto;
-  gap: 12px;
+  gap: 0.75rem;
   justify-items: center;
   width: 100%;
   min-width: 0;
@@ -280,7 +280,7 @@
   margin: 0;
   width: 100%;
   max-width: none;
-  padding-inline: 4px;
+  padding-inline: 0.25rem;
   color: var(--ev-purple);
   font-size: clamp(1.18rem, 1.28vw, 1.32rem);
   font-weight: 900;
@@ -292,15 +292,15 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 0.625rem;
   width: 100%;
-  margin-block: 2px;
+  margin-block: 0.125rem;
 }
 
 .public-homepage .public-section--events .public-event-card__divider-line {
   display: block;
-  width: 34px;
-  height: 2px;
+  width: 2.125rem;
+  height: 0.125rem;
   border-radius: 999px;
   background: linear-gradient(90deg, transparent, rgba(217, 70, 161, 0.48));
 }
@@ -320,7 +320,7 @@
   margin: 0;
   width: 100%;
   max-width: none;
-  padding-inline: 2px;
+  padding-inline: 0.125rem;
   color: var(--ev-muted);
   font-size: 0.96rem;
   font-weight: 500;
@@ -333,10 +333,10 @@
   align-items: center;
   justify-content: center;
   align-self: center;
-  min-height: 42px;
+  min-height: 2.625rem;
   margin-block-start: auto;
-  padding-block: 10px;
-  padding-inline: 22px;
+  padding-block: 0.625rem;
+  padding-inline: 1.375rem;
   color: var(--ev-purple);
   font-size: 0.92rem;
   font-weight: 800;
@@ -380,14 +380,14 @@
     display: block;
     height: auto;
     min-height: calc(100svh - var(--public-header-height, var(--public-navbar-offset)));
-    padding-block: clamp(48px, 8vw, 64px);
-    padding-inline: clamp(16px, 4vw, 28px);
+    padding-block: clamp(3rem, 8vw, 4rem);
+    padding-inline: clamp(1rem, 4vw, 1.75rem);
     scroll-margin-top: var(--public-header-height, var(--public-navbar-offset));
   }
 
   .public-homepage .public-section--events .public-events__inner {
     align-content: start;
-    gap: clamp(20px, 4vw, 28px);
+    gap: clamp(1.25rem, 4vw, 1.75rem);
     height: auto;
     min-height: 0;
   }
@@ -399,13 +399,13 @@
   .public-homepage .public-section--events .public-events-grid {
     display: flex;
     flex-flow: row nowrap;
-    gap: clamp(16px, 4vw, 22px);
+    gap: clamp(1rem, 4vw, 1.375rem);
     justify-content: flex-start;
     width: 100%;
     height: auto;
     min-height: 0;
     margin: 0;
-    padding-block: 8px 14px;
+    padding-block: 0.5rem 0.875rem;
     padding-inline:
       calc((100% - var(--events-mobile-card-width)) / 2)
       calc((100% - var(--events-mobile-card-width)) / 2 + clamp(16px, 4vw, 22px));
@@ -433,13 +433,13 @@
   }
 
   .public-homepage .public-section--events .public-event-card__media {
-    flex-basis: clamp(190px, 30vw, 220px);
-    height: clamp(190px, 30vw, 220px);
+    flex-basis: clamp(11.875rem, 30vw, 13.75rem);
+    height: clamp(11.875rem, 30vw, 13.75rem);
   }
 
   .public-homepage .public-section--events .public-event-card__button {
     width: auto;
-    min-width: min(100%, 150px);
+    min-width: min(100%, 9.375rem);
   }
 }
 

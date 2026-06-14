@@ -114,12 +114,12 @@ export default function Sidebar({ drawerWidth = 260, collapsed = false, onToggle
       }}
       variant="permanent"
       sx={{
-        width: { xs: 84, md: drawerWidth + 24 },
+        width: { xs: '5.25rem', md: drawerWidth + 24 },
         flexShrink: 0,
         transition: 'width 300ms ease-in-out',
         direction: 'ltr',
         '& .MuiDrawer-paper': {
-          width: { xs: 84, md: drawerWidth },
+          width: { xs: '5.25rem', md: drawerWidth },
           top: { xs: 0, md: 16 },
           left: { xs: 0, md: 12 },
           right: 'auto !important',
@@ -179,17 +179,17 @@ export default function Sidebar({ drawerWidth = 260, collapsed = false, onToggle
         sx={{
           position: 'relative',
           zIndex: 1,
-          minHeight: 58,
+          minHeight: '3.625rem',
           display: 'flex',
           alignItems: 'center',
           justifyContent: collapsed ? 'center' : 'flex-start',
-          gap: 1.5,
+          gap: '0.75rem',
           pb: 2.5,
           mb: 2.5,
           borderBottom: '1px solid rgba(255,255,255,0.5)',
         }}
       >
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, overflow: 'hidden', width: '100%' }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: '0.75rem', overflow: 'hidden', width: '100%' }}>
           <Box
             sx={{
               display: { xs: 'none', md: 'block' },
@@ -200,7 +200,7 @@ export default function Sidebar({ drawerWidth = 260, collapsed = false, onToggle
               transition: 'opacity 220ms ease-in-out, width 300ms ease-in-out',
             }}
           >
-            <Typography sx={{ color: '#24104F', fontSize: 16, fontWeight: 800, lineHeight: 1.15 }}>
+            <Typography sx={{ color: '#24104F', fontSize: '1rem', fontWeight: 800, lineHeight: 1.15 }}>
               {adminName}
             </Typography>
             <Typography
@@ -208,13 +208,13 @@ export default function Sidebar({ drawerWidth = 260, collapsed = false, onToggle
                 mt: 0.6,
                 width: 'fit-content',
                 px: '9px',
-                height: 20,
+                height: '1.25rem',
                 display: 'inline-flex',
                 alignItems: 'center',
                 borderRadius: 999,
                 color: '#6D35B8',
                 background: 'rgba(167,139,250,0.18)',
-                fontSize: 11,
+                fontSize: '0.6875rem',
                 fontWeight: 800,
                 lineHeight: 1,
               }}
@@ -225,15 +225,15 @@ export default function Sidebar({ drawerWidth = 260, collapsed = false, onToggle
           <Avatar
             src={currentUser?.photoURL || undefined}
             sx={{
-              width: 44,
-              height: 44,
+              width: '2.75rem',
+              height: '2.75rem',
               flex: '0 0 auto',
               ml: 'auto',
               color: '#fff',
               background: 'linear-gradient(135deg, #6D35B8, #E05297)',
               border: '2px solid rgba(255,255,255,0.78)',
               boxShadow: '0 14px 28px rgba(109,53,184,0.16)',
-              fontSize: 14,
+              fontSize: '0.875rem',
               fontWeight: 800,
             }}
           >
@@ -261,8 +261,8 @@ export default function Sidebar({ drawerWidth = 260, collapsed = false, onToggle
               selected={selected}
               id={item.id}
               sx={{
-                width: { xs: 52, md: collapsed ? 52 : 'auto' },
-                minHeight: 52,
+                width: { xs: '3.25rem', md: collapsed ? 52 : 'auto' },
+                minHeight: '3.25rem',
                 position: 'relative',
                 mx: { xs: 'auto', md: collapsed ? 'auto' : 0 },
                 mb: '9px',
@@ -289,7 +289,7 @@ export default function Sidebar({ drawerWidth = 260, collapsed = false, onToggle
                     left: collapsed ? -14 : -18,
                     top: 12,
                     bottom: 12,
-                    width: 4,
+                    width: '0.25rem',
                     borderRadius: 999,
                     background: 'linear-gradient(180deg, #A78BFA, #E05297)',
                     boxShadow: '0 0 18px rgba(167,139,250,0.72)',
@@ -304,7 +304,7 @@ export default function Sidebar({ drawerWidth = 260, collapsed = false, onToggle
                   color: 'inherit',
                   justifyContent: 'center',
                   flex: '0 0 auto',
-                  '& svg': { width: 22, height: 22 },
+                  '& svg': { width: '1.375rem', height: '1.375rem' },
                   transition: 'all 0.3s ease',
                 }}
               >
@@ -356,8 +356,8 @@ export default function Sidebar({ drawerWidth = 260, collapsed = false, onToggle
           onClick={logout}
           id="btn-logout"
           sx={{
-            width: { xs: 52, md: collapsed ? 52 : 'auto' },
-            minHeight: 48,
+            width: { xs: '3.25rem', md: collapsed ? 52 : 'auto' },
+            minHeight: '3rem',
             position: 'absolute',
             zIndex: 1,
             left: { xs: 16, md: collapsed ? 18 : 18 },
@@ -387,7 +387,7 @@ export default function Sidebar({ drawerWidth = 260, collapsed = false, onToggle
               color: 'inherit',
               justifyContent: 'center',
               flex: '0 0 auto',
-              '& svg': { width: 21, height: 21 },
+              '& svg': { width: '1.3125rem', height: '1.3125rem' },
               transition: 'all 0.3s ease',
             }}
           >

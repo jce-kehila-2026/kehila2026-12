@@ -7,8 +7,8 @@
 
   .public-navbar {
     min-height: auto;
-    padding-block: 12px;
-    padding-inline: clamp(18px, 4vw, 34px);
+    padding-block: 0.75rem;
+    padding-inline: clamp(1.125rem, 4vw, 2.125rem);
   }
 
   .public-navbar__inner {
@@ -20,13 +20,13 @@
   .public-navbar__bar {
     justify-content: space-between;
     width: 100%;
-    gap: 14px;
+    gap: 0.875rem;
     min-width: 0;
   }
 
   .public-navbar__brand-image {
     max-width: min(150px, 46vw);
-    max-height: 44px;
+    max-height: 2.75rem;
   }
 
   .public-navbar__toggle {
@@ -43,13 +43,13 @@
   .public-navbar__menu--open {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 14px;
+    gap: 0.875rem;
   }
 
   .public-navbar__links {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 10px;
+    gap: 0.625rem;
     width: 100%;
   }
 
@@ -58,9 +58,9 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-height: 46px;
-    padding-block: 12px;
-    padding-inline: 12px;
+    min-height: 2.875rem;
+    padding-block: 0.75rem;
+    padding-inline: 0.75rem;
     background: var(--public-soft);
     border: 1px solid var(--public-line);
     border-radius: 999px;
@@ -74,7 +74,7 @@
   }
 
   .public-navbar__dropdown-trigger {
-    gap: 6px;
+    gap: 0.375rem;
     width: 100%;
     color: #3f4657;
   }
@@ -84,7 +84,7 @@
     inset-block-start: calc(100% + 6px);
     inset-inline-start: 0;
     width: max-content;
-    min-width: 172px;
+    min-width: 10.75rem;
     margin: 0;
   }
 
@@ -101,7 +101,7 @@
   .public-navbar__actions {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr)) auto;
-    gap: 10px;
+    gap: 0.625rem;
     width: 100%;
     align-items: center;
   }
@@ -110,21 +110,21 @@
     display: inline-flex;
     align-items: center;
     justify-content: flex-end;
-    gap: 10px;
+    gap: 0.625rem;
     width: auto;
     min-width: 0;
   }
 
   .public-navbar__actions-end .public-navbar__cta {
     width: auto;
-    min-width: 108px;
+    min-width: 6.75rem;
     flex: 1 1 auto;
   }
 
   .public-navbar__cta {
     width: 100%;
-    min-height: 50px;
-    padding-inline: 18px;
+    min-height: 3.125rem;
+    padding-inline: 1.125rem;
   }
 }
 
@@ -150,7 +150,7 @@
   .public-navbar__actions-end {
     display: inline-flex;
     align-items: center;
-    gap: 10px;
+    gap: 0.625rem;
     width: 100%;
   }
 
@@ -168,12 +168,12 @@
 
   .public-button {
     width: 100%;
-    min-height: 58px;
+    min-height: 3.625rem;
   }
 
   .public-section:not(.public-section--statistics):not(.public-section--donation-cta):not(.public-section--team-section):not(.public-section--about):not(.public-section--support):not(.public-section--medical-partners):not(.public-section--press-articles):not(.public-section--events):not(.public-contact) {
-    padding-block: 58px;
-    padding-inline: 18px;
+    padding-block: 3.625rem;
+    padding-inline: 1.125rem;
   }
 
   .public-section__header--centered,
@@ -198,7 +198,7 @@
   .public-team-card,
   .public-article-card__body,
   .public-event-card__body {
-    padding-inline: 22px;
+    padding-inline: 1.375rem;
   }
 
   .public-event-card__button,
@@ -212,8 +212,8 @@
   }
 
   .public-donation {
-    padding-block: 58px;
-    padding-inline: 18px;
+    padding-block: 3.625rem;
+    padding-inline: 1.125rem;
   }
 
   .public-donation__content {
@@ -221,8 +221,8 @@
   }
 
   .public-footer {
-    padding-block: 48px 24px;
-    padding-inline: 18px;
+    padding-block: 3rem 1.5rem;
+    padding-inline: 1.125rem;
   }
 
   .public-footer__main {

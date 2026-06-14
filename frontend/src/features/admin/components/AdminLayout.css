@@ -13,7 +13,7 @@
   order: 0 !important;
   direction: ltr !important;
   flex: 0 0 calc(var(--admin-sidebar-width) + 24px) !important;
-  width: calc(var(--admin-sidebar-width) + 24px) !important;
+  width: calc(var(--admin-sidebar-width) + 1.5rem) !important;
   max-width: calc(var(--admin-sidebar-width) + 24px) !important;
   overflow: visible !important;
   box-sizing: border-box !important;
@@ -37,9 +37,9 @@
   left: auto !important;
   z-index: 1302 !important;
   display: inline-flex !important;
-  width: 40px !important;
-  height: 40px !important;
-  min-width: 40px !important;
+  width: 2.5rem !important;
+  height: 2.5rem !important;
+  min-width: 2.5rem !important;
   border-radius: 999px !important;
   align-items: center !important;
   justify-content: center !important;
@@ -85,7 +85,7 @@
   height: 100vh !important;
   margin-left: 0 !important;
   margin-right: 0 !important;
-  padding: 24px 32px !important;
+  padding: 1.5rem 2rem !important;
   overflow-x: hidden !important;
   overflow-y: auto !important;
   box-sizing: border-box !important;
@@ -93,8 +93,8 @@
 
 @media (max-width: 899px) {
   .admin-sidebar {
-    flex-basis: 84px !important;
-    width: 84px !important;
+    flex-basis: 5.25rem !important;
+    width: 5.25rem !important;
     max-width: 84px !important;
   }
 
@@ -108,6 +108,6 @@
   }
 
   .admin-main {
-    padding: 16px !important;
+    padding: 1rem !important;
   }
 }
