@@ -1,5 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import PhotoCameraOutlinedIcon from "@mui/icons-material/PhotoCameraOutlined";
+import MailOutlineOutlinedIcon from "@mui/icons-material/MailOutlineOutlined";
+import LocationOnOutlinedIcon from "@mui/icons-material/LocationOnOutlined";
+import PublicOutlinedIcon from "@mui/icons-material/PublicOutlined";
+import CalendarTodayOutlinedIcon from "@mui/icons-material/CalendarTodayOutlined";
 import {
   Avatar,
   Box,
@@ -24,6 +28,13 @@ function formatBirthDateLabel(raw) {
   }
   return String(raw);
 }
+
+const PROFILE_ROWS = [
+  { key: "email", labelKey: "emailAddress", icon: MailOutlineOutlinedIcon, field: "email" },
+  { key: "city", labelKey: "city", icon: LocationOnOutlinedIcon, field: "city" },
+  { key: "language", labelKey: "language", icon: PublicOutlinedIcon, field: "language" },
+  { key: "birthDate", labelKey: "birthDateLabel", icon: CalendarTodayOutlinedIcon, field: "birthDate" },
+];
 
 function ProfileCard({
   profile,
@@ -57,6 +68,13 @@ function ProfileCard({
     (profile?.language || "english").toLowerCase() === "hebrew"
       ? t("languageHebrew")
       : t("languageEnglish");
+
+  const rowValues = {
+    email: profile?.email || "—",
+    city: profile?.city || "—",
+    language: languageLabel,
+    birthDate: formatBirthDateLabel(profile?.birthDate),
+  };
 
   const handleImageChange = async (event) => {
     const file = event.target.files?.[0];
@@ -93,21 +111,22 @@ function ProfileCard({
 
   return (
     <aside className="profile-summary">
-      <Box
-        className="profile-summary__avatar-wrap"
-        sx={{
-          position: "relative",
-          overflow: "visible",
-        }}
-      >
+      <div className="profile-summary__hero">
+        <Box
+          className="profile-summary__avatar-wrap"
+          sx={{
+            position: "relative",
+            overflow: "visible",
+          }}
+        >
         <Avatar
           src={previewImage || profile?.avatarUrl || undefined}
           sx={{
-            width: 68,
-            height: 68,
+            width: 76,
+            height: 76,
             mx: "auto",
-            bgcolor: darkMode ? "rgba(196, 165, 245, 0.34)" : "#dcc4f5",
-            color: darkMode ? "#f3e8ff" : "#4b136b",
+            bgcolor: darkMode ? "rgba(196, 165, 245, 0.34)" : "#FDEEF6",
+            color: darkMode ? "#f3e8ff" : "#2F145C",
             fontWeight: 700,
             fontSize: 28,
           }}
@@ -145,10 +164,10 @@ function ProfileCard({
             alignItems: "center",
             justifyContent: "center",
             borderRadius: "50%",
-            background: darkMode ? "#5b1e8c" : "#4b136b",
+            background: darkMode ? "#5b1e8c" : "#EC168C",
             color: "#ffffff",
             border: darkMode ? "2px solid #1e293b" : "2px solid #ffffff",
-            boxShadow: "0 4px 14px rgba(181, 123, 232, 0.35)",
+            boxShadow: "0 2px 8px rgba(236, 22, 140, 0.12)",
             cursor: avatarUploading ? "default" : "pointer",
             opacity: avatarUploading ? 0.55 : 1,
             pointerEvents: avatarUploading ? "none" : "auto",
@@ -163,42 +182,46 @@ function ProfileCard({
             onChange={handleImageChange}
           />
         </Box>
-      </Box>
+        </Box>
 
-      {avatarError ? (
-        <Typography
-          variant="caption"
-          sx={{
-            color: "#b91c1c",
-            textAlign: "center",
-            display: "block",
-            mt: 0.5,
-            lineHeight: 1.35,
-          }}
-        >
-          {avatarError}
-        </Typography>
-      ) : null}
+        {avatarError ? (
+          <Typography
+            variant="caption"
+            sx={{
+              color: "#b91c1c",
+              textAlign: "center",
+              display: "block",
+              mt: 0.5,
+              lineHeight: 1.35,
+            }}
+          >
+            {avatarError}
+          </Typography>
+        ) : null}
 
-      <h2 className="profile-summary__name">{profile?.fullName}</h2>
+        <h2 className="profile-summary__name">{profile?.fullName}</h2>
+        <p className="profile-summary__email" title={profile?.email || undefined}>
+          {profile?.email || "—"}
+        </p>
+      </div>
 
       <ul className="profile-summary__meta">
-        <li className="is-email">
-          <span>{t("emailAddress")}</span>
-          <strong title={profile?.email || undefined}>{profile?.email || "—"}</strong>
-        </li>
-        <li>
-          <span>{t("city")}</span>
-          <strong>{profile?.city || "—"}</strong>
-        </li>
-        <li>
-          <span>{t("language")}</span>
-          <strong>{languageLabel}</strong>
-        </li>
-        <li>
-          <span>{t("birthDateLabel")}</span>
-          <strong>{formatBirthDateLabel(profile?.birthDate)}</strong>
-        </li>
+        {PROFILE_ROWS.map(({ key, labelKey, icon: RowIcon, field }) => (
+          <li key={key} className={`profile-summary__row${field === "email" ? " is-email" : ""}`}>
+            <span className="profile-summary__row-icon" aria-hidden="true">
+              <RowIcon fontSize="small" />
+            </span>
+            <div className="profile-summary__row-copy">
+              <span className="profile-summary__row-label">{t(labelKey)}</span>
+              <strong
+                className="profile-summary__row-value"
+                title={field === "email" ? rowValues[field] : undefined}
+              >
+                {rowValues[field]}
+              </strong>
+            </div>
+          </li>
+        ))}
       </ul>
     </aside>
   );
