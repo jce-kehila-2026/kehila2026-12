@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
-import { auth } from '../../../firebase';
+import { doc, getDoc } from 'firebase/firestore';
+import { auth, db } from '../../../firebase';
 import { AdminContext } from './AdminContext';
 import { logAuditEvent } from '../services/auditService';
 import { resolveUserRole } from '../services/authRoleService';
@@ -11,6 +12,7 @@ export default function AdminProvider({ children }) {
   const [loading, setLoading] = useState(true);
   const [impersonatedUserUID, setImpersonatedUserUID] = useState(null);
   const [impersonatedDisplayName, setImpersonatedDisplayName] = useState('');
+  const [mustChangePassword, setMustChangePassword] = useState(false);
 
   // Listen to Firebase Auth state
   useEffect(() => {
@@ -19,9 +21,19 @@ export default function AdminProvider({ children }) {
       if (user) {
         const role = await resolveUserRole(user);
         setUserRole(role || 'participant');
+        // Members approved from a join request get a temporary password and a
+        // `mustChangePassword` flag, which gates them to the set-password screen.
+        try {
+          const snap = await getDoc(doc(db, 'users', user.uid));
+          setMustChangePassword(snap.exists() && snap.data().mustChangePassword === true);
+        } catch (err) {
+          console.error('Failed to read profile flags:', err);
+          setMustChangePassword(false);
+        }
       } else {
         setUserRole(null);
         setImpersonatedUserUID(null);
+        setMustChangePassword(false);
       }
       setLoading(false);
     });
@@ -51,6 +63,10 @@ export default function AdminProvider({ children }) {
     setImpersonatedDisplayName('');
   }, []);
 
+  const clearMustChangePassword = useCallback(() => {
+    setMustChangePassword(false);
+  }, []);
+
   const logout = useCallback(async () => {
     setImpersonatedUserUID(null);
     await signOut(auth);
@@ -71,6 +87,8 @@ export default function AdminProvider({ children }) {
       startImpersonation,
       stopImpersonation,
       logout,
+      mustChangePassword,
+      clearMustChangePassword,
     }),
     [
       currentUser,
@@ -83,6 +101,8 @@ export default function AdminProvider({ children }) {
       startImpersonation,
       stopImpersonation,
       logout,
+      mustChangePassword,
+      clearMustChangePassword,
     ]
   );
 
