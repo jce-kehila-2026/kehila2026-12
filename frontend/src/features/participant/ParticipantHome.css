@@ -404,8 +404,12 @@
 }
 
 .participant-main--dashboard-home > .pd-home__header {
-  margin: 16px 0 20px 4px;
+  margin: 16px 0 12px 4px;
   padding: 0 4px 8px;
+}
+
+.participant-main--dashboard-home > .participant-home__main {
+  min-width: 0;
 }
 
 .participant-main--calendar {

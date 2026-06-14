@@ -2,6 +2,7 @@ import { Bell } from 'lucide-react';
 import sheNaLogo from '../../../assets/she-na-logo.png';
 import DarkModeToggle from '../../profile/components/DarkModeToggle';
 import { PublicSectionHeadingDivider } from '../../public/components/PublicSectionHeading';
+import DailyInspiration from '../home/DailyInspiration';
 import ParticipantLanguageSwitcher from './ParticipantLanguageSwitcher';
 import '../../public/styles/public-section-heading.css';
 import './ParticipantHeader.css';
@@ -15,6 +16,7 @@ export default function ParticipantHeader({
   onLocaleChange,
   notificationsBell = null,
   className = '',
+  dailyQuote = null,
 }) {
   const headerTitle = title ?? (displayName ? `Welcome back, ${displayName}` : 'Welcome back');
 
@@ -22,6 +24,7 @@ export default function ParticipantHeader({
     <header className={['pd-home__header', className].filter(Boolean).join(' ')}>
       <div className="pd-home__header-copy">
         <h1>{headerTitle}</h1>
+        <DailyInspiration quote={dailyQuote} />
         <PublicSectionHeadingDivider />
       </div>
 
