@@ -7,6 +7,16 @@ export const profileSettingsTranslations = {
   en: {
     profileSettings: "Profile Settings",
     profileSettingsSubtitle: "Manage your personal details and preferences.",
+    settingsTitle: "Settings",
+    settingsSubtitle: "Manage your account settings and preferences.",
+    tabPersonalInfo: "Personal Info",
+    tabPrivacy: "Privacy",
+    tabPassword: "Password",
+    communitySettings: "Community Settings",
+    showBirthdayTitle: "Show my birthday in the community",
+    showBirthdayDescription:
+      "This only controls community visibility. Your birthday stays unchanged in Settings.",
+    birthDateLabel: "Birth date",
     darkMode: "Dark Mode",
     toggleDarkMode: "Toggle dark mode",
 
@@ -20,6 +30,8 @@ export const profileSettingsTranslations = {
     personalDetails: "Personal Details",
     personalDetailsSubtitle: "Update your information and communication preferences.",
     fullName: "Full Name",
+    firstName: "First Name",
+    lastName: "Last Name",
     phoneNumber: "Phone Number",
     emailAddress: "Email Address",
     streetAddress: "Street Address",
@@ -48,6 +60,9 @@ export const profileSettingsTranslations = {
     newPassword: "New Password",
     confirmNewPassword: "Confirm New Password",
     updatePassword: "Update Password",
+    newPasswordMustDiffer: "New password must be different from the current password.",
+    passwordsDoNotMatch: "Passwords do not match.",
+    currentPasswordIncorrect: "Current password is incorrect.",
 
     validationEmail: "Please enter a valid email address",
     validationEmailRequired: "Email address is required",
@@ -65,6 +80,16 @@ export const profileSettingsTranslations = {
   he: {
     profileSettings: "הגדרות פרופיל",
     profileSettingsSubtitle: "נהל את הפרטים האישיים וההעדפות שלך.",
+    settingsTitle: "הגדרות",
+    settingsSubtitle: "נהלי את הגדרות החשבון וההעדפות שלך.",
+    tabPersonalInfo: "פרטים אישיים",
+    tabPrivacy: "פרטיות",
+    tabPassword: "סיסמה",
+    communitySettings: "הגדרות קהילה",
+    showBirthdayTitle: "הציגי את יום ההולדת שלי בקהילה",
+    showBirthdayDescription:
+      "הגדרה זו משפיעה רק על הנראות בקהילה. תאריך הלידה בפרופיל נשאר ללא שינוי.",
+    birthDateLabel: "תאריך לידה",
     darkMode: "מצב כהה",
     toggleDarkMode: "החלפת מצב תצוגה כהה",
 
@@ -78,6 +103,8 @@ export const profileSettingsTranslations = {
     personalDetails: "פרטים אישיים",
     personalDetailsSubtitle: "עדכן את המידע והעדפות התקשורת שלך.",
     fullName: "שם מלא",
+    firstName: "שם פרטי",
+    lastName: "שם משפחה",
     phoneNumber: "מספר טלפון",
     emailAddress: "כתובת דוא\"ל",
     streetAddress: "כתובת רחוב",
@@ -106,6 +133,9 @@ export const profileSettingsTranslations = {
     newPassword: "סיסמה חדשה",
     confirmNewPassword: "אימות סיסמה חדשה",
     updatePassword: "עדכן סיסמה",
+    newPasswordMustDiffer: "הסיסמה החדשה חייבת להיות שונה מהסיסמה הנוכחית.",
+    passwordsDoNotMatch: "הסיסמאות אינן תואמות.",
+    currentPasswordIncorrect: "הסיסמה הנוכחית שגויה.",
 
     validationEmail: "נא להזין כתובת דוא\"ל תקינה",
     validationEmailRequired: "כתובת דוא\"ל נדרשת",

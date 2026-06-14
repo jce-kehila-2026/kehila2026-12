@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
+import CakeOutlinedIcon from "@mui/icons-material/CakeOutlined";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
-import LogoutOutlinedIcon from "@mui/icons-material/LogoutOutlined";
-import SaveOutlinedIcon from "@mui/icons-material/SaveOutlined";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 import { DatePicker } from "@mui/x-date-pickers/DatePicker";
@@ -22,6 +21,7 @@ import {
 } from "@mui/material";
 import { Timestamp } from "firebase/firestore";
 import { updateParticipantData } from "../services/participantService";
+import useCommunityProfile from "../../participant/community/hooks/useCommunityProfile";
 import { WELLNESS, WELLNESS_DARK } from "../../appointments/appointmentTypeMeta";
 
 const defaultT = (key) => key;
@@ -118,11 +118,33 @@ function isValidEmail(email) {
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 }
 
+function splitFullName(fullName) {
+  const trimmed = (fullName || "").trim();
+  if (!trimmed) return { firstName: "", lastName: "" };
+
+  const parts = trimmed.split(/\s+/);
+  if (parts.length === 1) {
+    return { firstName: parts[0], lastName: "" };
+  }
+
+  return {
+    firstName: parts[0],
+    lastName: parts.slice(1).join(" "),
+  };
+}
+
+function combineFullName(firstName, lastName) {
+  return [firstName, lastName]
+    .map((part) => (part || "").trim())
+    .filter(Boolean)
+    .join(" ");
+}
+
 function validatePersonalDetailsForm(formData, t) {
   const errors = {};
 
-  const fullName = (formData.fullName || "").trim();
-  if (!fullName) errors.fullName = t("validationFullNameRequired");
+  const fullName = combineFullName(formData.firstName, formData.lastName);
+  if (!fullName) errors.firstName = t("validationFullNameRequired");
 
   const phoneDigits = (formData.phoneNumber || "").replace(/\D/g, "");
   if (!phoneDigits) errors.phoneNumber = t("validationPhoneRequired");
@@ -155,19 +177,30 @@ function validatePersonalDetailsForm(formData, t) {
   return errors;
 }
 
+function profileToFormSnapshot(profile) {
+  const p = profile || {};
+  const { firstName, lastName } = splitFullName(p.fullName);
+  return {
+    firstName,
+    lastName,
+    phoneNumber: p.phoneNumber || "",
+    email: p.email || "",
+    streetAddress: p.streetAddress || "",
+    city: p.city || "",
+    birthDate: normalizeBirthDateFromFirestore(p.birthDate),
+    preferredContactMethod: p.preferredContactMethod || "email",
+  };
+}
+
 function PersonalDetailsForm({
   participantId,
   profile,
   onProfileUpdated,
-  isEditing,
-  onFinishEditing,
-  onLogout,
   darkMode = false,
   t = defaultT,
-  /** Applied locale only: translations, dir, phone/date/menu formatting (not the language dropdown). */
+  /** Applied locale only: translations, dir, phone/date/menu formatting. */
   locale = "en",
-  onLocaleChange,
-  onSaveLanguage,
+  variant = "default",
 }) {
   const [formData, setFormData] = useState(profile || {});
   const [saving, setSaving] = useState(false);
@@ -175,15 +208,28 @@ function PersonalDetailsForm({
 
   useEffect(() => {
     const p = profile || {};
+    const { firstName, lastName } = splitFullName(p.fullName);
     setFormData({
       ...p,
+      firstName,
+      lastName,
       birthDate: normalizeBirthDateFromFirestore(p.birthDate),
     });
   }, [profile]);
 
-  useEffect(() => {
-    if (!isEditing) setFieldErrors({});
-  }, [isEditing]);
+  const savedSnapshot = useMemo(() => profileToFormSnapshot(profile), [profile]);
+
+  const { showBirthdayInCommunity, handleBirthdayVisibilityChange } = useCommunityProfile({
+    personalDetails: {
+      id: participantId,
+      ...profile,
+    },
+  });
+
+  const hasUnsavedChanges = useMemo(
+    () => JSON.stringify(profileToFormSnapshot(formData)) !== JSON.stringify(savedSnapshot),
+    [formData, savedSnapshot]
+  );
 
   const clearFieldError = (name) => {
     setFieldErrors((prev) => {
@@ -198,10 +244,11 @@ function PersonalDetailsForm({
     const { name, value } = event.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     clearFieldError(name);
-    if (name === "language" && onLocaleChange) {
-      onLocaleChange(value === "hebrew" ? "he" : "en");
+    if (name === "firstName" || name === "lastName") {
+      clearFieldError("firstName");
     }
   };
+
   const handleSave = async (event) => {
     event.preventDefault();
     const errors = validatePersonalDetailsForm(formData, t);
@@ -215,82 +262,393 @@ function PersonalDetailsForm({
 
     try {
       const dataToSave = { ...formData };
+      dataToSave.fullName = combineFullName(dataToSave.firstName, dataToSave.lastName);
+      delete dataToSave.firstName;
+      delete dataToSave.lastName;
       const bd = birthDateFormValueToDate(dataToSave.birthDate);
       dataToSave.birthDate = bd ? formatDateToYyyyMmDd(bd) : "";
       await updateParticipantData(participantId, dataToSave);
       onProfileUpdated(dataToSave);
-      onSaveLanguage?.();
-      onFinishEditing();
     } finally {
       setSaving(false);
     }
   };
 
-  const fieldSx = useMemo(
-    () => ({
+  const embedded = variant === "embedded";
+  const inputHeight = embedded ? 54 : 58;
+  const inputFontSize = embedded ? 15 : 17;
+  const inputRadius = embedded ? "12px" : "14px";
+  const gridSpacing = embedded ? 3 : 3;
+  const fieldBorderColor = embedded
+    ? darkMode
+      ? PROFILE_DARK_FIELD.border
+      : "rgba(91, 30, 140, 0.12)"
+    : darkMode
+      ? PROFILE_DARK_FIELD.border
+      : "rgba(181, 123, 232, 0.22)";
+  const fieldBorderHover = embedded
+    ? darkMode
+      ? PROFILE_DARK_FIELD.borderHover
+      : "rgba(91, 30, 140, 0.28)"
+    : darkMode
+      ? PROFILE_DARK_FIELD.borderHover
+      : "rgba(181, 123, 232, 0.45)";
+  const fieldBg = darkMode ? PROFILE_DARK_FIELD.bg : "#ffffff";
+  const fieldTextColor = darkMode ? "#f8fafc" : WELLNESS.text;
+  const fieldDisabledTextColor = darkMode ? "#cbd5e1" : undefined;
+  const iconColor = darkMode ? WELLNESS_DARK.primary : WELLNESS.primary;
+  const errorBorderColor = "#ef4444";
+  const focusBorderColor = iconColor;
+  const focusRingShadow = darkMode ? WELLNESS_DARK.focusRing : WELLNESS.focusRing;
+  const fieldTransition = "box-shadow 0.2s ease, border-color 0.2s ease";
+
+  const fieldSx = useMemo(() => {
+    const outlinedRootBase = {
+      borderRadius: inputRadius,
+      backgroundColor: fieldBg,
+      height: inputHeight,
+      paddingRight: "8px",
+      transition: fieldTransition,
+    };
+
+    const outlinedBorderBase = {
+      borderColor: fieldBorderColor,
+      borderWidth: "1px",
+    };
+
+    const outlinedHoverBorder = {
+      borderColor: fieldBorderHover,
+    };
+
+    const outlinedFocusStyles = {
+      "&.Mui-focused:not(.Mui-error)": {
+        boxShadow: focusRingShadow,
+      },
+      "&.Mui-focused:not(.Mui-error) fieldset": {
+        borderColor: focusBorderColor,
+        borderWidth: "1.5px",
+      },
+      "&.Mui-focused:not(.Mui-error) .MuiOutlinedInput-notchedOutline": {
+        borderColor: `${focusBorderColor} !important`,
+        borderWidth: "1.5px !important",
+      },
+    };
+
+    const outlinedErrorStyles = {
+      "&.Mui-error fieldset": {
+        borderColor: errorBorderColor,
+      },
+      "&.Mui-error .MuiOutlinedInput-notchedOutline": {
+        borderColor: `${errorBorderColor} !important`,
+      },
+    };
+
+    const pickerFocusStyles = {
+      "&.MuiPickersInputBase-focused:not(.MuiPickersInputBase-error) .MuiPickersOutlinedInput-notchedOutline":
+        {
+          borderColor: `${focusBorderColor} !important`,
+          borderWidth: "1.5px !important",
+        },
+      "&.Mui-focused:not(.Mui-error) .MuiPickersOutlinedInput-notchedOutline, &.Mui-focused:not(.Mui-error) fieldset":
+        {
+          borderColor: `${focusBorderColor} !important`,
+          borderWidth: "1.5px !important",
+        },
+      "&.MuiPickersInputBase-colorPrimary.MuiPickersInputBase-focused:not(.MuiPickersInputBase-error) .MuiPickersOutlinedInput-notchedOutline":
+        {
+          borderColor: `${focusBorderColor} !important`,
+          borderWidth: "1.5px !important",
+        },
+    };
+
+    const pickerErrorStyles = {
+      "&.MuiPickersInputBase-error .MuiPickersOutlinedInput-notchedOutline": {
+        borderColor: `${errorBorderColor} !important`,
+      },
+    };
+
+    return {
       "& .MuiOutlinedInput-root": {
-        borderRadius: "14px",
-        backgroundColor: darkMode ? PROFILE_DARK_FIELD.bg : "#ffffff",
-        height: 58,
-        paddingRight: "8px",
-        transition: "box-shadow 0.2s ease, border-color 0.2s ease",
-
-        "& fieldset": {
-          borderColor: darkMode ? PROFILE_DARK_FIELD.border : "rgba(181, 123, 232, 0.22)",
-        },
-
-        "&:hover fieldset": {
-          borderColor: darkMode
-            ? PROFILE_DARK_FIELD.borderHover
-            : "rgba(181, 123, 232, 0.45)",
-        },
-
-        "&.Mui-focused": {
-          boxShadow: darkMode ? WELLNESS_DARK.focusRing : WELLNESS.focusRing,
-        },
-
-        "&.Mui-focused fieldset": {
-          borderColor: darkMode ? WELLNESS_DARK.primary : WELLNESS.primary,
-        },
-
+        ...outlinedRootBase,
+        "& fieldset": outlinedBorderBase,
+        "& .MuiOutlinedInput-notchedOutline": outlinedBorderBase,
+        "&:hover fieldset": outlinedHoverBorder,
+        "&:hover .MuiOutlinedInput-notchedOutline": outlinedHoverBorder,
+        ...outlinedFocusStyles,
+        ...outlinedErrorStyles,
         "& .MuiSelect-icon": {
-          color: darkMode ? "#cbd5e1" : "#9d5bd6",
+          color: iconColor,
         },
-
         "&.Mui-disabled .MuiSelect-icon": {
-          color: darkMode ? "#cbd5e1" : undefined,
+          color: fieldDisabledTextColor,
           opacity: 1,
         },
       },
 
-      "& .MuiOutlinedInput-input": {
-        fontSize: 17,
-        color: darkMode ? "#f8fafc" : WELLNESS.text,
-        WebkitTextFillColor: darkMode ? "#f8fafc" : undefined,
+      "& .MuiPickersOutlinedInput-root": {
+        ...outlinedRootBase,
+        "& .MuiPickersOutlinedInput-notchedOutline": outlinedBorderBase,
+        "&:hover .MuiPickersOutlinedInput-notchedOutline": outlinedHoverBorder,
+        ...pickerFocusStyles,
+        ...pickerErrorStyles,
+      },
+
+      "& .MuiOutlinedInput-input, & .MuiSelect-select": {
+        fontSize: inputFontSize,
+        color: fieldTextColor,
+        WebkitTextFillColor: darkMode ? fieldTextColor : undefined,
         paddingRight: "8px",
+        outline: "none",
       },
 
-      "& .MuiOutlinedInput-input.Mui-disabled": {
-        color: darkMode ? "#cbd5e1" : undefined,
-        WebkitTextFillColor: darkMode ? "#cbd5e1" : undefined,
+      "& .MuiOutlinedInput-input:focus, & .MuiSelect-select:focus, & .MuiPickersInputBase-input:focus, & .MuiPickersSectionList-root:focus-within":
+        {
+          outline: "none",
+        },
+
+      "& .MuiSelect-select:focus": {
+        backgroundColor: "transparent",
+      },
+
+      "& .MuiOutlinedInput-input.Mui-disabled, & .Mui-disabled .MuiSelect-select": {
+        color: fieldDisabledTextColor,
+        WebkitTextFillColor: fieldDisabledTextColor,
         opacity: 1,
       },
 
-      "& .MuiOutlinedInput-root.Mui-disabled": {
+      "& .MuiOutlinedInput-root.Mui-disabled, & .MuiPickersOutlinedInput-root.Mui-disabled": {
         opacity: 1,
       },
 
-      "& .MuiOutlinedInput-root.Mui-disabled fieldset": {
-        borderColor: darkMode ? PROFILE_DARK_FIELD.border : undefined,
+      "& .MuiOutlinedInput-root.Mui-disabled fieldset, & .MuiPickersOutlinedInput-root.Mui-disabled .MuiPickersOutlinedInput-notchedOutline":
+        {
+          borderColor: darkMode ? PROFILE_DARK_FIELD.border : undefined,
+        },
+
+      "& .MuiPickersSectionList-sectionContent": {
+        color: fieldTextColor,
+        WebkitTextFillColor: darkMode ? fieldTextColor : undefined,
+        fontSize: inputFontSize,
       },
 
-      "& .Mui-disabled .MuiSelect-select": {
-        color: darkMode ? "#cbd5e1" : undefined,
-        WebkitTextFillColor: darkMode ? "#cbd5e1" : undefined,
+      "& .Mui-disabled .MuiPickersSectionList-sectionContent": {
+        color: fieldDisabledTextColor,
+        WebkitTextFillColor: fieldDisabledTextColor,
+        opacity: 1,
+      },
+    };
+  }, [
+    darkMode,
+    embedded,
+    fieldBg,
+    fieldBorderColor,
+    fieldBorderHover,
+    fieldDisabledTextColor,
+    fieldTextColor,
+    focusBorderColor,
+    focusRingShadow,
+    iconColor,
+    inputFontSize,
+    inputHeight,
+    inputRadius,
+  ]);
+
+  const datePickerRootSx = useMemo(
+    () => ({
+      borderRadius: inputRadius,
+      backgroundColor: fieldBg,
+      height: inputHeight,
+      paddingRight: "8px",
+      transition: fieldTransition,
+      overflow: "visible",
+      position: "relative",
+      "&.MuiPickersInputBase-focused:not(.MuiPickersInputBase-error), &.Mui-focused:not(.Mui-error)": {
+        boxShadow: "none",
+      },
+      "&.MuiPickersInputBase-focused:not(.MuiPickersInputBase-error) .MuiPickersOutlinedInput-notchedOutline, &.Mui-focused:not(.Mui-error) .MuiPickersOutlinedInput-notchedOutline, &.MuiPickersInputBase-focused:not(.MuiPickersInputBase-error) fieldset, &.Mui-focused:not(.Mui-error) fieldset":
+        {
+          borderColor: `${focusBorderColor} !important`,
+          borderWidth: "1.5px !important",
+        },
+      "&.MuiPickersInputBase-colorPrimary.MuiPickersInputBase-focused:not(.MuiPickersInputBase-error) .MuiPickersOutlinedInput-notchedOutline":
+        {
+          borderColor: `${focusBorderColor} !important`,
+          borderWidth: "1.5px !important",
+        },
+      "& .MuiPickersSectionList-root:focus-within, & .MuiPickersInputBase-input:focus": {
+        outline: "none !important",
+      },
+    }),
+    [
+      fieldBg,
+      focusBorderColor,
+      inputHeight,
+      inputRadius,
+      fieldTransition,
+    ]
+  );
+
+  const datePickerFieldSx = useMemo(
+    () => ({
+      ...fieldSx,
+      overflow: "visible",
+      borderRadius: inputRadius,
+      transition: fieldTransition,
+      "&:focus-within:not(.Mui-error):not(.MuiPickersTextField-error)": {
+        borderRadius: inputRadius,
+        boxShadow: `${focusRingShadow} !important`,
+      },
+      "&.MuiPickersTextField-focused:not(.MuiPickersTextField-error)": {
+        borderRadius: inputRadius,
+        boxShadow: `${focusRingShadow} !important`,
+      },
+      "& .MuiPickersOutlinedInput-root": {
+        ...fieldSx["& .MuiPickersOutlinedInput-root"],
+        overflow: "visible",
+        boxShadow: "none !important",
+        "&.MuiPickersInputBase-focused:not(.MuiPickersInputBase-error), &.Mui-focused:not(.Mui-error)":
+          {
+            boxShadow: "none !important",
+          },
+      },
+    }),
+    [fieldSx, focusRingShadow, inputRadius, fieldTransition]
+  );
+
+  const phoneHasError = Boolean(fieldErrors.phoneNumber);
+
+  const phoneBorder = phoneHasError ? errorBorderColor : fieldBorderColor;
+  const phoneBorderWidth = phoneHasError ? "1.5px" : "1px";
+
+  const phoneInputStyle = useMemo(
+    () => ({
+      width: "100%",
+      height: `${inputHeight}px`,
+      borderRadius: inputRadius,
+      fontSize: `${inputFontSize}px`,
+      border: `${phoneBorderWidth} solid ${phoneBorder}`,
+      backgroundColor: fieldBg,
+      color: fieldTextColor,
+      direction: "ltr",
+      textAlign: "left",
+      unicodeBidi: "plaintext",
+      paddingLeft: "52px",
+      paddingRight: "12px",
+      outline: "none",
+      transition: fieldTransition,
+    }),
+    [
+      fieldBg,
+      fieldTextColor,
+      inputFontSize,
+      inputHeight,
+      inputRadius,
+      phoneBorder,
+      phoneBorderWidth,
+    ]
+  );
+
+  const phoneButtonStyle = useMemo(
+    () => ({
+      borderTopLeftRadius: inputRadius,
+      borderBottomLeftRadius: inputRadius,
+      border: `${phoneBorderWidth} solid ${phoneBorder}`,
+      backgroundColor: fieldBg,
+    }),
+    [fieldBg, inputRadius, phoneBorder, phoneBorderWidth]
+  );
+
+  const phoneFieldSx = useMemo(
+    () => ({
+      direction: "ltr",
+      unicodeBidi: "isolate",
+      "& .react-tel-input": {
+        direction: "ltr",
+        textAlign: "left",
+      },
+      "& .react-tel-input .flag-dropdown, & .react-tel-input .selected-flag": {
+        pointerEvents: "auto",
+        backgroundColor: `${fieldBg} !important`,
+      },
+      "& .react-tel-input .flag-dropdown": {
+        zIndex: 3,
+        borderColor: `${phoneBorder} !important`,
+        borderRight: `${phoneBorderWidth} solid ${phoneBorder} !important`,
+      },
+      "& .react-tel-input .form-control": {
+        direction: "ltr",
+        textAlign: "left",
+        unicodeBidi: "plaintext",
+        borderColor: `${phoneBorder} !important`,
+        borderWidth: `${phoneBorderWidth} !important`,
+        backgroundColor: `${fieldBg} !important`,
+        color: `${fieldTextColor} !important`,
+        outline: "none !important",
+        transition: fieldTransition,
+      },
+      "& .react-tel-input .form-control:hover": {
+        borderColor: `${phoneHasError ? errorBorderColor : fieldBorderHover} !important`,
+      },
+      "& .react-tel-input .form-control:focus": {
+        outline: "none !important",
+        borderColor: `${phoneHasError ? errorBorderColor : focusBorderColor} !important`,
+        borderWidth: "1.5px !important",
+        boxShadow: phoneHasError ? "none !important" : `${focusRingShadow} !important`,
+      },
+      "& .react-tel-input .country-list": {
+        direction: "ltr",
+        textAlign: "left",
+        backgroundColor: `${fieldBg} !important`,
+        color: `${fieldTextColor} !important`,
+        border: `${phoneBorderWidth} solid ${fieldBorderColor} !important`,
+      },
+      "& .react-tel-input .country-list .country": {
+        color: `${fieldTextColor} !important`,
+      },
+      "& .react-tel-input .country-list .country:hover": {
+        backgroundColor: darkMode
+          ? "rgba(196, 165, 245, 0.12) !important"
+          : "rgba(181, 123, 232, 0.1) !important",
+      },
+      "& .react-tel-input .country-list .country.highlight": {
+        backgroundColor: darkMode
+          ? "rgba(196, 165, 245, 0.2) !important"
+          : "rgba(181, 123, 232, 0.16) !important",
+      },
+    }),
+    [
+      darkMode,
+      fieldBg,
+      fieldBorderColor,
+      fieldBorderHover,
+      fieldTextColor,
+      focusBorderColor,
+      focusRingShadow,
+      phoneBorder,
+      phoneBorderWidth,
+      phoneHasError,
+    ]
+  );
+
+  const pickerButtonSx = useMemo(
+    () => ({
+      color: iconColor,
+      opacity: 1,
+      "&:hover": {
+        backgroundColor: darkMode
+          ? "rgba(196, 165, 245, 0.12)"
+          : "rgba(181, 123, 232, 0.1)",
+        color: iconColor,
+      },
+      "&.Mui-focused": {
+        color: iconColor,
+      },
+      "&.Mui-disabled": {
+        color: fieldDisabledTextColor,
         opacity: 1,
       },
     }),
-    [darkMode]
+    [darkMode, fieldDisabledTextColor, iconColor]
   );
 
   const labelMuted = darkMode ? WELLNESS_DARK.muted : WELLNESS.muted;
@@ -303,14 +661,6 @@ function PersonalDetailsForm({
       { value: "phone", label: t("contactPhone") },
       { value: "sms", label: t("contactSms") },
       { value: "whatsapp", label: t("contactWhatsapp") },
-    ],
-    [t]
-  );
-
-  const languageOptions = useMemo(
-    () => [
-      { value: "english", label: t("languageEnglish") },
-      { value: "hebrew", label: t("languageHebrew") },
     ],
     [t]
   );
@@ -359,137 +709,263 @@ function PersonalDetailsForm({
     [locale, darkMode]
   );
 
-  const phoneHasError = Boolean(fieldErrors.phoneNumber);
-
-  const phoneInputStyle = useMemo(
-    () => ({
-      width: "100%",
-      height: "58px",
-      borderRadius: "14px",
-      fontSize: "17px",
-      border: phoneHasError
-        ? "1.5px solid #ef4444"
-        : darkMode
-          ? `1px solid ${PROFILE_DARK_FIELD.border}`
-          : "1px solid rgba(181, 123, 232, 0.22)",
-      backgroundColor: darkMode ? PROFILE_DARK_FIELD.bg : "#ffffff",
-      color: darkMode ? "#f8fafc" : WELLNESS.text,
-      direction: "ltr",
-      textAlign: "left",
-      unicodeBidi: "plaintext",
-      paddingLeft: "52px",
-      paddingRight: "12px",
-    }),
-    [darkMode, phoneHasError]
-  );
-
-  const phoneButtonStyle = useMemo(
-    () => ({
-      borderTopLeftRadius: "14px",
-      borderBottomLeftRadius: "14px",
-      border: phoneHasError
-        ? "1.5px solid #ef4444"
-        : darkMode
-          ? `1px solid ${PROFILE_DARK_FIELD.border}`
-          : "1px solid rgba(181, 123, 232, 0.22)",
-      backgroundColor: darkMode ? PROFILE_DARK_FIELD.bg : "#ffffff",
-    }),
-    [darkMode, phoneHasError]
-  );
-
-  const dateFieldSx = useMemo(
-    () => ({
-      "& .MuiOutlinedInput-root": {
-        borderRadius: "14px",
-        backgroundColor: darkMode ? PROFILE_DARK_FIELD.bg : "#ffffff",
-        height: 58,
-        transition: "box-shadow 0.2s ease, border-color 0.2s ease",
-
-        "& fieldset": {
-          borderColor: darkMode ? PROFILE_DARK_FIELD.border : "rgba(181, 123, 232, 0.22)",
-          borderWidth: "1px",
-        },
-
-        "& .MuiOutlinedInput-notchedOutline": {
-          borderColor: darkMode ? PROFILE_DARK_FIELD.border : "rgba(181, 123, 232, 0.22)",
-          borderWidth: "1px",
-        },
-
-        "&:hover fieldset": {
-          borderColor: darkMode
-            ? PROFILE_DARK_FIELD.borderHover
-            : "rgba(181, 123, 232, 0.45)",
-        },
-
-        "&:hover .MuiOutlinedInput-notchedOutline": {
-          borderColor: darkMode
-            ? PROFILE_DARK_FIELD.borderHover
-            : "rgba(181, 123, 232, 0.45)",
-        },
-
-        "&.Mui-focused": {
-          boxShadow: darkMode ? WELLNESS_DARK.focusRing : WELLNESS.focusRing,
-        },
-
-        "&.Mui-focused fieldset": {
-          borderColor: darkMode ? WELLNESS_DARK.primary : WELLNESS.primary,
-        },
-
-        "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
-          borderColor: darkMode ? WELLNESS_DARK.primary : WELLNESS.primary,
-        },
-
-        "&.Mui-disabled fieldset": {
-          borderColor: darkMode ? PROFILE_DARK_FIELD.border : undefined,
-        },
-
-        "&.Mui-disabled .MuiOutlinedInput-notchedOutline": {
-          borderColor: darkMode ? PROFILE_DARK_FIELD.border : undefined,
-        },
-      },
-
-      "& input": {
-        fontSize: 17,
-        color: darkMode ? "#f8fafc" : WELLNESS.text,
-        WebkitTextFillColor: darkMode ? "#f8fafc" : undefined,
-      },
-
-      "& .MuiOutlinedInput-input.Mui-disabled": {
-        color: darkMode ? "#cbd5e1" : undefined,
-        WebkitTextFillColor: darkMode ? "#cbd5e1" : undefined,
-        opacity: 1,
-      },
-
-      "& .MuiOutlinedInput-root.Mui-disabled": {
-        opacity: 1,
-      },
-
-      "& .MuiPickersSectionList-sectionContent": {
-        color: darkMode ? "#f8fafc" : WELLNESS.text,
-        WebkitTextFillColor: darkMode ? "#f8fafc" : undefined,
-      },
-
-      "& .Mui-disabled .MuiPickersSectionList-sectionContent": {
-        color: darkMode ? "#cbd5e1" : undefined,
-        WebkitTextFillColor: darkMode ? "#cbd5e1" : undefined,
-        opacity: 1,
-      },
-    }),
-    [darkMode]
-  );
-
   const FieldLabel = ({ children }) => (
     <Typography
       sx={{
-        mb: 0.8,
+        mb: embedded ? 0.6 : 0.8,
         color: labelMuted,
-        fontSize: 14,
-        fontWeight: 500,
+        fontSize: embedded ? 13 : 14,
+        fontWeight: embedded ? 600 : 500,
       }}
     >
       {children}
     </Typography>
   );
+
+  const formBody = (
+    <Stack
+      className={embedded ? "profile-settings-form" : undefined}
+      component="form"
+      spacing={embedded ? 2.5 : 3.2}
+      onSubmit={handleSave}
+    >
+      {!embedded ? (
+        <Box>
+          <Typography
+            variant="h4"
+            sx={{ fontWeight: 800, color: titleColor, mb: 1 }}
+          >
+            {t("personalDetails")}
+          </Typography>
+
+          <Typography sx={{ color: subtitleColor }}>
+            {t("personalDetailsSubtitle")}
+          </Typography>
+        </Box>
+      ) : null}
+
+      <Grid container spacing={gridSpacing}>
+        <Grid item xs={12} md={6}>
+          <FieldLabel>{t("firstName")}</FieldLabel>
+          <TextField
+            fullWidth
+            name="firstName"
+            value={formData.firstName || ""}
+            onChange={handleChange}
+            sx={fieldSx}
+            error={Boolean(fieldErrors.firstName)}
+            helperText={fieldErrors.firstName || undefined}
+          />
+        </Grid>
+
+        <Grid item xs={12} md={6}>
+          <FieldLabel>{t("lastName")}</FieldLabel>
+          <TextField
+            fullWidth
+            name="lastName"
+            value={formData.lastName || ""}
+            onChange={handleChange}
+            sx={fieldSx}
+          />
+        </Grid>
+
+        <Grid item xs={12} md={6}>
+          <FieldLabel>{t("phoneNumber")}</FieldLabel>
+
+          <Box dir="ltr" lang="en" sx={phoneFieldSx}>
+            <PhoneInput
+              country={"il"}
+              value={formData.phoneNumber}
+              onChange={(phone) => {
+                setFormData((prev) => ({
+                  ...prev,
+                  phoneNumber: phone,
+                }));
+                clearFieldError("phoneNumber");
+              }}
+              specialLabel=""
+              containerStyle={{ direction: "ltr" }}
+              inputProps={{
+                dir: "ltr",
+                autoComplete: "tel",
+                style: { unicodeBidi: "plaintext" },
+              }}
+              inputStyle={phoneInputStyle}
+              buttonStyle={phoneButtonStyle}
+              dropdownStyle={{ direction: "ltr", textAlign: "left" }}
+              disabled={false}
+            />
+          </Box>
+          {fieldErrors.phoneNumber ? (
+            <FormHelperText error sx={{ mx: 0, mt: 0.5 }}>
+              {fieldErrors.phoneNumber}
+            </FormHelperText>
+          ) : null}
+        </Grid>
+
+        <Grid item xs={12} md={6}>
+          <FieldLabel>{t("emailAddress")}</FieldLabel>
+          <TextField
+            fullWidth
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            sx={fieldSx}
+            error={Boolean(fieldErrors.email)}
+            helperText={fieldErrors.email || undefined}
+          />
+        </Grid>
+
+        <Grid item xs={12} md={6}>
+          <FieldLabel>{t("streetAddress")}</FieldLabel>
+          <TextField
+            fullWidth
+            name="streetAddress"
+            value={formData.streetAddress}
+            onChange={handleChange}
+            sx={fieldSx}
+            error={Boolean(fieldErrors.streetAddress)}
+            helperText={fieldErrors.streetAddress || undefined}
+          />
+        </Grid>
+
+        <Grid item xs={12} md={6}>
+          <FieldLabel>{t("city")}</FieldLabel>
+          <TextField
+            fullWidth
+            name="city"
+            value={formData.city}
+            onChange={handleChange}
+            sx={fieldSx}
+            error={Boolean(fieldErrors.city)}
+            helperText={fieldErrors.city || undefined}
+          />
+        </Grid>
+
+        <Grid item xs={12} md={6}>
+          <FieldLabel>{t("birthDate")}</FieldLabel>
+
+          <Box className="profile-settings-form__date-field">
+            <LocalizationProvider
+              dateAdapter={AdapterDateFns}
+              adapterLocale={locale === "he" ? dateFnsHe : undefined}
+            >
+              <DatePicker
+                value={birthDateFormValueToDate(formData.birthDate)}
+                onChange={(newValue) => {
+                  setFormData((prev) => ({
+                    ...prev,
+                    birthDate:
+                      newValue == null || Number.isNaN(newValue?.getTime?.())
+                        ? ""
+                        : formatDateToYyyyMmDd(newValue),
+                  }));
+                  clearFieldError("birthDate");
+                }}
+                slots={{
+                  openPickerIcon: CalendarMonthOutlinedIcon,
+                }}
+                slotProps={{
+                  openPickerButton: {
+                    sx: pickerButtonSx,
+                  },
+                  textField: {
+                    fullWidth: true,
+                    error: Boolean(fieldErrors.birthDate),
+                    helperText: fieldErrors.birthDate || undefined,
+                    sx: datePickerFieldSx,
+                    slotProps: {
+                      input: {
+                        slotProps: {
+                          root: {
+                            sx: datePickerRootSx,
+                          },
+                        },
+                      },
+                    },
+                  },
+                }}
+                disabled={false}
+              />
+            </LocalizationProvider>
+          </Box>
+        </Grid>
+
+        <Grid item xs={12} md={6}>
+          <FieldLabel>{t("preferredContactMethod")}</FieldLabel>
+          <TextField
+            fullWidth
+            select
+            name="preferredContactMethod"
+            value={formData.preferredContactMethod || "email"}
+            onChange={handleChange}
+            sx={fieldSx}
+            MenuProps={{
+              PaperProps: {
+                sx: menuPaperSx,
+              },
+            }}
+            error={Boolean(fieldErrors.preferredContactMethod)}
+            helperText={fieldErrors.preferredContactMethod || undefined}
+          >
+            {contactOptions.map((option) => (
+              <MenuItem key={option.value} value={option.value}>
+                {option.label}
+              </MenuItem>
+            ))}
+          </TextField>
+        </Grid>
+      </Grid>
+
+      <Box className={embedded ? "profile-settings-form__pref-row" : undefined} sx={{ mt: embedded ? 0 : 2 }}>
+        <div className="profile-settings__setting-row">
+          <div className="profile-settings__setting-copy">
+            <span className="profile-settings__setting-icon" aria-hidden="true">
+              <CakeOutlinedIcon />
+            </span>
+            <div>
+              <p className="profile-settings__setting-title">{t("showBirthdayTitle")}</p>
+              <p className="profile-settings__setting-desc">{t("showBirthdayDescription")}</p>
+            </div>
+          </div>
+
+          <button
+            type="button"
+            role="switch"
+            aria-checked={showBirthdayInCommunity}
+            aria-label={t("showBirthdayTitle")}
+            className={`profile-settings__toggle${showBirthdayInCommunity ? " is-on" : ""}`}
+            onClick={() => handleBirthdayVisibilityChange(!showBirthdayInCommunity)}
+          >
+            <span />
+          </button>
+        </div>
+      </Box>
+
+      {hasUnsavedChanges ? (
+        <Box
+          className="profile-settings-form__save-row"
+          display="flex"
+          justifyContent="flex-end"
+          sx={{ pt: embedded ? 1.5 : 0 }}
+        >
+          <Button
+            type="submit"
+            variant="contained"
+            className="profile-settings-form__save-btn"
+            disabled={saving}
+            sx={{ textTransform: "none" }}
+          >
+            {saving ? t("saving") : t("saveChanges")}
+          </Button>
+        </Box>
+      ) : null}
+    </Stack>
+  );
+
+  if (embedded) {
+    return formBody;
+  }
 
   return (
     <Card
@@ -503,385 +979,7 @@ function PersonalDetailsForm({
         boxShadow: darkMode ? WELLNESS_DARK.shadowCard : WELLNESS.shadowCard,
       }}
     >
-      <CardContent sx={{ p: { xs: 3, md: 4.5 } }}>
-        <Stack component="form" spacing={3.2} onSubmit={handleSave}>
-          <Box>
-            <Typography
-              variant="h4"
-              sx={{ fontWeight: 800, color: titleColor, mb: 1 }}
-            >
-              {t("personalDetails")}
-            </Typography>
-
-            <Typography sx={{ color: subtitleColor }}>
-              {t("personalDetailsSubtitle")}
-            </Typography>
-          </Box>
-
-          <Grid container spacing={3}>
-            <Grid item xs={12} md={6}>
-              <FieldLabel>{t("fullName")}</FieldLabel>
-              <TextField
-                fullWidth
-                name="fullName"
-                value={formData.fullName}
-                onChange={handleChange}
-                sx={fieldSx}
-                disabled={!isEditing}
-                error={Boolean(fieldErrors.fullName)}
-                helperText={fieldErrors.fullName || undefined}
-              />
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              <FieldLabel>{t("phoneNumber")}</FieldLabel>
-
-              <Box
-                dir="ltr"
-                lang="en"
-                sx={{
-                  direction: "ltr",
-                  unicodeBidi: "isolate",
-                  "& .react-tel-input": {
-                    direction: "ltr",
-                    textAlign: "left",
-                  },
-                  "& .react-tel-input .flag-dropdown": {
-                    pointerEvents: "auto",
-                    zIndex: 3,
-                    borderColor: phoneHasError
-                      ? "#ef4444 !important"
-                      : darkMode
-                        ? `${PROFILE_DARK_FIELD.border} !important`
-                        : "rgba(181, 123, 232, 0.22) !important",
-                    backgroundColor: darkMode
-                      ? `${PROFILE_DARK_FIELD.bg} !important`
-                      : "#ffffff !important",
-                    borderRight: phoneHasError
-                      ? "1.5px solid #ef4444 !important"
-                      : darkMode
-                        ? `1px solid ${PROFILE_DARK_FIELD.border} !important`
-                        : "1px solid rgba(181, 123, 232, 0.22) !important",
-                  },
-                  "& .react-tel-input .selected-flag": {
-                    pointerEvents: "auto",
-                    backgroundColor: darkMode
-                      ? `${PROFILE_DARK_FIELD.bg} !important`
-                      : "#ffffff !important",
-                  },
-                  "& .react-tel-input .form-control": {
-                    direction: "ltr",
-                    textAlign: "left",
-                    unicodeBidi: "plaintext",
-                    borderColor: phoneHasError
-                      ? "#ef4444 !important"
-                      : darkMode
-                        ? `${PROFILE_DARK_FIELD.border} !important`
-                        : "rgba(181, 123, 232, 0.22) !important",
-                    borderWidth: phoneHasError ? "1.5px !important" : "1px !important",
-                    backgroundColor: darkMode
-                      ? `${PROFILE_DARK_FIELD.bg} !important`
-                      : "#ffffff !important",
-                    color: darkMode
-                      ? "#f8fafc !important"
-                      : `${WELLNESS.text} !important`,
-                  },
-                  "& .react-tel-input .country-list": {
-                    direction: "ltr",
-                    textAlign: "left",
-                    backgroundColor: darkMode
-                      ? `${PROFILE_DARK_FIELD.bg} !important`
-                      : "#ffffff !important",
-                    color: darkMode
-                      ? "#f8fafc !important"
-                      : `${WELLNESS.text} !important`,
-                    borderColor: darkMode
-                      ? `${PROFILE_DARK_FIELD.border} !important`
-                      : "rgba(181, 123, 232, 0.22) !important",
-                    border: darkMode
-                      ? `1px solid ${PROFILE_DARK_FIELD.border} !important`
-                      : "1px solid rgba(181, 123, 232, 0.22) !important",
-                  },
-                  "& .react-tel-input .country-list .country": {
-                    color: darkMode
-                      ? "#f1f5f9 !important"
-                      : `${WELLNESS.text} !important`,
-                  },
-                  "& .react-tel-input .country-list .country:hover": {
-                    backgroundColor: darkMode
-                      ? "rgba(196, 165, 245, 0.12) !important"
-                      : "rgba(181, 123, 232, 0.1) !important",
-                  },
-                  "& .react-tel-input .country-list .country.highlight": {
-                    backgroundColor: darkMode
-                      ? "rgba(196, 165, 245, 0.2) !important"
-                      : "rgba(181, 123, 232, 0.16) !important",
-                  },
-                }}
-              >
-                <PhoneInput
-                  country={"il"}
-                  value={formData.phoneNumber}
-                  onChange={(phone) => {
-                    setFormData((prev) => ({
-                      ...prev,
-                      phoneNumber: phone,
-                    }));
-                    clearFieldError("phoneNumber");
-                  }}
-                  specialLabel=""
-                  containerStyle={{ direction: "ltr" }}
-                  inputProps={{
-                    dir: "ltr",
-                    autoComplete: "tel",
-                    style: { unicodeBidi: "plaintext" },
-                  }}
-                  inputStyle={phoneInputStyle}
-                  buttonStyle={phoneButtonStyle}
-                  dropdownStyle={{ direction: "ltr", textAlign: "left" }}
-                  disabled={!isEditing}
-                />
-              </Box>
-              {fieldErrors.phoneNumber ? (
-                <FormHelperText error sx={{ mx: 0, mt: 0.5 }}>
-                  {fieldErrors.phoneNumber}
-                </FormHelperText>
-              ) : null}
-            </Grid>
-
-            <Grid item xs={12}>
-              <FieldLabel>{t("emailAddress")}</FieldLabel>
-              <TextField
-                fullWidth
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                sx={fieldSx}
-                disabled={!isEditing}
-                error={Boolean(fieldErrors.email)}
-                helperText={fieldErrors.email || undefined}
-              />
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              <FieldLabel>{t("streetAddress")}</FieldLabel>
-              <TextField
-                fullWidth
-                name="streetAddress"
-                value={formData.streetAddress}
-                onChange={handleChange}
-                sx={fieldSx}
-                disabled={!isEditing}
-                error={Boolean(fieldErrors.streetAddress)}
-                helperText={fieldErrors.streetAddress || undefined}
-              />
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              <FieldLabel>{t("city")}</FieldLabel>
-              <TextField
-                fullWidth
-                name="city"
-                value={formData.city}
-                onChange={handleChange}
-                sx={fieldSx}
-                disabled={!isEditing}
-                error={Boolean(fieldErrors.city)}
-                helperText={fieldErrors.city || undefined}
-              />
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              <FieldLabel>{t("birthDate")}</FieldLabel>
-
-              <LocalizationProvider
-                dateAdapter={AdapterDateFns}
-                adapterLocale={locale === "he" ? dateFnsHe : undefined}
-              >
-                <DatePicker
-                  value={birthDateFormValueToDate(formData.birthDate)}
-                  onChange={(newValue) => {
-                    setFormData((prev) => ({
-                      ...prev,
-                      birthDate:
-                        newValue == null || Number.isNaN(newValue?.getTime?.())
-                          ? ""
-                          : formatDateToYyyyMmDd(newValue),
-                    }));
-                    clearFieldError("birthDate");
-                  }}
-                  slots={{
-                    openPickerIcon: CalendarMonthOutlinedIcon,
-                  }}
-                  slotProps={{
-                    openPickerButton: {
-                      sx: {
-                        color: darkMode ? "#cbd5e1" : "#9d5bd6",
-                        opacity: 1,
-                        "&:hover": {
-                          backgroundColor: darkMode
-                            ? "rgba(196, 165, 245, 0.12)"
-                            : "rgba(181, 123, 232, 0.1)",
-                          color: darkMode ? "#f8fafc" : "#9d5bd6",
-                        },
-                        "&.Mui-disabled": {
-                          color: darkMode ? "#cbd5e1" : undefined,
-                          opacity: 1,
-                        },
-                      },
-                    },
-                    textField: {
-                      fullWidth: true,
-                      error: Boolean(fieldErrors.birthDate),
-                      helperText: fieldErrors.birthDate || undefined,
-                      sx: dateFieldSx,
-                    },
-                  }}
-                  disabled={!isEditing}
-                />
-              </LocalizationProvider>
-            </Grid>
-
-            <Grid item xs={12} md={6}>
-              <FieldLabel>{t("preferredContactMethod")}</FieldLabel>
-              <TextField
-                fullWidth
-                select
-                name="preferredContactMethod"
-                value={formData.preferredContactMethod || "email"}
-                onChange={handleChange}
-                sx={fieldSx}
-                MenuProps={{
-                  PaperProps: {
-                    sx: menuPaperSx,
-                  },
-                }}
-                disabled={!isEditing}
-                error={Boolean(fieldErrors.preferredContactMethod)}
-                helperText={fieldErrors.preferredContactMethod || undefined}
-              >
-                {contactOptions.map((option) => (
-                  <MenuItem key={option.value} value={option.value}>
-                    {option.label}
-                  </MenuItem>
-                ))}
-              </TextField>
-            </Grid>
-
-            <Grid item xs={12}>
-              <FieldLabel>{t("language")}</FieldLabel>
-              <TextField
-                fullWidth
-                select
-                name="language"
-                value={formData.language || "english"}
-                onChange={handleChange}
-                sx={fieldSx}
-                MenuProps={{
-                  PaperProps: {
-                    sx: menuPaperSx,
-                  },
-                }}
-                disabled={!isEditing}
-                error={Boolean(fieldErrors.language)}
-                helperText={fieldErrors.language || undefined}
-              >
-                {languageOptions.map((option) => (
-                  <MenuItem key={option.value} value={option.value}>
-                    {option.label}
-                  </MenuItem>
-                ))}
-              </TextField>
-            </Grid>
-          </Grid>
-
-          {isEditing && (
-            <Box display="flex" justifyContent="flex-end">
-              <Button
-                type="submit"
-                variant="contained"
-                disabled={saving}
-                startIcon={<SaveOutlinedIcon />}
-                sx={{
-                  textTransform: "none",
-                  borderRadius: "18px",
-                  px: 4,
-                  py: 1.4,
-                  fontWeight: 700,
-                  fontSize: 16,
-                  background: `linear-gradient(135deg, ${WELLNESS.primary} 0%, #e879c8 100%)`,
-                  boxShadow: "0 8px 22px rgba(181, 123, 232, 0.28)",
-                  transition: "transform 0.2s ease, box-shadow 0.2s ease",
-                  color: "#ffffff",
-                  "& .MuiButton-startIcon": {
-                    color: "inherit",
-                  },
-                  "&:hover": {
-                    background:
-                      "linear-gradient(135deg, #a66ee0 0%, #df6aad 100%)",
-                    transform: "translateY(-1px)",
-                    boxShadow: "0 10px 26px rgba(181, 123, 232, 0.36)",
-                  },
-                  "&:disabled": {
-                    color: "rgba(255,255,255,0.9)",
-                    background:
-                      "linear-gradient(135deg, #d4c4e8 0%, #e8b8d4 100%)",
-                    boxShadow: "none",
-                    transform: "none",
-                  },
-                }}
-              >
-                {saving ? t("saving") : t("saveChanges")}
-              </Button>
-            </Box>
-          )}
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "flex-end",
-              pt: 1,
-              pr: { xs: 0.2, md: 0.6 },
-              pb: { xs: 0.5, md: 0.8 },
-            }}
-          >
-            <Button
-              type="button"
-              variant="outlined"
-              startIcon={
-                <LogoutOutlinedIcon sx={{ color: "inherit", fontSize: 20 }} />
-              }
-              onClick={onLogout}
-              sx={{
-                gap: 1,
-                textTransform: "none",
-                borderRadius: "18px",
-                px: 2.5,
-                py: 1,
-                fontWeight: 600,
-                fontSize: 15,
-                color: "#6b4f9a",
-                borderWidth: 1.5,
-                borderColor: "rgba(181, 123, 232, 0.45)",
-                backgroundColor: "#ffffff",
-                transition:
-                  "border-color 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease",
-                "& .MuiButton-startIcon": {
-                  color: "inherit",
-                },
-                "&:hover": {
-                  borderColor: WELLNESS.primary,
-                  borderWidth: 1.5,
-                  backgroundColor: "rgba(181, 123, 232, 0.06)",
-                  transform: "translateY(-1px)",
-                  boxShadow: "0 4px 14px rgba(181, 123, 232, 0.12)",
-                },
-              }}
-            >
-              {t("logout")}
-            </Button>
-          </Box>
-        </Stack>
-      </CardContent>
+      <CardContent sx={{ p: { xs: 3, md: 4.5 } }}>{formBody}</CardContent>
     </Card>
   );
 }

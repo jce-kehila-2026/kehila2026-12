@@ -7,7 +7,6 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import MoodOutlinedIcon from '@mui/icons-material/MoodOutlined';
 import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNoneOutlined';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
-import VolunteerActivismOutlinedIcon from '@mui/icons-material/VolunteerActivismOutlined';
 import { useLocation, useNavigate } from 'react-router-dom';
 import CalendarPage from '../calendar/CalendarPage';
 import EventsPage from '../events/EventsPage';
@@ -343,15 +342,6 @@ export default function ParticipantHome({ initialView = 'home' }) {
               );
             })}
           </nav>
-
-          <div className="participant-support-card">
-            <VolunteerActivismOutlinedIcon />
-            <strong>Need Support?</strong>
-            <span>We are here for you.</span>
-            <button type="button" onClick={() => setActiveView('community')}>
-              Contact Us
-            </button>
-          </div>
 
           <button className="participant-logout" type="button" onClick={logout} title={sidebarCollapsed ? 'Logout' : undefined}>
             <LogoutIcon fontSize="small" />
