@@ -12,9 +12,11 @@ import Alert from '@mui/material/Alert';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
+import Checkbox from '@mui/material/Checkbox';
 import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
 import Dialog from '@mui/material/Dialog';
+import FormControlLabel from '@mui/material/FormControlLabel';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
@@ -42,7 +44,12 @@ import {
   approveJoinRequest,
   rejectJoinRequest,
 } from '../services/joinRequestAdminService';
-import { isApprovalEmailConfigured, sendApprovalEmail } from '../services/approvalEmailService';
+import {
+  isApprovalEmailConfigured,
+  isRejectionEmailConfigured,
+  sendApprovalEmail,
+  sendRejectionEmail,
+} from '../services/approvalEmailService';
 
 const STATUS_META = {
   [JOIN_REQUEST_STATUS.NEW]: { label: 'New', color: '#B45309', bg: 'rgba(245, 158, 11, 0.16)' },
@@ -147,6 +154,7 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
   const [actionLoading, setActionLoading] = useState(false);
   const [actionError, setActionError] = useState('');
   const [rejectReason, setRejectReason] = useState('');
+  const [notifyOnReject, setNotifyOnReject] = useState(() => isRejectionEmailConfigured());
   const [approveResult, setApproveResult] = useState(null); // { email, tempPassword }
   const [emailStatus, setEmailStatus] = useState('idle'); // 'sending' | 'sent' | 'failed' | 'not-configured'
   const [copied, setCopied] = useState(false);
@@ -182,6 +190,7 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
     setActionTarget(req);
     setActionMode('reject');
     setRejectReason('');
+    setNotifyOnReject(isRejectionEmailConfigured() && Boolean(req?.email));
     setActionError('');
     setDetailsOpen(false);
   }
@@ -244,6 +253,16 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
     try {
       await rejectJoinRequest(actionTarget, { reason: rejectReason });
       onChanged?.();
+
+      // Optional decline email — best effort; the reject already succeeded.
+      if (notifyOnReject && actionTarget.email && isRejectionEmailConfigured()) {
+        try {
+          await sendRejectionEmail({ toEmail: actionTarget.email, fullName: actionTarget.fullName });
+        } catch (emailErr) {
+          console.error('Decline email failed:', emailErr);
+        }
+      }
+
       resetAction();
     } catch (err) {
       console.error('Reject failed:', err);
@@ -680,7 +699,7 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
       <Dialog
         open={actionMode === 'approve' && Boolean(actionTarget)}
         onClose={closeAction}
-        PaperProps={{ sx: { borderRadius: '24px', width: { xs: 'calc(100vw - 32px)', sm: '30rem' }, maxWidth: 480 } }}
+        PaperProps={{ dir: 'ltr', sx: { borderRadius: '24px', width: { xs: 'calc(100vw - 32px)', sm: '30rem' }, maxWidth: 480 } }}
       >
         {approveResult ? (
           <>
@@ -758,7 +777,7 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
       <Dialog
         open={actionMode === 'reject' && Boolean(actionTarget)}
         onClose={closeAction}
-        PaperProps={{ sx: { borderRadius: '24px', width: { xs: 'calc(100vw - 32px)', sm: '30rem' }, maxWidth: 480 } }}
+        PaperProps={{ dir: 'ltr', sx: { borderRadius: '24px', width: { xs: 'calc(100vw - 32px)', sm: '30rem' }, maxWidth: 480 } }}
       >
         <DialogTitle sx={{ fontWeight: 950, color: '#100B2F' }}>Reject application?</DialogTitle>
         <DialogContent>
@@ -773,6 +792,21 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
             multiline
             minRows={2}
             sx={{ '& .MuiOutlinedInput-root': { borderRadius: '14px' } }}
+          />
+          <FormControlLabel
+            sx={{ mt: 1, alignItems: 'center' }}
+            control={
+              <Checkbox
+                checked={notifyOnReject}
+                onChange={(event) => setNotifyOnReject(event.target.checked)}
+                disabled={!isRejectionEmailConfigured() || !actionTarget?.email}
+              />
+            }
+            label={
+              isRejectionEmailConfigured()
+                ? 'Email the applicant a polite decline'
+                : 'Email the applicant (add a decline template to enable)'
+            }
           />
           {actionError ? <Alert severity="error" sx={{ mt: 2, borderRadius: '14px' }}>{actionError}</Alert> : null}
         </DialogContent>

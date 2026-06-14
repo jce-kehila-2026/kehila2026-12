@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
+import { sendPasswordResetEmail, signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
 import GoogleIcon from '@mui/icons-material/Google';
@@ -22,13 +22,37 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [notice, setNotice] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
   const navigate = useNavigate();
 
+  async function handleForgotPassword() {
+    setError('');
+    setNotice('');
+
+    if (!email) {
+      setError('הזיני את כתובת האימייל כדי לאפס את הסיסמה.');
+      return;
+    }
+
+    try {
+      await sendPasswordResetEmail(auth, email);
+      setNotice('שלחנו קישור לאיפוס הסיסמה לכתובת האימייל שלך. בדקי את תיבת הדואר (וגם את הספאם).');
+    } catch (err) {
+      const messages = {
+        'auth/invalid-email': 'כתובת האימייל אינה תקינה.',
+        'auth/user-not-found': 'לא נמצא חשבון עם כתובת אימייל זו.',
+        'auth/too-many-requests': 'יותר מדי ניסיונות. נסי שוב בעוד רגע.',
+      };
+      setError(messages[err.code] || 'שליחת קישור האיפוס נכשלה. נסי שוב.');
+    }
+  }
+
   async function handleEmailLogin(event) {
     event.preventDefault();
     setError('');
+    setNotice('');
     setSubmitting(true);
 
     try {
@@ -158,6 +182,26 @@ export default function LoginPage() {
               </div>
             ) : null}
 
+            {notice ? (
+              <div
+                id="login-notice"
+                role="status"
+                style={{
+                  margin: '0 0 1rem',
+                  padding: '0.75rem 1rem',
+                  borderRadius: '14px',
+                  border: '1px solid rgba(34, 197, 94, 0.35)',
+                  background: 'rgba(34, 197, 94, 0.12)',
+                  color: '#15803D',
+                  fontWeight: 600,
+                  fontSize: '0.9rem',
+                  lineHeight: 1.5,
+                }}
+              >
+                {notice}
+              </div>
+            ) : null}
+
             <form onSubmit={handleEmailLogin}>
               <div className="login-page__field">
                 <label className="login-page__label" htmlFor="login-email">
@@ -214,7 +258,12 @@ export default function LoginPage() {
                   <input type="checkbox" />
                   זכור אותי
                 </label>
-                <button type="button" className="login-page__link-btn">
+                <button
+                  type="button"
+                  className="login-page__link-btn"
+                  onClick={handleForgotPassword}
+                  disabled={submitting}
+                >
                   שכחת סיסמה?
                 </button>
               </div>

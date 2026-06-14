@@ -20,6 +20,7 @@ import emailjs from '@emailjs/browser';
 
 const SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID || '';
 const TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID || '';
+const REJECT_TEMPLATE_ID = import.meta.env.VITE_EMAILJS_REJECT_TEMPLATE_ID || '';
 const PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY || '';
 
 const ORG_NAME = 'שינה את החיים שלך';
@@ -52,4 +53,32 @@ export async function sendApprovalEmail({ toEmail, fullName, tempPassword, login
   };
 
   return emailjs.send(SERVICE_ID, TEMPLATE_ID, templateParams, { publicKey: PUBLIC_KEY });
+}
+
+/** True only when the optional decline template is configured. */
+export function isRejectionEmailConfigured() {
+  return Boolean(SERVICE_ID && REJECT_TEMPLATE_ID && PUBLIC_KEY);
+}
+
+/**
+ * Send a polite decline email. Uses a SEPARATE template
+ * (VITE_EMAILJS_REJECT_TEMPLATE_ID). The internal rejection reason is NOT
+ * sent to the applicant — only name and org. Throws on missing config/failure.
+ */
+export async function sendRejectionEmail({ toEmail, fullName }) {
+  if (!isRejectionEmailConfigured()) {
+    const error = new Error('Decline email template is not configured.');
+    error.code = 'REJECT_EMAIL_NOT_CONFIGURED';
+    throw error;
+  }
+
+  const templateParams = {
+    to_email: toEmail,
+    email: toEmail,
+    full_name: fullName || '',
+    to_name: fullName || '',
+    org_name: ORG_NAME,
+  };
+
+  return emailjs.send(SERVICE_ID, REJECT_TEMPLATE_ID, templateParams, { publicKey: PUBLIC_KEY });
 }
