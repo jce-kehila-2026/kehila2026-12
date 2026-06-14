@@ -22,7 +22,6 @@ import {
 import heroWellnessBanner from '../../../assets/hero-wellness-banner.png';
 import communityHighlightFallback from '../../../assets/images/support-groups.jpeg';
 import { auth } from '../../../firebase';
-import useDailyMotivation from './useDailyMotivation';
 import { createCalendarNote } from '../../calendar/calendarService';
 import {
   buildCalendarMonthCells,
@@ -317,7 +316,68 @@ function CircularCountdownRing({ variant, targetDate, countdown }) {
   );
 }
 
-function HeroBanner({ displayName, dailyQuote }) {
+function formatRelativeTime(timestamp) {
+  if (!timestamp) return '';
+  const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+  if (Number.isNaN(date.getTime())) return '';
+  const diffSeconds = (Date.now() - date.getTime()) / 1000;
+  if (diffSeconds < 60) return 'Just now';
+  if (diffSeconds < 3600) return `${Math.floor(diffSeconds / 60)}m ago`;
+  if (diffSeconds < 86400) return `${Math.floor(diffSeconds / 3600)}h ago`;
+  if (diffSeconds < 172800) return 'Yesterday';
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+function LatestMessageCard({ notification, onOpenNotifications }) {
+  const hasNotification = Boolean(notification?.title || notification?.body);
+  const notificationTitle = hasNotification ? notification.title || '' : '';
+  const notificationBody = hasNotification ? notification.body || '' : '';
+  const truncatedBody = notificationBody.length > 80 ? `${notificationBody.slice(0, 77)}...` : notificationBody;
+
+  return (
+    <button
+      type="button"
+      className="pd-home__admin-message"
+      onClick={onOpenNotifications}
+      aria-label={
+        hasNotification
+          ? `New admin message: ${notificationTitle || truncatedBody}`
+          : 'No new admin messages'
+      }
+    >
+      <span className="pd-home__admin-message-badge" aria-hidden="true">
+        <MessageCircle size={17} strokeWidth={2.2} />
+      </span>
+
+      <span className="pd-home__admin-message-content">
+        <span className="pd-home__admin-message-label">New admin message</span>
+        {hasNotification ? (
+          <>
+            {notificationTitle ? (
+              <span className="pd-home__admin-message-title">{notificationTitle}</span>
+            ) : null}
+            {truncatedBody ? (
+              <span className="pd-home__admin-message-preview">{truncatedBody}</span>
+            ) : null}
+          </>
+        ) : (
+          <span className="pd-home__admin-message-preview pd-home__admin-message-preview--empty">
+            No new admin messages yet
+          </span>
+        )}
+      </span>
+
+      <span className="pd-home__admin-message-meta">
+        {hasNotification ? (
+          <time className="pd-home__admin-message-time">{formatRelativeTime(notification.createdAt)}</time>
+        ) : null}
+        <ChevronRight className="pd-home__admin-message-arrow" size={16} strokeWidth={2} aria-hidden="true" />
+      </span>
+    </button>
+  );
+}
+
+function HeroBanner() {
   return (
     <section className="pd-home__hero" aria-label="Welcome banner">
       <img
@@ -326,23 +386,6 @@ function HeroBanner({ displayName, dailyQuote }) {
         alt="Woman overlooking a pink sunset valley with blossoms"
       />
       <div className="pd-home__hero-overlay" aria-hidden="true" />
-      <div className="pd-home__hero-content">
-        <h2 className="pd-home__hero-title">
-          Keep going
-          {displayName ? (
-            <>
-              ,{' '}
-              <span className="pd-home__hero-name">{displayName}</span>
-            </>
-          ) : null}
-        </h2>
-        {dailyQuote?.text ? (
-          <blockquote className="pd-home__hero-quote" aria-live="polite">
-            <p>&ldquo;{dailyQuote.text}&rdquo;</p>
-            {dailyQuote.author ? <cite>— {dailyQuote.author}</cite> : null}
-          </blockquote>
-        ) : null}
-      </div>
     </section>
   );
 }
@@ -1661,6 +1704,8 @@ export default function ParticipantDashboardHome({
   birthDate = '',
   onNavigateToView,
   onViewCommunity,
+  latestNotification = null,
+  onOpenNotifications,
 }) {
   const { appointment, event, isLoading, appointmentError, eventError } = useParticipantDashboardHomeData(userId);
   const isBirthdayToday = useBirthdayToday(birthDate);
@@ -1670,7 +1715,6 @@ export default function ParticipantDashboardHome({
     hasError: communityHasError,
     relativeTime: communityRelativeTime,
   } = useLatestCommunityPost();
-  const { quote: dailyQuote } = useDailyMotivation();
 
   const goToEventsView = useCallback(() => {
     onNavigateToView?.('events');
@@ -1696,12 +1740,14 @@ export default function ParticipantDashboardHome({
   }, [onViewCommunity]);
 
   return (
-    <div className="pd-home">
-      <HeroBanner displayName={displayName} dailyQuote={dailyQuote} />
+    <div className="participant-home__main">
+      <LatestMessageCard notification={latestNotification} onOpenNotifications={onOpenNotifications} />
+      <HeroBanner />
 
-      {isBirthdayToday ? <BirthdayGreeting firstName={displayName} /> : null}
+      <section className="pd-home">
+        {isBirthdayToday ? <BirthdayGreeting firstName={displayName} /> : null}
 
-      <section className="pd-home__row" aria-label="Upcoming appointment and event">
+        <section className="pd-home__row" aria-label="Upcoming appointment and event">
         {appointment ? (
           <AppointmentCard appointment={appointment} onView={goToAppointments} />
         ) : appointmentError ? (
@@ -1732,16 +1778,17 @@ export default function ParticipantDashboardHome({
         )}
       </section>
 
-      <section className="pd-home__row" aria-label="Notes and community">
-        <NotesCard userId={userId} />
-        <CommunityCardSection
-          post={latestCommunityPost}
-          isLoading={isCommunityLoading}
-          hasError={communityHasError}
-          relativeTime={communityRelativeTime}
-          onViewPost={handleViewCommunityPost}
-          onVisitCommunity={handleVisitCommunity}
-        />
+        <section className="pd-home__row" aria-label="Notes and community">
+          <NotesCard userId={userId} />
+          <CommunityCardSection
+            post={latestCommunityPost}
+            isLoading={isCommunityLoading}
+            hasError={communityHasError}
+            relativeTime={communityRelativeTime}
+            onViewPost={handleViewCommunityPost}
+            onVisitCommunity={handleVisitCommunity}
+          />
+        </section>
       </section>
     </div>
   );
