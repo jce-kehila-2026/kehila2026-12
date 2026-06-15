@@ -406,6 +406,8 @@ function mergeTeamMember(member, index) {
     imageUrl: safeString(safe.imageUrl),
     email: safeString(safe.email),
     order,
+    // Preserve Azure translations so the public read path can localize.
+    ...(safe.translations ? { translations: safe.translations } : {}),
   };
 }
 
