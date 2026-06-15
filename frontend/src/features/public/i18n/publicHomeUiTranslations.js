@@ -160,6 +160,9 @@ export const publicHomeUiTranslations = {
     volunteerCloseAria: 'סגירת טופס ההתנדבות',
     volunteerIntro: 'נשמח שתצטרפי אלינו להתנדבות שמתאימה לך! כל אחת יכולה לתרום בדרך שלה, בזמן שלה. השאירי פרטים ונחזור אלייך למצוא את האפשרות הנכונה עבורך.',
     volunteerDetailsTitle: 'פרטים להתנדבות',
+    supportAreaDefaultQuote: 'כאן תמיד יש מקום ללב, לתקווה ולחיבור אמיתי.',
+    supportAreaCloseAria: 'סגירת חלון',
+    supportAreaContact: 'צרי קשר',
   },
   ar: {
     aboutEyebrow: 'معًا نصنع مساحة آمنة',
@@ -321,6 +324,9 @@ export const publicHomeUiTranslations = {
     volunteerCloseAria: 'إغلاق نموذج التطوع',
     volunteerIntro: 'يسعدنا أن تنضمي إلينا في تطوّع يناسبك! يمكن لكل امرأة أن تساهم بطريقتها وفي وقتها. اتركي تفاصيلك وسنعود إليكِ لإيجاد الخيار المناسب لكِ.',
     volunteerDetailsTitle: 'تفاصيل التطوع',
+    supportAreaDefaultQuote: 'هنا دائمًا متّسع للقلب وللأمل وللتواصل الحقيقي.',
+    supportAreaCloseAria: 'إغلاق النافذة',
+    supportAreaContact: 'تواصلي معنا',
   },
   en: {
     aboutEyebrow: 'Together we create a safe space',
@@ -482,5 +488,8 @@ export const publicHomeUiTranslations = {
     volunteerCloseAria: 'Close the volunteer form',
     volunteerIntro: "We'd love for you to join us in volunteering that suits you! Everyone can contribute in her own way, in her own time. Leave your details and we'll get back to you to find the right option for you.",
     volunteerDetailsTitle: 'Volunteer details',
+    supportAreaDefaultQuote: 'Here, there is always room for the heart, for hope, and for genuine connection.',
+    supportAreaCloseAria: 'Close window',
+    supportAreaContact: 'Contact us',
   },
 };

@@ -12,6 +12,7 @@ import PersonOutlineRoundedIcon from '@mui/icons-material/PersonOutlineRounded';
 import CardGiftcardRoundedIcon from '@mui/icons-material/CardGiftcardRounded';
 import LoginRoundedIcon from '@mui/icons-material/LoginRounded';
 import { resolveSupportAreaActionPath } from '../constants/supportAreaModalContent';
+import { usePublicLocale } from '../context/PublicLocaleContext';
 import SupportAreaCardImage from './SupportAreaCardImage';
 
 const AREA_ICONS = {
@@ -29,13 +30,12 @@ const INFO_POINT_ICONS = {
   'איך מצטרפות': LoginRoundedIcon,
 };
 
-const DEFAULT_IMAGE_QUOTE = 'כאן תמיד יש מקום ללב, לתקווה ולחיבור אמיתי.';
-
 function getInfoPointIcon(label = '') {
   return INFO_POINT_ICONS[label] || FavoriteBorderRoundedIcon;
 }
 
 export default function SupportAreaModal({ area, isOpen, onClose }) {
+  const { t, direction } = usePublicLocale();
   const titleId = useId();
 
   useEffect(() => {
@@ -95,7 +95,7 @@ export default function SupportAreaModal({ area, isOpen, onClose }) {
         aria-labelledby={titleId}
         onMouseDown={(event) => event.stopPropagation()}
       >
-        <button className="support-area-modal__close" type="button" onClick={onClose} aria-label="סגירת חלון">
+        <button className="support-area-modal__close" type="button" onClick={onClose} aria-label={t('supportAreaCloseAria')}>
           <CloseRoundedIcon fontSize="inherit" aria-hidden="true" />
         </button>
 
@@ -107,12 +107,12 @@ export default function SupportAreaModal({ area, isOpen, onClose }) {
             position={area.imagePosition}
           />
           <div className="support-area-modal__media-overlay" aria-hidden="true">
-            <p className="support-area-modal__quote">{area.imageQuote || DEFAULT_IMAGE_QUOTE}</p>
+            <p className="support-area-modal__quote">{area.imageQuote || t('supportAreaDefaultQuote')}</p>
             <FavoriteBorderRoundedIcon className="support-area-modal__quote-icon" fontSize="small" />
           </div>
         </div>
 
-        <div className="support-area-modal__body" dir="rtl">
+        <div className="support-area-modal__body" dir={direction}>
           <header className="support-area-modal__header">
             <span className="support-area-modal__title-icon" aria-hidden="true">
               <AreaIcon fontSize="inherit" />
@@ -149,7 +149,7 @@ export default function SupportAreaModal({ area, isOpen, onClose }) {
               href={actionPath}
               onClick={handlePrimaryActionClick}
             >
-              <span className="support-area-modal__action-label">{area.actionLabel || 'צרי קשר'}</span>
+              <span className="support-area-modal__action-label">{area.actionLabel || t('supportAreaContact')}</span>
               <FavoriteBorderRoundedIcon fontSize="inherit" aria-hidden="true" />
             </a>
             <button
@@ -157,7 +157,7 @@ export default function SupportAreaModal({ area, isOpen, onClose }) {
               className="support-area-modal__action support-area-modal__action--secondary"
               onClick={onClose}
             >
-              סגירה
+              {t('joinClose')}
             </button>
           </div>
         </div>
