@@ -74,7 +74,6 @@ function PublicStoriesArticlesPageContent() {
         organization={content.organization}
         onJoinClick={() => setIsJoinModalOpen(true)}
         onVolunteerClick={() => setIsVolunteerModalOpen(true)}
-        showHomeDropdown={false}
       />
       <main id="public-main">
         <InspirationStoriesSection stories={publicHomeDoc.inspirationalStories} />

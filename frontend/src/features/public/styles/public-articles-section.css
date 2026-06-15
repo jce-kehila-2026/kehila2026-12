@@ -40,6 +40,15 @@
   margin-block-end: clamp(40px, 5vw, 52px);
 }
 
+.public-homepage[lang="en"] .public-section--press-articles .press-articles__heading-wrap {
+  max-width: 1040px;
+}
+
+.public-homepage[lang="en"] .public-section--press-articles .press-articles__heading-wrap .public-section-heading__title {
+  max-width: none;
+  white-space: nowrap;
+}
+
 .public-homepage .public-section--press-articles .press-articles__heading-wrap .public-section-heading__subtitle {
   color: var(--pa-muted);
 }
@@ -72,6 +81,10 @@
 }
 
 @media (max-width: 820px) {
+  .public-homepage[lang="en"] .public-section--press-articles .press-articles__heading-wrap .public-section-heading__title {
+    white-space: normal;
+  }
+
   .public-homepage .public-section--press-articles .press-articles__track > .press-article-card {
     flex-basis: 86%;
   }
