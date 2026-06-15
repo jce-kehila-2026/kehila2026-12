@@ -79,6 +79,20 @@
     color: #3f4657;
   }
 
+  .public-navbar__dropdown-trigger > a {
+    display: inline-flex;
+    flex: 1;
+    align-items: center;
+    justify-content: center;
+    min-height: 1.5rem;
+  }
+
+  .public-navbar__dropdown-trigger > button {
+    flex: 0 0 auto;
+    width: 2rem;
+    height: 2rem;
+  }
+
   .public-navbar__dropdown-menu {
     position: absolute;
     inset-block-start: calc(100% + 6px);

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { collection, getDocs, limit, orderBy, query } from 'firebase/firestore';
 import {
   CalendarDays,
@@ -7,10 +7,14 @@ import {
   Search,
   Trash2,
   UserRound,
+  X,
 } from 'lucide-react';
 import { db } from '../../../firebase';
 import { getAllAppointments } from '../services/appointmentService';
+import { mergeBookingRows, paginateRows, toDateKey } from './bookingsPageUtils';
 import './AppointmentsPage.css';
+
+const PAGE_SIZE = 7;
 
 function getInitials(name = 'Participant') {
   return name
@@ -28,17 +32,6 @@ function toDate(value) {
   return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
 
-function toDateKey(value) {
-  if (!value) return '';
-  if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}/.test(value)) return value.slice(0, 10);
-  const date = toDate(value);
-  if (!date) return '';
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const day = String(date.getDate()).padStart(2, '0');
-  return `${year}-${month}-${day}`;
-}
-
 function formatDate(dateValue) {
   const date = toDate(dateValue);
   if (!date) return 'Date TBD';
@@ -51,9 +44,15 @@ function formatTime(timeValue) {
     return timeValue.toDate().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
   }
   if (/am|pm/i.test(String(timeValue))) return timeValue;
-  const [hours, minutes = '00'] = String(timeValue).split(':');
+  const match = String(timeValue).match(/(\d{1,2}):(\d{2})/);
+  if (!match) {
+    const date = toDate(timeValue);
+    return date
+      ? date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+      : 'Time TBD';
+  }
   const date = new Date();
-  date.setHours(Number(hours), Number(minutes));
+  date.setHours(Number(match[1]), Number(match[2]));
   return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
 }
 
@@ -66,76 +65,37 @@ function formatRegisteredAt(value) {
   };
 }
 
-function normalizeStatus(status) {
-  return String(status || 'pending').toLowerCase().replace('confirmed', 'approved');
-}
-
-function normalizeAppointment(item) {
-  return {
-    id: `appointment-${item.id}`,
-    participantName: item.participantName || item.name || 'Community Participant',
-    participantEmail: item.participantEmail || item.email || 'participant@she-na.org',
-    eventType: 'Appointment',
-    eventName: item.type || item.appointmentType || item.typeName || item.title || 'Appointment',
-    providerName: item.providerName || item.provider || 'Michal',
-    eventDate: item.date || item.createdAt || '2026-05-26',
-    eventTime: item.time || item.selectedTimeSlot || '10:00',
-    registeredAt: item.createdAt || item.registeredAt || item.date || '2026-05-20T14:14:00',
-    status: normalizeStatus(item.status),
-  };
-}
-
-function normalizeBooking(item, index) {
-  const eventType = String(item.eventType || item.type || '').toLowerCase().includes('appointment')
-    ? 'Appointment'
-    : 'Workshop';
-  return {
-    id: `booking-${item.bookingId || item.id || index}`,
-    participantName: item.participantName || item.userName || item.name || 'Community Participant',
-    participantEmail: item.participantEmail || item.userEmail || item.email || 'participant@she-na.org',
-    eventType,
-    eventName: item.eventTitle || item.title || item.appointmentType || (eventType === 'Workshop' ? 'Workshop' : 'Appointment'),
-    providerName: item.providerName || item.provider || (eventType === 'Workshop' ? 'She-Na Team' : 'Michal'),
-    eventDate: item.startAt || item.eventDate || item.selectedDate || item.dateKey || item.date || item.registeredAt,
-    eventTime: item.selectedTime || item.selectedTimeSlot || item.sessionTime || item.time || item.startAt,
-    registeredAt: item.registeredAt || item.createdAt,
-    status: normalizeStatus(item.status || 'approved'),
-  };
-}
-
-function MiniCalendar({ onSelectDate }) {
-  const days = [
-    ['27', 'muted'], ['28', 'muted'], ['29', 'muted'], ['30', 'muted'], ['1'], ['2'], ['3'],
-    ['4'], ['5'], ['6'], ['7'], ['8'], ['9'], ['10'],
-    ['11'], ['12'], ['13'], ['14'], ['15'], ['16'], ['17'],
-    ['18'], ['19'], ['20'], ['21'], ['22', 'dot'], ['23'], ['24'],
-    ['25'], ['26', 'selected'], ['27'], ['28'], ['29'], ['30'], ['31'],
-    ['1', 'muted'], ['2', 'muted'], ['3', 'muted'], ['4', 'muted'], ['5', 'muted'], ['6', 'muted'],
-  ];
+function BookingDetailsDialog({ booking, onClose }) {
+  if (!booking) return null;
+  const registeredAt = formatRegisteredAt(booking.registeredAt);
 
   return (
-    <article className="appointments-panel-card appointments-calendar-card">
-      <header>
-        <button type="button" aria-label="Previous month">‹</button>
-        <strong>May 2026</strong>
-        <button type="button" aria-label="Next month">›</button>
-      </header>
-      <div className="appointments-calendar-weekdays">
-        {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map((day) => <span key={day}>{day}</span>)}
-      </div>
-      <div className="appointments-calendar-grid">
-        {days.map(([day, state], index) => (
-          <button
-            type="button"
-            className={state ? `is-${state}` : ''}
-            key={`${day}-${index}`}
-            onClick={() => onSelectDate(`2026-05-${String(day).padStart(2, '0')}`)}
-          >
-            {day}
-          </button>
-        ))}
-      </div>
-    </article>
+    <div className="appointments-details-backdrop" role="presentation" onMouseDown={onClose}>
+      <section
+        className="appointments-details-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="booking-details-title"
+        onMouseDown={(event) => event.stopPropagation()}
+      >
+        <header>
+          <div>
+            <span>{booking.eventType}</span>
+            <h2 id="booking-details-title">{booking.eventName}</h2>
+          </div>
+          <button type="button" aria-label="Close booking details" onClick={onClose}><X size={18} /></button>
+        </header>
+        <dl>
+          <div><dt>Participant</dt><dd>{booking.participantName}</dd></div>
+          <div><dt>Email</dt><dd>{booking.participantEmail}</dd></div>
+          <div><dt>Provider</dt><dd>{booking.providerName}</dd></div>
+          <div><dt>Event date</dt><dd>{formatDate(booking.eventDate)} at {formatTime(booking.eventTime)}</dd></div>
+          <div><dt>Registered</dt><dd>{registeredAt.date} {registeredAt.time}</dd></div>
+          <div><dt>Status</dt><dd>{booking.status}</dd></div>
+          <div><dt>Source</dt><dd>{booking.source === 'booking' ? 'Central booking' : 'Legacy appointment'}</dd></div>
+        </dl>
+      </section>
+    </div>
   );
 }
 
@@ -147,29 +107,40 @@ export default function AppointmentsPage() {
   const [provider, setProvider] = useState('All Providers');
   const [selectedDate, setSelectedDate] = useState('');
   const [calendarOpen, setCalendarOpen] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState(null);
+  const [page, setPage] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState('');
+
+  const loadBookings = useCallback(async () => {
+    setLoading(true);
+    setLoadError('');
+    try {
+      const bookingSnap = await getDocs(
+        query(collection(db, 'bookings'), orderBy('registeredAt', 'desc'), limit(250)),
+      );
+      const bookingItems = bookingSnap.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }));
+
+      let appointmentItems = [];
+      try {
+        appointmentItems = await getAllAppointments();
+      } catch (legacyError) {
+        console.warn('Legacy appointments could not be loaded:', legacyError);
+      }
+
+      setBookings(mergeBookingRows(bookingItems, appointmentItems));
+    } catch (error) {
+      console.error('Failed to load bookings:', error);
+      setBookings([]);
+      setLoadError('Could not load bookings from Firestore.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    let ignore = false;
-    Promise.all([
-      getAllAppointments().catch(() => []),
-      getDocs(query(collection(db, 'bookings'), orderBy('registeredAt', 'desc'), limit(250)))
-        .then((snap) => snap.docs
-          .map((docSnap, index) => ({ id: docSnap.id || index, ...docSnap.data() })))
-        .catch(() => []),
-    ])
-      .then(([appointmentItems, bookingItems]) => {
-        if (ignore) return;
-        const rows = [
-          ...bookingItems.map(normalizeBooking),
-          ...appointmentItems.map(normalizeAppointment),
-        ];
-        setBookings(rows);
-      })
-      .catch((error) => console.error('Failed to load bookings:', error));
-    return () => {
-      ignore = true;
-    };
-  }, []);
+    loadBookings();
+  }, [loadBookings]);
 
   const filtered = useMemo(() => {
     const term = search.trim().toLowerCase();
@@ -183,7 +154,14 @@ export default function AppointmentsPage() {
     });
   }, [bookings, provider, search, selectedDate, status, type]);
 
+  useEffect(() => {
+    setPage(1);
+  }, [provider, search, selectedDate, status, type]);
+
+  const pagination = useMemo(() => paginateRows(filtered, page, PAGE_SIZE), [filtered, page]);
   const providers = ['All Providers', ...Array.from(new Set(bookings.map((item) => item.providerName).filter(Boolean)))];
+  const resultStart = filtered.length ? pagination.startIndex + 1 : 0;
+  const resultEnd = Math.min(pagination.startIndex + pagination.rows.length, filtered.length);
 
   return (
     <section className={`appointments-admin-page${selectedDate ? ' has-date-filter' : ''}`}>
@@ -218,18 +196,25 @@ export default function AppointmentsPage() {
                 className="appointments-calendar-icon-btn"
                 type="button"
                 aria-label="Open calendar date filter"
+                aria-expanded={calendarOpen}
                 onClick={() => setCalendarOpen((current) => !current)}
               >
                 <CalendarDays size={18} />
               </button>
               {calendarOpen && (
-                <div className="appointments-calendar-popover">
-                  <MiniCalendar
-                    onSelectDate={(date) => {
-                      setSelectedDate(date);
-                      setCalendarOpen(false);
-                    }}
-                  />
+                <div className="appointments-calendar-popover appointments-date-picker-popover">
+                  <label>
+                    Filter by event date
+                    <input
+                      type="date"
+                      value={selectedDate}
+                      autoFocus
+                      onChange={(event) => {
+                        setSelectedDate(event.target.value);
+                        setCalendarOpen(false);
+                      }}
+                    />
+                  </label>
                 </div>
               )}
             </div>
@@ -245,7 +230,7 @@ export default function AppointmentsPage() {
             </div>
           )}
 
-          <section className="appointments-table-card">
+          <section className="appointments-table-card" aria-busy={loading}>
             <div className="appointments-table appointments-table--head">
               <span>Participant</span>
               <span>Event Type</span>
@@ -257,7 +242,18 @@ export default function AppointmentsPage() {
               <span>Actions</span>
             </div>
             <div className="appointments-table-body appointments-table-wrapper">
-              {filtered.slice(0, 7).map((item) => {
+              {loading ? (
+                <div className="appointments-table-state">Loading bookings...</div>
+              ) : loadError ? (
+                <div className="appointments-table-state appointments-table-state--error">
+                  <span>{loadError}</span>
+                  <button type="button" onClick={loadBookings}>Retry</button>
+                </div>
+              ) : pagination.rows.length === 0 ? (
+                <div className="appointments-table-state">
+                  {bookings.length ? 'No bookings match the selected filters.' : 'No bookings have been created yet.'}
+                </div>
+              ) : pagination.rows.map((item) => {
                 const registeredAt = formatRegisteredAt(item.registeredAt);
                 return (
                   <div className="appointments-table appointments-table--row" key={item.id}>
@@ -274,23 +270,38 @@ export default function AppointmentsPage() {
                     <span className="appointments-date-time"><strong>{registeredAt.date}</strong><small>{registeredAt.time}</small></span>
                     <span className={`appointments-status appointments-status--${item.status}`}>{item.status}</span>
                     <span className="appointments-actions">
-                      <button aria-label="View"><Eye size={15} /></button>
-                      <button aria-label="Edit"><Edit3 size={15} /></button>
-                      <button aria-label="Reschedule"><CalendarDays size={15} /></button>
-                      <button aria-label="Delete"><Trash2 size={15} /></button>
+                      <button type="button" aria-label="View booking" title="View booking" onClick={() => setSelectedBooking(item)}><Eye size={15} /></button>
+                      <button type="button" aria-label="Edit booking unavailable" title="Edit is not available yet" disabled><Edit3 size={15} /></button>
+                      <button type="button" aria-label="Reschedule booking unavailable" title="Reschedule is not available yet" disabled><CalendarDays size={15} /></button>
+                      <button type="button" aria-label="Delete booking unavailable" title="Delete is not available yet" disabled><Trash2 size={15} /></button>
                     </span>
                   </div>
                 );
               })}
             </div>
             <footer className="appointments-table-footer">
-              <span>Showing 1 to {Math.min(filtered.length, 7)} of {bookings.length} results</span>
-              <div><button>‹</button><button className="is-active">1</button><button>2</button><button>3</button><span>...</span><button>18</button><button>›</button></div>
+              <span>Showing {resultStart} to {resultEnd} of {filtered.length} results</span>
+              <div>
+                <button type="button" aria-label="Previous page" disabled={pagination.page <= 1} onClick={() => setPage((current) => Math.max(1, current - 1))}>&lt;</button>
+                {Array.from({ length: pagination.pageCount }, (_, index) => index + 1).map((pageNumber) => (
+                  <button
+                    type="button"
+                    className={pageNumber === pagination.page ? 'is-active' : ''}
+                    aria-label={`Page ${pageNumber}`}
+                    onClick={() => setPage(pageNumber)}
+                    key={pageNumber}
+                  >
+                    {pageNumber}
+                  </button>
+                ))}
+                <button type="button" aria-label="Next page" disabled={pagination.page >= pagination.pageCount} onClick={() => setPage((current) => Math.min(pagination.pageCount, current + 1))}>&gt;</button>
+              </div>
             </footer>
           </section>
         </main>
-
       </div>
+
+      <BookingDetailsDialog booking={selectedBooking} onClose={() => setSelectedBooking(null)} />
     </section>
   );
 }

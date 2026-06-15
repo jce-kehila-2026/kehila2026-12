@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from 'react';
 import './CalendarPage.css';
 import { useAdmin } from '../admin/context/AdminContext';
 import { createCalendarNote, getCalendarData } from './calendarService';
-import { calendarEvents, calendarNotes } from './calendarMockData';
 
 const TODAY_KEY = toDateKey(new Date());
 const TIME_SLOTS = Array.from({ length: 24 }, (_, hour) => `${String(hour).padStart(2, '0')}:00`);
@@ -148,14 +147,6 @@ function CalendarPill({ item }) {
   );
 }
 
-function getLocalCalendarData() {
-  return {
-    events: calendarEvents.filter((item) => item.type !== 'appointment'),
-    appointments: calendarEvents.filter((item) => item.type === 'appointment'),
-    notes: calendarNotes.map((note) => ({ ...note, type: 'note', registered: false })),
-  };
-}
-
 export default function CalendarPage({ variant = 'standalone' }) {
   const { currentUser, effectiveUID, loading: authLoading } = useAdmin();
   const calendarUser = useMemo(
@@ -169,6 +160,7 @@ export default function CalendarPage({ variant = 'standalone' }) {
   const [calendarError, setCalendarError] = useState('');
   const [savingNote, setSavingNote] = useState(false);
   const [noteFormOpen, setNoteFormOpen] = useState(false);
+  const [calendarReloadKey, setCalendarReloadKey] = useState(0);
   const [noteForm, setNoteForm] = useState({
     title: '',
     date: TODAY_KEY,
@@ -195,13 +187,8 @@ export default function CalendarPage({ variant = 'standalone' }) {
         console.error('Failed to load calendar data:', error);
 
         if (!ignore) {
-          if (import.meta.env.DEV) {
-            setCalendarError('Could not load calendar data from Firestore. Showing local demo data.');
-            setCalendarData(getLocalCalendarData());
-          } else {
-            setCalendarError('Could not load calendar data from Firestore.');
-            setCalendarData({ events: [], appointments: [], notes: [] });
-          }
+          setCalendarError('Could not load calendar data from Firestore.');
+          setCalendarData({ events: [], appointments: [], notes: [] });
         }
       } finally {
         if (!ignore) {
@@ -215,7 +202,7 @@ export default function CalendarPage({ variant = 'standalone' }) {
     return () => {
       ignore = true;
     };
-  }, [authLoading, calendarUser]);
+  }, [authLoading, calendarReloadKey, calendarUser]);
 
   const activeDate = useMemo(() => fromDateKey(selectedDate), [selectedDate]);
   const activeWeekStart = useMemo(() => getStartOfWeek(activeDate), [activeDate]);
@@ -382,7 +369,12 @@ export default function CalendarPage({ variant = 'standalone' }) {
 
         {(loadingCalendar || calendarError) && (
           <div className={`calendar-status${calendarError ? ' calendar-status--error' : ''}`}>
-            {loadingCalendar ? 'Loading calendar from Firestore...' : calendarError}
+            <span>{loadingCalendar ? 'Loading calendar from Firestore...' : calendarError}</span>
+            {calendarError && !loadingCalendar && (
+              <button type="button" onClick={() => setCalendarReloadKey((current) => current + 1)}>
+                Retry
+              </button>
+            )}
           </div>
         )}
 
@@ -626,7 +618,7 @@ export default function CalendarPage({ variant = 'standalone' }) {
               </div>
             )}
 
-            {calendarItems.length === 0 && (
+            {!loadingCalendar && !calendarError && calendarItems.length === 0 && (
               <p className="empty-state empty-state--wide">No workshops, registrations, appointments, or notes yet.</p>
             )}
           </section>

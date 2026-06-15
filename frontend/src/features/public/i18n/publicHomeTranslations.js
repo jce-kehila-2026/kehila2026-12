@@ -35,6 +35,11 @@ const NAVBAR_STORIES_MENU_KEYS = [
   { key: 'navbarStoriesMenuArticles', href: '#articles' },
 ];
 
+const NAVBAR_TEAM_MENU_KEYS = [
+  { key: 'navOurTeam', href: '#team' },
+  { key: 'navOurPartners', href: '#medical-partners' },
+];
+
 export const publicHomeTranslations = {
   he: {
     navHome: 'הבית',
@@ -51,6 +56,7 @@ export const publicHomeTranslations = {
     navOurPartners: 'השותפים שלנו',
     navHomeMenuLabel: 'תפריט הבית',
     navbarStoriesMenuLabel: 'תפריט סיפורים ומאמרים',
+    navbarTeamMenuLabel: 'תפריט הצוות והשותפים',
     navbarStoriesMenuStories: 'סיפורים',
     navbarStoriesMenuArticles: 'מאמרים',
     navJoin: 'להצטרף',
@@ -98,6 +104,7 @@ export const publicHomeTranslations = {
     navOurPartners: 'شركاؤنا',
     navHomeMenuLabel: 'قائمة الرئيسية',
     navbarStoriesMenuLabel: 'قائمة القصص والمقالات',
+    navbarTeamMenuLabel: 'قائمة الفريق والشركاء',
     navbarStoriesMenuStories: 'قصص',
     navbarStoriesMenuArticles: 'مقالات',
     navJoin: 'انضمّي',
@@ -145,6 +152,7 @@ export const publicHomeTranslations = {
     navOurPartners: 'Our Partners',
     navHomeMenuLabel: 'Home menu',
     navbarStoriesMenuLabel: 'Stories and articles menu',
+    navbarTeamMenuLabel: 'Team and partners menu',
     navbarStoriesMenuStories: 'Stories',
     navbarStoriesMenuArticles: 'Articles',
     navJoin: 'Join',
@@ -248,6 +256,13 @@ export function getPublicNavbarHomeMenu(t) {
 
 export function getPublicNavbarStoriesMenu(t) {
   return NAVBAR_STORIES_MENU_KEYS.map(({ key, href }) => ({
+    label: t(key),
+    href,
+  }));
+}
+
+export function getPublicNavbarTeamMenu(t) {
+  return NAVBAR_TEAM_MENU_KEYS.map(({ key, href }) => ({
     label: t(key),
     href,
   }));
