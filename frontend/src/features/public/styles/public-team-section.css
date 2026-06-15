@@ -8,12 +8,88 @@
   --team-shadow: 0 14px 36px rgba(91, 30, 140, 0.08);
   --team-shadow-hover: 0 22px 48px rgba(91, 30, 140, 0.14);
   position: relative;
+  isolation: isolate;
+  overflow: hidden;
   padding-block: clamp(56px, 6.5vw, 92px) clamp(44px, 5vw, 68px);
   padding-inline: clamp(20px, 6vw, 96px);
-  background: #ffffff;
+  background-color: #fdf6fb;
+  background-image:
+    radial-gradient(ellipse 65% 48% at 10% 14%, rgba(217, 70, 161, 0.16) 0%, transparent 62%),
+    radial-gradient(ellipse 50% 42% at 90% 20%, rgba(138, 45, 168, 0.12) 0%, transparent 65%),
+    radial-gradient(ellipse 75% 50% at 50% 100%, rgba(255, 255, 255, 0.9) 0%, transparent 55%),
+    linear-gradient(180deg, #fffafc 0%, #fdf6fb 40%, #faf2f7 100%);
+}
+
+.public-team-section__decor {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.public-team-section__blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(56px);
+}
+
+.public-team-section__blob--pink {
+  width: min(480px, 46vw);
+  height: min(480px, 46vw);
+  inset-block-start: -10%;
+  inset-inline-end: -8%;
+  background: rgba(217, 70, 161, 0.32);
+}
+
+.public-team-section__blob--lavender {
+  width: min(420px, 40vw);
+  height: min(420px, 40vw);
+  inset-block-end: -8%;
+  inset-inline-start: -10%;
+  background: rgba(247, 214, 234, 0.88);
+}
+
+.public-team-section__blob--purple {
+  width: min(340px, 32vw);
+  height: min(340px, 32vw);
+  inset-block-start: 40%;
+  inset-inline-start: 36%;
+  background: rgba(138, 45, 168, 0.2);
+}
+
+.public-team-section__dots {
+  position: absolute;
+  opacity: 0.5;
+  background-image: radial-gradient(circle, rgba(217, 70, 161, 0.5) 2px, transparent 2px);
+  background-size: 16px 16px;
+}
+
+.public-team-section__dots--mesh {
+  inset: 8% 6%;
+  opacity: 0.35;
+  background-image: radial-gradient(circle, rgba(91, 30, 140, 0.12) 1.5px, transparent 1.5px);
+  background-size: 20px 20px;
+  mask-image: radial-gradient(ellipse at 50% 40%, #000 0%, transparent 75%);
+}
+
+.public-team-section__dots--one {
+  width: 150px;
+  height: 150px;
+  inset-block-start: 12%;
+  inset-inline-start: 7%;
+}
+
+.public-team-section__dots--two {
+  width: 130px;
+  height: 130px;
+  inset-block-end: 16%;
+  inset-inline-end: 9%;
 }
 
 .public-team-section__inner {
+  position: relative;
+  z-index: 2;
   width: min(100%, 1320px);
   margin-inline: auto;
 }

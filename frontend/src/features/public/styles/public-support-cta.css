@@ -14,18 +14,21 @@
   width: 100%;
   margin: 0;
   padding: clamp(3rem, 6vw, 5rem) clamp(1.25rem, 4vw, 3rem);
-  overflow-x: clip;
-  overflow-y: visible;
+  overflow: hidden;
   scroll-margin-top: var(--public-navbar-offset, 96px);
-  background-color: #faf4fc;
-  background-image: linear-gradient(180deg, #fef9fc 0%, #faf4fc 48%, #f3ebfa 100%);
+  background-color: #fdf6fb;
+  background-image:
+    radial-gradient(ellipse 65% 48% at 10% 14%, rgba(217, 70, 161, 0.16) 0%, transparent 62%),
+    radial-gradient(ellipse 50% 42% at 90% 20%, rgba(138, 45, 168, 0.12) 0%, transparent 65%),
+    radial-gradient(ellipse 75% 50% at 50% 100%, rgba(255, 255, 255, 0.9) 0%, transparent 55%),
+    linear-gradient(180deg, #fffafc 0%, #fdf6fb 40%, #faf2f7 100%);
   background-repeat: no-repeat;
   background-size: cover;
 }
 
 .public-support-cta__inner {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   display: grid;
   grid-template-columns: minmax(0, 0.96fr) minmax(0, 1.04fr);
   grid-template-rows: auto;
@@ -34,6 +37,10 @@
   width: min(100%, 105rem);
   min-height: 0;
   margin-inline: auto;
+}
+
+.public-section--donation-cta .public-pink-section-decor__dots--one {
+  display: none;
 }
 
 /* RTL: content on visual left, image on visual right */
@@ -362,7 +369,7 @@
   min-height: clamp(8.75rem, 13vw, 10.5rem);
   padding: clamp(1.25rem, 2.3vw, 1.75rem);
   border-radius: 28px;
-  background: rgba(255, 255, 255, 0.62);
+  background: #fefbfe;
   border: 1px solid rgba(236, 60, 151, 0.07);
   box-shadow: 0 6px 20px rgba(91, 30, 140, 0.04);
   transition:
@@ -375,7 +382,7 @@
 .public-support-cta__feature:hover,
 .public-support-cta__feature:focus-within {
   border-color: rgba(236, 60, 151, 0.14);
-  background: rgba(255, 255, 255, 0.78);
+  background: #fffdfd;
   box-shadow: 0 12px 32px rgba(91, 30, 140, 0.08);
 }
 
