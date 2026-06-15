@@ -437,15 +437,16 @@
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
   overflow: hidden;
-  padding-block: 18px;
+  padding-top: 12px;
+  padding-bottom: 18px;
 }
 
 .participant-main--calendar > .pd-home__header {
   position: sticky;
   top: 0;
   z-index: 60;
-  margin: 0 0 12px 4px;
-  padding: 0 4px 10px;
+  margin: 0 0 4px 4px;
+  padding: 0 4px 6px;
   background:
     radial-gradient(circle at 88% 4%, rgba(236, 22, 140, 0.06), transparent 22rem),
     linear-gradient(180deg, #fff9fc 0%, #f9f3fb 100%);
@@ -1357,14 +1358,14 @@
 }
 
 .participant-main--dashboard-home .participant-content--calendar {
-  padding: 0 4px 0;
+  padding: 0;
   gap: 0;
 }
 
 .participant-main--calendar .participant-content--calendar {
   height: 100%;
   min-height: 0;
-  overflow-y: auto;
+  overflow: hidden;
   overflow-x: hidden;
   padding-right: 8px;
 }
