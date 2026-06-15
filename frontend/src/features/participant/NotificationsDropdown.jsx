@@ -75,7 +75,7 @@ export default function NotificationsDropdown({ updates, lastSeenAt, onMarkAllRe
         </div>
         {activeUpdates.length > 0 && (
           <button type="button" className="notif-dropdown__mark-all" onClick={onMarkAllRead}>
-            <DoneAllIcon style={{ fontSize: 14 }} />
+            <DoneAllIcon style={{ fontSize: '0.875rem' }} />
             Mark all as read
           </button>
         )}
@@ -104,7 +104,7 @@ export default function NotificationsDropdown({ updates, lastSeenAt, onMarkAllRe
                 className="notif-dropdown__type-icon"
                 style={{ '--icon-color': meta.color }}
               >
-                <Icon style={{ fontSize: 16 }} />
+                <Icon style={{ fontSize: '1rem' }} />
               </span>
               <div className="notif-dropdown__item-body">
                 <p className="notif-dropdown__item-title">{update.title}</p>

@@ -7,7 +7,6 @@ import LogoutIcon from '@mui/icons-material/Logout';
 import MoodOutlinedIcon from '@mui/icons-material/MoodOutlined';
 import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNoneOutlined';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
-import VolunteerActivismOutlinedIcon from '@mui/icons-material/VolunteerActivismOutlined';
 import { useLocation, useNavigate } from 'react-router-dom';
 import CalendarPage from '../calendar/CalendarPage';
 import EventsPage from '../events/EventsPage';
@@ -33,6 +32,7 @@ import CommunityPage from './community/CommunityPage';
 import WorkshopFeed from './WorkshopFeed';
 import { useAdmin } from '../admin/context/AdminContext';
 import ParticipantDashboardHome from './home/ParticipantDashboardHome';
+import useDailyMotivation from './home/useDailyMotivation';
 import ParticipantSidebarProfile from './components/ParticipantSidebarProfile';
 import ParticipantHeader from './components/ParticipantHeader';
 import NotificationsDropdown from './NotificationsDropdown';
@@ -80,6 +80,7 @@ export default function ParticipantHome({ initialView = 'home' }) {
   const [participantProfile, setParticipantProfile] = useState(null);
   const [loadingParticipantProfile, setLoadingParticipantProfile] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(getStoredSidebarCollapsed);
+  const { quote: dailyQuote } = useDailyMotivation();
 
   // ── Notifications ────────────────────────────────────────────────────────
   // The bell shows a unified feed: admin announcements + auto-generated
@@ -131,6 +132,11 @@ export default function ParticipantHome({ initialView = 'home' }) {
     setNotifOpen(true);
     loadNotifications();
   }, [notifOpen, loadNotifications]);
+
+  const handleOpenNotifications = useCallback(() => {
+    setNotifOpen(true);
+    loadNotifications();
+  }, [loadNotifications]);
 
   const handleMarkAllRead = useCallback(async () => {
     if (!currentUser) return;
@@ -344,15 +350,6 @@ export default function ParticipantHome({ initialView = 'home' }) {
             })}
           </nav>
 
-          <div className="participant-support-card">
-            <VolunteerActivismOutlinedIcon />
-            <strong>Need Support?</strong>
-            <span>We are here for you.</span>
-            <button type="button" onClick={() => setActiveView('community')}>
-              Contact Us
-            </button>
-          </div>
-
           <button className="participant-logout" type="button" onClick={logout} title={sidebarCollapsed ? 'Logout' : undefined}>
             <LogoutIcon fontSize="small" />
             <span>Logout</span>
@@ -381,6 +378,7 @@ export default function ParticipantHome({ initialView = 'home' }) {
             locale={locale}
             onLocaleChange={handleLocaleChange}
             notificationsBell={notificationsBell}
+            dailyQuote={activeView === 'home' ? dailyQuote : null}
             className={activeView === 'community' ? 'participant-header-sticky' : ''}
           />
 
@@ -391,6 +389,8 @@ export default function ParticipantHome({ initialView = 'home' }) {
               birthDate={participantProfile?.birthDate || participantProfile?.birthday || ''}
               onNavigateToView={navigateParticipantView}
               onViewCommunity={handleViewCommunity}
+              latestNotification={notifications?.[0] ?? null}
+              onOpenNotifications={handleOpenNotifications}
             />
           )}
 

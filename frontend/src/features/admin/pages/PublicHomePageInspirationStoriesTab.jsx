@@ -274,7 +274,7 @@ export default function PublicHomePageInspirationStoriesTab() {
               <Paper
                 key={s.id}
                 variant="outlined"
-                sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 2 }}
+                sx={{ p: 2, display: 'flex', alignItems: 'center', gap: '1rem' }}
               >
                 <Avatar src={s.imageUrl || undefined} alt={s.name}>
                   {(s.name || '?').slice(0, 1)}

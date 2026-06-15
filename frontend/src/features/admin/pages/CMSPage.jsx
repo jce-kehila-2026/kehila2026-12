@@ -60,7 +60,7 @@ export default function CMSPage() {
 
   return (
     <Box sx={{ pb: 12 }}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3, gap: 2 }}>
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3, gap: '1rem' }}>
         <Box>
           <Typography variant="h4">Public Home-page</Typography>
           <Typography variant="subtitle1" sx={{ mt: 0.5 }}>

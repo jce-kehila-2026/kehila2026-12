@@ -1,0 +1,754 @@
+.profile-settings {
+  --ps-purple: #5b1e8c;
+  --ps-purple-deep: #4b136b;
+  --ps-pink: #db4f9f;
+  --ps-pink-hover: #c83f91;
+  --ps-pink-soft: #fdf2f8;
+  --ps-text: #3a0f55;
+  --ps-muted: rgba(75, 19, 107, 0.62);
+  --ps-card: #fffafd;
+  --ps-input-bg: #fffafb;
+  --ps-border: rgba(219, 79, 159, 0.12);
+  --ps-border-strong: rgba(255, 255, 255, 0.88);
+  --ps-shadow: 0 12px 32px rgba(91, 30, 140, 0.07);
+  --ps-shadow-hover: 0 16px 36px rgba(15, 23, 42, 0.08);
+  --ps-radius: 28px;
+  --ps-radius-sm: 12px;
+  --ps-focus-ring: 0 0 0 3px rgba(219, 79, 159, 0.18);
+  --ps-btn-soft-bg: #fff7fb;
+  --ps-btn-soft-bg-hover: #fdf2f8;
+  --ps-btn-soft-border: rgba(219, 79, 159, 0.28);
+  --ps-btn-soft-border-hover: rgba(219, 79, 159, 0.45);
+  padding: 0 2px 6px;
+}
+
+.profile-settings--dark {
+  --ps-text: #f8fafc;
+  --ps-muted: #94a3b8;
+  --ps-card: rgba(17, 24, 39, 0.94);
+  --ps-input-bg: #172033;
+  --ps-border: rgba(148, 163, 184, 0.12);
+  --ps-border-strong: rgba(148, 163, 184, 0.12);
+  --ps-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+}
+
+.profile-settings__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 296px) minmax(0, 1fr);
+  gap: 26px;
+  align-items: stretch;
+}
+
+.profile-settings__main {
+  min-width: 0;
+  min-height: 480px;
+  height: 100%;
+  border: 1px solid var(--ps-border-strong);
+  border-radius: var(--ps-radius);
+  background: var(--ps-card);
+  box-shadow: var(--ps-shadow);
+  overflow: hidden;
+}
+
+.profile-settings__tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 8px 24px 0;
+  border-bottom: 1px solid var(--ps-border);
+  background: transparent;
+}
+
+.profile-settings__tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 40px;
+  padding: 0 12px 10px;
+  margin-bottom: -1px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  color: var(--ps-muted);
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    color 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+.profile-settings__tab svg {
+  font-size: 1.05rem;
+}
+
+.profile-settings__tab:hover {
+  color: var(--ps-pink);
+  background: rgba(253, 242, 248, 0.55);
+}
+
+.profile-settings--dark .profile-settings__tab:hover {
+  color: #f8fafc;
+  background: rgba(196, 165, 245, 0.08);
+}
+
+.profile-settings__tab.is-active {
+  color: var(--ps-pink);
+  background: rgba(253, 242, 248, 0.72);
+  border-bottom-color: rgba(219, 79, 159, 0.42);
+  box-shadow: none;
+}
+
+.profile-settings--dark .profile-settings__tab.is-active {
+  color: #f8fafc;
+  background: rgba(196, 165, 245, 0.1);
+  border-bottom-color: rgba(196, 165, 245, 0.65);
+}
+
+.profile-settings__panel {
+  padding: 22px 28px 28px;
+}
+
+.profile-settings-form .MuiGrid-container {
+  margin-top: 0 !important;
+  row-gap: 6px;
+}
+
+.profile-settings-form .MuiGrid-item {
+  padding-top: 18px !important;
+}
+
+.profile-settings-form .MuiGrid-item > .MuiTypography-root {
+  font-size: 14px !important;
+  margin-bottom: 6px !important;
+}
+
+.profile-settings-form .MuiOutlinedInput-root,
+.profile-settings__panel .MuiOutlinedInput-root,
+.profile-settings-form .MuiPickersOutlinedInput-root {
+  height: 56px !important;
+  min-height: 56px !important;
+  border-radius: 12px !important;
+  background-color: var(--ps-input-bg) !important;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease !important;
+}
+
+.profile-settings-form .MuiOutlinedInput-root fieldset,
+.profile-settings-form .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline,
+.profile-settings-form .MuiPickersOutlinedInput-root .MuiPickersOutlinedInput-notchedOutline {
+  border-color: var(--ps-border) !important;
+  border-width: 1px !important;
+}
+
+.profile-settings-form .MuiOutlinedInput-root:hover fieldset,
+.profile-settings-form .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline,
+.profile-settings-form .MuiPickersOutlinedInput-root:hover .MuiPickersOutlinedInput-notchedOutline {
+  border-color: rgba(219, 79, 159, 0.24) !important;
+}
+
+.profile-settings-form .MuiOutlinedInput-root.Mui-error fieldset,
+.profile-settings-form .MuiOutlinedInput-root.Mui-error .MuiOutlinedInput-notchedOutline,
+.profile-settings-form .MuiPickersOutlinedInput-root.MuiPickersInputBase-error .MuiPickersOutlinedInput-notchedOutline {
+  border-color: #ef4444 !important;
+}
+
+.profile-settings-form .MuiOutlinedInput-input,
+.profile-settings__panel .MuiOutlinedInput-input,
+.profile-settings-form .MuiSelect-select,
+.profile-settings-form .MuiPickersSectionList-sectionContent {
+  font-size: 16px !important;
+}
+
+.profile-settings-form .MuiSelect-icon,
+.profile-settings-form .MuiPickersTextField-root .MuiIconButton-root {
+  color: var(--ps-pink) !important;
+}
+
+.profile-settings-form__contact-select .MuiSelect-select {
+  text-align: left !important;
+  direction: ltr !important;
+  padding-left: 16px !important;
+  padding-right: 36px !important;
+}
+
+.profile-settings-form__contact-select .MuiSelect-icon {
+  right: 12px !important;
+  left: auto !important;
+}
+
+.profile-settings-form__contact-menu .MuiMenuItem-root {
+  justify-content: flex-start !important;
+  text-align: left !important;
+  direction: ltr !important;
+  padding-left: 16px !important;
+  padding-right: 16px !important;
+}
+
+.profile-settings-form .react-tel-input .form-control {
+  height: 56px !important;
+  min-height: 56px !important;
+  font-size: 16px !important;
+  border-radius: 12px !important;
+  border: 1px solid var(--ps-border) !important;
+  background-color: var(--ps-input-bg) !important;
+  outline: none !important;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease !important;
+}
+
+.profile-settings-form .react-tel-input .form-control:hover {
+  border-color: rgba(219, 79, 159, 0.24) !important;
+}
+
+.profile-settings-form .react-tel-input .flag-dropdown,
+.profile-settings-form .react-tel-input .selected-flag {
+  background-color: var(--ps-input-bg) !important;
+  border-color: var(--ps-border) !important;
+}
+
+.profile-settings__panel .MuiStack-root > .MuiStack-root > .MuiBox-root > .MuiTypography-root {
+  font-size: 14px !important;
+  margin-bottom: 6px !important;
+}
+
+.profile-settings-form__pref-row {
+  margin-top: 28px !important;
+  padding-top: 0 !important;
+}
+
+.profile-settings--dark .profile-settings-form__pref-row {
+  border-top: none;
+}
+
+.profile-settings-form__pref-row > .MuiGrid-container {
+  width: 100%;
+}
+
+.profile-settings-form .profile-settings__setting-row {
+  padding: 10px 12px;
+  gap: 12px;
+}
+
+.profile-settings-form .profile-settings__setting-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+}
+
+.profile-settings-form .profile-settings__setting-title {
+  font-size: 0.84rem;
+}
+
+.profile-settings-form .profile-settings__setting-desc {
+  font-size: 0.74rem;
+}
+
+.profile-settings-form .MuiOutlinedInput-input {
+  overflow: visible;
+  text-overflow: clip;
+}
+
+.profile-settings-form .MuiOutlinedInput-root.Mui-focused:not(.Mui-error) {
+  box-shadow: var(--ps-focus-ring) !important;
+}
+
+.profile-settings-form .MuiOutlinedInput-root.Mui-focused:not(.Mui-error) fieldset,
+.profile-settings-form .MuiOutlinedInput-root.Mui-focused:not(.Mui-error) .MuiOutlinedInput-notchedOutline {
+  border-color: var(--ps-pink) !important;
+  border-width: 1.5px !important;
+}
+
+.profile-settings-form__date-field {
+  overflow: visible !important;
+}
+
+.profile-settings-form .MuiPickersTextField-root,
+.profile-settings-form .MuiPickersOutlinedInput-root {
+  overflow: visible !important;
+}
+
+.profile-settings-form__date-field .MuiPickersTextField-root:focus-within:not(.Mui-error),
+.profile-settings-form .MuiPickersTextField-root:focus-within:not(.Mui-error):not(.MuiPickersTextField-error),
+.profile-settings-form
+  .MuiPickersTextField-root.MuiPickersTextField-focused:not(.MuiPickersTextField-error) {
+  border-radius: 12px !important;
+  box-shadow: var(--ps-focus-ring) !important;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease !important;
+}
+
+.profile-settings-form .MuiPickersOutlinedInput-root,
+.profile-settings-form .MuiPickersOutlinedInput-root.MuiPickersInputBase-focused:not(.MuiPickersInputBase-error),
+.profile-settings-form .MuiPickersOutlinedInput-root.Mui-focused:not(.Mui-error) {
+  box-shadow: none !important;
+}
+
+.profile-settings-form
+  .MuiPickersOutlinedInput-root.MuiPickersInputBase-focused:not(.MuiPickersInputBase-error)
+  .MuiPickersOutlinedInput-notchedOutline,
+.profile-settings-form
+  .MuiPickersOutlinedInput-root.MuiPickersInputBase-colorPrimary.MuiPickersInputBase-focused:not(.MuiPickersInputBase-error)
+  .MuiPickersOutlinedInput-notchedOutline,
+.profile-settings-form
+  .MuiPickersOutlinedInput-root.Mui-focused:not(.Mui-error)
+  .MuiPickersOutlinedInput-notchedOutline,
+.profile-settings-form
+  .MuiPickersOutlinedInput-root.Mui-focused:not(.Mui-error)
+  fieldset,
+.profile-settings-form
+  .MuiPickersOutlinedInput-root.MuiPickersInputBase-focused:not(.MuiPickersInputBase-error)
+  fieldset {
+  border-color: var(--ps-pink) !important;
+  border-width: 1.5px !important;
+}
+
+.profile-settings-form .MuiPickersSectionList-root:focus-within {
+  outline: none !important;
+}
+
+.profile-settings-form .MuiPickersTextField-root .MuiIconButton-root:hover {
+  color: var(--ps-pink) !important;
+}
+
+.profile-settings-form .MuiOutlinedInput-input:focus,
+.profile-settings-form .MuiSelect-select:focus,
+.profile-settings-form .MuiPickersInputBase-input:focus {
+  outline: none !important;
+}
+
+.profile-settings-form .react-tel-input .form-control:focus {
+  outline: none !important;
+  border-color: var(--ps-pink) !important;
+  border-width: 1.5px !important;
+  box-shadow: var(--ps-focus-ring) !important;
+}
+
+.profile-settings--dark .profile-settings-form .MuiOutlinedInput-root,
+.profile-settings--dark .profile-settings-form .MuiPickersOutlinedInput-root,
+.profile-settings--dark .profile-settings-form .react-tel-input .form-control,
+.profile-settings--dark .profile-settings-form .react-tel-input .flag-dropdown,
+.profile-settings--dark .profile-settings-form .react-tel-input .selected-flag {
+  background-color: var(--ps-input-bg) !important;
+}
+
+.profile-settings--dark .profile-settings-form .MuiOutlinedInput-root fieldset,
+.profile-settings--dark .profile-settings-form .MuiOutlinedInput-root .MuiOutlinedInput-notchedOutline,
+.profile-settings--dark .profile-settings-form .MuiPickersOutlinedInput-root .MuiPickersOutlinedInput-notchedOutline,
+.profile-settings--dark .profile-settings-form .react-tel-input .form-control,
+.profile-settings--dark .profile-settings-form .react-tel-input .flag-dropdown {
+  border-color: rgba(236, 72, 153, 0.22) !important;
+}
+
+.profile-settings--dark .profile-settings-form .MuiOutlinedInput-root:hover fieldset,
+.profile-settings--dark .profile-settings-form .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline,
+.profile-settings--dark .profile-settings-form .MuiPickersOutlinedInput-root:hover .MuiPickersOutlinedInput-notchedOutline,
+.profile-settings--dark .profile-settings-form .react-tel-input .form-control:hover {
+  border-color: rgba(196, 165, 245, 0.45) !important;
+}
+
+.profile-settings--dark .profile-settings-form .MuiSelect-icon,
+.profile-settings--dark .profile-settings-form .MuiPickersTextField-root .MuiIconButton-root,
+.profile-settings--dark .profile-settings-form .MuiPickersTextField-root .MuiIconButton-root:hover {
+  color: #c4a5f5 !important;
+}
+
+.profile-settings--dark .profile-settings-form .MuiOutlinedInput-root.Mui-focused:not(.Mui-error) {
+  box-shadow: 0 0 0 3px rgba(196, 165, 245, 0.35) !important;
+}
+
+.profile-settings--dark .profile-settings-form .MuiOutlinedInput-root.Mui-focused:not(.Mui-error) fieldset,
+.profile-settings--dark .profile-settings-form .MuiOutlinedInput-root.Mui-focused:not(.Mui-error) .MuiOutlinedInput-notchedOutline {
+  border-color: #c4a5f5 !important;
+}
+
+.profile-settings--dark .profile-settings-form__date-field .MuiPickersTextField-root:focus-within:not(.Mui-error),
+.profile-settings--dark
+  .profile-settings-form
+  .MuiPickersTextField-root:focus-within:not(.Mui-error):not(.MuiPickersTextField-error),
+.profile-settings--dark
+  .profile-settings-form
+  .MuiPickersTextField-root.MuiPickersTextField-focused:not(.MuiPickersTextField-error) {
+  box-shadow: 0 0 0 3px rgba(196, 165, 245, 0.35) !important;
+}
+
+.profile-settings--dark
+  .profile-settings-form
+  .MuiPickersOutlinedInput-root.MuiPickersInputBase-focused:not(.MuiPickersInputBase-error)
+  .MuiPickersOutlinedInput-notchedOutline,
+.profile-settings--dark
+  .profile-settings-form
+  .MuiPickersOutlinedInput-root.MuiPickersInputBase-colorPrimary.MuiPickersInputBase-focused:not(.MuiPickersInputBase-error)
+  .MuiPickersOutlinedInput-notchedOutline,
+.profile-settings--dark
+  .profile-settings-form
+  .MuiPickersOutlinedInput-root.Mui-focused:not(.Mui-error)
+  .MuiPickersOutlinedInput-notchedOutline,
+.profile-settings--dark
+  .profile-settings-form
+  .MuiPickersOutlinedInput-root.Mui-focused:not(.Mui-error)
+  fieldset,
+.profile-settings--dark
+  .profile-settings-form
+  .MuiPickersOutlinedInput-root.MuiPickersInputBase-focused:not(.MuiPickersInputBase-error)
+  fieldset {
+  border-color: #c4a5f5 !important;
+}
+
+.profile-settings--dark .profile-settings-form .react-tel-input .form-control:focus {
+  border-color: #c4a5f5 !important;
+  box-shadow: 0 0 0 3px rgba(196, 165, 245, 0.35) !important;
+}
+
+.profile-settings-form__save-row {
+  margin-top: 22px !important;
+  padding-top: 0;
+}
+
+/* Button system — matches Home Dashboard soft View buttons (.pd-btn--soft) */
+.profile-settings .ps-btn,
+.profile-settings .MuiButton-root.ps-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  height: 44px !important;
+  min-height: 44px !important;
+  padding: 0 22px !important;
+  border-radius: 999px !important;
+  cursor: pointer;
+  font: inherit !important;
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+  letter-spacing: normal !important;
+  text-transform: none !important;
+  white-space: nowrap !important;
+  box-shadow: none !important;
+  transition:
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 220ms ease,
+    background-color 220ms ease,
+    border-color 220ms ease !important;
+}
+
+.profile-settings .ps-btn--soft,
+.profile-settings .MuiButton-root.ps-btn--soft,
+.profile-settings button.ps-btn.ps-btn--soft {
+  color: var(--ps-pink) !important;
+  background: var(--ps-btn-soft-bg) !important;
+  border: 1px solid var(--ps-btn-soft-border) !important;
+  box-shadow: none !important;
+}
+
+.profile-settings .ps-btn--soft:hover:not(:disabled),
+.profile-settings .MuiButton-root.ps-btn--soft:hover:not(:disabled),
+.profile-settings button.ps-btn.ps-btn--soft:hover:not(:disabled) {
+  filter: none !important;
+  color: var(--ps-pink) !important;
+  background: var(--ps-btn-soft-bg-hover) !important;
+  border-color: var(--ps-btn-soft-border-hover) !important;
+  box-shadow: none !important;
+  transform: translateY(-1px);
+}
+
+.profile-settings .ps-btn--soft:disabled,
+.profile-settings .MuiButton-root.ps-btn--soft.Mui-disabled,
+.profile-settings button.ps-btn.ps-btn--soft:disabled {
+  color: rgba(219, 79, 159, 0.45) !important;
+  background: rgba(255, 247, 251, 0.72) !important;
+  border-color: rgba(219, 79, 159, 0.16) !important;
+  box-shadow: none !important;
+  transform: none !important;
+  opacity: 1 !important;
+  cursor: not-allowed;
+}
+
+.profile-settings .MuiButton-root.ps-btn--soft.MuiButton-contained,
+.profile-settings .MuiButton-root.ps-btn--soft.MuiButton-containedPrimary {
+  background-color: var(--ps-btn-soft-bg) !important;
+  background-image: none !important;
+  color: var(--ps-pink) !important;
+}
+
+.profile-settings .ps-btn__arrow {
+  flex-shrink: 0;
+  opacity: 0.95;
+  transition: transform 200ms ease;
+}
+
+.profile-settings .ps-btn:hover:not(:disabled) .ps-btn__arrow {
+  transform: translateX(3px);
+}
+
+.profile-settings--dark .ps-btn--soft,
+.profile-settings--dark .MuiButton-root.ps-btn--soft,
+.profile-settings--dark button.ps-btn.ps-btn--soft {
+  color: #f8fafc !important;
+  background: rgba(219, 79, 159, 0.12) !important;
+  border-color: rgba(219, 79, 159, 0.28) !important;
+}
+
+.profile-settings__setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 16px;
+  border: 1px solid var(--ps-border-strong);
+  border-radius: var(--ps-radius-sm);
+  background: var(--ps-card);
+  box-shadow: var(--ps-shadow);
+}
+
+.profile-settings--dark .profile-settings__setting-row {
+  background: rgba(15, 23, 42, 0.4);
+  border-color: var(--ps-border);
+  box-shadow: none;
+}
+
+.profile-settings__setting-copy {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  min-width: 0;
+}
+
+.profile-settings__setting-icon {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  color: #ffffff;
+  background: var(--ps-pink);
+  box-shadow: 0 2px 8px rgba(219, 79, 159, 0.12);
+}
+
+.profile-settings__setting-icon svg {
+  font-size: 1rem;
+}
+
+.profile-settings__setting-title {
+  margin: 0;
+  color: var(--ps-text);
+  font-size: 0.9rem;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.profile-settings__setting-desc {
+  margin: 3px 0 0;
+  color: var(--ps-muted);
+  font-size: 0.78rem;
+  line-height: 1.4;
+}
+
+.profile-settings__toggle {
+  flex-shrink: 0;
+  width: 48px;
+  height: 28px;
+  padding: 3px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(219, 79, 159, 0.16);
+  cursor: pointer;
+}
+
+.profile-settings__toggle span {
+  display: block;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 2px 6px rgba(219, 79, 159, 0.12);
+  transition: transform 180ms ease;
+}
+
+.profile-settings__toggle.is-on {
+  background: var(--ps-pink);
+}
+
+.profile-settings__toggle.is-on span {
+  transform: translateX(20px);
+}
+
+@media (max-width: 960px) {
+  .profile-settings__layout {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  .profile-summary {
+    height: auto;
+    min-height: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .profile-settings__tabs {
+    padding: 0 10px;
+    overflow-x: auto;
+    flex-wrap: nowrap;
+  }
+
+  .profile-settings__tab {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  .profile-settings__panel {
+    padding: 18px;
+  }
+
+  .profile-settings__setting-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .profile-settings__toggle {
+    align-self: flex-end;
+  }
+}
+
+.profile-summary {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 480px;
+  max-width: 296px;
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid var(--ps-border-strong);
+  border-radius: var(--ps-radius);
+  background: var(--ps-card);
+  box-shadow: var(--ps-shadow);
+  padding: 32px 24px 28px;
+}
+
+.profile-summary__hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.profile-summary__avatar-wrap {
+  position: relative;
+  width: 76px;
+  height: 76px;
+  margin: 0 auto 24px;
+}
+
+.profile-summary__avatar-wrap .MuiAvatar-root {
+  width: 76px !important;
+  height: 76px !important;
+  font-size: 30px !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.profile-summary__name {
+  margin: 0;
+  color: #2f145c;
+  font-size: 1.05rem;
+  font-weight: 700;
+  text-align: center;
+  line-height: 1.25;
+  word-break: break-word;
+}
+
+.profile-settings--dark .profile-summary__name {
+  color: #f8fafc;
+}
+
+.profile-summary__email {
+  margin: 10px 0 0;
+  color: #8e7aa8;
+  font-size: 0.82rem;
+  font-weight: 500;
+  line-height: 1.45;
+  text-align: center;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.profile-settings--dark .profile-summary__email {
+  color: #94a3b8;
+}
+
+.profile-summary__meta {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  margin: 28px 0 0;
+  padding: 0;
+  list-style: none;
+  min-height: 0;
+}
+
+.profile-summary__row {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  min-width: 0;
+}
+
+.profile-summary__row-icon {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  margin-top: 2px;
+  color: var(--ps-pink);
+}
+
+.profile-summary__row-icon svg {
+  font-size: 1.2rem;
+  width: 1.2rem;
+  height: 1.2rem;
+}
+
+.profile-settings--dark .profile-summary__row-icon {
+  color: var(--ps-pink);
+}
+
+.profile-summary__row-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+}
+
+.profile-summary__row-label {
+  color: #8e7aa8;
+  font-size: 0.8rem;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.profile-settings--dark .profile-summary__row-label {
+  color: #94a3b8;
+}
+
+.profile-summary__row-value {
+  color: #2f145c;
+  font-weight: 600;
+  font-size: 0.875rem;
+  line-height: 1.45;
+  min-width: 0;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+}
+
+.profile-settings--dark .profile-summary__row-value {
+  color: #f1e8ff;
+}
+
+.profile-summary__row.is-email .profile-summary__row-value {
+  font-size: 0.84rem;
+  line-height: 1.4;
+}

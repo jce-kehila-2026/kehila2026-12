@@ -10,9 +10,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 16px;
-  padding: 0 4px 8px;
-  margin: 0 0 20px;
+  gap: 1rem;
+  padding: 0 0.25rem 0.5rem;
+  margin: 0 0 1.25rem;
   background: transparent;
   border: none;
   border-bottom: 1px solid rgba(236, 60, 151, 0.12);
@@ -45,16 +45,40 @@
   max-height: none;
 }
 
+.pd-home__header-copy .pd-home__inspiration {
+  display: block;
+  margin: 0.5rem 0 0;
+  padding: 0;
+  max-width: 42rem;
+  font-family: 'Nunito', 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-size: 0.92rem;
+  font-weight: 400;
+  font-style: italic;
+  line-height: 1.55;
+  letter-spacing: 0.01em;
+  color: rgba(91, 30, 140, 0.58);
+}
+
+.pd-home__header-copy .pd-home__inspiration-author {
+  font-style: normal;
+  font-weight: 500;
+  color: rgba(138, 45, 168, 0.62);
+}
+
+.pd-home__header-copy .pd-home__inspiration + .public-section-heading__divider--title {
+  margin-top: 0.75rem;
+}
+
 .pd-home__header-copy .public-section-heading__divider--title {
-  width: min(100%, 380px);
-  gap: 16px;
-  margin: clamp(14px, 1.8vw, 18px) 0 0;
+  width: min(100%, 23.75rem);
+  gap: 1rem;
+  margin: clamp(0.875rem, 1.8vw, 1.125rem) 0 0;
   justify-content: flex-start;
 }
 
 .pd-home__header-copy .public-section-heading__divider-line {
   flex: 1;
-  min-width: 72px;
+  min-width: 4.5rem;
 }
 
 .pd-home__header-copy .public-section-heading__divider-heart {
@@ -64,15 +88,15 @@
 .pd-home__header-actions {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 0.625rem;
   flex-shrink: 0;
 }
 
 .pd-header-icon-btn,
 .pd-home__header-actions .participant-notif-wrap > button {
   position: relative;
-  width: 36px;
-  height: 36px;
+  width: 2.25rem;
+  height: 2.25rem;
   display: grid;
   place-items: center;
   border: 1px solid rgba(236, 22, 140, 0.14);
@@ -102,11 +126,11 @@
   position: absolute;
   top: -4px;
   right: -4px;
-  min-width: 18px;
-  height: 18px;
+  min-width: 1.125rem;
+  height: 1.125rem;
   display: grid;
   place-items: center;
-  padding: 0 5px;
+  padding: 0 0.3125rem;
   border-radius: 999px;
   background: var(--pd-pink);
   color: #fff;
@@ -119,22 +143,22 @@
 }
 
 .pd-header-lang__trigger {
-  width: 36px;
-  height: 36px;
+  width: 2.25rem;
+  height: 2.25rem;
   border-radius: 12px;
 }
 
 .pd-home__header-divider {
-  width: 1px;
-  height: 28px;
+  width: 0.0625rem;
+  height: 1.75rem;
   background: rgba(138, 45, 168, 0.22);
   flex-shrink: 0;
 }
 
 .pd-home__header-logo {
-  width: 150px;
+  width: 9.375rem;
   height: auto;
-  max-height: 52px;
+  max-height: 3.25rem;
   object-fit: contain;
   flex-shrink: 0;
 }
@@ -157,6 +181,14 @@
 
 .participant-home--dark .pd-home__header-copy h1 {
   color: #f8fafc;
+}
+
+.participant-home--dark .pd-home__header-copy .pd-home__inspiration {
+  color: rgba(232, 180, 220, 0.72);
+}
+
+.participant-home--dark .pd-home__header-copy .pd-home__inspiration-author {
+  color: rgba(232, 180, 220, 0.58);
 }
 
 .participant-home--dark .pd-header-icon-btn,

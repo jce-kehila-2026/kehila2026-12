@@ -7,15 +7,15 @@
   justify-items: center;
   max-width: 780px;
   margin-inline: auto;
-  padding-inline: 16px;
+  padding-inline: 1rem;
   text-align: center;
 }
 
 .public-section-heading__eyebrow {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
-  margin: 0 0 clamp(16px, 2.2vw, 24px);
+  gap: 0.75rem;
+  margin: 0 0 clamp(1rem, 2.2vw, 1.5rem);
   font-size: clamp(0.9rem, 1.08vw, 1rem);
   font-weight: 600;
   letter-spacing: 0.03em;
@@ -30,8 +30,8 @@
 }
 
 .public-section-heading__eyebrow-line {
-  width: clamp(36px, 5vw, 56px);
-  height: 1px;
+  width: clamp(2.25rem, 5vw, 3.5rem);
+  height: 0.0625rem;
   background: linear-gradient(90deg, transparent, rgba(236, 60, 151, 0.45));
   border-radius: 999px;
 }
@@ -65,17 +65,17 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 0.75rem;
 }
 
 .public-section-heading__divider--title {
-  width: min(100%, 300px);
-  margin-block: clamp(16px, 2.2vw, 24px) 0;
+  width: min(100%, 18.75rem);
+  margin-block: clamp(1rem, 2.2vw, 1.5rem) 0;
 }
 
 .public-section-heading__divider-line {
   flex: 1;
-  height: 1px;
+  height: 0.0625rem;
   background: linear-gradient(90deg, transparent, rgba(236, 60, 151, 0.35));
   border-radius: 999px;
 }
@@ -93,8 +93,8 @@
 
 .public-section-heading__subtitle {
   max-width: 600px;
-  margin: clamp(20px, 2.6vw, 30px) 0 0;
-  padding-inline: clamp(8px, 2vw, 16px);
+  margin: clamp(1.25rem, 2.6vw, 1.875rem) 0 0;
+  padding-inline: clamp(0.5rem, 2vw, 1rem);
   color: #8a7a9c;
   font-size: clamp(0.98rem, 1.2vw, 1.08rem);
   font-weight: 400;

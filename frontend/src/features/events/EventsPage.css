@@ -45,8 +45,8 @@
   height: 100vh;
   display: flex;
   flex-direction: column;
-  gap: 18px;
-  padding: 20px 18px;
+  gap: 1.125rem;
+  padding: 1.25rem 1.125rem;
   border-inline-end: 1px solid rgba(255, 255, 255, 0.58);
   background:
     linear-gradient(165deg, rgba(255, 255, 255, 0.72), rgba(255, 244, 251, 0.46)),
@@ -67,7 +67,7 @@
   display: grid;
   grid-template-rows: auto auto auto auto minmax(0, 1fr) auto auto auto;
   margin: 0;
-  padding: 18px 28px 22px;
+  padding: 1.125rem 1.75rem 1.375rem;
 }
 
 .events-main--embedded {
@@ -166,7 +166,7 @@
 
 .events-brand {
   align-items: center;
-  gap: 12px;
+  gap: 0.75rem;
   border: 0;
   background: transparent;
   color: inherit;
@@ -177,8 +177,8 @@
 }
 
 .events-brand__mark {
-  width: 48px;
-  height: 48px;
+  width: 3rem;
+  height: 3rem;
   display: grid;
   place-items: center;
   border-radius: 16px;
@@ -195,7 +195,7 @@
 
 .events-brand__text {
   flex-direction: column;
-  gap: 2px;
+  gap: 0.125rem;
 }
 
 .events-brand strong {
@@ -213,9 +213,9 @@
 .events-nav {
   flex: 1;
   flex-direction: column;
-  gap: 5px;
+  gap: 0.3125rem;
   overflow: hidden;
-  padding-inline-end: 4px;
+  padding-inline-end: 0.25rem;
 }
 
 .events-nav button,
@@ -223,9 +223,9 @@
   --events-nav-shift: 2px;
   position: relative;
   align-items: center;
-  gap: 12px;
+  gap: 0.75rem;
   width: 100%;
-  min-height: 46px;
+  min-height: 2.875rem;
   border: 0;
   border-radius: 14px;
   background: transparent;
@@ -234,14 +234,14 @@
   font: inherit;
   font-size: 0.9rem;
   font-weight: 600;
-  padding: 0 14px;
+  padding: 0 0.875rem;
   text-align: start;
   transition: transform 180ms ease, background 180ms ease, color 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
 }
 
 .events-nav button,
 .events-logout {
-  min-height: 40px;
+  min-height: 2.5rem;
 }
 
 .events-page[dir="rtl"] .events-nav button,
@@ -276,9 +276,9 @@
   flex: 0 0 auto;
   display: inline-grid;
   place-items: center;
-  width: 22px;
-  min-width: 22px;
-  height: 22px;
+  width: 1.375rem;
+  min-width: 1.375rem;
+  height: 1.375rem;
   border-radius: 999px;
   background: #ec6fa2;
   color: #fff;
@@ -289,14 +289,14 @@
 
 .events-support-card {
   display: grid;
-  gap: 5px;
+  gap: 0.3125rem;
   border: 1px solid rgba(255, 255, 255, 0.58);
   border-radius: 22px;
   background:
     linear-gradient(145deg, rgba(255, 255, 255, 0.62), rgba(255, 236, 247, 0.42)),
     radial-gradient(circle at 88% 10%, rgba(255, 197, 222, 0.26), transparent 7rem);
   color: #4b136b;
-  padding: 14px;
+  padding: 0.875rem;
   box-shadow:
     0 18px 42px rgba(123, 63, 161, 0.09),
     inset 0 1px 0 rgba(255, 255, 255, 0.78);
@@ -319,7 +319,7 @@
 }
 
 .events-support-card button {
-  min-height: 34px;
+  min-height: 2.125rem;
   margin-block-start: 5px;
   border: 0;
   border-radius: 12px;
@@ -339,7 +339,7 @@
 .events-topbar {
   align-items: flex-start;
   justify-content: space-between;
-  gap: 24px;
+  gap: 1.5rem;
   margin-block-end: 12px;
 }
 
@@ -374,7 +374,7 @@
 
 .events-profile {
   align-items: center;
-  gap: 12px;
+  gap: 0.75rem;
 }
 
 .events-profile span {
@@ -383,8 +383,8 @@
 }
 
 .events-profile strong {
-  width: 46px;
-  height: 46px;
+  width: 2.875rem;
+  height: 2.875rem;
   display: grid;
   place-items: center;
   border-radius: 16px;
@@ -400,13 +400,13 @@
 
 .events-hero {
   position: relative;
-  min-height: 96px;
+  min-height: 6rem;
   overflow: hidden;
   display: flex;
   flex-direction: row-reverse;
   align-items: center;
   justify-content: space-between;
-  gap: 18px;
+  gap: 1.125rem;
   border: 1px solid rgba(255, 255, 255, 0.66);
   border-radius: 24px;
   background:
@@ -420,7 +420,7 @@
     inset 0 -18px 44px rgba(255, 255, 255, 0.22);
   backdrop-filter: blur(30px) saturate(1.16);
   -webkit-backdrop-filter: blur(30px) saturate(1.16);
-  padding: 20px clamp(38px, 5vw, 64px) 20px clamp(20px, 3vw, 34px);
+  padding: 1.25rem clamp(2.375rem, 5vw, 4rem) 1.25rem clamp(1.25rem, 3vw, 2.125rem);
 }
 
 .events-hero::before {
@@ -482,14 +482,14 @@
   position: relative;
   overflow: hidden;
   width: 100%;
-  height: 200px;
-  min-height: 200px;
-  max-height: 200px;
+  height: 12.5rem;
+  min-height: 12.5rem;
+  max-height: 12.5rem;
   border-radius: 32px;
   box-shadow: 0 12px 32px rgba(91, 30, 140, 0.07);
   isolation: isolate;
   flex-shrink: 0;
-  margin-block: 0 14px;
+  margin-block: 0 0.875rem;
   line-height: 0;
 }
 
@@ -525,7 +525,7 @@
   margin-block-start: 8px;
   color: #4b136b;
   font-weight: 700;
-  padding: 10px 14px;
+  padding: 0.625rem 0.875rem;
 }
 
 .events-status--error {
@@ -535,12 +535,12 @@
 }
 
 .events-categories {
-  width: min(100%, 720px);
+  width: min(100%, 45rem);
   align-self: flex-start;
   margin-block-start: 0;
   margin-left: 0;
   margin-right: auto;
-  padding: 8px 10px;
+  padding: 0.5rem 0.625rem;
   border: 1px solid rgba(255, 255, 255, 0.68);
   border-radius: 18px;
   direction: ltr;
@@ -559,7 +559,7 @@
 .registered-events__heading {
   align-items: center;
   justify-content: flex-start;
-  gap: 18px;
+  gap: 1.125rem;
   direction: rtl;
   text-align: right;
 }
@@ -589,7 +589,7 @@
 .registered-events__heading {
   align-items: flex-end;
   flex-direction: column;
-  gap: 8px;
+  gap: 0.5rem;
 }
 
 .registered-events__heading button {
@@ -619,9 +619,9 @@
 
 .events-suggest-pill {
   overflow: hidden;
-  min-height: 36px;
+  min-height: 2.25rem;
   align-items: center;
-  gap: 8px;
+  gap: 0.5rem;
   border: 0;
   border-radius: 999px;
   background:
@@ -631,7 +631,7 @@
   font: inherit;
   font-size: 0.78rem;
   font-weight: 800;
-  padding: 0 16px;
+  padding: 0 1rem;
   box-shadow: 0 10px 22px rgba(236, 111, 162, 0.2);
   transition: transform 160ms ease, box-shadow 160ms ease;
 }
@@ -640,7 +640,7 @@
   content: "";
   position: absolute;
   inset: 1px 12px auto;
-  height: 14px;
+  height: 0.875rem;
   border-radius: 999px;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.58), rgba(255, 255, 255, 0));
   pointer-events: none;
@@ -657,7 +657,7 @@
   grid-template-columns: repeat(3, 220px);
   justify-content: start;
   align-items: center;
-  gap: 10px;
+  gap: 0.625rem;
   margin-block-start: 0;
   padding: 0;
 }
@@ -665,12 +665,12 @@
 .events-category-button {
   position: relative;
   width: 100%;
-  height: 50px;
+  height: 3.125rem;
   overflow: hidden;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 9px;
+  gap: 0.5625rem;
   border: 1px solid transparent;
   border-radius: 16px;
   background: transparent;
@@ -679,7 +679,7 @@
   -webkit-backdrop-filter: blur(22px) saturate(1.16);
   cursor: pointer;
   font: inherit;
-  padding: 0 16px;
+  padding: 0 1rem;
   text-align: center;
   transform: none;
   box-shadow: none;
@@ -697,8 +697,8 @@
 .events-category-button svg {
   position: relative;
   z-index: 1;
-  width: 18px;
-  height: 18px;
+  width: 1.125rem;
+  height: 1.125rem;
   flex: 0 0 auto;
   color: currentColor;
 }
@@ -792,7 +792,7 @@
   overscroll-behavior: contain;
   scrollbar-gutter: stable;
   margin-block-start: 8px;
-  padding: 0 2px 12px 0;
+  padding: 0 0.125rem 0.75rem 0;
   border: 0;
   background: transparent;
   box-shadow: none;
@@ -804,7 +804,7 @@
 }
 
 .events-list-panel::-webkit-scrollbar {
-  width: 8px;
+  width: 0.5rem;
 }
 
 .events-list-panel::-webkit-scrollbar-track {
@@ -834,7 +834,7 @@
   justify-content: center;
   justify-items: center;
   align-items: start;
-  gap: 18px;
+  gap: 1.125rem;
   margin-block-start: 8px;
   direction: ltr;
 }
@@ -853,7 +853,7 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   align-items: start;
-  gap: 24px;
+  gap: 1.5rem;
 }
 
 .appointments-tab-panel.has-panel .appointments-tab-panel__body {
@@ -863,22 +863,22 @@
 .appointments-tab-panel__list {
   min-width: 0;
   display: grid;
-  gap: 14px;
+  gap: 0.875rem;
 }
 
 .appointment-service-list {
   display: grid;
-  gap: 14px;
+  gap: 0.875rem;
 }
 
 .appointment-service-card {
   position: relative;
   overflow: hidden;
-  min-height: 156px;
+  min-height: 9.75rem;
   display: grid;
   grid-template-columns: 178px minmax(0, 1fr) max-content;
   align-items: center;
-  column-gap: 24px;
+  column-gap: 1.5rem;
   border: 1px solid rgba(255, 255, 255, 0.72);
   border-radius: 26px;
   background:
@@ -889,7 +889,7 @@
     0 18px 42px rgba(118, 82, 166, 0.1),
     0 8px 20px rgba(236, 111, 162, 0.06),
     inset 0 1px 0 rgba(255, 255, 255, 0.94);
-  padding: 16px 22px 16px 16px;
+  padding: 1rem 1.375rem 1rem 1rem;
   backdrop-filter: blur(26px) saturate(1.14);
   -webkit-backdrop-filter: blur(26px) saturate(1.14);
   transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
@@ -918,7 +918,7 @@
 
 .appointment-service-card__media {
   width: 100%;
-  height: 124px;
+  height: 7.75rem;
   overflow: hidden;
   justify-self: start;
   border: 1px solid rgba(255, 255, 255, 0.76);
@@ -937,8 +937,8 @@
 }
 
 .appointment-service-card__icon {
-  width: 64px;
-  height: 64px;
+  width: 4rem;
+  height: 4rem;
   display: none;
   place-items: center;
   border-radius: 21px;
@@ -946,15 +946,15 @@
 }
 
 .appointment-service-card__icon svg {
-  height: 32px;
-  width: 32px;
+  height: 2rem;
+  width: 2rem;
 }
 
 .appointment-service-card__copy {
   min-width: 0;
   display: grid;
   justify-items: start;
-  gap: 12px;
+  gap: 0.75rem;
   align-self: center;
   text-align: left;
 }
@@ -990,11 +990,11 @@
   flex-wrap: wrap;
   align-items: center;
   justify-content: flex-start;
-  gap: 8px;
+  gap: 0.5rem;
 }
 
 .appointment-service-card__meta span {
-  min-height: 28px;
+  min-height: 1.75rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1004,7 +1004,7 @@
   color: rgba(75, 42, 119, 0.72);
   font-size: 0.68rem;
   font-weight: 900;
-  padding: 0 13px;
+  padding: 0 0.8125rem;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.86);
 }
 
@@ -1013,11 +1013,11 @@
 }
 
 .appointment-service-card__action {
-  min-height: 46px;
+  min-height: 2.875rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 0.625rem;
   justify-self: end;
   align-self: center;
   border: 1px solid rgba(236, 111, 162, 0.32);
@@ -1030,7 +1030,7 @@
   font: inherit;
   font-size: 0.8rem;
   font-weight: 900;
-  padding: 0 22px;
+  padding: 0 1.375rem;
   white-space: nowrap;
   box-shadow:
     0 12px 24px rgba(216, 76, 136, 0.1),
@@ -1058,8 +1058,8 @@
   display: grid;
   grid-template-columns: 54px minmax(0, 1fr) auto;
   align-items: center;
-  gap: 16px;
-  min-height: 94px;
+  gap: 1rem;
+  min-height: 5.875rem;
   border: 1px solid rgba(255, 255, 255, 0.72);
   border-radius: 24px;
   background:
@@ -1068,12 +1068,12 @@
   box-shadow:
     0 20px 42px rgba(118, 82, 166, 0.12),
     inset 0 1px 0 rgba(255, 255, 255, 0.9);
-  padding: 18px 20px;
+  padding: 1.125rem 1.25rem;
 }
 
 .appointments-waitlist-card > span {
-  width: 48px;
-  height: 48px;
+  width: 3rem;
+  height: 3rem;
   display: inline-grid;
   place-items: center;
   border-radius: 18px;
@@ -1100,7 +1100,7 @@
 }
 
 .appointments-waitlist-card button {
-  min-height: 42px;
+  min-height: 2.625rem;
   border: 1px solid rgba(236, 111, 162, 0.3);
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.58);
@@ -1109,7 +1109,7 @@
   font: inherit;
   font-size: 0.8rem;
   font-weight: 900;
-  padding: 0 20px;
+  padding: 0 1.25rem;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.86);
 }
 
@@ -1125,7 +1125,7 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   align-items: start;
-  gap: 24px;
+  gap: 1.5rem;
 }
 
 .workshops-tab-panel.has-panel .workshops-tab-panel__body {
@@ -1135,16 +1135,16 @@
 .workshop-list {
   min-width: 0;
   display: grid;
-  gap: 14px;
+  gap: 0.875rem;
 }
 
 .workshop-list-card {
   position: relative;
-  min-height: 156px;
+  min-height: 9.75rem;
   display: grid;
   grid-template-columns: 178px minmax(0, 1fr) max-content;
   align-items: center;
-  column-gap: 24px;
+  column-gap: 1.5rem;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.72);
   border-radius: 26px;
@@ -1156,7 +1156,7 @@
     0 18px 42px rgba(118, 82, 166, 0.1),
     0 8px 20px rgba(236, 111, 162, 0.06),
     inset 0 1px 0 rgba(255, 255, 255, 0.94);
-  padding: 16px 22px 16px 16px;
+  padding: 1rem 1.375rem 1rem 1rem;
   backdrop-filter: blur(26px) saturate(1.14);
   -webkit-backdrop-filter: blur(26px) saturate(1.14);
   transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
@@ -1178,7 +1178,7 @@
 
 .workshop-list-card__media {
   width: 100%;
-  height: 124px;
+  height: 7.75rem;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.76);
   border-radius: 18px;
@@ -1198,7 +1198,7 @@
 .workshop-list-card__content {
   min-width: 0;
   display: grid;
-  gap: 12px;
+  gap: 0.75rem;
   text-align: left;
 }
 
@@ -1229,36 +1229,36 @@
 .workshop-list-card__meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 0.5rem;
 }
 
 .workshop-list-card__meta span {
-  min-height: 28px;
+  min-height: 1.75rem;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 0.375rem;
   border: 1px solid rgba(255, 255, 255, 0.7);
   border-radius: 999px;
   background: rgba(244, 238, 249, 0.72);
   color: rgba(75, 42, 119, 0.72);
   font-size: 0.68rem;
   font-weight: 900;
-  padding: 0 10px;
+  padding: 0 0.625rem;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.86);
 }
 
 .workshop-list-card__meta svg {
-  width: 15px;
-  height: 15px;
+  width: 0.9375rem;
+  height: 0.9375rem;
   color: #d94f92;
 }
 
 .workshop-list-card__action {
-  min-height: 46px;
+  min-height: 2.875rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 0.625rem;
   justify-self: end;
   align-self: center;
   border: 1px solid rgba(236, 111, 162, 0.32);
@@ -1271,7 +1271,7 @@
   font: inherit;
   font-size: 0.8rem;
   font-weight: 900;
-  padding: 0 22px;
+  padding: 0 1.375rem;
   white-space: nowrap;
   box-shadow:
     0 12px 24px rgba(216, 76, 136, 0.1),
@@ -1306,16 +1306,16 @@
 .registered-session-list {
   min-width: 0;
   display: grid;
-  gap: 14px;
+  gap: 0.875rem;
 }
 
 .registered-session-card {
   position: relative;
-  min-height: 156px;
+  min-height: 9.75rem;
   display: grid;
   grid-template-columns: 178px minmax(0, 1fr) max-content;
   align-items: center;
-  column-gap: 24px;
+  column-gap: 1.5rem;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.72);
   border-radius: 26px;
@@ -1327,7 +1327,7 @@
     0 18px 42px rgba(118, 82, 166, 0.1),
     0 8px 20px rgba(236, 111, 162, 0.06),
     inset 0 1px 0 rgba(255, 255, 255, 0.94);
-  padding: 16px 22px 16px 16px;
+  padding: 1rem 1.375rem 1rem 1rem;
   backdrop-filter: blur(26px) saturate(1.14);
   -webkit-backdrop-filter: blur(26px) saturate(1.14);
   transition: transform 220ms ease, box-shadow 220ms ease, border-color 220ms ease;
@@ -1344,7 +1344,7 @@
 
 .registered-session-card__media {
   width: 100%;
-  height: 124px;
+  height: 7.75rem;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.76);
   border-radius: 18px;
@@ -1364,7 +1364,7 @@
 .registered-session-card__content {
   min-width: 0;
   display: grid;
-  gap: 12px;
+  gap: 0.75rem;
   text-align: left;
 }
 
@@ -1395,38 +1395,38 @@
 .registered-session-card__meta {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 0.5rem;
 }
 
 .registered-session-card__meta span {
-  min-height: 28px;
+  min-height: 1.75rem;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 0.375rem;
   border: 1px solid rgba(255, 255, 255, 0.7);
   border-radius: 999px;
   background: rgba(244, 238, 249, 0.72);
   color: rgba(75, 42, 119, 0.72);
   font-size: 0.68rem;
   font-weight: 900;
-  padding: 0 10px;
+  padding: 0 0.625rem;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.86);
 }
 
 .registered-session-card__meta svg {
-  width: 15px;
-  height: 15px;
+  width: 0.9375rem;
+  height: 0.9375rem;
   color: #d94f92;
 }
 
 .registered-session-card__actions {
   display: grid;
   justify-items: end;
-  gap: 14px;
+  gap: 0.875rem;
 }
 
 .registered-session-card__status {
-  min-height: 34px;
+  min-height: 2.125rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -1436,16 +1436,16 @@
   color: #168a45;
   font-size: 0.76rem;
   font-weight: 900;
-  padding: 0 18px;
+  padding: 0 1.125rem;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
 }
 
 .registered-session-card__cancel {
-  min-height: 46px;
+  min-height: 2.875rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 0.625rem;
   border: 1px solid rgba(236, 111, 162, 0.32);
   border-radius: 999px;
   background:
@@ -1456,7 +1456,7 @@
   font: inherit;
   font-size: 0.8rem;
   font-weight: 900;
-  padding: 0 22px;
+  padding: 0 1.375rem;
   white-space: nowrap;
   box-shadow:
     0 12px 24px rgba(216, 76, 136, 0.1),
@@ -1488,7 +1488,7 @@
   position: sticky;
   top: 0;
   width: 100%;
-  max-height: calc(100vh - 120px);
+  max-height: calc(100vh - 7.5rem);
   overflow-y: auto;
   border: 1px solid rgba(255, 255, 255, 0.74);
   border-radius: 30px;
@@ -1501,7 +1501,7 @@
     0 30px 72px rgba(35, 20, 95, 0.16),
     0 16px 38px rgba(236, 111, 162, 0.12),
     inset 0 1px 0 rgba(255, 255, 255, 0.96);
-  padding: 22px;
+  padding: 1.375rem;
   text-align: left;
   backdrop-filter: blur(30px) saturate(1.16);
   -webkit-backdrop-filter: blur(30px) saturate(1.16);
@@ -1509,7 +1509,7 @@
 }
 
 .workshop-details-panel::-webkit-scrollbar {
-  width: 7px;
+  width: 0.4375rem;
 }
 
 .workshop-details-panel::-webkit-scrollbar-thumb {
@@ -1522,8 +1522,8 @@
   top: 18px;
   right: 18px;
   z-index: 2;
-  width: 34px;
-  height: 34px;
+  width: 2.125rem;
+  height: 2.125rem;
   display: inline-grid;
   place-items: center;
   border: 0;
@@ -1535,7 +1535,7 @@
 }
 
 .workshop-details-panel__image {
-  height: 180px;
+  height: 11.25rem;
   overflow: hidden;
   border-radius: 22px;
   margin-block-end: 18px;
@@ -1555,13 +1555,13 @@
   display: grid;
   grid-template-columns: 52px minmax(0, 1fr);
   align-items: center;
-  gap: 13px;
-  padding-inline-end: 40px;
+  gap: 0.8125rem;
+  padding-inline-end: 2.5rem;
 }
 
 .workshop-details-panel__header > span {
-  width: 50px;
-  height: 50px;
+  width: 3.125rem;
+  height: 3.125rem;
   display: inline-grid;
   place-items: center;
   border-radius: 18px;
@@ -1604,16 +1604,16 @@
 
 .workshop-details-panel__details {
   display: grid;
-  gap: 10px;
+  gap: 0.625rem;
   margin-block-start: 18px;
 }
 
 .workshop-details-panel__details span {
-  min-height: 58px;
+  min-height: 3.625rem;
   display: grid;
   grid-template-columns: 28px minmax(78px, auto) minmax(0, 1fr);
   align-items: center;
-  gap: 9px;
+  gap: 0.5625rem;
   border: 1px solid rgba(255, 255, 255, 0.64);
   border-radius: 18px;
   background:
@@ -1622,7 +1622,7 @@
   color: rgba(70, 42, 119, 0.72);
   font-size: 0.78rem;
   font-weight: 800;
-  padding: 10px 12px;
+  padding: 0.625rem 0.75rem;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.78);
 }
 
@@ -1637,24 +1637,24 @@
 }
 
 .workshop-details-panel__notice {
-  margin: 14px 0 0;
+  margin: 0.875rem 0 0;
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.58);
   color: rgba(70, 42, 119, 0.68);
   font-size: 0.74rem;
   font-weight: 800;
   line-height: 1.35;
-  padding: 12px;
+  padding: 0.75rem;
 }
 
 .workshop-details-panel__actions {
   display: grid;
-  gap: 12px;
+  gap: 0.75rem;
   margin-block-start: 22px;
 }
 
 .workshop-details-panel__actions button {
-  min-height: 48px;
+  min-height: 3rem;
   border-radius: 14px;
   cursor: pointer;
   font: inherit;
@@ -1666,7 +1666,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 0.625rem;
   border: 0;
   background:
     radial-gradient(circle at 22% 16%, rgba(255, 255, 255, 0.42), transparent 4rem),
@@ -1763,8 +1763,8 @@
   position: absolute;
   inset-inline-start: 20px;
   inset-block-start: 178px;
-  width: 46px;
-  height: 46px;
+  width: 2.875rem;
+  height: 2.875rem;
   border: 2px solid rgba(255, 255, 255, 0.42);
   border-radius: 60% 40% 55% 45%;
   opacity: 0.42;
@@ -1777,8 +1777,8 @@
   position: absolute;
   inset-inline-end: 20px;
   inset-block-start: 228px;
-  width: 34px;
-  height: 34px;
+  width: 2.125rem;
+  height: 2.125rem;
   background-image: radial-gradient(circle, rgba(123, 63, 161, 0.14) 2px, transparent 2.5px);
   background-size: 13px 13px;
   opacity: 0.7;
@@ -1797,8 +1797,8 @@
 
 .events-card__image {
   position: relative;
-  height: 112px;
-  margin: 9px 9px 0;
+  height: 7rem;
+  margin: 0.5625rem 0.5625rem 0;
   overflow: hidden;
   border-radius: 20px;
   border: 1px solid rgba(255, 255, 255, 0.54);
@@ -1835,11 +1835,11 @@
   right: auto;
   left: 10px;
   z-index: 2;
-  min-height: 30px;
+  min-height: 1.875rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 0.25rem;
   border: 1px solid rgba(255, 255, 255, 0.76);
   border-radius: 999px;
   background:
@@ -1851,7 +1851,7 @@
   font: inherit;
   font-size: 0.64rem;
   font-weight: 800;
-  padding: 0 10px;
+  padding: 0 0.625rem;
   text-align: left;
   box-shadow:
     0 12px 22px rgba(75, 19, 107, 0.14),
@@ -1867,8 +1867,8 @@
 }
 
 .events-card__about-button svg {
-  width: 16px;
-  height: 16px;
+  width: 1rem;
+  height: 1rem;
   transition: transform 220ms ease;
 }
 
@@ -1884,8 +1884,8 @@
 .events-card__status {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
-  min-height: 38px;
+  gap: 0.4375rem;
+  min-height: 2.375rem;
   border-radius: 999px;
   border: 1px solid rgba(255, 255, 255, 0.72);
   background:
@@ -1895,7 +1895,7 @@
   -webkit-backdrop-filter: blur(18px) saturate(1.12);
   font-size: 0.8rem;
   font-weight: 800;
-  padding: 8px 14px;
+  padding: 0.5rem 0.875rem;
   box-shadow:
     0 14px 26px rgba(75, 19, 107, 0.14),
     inset 0 1px 0 rgba(255, 255, 255, 0.8);
@@ -1927,7 +1927,7 @@
   width: 100%;
   display: flex;
   justify-content: flex-start;
-  gap: 8px;
+  gap: 0.5rem;
   direction: rtl;
   margin-block-end: 12px;
 }
@@ -1960,7 +1960,7 @@
   flex-direction: column;
   align-items: flex-start;
   direction: ltr;
-  padding: 10px 12px 12px;
+  padding: 0.625rem 0.75rem 0.75rem;
   text-align: left;
 }
 
@@ -2005,11 +2005,11 @@
   align-items: center;
   justify-content: center;
   flex-direction: row;
-  gap: 6px;
+  gap: 0.375rem;
   align-self: flex-start;
   direction: ltr;
   margin-block-start: 7px;
-  min-height: 26px;
+  min-height: 1.625rem;
   border: 1px solid rgba(255, 255, 255, 0.72);
   border-radius: 999px;
   background:
@@ -2018,7 +2018,7 @@
   color: #6b43a5;
   font-size: 0.68rem;
   font-weight: 800;
-  padding: 0 10px;
+  padding: 0 0.625rem;
   text-align: left;
   box-shadow:
     0 12px 24px rgba(123, 63, 161, 0.11),
@@ -2036,7 +2036,7 @@
 .events-card__registered-meta {
   width: 100%;
   display: grid;
-  gap: 6px;
+  gap: 0.375rem;
   margin-block-start: 8px;
 }
 
@@ -2044,7 +2044,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: flex-start;
-  gap: 6px;
+  gap: 0.375rem;
   color: rgba(35, 20, 95, 0.68);
   font-size: 0.72rem;
   font-weight: 800;
@@ -2083,11 +2083,11 @@
 
 .events-card__read-button {
   width: auto;
-  min-height: 26px;
+  min-height: 1.625rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 0.375rem;
   direction: ltr;
   border: 1px solid rgba(255, 255, 255, 0.7);
   border-radius: 999px;
@@ -2099,7 +2099,7 @@
   font: inherit;
   font-size: 0.66rem;
   font-weight: 800;
-  padding: 0 9px;
+  padding: 0 0.5625rem;
   text-align: left;
   box-shadow:
     0 8px 16px rgba(123, 63, 161, 0.08),
@@ -2120,8 +2120,8 @@
 }
 
 .events-card__read-button svg:first-child {
-  width: 15px;
-  height: 15px;
+  width: 0.9375rem;
+  height: 0.9375rem;
   padding: 0;
   border-radius: 0;
   background: transparent;
@@ -2153,7 +2153,7 @@
 }
 
 .events-card__description-inner p {
-  padding: 8px 10px;
+  padding: 0.5rem 0.625rem;
   border: 1px solid rgba(255, 255, 255, 0.62);
   border-radius: 16px;
   background:
@@ -2170,7 +2170,7 @@
 
 .events-card__meta {
   display: grid;
-  gap: 8px;
+  gap: 0.5rem;
   margin-block-start: 14px;
   padding-block-start: 12px;
   width: 100%;
@@ -2184,7 +2184,7 @@
   align-items: center;
   flex-direction: row;
   justify-content: flex-start;
-  gap: 8px;
+  gap: 0.5rem;
   color: rgba(35, 20, 95, 0.68);
   font-size: 0.78rem;
   font-weight: 600;
@@ -2213,10 +2213,10 @@
   position: relative;
   overflow: hidden;
   width: 100%;
-  min-height: 34px;
+  min-height: 2.125rem;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 0.375rem;
   direction: ltr;
   margin-block-start: 9px;
   align-self: center;
@@ -2231,7 +2231,7 @@
   font-size: 0.74rem;
   font-weight: 800;
   text-align: center;
-  padding-inline: 12px;
+  padding-inline: 0.75rem;
   box-shadow:
     0 18px 34px rgba(111, 70, 170, 0.26),
     0 0 30px rgba(190, 156, 255, 0.24),
@@ -2321,7 +2321,7 @@
   position: sticky;
   top: 0;
   width: 100%;
-  max-height: calc(100vh - 120px);
+  max-height: calc(100vh - 7.5rem);
   overflow-y: auto;
   border: 1px solid rgba(255, 255, 255, 0.74);
   border-radius: 30px;
@@ -2334,7 +2334,7 @@
     0 30px 72px rgba(35, 20, 95, 0.16),
     0 16px 38px rgba(236, 111, 162, 0.12),
     inset 0 1px 0 rgba(255, 255, 255, 0.96);
-  padding: 24px;
+  padding: 1.5rem;
   text-align: left;
   backdrop-filter: blur(30px) saturate(1.16);
   -webkit-backdrop-filter: blur(30px) saturate(1.16);
@@ -2350,7 +2350,7 @@
 }
 
 .appointment-drawer::-webkit-scrollbar {
-  width: 7px;
+  width: 0.4375rem;
 }
 
 .appointment-drawer::-webkit-scrollbar-thumb {
@@ -2362,8 +2362,8 @@
   position: absolute;
   top: 22px;
   right: 22px;
-  width: 34px;
-  height: 34px;
+  width: 2.125rem;
+  height: 2.125rem;
   display: inline-grid;
   place-items: center;
   border: 0;
@@ -2385,14 +2385,14 @@
   display: grid;
   grid-template-columns: 58px minmax(0, 1fr);
   align-items: center;
-  gap: 14px;
-  padding-inline-end: 42px;
+  gap: 0.875rem;
+  padding-inline-end: 2.625rem;
   margin-block-end: 26px;
 }
 
 .appointment-drawer__mark {
-  width: 54px;
-  height: 54px;
+  width: 3.375rem;
+  height: 3.375rem;
   display: inline-grid;
   place-items: center;
   border-radius: 20px;
@@ -2407,8 +2407,8 @@
 }
 
 .appointment-drawer__mark svg {
-  width: 30px;
-  height: 30px;
+  width: 1.875rem;
+  height: 1.875rem;
 }
 
 .appointment-drawer__header h2,
@@ -2432,14 +2432,14 @@
 
 .appointment-booking-step {
   display: grid;
-  gap: 14px;
+  gap: 0.875rem;
   margin-block-start: 22px;
 }
 
 .appointment-booking-step h3 {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 0.625rem;
   margin: 0;
   color: #32176c;
   font-size: 0.88rem;
@@ -2447,8 +2447,8 @@
 }
 
 .appointment-booking-step h3 span {
-  width: 22px;
-  height: 22px;
+  width: 1.375rem;
+  height: 1.375rem;
   display: inline-grid;
   place-items: center;
   border-radius: 999px;
@@ -2461,16 +2461,16 @@
 .appointment-instructor-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 12px;
+  gap: 0.75rem;
 }
 
 .appointment-instructor-card {
   position: relative;
-  min-height: 152px;
+  min-height: 9.5rem;
   display: grid;
   justify-items: center;
   align-content: center;
-  gap: 7px;
+  gap: 0.4375rem;
   border: 1px solid rgba(123, 63, 161, 0.12);
   border-radius: 20px;
   background:
@@ -2479,7 +2479,7 @@
   color: #24105f;
   cursor: pointer;
   font: inherit;
-  padding: 14px 10px;
+  padding: 0.875rem 0.625rem;
   text-align: center;
   box-shadow:
     0 16px 32px rgba(123, 63, 161, 0.09),
@@ -2508,8 +2508,8 @@
   position: absolute;
   top: 10px;
   right: 10px;
-  width: 24px;
-  height: 24px;
+  width: 1.5rem;
+  height: 1.5rem;
   display: grid;
   place-items: center;
   border-radius: 999px;
@@ -2522,8 +2522,8 @@
 
 .appointment-instructor-card img,
 .appointment-instructor-card__avatar {
-  width: 62px;
-  height: 62px;
+  width: 3.875rem;
+  height: 3.875rem;
   display: inline-grid;
   place-items: center;
   border-radius: 999px;
@@ -2561,7 +2561,7 @@
 .appointment-instructor-card em {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 0.25rem;
   color: #d94f92;
   font-size: 0.68rem;
   font-style: normal;
@@ -2569,12 +2569,12 @@
 }
 
 .appointment-instructor-card em svg {
-  width: 14px;
-  height: 14px;
+  width: 0.875rem;
+  height: 0.875rem;
 }
 
 .appointment-date-selector {
-  min-height: 48px;
+  min-height: 3rem;
   display: grid;
   grid-template-columns: 44px minmax(0, 1fr) 44px;
   align-items: center;
@@ -2589,8 +2589,8 @@
 }
 
 .appointment-date-selector button {
-  width: 42px;
-  height: 42px;
+  width: 2.625rem;
+  height: 2.625rem;
   display: inline-grid;
   place-items: center;
   border: 0;
@@ -2610,7 +2610,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 0.5rem;
   color: #32176c;
   font-size: 0.86rem;
   font-weight: 900;
@@ -2624,15 +2624,15 @@
 .appointment-time-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 10px;
+  gap: 0.625rem;
 }
 
 .appointment-time-grid button {
-  min-height: 44px;
+  min-height: 2.75rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 0.375rem;
   border: 1px solid rgba(123, 63, 161, 0.12);
   border-radius: 12px;
   background:
@@ -2678,15 +2678,15 @@
 }
 
 .appointment-time-grid button svg {
-  width: 14px;
-  height: 14px;
+  width: 0.875rem;
+  height: 0.875rem;
 }
 
 .appointment-drawer__timezone,
 .appointment-drawer__empty {
   display: inline-flex;
   align-items: center;
-  gap: 7px;
+  gap: 0.4375rem;
   margin: 0;
   color: rgba(70, 42, 119, 0.64);
   font-size: 0.74rem;
@@ -2700,17 +2700,17 @@
 .appointment-drawer__empty {
   border-radius: 18px;
   background: rgba(255, 255, 255, 0.48);
-  padding: 14px;
+  padding: 0.875rem;
 }
 
 .appointment-drawer__actions {
   display: grid;
-  gap: 12px;
+  gap: 0.75rem;
   margin-block-start: 24px;
 }
 
 .appointment-drawer__actions button {
-  min-height: 48px;
+  min-height: 3rem;
   border-radius: 14px;
   cursor: pointer;
   font: inherit;
@@ -2723,7 +2723,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 0.625rem;
   border: 0;
   background:
     radial-gradient(circle at 22% 16%, rgba(255, 255, 255, 0.42), transparent 4rem),
@@ -2773,7 +2773,7 @@
   z-index: 90;
   display: grid;
   place-items: center;
-  padding: 24px;
+  padding: 1.5rem;
 }
 
 .events-booking-modal__backdrop {
@@ -2792,8 +2792,8 @@
 
 .events-booking-modal__dialog {
   position: relative;
-  width: min(620px, calc(100vw - 32px));
-  max-height: min(86vh, 760px);
+  width: min(38.75rem, calc(100vw - 2rem));
+  max-height: min(86vh, 47.5rem);
   overflow-y: auto;
   border: 1px solid rgba(255, 255, 255, 0.62);
   border-radius: 28px;
@@ -2808,7 +2808,7 @@
     0 0 54px rgba(207, 181, 255, 0.18),
     inset 0 1px 0 rgba(255, 255, 255, 0.94),
     inset 0 -1px 0 rgba(159, 107, 208, 0.1);
-  padding: 20px;
+  padding: 1.25rem;
   direction: ltr;
   text-align: left;
   font-family: "Plus Jakarta Sans", "Inter", system-ui, sans-serif;
@@ -2822,8 +2822,8 @@
   top: 22px;
   right: 22px;
   z-index: 2;
-  width: 34px;
-  height: 34px;
+  width: 2.125rem;
+  height: 2.125rem;
   display: inline-grid;
   place-items: center;
   border: 0;
@@ -2840,8 +2840,8 @@
 }
 
 .events-booking-modal__close svg {
-  width: 22px;
-  height: 22px;
+  width: 1.375rem;
+  height: 1.375rem;
   display: block;
 }
 
@@ -2854,35 +2854,35 @@
 }
 
 .events-booking-modal .events-card__calendar-grid {
-  gap: 7px;
+  gap: 0.4375rem;
 }
 
 .events-booking-modal .events-card__calendar-grid button {
-  min-height: 48px;
+  min-height: 3rem;
   border-radius: 999px;
   font-size: 0.88rem;
 }
 
 .events-booking-modal .events-card__provider-option {
   grid-template-columns: 48px minmax(0, 1fr) auto;
-  min-height: 92px;
-  padding: 11px;
+  min-height: 5.75rem;
+  padding: 0.6875rem;
 }
 
 .events-booking-modal .events-card__provider-option img,
 .events-booking-modal .events-card__provider-avatar {
-  width: 48px;
-  height: 48px;
+  width: 3rem;
+  height: 3rem;
 }
 
 .events-booking-modal .events-card__provider-meta {
-  padding-inline-start: 56px;
+  padding-inline-start: 3.5rem;
 }
 
 .events-card__booking {
-  width: calc(100% - 24px);
+  width: calc(100% - 1.5rem);
   max-height: 0;
-  margin-inline: 12px;
+  margin-inline: 0.75rem;
   overflow: hidden;
   opacity: 0;
   direction: ltr;
@@ -2896,7 +2896,7 @@
 }
 
 .events-card__booking.is-open {
-  max-height: 920px;
+  max-height: 57.5rem;
   margin-block-start: 8px;
   opacity: 1;
 }
@@ -2916,12 +2916,12 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.86);
   backdrop-filter: blur(22px) saturate(1.14);
   -webkit-backdrop-filter: blur(22px) saturate(1.14);
-  padding: 12px;
+  padding: 0.75rem;
 }
 
 .events-card__booking-view {
   display: grid;
-  gap: 10px;
+  gap: 0.625rem;
   animation: eventsBookingSwap 260ms ease both;
 }
 
@@ -2941,8 +2941,8 @@
   position: absolute;
   inset-block-start: 0;
   inset-inline-start: 50%;
-  width: 160px;
-  height: 5px;
+  width: 10rem;
+  height: 0.3125rem;
   border-radius: 999px;
   background:
     linear-gradient(90deg, rgba(236, 111, 162, 0), rgba(166, 105, 232, 0.9), rgba(236, 111, 162, 0));
@@ -2953,22 +2953,22 @@
 }
 
 .events-card__booking-view--providers {
-  gap: 10px;
+  gap: 0.625rem;
 }
 
 .events-card__booking-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  gap: 0.625rem;
   text-align: left;
 }
 
 .events-card__booking-view--calendar .events-card__booking-header {
   position: relative;
-  min-height: 70px;
+  min-height: 4.375rem;
   justify-content: center;
-  padding-inline: 76px;
+  padding-inline: 4.75rem;
   text-align: center;
 }
 
@@ -2976,8 +2976,8 @@
 .events-card__booking-view--calendar .events-card__booking-header::after {
   position: absolute;
   inset-block-start: 50%;
-  width: 46px;
-  height: 46px;
+  width: 2.875rem;
+  height: 2.875rem;
   display: grid;
   place-items: center;
   border: 1px solid rgba(255, 255, 255, 0.68);
@@ -3072,7 +3072,7 @@
   color: #7b3fa1;
   font-size: 0.62rem;
   font-weight: 900;
-  padding: 7px 10px;
+  padding: 0.4375rem 0.625rem;
   box-shadow:
     0 10px 20px rgba(123, 63, 161, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.82);
@@ -3088,7 +3088,7 @@
 .events-card__change-date--back {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 0.375rem;
   margin-block-start: 10px;
   border: 0;
   background: transparent;
@@ -3099,8 +3099,8 @@
 }
 
 .events-card__change-date--back svg {
-  width: 16px;
-  height: 16px;
+  width: 1rem;
+  height: 1rem;
 }
 
 .events-card__change-date:hover {
@@ -3140,7 +3140,7 @@
     0 0 34px rgba(236, 111, 162, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.84),
     inset 0 -1px 0 rgba(159, 107, 208, 0.08);
-  padding: 16px;
+  padding: 1rem;
   backdrop-filter: blur(22px) saturate(1.16);
   -webkit-backdrop-filter: blur(22px) saturate(1.16);
 }
@@ -3149,7 +3149,7 @@
 .events-card__calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 6px;
+  gap: 0.375rem;
 }
 
 .events-card__calendar-weekdays {
@@ -3166,7 +3166,7 @@
 
 .events-card__calendar-grid button {
   aspect-ratio: 1;
-  min-height: 36px;
+  min-height: 2.25rem;
   min-width: 0;
   display: grid;
   place-items: center;
@@ -3237,7 +3237,7 @@
     0 22px 48px rgba(123, 63, 161, 0.14),
     0 0 38px rgba(236, 111, 162, 0.12),
     inset 0 1px 0 rgba(255, 255, 255, 0.88);
-  padding: 14px;
+  padding: 0.875rem;
   backdrop-filter: blur(24px) saturate(1.16);
   -webkit-backdrop-filter: blur(24px) saturate(1.16);
   animation: eventsSessionPanelIn 260ms cubic-bezier(0.2, 0.78, 0.2, 1) both;
@@ -3248,7 +3248,7 @@
   position: absolute;
   inset-inline: 18px;
   inset-block-start: 0;
-  height: 1px;
+  height: 0.0625rem;
   background:
     linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.86), rgba(236, 111, 162, 0.24), transparent);
 }
@@ -3284,7 +3284,7 @@
 
 .events-card__session-list {
   display: grid;
-  gap: 9px;
+  gap: 0.5625rem;
 }
 
 .events-card__session-option {
@@ -3292,8 +3292,8 @@
   display: grid;
   grid-template-columns: minmax(210px, 1fr) minmax(168px, max-content) minmax(112px, auto);
   align-items: center;
-  gap: 10px;
-  min-height: 82px;
+  gap: 0.625rem;
+  min-height: 5.125rem;
   overflow: hidden;
   border: 1px solid rgba(255, 255, 255, 0.62);
   border-radius: 18px;
@@ -3301,7 +3301,7 @@
     radial-gradient(circle at 14% 12%, rgba(255, 255, 255, 0.86), transparent 6rem),
     linear-gradient(135deg, rgba(255, 249, 238, 0.54), rgba(239, 229, 255, 0.36));
   color: rgba(35, 20, 95, 0.72);
-  padding: 11px 12px 11px 18px;
+  padding: 0.6875rem 0.75rem 0.6875rem 1.125rem;
   box-shadow:
     0 14px 28px rgba(123, 63, 161, 0.1),
     inset 0 1px 0 rgba(255, 255, 255, 0.82);
@@ -3315,7 +3315,7 @@
   position: absolute;
   inset-block: 14px;
   inset-inline-start: 0;
-  width: 5px;
+  width: 0.3125rem;
   border-radius: 0 999px 999px 0;
   background:
     linear-gradient(180deg, rgba(236, 111, 162, 0.94), rgba(159, 107, 208, 0.88));
@@ -3327,13 +3327,13 @@
   display: grid;
   grid-template-columns: 44px minmax(0, 1fr);
   align-items: center;
-  gap: 10px;
+  gap: 0.625rem;
 }
 
 .events-card__session-provider img,
 .events-card__session-avatar {
-  width: 44px;
-  height: 44px;
+  width: 2.75rem;
+  height: 2.75rem;
   display: inline-grid;
   place-items: center;
   border-radius: 999px;
@@ -3377,18 +3377,18 @@
 }
 
 .events-card__session-time {
-  min-width: 168px;
+  min-width: 10.5rem;
   display: inline-flex;
   align-items: center;
   justify-self: start;
-  gap: 6px;
+  gap: 0.375rem;
   border-radius: 999px;
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.62), rgba(244, 233, 255, 0.44));
   color: rgba(35, 20, 95, 0.72);
   font-size: 0.74rem;
   font-weight: 900;
-  padding: 8px 11px;
+  padding: 0.5rem 0.6875rem;
   text-align: left;
   white-space: nowrap;
   box-shadow:
@@ -3397,15 +3397,15 @@
 }
 
 .events-card__session-time svg {
-  width: 17px;
-  height: 17px;
+  width: 1.0625rem;
+  height: 1.0625rem;
   color: rgba(224, 76, 136, 0.84);
 }
 
 .events-card__session-action {
   display: grid;
   justify-items: end;
-  gap: 6px;
+  gap: 0.375rem;
   justify-self: end;
 }
 
@@ -3420,8 +3420,8 @@
 
 .events-card__session-option button {
   justify-self: end;
-  min-height: 38px;
-  min-width: 112px;
+  min-height: 2.375rem;
+  min-width: 7rem;
   border: 0;
   border-radius: 999px;
   background:
@@ -3433,7 +3433,7 @@
   font-size: 0.72rem;
   font-weight: 900;
   text-align: center;
-  padding: 0 16px;
+  padding: 0 1rem;
   box-shadow:
     0 16px 30px rgba(123, 63, 161, 0.22),
     0 0 20px rgba(236, 111, 162, 0.16),
@@ -3486,22 +3486,22 @@
 
 .events-card__provider-list {
   display: grid;
-  gap: 8px;
+  gap: 0.5rem;
 }
 
 .events-card__provider-option {
   display: grid;
   grid-template-columns: 42px minmax(0, 1fr) auto;
   align-items: center;
-  gap: 8px;
-  min-height: 86px;
+  gap: 0.5rem;
+  min-height: 5.375rem;
   border: 1px solid rgba(255, 255, 255, 0.58);
   border-radius: 17px;
   background:
     linear-gradient(145deg, rgba(255, 255, 255, 0.58), rgba(255, 244, 250, 0.34)),
     radial-gradient(circle at 50% 0%, rgba(205, 177, 255, 0.2), transparent 8rem);
   color: rgba(35, 20, 95, 0.72);
-  padding: 9px;
+  padding: 0.5625rem;
   box-shadow:
     0 16px 34px rgba(123, 63, 161, 0.12),
     inset 0 1px 0 rgba(255, 255, 255, 0.72);
@@ -3512,8 +3512,8 @@
 
 .events-card__provider-option img,
 .events-card__provider-avatar {
-  width: 42px;
-  height: 42px;
+  width: 2.625rem;
+  height: 2.625rem;
   display: inline-grid;
   place-items: center;
   border-radius: 999px;
@@ -3530,7 +3530,7 @@
 .events-card__provider-copy {
   min-width: 0;
   display: grid;
-  gap: 3px;
+  gap: 0.1875rem;
   text-align: left;
 }
 
@@ -3564,10 +3564,10 @@
   grid-column: 1 / -1;
   display: flex;
   flex-wrap: wrap;
-  gap: 5px 8px;
+  gap: 0.3125rem 0.5rem;
   align-items: center;
   justify-content: flex-start;
-  padding-inline-start: 50px;
+  padding-inline-start: 3.125rem;
 }
 
 .events-card__provider-option time,
@@ -3581,7 +3581,7 @@
   color: rgba(35, 20, 95, 0.62);
   font-size: 0.6rem;
   font-weight: 900;
-  padding: 4px 7px;
+  padding: 0.25rem 0.4375rem;
 }
 
 .events-card__provider-meta > span {
@@ -3590,7 +3590,7 @@
 
 .events-card__provider-option button {
   justify-self: end;
-  min-height: 32px;
+  min-height: 2rem;
   border: 0;
   border-radius: 999px;
   background:
@@ -3601,7 +3601,7 @@
   font-size: 0.66rem;
   font-weight: 900;
   text-align: center;
-  padding: 0 10px;
+  padding: 0 0.625rem;
   box-shadow:
     0 14px 26px rgba(123, 63, 161, 0.18),
     inset 0 1px 0 rgba(255, 255, 255, 0.36);
@@ -3641,7 +3641,7 @@
   font-size: 0.82rem;
   font-weight: 800;
   line-height: 1.35;
-  padding: 16px;
+  padding: 1rem;
   text-align: left;
 }
 
@@ -3725,13 +3725,13 @@
   place-items: center;
   margin-block-start: 22px;
   color: rgba(35, 20, 95, 0.72);
-  padding: 42px 24px;
+  padding: 2.625rem 1.5rem;
   text-align: center;
 }
 
 .events-empty svg {
-  width: 52px;
-  height: 52px;
+  width: 3.25rem;
+  height: 3.25rem;
   margin-block-end: 12px;
   color: #9f6bd0;
 }
@@ -3744,7 +3744,7 @@
 
 .events-empty p {
   max-width: 440px;
-  margin: 10px 0 0;
+  margin: 0.625rem 0 0;
   line-height: 1.55;
 }
 
@@ -3759,7 +3759,7 @@
 .registered-events__heading button {
   align-items: center;
   flex-direction: row;
-  gap: 8px;
+  gap: 0.5rem;
   border: 0;
   background: transparent;
   color: #7b3fa1;
@@ -3776,34 +3776,34 @@
   display: grid;
   grid-auto-flow: column;
   grid-auto-columns: minmax(250px, 1fr);
-  gap: 16px;
+  gap: 1rem;
   overflow-x: auto;
   overscroll-behavior-inline: contain;
-  padding-block: 18px 4px;
+  padding-block: 1.125rem 0.25rem;
   scrollbar-width: thin;
 }
 
 .registered-events__empty {
-  margin: 18px 0 0;
+  margin: 1.125rem 0 0;
   border: 1px dashed rgba(255, 255, 255, 0.58);
   border-radius: 18px;
   background: rgba(255, 248, 251, 0.48);
   color: rgba(35, 20, 95, 0.62);
   font-weight: 700;
-  padding: 18px;
+  padding: 1.125rem;
 }
 
 .registered-mini-card {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 84px;
-  gap: 14px;
-  min-height: 118px;
+  gap: 0.875rem;
+  min-height: 7.375rem;
   border: 1px solid rgba(255, 255, 255, 0.62);
   border-radius: 18px;
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.58), rgba(255, 247, 251, 0.36)),
     radial-gradient(circle at 88% 10%, rgba(205, 177, 255, 0.16), transparent 8rem);
-  padding: 12px;
+  padding: 0.75rem;
   box-shadow:
     0 18px 38px rgba(123, 63, 161, 0.09),
     inset 0 1px 0 rgba(255, 255, 255, 0.82);
@@ -3813,8 +3813,8 @@
 
 .registered-mini-card img {
   grid-column: 2;
-  width: 84px;
-  height: 94px;
+  width: 5.25rem;
+  height: 5.875rem;
   border-radius: 14px;
   object-fit: cover;
   box-shadow: 0 12px 24px rgba(75, 19, 107, 0.12);
@@ -3825,7 +3825,7 @@
   min-width: 0;
   display: grid;
   align-content: center;
-  gap: 5px;
+  gap: 0.3125rem;
   justify-items: end;
   text-align: right;
 }
@@ -3852,7 +3852,7 @@
   width: max-content;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 0.375rem;
   border-radius: 999px;
   border: 1px solid rgba(255, 255, 255, 0.62);
   background: rgba(232, 250, 239, 0.68);
@@ -3860,7 +3860,7 @@
   font-size: 0.72rem;
   font-style: normal;
   font-weight: 800;
-  padding: 6px 10px;
+  padding: 0.375rem 0.625rem;
 }
 
 .suggest-modal {
@@ -3869,7 +3869,7 @@
   z-index: 1000;
   display: grid;
   place-items: center;
-  padding: 24px;
+  padding: 1.5rem;
 }
 
 .suggest-modal__overlay {
@@ -3886,8 +3886,8 @@
 .suggest-modal__dialog {
   position: relative;
   z-index: 1;
-  width: min(640px, 100%);
-  max-height: min(92vh, 860px);
+  width: min(40rem, 100%);
+  max-height: min(92vh, 53.75rem);
   overflow-y: auto;
   border: 1px solid rgba(255, 255, 255, 0.56);
   border-radius: 28px;
@@ -3901,15 +3901,15 @@
     inset 0 1px 0 rgba(255, 255, 255, 0.88);
   backdrop-filter: blur(30px) saturate(1.14);
   -webkit-backdrop-filter: blur(30px) saturate(1.14);
-  padding: 32px;
+  padding: 2rem;
 }
 
 .suggest-modal__close {
   position: absolute;
   inset-block-start: 24px;
   inset-inline-end: 24px;
-  width: 40px;
-  height: 40px;
+  width: 2.5rem;
+  height: 2.5rem;
   display: grid;
   place-items: center;
   border: 0;
@@ -3928,13 +3928,13 @@
 .suggest-modal__header {
   display: grid;
   justify-items: center;
-  padding: 0 36px 20px;
+  padding: 0 2.25rem 1.25rem;
   text-align: center;
 }
 
 .suggest-modal__mark {
-  width: 70px;
-  height: 70px;
+  width: 4.375rem;
+  height: 4.375rem;
   display: grid;
   place-items: center;
   border-radius: 999px;
@@ -3949,8 +3949,8 @@
 }
 
 .suggest-modal__mark svg {
-  width: 34px;
-  height: 34px;
+  width: 2.125rem;
+  height: 2.125rem;
 }
 
 .suggest-modal__header h2 {
@@ -3962,7 +3962,7 @@
 
 .suggest-modal__header p {
   max-width: 420px;
-  margin: 10px 0 0;
+  margin: 0.625rem 0 0;
   color: rgba(35, 20, 95, 0.62);
   font-size: 0.94rem;
   line-height: 1.45;
@@ -3973,7 +3973,7 @@
   margin-block-end: 18px;
   border-radius: 16px;
   font-weight: 700;
-  padding: 14px 16px;
+  padding: 0.875rem 1rem;
   text-align: center;
 }
 
@@ -3992,12 +3992,12 @@
 
 .suggest-form {
   display: grid;
-  gap: 18px;
+  gap: 1.125rem;
 }
 
 .suggest-form__field {
   display: grid;
-  gap: 8px;
+  gap: 0.5rem;
 }
 
 .suggest-form__field > span,
@@ -4034,26 +4034,26 @@
 
 .suggest-form__control > svg {
   align-self: stretch;
-  width: 46px;
+  width: 2.875rem;
   height: 100%;
   background:
     linear-gradient(145deg, rgba(255, 255, 255, 0.44), rgba(236, 221, 255, 0.42));
   color: #7b3fa1;
-  padding: 13px;
+  padding: 0.8125rem;
 }
 
 .suggest-form__control input,
 .suggest-form__control select,
 .suggest-form__control textarea {
   width: 100%;
-  min-height: 48px;
+  min-height: 3rem;
   border: 0;
   outline: 0;
   background: transparent;
   color: #24105f;
   font: inherit;
   font-size: 0.92rem;
-  padding: 0 14px;
+  padding: 0 0.875rem;
 }
 
 .suggest-form__control select {
@@ -4061,8 +4061,8 @@
 }
 
 .suggest-form__control textarea {
-  min-height: 86px;
-  padding-block: 13px;
+  min-height: 5.375rem;
+  padding-block: 0.8125rem;
   resize: vertical;
 }
 
@@ -4075,18 +4075,18 @@
 .suggest-form__anonymous {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 0.75rem;
 }
 
 .suggest-form__anonymous input {
-  width: 28px;
-  height: 28px;
+  width: 1.75rem;
+  height: 1.75rem;
   accent-color: #7b3fa1;
 }
 
 .suggest-form__anonymous span {
   display: grid;
-  gap: 3px;
+  gap: 0.1875rem;
 }
 
 .suggest-form__anonymous small {
@@ -4098,12 +4098,12 @@
 .suggest-form__actions {
   display: grid;
   grid-template-columns: minmax(120px, 0.55fr) minmax(0, 1fr);
-  gap: 16px;
+  gap: 1rem;
   margin-block-start: 6px;
 }
 
 .suggest-form__actions button {
-  min-height: 50px;
+  min-height: 3.125rem;
   border-radius: 13px;
   cursor: pointer;
   font: inherit;
@@ -4124,7 +4124,7 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 0.625rem;
   border: 0;
   background:
     linear-gradient(135deg, rgba(123, 63, 161, 0.96), rgba(236, 111, 162, 0.94));
@@ -4169,7 +4169,7 @@
 
   .events-sidebar {
     align-items: center;
-    padding-inline: 14px;
+    padding-inline: 0.875rem;
   }
 
   .events-brand__text,
@@ -4183,12 +4183,12 @@
   .events-nav button,
   .events-logout {
     justify-content: center;
-    width: 52px;
+    width: 3.25rem;
     padding: 0;
   }
 
   .events-main {
-    padding: 30px 28px 46px;
+    padding: 1.875rem 1.75rem 2.875rem;
   }
 
   .events-category-grid {
@@ -4209,18 +4209,18 @@
     height: auto;
     flex-direction: row;
     justify-content: space-between;
-    padding: 14px;
+    padding: 0.875rem;
   }
 
   .events-nav {
     flex-direction: row;
-    gap: 6px;
+    gap: 0.375rem;
   }
 
   .events-main {
     height: auto;
     overflow: visible;
-    padding: 24px 18px 36px;
+    padding: 1.5rem 1.125rem 2.25rem;
   }
 
   .events-main--embedded {
@@ -4238,8 +4238,8 @@
     flex-direction: column;
     align-items: flex-end;
     justify-content: center;
-    min-height: 250px;
-    padding: 34px 28px;
+    min-height: 15.625rem;
+    padding: 2.125rem 1.75rem;
   }
 
   .events-main--embedded .events-hero__content {
@@ -4325,9 +4325,9 @@
     top: 12px;
     right: 12px;
     z-index: 96;
-    width: min(520px, calc(100vw - 24px));
-    max-height: calc(100vh - 24px);
-    padding: 22px;
+    width: min(32.5rem, calc(100vw - 1.5rem));
+    max-height: calc(100vh - 1.5rem);
+    padding: 1.375rem;
   }
 
   .workshop-details-panel {
@@ -4335,9 +4335,9 @@
     top: 12px;
     right: 12px;
     z-index: 96;
-    width: min(520px, calc(100vw - 24px));
-    max-height: calc(100vh - 24px);
-    padding: 22px;
+    width: min(32.5rem, calc(100vw - 1.5rem));
+    max-height: calc(100vh - 1.5rem);
+    padding: 1.375rem;
   }
 
   .appointment-instructor-grid {
@@ -4354,7 +4354,7 @@
   }
 
   .events-card__image {
-    height: 190px;
+    height: 11.875rem;
   }
 
   .events-suggest-pill {
@@ -4368,7 +4368,7 @@
   }
 
   .suggest-modal__dialog {
-    padding: 28px 22px;
+    padding: 1.75rem 1.375rem;
   }
 }
 
@@ -4384,40 +4384,40 @@
   .events-categories,
   .events-list-panel,
   .registered-events {
-    padding: 18px;
+    padding: 1.125rem;
   }
 
   .appointment-service-card {
     grid-template-columns: 1fr;
     justify-items: start;
     min-height: 0;
-    padding: 18px;
+    padding: 1.125rem;
   }
 
   .workshop-list-card {
     grid-template-columns: 1fr;
     justify-items: start;
     min-height: 0;
-    padding: 18px;
+    padding: 1.125rem;
   }
 
   .registered-session-card {
     grid-template-columns: 1fr;
     justify-items: start;
     min-height: 0;
-    padding: 18px;
+    padding: 1.125rem;
   }
 
   .appointment-service-card__media {
-    height: 156px;
+    height: 9.75rem;
   }
 
   .workshop-list-card__media {
-    height: 156px;
+    height: 9.75rem;
   }
 
   .registered-session-card__media {
-    height: 156px;
+    height: 9.75rem;
   }
 
   .appointments-waitlist-card {
@@ -4428,44 +4428,44 @@
   .appointment-drawer {
     top: 10px;
     right: 10px;
-    width: calc(100vw - 20px);
-    max-height: calc(100vh - 20px);
+    width: calc(100vw - 1.25rem);
+    max-height: calc(100vh - 1.25rem);
     border-radius: 24px;
-    padding: 20px 16px;
+    padding: 1.25rem 1rem;
   }
 
   .workshop-details-panel {
     top: 10px;
     right: 10px;
-    width: calc(100vw - 20px);
-    max-height: calc(100vh - 20px);
+    width: calc(100vw - 1.25rem);
+    max-height: calc(100vh - 1.25rem);
     border-radius: 24px;
-    padding: 20px 16px;
+    padding: 1.25rem 1rem;
   }
 
   .workshop-details-panel__image {
-    height: 150px;
+    height: 9.375rem;
   }
 
   .appointment-drawer__header {
     grid-template-columns: 48px minmax(0, 1fr);
-    gap: 12px;
+    gap: 0.75rem;
   }
 
   .workshop-details-panel__header {
     grid-template-columns: 48px minmax(0, 1fr);
-    gap: 12px;
+    gap: 0.75rem;
   }
 
   .appointment-drawer__mark {
-    width: 46px;
-    height: 46px;
+    width: 2.875rem;
+    height: 2.875rem;
     border-radius: 17px;
   }
 
   .workshop-details-panel__header > span {
-    width: 46px;
-    height: 46px;
+    width: 2.875rem;
+    height: 2.875rem;
     border-radius: 17px;
   }
 
@@ -4483,7 +4483,7 @@
   }
 
   .appointment-instructor-card {
-    min-height: 140px;
+    min-height: 8.75rem;
   }
 
   .appointment-date-selector {
@@ -4500,32 +4500,32 @@
   }
 
   .events-card__image {
-    height: 176px;
-    margin: 12px 12px 0;
+    height: 11rem;
+    margin: 0.75rem 0.75rem 0;
   }
 
   .events-card__booking-inner {
-    padding: 14px;
+    padding: 0.875rem;
   }
 
   .events-card__booking-header {
     align-items: flex-start;
     flex-direction: column;
-    gap: 10px;
+    gap: 0.625rem;
   }
 
   .events-card__booking-view--calendar .events-card__booking-header {
     align-items: center;
     flex-direction: row;
     justify-content: center;
-    min-height: 64px;
-    padding-inline: 54px;
+    min-height: 4rem;
+    padding-inline: 3.375rem;
   }
 
   .events-card__booking-view--calendar .events-card__booking-header::before,
   .events-card__booking-view--calendar .events-card__booking-header::after {
-    width: 38px;
-    height: 38px;
+    width: 2.375rem;
+    height: 2.375rem;
     font-size: 1.42rem;
   }
 
@@ -4534,28 +4534,28 @@
   }
 
   .events-card__calendar {
-    padding: 10px;
+    padding: 0.625rem;
   }
 
   .events-card__calendar-weekdays,
   .events-card__calendar-grid {
-    gap: 4px;
+    gap: 0.25rem;
   }
 
   .events-card__calendar-grid button {
-    min-height: 42px;
+    min-height: 2.625rem;
     border-radius: 999px;
     font-size: 0.78rem;
   }
 
   .events-card__session-panel {
-    padding: 11px;
+    padding: 0.6875rem;
   }
 
   .events-card__session-option {
     grid-template-columns: 1fr;
-    gap: 10px;
-    padding: 12px 12px 12px 18px;
+    gap: 0.625rem;
+    padding: 0.75rem 0.75rem 0.75rem 1.125rem;
   }
 
   .events-card__session-time {
@@ -4592,20 +4592,20 @@
 
   .registered-mini-card img {
     width: 100%;
-    height: 126px;
+    height: 7.875rem;
   }
 
   .suggest-modal {
-    padding: 12px;
+    padding: 0.75rem;
   }
 
   .suggest-modal__dialog {
     border-radius: 22px;
-    padding: 24px 16px;
+    padding: 1.5rem 1rem;
   }
 
   .suggest-modal__header {
-    padding-inline: 30px;
+    padding-inline: 1.875rem;
   }
 
   .suggest-form__actions {

@@ -3,32 +3,25 @@ import createCache from "@emotion/cache";
 import { CacheProvider } from "@emotion/react";
 import { prefixer } from "stylis";
 import rtlPlugin from "stylis-plugin-rtl";
-import { signOut } from "firebase/auth";
-import DarkModeToggle from "../components/DarkModeToggle";
-import {
-  Box,
-  ButtonBase,
-  CircularProgress,
-  Stack,
-  Typography,
-} from "@mui/material";
+import { Box, CircularProgress } from "@mui/material";
+import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
+import PersonOutlineOutlinedIcon from "@mui/icons-material/PersonOutlineOutlined";
 import { ThemeProvider, createTheme, useTheme } from "@mui/material/styles";
 import { createProfileT } from "../i18n/profileSettingsTranslations";
 import {
   getParticipantLocaleDirection,
   profileLanguageToLocale,
 } from "../../participant/i18n/participantLocale";
-import { useNavigate } from "react-router-dom";
 import { auth } from "../../../firebase";
 import ChangePasswordCard from "../components/ChangePasswordCard";
 import PersonalDetailsForm from "../components/PersonalDetailsForm";
 import ProfileCard from "../components/ProfileCard";
-import useCommunityProfile from "../../participant/community/hooks/useCommunityProfile";
 import {
   getParticipantData,
   createParticipantProfile,
 } from "../services/participantService";
 import { WELLNESS, WELLNESS_DARK } from "../../appointments/appointmentTypeMeta";
+import "./ProfilePage.css";
 
 const profileCacheRtl = createCache({
   key: "profile-mui-rtl",
@@ -42,136 +35,12 @@ const profileCacheLtr = createCache({
   stylisPlugins: [prefixer],
 });
 
-const profilePageBg =
-  "linear-gradient(145deg, #F7EEFF 0%, #FFF9FC 42%, #fdf8ff 100%)";
+const profilePageBg = "#fffafd";
 
-function CommunitySettingsSection({ darkMode = false, participantId = "", profile = {} }) {
-  const {
-    showBirthdayInCommunity,
-    handleBirthdayVisibilityChange,
-  } = useCommunityProfile({
-    personalDetails: {
-      id: participantId,
-      ...profile,
-    },
-  });
-
-  return (
-    <Box
-      component="section"
-      aria-labelledby="community-settings-title"
-      sx={{
-        border: darkMode
-          ? "1px solid rgba(196, 165, 245, 0.22)"
-          : "1px solid rgba(181, 123, 232, 0.18)",
-        borderRadius: 4,
-        backgroundColor: darkMode ? WELLNESS_DARK.card : WELLNESS.card,
-        boxShadow: darkMode ? WELLNESS_DARK.shadowCard : WELLNESS.shadowCard,
-        p: { xs: 2.2, sm: 2.8 },
-      }}
-    >
-      <Typography
-        id="community-settings-title"
-        sx={{
-          color: darkMode ? WELLNESS_DARK.text : WELLNESS.text,
-          fontSize: 20,
-          fontWeight: 800,
-          lineHeight: 1.2,
-          mb: 1.8,
-        }}
-      >
-        Community Settings
-      </Typography>
-
-      <Box
-        sx={{
-          display: "flex",
-          alignItems: { xs: "flex-start", sm: "center" },
-          justifyContent: "space-between",
-          flexDirection: { xs: "column", sm: "row" },
-          gap: 1.5,
-          border: darkMode
-            ? "1px solid rgba(196, 165, 245, 0.16)"
-            : "1px solid rgba(181, 123, 232, 0.14)",
-          borderRadius: 3,
-          backgroundColor: darkMode ? "rgba(15, 23, 42, 0.46)" : "rgba(255, 251, 255, 0.78)",
-          p: { xs: 1.6, sm: 1.8 },
-        }}
-      >
-        <Box sx={{ minWidth: 0 }}>
-          <Typography
-            sx={{
-              color: darkMode ? WELLNESS_DARK.text : WELLNESS.text,
-              fontSize: 15,
-              fontWeight: 800,
-              lineHeight: 1.3,
-            }}
-          >
-            Show my birthday in the community
-          </Typography>
-          <Typography
-            sx={{
-              color: darkMode ? WELLNESS_DARK.muted : WELLNESS.muted,
-              fontSize: 13,
-              lineHeight: 1.5,
-              mt: 0.45,
-            }}
-          >
-            This only controls community visibility. Your birthday stays unchanged in Settings.
-          </Typography>
-        </Box>
-
-        <ButtonBase
-          type="button"
-          role="switch"
-          aria-checked={showBirthdayInCommunity}
-          aria-label="Show my birthday in the community"
-          disableRipple
-          onClick={() => handleBirthdayVisibilityChange(!showBirthdayInCommunity)}
-          sx={{
-            flexShrink: 0,
-            alignSelf: { xs: "flex-end", sm: "center" },
-            width: 52,
-            height: 30,
-            borderRadius: 999,
-            border: darkMode
-              ? "1px solid rgba(196, 165, 245, 0.28)"
-              : "1px solid rgba(181, 123, 232, 0.32)",
-            backgroundColor: showBirthdayInCommunity
-              ? darkMode
-                ? "rgba(196, 165, 245, 0.24)"
-                : "rgba(234, 215, 255, 0.9)"
-              : darkMode
-                ? "rgba(30, 41, 59, 0.9)"
-                : "#ffffff",
-            transition: "background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease",
-            "&::after": {
-              content: '""',
-              width: 22,
-              height: 22,
-              borderRadius: "50%",
-              background: showBirthdayInCommunity
-                ? `linear-gradient(145deg, ${WELLNESS.primary}, #c4a5f5)`
-                : darkMode
-                  ? "#94a3b8"
-                  : "#d7c4ec",
-              transform: showBirthdayInCommunity ? "translateX(10px)" : "translateX(-10px)",
-              transition: "transform 0.2s ease, background 0.2s ease",
-              boxShadow: "0 2px 8px rgba(75, 19, 107, 0.18)",
-            },
-            "&:hover": {
-              borderColor: darkMode ? "rgba(196, 165, 245, 0.46)" : "rgba(181, 123, 232, 0.52)",
-            },
-            "&.Mui-focusVisible": {
-              outline: `2px solid ${WELLNESS.primary}`,
-              outlineOffset: 2,
-            },
-          }}
-        />
-      </Box>
-    </Box>
-  );
-}
+const SETTINGS_TABS = [
+  { id: "personal", labelKey: "tabPersonalInfo", icon: PersonOutlineOutlinedIcon },
+  { id: "password", labelKey: "tabPassword", icon: LockOutlinedIcon },
+];
 
 function ProfilePage({
   darkMode: darkModeFromParent,
@@ -185,7 +54,7 @@ function ProfilePage({
   const participantId = user?.uid;
 
   const [profile, setProfile] = useState(null);
-  const [isEditing, setIsEditing] = useState(false);
+  const [activeTab, setActiveTab] = useState("personal");
   const [darkModeInternal, setDarkModeInternal] = useState(false);
 
   const darkModeControlled =
@@ -193,18 +62,16 @@ function ProfilePage({
     typeof onDarkModeChange === "function";
   const darkMode = darkModeControlled ? darkModeFromParent : darkModeInternal;
   const setDarkMode = darkModeControlled
-    ? (value) => onDarkModeChange(typeof value === 'function' ? value(darkModeFromParent) : value)
+    ? (value) => onDarkModeChange(typeof value === "function" ? value(darkModeFromParent) : value)
     : setDarkModeInternal;
 
   const [localeInternal, setLocaleInternal] = useState("en");
-  const [selectedLanguage, setSelectedLanguage] = useState("en");
 
   const localeControlled =
     typeof localeFromParent === "string" && typeof onLocaleChange === "function";
   const locale = localeControlled ? localeFromParent : localeInternal;
   const setLocale = localeControlled ? onLocaleChange : setLocaleInternal;
 
-  const navigate = useNavigate();
   const parentTheme = useTheme();
 
   const t = useMemo(() => createProfileT(locale), [locale]);
@@ -219,15 +86,6 @@ function ProfilePage({
   );
 
   const profileCache = locale === "he" ? profileCacheRtl : profileCacheLtr;
-
-  const handleLogout = async () => {
-    await signOut(auth);
-    navigate("/login");
-  };
-
-  const handleSaveLanguage = () => {
-    setLocale(selectedLanguage);
-  };
 
   useEffect(() => {
     let mounted = true;
@@ -267,7 +125,7 @@ function ProfilePage({
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [participantId, user]);
 
   useEffect(() => {
     if (!profile?.language) return;
@@ -275,7 +133,6 @@ function ProfilePage({
     const lang = profileLanguageToLocale(profile.language);
 
     setLocale(lang);
-    setSelectedLanguage(lang);
   }, [profile?.language, setLocale]);
 
   const handleProfileUpdated = useCallback((updatedProfile) => {
@@ -330,6 +187,7 @@ function ProfilePage({
         <Box
           dir={getParticipantLocaleDirection(locale)}
           lang={locale === "he" ? "he" : locale === "ar" ? "ar" : "en"}
+          className={`profile-settings${darkMode ? " profile-settings--dark" : ""}`}
           sx={{
             minHeight: embedInDashboard ? "auto" : "100vh",
             display: "flex",
@@ -348,119 +206,56 @@ function ProfilePage({
               flex: 1,
               width: "100%",
               minWidth: 0,
-              px: { xs: 2, sm: 4 },
-              py: { xs: 2.5, sm: 3.6 },
+              px: embedInDashboard ? 0 : { xs: 1.5, sm: 2.5 },
+              py: embedInDashboard ? 0 : { xs: 1.5, sm: 2 },
             }}
           >
-            <Box sx={{ maxWidth: { xs: "100%", lg: 1320 }, width: "100%" }}>
-              <Box
-                sx={{
-                  display: "flex",
-                  flexDirection: { xs: "column", sm: "row" },
-                  alignItems: { xs: "stretch", sm: "center" },
-                  justifyContent: "space-between",
-                  gap: { xs: 1.5, sm: 2 },
-                  mb: 3,
-                }}
-              >
-                <Box sx={{ flex: 1, minWidth: 0 }}>
-                  <Typography
-                    sx={{
-                      fontSize: { xs: 36, sm: 48, md: 52 },
-                      fontWeight: 700,
-                      color: darkMode ? WELLNESS_DARK.text : WELLNESS.text,
-                      lineHeight: 1.1,
-                    }}
-                  >
-                    {t("profileSettings")}
-                  </Typography>
+            <Box sx={{ maxWidth: { xs: "100%", lg: 1120 }, width: "100%", mx: "auto" }}>
+              <div className="profile-settings__layout">
+                <ProfileCard
+                  profile={profile}
+                  participantId={participantId}
+                  onAvatarUpdated={handleAvatarUpdated}
+                  darkMode={darkMode}
+                  t={t}
+                />
 
-                  <Typography
-                    sx={{
-                      color: darkMode ? WELLNESS_DARK.muted : WELLNESS.muted,
-                      fontSize: { xs: 17, sm: 20, md: 22 },
-                      mt: 0.5,
-                    }}
-                  >
-                    {t("profileSettingsSubtitle")}
-                  </Typography>
-                </Box>
+                <section className="profile-settings__main" aria-label={t("settingsTitle")}>
+                  <div className="profile-settings__tabs" role="tablist">
+                    {SETTINGS_TABS.map(({ id, labelKey, icon: TabIcon }) => (
+                      <button
+                        key={id}
+                        type="button"
+                        role="tab"
+                        aria-selected={activeTab === id}
+                        className={`profile-settings__tab${activeTab === id ? " is-active" : ""}`}
+                        onClick={() => setActiveTab(id)}
+                      >
+                        <TabIcon fontSize="inherit" />
+                        <span>{t(labelKey)}</span>
+                      </button>
+                    ))}
+                  </div>
 
-                <Stack
-                  direction="row"
-                  alignItems="center"
-                  flexWrap="nowrap"
-                  gap={0.75}
-                  sx={{
-                    flexShrink: 0,
-                    alignSelf: { xs: "flex-end", sm: "auto" },
-                    lineHeight: 1,
-                  }}
-                >
-                  <DarkModeToggle
-                    darkMode={darkMode}
-                    onChange={setDarkMode}
-                    label={t("darkMode")}
-                    ariaLabel={t("toggleDarkMode")}
-                  />
-                </Stack>
-              </Box>
+                  <div className="profile-settings__panel">
+                    {activeTab === "personal" ? (
+                      <PersonalDetailsForm
+                        variant="embedded"
+                        participantId={participantId}
+                        profile={profile}
+                        onProfileUpdated={handleProfileUpdated}
+                        darkMode={darkMode}
+                        t={t}
+                        locale={locale}
+                      />
+                    ) : null}
 
-              <Box
-                sx={{
-                  display: "grid",
-                  gridTemplateColumns: {
-                    xs: "1fr",
-                    lg: "300px minmax(0, 1fr)",
-                  },
-                  gap: { xs: 2.2, lg: 2.8 },
-                  alignItems: "start",
-                }}
-              >
-                <Box sx={{ gridColumn: { xs: 1, lg: 1 }, gridRow: 1 }}>
-                  <ProfileCard
-                    profile={profile}
-                    participantId={participantId}
-                    isEditing={isEditing}
-                    onEdit={() => setIsEditing(true)}
-                    onAvatarUpdated={handleAvatarUpdated}
-                    darkMode={darkMode}
-                    t={t}
-                  />
-                </Box>
-
-                <Box
-                  sx={{
-                    gridColumn: { xs: 1, lg: 2 },
-                    gridRow: 1,
-                    minWidth: 0,
-                  }}
-                >
-                  <Stack spacing={{ xs: 2.2, lg: 2.8 }}>
-                    <PersonalDetailsForm
-                      participantId={participantId}
-                      profile={profile}
-                      onProfileUpdated={handleProfileUpdated}
-                      isEditing={isEditing}
-                      onFinishEditing={() => setIsEditing(false)}
-                      onLogout={handleLogout}
-                      darkMode={darkMode}
-                      t={t}
-                      locale={locale}
-                      onLocaleChange={setSelectedLanguage}
-                      onSaveLanguage={handleSaveLanguage}
-                    />
-
-                    <CommunitySettingsSection
-                      darkMode={darkMode}
-                      participantId={participantId}
-                      profile={profile}
-                    />
-
-                    <ChangePasswordCard darkMode={darkMode} t={t} />
-                  </Stack>
-                </Box>
-              </Box>
+                    {activeTab === "password" ? (
+                      <ChangePasswordCard variant="embedded" darkMode={darkMode} t={t} />
+                    ) : null}
+                  </div>
+                </section>
+              </div>
             </Box>
           </Box>
         </Box>

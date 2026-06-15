@@ -43,7 +43,7 @@ export default function ImpersonationBanner() {
           '& .MuiAlert-message': {
             display: 'flex',
             alignItems: 'center',
-            gap: 2,
+            gap: '1rem',
           },
         }}
         action={

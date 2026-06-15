@@ -1,9 +1,11 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { collection, doc, getDoc, getDocs, limit, query, updateDoc } from 'firebase/firestore';
 import { Ban, Pencil, ShieldCheck } from 'lucide-react';
 import { db } from '../../../firebase';
 import { logAuditEvent } from '../services/auditService';
+import { listJoinRequests } from '../services/joinRequestAdminService';
+import JoinRequestsTab from './JoinRequestsTab';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -48,10 +50,10 @@ const ROLE_STYLES = {
 };
 
 const actionButtonBaseSx = {
-  height: 32,
+  height: '2rem',
   borderRadius: 2.25,
   px: 1.25,
-  fontSize: 12.5,
+  fontSize: '0.78125rem',
   fontWeight: 850,
   letterSpacing: 0,
   border: '1px solid transparent',
@@ -60,8 +62,8 @@ const actionButtonBaseSx = {
   '& .MuiButton-startIcon': {
     mr: 0.75,
     '& svg': {
-      width: 15,
-      height: 15,
+      width: '0.9375rem',
+      height: '0.9375rem',
       strokeWidth: 2.2,
     },
   },
@@ -130,7 +132,7 @@ function RoleChip({ role }) {
 }
 
 function getFieldIcon(label) {
-  const iconSx = { fontSize: 18 };
+  const iconSx = { fontSize: '1.125rem' };
   const map = {
     'Full Name': <PersonIcon sx={iconSx} />,
     Email: <EmailOutlinedIcon sx={iconSx} />,
@@ -151,7 +153,7 @@ function InfoCard({ label, value, icon }) {
         px: 2,
         py: 1.35,
         width: '100%',
-        height: 86,
+        height: '5.375rem',
         flex: '0 0 86px',
         boxSizing: 'border-box',
         overflow: 'hidden',
@@ -161,7 +163,7 @@ function InfoCard({ label, value, icon }) {
         boxShadow: '0 8px 20px rgba(91, 57, 145, 0.045)',
         display: 'flex',
         alignItems: 'center',
-        gap: 1.45,
+        gap: '0.725rem',
         flexDirection: 'row-reverse',
         justifyContent: 'flex-start',
         textAlign: 'right',
@@ -169,8 +171,8 @@ function InfoCard({ label, value, icon }) {
     >
       <Box
         sx={{
-          width: 44,
-          height: 44,
+          width: '2.75rem',
+          height: '2.75rem',
           borderRadius: '50%',
           display: 'grid',
           placeItems: 'center',
@@ -182,14 +184,14 @@ function InfoCard({ label, value, icon }) {
         {icon || getFieldIcon(label)}
       </Box>
       <Box sx={{ minWidth: 0, flex: 1 }}>
-        <Typography variant="caption" color="text.secondary" fontWeight={800} sx={{ display: 'block', lineHeight: 1.1, fontSize: 13 }}>
+        <Typography variant="caption" color="text.secondary" fontWeight={800} sx={{ display: 'block', lineHeight: 1.1, fontSize: '0.8125rem' }}>
           {label}
         </Typography>
         <Typography
           fontWeight={850}
           noWrap
           title={value || '-'}
-          sx={{ color: '#17122E', fontSize: 16, mt: 0.35, lineHeight: 1.3 }}
+          sx={{ color: '#17122E', fontSize: '1rem', mt: 0.35, lineHeight: 1.3 }}
         >
           {value || '-'}
         </Typography>
@@ -209,6 +211,9 @@ export default function UserManagementPage() {
   const [selectedUser, setSelectedUser] = useState(null);
   const [detailsLoading, setDetailsLoading] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState('users');
+  const [joinRequests, setJoinRequests] = useState([]);
+  const [joinLoading, setJoinLoading] = useState(true);
 
   useEffect(() => {
     async function fetchUsers() {
@@ -225,6 +230,22 @@ export default function UserManagementPage() {
     }
     fetchUsers();
   }, []);
+
+  const loadJoinRequests = useCallback(async () => {
+    setJoinLoading(true);
+    try {
+      const list = await listJoinRequests();
+      setJoinRequests(list);
+    } catch (err) {
+      console.error('Failed to fetch membership applications:', err);
+    } finally {
+      setJoinLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadJoinRequests();
+  }, [loadJoinRequests]);
 
   async function handleRoleChange(user, newRole) {
     const oldRole = user.role || 'participant';
@@ -318,7 +339,7 @@ export default function UserManagementPage() {
       md: 'minmax(300px, 1.45fr) 170px 150px 180px',
     },
     alignItems: 'center',
-    gap: 2,
+    gap: '1rem',
   };
 
   const actionIconSx = (tone = 'purple') => {
@@ -337,8 +358,8 @@ export default function UserManagementPage() {
     const palette = tones[tone] || tones.purple;
 
     return {
-      width: 42,
-      height: 42,
+      width: '2.625rem',
+      height: '2.625rem',
       color: palette.color,
       bgcolor: palette.bgcolor,
       border: '1px solid rgba(255, 255, 255, 0.72)',
@@ -351,6 +372,8 @@ export default function UserManagementPage() {
       },
     };
   };
+
+  const pendingApplications = joinRequests.filter((req) => (req.status || 'new') === 'new').length;
 
   return (
     <Box
@@ -370,7 +393,7 @@ export default function UserManagementPage() {
       <Stack spacing={2.8} sx={{ width: '100%', maxWidth: 'none', height: '100%', minHeight: 0 }}>
         <Stack direction={{ xs: 'column', lg: 'row' }} spacing={2} alignItems={{ lg: 'center' }} justifyContent="space-between">
           <Box>
-            <Typography variant="h3" sx={{ fontSize: { xs: 30, md: 39 }, fontWeight: 950, color: '#100B2F', lineHeight: 1.05 }}>
+            <Typography variant="h3" sx={{ fontSize: { xs: '1.875rem', md: '2.4375rem' }, fontWeight: 950, color: '#100B2F', lineHeight: 1.05 }}>
               User Management
             </Typography>
             <Typography variant="subtitle1" sx={{ mt: 0.9, color: '#4F4A70', fontWeight: 600 }}>
@@ -383,7 +406,7 @@ export default function UserManagementPage() {
               startIcon={<PreviewIcon />}
               onClick={() => navigate('/home')}
               sx={{
-                height: 48,
+                height: '3rem',
                 px: 3.2,
                 borderRadius: 999,
                 borderColor: 'rgba(223, 50, 123, 0.46)',
@@ -403,7 +426,7 @@ export default function UserManagementPage() {
               variant="contained"
               startIcon={<AddIcon />}
               sx={{
-                height: 56,
+                height: '3.5rem',
                 px: 3.5,
                 borderRadius: '18px',
                 background: 'linear-gradient(135deg, #DF327B 0%, #B933C4 100%)',
@@ -421,6 +444,61 @@ export default function UserManagementPage() {
           </Stack>
         </Stack>
 
+        <Stack direction="row" spacing={1.2} sx={{ flexShrink: 0 }} role="tablist" aria-label="User management sections">
+          {[
+            { key: 'users', label: 'Users' },
+            { key: 'applications', label: 'Membership Applications' },
+          ].map((tab) => {
+            const selected = activeTab === tab.key;
+            return (
+              <Button
+                key={tab.key}
+                role="tab"
+                aria-selected={selected}
+                onClick={() => setActiveTab(tab.key)}
+                sx={{
+                  height: '2.75rem',
+                  px: 2.6,
+                  borderRadius: 999,
+                  textTransform: 'none',
+                  fontWeight: 900,
+                  fontSize: '0.95rem',
+                  color: selected ? '#fff' : '#6D3CCF',
+                  background: selected
+                    ? 'linear-gradient(135deg, #7C3AED 0%, #DF327B 100%)'
+                    : 'rgba(255,255,255,0.7)',
+                  border: '1px solid rgba(124, 58, 237, 0.16)',
+                  boxShadow: selected ? '0 14px 30px rgba(124, 58, 237, 0.22)' : 'none',
+                  '&:hover': {
+                    background: selected
+                      ? 'linear-gradient(135deg, #6F32D8 0%, #D12B72 100%)'
+                      : 'rgba(244, 238, 255, 0.9)',
+                  },
+                }}
+              >
+                {tab.label}
+                {tab.key === 'applications' && pendingApplications > 0 ? (
+                  <Box
+                    component="span"
+                    sx={{
+                      ml: 1,
+                      px: 1,
+                      py: 0.15,
+                      borderRadius: 999,
+                      fontSize: '0.75rem',
+                      fontWeight: 950,
+                      bgcolor: selected ? 'rgba(255,255,255,0.26)' : 'rgba(223, 50, 123, 0.14)',
+                      color: selected ? '#fff' : '#C52A72',
+                    }}
+                  >
+                    {pendingApplications} new
+                  </Box>
+                ) : null}
+              </Button>
+            );
+          })}
+        </Stack>
+
         <Grid
           container
           spacing={0}
@@ -428,6 +506,9 @@ export default function UserManagementPage() {
           sx={{ width: '100%', maxWidth: 'none', minHeight: 0, flex: 1, m: 0 }}
         >
           <Grid item xs={12} sx={{ width: '100%', maxWidth: 'none', flexBasis: '100%', p: 0 }}>
+            {activeTab === 'applications' ? (
+              <JoinRequestsTab requests={joinRequests} loading={joinLoading} onChanged={loadJoinRequests} />
+            ) : (
             <Box
               sx={{
                 width: '100%',
@@ -451,7 +532,7 @@ export default function UserManagementPage() {
               <Chip
                 label={`${users.length} total`}
                 sx={{
-                  height: 30,
+                  height: '1.875rem',
                   bgcolor: '#F2ECFF',
                   color: '#6D3CCF',
                   fontWeight: 950,
@@ -467,9 +548,9 @@ export default function UserManagementPage() {
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
                 sx={{
-                  minWidth: { md: 330 },
+                  minWidth: { md: '20.625rem' },
                   '& .MuiOutlinedInput-root': {
-                    height: 50,
+                    height: '3.125rem',
                     borderRadius: '16px',
                     bgcolor: 'rgba(255,255,255,0.72)',
                     boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.8)',
@@ -486,12 +567,12 @@ export default function UserManagementPage() {
                   ),
                 }}
               />
-              <FormControl size="small" sx={{ minWidth: 150 }}>
+              <FormControl size="small" sx={{ minWidth: '9.375rem' }}>
                 <Select
                   value={roleFilter}
                   onChange={(event) => setRoleFilter(event.target.value)}
                   sx={{
-                    height: 50,
+                    height: '3.125rem',
                     borderRadius: '16px',
                     bgcolor: 'rgba(255,255,255,0.72)',
                     fontWeight: 750,
@@ -502,12 +583,12 @@ export default function UserManagementPage() {
                   {ROLES.map((role) => <MenuItem key={role} value={role}>{humanizeValue(role)}</MenuItem>)}
                 </Select>
               </FormControl>
-              <FormControl size="small" sx={{ minWidth: 160 }}>
+              <FormControl size="small" sx={{ minWidth: '10rem' }}>
                 <Select
                   value={sortBy}
                   onChange={(event) => setSortBy(event.target.value)}
                   sx={{
-                    height: 50,
+                    height: '3.125rem',
                     borderRadius: '16px',
                     bgcolor: 'rgba(255,255,255,0.72)',
                     fontWeight: 750,
@@ -574,7 +655,7 @@ export default function UserManagementPage() {
                 overflowX: 'hidden',
                 pr: '6px',
                 mr: '-6px',
-                '&::-webkit-scrollbar': { width: 8 },
+                '&::-webkit-scrollbar': { width: '0.5rem' },
                 '&::-webkit-scrollbar-track': { background: 'rgba(244, 238, 255, 0.45)', borderRadius: 999 },
                 '&::-webkit-scrollbar-thumb': { background: 'rgba(167, 139, 250, 0.5)', borderRadius: 999 },
               }}
@@ -621,12 +702,12 @@ export default function UserManagementPage() {
                       <Avatar
                         src={user.avatarUrl || ''}
                         sx={{
-                          width: 54,
-                          height: 54,
+                          width: '3.375rem',
+                          height: '3.375rem',
                           bgcolor: '#EEE7FF',
                           color: '#6D3CCF',
                           fontWeight: 950,
-                          fontSize: 19,
+                          fontSize: '1.1875rem',
                           boxShadow: '0 10px 24px rgba(109, 60, 207, 0.12)',
                         }}
                       >
@@ -634,7 +715,7 @@ export default function UserManagementPage() {
                       </Avatar>
                       <Box sx={{ minWidth: 0 }}>
                         <Typography fontWeight={950} noWrap sx={{ color: '#17122E' }}>{getFullName(user)}</Typography>
-                        <Typography color="#5E587E" noWrap sx={{ fontSize: 13.5 }}>{user.email || 'No email provided'}</Typography>
+                        <Typography color="#5E587E" noWrap sx={{ fontSize: '0.84375rem' }}>{user.email || 'No email provided'}</Typography>
                       </Box>
                     </Stack>
 
@@ -645,8 +726,8 @@ export default function UserManagementPage() {
                         disabled={saving === user.id}
                         size="small"
                         sx={{
-                          minWidth: 150,
-                          height: 42,
+                          minWidth: '9.375rem',
+                          height: '2.625rem',
                           borderRadius: 999,
                           fontWeight: 900,
                           ...(ROLE_STYLES[user.role || 'participant'] || ROLE_STYLES.participant),
@@ -702,8 +783,8 @@ export default function UserManagementPage() {
                     variant="contained"
                     disableElevation
                     sx={{
-                      minWidth: 42,
-                      height: 42,
+                      minWidth: '2.625rem',
+                      height: '2.625rem',
                       borderRadius: '14px',
                       bgcolor: '#E9D9FF',
                       color: '#6D3CCF',
@@ -719,6 +800,7 @@ export default function UserManagementPage() {
             ) : null}
           </Box>
             </Box>
+            )}
           </Grid>
 
         </Grid>
@@ -739,15 +821,15 @@ export default function UserManagementPage() {
         PaperProps={{
           dir: 'ltr',
           sx: {
-            width: { xs: 'calc(100vw - 24px)', sm: 560 },
+            width: { xs: 'calc(100vw - 24px)', sm: '35rem' },
             maxWidth: 560,
             m: 0,
             position: 'fixed',
             top: '50%',
             insetInlineStart: '50%',
             transform: 'translate(-50%, -50%)',
-            height: { xs: 'auto', sm: 850 },
-            maxHeight: { xs: 'calc(100vh - 24px)', md: 850 },
+            height: { xs: 'auto', sm: '53.125rem' },
+            maxHeight: { xs: 'calc(100vh - 24px)', md: '53.125rem' },
             borderRadius: { xs: '24px', md: '34px' },
             overflow: 'hidden',
             bgcolor: 'rgba(255, 255, 255, 0.94)',
@@ -763,16 +845,16 @@ export default function UserManagementPage() {
         }}
       >
         {selectedUser ? (
-          <Box sx={{ display: 'flex', flexDirection: 'column', height: { xs: 'auto', sm: 850 }, maxHeight: { xs: 'calc(100vh - 24px)', md: 850 }, background: 'radial-gradient(circle at 50% 0%, rgba(223, 50, 123, 0.08), transparent 32%), linear-gradient(180deg, #FFFFFF 0%, #FFFBFE 100%)' }}>
-            <Box sx={{ p: { xs: 2, md: 2.6 }, pb: 1.8, position: 'relative', height: 228, flex: '0 0 228px', boxSizing: 'border-box', overflow: 'hidden' }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', height: { xs: 'auto', sm: '53.125rem' }, maxHeight: { xs: 'calc(100vh - 24px)', md: '53.125rem' }, background: 'radial-gradient(circle at 50% 0%, rgba(223, 50, 123, 0.08), transparent 32%), linear-gradient(180deg, #FFFFFF 0%, #FFFBFE 100%)' }}>
+            <Box sx={{ p: { xs: 2, md: 2.6 }, pb: 1.8, position: 'relative', height: '14.25rem', flex: '0 0 228px', boxSizing: 'border-box', overflow: 'hidden' }}>
               <Stack spacing={1.45} alignItems="stretch" textAlign="right">
                 <Stack direction="row-reverse" spacing={1.5} alignItems="center" sx={{ width: '100%', pr: 0 }}>
-                  <Avatar src={selectedUser.avatarUrl || ''} sx={{ width: 82, height: 82, bgcolor: '#EEE7FF', color: '#6D3CCF', fontSize: 30, fontWeight: 950, boxShadow: '0 14px 30px rgba(109, 60, 207, 0.16)', flexShrink: 0 }}>
+                  <Avatar src={selectedUser.avatarUrl || ''} sx={{ width: '5.125rem', height: '5.125rem', bgcolor: '#EEE7FF', color: '#6D3CCF', fontSize: '1.875rem', fontWeight: 950, boxShadow: '0 14px 30px rgba(109, 60, 207, 0.16)', flexShrink: 0 }}>
                     {initials(selectedUser)}
                   </Avatar>
                   <Box sx={{ minWidth: 0, flex: 1 }}>
                     <Stack direction="row-reverse" spacing={0.75} alignItems="center" justifyContent="flex-start" flexWrap="nowrap" sx={{ minWidth: 0 }}>
-                      <Typography variant="h5" fontWeight={950} noWrap sx={{ fontSize: 21, textAlign: 'right', minWidth: 0, flex: 1 }}>{getFullName(selectedUser)}</Typography>
+                      <Typography variant="h5" fontWeight={950} noWrap sx={{ fontSize: '1.3125rem', textAlign: 'right', minWidth: 0, flex: 1 }}>{getFullName(selectedUser)}</Typography>
                       <Box sx={{ flexShrink: 0 }}>
                         <RoleChip role={selectedUser.role || 'participant'} />
                       </Box>
@@ -781,8 +863,8 @@ export default function UserManagementPage() {
                         onClick={closeDetails}
                         aria-label="Close user details"
                         sx={{
-                          width: 30,
-                          height: 30,
+                          width: '1.875rem',
+                          height: '1.875rem',
                           bgcolor: 'rgba(109, 60, 207, 0.06)',
                           color: '#4E466B',
                           '&:hover': { bgcolor: 'rgba(109, 60, 207, 0.12)' },
@@ -792,9 +874,9 @@ export default function UserManagementPage() {
                       </IconButton>
                       {detailsLoading ? <CircularProgress size={16} /> : null}
                     </Stack>
-                    <Typography color="text.secondary" noWrap sx={{ mt: 0.45, fontSize: 13.5, textAlign: 'right' }}>{selectedUser.email || 'No email provided'}</Typography>
+                    <Typography color="text.secondary" noWrap sx={{ mt: 0.45, fontSize: '0.84375rem', textAlign: 'right' }}>{selectedUser.email || 'No email provided'}</Typography>
                     <Stack direction="row-reverse" spacing={1.1} justifyContent="flex-start" alignItems="center" flexWrap="wrap" sx={{ mt: 0.75 }}>
-                      <Typography color="text.secondary" sx={{ fontSize: 13 }}>Joined {formatDateValue(getJoinedDate(selectedUser))}</Typography>
+                      <Typography color="text.secondary" sx={{ fontSize: '0.8125rem' }}>Joined {formatDateValue(getJoinedDate(selectedUser))}</Typography>
                     </Stack>
                   </Box>
                 </Stack>

@@ -23,6 +23,7 @@ import AuditLogPage from './features/admin/pages/AuditLogPage';
 import CommunityModerationPage from './features/admin/pages/CommunityModerationPage';
 import UpdatesPage from './features/admin/pages/UpdatesPage';
 import ProfilePage from './features/profile/pages/ProfilePage';
+import ForcePasswordChange from './features/profile/pages/ForcePasswordChange';
 import ParticipantHome from './features/participant/ParticipantHome';
 import PublicHomePage from './features/public/pages/PublicHomePage';
 import PublicDonationsPage from './features/public/pages/PublicDonationsPage';
@@ -67,6 +68,7 @@ function ThemedApp() {
               <Route path="/public/team-partners" element={<PublicTeamPartnersPage />} />
               <Route path="/accessibility" element={<AccessibilityStatementPage />} />
               <Route path="/login" element={<LoginPage />} />
+              <Route path="/set-password" element={<ForcePasswordChange />} />
               <Route path="/profile" element={<ProfilePage />} />
               <Route
                 path="/home"

@@ -245,7 +245,7 @@ export default function PublicHomePageContactTab() {
           px: 3,
           display: 'flex',
           justifyContent: 'flex-end',
-          gap: 1.5,
+          gap: '0.75rem',
           borderTop: 1,
           borderColor: 'divider',
           zIndex: 1100,

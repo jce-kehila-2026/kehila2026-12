@@ -291,7 +291,7 @@ export default function PublicHomePageTeamTab() {
   return (
     <Box sx={{ pb: 12 }}>
       <Paper sx={{ p: 3 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2, gap: 2 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2, gap: '1rem' }}>
           <Box>
             <Typography variant="h6">Team Members</Typography>
             <Typography variant="body2" color="text.secondary">
@@ -318,9 +318,9 @@ export default function PublicHomePageTeamTab() {
               <Paper
                 key={m.id}
                 variant="outlined"
-                sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 2 }}
+                sx={{ p: 2, display: 'flex', alignItems: 'center', gap: '1rem' }}
               >
-                <Avatar src={m.imageUrl || undefined} sx={{ width: 56, height: 56 }}>
+                <Avatar src={m.imageUrl || undefined} sx={{ width: '3.5rem', height: '3.5rem' }}>
                   {(m.name || '?').slice(0, 1)}
                 </Avatar>
                 <Box sx={{ flex: 1, minWidth: 0 }}>
