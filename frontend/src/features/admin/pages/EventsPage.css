@@ -986,6 +986,298 @@
   height: 1.0625rem;
 }
 
+.admin-events-provider-tabs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(11.75rem, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.admin-events-provider-tabs button,
+.admin-events-provider-skeleton {
+  min-height: 4.25rem;
+  border: 1px solid rgba(102, 112, 140, 0.18);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.88);
+}
+
+.admin-events-provider-tabs button {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 0.75rem;
+  align-items: center;
+  padding: 0.625rem 0.75rem;
+  color: var(--admin-text);
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease, background 180ms ease;
+}
+
+.admin-events-provider-tabs button:hover,
+.admin-events-provider-tabs button.is-active {
+  border-color: rgba(109, 60, 207, 0.34);
+  background: linear-gradient(135deg, rgba(248, 239, 255, 0.95), rgba(255, 240, 249, 0.9));
+  box-shadow: 0 14px 28px rgba(109, 60, 207, 0.13);
+  transform: translateY(-1px);
+}
+
+.admin-events-provider-tabs img,
+.admin-events-provider-tabs button > span {
+  display: grid;
+  width: 2.625rem;
+  height: 2.625rem;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--admin-primary);
+  background: rgba(166, 124, 255, 0.18);
+  font-size: 0.78rem;
+  font-weight: 900;
+  object-fit: cover;
+}
+
+.admin-events-provider-tabs strong,
+.admin-events-provider-tabs small,
+.admin-events-provider-tabs em {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-events-provider-tabs strong {
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.admin-events-provider-tabs small {
+  margin-top: 0.2rem;
+  color: #64708d;
+  font-size: 0.72rem;
+}
+
+.admin-events-provider-tabs em {
+  grid-column: 2;
+  color: var(--admin-primary);
+  font-size: 0.72rem;
+  font-style: normal;
+  font-weight: 900;
+}
+
+.admin-events-provider-skeleton {
+  display: block;
+  background: linear-gradient(90deg, #f7f2ff, #fff, #f7f2ff);
+  background-size: 220% 100%;
+  animation: admin-events-shimmer 1.2s infinite linear;
+}
+
+.admin-events-schedule-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.admin-events-schedule-toolbar label {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: #53607d;
+  font-size: 0.8rem;
+  font-weight: 900;
+}
+
+.admin-events-schedule-toolbar input {
+  min-height: 2.75rem;
+  border: 1px solid rgba(102, 112, 140, 0.22);
+  border-radius: 12px;
+  padding: 0 0.875rem;
+  color: var(--admin-text);
+  background: #fff;
+  font: inherit;
+}
+
+.admin-events-schedule-toolbar p {
+  margin: 0;
+  color: var(--admin-primary);
+  font-size: 0.82rem;
+  font-weight: 900;
+}
+
+.admin-events-schedule-card {
+  overflow: hidden;
+  border: 1px solid rgba(102, 112, 140, 0.16);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 16px 34px rgba(35, 26, 60, 0.08);
+}
+
+.admin-events-schedule-card > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.875rem 1rem;
+  background: linear-gradient(90deg, rgba(248, 239, 255, 0.92), rgba(255, 240, 249, 0.7));
+}
+
+.admin-events-schedule-card > header strong {
+  color: var(--admin-text);
+  font-size: 0.86rem;
+}
+
+.admin-events-schedule-card > header span {
+  color: var(--admin-primary);
+  font-size: 0.74rem;
+  font-weight: 900;
+}
+
+.admin-events-schedule-table {
+  overflow: hidden;
+}
+
+.admin-events-schedule-head,
+.admin-events-schedule-row {
+  display: grid;
+  grid-template-columns: 92px minmax(150px, 1.1fr) minmax(180px, 1.3fr) 116px minmax(110px, 0.8fr) 112px;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.admin-events-schedule-head {
+  padding: 0.75rem 1rem;
+  color: #53607d;
+  font-size: 0.7rem;
+  font-weight: 900;
+}
+
+.admin-events-schedule-row {
+  min-height: 4.125rem;
+  padding: 0.8125rem 1rem;
+  border-top: 1px solid rgba(102, 112, 140, 0.12);
+}
+
+.admin-events-schedule-row time {
+  color: var(--admin-text);
+  font-size: 0.8rem;
+  font-weight: 900;
+}
+
+.admin-events-schedule-row .admin-events-participant-person {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  gap: 0.625rem;
+  align-items: center;
+}
+
+.admin-events-schedule-row .admin-events-participant-avatar {
+  width: 2.25rem;
+  height: 2.25rem;
+}
+
+.admin-events-schedule-contact,
+.admin-events-schedule-notes {
+  min-width: 0;
+  color: #64708d;
+  font-size: 0.74rem;
+}
+
+.admin-events-schedule-contact span,
+.admin-events-schedule-contact a {
+  display: block;
+  overflow: hidden;
+  color: inherit;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-decoration: none;
+}
+
+.admin-events-status-select {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 2rem;
+  border-radius: 8px;
+  font-size: 0.7rem;
+  font-weight: 900;
+  text-transform: capitalize;
+}
+
+.admin-events-status-select select {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+}
+
+.admin-events-participant-chip--completed {
+  color: #285fca;
+  background: #e4edff;
+}
+
+.admin-events-booking-details {
+  position: absolute;
+  right: 1.25rem;
+  bottom: 5.5rem;
+  z-index: 3;
+  width: min(23rem, calc(100% - 2.5rem));
+  border: 1px solid rgba(102, 112, 140, 0.16);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.98);
+  box-shadow: 0 22px 48px rgba(35, 26, 60, 0.18);
+}
+
+.admin-events-booking-details header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1rem 1rem 0.75rem;
+  border-bottom: 1px solid rgba(102, 112, 140, 0.12);
+}
+
+.admin-events-booking-details header button {
+  display: grid;
+  width: 1.875rem;
+  height: 1.875rem;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background: rgba(109, 60, 207, 0.08);
+  color: var(--admin-primary);
+  cursor: pointer;
+}
+
+.admin-events-booking-details dl {
+  display: grid;
+  gap: 0.625rem;
+  margin: 0;
+  padding: 1rem;
+}
+
+.admin-events-booking-details div {
+  display: grid;
+  grid-template-columns: 86px minmax(0, 1fr);
+  gap: 0.75rem;
+}
+
+.admin-events-booking-details dt {
+  color: #64708d;
+  font-size: 0.72rem;
+  font-weight: 900;
+}
+
+.admin-events-booking-details dd {
+  min-width: 0;
+  margin: 0;
+  overflow-wrap: anywhere;
+  color: var(--admin-text);
+  font-size: 0.78rem;
+}
+
 .admin-events-participant-skeleton {
   display: block;
   height: 4.375rem;
@@ -1812,8 +2104,25 @@
   .admin-events-participant-summary,
   .admin-events-participant-controls,
   .admin-events-participant-row,
+  .admin-events-schedule-toolbar,
+  .admin-events-schedule-head,
+  .admin-events-schedule-row,
   .admin-events-participants-footer {
     grid-template-columns: 1fr;
+  }
+
+  .admin-events-schedule-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .admin-events-schedule-head {
+    display: none;
+  }
+
+  .admin-events-schedule-row {
+    display: grid;
+    gap: 0.625rem;
   }
 
   .admin-events-participant-stats {

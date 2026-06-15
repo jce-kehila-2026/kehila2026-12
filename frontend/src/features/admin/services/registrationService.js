@@ -284,6 +284,69 @@ export async function getRegistrationsByEvent(eventId) {
 }
 
 /**
+ * Appointment participant management uses central bookings as the source of
+ * truth. This keeps provider/date schedule views away from the legacy roster
+ * shape while still supporting template/parent event ids created earlier.
+ */
+export async function getBookingsByEvent(eventId) {
+  if (!eventId) return [];
+
+  const snapshots = await Promise.allSettled([
+    getDocs(query(collection(db, 'bookings'), where('eventId', '==', eventId), limit(500))),
+    getDocs(query(collection(db, 'bookings'), where('eventTemplateId', '==', eventId), limit(500))),
+    getDocs(query(collection(db, 'bookings'), where('parentEventId', '==', eventId), limit(500))),
+  ]);
+
+  const bookings = new Map();
+  snapshots.forEach((result) => {
+    if (result.status !== 'fulfilled') return;
+    result.value.docs.forEach((docSnap) => {
+      bookings.set(docSnap.id, { id: docSnap.id, ...docSnap.data() });
+    });
+  });
+
+  return Array.from(bookings.values()).sort((left, right) => {
+    const leftTime = left.startAt?.toDate?.() ?? new Date(left.selectedDate || left.dateKey || 0);
+    const rightTime = right.startAt?.toDate?.() ?? new Date(right.selectedDate || right.dateKey || 0);
+    return leftTime - rightTime;
+  });
+}
+
+export async function updateRegistrationStatus(regId, eventId, status) {
+  if (!regId || !eventId) throw new Error('updateRegistrationStatus requires registration and event ids.');
+  const normalizedStatus = String(status || '').toLowerCase();
+  const allowedStatuses = new Set(['confirmed', 'pending', 'cancelled', 'completed']);
+  if (!allowedStatuses.has(normalizedStatus)) throw new Error('Unsupported registration status.');
+
+  const rosterRef = doc(db, 'events', eventId, 'registrations', regId);
+  const rosterSnap = await getDoc(rosterRef);
+  const rosterData = rosterSnap.exists() ? rosterSnap.data() : {};
+  const bookingId = rosterData.bookingId || rosterData.id || regId;
+  const uid = rosterData.userId || rosterData.uid || null;
+  const patch = {
+    status: normalizedStatus,
+    updatedAt: serverTimestamp(),
+  };
+
+  if (normalizedStatus === 'completed') {
+    patch.checkedIn = true;
+    patch.checkedInAt = serverTimestamp();
+  }
+
+  const batch = writeBatch(db);
+  batch.set(doc(db, 'bookings', bookingId), patch, { merge: true });
+  batch.set(rosterRef, patch, { merge: true });
+  if (uid) {
+    batch.set(doc(db, 'users', uid, 'bookings', bookingId), patch, { merge: true });
+  }
+  await batch.commit();
+
+  await logAuditEvent('UPDATE', 'Event Registration', {
+    details: { registrationId: regId, bookingId, eventId, status: normalizedStatus },
+  });
+}
+
+/**
  * Count registrations per event. Uses one getCountFromServer() call per event,
  * which is cheap (server-side aggregation, doesn't return docs) and only requires
  * read permission on that specific event roster.
