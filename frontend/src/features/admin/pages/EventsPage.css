@@ -8,7 +8,8 @@
   --admin-border: rgba(109, 60, 207, 0.14);
   --admin-shadow: 0 22px 55px rgba(51, 29, 95, 0.12);
   box-sizing: border-box;
-  height: calc(100vh - 8rem);
+  height: calc(100vh - 1rem);
+  max-height: calc(100vh - 1rem);
   min-height: 0;
   margin: -1rem;
   padding: 0.875rem 1.125rem 1rem;
@@ -27,6 +28,7 @@
   display: grid;
   grid-template-columns: minmax(0, 1fr);
   flex: 1 1 auto;
+  height: 100%;
   min-height: 0;
   gap: 0.75rem;
   align-items: stretch;
@@ -51,6 +53,7 @@
 }
 
 .admin-events-header {
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -84,6 +87,7 @@
 }
 
 .admin-events-tabs-row {
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -191,6 +195,7 @@
 }
 
 .admin-events-stats {
+  flex: 0 0 auto;
   display: grid;
   grid-template-columns: repeat(2, minmax(180px, 260px));
   gap: 0.625rem;
@@ -296,6 +301,7 @@
 }
 
 .admin-events-filterbar {
+  flex: 0 0 auto;
   display: grid;
   grid-template-columns: minmax(230px, 1fr) 150px 180px 40px 40px;
   gap: 0.5rem;
@@ -377,7 +383,7 @@
 .admin-events-table-card {
   display: flex;
   min-height: 0;
-  flex: 1 1 auto;
+  flex: 1 1 0;
   flex-direction: column;
   overflow: hidden;
   border: 1px solid var(--admin-border);
@@ -638,10 +644,11 @@
 }
 
 .admin-events-participants-drawer {
-  position: sticky;
-  top: 88px;
+  position: relative;
+  top: auto;
   display: none;
-  height: calc(100vh - 7.25rem);
+  height: 100%;
+  min-height: 0;
   overflow: hidden;
   border: 1px solid var(--admin-border);
   border-radius: 18px;
