@@ -14,15 +14,15 @@ import '../styles/PublicHomePage.css';
 
 function PublicTeamPartnersPageContent() {
   const pageRef = useRef(null);
-  const { direction, lang, t } = usePublicLocale();
+  const { direction, lang, locale, t } = usePublicLocale();
   const [content, setContent] = useState(() => getFallbackPublicHomepageContent());
   const [publicHomeDoc, setPublicHomeDoc] = useState(() => getDefaultPublicHomeDoc());
   const [isContentLoading, setIsContentLoading] = useState(true);
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
   const [isVolunteerModalOpen, setIsVolunteerModalOpen] = useState(false);
   const revealRefreshKey = useMemo(
-    () => `${publicHomeDoc.teamMembers?.length || 0}:${publicHomeDoc.partners?.length || 0}`,
-    [publicHomeDoc.partners?.length, publicHomeDoc.teamMembers?.length],
+    () => `${locale}:${publicHomeDoc.teamMembers?.length || 0}:${publicHomeDoc.partners?.length || 0}`,
+    [locale, publicHomeDoc.partners?.length, publicHomeDoc.teamMembers?.length],
   );
 
   useRevealOnScroll(pageRef, revealRefreshKey);

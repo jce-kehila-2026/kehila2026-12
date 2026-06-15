@@ -33,6 +33,7 @@ export default function MedicalPartnersSection({ partners = [] }) {
     cardSelector: '.medical-partners__card',
     direction,
     itemCount: localizedPartners.length,
+    refreshKey: locale,
   });
 
   return (

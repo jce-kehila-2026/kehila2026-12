@@ -17,7 +17,7 @@ import '../styles/PublicHomePage.css';
 
 function PublicHomePageContent() {
   const pageRef = useRef(null);
-  const { direction, lang, t } = usePublicLocale();
+  const { direction, lang, locale, t } = usePublicLocale();
   const [content, setContent] = useState(() => getFallbackPublicHomepageContent());
   const [publicHomeDoc, setPublicHomeDoc] = useState(() => getDefaultPublicHomeDoc());
   const [loading, setLoading] = useState(true);
@@ -27,6 +27,7 @@ function PublicHomePageContent() {
   const revealRefreshKey = useMemo(
     () => [
       loading ? 'loading' : 'ready',
+      locale,
       content.supportAreas?.length || 0,
       content.statistics?.length || 0,
       content.teamMembers?.length || 0,
@@ -39,6 +40,7 @@ function PublicHomePageContent() {
       content.supportAreas?.length,
       content.teamMembers?.length,
       loading,
+      locale,
       publicHomeDoc.learnTogether?.cards?.length,
     ],
   );

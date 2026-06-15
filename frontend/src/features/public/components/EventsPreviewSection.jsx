@@ -64,6 +64,7 @@ export default function EventsPreviewSection({
     cardSelector: '.public-event-card',
     direction,
     itemCount: publicUpcomingEvents.length,
+    refreshKey: locale,
   });
 
   return (

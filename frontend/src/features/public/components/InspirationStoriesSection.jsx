@@ -9,8 +9,8 @@ import { usePublicLocale } from '../context/PublicLocaleContext';
 import { localizeField } from '../../../i18n/localizeField';
 import useHorizontalCardCarousel from '../hooks/useHorizontalCardCarousel';
 
-function isEnglishOnlyStory({ name, story, occupation } = {}) {
-  const text = [name, occupation, story]
+function isEnglishOnlyText(...values) {
+  const text = values
     .filter((value) => typeof value === 'string' && value.trim())
     .join(' ');
 
@@ -56,7 +56,8 @@ function StoryAvatar({ name, imageUrl }) {
 
 function StoryCard({ story, onReadMore, readMoreLabel }) {
   const { name, story: body, imageUrl, occupation } = story;
-  const isLtr = isEnglishOnlyStory(story);
+  const isIdentityLtr = isEnglishOnlyText(name, occupation);
+  const isBodyLtr = isEnglishOnlyText(body);
   const textRef = useRef(null);
   const [isOverflowing, setIsOverflowing] = useState(false);
 
@@ -87,16 +88,16 @@ function StoryCard({ story, onReadMore, readMoreLabel }) {
 
   return (
     <article
-      className={`public-team-card public-story-card reveal${isLtr ? ' public-story-card--ltr' : ''}`}
+      className={`public-team-card public-story-card reveal${isBodyLtr ? ' public-story-card--ltr' : ''}`}
     >
       <StoryAvatar name={name} imageUrl={imageUrl} />
       {name || occupation ? (
-        <div className="public-story-card__identity" dir={isLtr ? 'ltr' : undefined}>
+        <div className="public-story-card__identity" dir={isIdentityLtr ? 'ltr' : undefined}>
           {name ? <h3>{name}</h3> : null}
           {occupation ? <p className="public-team-card__role">{occupation}</p> : null}
         </div>
       ) : null}
-      <div className="public-story-card__content" dir={isLtr ? 'ltr' : undefined}>
+      <div className="public-story-card__content" dir={isBodyLtr ? 'ltr' : undefined}>
         {body ? (
           <p
             ref={textRef}
@@ -145,7 +146,8 @@ function StoryModal({ story, onClose, closeLabel }) {
   }
 
   const { name, story: body, imageUrl, occupation } = story;
-  const isLtr = isEnglishOnlyStory(story);
+  const isIdentityLtr = isEnglishOnlyText(name, occupation);
+  const isBodyLtr = isEnglishOnlyText(body);
 
   return createPortal(
     <div
@@ -168,7 +170,7 @@ function StoryModal({ story, onClose, closeLabel }) {
         >
           <CloseRoundedIcon fontSize="inherit" aria-hidden="true" />
         </button>
-        <div className="public-story-modal__header" dir={isLtr ? 'ltr' : undefined}>
+        <div className="public-story-modal__header" dir={isIdentityLtr ? 'ltr' : undefined}>
           <StoryAvatar name={name} imageUrl={imageUrl} />
           <div className="public-story-modal__identity">
             {name ? <h3 id={titleId}>{name}</h3> : null}
@@ -177,8 +179,8 @@ function StoryModal({ story, onClose, closeLabel }) {
         </div>
         <div className="public-story-modal__scroll">
           <div
-            className={`public-story-modal__body${isLtr ? ' public-story-modal__body--ltr' : ''}`}
-            dir={isLtr ? 'ltr' : undefined}
+            className={`public-story-modal__body${isBodyLtr ? ' public-story-modal__body--ltr' : ''}`}
+            dir={isBodyLtr ? 'ltr' : undefined}
           >
             {body ? (
               <p className="public-team-card__description public-story-modal__text">"{body}"</p>
@@ -210,6 +212,7 @@ export default function InspirationStoriesSection({ stories = [] }) {
     cardSelector: '.public-story-card',
     direction,
     itemCount: safeStories.length,
+    refreshKey: locale,
   });
 
   return (
