@@ -1,4 +1,6 @@
 import { useMemo } from 'react';
+import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded';
+import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
 import EmptyState from './EmptyState';
 import ErrorState from './ErrorState';
 import EventPreviewCard from './EventPreviewCard';
@@ -6,6 +8,7 @@ import LoadingState from './LoadingState';
 import PublicSectionHeading from './PublicSectionHeading';
 import { usePublicLocale } from '../context/PublicLocaleContext';
 import { localizeEvents } from '../i18n/publicHomeContentLocalization';
+import useHorizontalCardCarousel from '../hooks/useHorizontalCardCarousel';
 import '../styles/public-events-section.css';
 
 function isUpcomingEvent(event) {
@@ -47,15 +50,21 @@ function getPublicUpcomingEvents(events, maxItems) {
 
 export default function EventsPreviewSection({
   events = [],
-  maxItems = 3,
+  maxItems = 20,
   isLoading = false,
   hasError = false,
 }) {
-  const { locale, t } = usePublicLocale();
+  const { direction, locale, t } = usePublicLocale();
   const publicUpcomingEvents = useMemo(() => {
     const upcoming = getPublicUpcomingEvents(events, maxItems);
     return localizeEvents(upcoming, locale);
   }, [events, locale, maxItems]);
+
+  const carousel = useHorizontalCardCarousel({
+    cardSelector: '.public-event-card',
+    direction,
+    itemCount: publicUpcomingEvents.length,
+  });
 
   return (
     <section
@@ -90,10 +99,38 @@ export default function EventsPreviewSection({
             <ErrorState message={t('errorEvents')} />
           </div>
         ) : publicUpcomingEvents.length ? (
-          <div className="public-events-grid stagger-children">
-            {publicUpcomingEvents.map((event, index) => (
-              <EventPreviewCard event={event} index={index} key={event.id || event.title} />
-            ))}
+          <div className={[
+            'public-events__carousel',
+            'public-card-carousel',
+            !carousel.showControls ? 'public-card-carousel--without-controls' : '',
+            carousel.fadeLeft ? 'public-card-carousel--fade-left' : '',
+            carousel.fadeRight ? 'public-card-carousel--fade-right' : '',
+          ].filter(Boolean).join(' ')}>
+            {carousel.showControls ? <button
+              type="button"
+              className="public-events__scroll-btn public-events__scroll-btn--prev public-card-carousel__button"
+              aria-label={t('scrollPrevActivity')}
+              onClick={() => carousel.scrollByCards(-1)}
+              disabled={!carousel.canScrollPrev}
+            >
+              <ChevronRightRoundedIcon fontSize="inherit" aria-hidden="true" />
+            </button> : null}
+
+            <div className="public-events-grid public-card-carousel__track stagger-children" ref={carousel.scrollerRef}>
+              {publicUpcomingEvents.map((event, index) => (
+                <EventPreviewCard event={event} index={index} key={event.id || event.title} />
+              ))}
+            </div>
+
+            {carousel.showControls ? <button
+              type="button"
+              className="public-events__scroll-btn public-events__scroll-btn--next public-card-carousel__button"
+              aria-label={t('scrollNextActivity')}
+              onClick={() => carousel.scrollByCards(1)}
+              disabled={!carousel.canScrollNext}
+            >
+              <ChevronLeftRoundedIcon fontSize="inherit" aria-hidden="true" />
+            </button> : null}
           </div>
         ) : (
           <div className="public-events__state">

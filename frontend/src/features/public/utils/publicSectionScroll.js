@@ -7,7 +7,14 @@ let activeScrollRequest = null;
 
 function getNavbarHeight() {
   const navbar = document.querySelector('[data-public-navbar]');
-  return navbar ? navbar.getBoundingClientRect().height : 0;
+  const navbarHeight = navbar ? navbar.getBoundingClientRect().height : 0;
+  const homepage = document.querySelector('.public-homepage--main');
+
+  if (homepage && navbarHeight > 0) {
+    homepage.style.setProperty('--public-current-navbar-height', `${navbarHeight}px`);
+  }
+
+  return navbarHeight;
 }
 
 function getTargetScrollTop(target, navbarHeight = getNavbarHeight()) {

@@ -11,12 +11,6 @@ import {
   emptyLearnTogetherPopup,
   popupHasLegacyFields,
 } from '../../public/services/publicPagesService';
-import {
-  CMS_ICON_LIBRARY,
-  DEFAULT_CMS_ICON_KEY,
-  getCmsIconEntry,
-  isKnownCmsIconKey,
-} from '../../public/components/cmsIcons';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
@@ -91,7 +85,6 @@ function emptyCardDraft() {
   return {
     id: '',
     imageUrl: '',
-    iconKey: DEFAULT_CMS_ICON_KEY,
     title: '',
     description: '',
     popup: emptyLearnTogetherPopup(),
@@ -165,13 +158,14 @@ export default function PublicHomePageLearnTogetherTab() {
         const merged = mergeLearnTogether(data.learnTogether);
 
         const rawCards = Array.isArray(data.learnTogether?.cards) ? data.learnTogether.cards : [];
-        const needsMigration = rawCards.some((card) => popupHasLegacyFields(card?.popup));
+        const needsMigration = rawCards.some(
+          (card) => popupHasLegacyFields(card?.popup) || Object.hasOwn(card || {}, 'iconKey'),
+        );
         if (needsMigration) {
           await updateDoc(ref, {
             'learnTogether.cards': merged.cards.map((card) => ({
               id: card.id,
               imageUrl: card.imageUrl,
-              iconKey: card.iconKey,
               title: card.title,
               description: card.description,
               order: card.order,
@@ -189,7 +183,7 @@ export default function PublicHomePageLearnTogetherTab() {
           await logAuditEvent({
             actionType: 'MIGRATE_PUBLIC_HOME_LEARN_TOGETHER_POPUP_SCHEMA',
             targetId: `${PUBLIC_PAGES_COLLECTION}/${PUBLIC_HOME_DOC_ID}`,
-            details: { section: 'learnTogether', change: 'sections-array + drop cta' },
+            details: { section: 'learnTogether', change: 'sections-array + drop cta/iconKey' },
           });
         }
 
@@ -325,7 +319,6 @@ export default function PublicHomePageLearnTogetherTab() {
       'learnTogether.cards': nextCards.map((card) => ({
         id: card.id,
         imageUrl: card.imageUrl,
-        iconKey: card.iconKey,
         title: card.title,
         description: card.description,
         order: card.order,
@@ -368,7 +361,6 @@ export default function PublicHomePageLearnTogetherTab() {
     setEditorDraft({
       id: card.id,
       imageUrl: card.imageUrl || '',
-      iconKey: isKnownCmsIconKey(card.iconKey) ? card.iconKey : DEFAULT_CMS_ICON_KEY,
       title: card.title || '',
       description: card.description || '',
       popup: { ...emptyLearnTogetherPopup(), ...card.popup },
@@ -387,7 +379,6 @@ export default function PublicHomePageLearnTogetherTab() {
     const d = editorDraft;
     if (!d.title.trim()) next.title = 'Title is required.';
     if (!d.description.trim()) next.description = 'Description is required.';
-    if (!isKnownCmsIconKey(d.iconKey)) next.iconKey = 'Pick an icon.';
     if (!isValidUrlOrAnchorOrEmpty(d.imageUrl)) next.imageUrl = 'Invalid URL.';
     if (!d.popup.title.trim()) next['popup.title'] = 'Popup title is required.';
     if (!d.popup.paragraph.trim()) next['popup.paragraph'] = 'Popup paragraph is required.';
@@ -423,9 +414,6 @@ export default function PublicHomePageLearnTogetherTab() {
       const cleanCard = {
         id: editorDraft.id || generateCardId(),
         imageUrl: editorDraft.imageUrl.trim(),
-        iconKey: isKnownCmsIconKey(editorDraft.iconKey)
-          ? editorDraft.iconKey
-          : DEFAULT_CMS_ICON_KEY,
         title: editorDraft.title.trim(),
         description: editorDraft.description.trim(),
         order: 0,
@@ -717,8 +705,6 @@ function CardRow({
   onDragOver,
   onDrop,
 }) {
-  const iconEntry = getCmsIconEntry(card.iconKey);
-  const Icon = iconEntry.Icon;
   return (
     <Box
       draggable
@@ -728,7 +714,7 @@ function CardRow({
       sx={{
         display: 'flex',
         alignItems: 'center',
-        gap: '0.75rem',
+        gap: 1.5,
         p: 1.5,
         border: 1,
         borderColor: 'divider',
@@ -741,8 +727,8 @@ function CardRow({
       <DragIndicatorIcon color="action" />
       <Box
         sx={{
-          width: '4rem',
-          height: '3rem',
+          width: 64,
+          height: 48,
           borderRadius: 1.5,
           overflow: 'hidden',
           bgcolor: 'action.hover',
@@ -752,22 +738,6 @@ function CardRow({
           backgroundPosition: 'center',
         }}
       />
-      <Box
-        sx={{
-          width: '2.25rem',
-          height: '2.25rem',
-          borderRadius: 1.5,
-          border: 1,
-          borderColor: 'divider',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: 'primary.main',
-          flexShrink: 0,
-        }}
-      >
-        <Icon size={20} strokeWidth={1.5} />
-      </Box>
       <Box sx={{ flex: 1, minWidth: 0 }}>
         <Typography variant="subtitle1" sx={{ fontWeight: 700 }} noWrap>
           {card.title || '(untitled)'}
@@ -818,9 +788,6 @@ function CardEditorDialog({
   onClose,
   onSave,
 }) {
-  const selectedEntry = getCmsIconEntry(draft.iconKey);
-  const SelectedIcon = selectedEntry.Icon;
-
   function show(field) {
     return Boolean(errors[field]) && submitted;
   }
@@ -830,57 +797,6 @@ function CardEditorDialog({
       <DialogTitle>{mode === 'create' ? 'Add new card' : 'Edit card'}</DialogTitle>
       <DialogContent dividers>
         <Stack spacing={2.5}>
-          <Box>
-            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
-              Icon
-            </Typography>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-              <Box
-                sx={{
-                  width: '3.5rem',
-                  height: '3.5rem',
-                  borderRadius: 2,
-                  border: 1,
-                  borderColor: 'divider',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  bgcolor: 'background.default',
-                  color: 'primary.main',
-                  flexShrink: 0,
-                }}
-              >
-                <SelectedIcon size={28} strokeWidth={1.5} />
-              </Box>
-              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem' }}>
-                {CMS_ICON_LIBRARY.map(({ key, label, Icon }) => {
-                  const isSelected = key === draft.iconKey;
-                  return (
-                    <Tooltip key={key} title={label} arrow>
-                      <IconButton
-                        onClick={() => onChangeField('iconKey', key)}
-                        aria-pressed={isSelected}
-                        size="small"
-                        sx={{
-                          width: '2.25rem',
-                          height: '2.25rem',
-                          border: 1,
-                          borderRadius: 1.5,
-                          borderColor: isSelected ? 'primary.main' : 'divider',
-                          color: isSelected ? 'primary.main' : 'text.secondary',
-                          bgcolor: isSelected ? 'action.selected' : 'transparent',
-                          '&:hover': { bgcolor: 'action.hover', borderColor: 'primary.light' },
-                        }}
-                      >
-                        <Icon size={20} strokeWidth={1.5} />
-                      </IconButton>
-                    </Tooltip>
-                  );
-                })}
-              </Box>
-            </Box>
-          </Box>
-
           <Box>
             <TextField
               label="Card image URL"
@@ -897,8 +813,8 @@ function CardEditorDialog({
               <Box
                 sx={{
                   mt: 1,
-                  width: '12.5rem',
-                  height: '7.5rem',
+                  width: 200,
+                  height: 120,
                   borderRadius: 2,
                   overflow: 'hidden',
                   bgcolor: 'action.hover',
@@ -994,8 +910,8 @@ function CardEditorDialog({
               <Box
                 sx={{
                   mt: 1,
-                  width: '12.5rem',
-                  height: '7.5rem',
+                  width: 200,
+                  height: 120,
                   borderRadius: 2,
                   overflow: 'hidden',
                   bgcolor: 'action.hover',

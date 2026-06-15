@@ -1,6 +1,6 @@
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../../firebase';
-import heroWomenSupport from '../../../assets/images/hero-women-support.png';
+import heroSupportJourney from '../../../assets/images/hero-support-journey.png';
 import assutaLogo from '../../../assets/images/assuta.png';
 import ichilovLogo from '../../../assets/images/ichilov.png';
 import barzilaiLogo from '../../../assets/images/barzilai-logo.jpg';
@@ -8,8 +8,6 @@ import shamirLogo from '../../../assets/images/shamir.png';
 import {
   isKnownAboutUsIconKey,
   DEFAULT_ABOUT_US_ICON_KEY,
-  isKnownCmsIconKey,
-  DEFAULT_CMS_ICON_KEY,
 } from '../components/cmsIcons';
 
 // Single source of truth for the public home page document.
@@ -25,7 +23,7 @@ export const DEFAULT_HOME_HERO = {
   title: 'את לא לבד במסע שלך',
   subtitle: 'קהילה תומכת לנשים ולמתמודדות עם סרטן',
   description: 'מרחב חם, בטוח ומקצועי לתמיכה, ליווי, למידה ותקווה לאורך הדרך.',
-  backgroundImageUrl: heroWomenSupport,
+  backgroundImageUrl: heroSupportJourney,
 };
 
 export const ABOUT_US_CARD_COUNT = 4;
@@ -66,7 +64,6 @@ export const DEFAULT_LEARN_TOGETHER = {
     {
       id: 'seed-support-groups',
       imageUrl: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?auto=format&fit=crop&w=1000&q=80',
-      iconKey: 'users-round',
       title: 'קבוצות תמיכה',
       description: 'מפגשי תמיכה קבוצתיים במרחב בטוח ותומך עם נשים שעוברות חוויות דומות.',
       order: 0,
@@ -94,7 +91,6 @@ export const DEFAULT_LEARN_TOGETHER = {
     {
       id: 'seed-lectures-workshops',
       imageUrl: 'https://images.unsplash.com/photo-1573496359142-bf2b0c2303f2?auto=format&fit=crop&w=1000&q=80',
-      iconKey: 'sparkles',
       title: 'הרצאות וסדנאות',
       description: 'ידע מעשי, כלים רגשיים וסדנאות העצמה שמחזקות את ההתמודדות היומיומית.',
       order: 1,
@@ -122,7 +118,6 @@ export const DEFAULT_LEARN_TOGETHER = {
     {
       id: 'seed-inspiration-stories',
       imageUrl: 'https://images.unsplash.com/photo-1488520997922-dddff85973fb?auto=format&fit=crop&w=1000&q=80',
-      iconKey: 'heart',
       title: 'סיפורי השראה',
       description: 'סיפורים אמיתיים של נשים שמצאו תקווה, כוח ומשמעות בתוך המסע.',
       order: 2,
@@ -150,7 +145,6 @@ export const DEFAULT_LEARN_TOGETHER = {
     {
       id: 'seed-chat-support',
       imageUrl: 'https://images.unsplash.com/photo-1529333166432-856ffee0e6b8?auto=format&fit=crop&w=1000&q=80',
-      iconKey: 'message-circle-heart',
       title: "צ'אט ותמיכה",
       description: 'ערוץ תמיכה נגיש לשיחה, שיתוף וליווי ברגעים שבהם צריך מענה קרוב.',
       order: 3,
@@ -178,7 +172,6 @@ export const DEFAULT_LEARN_TOGETHER = {
     {
       id: 'seed-donations-community',
       imageUrl: 'https://images.unsplash.com/photo-1487412727787-6dfaa1abf0f2?auto=format&fit=crop&w=1000&q=80',
-      iconKey: 'gift',
       title: 'תרומות לקהילה',
       description: 'תרומות שמאפשרות להרחיב פעילות, להנגיש ליווי ולתמוך בנשים נוספות.',
       order: 4,
@@ -206,7 +199,6 @@ export const DEFAULT_LEARN_TOGETHER = {
     {
       id: 'seed-women-events',
       imageUrl: 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&w=1000&q=80',
-      iconKey: 'calendar-heart',
       title: 'אירועים לנשים',
       description: 'ערבי העצמה, מפגשי רווחה וחגיגות קהילתיות שמחברות ומחזקות.',
       order: 5,
@@ -278,7 +270,7 @@ export const DEFAULT_STATISTICS = [
   {
     id: 'community_women',
     icon: 'hands-heart',
-    value: 2500,
+    value: 2545,
     title: 'נשים בקהילה',
     description: 'מרחב תמיכה חי, מכיל ונגיש.',
   },
@@ -514,12 +506,10 @@ export function popupHasLegacyFields(popup) {
 
 function mergeLearnTogetherCard(card, index) {
   const safe = card && typeof card === 'object' ? card : {};
-  const iconKey = isKnownCmsIconKey(safe.iconKey) ? safe.iconKey : DEFAULT_CMS_ICON_KEY;
   const order = Number.isFinite(safe.order) ? safe.order : index;
   return {
     id: safeString(safe.id) || `card-${index}`,
     imageUrl: safeString(safe.imageUrl),
-    iconKey,
     title: safeString(safe.title),
     description: safeString(safe.description),
     order,

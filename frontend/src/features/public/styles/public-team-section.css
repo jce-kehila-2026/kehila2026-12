@@ -1,25 +1,5 @@
 /* SHE-NA team — Figma-aligned member cards */
 
-/* Horizontal slider — uniform card width per breakpoint */
-.public-stories-slider__track > .public-team-section__card {
-  flex: 0 0 calc((100% - var(--public-grid-gap, 28px) * 2) / 3);
-  min-width: 16.25rem;
-  scroll-snap-align: start;
-}
-
-@media (max-width: 1100px) {
-  .public-stories-slider__track > .public-team-section__card {
-    flex: 0 0 calc((100% - var(--public-grid-gap, 28px)) / 2);
-  }
-}
-
-@media (max-width: 640px) {
-  .public-stories-slider__track > .public-team-section__card {
-    flex: 0 0 86%;
-    min-width: 0;
-  }
-}
-
 .public-section.public-section--team-section {
   --team-pink: #ec3c97;
   --team-purple: #5b1e8c;
@@ -28,15 +8,13 @@
   --team-shadow: 0 14px 36px rgba(91, 30, 140, 0.08);
   --team-shadow-hover: 0 22px 48px rgba(91, 30, 140, 0.14);
   position: relative;
-  padding-block: clamp(3.5rem, 6.5vw, 5.75rem) clamp(2.75rem, 5vw, 4.25rem);
-  padding-inline: clamp(1.25rem, 6vw, 6rem);
-  background:
-    radial-gradient(ellipse 70% 50% at 50% 0%, rgba(236, 60, 151, 0.06) 0%, transparent 62%),
-    linear-gradient(180deg, #fffefe 0%, #fff7fb 48%, #ffffff 100%);
+  padding-block: clamp(56px, 6.5vw, 92px) clamp(44px, 5vw, 68px);
+  padding-inline: clamp(20px, 6vw, 96px);
+  background: #ffffff;
 }
 
 .public-team-section__inner {
-  width: min(100%, 82.5rem);
+  width: min(100%, 1320px);
   margin-inline: auto;
 }
 
@@ -50,13 +28,59 @@
   line-height: 1.62;
 }
 
+.public-team-section__grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, var(--public-home-card-width)));
+  justify-content: center;
+  gap: var(--public-grid-gap, clamp(20px, 2.4vw, 28px));
+  width: 100%;
+}
+
+.public-stories-slider__track > .public-team-section__card {
+  flex: 0 0 var(--public-home-card-width);
+  width: var(--public-home-card-width);
+  min-width: var(--public-home-card-width);
+  scroll-snap-align: start;
+}
+
+.public-team-partners-page .public-section--team-section .public-stories-slider,
+.public-team-partners-page
+  .public-section--team-section
+  .public-stories-slider__track {
+  background: transparent;
+}
+
+.public-team-partners-page
+  .public-section--team-section
+  .public-stories-slider__track {
+  overflow-x: auto;
+  overflow-y: clip;
+  overscroll-behavior-x: contain;
+  overscroll-behavior-y: auto;
+  touch-action: auto;
+  mask-image: none;
+  -webkit-mask-image: none;
+}
+
+.public-team-partners-page
+  .public-section--team-section
+  .public-team-section__card {
+  box-shadow: none;
+}
+
+.public-team-partners-page
+  .public-section--team-section
+  .public-team-section__card:is(:hover, :focus-within) {
+  box-shadow: none;
+}
+
 .public-team-section__rows {
   display: grid;
-  gap: clamp(1.25rem, 2.2vw, 1.75rem);
+  gap: clamp(20px, 2.2vw, 28px);
 }
 
 .public-team-section__row {
-  gap: clamp(1.25rem, 2.2vw, 1.75rem);
+  gap: clamp(20px, 2.2vw, 28px);
 }
 
 .public-team-section__row--primary {
@@ -70,13 +94,13 @@
   flex-wrap: wrap;
   justify-content: center;
   align-items: stretch;
-  gap: clamp(1.25rem, 2.2vw, 1.75rem);
+  gap: clamp(20px, 2.2vw, 28px);
 }
 
 .public-team-section__row--secondary .public-team-section__card {
   flex: 0 1 calc((100% - (clamp(20px, 2.2vw, 28px) * 3)) / 4);
   max-width: calc((100% - (clamp(20px, 2.2vw, 28px) * 3)) / 4);
-  min-width: min(100%, 16.25rem);
+  min-width: min(100%, 260px);
 }
 
 /* Card — uniform height via flex-column + fixed dimensions */
@@ -87,10 +111,10 @@
   flex-direction: column;
   align-items: center;
   gap: 0;
-  height: 22.5rem;
+  height: 360px;
   box-sizing: border-box;
-  padding-block: clamp(1.5rem, 2.6vw, 1.875rem) clamp(1.125rem, 2vw, 1.5rem);
-  padding-inline: clamp(1.125rem, 2vw, 1.5rem);
+  padding-block: clamp(24px, 2.6vw, 30px) clamp(18px, 2vw, 24px);
+  padding-inline: clamp(18px, 2vw, 24px);
   overflow: visible;
   text-align: center;
   background: #ffffff;
@@ -118,11 +142,18 @@
 
 .public-team-section__card.reveal.reveal-visible {
   transform: translate3d(0, 0, 0);
+  transition:
+    opacity 550ms ease-out,
+    transform 420ms cubic-bezier(0.22, 1, 0.36, 1),
+    filter 550ms ease-out,
+    box-shadow 420ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 320ms ease;
+  transition-delay: 0ms;
 }
 
 .public-team-section__card.reveal.reveal-visible:hover,
 .public-team-section__card.reveal.reveal-visible:focus-within {
-  transform: translate3d(0, -6px, 0);
+  transform: translate3d(0, -8px, 0);
 }
 
 .public-team-section__card::after {
@@ -133,12 +164,11 @@
   height: 42%;
   content: "";
   pointer-events: none;
-  background: linear-gradient(180deg, transparent 0%, rgba(253, 236, 246, 0.55) 55%, rgba(248, 220, 238, 0.35) 100%);
 }
 
 .public-team-section__card.reveal-visible:hover,
 .public-team-section__card.reveal-visible:focus-within {
-  border-color: rgba(236, 60, 151, 0.28);
+  border-color: rgba(236, 60, 151, 0.4);
   box-shadow: var(--team-shadow-hover);
 }
 
@@ -160,9 +190,9 @@
 .public-team-section__avatar-shell {
   display: grid;
   flex-shrink: 0;
-  width: 6.875rem;
-  height: 6.875rem;
-  padding: 0.1875rem;
+  width: 110px;
+  height: 110px;
+  padding: 3px;
   overflow: hidden;
   border-radius: 50%;
   background: #ffffff;
@@ -203,7 +233,7 @@
 }
 
 .public-team-section__role {
-  margin: 0.375rem 0 0;
+  margin: 6px 0 0;
   color: var(--team-pink);
   font-size: clamp(0.9rem, 1vw, 0.98rem);
   font-weight: 700;
@@ -213,7 +243,7 @@
 .public-team-section__description {
   display: -webkit-box;
   max-width: 22rem;
-  margin: clamp(0.625rem, 1.2vw, 0.875rem) 0 0;
+  margin: clamp(10px, 1.2vw, 14px) 0 0;
   overflow: hidden;
   color: var(--team-muted);
   font-size: clamp(0.88rem, 0.98vw, 0.94rem);
@@ -225,12 +255,12 @@
 }
 
 .public-team-section__social {
-  position: relative;
+  position: static;
   z-index: 2;
   display: flex;
   align-items: center;
   justify-content: center;
-  min-height: 2.25rem;
+  min-height: 36px;
   margin-block-start: auto;
   padding-block-start: 12px;
 }
@@ -239,28 +269,38 @@
   position: relative;
   z-index: 1;
   display: inline-grid;
-  width: 2.25rem;
-  height: 2.25rem;
+  width: 36px;
+  height: 36px;
   padding: 0;
   place-items: center;
-  color: var(--team-pink);
+  color: #5b1e8c;
   cursor: pointer;
-  background: rgba(236, 60, 151, 0.1);
-  border: none;
+  background: rgba(255, 255, 255, 0.97);
+  border: 2px solid rgba(91, 30, 140, 0.2);
   border-radius: 50%;
+  box-shadow: 0 7px 18px rgba(91, 30, 140, 0.12);
+  transition:
+    color 180ms ease,
+    background 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
 }
 
 .public-team-section__email-trigger:hover,
 .public-team-section__email-trigger:focus-visible {
   color: #ffffff;
-  background: var(--team-pink);
-  box-shadow: 0 6px 16px rgba(236, 60, 151, 0.22);
+  background: linear-gradient(135deg, #e73386, #dc2577);
+  border-color: transparent;
+  box-shadow: 0 14px 26px rgba(223, 50, 123, 0.24);
+  transform: translateY(-2px);
 }
 
 .public-team-section__email-trigger[aria-expanded='true'] {
-  color: var(--team-pink);
-  background: rgba(236, 60, 151, 0.16);
-  box-shadow: 0 4px 14px rgba(236, 60, 151, 0.14);
+  color: #ffffff;
+  background: linear-gradient(135deg, #e73386, #dc2577);
+  border-color: transparent;
+  box-shadow: 0 14px 26px rgba(223, 50, 123, 0.24);
 }
 
 .public-team-section__social-glyph {
@@ -269,20 +309,21 @@
 }
 
 .public-team-section__email-popover {
-  --popover-bg: #fff9fc;
+  --popover-bg: #ffffff;
   position: absolute;
-  inset-block-end: calc(100% + 14px);
+  inset-block-start: calc(100% + 10px);
+  inset-block-end: auto;
   left: 50%;
   z-index: 12;
   width: max-content;
-  min-width: 18.75rem;
+  min-width: 300px;
   max-width: min(420px, calc(100vw - 40px));
   padding: 0;
   pointer-events: none;
   visibility: hidden;
   background: transparent;
   opacity: 0;
-  transform: translateX(-50%) translateY(10px) scale(0.96);
+  transform: translateX(-50%) translateY(-10px) scale(0.96);
   transition:
     opacity 240ms ease,
     transform 240ms ease,
@@ -301,18 +342,18 @@
 }
 
 .public-team-section__email-popover-inner {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: row;
   align-items: center;
-  gap: 0.625rem;
-  padding-block: 0.625rem;
-  padding-inline: 0.75rem 0.875rem;
+  gap: 10px;
+  padding-block: 10px;
+  padding-inline: 12px 14px;
   background: var(--popover-bg);
-  border: 1px solid rgba(236, 60, 151, 0.14);
+  border: 1px solid rgba(236, 60, 151, 0.2);
   border-radius: 18px;
-  box-shadow:
-    0 18px 40px rgba(91, 30, 140, 0.1),
-    0 6px 16px rgba(236, 60, 151, 0.08);
+  box-shadow: 0 10px 24px rgba(91, 30, 140, 0.1);
 }
 
 .public-team-section__email-field {
@@ -321,25 +362,31 @@
   align-items: center;
   justify-content: center;
   min-width: 0;
-  min-height: 2.125rem;
-  padding-inline: 0.625rem;
-  background: rgba(255, 255, 255, 0.72);
-  border: 1px solid rgba(236, 60, 151, 0.08);
+  min-height: 34px;
+  padding-inline: 10px;
+  background: #fffafd;
+  border: 1px solid rgba(236, 60, 151, 0.14);
   border-radius: 999px;
 }
 
 .public-team-section__email-popover::after {
   position: absolute;
-  inset-block-end: -5px;
+  inset-block-start: -5px;
   left: 50%;
-  z-index: -1;
-  width: 0.6875rem;
-  height: 0.6875rem;
+  z-index: 2;
+  width: 11px;
+  height: 11px;
   content: "";
   background: var(--popover-bg);
-  border-inline-end: 1px solid rgba(236, 60, 151, 0.14);
-  border-block-end: 1px solid rgba(236, 60, 151, 0.14);
+  border-inline-start: 1px solid rgba(236, 60, 151, 0.2);
+  border-block-start: 1px solid rgba(236, 60, 151, 0.2);
   transform: translateX(-50%) rotate(45deg);
+}
+
+.public-homepage
+  .public-section--team-section
+  .public-stories-slider__track:has(.public-team-section__email-popover--open) {
+  padding-block-end: 104px;
 }
 
 .public-team-section__email-value {
@@ -359,23 +406,26 @@
 
 .public-team-section__email-value:hover,
 .public-team-section__email-value:focus-visible {
-  color: var(--team-pink);
+  color: #8e24aa;
 }
 
 .public-team-section__email-copy {
   flex: 0 0 auto;
-  padding-block: 0.5rem;
-  padding-inline: 0.875rem;
-  color: #7a3d62;
+  padding-block: 8px;
+  padding-inline: 14px;
+  color: #5b1e8c;
   font-size: 0.78rem;
   font-weight: 700;
   line-height: 1.2;
   white-space: nowrap;
   cursor: pointer;
-  background: linear-gradient(135deg, #fde8f3 0%, #f8d4ea 100%);
-  border: 1px solid rgba(236, 60, 151, 0.2);
+  background: #ffffff;
+  border: 1.5px solid rgba(91, 30, 140, 0.2);
   border-radius: 999px;
+  box-shadow: 0 5px 14px rgba(91, 30, 140, 0.1);
   transition:
+    color 180ms ease,
+    border-color 180ms ease,
     transform 200ms ease,
     box-shadow 200ms ease,
     background 200ms ease;
@@ -383,15 +433,17 @@
 
 .public-team-section__email-copy:hover,
 .public-team-section__email-copy:focus-visible {
-  background: linear-gradient(135deg, #fcd9ee 0%, #f5c4e4 100%);
-  box-shadow: 0 4px 12px rgba(236, 60, 151, 0.18);
-  transform: translateY(-1px);
+  color: #ffffff;
+  background: linear-gradient(135deg, #e73386, #dc2577);
+  border-color: transparent;
+  box-shadow: 0 14px 26px rgba(223, 50, 123, 0.24);
+  transform: translateY(-2px);
 }
 
 .public-team-section__email-copy--copied {
-  color: #5b1e8c;
-  background: linear-gradient(135deg, #f3e8f8 0%, #ead4f4 100%);
-  border-color: rgba(91, 30, 140, 0.22);
+  color: #ffffff;
+  background: linear-gradient(135deg, #6f2a91, #b8329a);
+  border-color: transparent;
 }
 
 /* Tablet — 2 cards per row */
@@ -419,15 +471,15 @@
     display: block;
     height: auto;
     min-height: calc(100svh - var(--public-header-height, var(--public-navbar-offset)));
-    padding-block: clamp(3rem, 8vw, 4rem);
-    padding-inline: clamp(1rem, 4vw, 1.75rem);
+    padding-block: clamp(48px, 8vw, 64px);
+    padding-inline: clamp(16px, 4vw, 28px);
     scroll-margin-top: var(--public-header-height, var(--public-navbar-offset));
   }
 
   .public-homepage .public-section--team-section .public-team-section__inner {
     display: grid;
     align-content: start;
-    gap: clamp(1.25rem, 4vw, 1.75rem);
+    gap: clamp(20px, 4vw, 28px);
     height: auto;
     min-height: 0;
   }
@@ -449,7 +501,7 @@
     width: 100%;
     height: auto;
     min-height: 0;
-    padding-block: 0.5rem 0.875rem;
+    padding-block: 8px 14px;
     padding-inline:
       calc((100% - var(--team-mobile-card-width)) / 2)
       calc((100% - var(--team-mobile-card-width)) / 2 + clamp(16px, 4vw, 22px));
@@ -458,27 +510,25 @@
   }
 
   .public-homepage .public-section--team-section .public-stories-slider__track > .public-team-section__card {
-    flex: 0 0 var(--team-mobile-card-width);
-    width: var(--team-mobile-card-width);
-    max-width: 100%;
+    flex: 0 0 var(--public-home-card-width);
+    width: var(--public-home-card-width);
     height: auto;
-    min-width: 0;
-    min-height: 20.625rem;
-    padding-inline: clamp(1.25rem, 4vw, 1.75rem);
+    min-height: 330px;
+    padding-inline: clamp(20px, 4vw, 28px);
     scroll-snap-align: start;
   }
 
   .public-homepage .public-section--team-section .public-team-section__avatar-shell {
-    width: clamp(6.5rem, 18vw, 7.375rem);
-    height: clamp(6.5rem, 18vw, 7.375rem);
+    width: clamp(104px, 18vw, 118px);
+    height: clamp(104px, 18vw, 118px);
   }
 
   .public-homepage .public-section--team-section .public-stories-slider__arrow {
     position: absolute;
     top: 50%;
     z-index: 4;
-    width: 2.5rem;
-    height: 2.5rem;
+    width: 40px;
+    height: 40px;
     transform: translateY(-50%);
   }
 
@@ -501,25 +551,25 @@
 
   .public-team-section__card.reveal.reveal-visible:hover,
   .public-team-section__card.reveal.reveal-visible:focus-within {
-    transform: translate3d(0, -4px, 0);
+    transform: none;
   }
 
   .public-team-section__email-popover {
-    min-width: min(18.75rem, calc(100vw - 2rem));
+    min-width: min(300px, calc(100vw - 32px));
   }
 
   .public-team-section__email-popover-inner {
-    gap: 0.5rem;
-    padding-block: 0.625rem;
-    padding-inline: 0.625rem 0.75rem;
+    gap: 8px;
+    padding-block: 10px;
+    padding-inline: 10px 12px;
   }
 
   .public-team-section__email-field {
-    padding-inline: 0.5rem;
+    padding-inline: 8px;
   }
 
   .public-team-section__email-copy {
-    padding-inline: 0.75rem;
+    padding-inline: 12px;
     font-size: 0.72rem;
   }
 }

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useMemo } from 'react';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import { TEAM_MEMBERS } from '../constants/teamMembers';
@@ -6,6 +6,7 @@ import PublicSectionHeading from './PublicSectionHeading';
 import TeamSectionMemberCard from './TeamSectionMemberCard';
 import { usePublicLocale } from '../context/PublicLocaleContext';
 import { localizeTeamStaff } from '../i18n/publicHomeContentLocalization';
+import useHorizontalCardCarousel from '../hooks/useHorizontalCardCarousel';
 
 const TEAM_CARD_STAGGER_MS = 100;
 
@@ -23,9 +24,6 @@ function adaptAdminMember(member) {
 }
 
 export default function TeamSection({ members }) {
-  const scrollerRef = useRef(null);
-  const [canScrollPrev, setCanScrollPrev] = useState(false);
-  const [canScrollNext, setCanScrollNext] = useState(false);
   const { locale, t, direction } = usePublicLocale();
 
   const source = useMemo(() => {
@@ -40,40 +38,11 @@ export default function TeamSection({ members }) {
 
   const localizedMembers = useMemo(() => localizeTeamStaff(source, locale), [source, locale]);
 
-  const updateBoundaries = useCallback(() => {
-    const el = scrollerRef.current;
-    if (!el) return;
-    const maxScroll = el.scrollWidth - el.clientWidth;
-    if (maxScroll <= 1) {
-      setCanScrollPrev(false);
-      setCanScrollNext(false);
-      return;
-    }
-    const absScroll = Math.abs(el.scrollLeft);
-    setCanScrollPrev(absScroll > 1);
-    setCanScrollNext(absScroll < maxScroll - 1);
-  }, []);
-
-  useEffect(() => {
-    const el = scrollerRef.current;
-    if (!el) return undefined;
-    updateBoundaries();
-    el.addEventListener('scroll', updateBoundaries, { passive: true });
-    window.addEventListener('resize', updateBoundaries);
-    return () => {
-      el.removeEventListener('scroll', updateBoundaries);
-      window.removeEventListener('resize', updateBoundaries);
-    };
-  }, [updateBoundaries, localizedMembers.length]);
-
-  function scrollByCards(delta) {
-    const el = scrollerRef.current;
-    if (!el) return;
-    const card = el.querySelector('.public-team-section__card');
-    const step = card ? card.getBoundingClientRect().width + 24 : el.clientWidth * 0.8;
-    const dir = direction === 'rtl' ? -delta : delta;
-    el.scrollBy({ left: dir * step, behavior: 'smooth' });
-  }
+  const carousel = useHorizontalCardCarousel({
+    cardSelector: '.public-team-section__card',
+    direction,
+    itemCount: localizedMembers.length,
+  });
 
   return (
     <section
@@ -90,18 +59,24 @@ export default function TeamSection({ members }) {
           subtitle={t('teamSubtitle')}
         />
 
-        <div className="public-stories-slider">
-          <button
+        <div className={[
+          'public-stories-slider',
+          'public-card-carousel',
+          !carousel.showControls ? 'public-card-carousel--without-controls' : '',
+          carousel.fadeLeft ? 'public-card-carousel--fade-left' : '',
+          carousel.fadeRight ? 'public-card-carousel--fade-right' : '',
+        ].filter(Boolean).join(' ')}>
+          {carousel.showControls ? <button
             type="button"
-            className="public-stories-slider__arrow public-stories-slider__arrow--prev"
-            onClick={() => scrollByCards(-1)}
-            disabled={!canScrollPrev}
+            className="public-stories-slider__arrow public-stories-slider__arrow--prev public-card-carousel__button"
+            onClick={() => carousel.scrollByCards(-1)}
+            disabled={!carousel.canScrollPrev}
             aria-label="Previous"
           >
-            <ChevronRightIcon />
-          </button>
+            {direction === 'rtl' ? <ChevronRightIcon /> : <ChevronLeftIcon />}
+          </button> : null}
 
-          <div className="public-stories-slider__track" ref={scrollerRef}>
+          <div className="public-stories-slider__track public-card-carousel__track" ref={carousel.scrollerRef}>
             {localizedMembers.map((member, index) => (
               <TeamSectionMemberCard
                 member={member}
@@ -113,18 +88,17 @@ export default function TeamSection({ members }) {
             ))}
           </div>
 
-          <button
+          {carousel.showControls ? <button
             type="button"
-            className="public-stories-slider__arrow public-stories-slider__arrow--next"
-            onClick={() => scrollByCards(1)}
-            disabled={!canScrollNext}
+            className="public-stories-slider__arrow public-stories-slider__arrow--next public-card-carousel__button"
+            onClick={() => carousel.scrollByCards(1)}
+            disabled={!carousel.canScrollNext}
             aria-label="Next"
           >
-            <ChevronLeftIcon />
-          </button>
+            {direction === 'rtl' ? <ChevronLeftIcon /> : <ChevronRightIcon />}
+          </button> : null}
         </div>
       </div>
     </section>
   );
 }
-
