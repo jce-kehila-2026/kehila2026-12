@@ -22,6 +22,8 @@ import {
 import heroWellnessBanner from '../../../assets/hero-wellness-banner.png';
 import communityHighlightFallback from '../../../assets/images/support-groups.jpeg';
 import { auth } from '../../../firebase';
+import { getLocalizedText } from '../../../shared/i18n/getLocalizedText';
+import { getParticipantLocaleLang, getStoredParticipantLocale } from '../i18n/participantLocale';
 import { createCalendarNote } from '../../calendar/calendarService';
 import {
   buildCalendarMonthCells,
@@ -329,10 +331,13 @@ function formatRelativeTime(timestamp) {
 }
 
 function LatestMessageCard({ notification, onOpenNotifications }) {
-  const hasNotification = Boolean(notification?.title || notification?.body);
-  const notificationTitle = hasNotification ? notification.title || '' : '';
-  const notificationBody = hasNotification ? notification.body || '' : '';
-  const truncatedBody = notificationBody.length > 80 ? `${notificationBody.slice(0, 77)}...` : notificationBody;
+  const lang = getParticipantLocaleLang(getStoredParticipantLocale());
+  const notificationTitle = getLocalizedText(notification?.title, lang);
+  const notificationBody = getLocalizedText(notification?.body, lang);
+  const senderText = getLocalizedText(notification?.sender ?? notification?.senderTitle, lang);
+  const previewText = notificationBody || senderText;
+  const hasNotification = Boolean(notification && (notificationTitle || previewText));
+  const truncatedBody = previewText.length > 80 ? `${previewText.slice(0, 77)}...` : previewText;
 
   return (
     <button
