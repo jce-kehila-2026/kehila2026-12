@@ -312,6 +312,7 @@ function mergeStatistic(stat, index) {
     value,
     title: safeString(safe.title) || fallback.title,
     description: safeString(safe.description),
+    ...(safe.translations ? { translations: safe.translations } : {}),
   };
 }
 
@@ -634,6 +635,7 @@ export function mergeHero(hero) {
     subtitle: safeHero.subtitle || DEFAULT_HOME_HERO.subtitle,
     description: safeHero.description || DEFAULT_HOME_HERO.description,
     backgroundImageUrl: safeHero.backgroundImageUrl || DEFAULT_HOME_HERO.backgroundImageUrl,
+    ...(safeHero.translations ? { translations: safeHero.translations } : {}),
   };
 }
 

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db, auth } from '../../../firebase';
 import { logAuditEvent } from '../services/auditService';
+import { isTranslationConfigured, translateFields, translateItems } from '../services/translationService';
 import {
   PUBLIC_PAGES_COLLECTION,
   PUBLIC_HOME_DOC_ID,
@@ -251,15 +252,36 @@ export default function PublicHomePageHomeTab() {
         };
       });
 
+      // Translate hero (title/subtitle/description) and each statistic
+      // (title/description) to { he, en, ar } once on save.
+      let heroTranslations = null;
+      let statisticsToSave = statisticsPayload;
+      if (isTranslationConfigured()) {
+        try {
+          const [hero, stats] = await Promise.all([
+            translateFields(
+              { title: form.title.trim(), subtitle: form.subtitle.trim(), description: form.description.trim() },
+              ['title', 'subtitle', 'description'],
+            ),
+            translateItems(statisticsPayload, ['title', 'description']),
+          ]);
+          heroTranslations = Object.keys(hero).length ? hero : null;
+          statisticsToSave = stats;
+        } catch (err) {
+          console.error('Home content translation failed; saving original only:', err);
+        }
+      }
+
       const fieldUpdates = {
         'hero.title': form.title.trim(),
         'hero.subtitle': form.subtitle.trim(),
         'hero.description': form.description.trim(),
         'hero.backgroundImageUrl': form.backgroundImageUrl.trim(),
-        statistics: statisticsPayload,
+        statistics: statisticsToSave,
         updatedAt: serverTimestamp(),
         updatedBy,
       };
+      if (heroTranslations) fieldUpdates['hero.translations'] = heroTranslations;
 
       const ref = doc(db, PUBLIC_PAGES_COLLECTION, PUBLIC_HOME_DOC_ID);
       if (docMeta.exists) {
@@ -271,8 +293,9 @@ export default function PublicHomePageHomeTab() {
             subtitle: fieldUpdates['hero.subtitle'],
             description: fieldUpdates['hero.description'],
             backgroundImageUrl: fieldUpdates['hero.backgroundImageUrl'],
+            ...(heroTranslations ? { translations: heroTranslations } : {}),
           },
-          statistics: statisticsPayload,
+          statistics: statisticsToSave,
           updatedAt: serverTimestamp(),
           updatedBy,
         });

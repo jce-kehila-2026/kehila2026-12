@@ -90,22 +90,23 @@ export function localizeStatistics(statistics, locale) {
   }
 
   const pack = getLocalePack(locale);
-  if (!pack?.statistics) {
-    return statistics;
-  }
 
   return statistics.map((statistic) => {
-    const key = statistic?.id;
-    const localized = key ? pack.statistics[key] : null;
+    const localized = (pack?.statistics && statistic?.id) ? pack.statistics[statistic.id] : null;
 
-    if (!localized) {
+    if (!localized && !statistic.translations) {
       return statistic;
     }
 
+    // The render adapter maps title->label and description->note, so the stored
+    // translations (keyed title/description) map onto label/note here.
+    const fromAzureLabel = localizeField(statistic.translations?.title, locale);
+    const fromAzureNote = localizeField(statistic.translations?.description, locale);
+
     return {
       ...statistic,
-      label: pickLocalized(locale, statistic.label, localized.label),
-      note: pickLocalized(locale, statistic.note, localized.note),
+      label: fromAzureLabel || pickLocalized(locale, statistic.label, localized?.label),
+      note: fromAzureNote || pickLocalized(locale, statistic.note, localized?.note),
     };
   });
 }
