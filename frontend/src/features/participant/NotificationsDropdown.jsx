@@ -8,7 +8,17 @@ import ChatBubbleOutlineOutlinedIcon from '@mui/icons-material/ChatBubbleOutline
 import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined';
 import VolunteerActivismOutlinedIcon from '@mui/icons-material/VolunteerActivismOutlined';
 import DoneAllIcon from '@mui/icons-material/DoneAll';
+import { getParticipantLocaleLang, getStoredParticipantLocale } from './i18n/participantLocale';
 import './NotificationsDropdown.css';
+
+function getLocalizedText(value, lang = 'en') {
+  if (typeof value === 'string') return value;
+  if (!value) return '';
+  if (typeof value === 'object') {
+    return String(value[lang] || value.en || value.he || value.ar || '');
+  }
+  return String(value);
+}
 
 const TYPE_META = {
   // Admin announcements
@@ -42,6 +52,7 @@ function isUnread(update, lastSeenAt) {
 
 export default function NotificationsDropdown({ updates, lastSeenAt, onMarkAllRead, onClose }) {
   const panelRef = useRef(null);
+  const currentLanguage = getParticipantLocaleLang(getStoredParticipantLocale());
 
   // Close on Escape
   useEffect(() => {
@@ -94,6 +105,8 @@ export default function NotificationsDropdown({ updates, lastSeenAt, onMarkAllRe
           const meta = TYPE_META[update.type] ?? TYPE_META.general;
           const { Icon } = meta;
           const unread = isUnread(update, lastSeenAt);
+          const title = getLocalizedText(update.title, currentLanguage);
+          const body = getLocalizedText(update.body || update.text || update.message, currentLanguage);
           return (
             <div
               key={`${update.kind ?? 'update'}-${update.id}`}
@@ -107,8 +120,8 @@ export default function NotificationsDropdown({ updates, lastSeenAt, onMarkAllRe
                 <Icon style={{ fontSize: '1rem' }} />
               </span>
               <div className="notif-dropdown__item-body">
-                <p className="notif-dropdown__item-title">{update.title}</p>
-                <p className="notif-dropdown__item-text">{update.body}</p>
+                <p className="notif-dropdown__item-title">{title}</p>
+                <p className="notif-dropdown__item-text">{body}</p>
                 <span className="notif-dropdown__item-time">{relativeTime(update.createdAt)}</span>
               </div>
             </div>
