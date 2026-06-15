@@ -479,5 +479,8 @@ export const publicHomeUiTranslations = {
     donationContactTitle: 'Details for us to get back to you',
     donationMessage: 'Message',
     donationSubmit: 'Send to us',
+    volunteerCloseAria: 'Close the volunteer form',
+    volunteerIntro: "We'd love for you to join us in volunteering that suits you! Everyone can contribute in her own way, in her own time. Leave your details and we'll get back to you to find the right option for you.",
+    volunteerDetailsTitle: 'Volunteer details',
   },
 };
