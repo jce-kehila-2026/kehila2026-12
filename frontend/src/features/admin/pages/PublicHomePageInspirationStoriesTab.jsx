@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db, auth } from '../../../firebase';
 import { logAuditEvent } from '../services/auditService';
+import { isTranslationConfigured, translateItems } from '../services/translationService';
 import {
   PUBLIC_PAGES_COLLECTION,
   PUBLIC_HOME_DOC_ID,
@@ -159,13 +160,23 @@ export default function PublicHomePageInspirationStoriesTab() {
     const user = auth.currentUser;
     const updatedBy = user?.email || user?.uid || '';
     const ref = doc(db, PUBLIC_PAGES_COLLECTION, PUBLIC_HOME_DOC_ID);
+    // Translate occupation + story (not personal names) to { he, en, ar } on save.
+    let translatedStories = nextStories;
+    if (isTranslationConfigured()) {
+      try {
+        translatedStories = await translateItems(nextStories, ['occupation', 'story']);
+      } catch (err) {
+        console.error('Inspiration stories translation failed; saving original only:', err);
+      }
+    }
     await updateDoc(ref, {
-      inspirationalStories: nextStories.map((s) => ({
+      inspirationalStories: translatedStories.map((s) => ({
         id: s.id,
         name: s.name,
         story: s.story,
         imageUrl: s.imageUrl,
         occupation: s.occupation,
+        ...(s.translations ? { translations: s.translations } : {}),
       })),
       updatedAt: serverTimestamp(),
       updatedBy,

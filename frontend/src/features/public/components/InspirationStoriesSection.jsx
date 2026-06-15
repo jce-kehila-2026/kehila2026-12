@@ -1,4 +1,4 @@
-import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
@@ -6,6 +6,7 @@ import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import EmptyState from './EmptyState';
 import PublicSectionHeading from './PublicSectionHeading';
 import { usePublicLocale } from '../context/PublicLocaleContext';
+import { localizeField } from '../../../i18n/localizeField';
 import useHorizontalCardCarousel from '../hooks/useHorizontalCardCarousel';
 
 function getInitials(name) {
@@ -176,10 +177,19 @@ function StoryModal({ story, onClose, closeLabel }) {
 }
 
 export default function InspirationStoriesSection({ stories = [] }) {
-  const { t, direction } = usePublicLocale();
+  const { t, direction, locale } = usePublicLocale();
   const [selectedStory, setSelectedStory] = useState(null);
 
-  const safeStories = Array.isArray(stories) ? stories : [];
+  // Localize admin-edited story text (occupation + story) for the current
+  // locale via the stored translations; personal names are left as-is.
+  const safeStories = useMemo(() => {
+    const list = Array.isArray(stories) ? stories : [];
+    return list.map((story) => ({
+      ...story,
+      occupation: localizeField(story.translations?.occupation ?? story.occupation, locale),
+      story: localizeField(story.translations?.story ?? story.story, locale),
+    }));
+  }, [stories, locale]);
   const hasStories = safeStories.length > 0;
   const carousel = useHorizontalCardCarousel({
     cardSelector: '.public-story-card',

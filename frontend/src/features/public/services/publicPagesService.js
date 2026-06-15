@@ -442,6 +442,7 @@ function mergeInspirationalStory(story, index) {
     story: safeString(safe.story),
     imageUrl: safeString(safe.imageUrl),
     occupation: safeString(safe.occupation),
+    ...(safe.translations ? { translations: safe.translations } : {}),
   };
 }
 
