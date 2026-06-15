@@ -165,6 +165,20 @@
   font-weight: 800;
   padding: 0.875rem 1.125rem;
   box-shadow: 0 14px 32px rgba(75, 19, 107, 0.08);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.calendar-status button {
+  border: 1px solid rgba(157, 15, 97, 0.28);
+  border-radius: 999px;
+  padding: 0.45rem 0.85rem;
+  color: inherit;
+  background: rgba(255, 255, 255, 0.8);
+  font: inherit;
+  cursor: pointer;
 }
 
 .calendar-status--error {

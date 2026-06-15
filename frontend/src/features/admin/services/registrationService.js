@@ -178,6 +178,16 @@ function getUserRegistrationIdentityKeys(data, docId = '') {
   return [...new Set(keys)];
 }
 
+export function getLegacyUserRegistrationIds(registration = {}, eventId = '') {
+  return [...new Set([
+    registration.userMirrorId,
+    registration.slotId,
+    registration.sessionEventId,
+    registration.eventId,
+    eventId,
+  ].filter(Boolean))];
+}
+
 async function getRegistrationsMatchingField(fieldName, values) {
   if (!values.length) return [];
 
@@ -526,10 +536,9 @@ export async function removeRegistration(regId, participantName, eventId) {
     batch.delete(doc(db, 'events', templateEventId, 'registrations', templateRosterKey));
   }
   if (uid) {
-    batch.delete(doc(db, 'users', uid, 'registrations', userMirrorId));
-    if (userMirrorId !== (sessionEventId || eventId)) {
-      batch.delete(doc(db, 'users', uid, 'registrations', sessionEventId || eventId));
-    }
+    getLegacyUserRegistrationIds(registration, eventId).forEach((legacyRegistrationId) => {
+      batch.delete(doc(db, 'users', uid, 'registrations', legacyRegistrationId));
+    });
   }
   await batch.commit();
 

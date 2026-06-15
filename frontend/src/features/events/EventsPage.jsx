@@ -42,120 +42,6 @@ const VIEW_REGISTERED = 'registered';
 const UPCOMING_SESSION_COUNT = 4;
 const CALENDAR_WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-const ENGLISH_SCHEDULE_TEMPLATES = [
-  {
-    title: 'Reflexology',
-    keys: ['reflexology'],
-    description: 'Gentle pressure therapy through the feet to support balance, relaxation, and inner wellbeing.',
-    dayIndex: 1,
-    slots: [
-      { providerName: 'Margarita', specialty: 'Reflexology Therapist', startTime: '10:30', endTime: '11:00', room: 'Treatment Room #1', capacity: 1 },
-      { providerName: 'Margarita', specialty: 'Reflexology Therapist', startTime: '11:00', endTime: '11:30', room: 'Treatment Room #1', capacity: 1 },
-      { providerName: 'Margarita', specialty: 'Reflexology Therapist', startTime: '11:30', endTime: '12:00', room: 'Treatment Room #1', capacity: 1 },
-      { providerName: 'Margarita', specialty: 'Reflexology Therapist', startTime: '12:00', endTime: '12:30', room: 'Treatment Room #1', capacity: 1 },
-      { providerName: 'Margarita', specialty: 'Reflexology Therapist', startTime: '12:30', endTime: '13:00', room: 'Treatment Room #1', capacity: 1 },
-    ],
-  },
-  {
-    title: 'Acupuncture and Herbal Medicine',
-    keys: ['acupuncture', 'herbal medicine', 'chinese medicine'],
-    description: 'Traditional Chinese medicine support for balance, symptom relief, and overall strengthening.',
-    dayIndex: 3,
-    slots: [
-      { providerName: 'Shagi', specialty: 'Acupuncture Therapist', startTime: '10:30', endTime: '11:30', room: 'Treatment Room #1', capacity: 1 },
-      { providerName: 'Omer', specialty: 'Acupuncture Therapist', startTime: '10:30', endTime: '11:30', room: 'Treatment Room #2', capacity: 1 },
-      { providerName: 'Shagi', specialty: 'Acupuncture Therapist', startTime: '11:30', endTime: '12:30', room: 'Treatment Room #1', capacity: 1 },
-      { providerName: 'Omer', specialty: 'Acupuncture Therapist', startTime: '11:30', endTime: '12:30', room: 'Treatment Room #2', capacity: 1 },
-    ],
-  },
-  {
-    title: 'Qi Gong',
-    keys: ['qi gong', 'qigong'],
-    description: 'Gentle movement and breathing practice for release, energetic balance, and mind-body strength.',
-    dayIndex: 2,
-    slots: [
-      { providerName: 'Tzofi', specialty: 'Qi Gong Instructor', startTime: '17:00', room: 'Workshop Room', capacity: 6 },
-    ],
-  },
-  {
-    title: "Women's Circle",
-    keys: ['women circle', "women's circle", 'the day after'],
-    description: 'A supportive women-centered space for sharing, listening, connection, and healing.',
-    dayIndex: 1,
-    slots: [
-      { providerName: 'Stav', specialty: "Women's Circle Facilitator", startTime: '19:30', room: 'Workshop Room', capacity: 8 },
-    ],
-  },
-  {
-    title: 'Yoga',
-    keys: ['yoga'],
-    description: 'Adapted yoga practice combining movement, breathing, and relaxation.',
-    dayIndex: 3,
-    slots: [
-      { providerName: 'Keren', specialty: 'Yoga Instructor', startTime: '10:30', room: 'Workshop Room', capacity: 6 },
-    ],
-  },
-  {
-    title: 'Couples Counseling',
-    keys: ['couples counseling', 'relationship counseling'],
-    description: 'Emotional, practical, and communication-based support for strengthening relationships.',
-    dayIndex: 4,
-    slots: [
-      { providerName: 'Michal Papo', specialty: 'Couples Counselor', startTime: '10:00', room: 'Conversation Room', capacity: 1 },
-    ],
-  },
-  {
-    title: 'NLP Therapy',
-    keys: ['nlp'],
-    description: 'NLP-based emotional and cognitive work for creating change, resilience, and healthier patterns.',
-    dayIndex: null,
-    slots: [
-      { providerName: 'Oshrat Yosef', specialty: 'NLP Therapist', startTime: '', room: '', capacity: 1 },
-    ],
-  },
-  {
-    title: 'NLP Touch Therapy',
-    keys: ['nlp touch', 'nlp touch therapy'],
-    description: 'A combination of NLP and supportive touch for emotional processing, strengthening, and inner resources.',
-    dayIndex: null,
-    slots: [
-      { providerName: 'Eilat Shabtai', specialty: 'NLP and Touch Therapist', startTime: '', room: '', capacity: 1 },
-    ],
-  },
-];
-
-const SCHEDULE_TEMPLATE_MATCH_KEYS = {
-  Reflexology: ['\u05e8\u05e4\u05dc\u05e7\u05e1\u05d5\u05dc\u05d5\u05d2\u05d9\u05d4'],
-  'Acupuncture and Herbal Medicine': [
-    '\u05d3\u05d9\u05e7\u05d5\u05e8 \u05d5\u05e6\u05de\u05d7\u05d9 \u05de\u05e8\u05e4\u05d0',
-    '\u05d3\u05d9\u05e7\u05d5\u05e8',
-    '\u05e6\u05de\u05d7\u05d9 \u05de\u05e8\u05e4\u05d0',
-  ],
-  'Qi Gong': [
-    '\u05e6\u05f3\u05d9 \u05e7\u05d5\u05e0\u05d2',
-    "\u05e6'\u05d9 \u05e7\u05d5\u05e0\u05d2",
-    '\u05e6\u05d9\u05e7\u05d5\u05e0\u05d2',
-  ],
-  "Women's Circle": [
-    '\u05de\u05e2\u05d2\u05dc \u05e0\u05e9\u05d9\u05dd',
-    '\u05d4\u05d9\u05d5\u05dd \u05e9\u05d0\u05d7\u05e8\u05d9',
-  ],
-  Yoga: ['\u05d9\u05d5\u05d2\u05d4'],
-  'Couples Counseling': [
-    '\u05d9\u05d9\u05e2\u05d5\u05e5 \u05d6\u05d5\u05d2\u05d9',
-    '\u05d9\u05e2\u05d5\u05e5 \u05d6\u05d5\u05d2\u05d9',
-  ],
-  'NLP Touch Therapy': ['nlp \u05de\u05d2\u05e2'],
-};
-
-const SCHEDULE_TEMPLATES = ENGLISH_SCHEDULE_TEMPLATES.map((template) => ({
-  ...template,
-  keys: [
-    ...template.keys,
-    ...(SCHEDULE_TEMPLATE_MATCH_KEYS[template.title] || []),
-  ],
-}));
-
 const suggestionCategories = [
   'Anxiety Support',
   'Meditation',
@@ -247,11 +133,7 @@ function formatWeeklySchedule(value) {
 
 function formatWeeklyScheduleFromDay(dayIndex) {
   if (!Number.isInteger(dayIndex)) return 'Schedule TBD';
-  const referenceSunday = new Date(2026, 4, 24, 12, 0, 0, 0);
-  const date = new Date(referenceSunday);
-  date.setDate(referenceSunday.getDate() + dayIndex);
-
-  return `Every ${new Intl.DateTimeFormat('en', { weekday: 'long' }).format(date)}`;
+  return `Every ${CALENDAR_WEEKDAYS[dayIndex]}`;
 }
 
 function formatSessionDate(value) {
@@ -422,43 +304,21 @@ function buildSessionId(templateId, sessionStart, providerId, slotId) {
   return `${templateId}__${toDateKey(sessionStart)}__${providerId}__${slotId}`;
 }
 
-function normalizeScheduleText(value) {
-  return String(value || '')
-    .trim()
-    .toLowerCase()
-    .replace(/[\u05f3\u05f4'"]/g, '')
-    .replace(/\s+/g, ' ');
-}
-
-function findScheduleTemplate(event) {
-  const searchableText = normalizeScheduleText(`${event.title || ''} ${event.category || ''}`);
-
-  return SCHEDULE_TEMPLATES.find((template) =>
-    template.keys.some((key) => searchableText.includes(normalizeScheduleText(key))),
-  ) || null;
-}
-
-function getFirstSlotStartSource(scheduleTemplate, fallbackStart) {
-  const firstScheduledSlot = scheduleTemplate?.slots?.find((slot) => slot.startTime);
-  return firstScheduledSlot?.startTime || fallbackStart;
-}
-
 function getFirstProviderSlotStartSource(providerSlots, fallbackStart) {
   const firstProviderSlot = providerSlots?.find((slot) => slot.startSource);
   return firstProviderSlot?.startSource || fallbackStart;
 }
 
-function getEventWeeklyDayIndex(event, scheduleTemplate) {
+function getEventWeeklyDayIndex(event) {
   const rawDayIndex = event.weeklyDayIndex ?? event.dayIndex ?? event.recurringDayIndex ?? event.dayOfWeekIndex;
   const dayIndex = Number(rawDayIndex);
   if (Number.isInteger(dayIndex) && dayIndex >= 0 && dayIndex <= 6) return dayIndex;
-  if (Number.isInteger(scheduleTemplate?.dayIndex)) return scheduleTemplate.dayIndex;
   return null;
 }
 
-function getSessionStartsForEvent(event, scheduleTemplate, providerSlots = null) {
+function getSessionStartsForEvent(event, providerSlots = null) {
   const fallbackStart = event.startTime || event.date;
-  const eventDayIndex = getEventWeeklyDayIndex(event, scheduleTemplate);
+  const eventDayIndex = getEventWeeklyDayIndex(event);
   const disabledDateKeys = new Set(getDisabledDateKeys(event));
   const filterDisabledDates = (dates) => dates.filter((date) => !disabledDateKeys.has(toDateKey(date)));
 
@@ -466,7 +326,7 @@ function getSessionStartsForEvent(event, scheduleTemplate, providerSlots = null)
     const slots = providerSlots || getProviderSlots(event);
     return filterDisabledDates(getNextWeeklySessionStartsByDay(
       eventDayIndex,
-      getFirstProviderSlotStartSource(slots, getFirstSlotStartSource(scheduleTemplate, fallbackStart)),
+      getFirstProviderSlotStartSource(slots, fallbackStart),
     ));
   }
 
@@ -484,10 +344,9 @@ function getDisabledDateKeys(event) {
 
 function buildSessionIdsForEvents(eventList) {
   return eventList.flatMap((event) => {
-    const scheduleTemplate = findScheduleTemplate(event);
     const providerSlots = getProviderSlots(event);
 
-    return getSessionStartsForEvent(event, scheduleTemplate, providerSlots).flatMap((sessionStart) =>
+    return getSessionStartsForEvent(event, providerSlots).flatMap((sessionStart) =>
       providerSlots.map((slot) => {
         const optionStart = copyTimeToDate(sessionStart, slot.startSource);
         return buildSessionId(event.id, optionStart || sessionStart, slot.providerId, slot.slotId);
@@ -496,10 +355,10 @@ function buildSessionIdsForEvents(eventList) {
   });
 }
 
-function getWeeklyScheduleLabel(event, scheduleTemplate, fallbackStart) {
+function getWeeklyScheduleLabel(event, fallbackStart) {
   if (event.weeklyDay) return `Every ${event.weeklyDay}`;
 
-  const eventDayIndex = getEventWeeklyDayIndex(event, scheduleTemplate);
+  const eventDayIndex = getEventWeeklyDayIndex(event);
   if (Number.isInteger(eventDayIndex)) {
     return formatWeeklyScheduleFromDay(eventDayIndex);
   }
@@ -529,68 +388,6 @@ function formatSlotsTimeRange(providerSlots, dateSource) {
     .reduce((latest, date) => (date.getTime() > latest.getTime() ? date : latest), slotDates[0].end || slotDates[0].start);
 
   return formatEventTime(earliestStart, latestEnd);
-}
-
-function getScheduleTemplateTitle(template) {
-  return template.title || template.keys[0] || 'Weekly Program';
-}
-
-function getScheduleTemplateEventType(template) {
-  return template.slots?.some((slot) => Number(slot.capacity) > 1) ? 'workshop' : 'appointment';
-}
-
-function getScheduleTemplateStartDate(template) {
-  if (!Number.isInteger(template.dayIndex)) return null;
-
-  const referenceSunday = new Date(2026, 4, 24, 12, 0, 0, 0);
-  const date = new Date(referenceSunday);
-  date.setDate(referenceSunday.getDate() + template.dayIndex);
-
-  return copyTimeToDate(date, getFirstSlotStartSource(template, date)) || date;
-}
-
-function getScheduleTemplateEndDate(template) {
-  const startDate = getScheduleTemplateStartDate(template);
-  if (!startDate) return null;
-
-  const lastTimedSlot = [...(template.slots || [])].reverse().find((slot) => slot.endTime || slot.startTime);
-  return copyTimeToDate(startDate, lastTimedSlot?.endTime || lastTimedSlot?.startTime) || startDate;
-}
-
-function getScheduleTemplateLocation(template) {
-  const rooms = [...new Set((template.slots || []).map((slot) => slot.room).filter(Boolean))];
-  if (rooms.length > 1) return 'Multiple rooms';
-  return rooms[0] || 'She-Na Center';
-}
-
-function createScheduleTemplateEvent(template) {
-  const title = getScheduleTemplateTitle(template);
-  const eventType = getScheduleTemplateEventType(template);
-  const startDate = getScheduleTemplateStartDate(template);
-
-  return {
-    id: `schedule-${slugifyIdentifier(title)}`,
-    title,
-    type: eventType,
-    category: eventType === 'appointment' ? 'Appointment' : 'Workshop',
-    description: template.description || '',
-    imageUrl: appointmentsHero,
-    date: startDate,
-    startTime: startDate,
-    endTime: getScheduleTemplateEndDate(template),
-    location: getScheduleTemplateLocation(template),
-    status: 'published',
-    isScheduleTemplate: true,
-  };
-}
-
-function mergeScheduleTemplateEvents(publishedEvents) {
-  const eventsWithSchedule = SCHEDULE_TEMPLATES
-    .filter((template) => Number.isInteger(template.dayIndex) && template.slots?.some((slot) => slot.startTime))
-    .filter((template) => !publishedEvents.some((event) => findScheduleTemplate(event) === template))
-    .map(createScheduleTemplateEvent);
-
-  return [...eventsWithSchedule, ...publishedEvents];
 }
 
 function getInstructorLabel(event) {
@@ -711,29 +508,6 @@ function getProviderSlots(event) {
         capacity: Number(slot.maxParticipants || slot.capacity || slot.availableSpots || event.maxParticipants || event.capacity) || 0,
       };
     });
-  }
-
-  const scheduleTemplate = findScheduleTemplate(event);
-  if (scheduleTemplate?.slots?.length) {
-    return scheduleTemplate.slots
-      .filter((slot) => slot.startTime)
-      .map((slot, slotIndex) => {
-        const providerName = slot.providerName || getInstructorLabel(event);
-        const providerId = slugifyIdentifier(slot.providerId || providerName);
-        const slotId = slugifyIdentifier(slot.id || `${providerId}-${getTimeKey(slot.startTime)}-${getTimeKey(slot.endTime)}-${slotIndex + 1}`);
-
-        return {
-          providerId,
-          providerName,
-          providerSpecialty: slot.specialty || event.category || (inferEventType(event) === 'appointment' ? 'Therapist' : 'Instructor'),
-          providerAvatar: slot.avatarUrl || '',
-          slotId,
-          startSource: slot.startTime,
-          endSource: slot.endTime,
-          room: slot.room || event.room || event.location || 'She-Na Center',
-          capacity: Number(slot.capacity || event.maxParticipants || event.capacity) || 0,
-        };
-      });
   }
 
   const fallbackProvider = getInstructorLabel(event);
@@ -1903,6 +1677,7 @@ export default function EventsPage({ embedInDashboard = false }) {
   const [registeredMap, setRegisteredMap] = useState({});
   const [loadingEvents, setLoadingEvents] = useState(true);
   const [eventsError, setEventsError] = useState('');
+  const [eventsReloadKey, setEventsReloadKey] = useState(0);
   const [registeringId, setRegisteringId] = useState(null);
   const [suggestions, setSuggestions] = useState([]);
   const [suggestionForm, setSuggestionForm] = useState(emptySuggestionForm);
@@ -1949,23 +1724,22 @@ export default function EventsPage({ embedInDashboard = false }) {
     getPublishedEvents()
       .then((data) => {
         if (cancelled) return;
-        const mergedEvents = mergeScheduleTemplateEvents(data);
-        setEvents(mergedEvents);
+        setEvents(data);
         setLoadingEvents(false);
-        refreshRegistrationData(mergedEvents);
+        refreshRegistrationData(data);
       })
       .catch((error) => {
         if (cancelled) return;
         console.error('Failed to load published events:', error);
-        const fallbackEvents = mergeScheduleTemplateEvents([]);
-        setEvents(fallbackEvents);
-        refreshRegistrationData(fallbackEvents);
-        setEventsError('Could not load live Firestore events. Showing the weekly schedule templates.');
+        setEvents([]);
+        setCounts({});
+        setRegisteredMap({});
+        setEventsError('Could not load events from Firestore.');
         setLoadingEvents(false);
       });
 
     return () => { cancelled = true; };
-  }, [refreshRegistrationData]);
+  }, [eventsReloadKey, refreshRegistrationData]);
 
   useEffect(() => {
     setBookingEventId(null);
@@ -1987,8 +1761,8 @@ export default function EventsPage({ embedInDashboard = false }) {
   const displayEvents = useMemo(
     () =>
       [...events].sort((left, right) => {
-        const leftDate = getSessionStartsForEvent(left, findScheduleTemplate(left))[0];
-        const rightDate = getSessionStartsForEvent(right, findScheduleTemplate(right))[0];
+        const leftDate = getSessionStartsForEvent(left)[0];
+        const rightDate = getSessionStartsForEvent(right)[0];
 
         if (!leftDate && !rightDate) return 0;
         if (!leftDate) return 1;
@@ -1997,18 +1771,17 @@ export default function EventsPage({ embedInDashboard = false }) {
         return leftDate.getTime() - rightDate.getTime();
       }).map((event, index) => {
         const imageUrl = event.imageUrl || event.thumbnailUrl || event.coverImageUrl || appointmentsHero;
-        const scheduleTemplate = findScheduleTemplate(event);
-        const eventType = scheduleTemplate ? getScheduleTemplateEventType(scheduleTemplate) : inferEventType(event);
-        const displayTitle = scheduleTemplate ? getScheduleTemplateTitle(scheduleTemplate) : (event.title || 'Untitled Event');
+        const eventType = inferEventType(event);
+        const displayTitle = event.title || 'Untitled Event';
         const displayCategory = eventType === 'appointment' ? 'Appointment' : 'Workshop';
         const templateStart = event.startTime || event.date;
         const providerSlots = getProviderSlots(event);
         const providerNames = [...new Set(providerSlots.map((slot) => slot.providerName))];
         const roomLabels = [...new Set(providerSlots.map((slot) => slot.room).filter(Boolean))];
-        const displayLocation = scheduleTemplate ? getScheduleTemplateLocation(scheduleTemplate) : (roomLabels.length > 1 ? 'Multiple rooms' : roomLabels[0] || event.location || 'She-Na Center');
-        const sessionStarts = getSessionStartsForEvent(event, scheduleTemplate, providerSlots);
-        const weeklySchedule = getWeeklyScheduleLabel(event, scheduleTemplate, templateStart);
-        const templateDescription = scheduleTemplate?.description || event.description || 'More details will be added soon.';
+        const displayLocation = roomLabels.length > 1 ? 'Multiple rooms' : roomLabels[0] || event.location || 'She-Na Center';
+        const sessionStarts = getSessionStartsForEvent(event, providerSlots);
+        const weeklySchedule = getWeeklyScheduleLabel(event, templateStart);
+        const templateDescription = event.description || 'More details will be added soon.';
         const sessions = sessionStarts.map((sessionStart) => {
           const dateKey = toDateKey(sessionStart);
           const options = providerSlots.map((slot) => {
@@ -2307,7 +2080,12 @@ export default function EventsPage({ embedInDashboard = false }) {
 
       {(loadingEvents || eventsError) && (
         <div className={`events-status${eventsError ? ' events-status--error' : ''}`}>
-          {loadingEvents ? 'Loading live events from Firestore...' : eventsError}
+          <span>{loadingEvents ? 'Loading live events from Firestore...' : eventsError}</span>
+          {eventsError && !loadingEvents && (
+            <button type="button" onClick={() => setEventsReloadKey((current) => current + 1)}>
+              Retry
+            </button>
+          )}
         </div>
       )}
 
@@ -2324,6 +2102,7 @@ export default function EventsPage({ embedInDashboard = false }) {
         </div>
       </section>
 
+      {!loadingEvents && !eventsError && (
         <section className="events-list-panel">
           {activeView === VIEW_APPOINTMENTS ? (
             <AppointmentServicesPanel
@@ -2352,8 +2131,9 @@ export default function EventsPage({ embedInDashboard = false }) {
             />
           )}
         </section>
+      )}
 
-      {!loadingEvents && filteredEvents.length === 0 && (
+      {!loadingEvents && !eventsError && filteredEvents.length === 0 && (
         <section className="events-empty">
           <AutoAwesomeIcon />
           <h2>No events here yet</h2>

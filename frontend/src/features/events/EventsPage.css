@@ -526,6 +526,20 @@
   color: #4b136b;
   font-weight: 700;
   padding: 0.625rem 0.875rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.events-status button {
+  border: 1px solid rgba(157, 15, 97, 0.28);
+  border-radius: 999px;
+  padding: 0.4rem 0.8rem;
+  color: inherit;
+  background: rgba(255, 255, 255, 0.76);
+  font: inherit;
+  cursor: pointer;
 }
 
 .events-status--error {
