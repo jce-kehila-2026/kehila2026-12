@@ -453,6 +453,12 @@ function formatDateLabel(dateKey) {
   return new Intl.DateTimeFormat('en', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }).format(date);
 }
 
+function getNearestUpcomingDateKey(dateKeys) {
+  if (!dateKeys.length) return '';
+  const todayKey = toLocalDateKey(new Date());
+  return dateKeys.find((dateKey) => dateKey >= todayKey) || dateKeys[dateKeys.length - 1];
+}
+
 function csvEscape(value) {
   return `"${String(value ?? '').replaceAll('"', '""')}"`;
 }
@@ -637,6 +643,23 @@ export default function EventsPage() {
     return Array.from(providers.values()).filter((provider) => provider.name || provider.count);
   }, [registrations, selectedEvent, selectedEventIsAppointment]);
 
+  const appointmentBookedDates = useMemo(() => {
+    if (!selectedEventIsAppointment || !selectedProviderId) return [];
+
+    const dateCounts = new Map();
+    registrations
+      .filter((registration) => getRegistrationProviderId(registration) === selectedProviderId)
+      .forEach((registration) => {
+        const dateKey = getBookingDateKey(registration);
+        if (!dateKey) return;
+        dateCounts.set(dateKey, (dateCounts.get(dateKey) || 0) + 1);
+      });
+
+    return Array.from(dateCounts.entries())
+      .sort(([leftDate], [rightDate]) => leftDate.localeCompare(rightDate))
+      .map(([dateKey, count]) => ({ dateKey, count }));
+  }, [registrations, selectedEventIsAppointment, selectedProviderId]);
+
   const appointmentScheduleRows = useMemo(() => {
     if (!selectedEventIsAppointment || !selectedProviderId) return [];
     return registrations
@@ -652,6 +675,20 @@ export default function EventsPage() {
     if (selectedProviderId && appointmentProviders.some((provider) => provider.id === selectedProviderId)) return;
     setSelectedProviderId(appointmentProviders[0]?.id || '');
   }, [appointmentProviders, selectedEventIsAppointment, selectedProviderId]);
+
+  useEffect(() => {
+    if (!selectedEventIsAppointment) return;
+    const dateKeys = appointmentBookedDates.map((item) => item.dateKey);
+
+    if (!dateKeys.length) {
+      if (selectedParticipantDate) setSelectedParticipantDate('');
+      return;
+    }
+
+    if (!dateKeys.includes(selectedParticipantDate)) {
+      setSelectedParticipantDate(getNearestUpcomingDateKey(dateKeys));
+    }
+  }, [appointmentBookedDates, selectedEventIsAppointment, selectedParticipantDate]);
 
   function updateForm(field, value) {
     setForm((current) => ({ ...current, [field]: value }));
@@ -767,7 +804,7 @@ export default function EventsPage() {
     setParticipantSort('newest');
     setRegistrationsError('');
     setSelectedProviderId('');
-    setSelectedParticipantDate(toLocalDateKey(new Date()));
+    setSelectedParticipantDate('');
     setSelectedBookingDetails(null);
     setRegistrationsLoading(true);
     try {
@@ -1619,19 +1656,33 @@ export default function EventsPage() {
 
                   <section className="admin-events-schedule-toolbar">
                     <label>
-                      <span>Filter by date</span>
-                      <input
-                        type="date"
+                      <span>Booked dates</span>
+                      <select
                         value={selectedParticipantDate}
+                        disabled={!appointmentBookedDates.length}
                         onChange={(event) => setSelectedParticipantDate(event.target.value)}
-                      />
+                      >
+                        {appointmentBookedDates.length ? (
+                          appointmentBookedDates.map((item) => (
+                            <option value={item.dateKey} key={item.dateKey}>
+                              {formatDateLabel(item.dateKey)} ({item.count})
+                            </option>
+                          ))
+                        ) : (
+                          <option value="">No booked dates</option>
+                        )}
+                      </select>
                     </label>
-                    <p>{formatDateLabel(selectedParticipantDate)}</p>
+                    <p>
+                      {appointmentBookedDates.length
+                        ? 'Only dates with bookings are selectable'
+                        : 'No booked dates for this provider.'}
+                    </p>
                   </section>
 
                   <section className="admin-events-schedule-card" aria-label="Appointment schedule">
                     <header>
-                      <strong>{formatDateLabel(selectedParticipantDate)}</strong>
+                      <strong>{selectedParticipantDate ? formatDateLabel(selectedParticipantDate) : 'No booked dates'}</strong>
                       <span>{appointmentScheduleRows.length} booking{appointmentScheduleRows.length === 1 ? '' : 's'}</span>
                     </header>
                     <div className="admin-events-schedule-table">
@@ -1657,6 +1708,12 @@ export default function EventsPage() {
                           <Groups />
                           <strong>Select a provider</strong>
                           <p>Choose a provider above to view the appointment schedule.</p>
+                        </div>
+                      ) : !appointmentBookedDates.length ? (
+                        <div className="admin-events-empty">
+                          <CalendarMonth />
+                          <strong>No booked dates for this provider.</strong>
+                          <p>Bookings will appear here after participants reserve a slot.</p>
                         </div>
                       ) : appointmentScheduleRows.length ? (
                         appointmentScheduleRows.map((registration) => {

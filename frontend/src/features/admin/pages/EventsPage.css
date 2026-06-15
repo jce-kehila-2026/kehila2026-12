@@ -1094,7 +1094,8 @@
   font-weight: 900;
 }
 
-.admin-events-schedule-toolbar input {
+.admin-events-schedule-toolbar input,
+.admin-events-schedule-toolbar select {
   min-height: 2.75rem;
   border: 1px solid rgba(102, 112, 140, 0.22);
   border-radius: 12px;
@@ -1102,6 +1103,12 @@
   color: var(--admin-text);
   background: #fff;
   font: inherit;
+}
+
+.admin-events-schedule-toolbar select:disabled {
+  color: #8a92aa;
+  background: #f8f5fc;
+  cursor: not-allowed;
 }
 
 .admin-events-schedule-toolbar p {
