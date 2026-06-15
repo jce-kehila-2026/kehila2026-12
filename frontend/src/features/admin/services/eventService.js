@@ -2,6 +2,29 @@
 import { collection, getDocs, getDoc, addDoc, updateDoc, deleteDoc, doc, query, orderBy, limit, onSnapshot, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../../firebase';
 import { logAuditEvent } from './auditService';
+import { isTranslationConfigured, translateFields } from './translationService';
+
+const EVENT_TEXT_FIELDS = ['title', 'description', 'location'];
+
+/**
+ * Translate the event's text fields to { he, en, ar } and stash them under a
+ * `translations` map, leaving the source string fields (title/description/
+ * location) intact so the admin edit form — which reads event.title etc. —
+ * keeps working. Best-effort: on failure the event still saves, just without
+ * translations.
+ */
+async function withEventTranslations(data) {
+  if (!isTranslationConfigured()) return data;
+  try {
+    const translations = await translateFields(data, EVENT_TEXT_FIELDS);
+    if (Object.keys(translations).length > 0) {
+      return { ...data, translations: { ...(data.translations || {}), ...translations } };
+    }
+  } catch (err) {
+    console.error('Event translation failed; saving without translations:', err);
+  }
+  return data;
+}
 
 /**
  * Fetch a single event by its Firestore document ID.
@@ -60,8 +83,9 @@ export function subscribeToPublishedEvents(callback, onError) {
  * @param {Object} data The event data.
  */
 export async function createEvent(data) {
+  const payload = await withEventTranslations(data);
   const ref = await addDoc(collection(db, 'events'), {
-    ...data,
+    ...payload,
     createdAt: serverTimestamp(),
   });
   
@@ -80,8 +104,9 @@ export async function createEvent(data) {
  * @param {Object} data The updated event data.
  */
 export async function updateEvent(id, data) {
+  const payload = await withEventTranslations(data);
   await updateDoc(doc(db, 'events', id), {
-    ...data,
+    ...payload,
     updatedAt: serverTimestamp(),
   });
   

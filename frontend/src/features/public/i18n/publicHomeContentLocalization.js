@@ -1,5 +1,6 @@
 import { publicHomeContentLocales } from './publicHomeContentLocales';
 import { DEFAULT_PUBLIC_LOCALE } from './publicHomeTranslations';
+import { localizeField } from '../../../i18n/localizeField';
 
 /**
  * Returns Hebrew source when locale is Hebrew; otherwise the localized string.
@@ -242,25 +243,28 @@ export function localizeEvents(events, locale) {
   }
 
   const pack = getLocalePack(locale);
-  if (!pack?.events) {
-    return events;
-  }
-
-  const eventKeys = Object.keys(pack.events);
+  const eventKeys = pack?.events ? Object.keys(pack.events) : [];
 
   return events.map((event, index) => {
-    const localized = (event?.id && pack.events[event.id]) || pack.events[eventKeys[index]] || null;
+    const packEntry = pack?.events
+      ? (event?.id && pack.events[event.id]) || pack.events[eventKeys[index]] || null
+      : null;
 
-    if (!localized) {
+    // Nothing to localize this event with — leave it as the Hebrew source.
+    if (!packEntry && !event?.translations) {
       return event;
     }
 
+    // Prefer Azure-stored translations on the doc; fall back to the hand-written
+    // pack, then to the Hebrew source.
+    const fromAzure = (field) => localizeField(event?.translations?.[field], locale);
+
     return {
       ...event,
-      title: pickLocalized(locale, event.title, localized.title),
-      description: pickLocalized(locale, event.description, localized.description),
-      dateLabel: pickLocalized(locale, event.dateLabel, localized.dateLabel),
-      location: pickLocalized(locale, event.location, localized.location),
+      title: fromAzure('title') || pickLocalized(locale, event.title, packEntry?.title),
+      description: fromAzure('description') || pickLocalized(locale, event.description, packEntry?.description),
+      dateLabel: pickLocalized(locale, event.dateLabel, packEntry?.dateLabel),
+      location: fromAzure('location') || pickLocalized(locale, event.location, packEntry?.location),
     };
   });
 }
