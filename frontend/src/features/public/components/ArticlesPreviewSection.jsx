@@ -25,6 +25,7 @@ export default function ArticlesPreviewSection({ coverage = [] }) {
     cardSelector: '.press-article-card',
     direction,
     itemCount: items.length,
+    refreshKey: locale,
   });
 
   return (

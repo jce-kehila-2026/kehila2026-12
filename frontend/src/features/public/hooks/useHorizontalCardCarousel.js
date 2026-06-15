@@ -7,6 +7,7 @@ export default function useHorizontalCardCarousel({
   direction = 'rtl',
   itemCount = 0,
   visibleCardCount = 3,
+  refreshKey = '',
 }) {
   const scrollerRef = useRef(null);
   const [canScrollPrev, setCanScrollPrev] = useState(false);
@@ -17,8 +18,15 @@ export default function useHorizontalCardCarousel({
     const scroller = scrollerRef.current;
     if (!scroller) return;
 
-    scroller.scrollTo({ left: 0, behavior: 'auto' });
-  }, [direction, itemCount]);
+    const resetPosition = () => {
+      scroller.scrollTo({ left: 0, behavior: 'auto' });
+    };
+
+    resetPosition();
+    const frameId = window.requestAnimationFrame(resetPosition);
+
+    return () => window.cancelAnimationFrame(frameId);
+  }, [direction, itemCount, refreshKey]);
 
   const updateBoundaries = useCallback(() => {
     const scroller = scrollerRef.current;
@@ -61,8 +69,10 @@ export default function useHorizontalCardCarousel({
       typeof ResizeObserver === 'undefined' ? null : new ResizeObserver(updateBoundaries);
 
     resizeObserver?.observe(scroller);
+    scroller.querySelectorAll(cardSelector).forEach((card) => resizeObserver?.observe(card));
     scroller.addEventListener('scroll', updateBoundaries, { passive: true });
     window.addEventListener('resize', updateBoundaries);
+    document.fonts?.ready.then(updateBoundaries);
 
     return () => {
       window.cancelAnimationFrame(frameId);
@@ -70,7 +80,7 @@ export default function useHorizontalCardCarousel({
       scroller.removeEventListener('scroll', updateBoundaries);
       window.removeEventListener('resize', updateBoundaries);
     };
-  }, [direction, itemCount, updateBoundaries]);
+  }, [cardSelector, direction, itemCount, refreshKey, updateBoundaries]);
 
   const scrollByCards = useCallback(
     (stepDirection) => {

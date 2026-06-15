@@ -55,6 +55,7 @@ export default function LearnTogetherSection({ learnTogether }) {
     cardSelector: '.public-support__card',
     direction,
     itemCount: cards.length,
+    refreshKey: locale,
   });
 
   function handleOpenCard(card) {

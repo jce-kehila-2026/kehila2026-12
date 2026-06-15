@@ -47,6 +47,7 @@ export default function TeamSection({ members }) {
     cardSelector: '.public-team-section__card',
     direction,
     itemCount: localizedMembers.length,
+    refreshKey: locale,
   });
 
   return (
