@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db, auth } from '../../../firebase';
 import { logAuditEvent } from '../services/auditService';
+import { isTranslationConfigured, translateItems } from '../services/translationService';
 import {
   PUBLIC_PAGES_COLLECTION,
   PUBLIC_HOME_DOC_ID,
@@ -160,13 +161,23 @@ export default function PublicHomePagePressCoverageTab() {
     const user = auth.currentUser;
     const updatedBy = user?.email || user?.uid || '';
     const ref = doc(db, PUBLIC_PAGES_COLLECTION, PUBLIC_HOME_DOC_ID);
+    // Translate title + description to { he, en, ar } once on save.
+    let translatedItems = nextItems;
+    if (isTranslationConfigured()) {
+      try {
+        translatedItems = await translateItems(nextItems, ['title', 'description']);
+      } catch (err) {
+        console.error('Press coverage translation failed; saving original only:', err);
+      }
+    }
     await updateDoc(ref, {
-      pressCoverage: nextItems.map((p) => ({
+      pressCoverage: translatedItems.map((p) => ({
         id: p.id,
         title: p.title,
         description: p.description,
         imageUrl: p.imageUrl,
         articleUrl: p.articleUrl,
+        ...(p.translations ? { translations: p.translations } : {}),
       })),
       updatedAt: serverTimestamp(),
       updatedBy,

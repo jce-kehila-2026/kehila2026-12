@@ -426,6 +426,7 @@ function mergePressCoverageItem(item, index) {
     description: safeString(safe.description),
     imageUrl: safeString(safe.imageUrl),
     articleUrl: safeString(safe.articleUrl),
+    ...(safe.translations ? { translations: safe.translations } : {}),
   };
 }
 
