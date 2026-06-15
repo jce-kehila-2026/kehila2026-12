@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getEventById, updateEvent } from '../services/eventService';
-import { getRegistrationsByEvent, removeRegistration, checkInRegistration } from '../services/registrationService';
+import { getRegistrationsByEvent, removeRegistration } from '../services/registrationService';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
@@ -13,7 +13,6 @@ import MenuItem from '@mui/material/MenuItem';
 import Chip from '@mui/material/Chip';
 import { DataGrid } from '@mui/x-data-grid';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
-import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EmailIcon from '@mui/icons-material/Email';
 
@@ -132,17 +131,6 @@ export default function EventDetailPage() {
     }
   }
 
-  async function handleCheckIn(regId) {
-    try {
-      await checkInRegistration(regId, eventId);
-      setRegistrations((prev) =>
-        prev.map((r) => (r.id === regId ? { ...r, checkedIn: true } : r))
-      );
-    } catch (err) {
-      console.error('Check-in failed:', err);
-    }
-  }
-
   function handleEmailAll() {
     const emails = registrations
       .map((r) => r.participantEmail)
@@ -161,15 +149,15 @@ export default function EventDetailPage() {
       valueGetter: (value) => (value?.toDate ? value.toDate().toLocaleString() : '—'),
     },
     {
-      field: 'checkedIn',
+      field: 'status',
       headerName: 'Status',
       width: 130,
       renderCell: (params) => (
         <Chip
-          label={params.value ? 'Checked In' : 'Registered'}
+          label={params.value || 'Registered'}
           size="small"
-          color={params.value ? 'success' : 'default'}
-          variant={params.value ? 'filled' : 'outlined'}
+          color={params.value === 'cancelled' ? 'error' : 'default'}
+          variant="outlined"
         />
       ),
     },
@@ -181,15 +169,6 @@ export default function EventDetailPage() {
       filterable: false,
       renderCell: (params) => (
         <Box sx={{ display: 'flex', gap: '0.25rem', alignItems: 'center' }}>
-          <IconButton
-            size="small"
-            color="success"
-            disabled={Boolean(params.row.checkedIn)}
-            onClick={() => handleCheckIn(params.row.id)}
-            title="Check in"
-          >
-            <CheckCircleIcon fontSize="small" />
-          </IconButton>
           <IconButton
             size="small"
             color="error"

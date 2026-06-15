@@ -8,13 +8,17 @@
   --admin-border: rgba(109, 60, 207, 0.14);
   --admin-shadow: 0 22px 55px rgba(51, 29, 95, 0.12);
   box-sizing: border-box;
-  height: calc(100vh - 8rem);
+  width: 100%;
+  max-width: none;
+  height: calc(100vh - 1rem);
+  max-height: calc(100vh - 1rem);
   min-height: 0;
   margin: -1rem;
   padding: 0.875rem 1.125rem 1rem;
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  align-self: stretch;
   font-family: var(--font-sans);
   color: var(--admin-text);
   background:
@@ -26,7 +30,10 @@
 .admin-events-shell {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
+  width: 100%;
+  max-width: none;
   flex: 1 1 auto;
+  height: 100%;
   min-height: 0;
   gap: 0.75rem;
   align-items: stretch;
@@ -38,11 +45,13 @@
 }
 
 .admin-events-shell.has-participants-drawer {
-  grid-template-columns: minmax(0, 1fr) 560px;
+  grid-template-columns: minmax(20rem, 0.38fr) minmax(40rem, 0.62fr);
 }
 
 .admin-events-main {
   display: flex;
+  width: 100%;
+  max-width: none;
   min-height: 0;
   height: 100%;
   min-width: 0;
@@ -51,6 +60,7 @@
 }
 
 .admin-events-header {
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -84,6 +94,7 @@
 }
 
 .admin-events-tabs-row {
+  flex: 0 0 auto;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -191,6 +202,7 @@
 }
 
 .admin-events-stats {
+  flex: 0 0 auto;
   display: grid;
   grid-template-columns: repeat(2, minmax(180px, 260px));
   gap: 0.625rem;
@@ -296,6 +308,7 @@
 }
 
 .admin-events-filterbar {
+  flex: 0 0 auto;
   display: grid;
   grid-template-columns: minmax(230px, 1fr) 150px 180px 40px 40px;
   gap: 0.5rem;
@@ -377,7 +390,7 @@
 .admin-events-table-card {
   display: flex;
   min-height: 0;
-  flex: 1 1 auto;
+  flex: 1 1 0;
   flex-direction: column;
   overflow: hidden;
   border: 1px solid var(--admin-border);
@@ -638,10 +651,13 @@
 }
 
 .admin-events-participants-drawer {
-  position: sticky;
-  top: 88px;
+  position: relative;
+  top: auto;
   display: none;
-  height: calc(100vh - 7.25rem);
+  width: 100%;
+  max-width: none;
+  height: 100%;
+  min-height: 0;
   overflow: hidden;
   border: 1px solid var(--admin-border);
   border-radius: 18px;
@@ -778,7 +794,7 @@
 
 .admin-events-participant-stats {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 0.75rem;
   margin-bottom: 1.125rem;
 }
@@ -805,10 +821,6 @@
 }
 
 .admin-events-participant-stats article:nth-child(3) svg {
-  color: #17a86b;
-}
-
-.admin-events-participant-stats article:nth-child(4) svg {
   color: var(--admin-pink);
 }
 
@@ -933,11 +945,6 @@
   background: #dcf8ea;
 }
 
-.admin-events-participant-chip--checked-in {
-  color: var(--admin-primary);
-  background: rgba(109, 60, 207, 0.12);
-}
-
 .admin-events-participant-chip--pending,
 .admin-events-participant-chip--waitlist {
   color: #b56b05;
@@ -967,11 +974,11 @@
   cursor: pointer;
 }
 
-.admin-events-participant-actions button:nth-child(2) {
-  color: #11a85f;
+.admin-events-participant-actions button.is-email {
+  color: var(--admin-primary);
 }
 
-.admin-events-participant-actions button:nth-child(3) {
+.admin-events-participant-actions button.is-remove {
   color: var(--admin-pink);
   border-color: rgba(233, 75, 147, 0.2);
 }
@@ -1087,7 +1094,8 @@
   font-weight: 900;
 }
 
-.admin-events-schedule-toolbar input {
+.admin-events-schedule-toolbar input,
+.admin-events-schedule-toolbar select {
   min-height: 2.75rem;
   border: 1px solid rgba(102, 112, 140, 0.22);
   border-radius: 12px;
@@ -1095,6 +1103,12 @@
   color: var(--admin-text);
   background: #fff;
   font: inherit;
+}
+
+.admin-events-schedule-toolbar select:disabled {
+  color: #8a92aa;
+  background: #f8f5fc;
+  cursor: not-allowed;
 }
 
 .admin-events-schedule-toolbar p {
@@ -1133,28 +1147,40 @@
 }
 
 .admin-events-schedule-table {
+  display: grid;
+  gap: 0.5rem;
   overflow: hidden;
+  padding: 0.75rem;
 }
 
 .admin-events-schedule-head,
 .admin-events-schedule-row {
   display: grid;
-  grid-template-columns: 92px minmax(150px, 1.1fr) minmax(180px, 1.3fr) 116px minmax(110px, 0.8fr) 112px;
-  gap: 0.75rem;
+  grid-template-columns: 16% 28% 36% 20%;
+  gap: 0.5rem;
   align-items: center;
 }
 
 .admin-events-schedule-head {
-  padding: 0.75rem 1rem;
+  padding: 0 0.875rem 0.25rem;
   color: #53607d;
   font-size: 0.7rem;
   font-weight: 900;
 }
 
 .admin-events-schedule-row {
-  min-height: 4.125rem;
-  padding: 0.8125rem 1rem;
-  border-top: 1px solid rgba(102, 112, 140, 0.12);
+  min-height: 3.625rem;
+  padding: 0.625rem 0.875rem;
+  border: 1px solid rgba(102, 112, 140, 0.13);
+  border-radius: 13px;
+  background: #fff;
+  transition: background 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.admin-events-schedule-row:hover {
+  border-color: rgba(109, 60, 207, 0.18);
+  background: rgba(248, 243, 255, 0.62);
+  box-shadow: 0 10px 24px rgba(51, 29, 95, 0.07);
 }
 
 .admin-events-schedule-row time {
@@ -1164,15 +1190,17 @@
 }
 
 .admin-events-schedule-row .admin-events-participant-person {
-  display: grid;
-  grid-template-columns: 36px minmax(0, 1fr);
-  gap: 0.625rem;
-  align-items: center;
+  min-width: 0;
 }
 
-.admin-events-schedule-row .admin-events-participant-avatar {
-  width: 2.25rem;
-  height: 2.25rem;
+.admin-events-schedule-row .admin-events-participant-person strong {
+  display: block;
+  max-width: 100%;
+  overflow: hidden;
+  color: var(--admin-text);
+  font-size: 0.82rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .admin-events-schedule-contact,
@@ -1183,7 +1211,8 @@
 }
 
 .admin-events-schedule-contact span,
-.admin-events-schedule-contact a {
+.admin-events-schedule-contact a,
+.admin-events-schedule-contact small {
   display: block;
   overflow: hidden;
   color: inherit;
@@ -1192,12 +1221,46 @@
   text-decoration: none;
 }
 
+.admin-events-schedule-contact small {
+  margin-top: 0.125rem;
+  color: #8a92aa;
+  font-size: 0.68rem;
+}
+
+.admin-events-schedule-status-cell {
+  display: flex;
+  align-items: center;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.35rem;
+  min-width: 0;
+  padding-right: 0.25rem;
+}
+
+.admin-events-schedule-status-cell .admin-events-participant-actions {
+  gap: 0.25rem;
+}
+
+.admin-events-schedule-status-cell .admin-events-participant-actions button {
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 7px;
+}
+
+.admin-events-schedule-status-cell .admin-events-participant-actions svg {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
 .admin-events-status-select {
   position: relative;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  width: fit-content;
+  min-width: 6.25rem;
   min-height: 2rem;
+  padding-inline: 0.625rem;
   border-radius: 8px;
   font-size: 0.7rem;
   font-weight: 900;

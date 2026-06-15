@@ -151,36 +151,6 @@
   font-weight: 600;
 }
 
-.admin-dashboard-sparkline {
-  position: absolute;
-  left: 22px;
-  right: 22px;
-  bottom: 12px;
-  height: 1.125rem;
-  opacity: 0.55;
-}
-
-.admin-dashboard-sparkline i {
-  display: block;
-  height: 100%;
-  border-radius: 999px;
-  background:
-    linear-gradient(135deg, transparent 0 44%, currentColor 45% 50%, transparent 51% 100%),
-    linear-gradient(45deg, transparent 0 54%, currentColor 55% 60%, transparent 61% 100%);
-}
-
-.admin-dashboard-metric--purple .admin-dashboard-sparkline {
-  color: #8b5cf6;
-}
-
-.admin-dashboard-metric--pink .admin-dashboard-sparkline {
-  color: var(--soft-pink);
-}
-
-.admin-dashboard-metric--peach .admin-dashboard-sparkline {
-  color: #fb923c;
-}
-
 .admin-dashboard-main-grid {
   display: grid;
   grid-template-columns: minmax(300px, 45fr) minmax(420px, 55fr);

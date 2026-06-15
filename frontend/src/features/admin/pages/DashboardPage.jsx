@@ -142,9 +142,6 @@ function MetricCard({ accent, icon, label, value, subtext }) {
         <strong>{value.toLocaleString()}</strong>
         <p>{subtext}</p>
       </div>
-      <div className="admin-dashboard-sparkline" aria-hidden="true">
-        <i />
-      </div>
     </article>
   );
 }

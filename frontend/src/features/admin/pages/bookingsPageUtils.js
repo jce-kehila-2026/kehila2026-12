@@ -62,7 +62,6 @@ export function normalizeCentralBooking(item, index = 0) {
     eventTime: item.selectedTime || item.selectedTimeSlot || item.sessionTime || item.time || item.startAt || '',
     registeredAt: item.registeredAt || item.createdAt || null,
     status: normalizeBookingStatus(item.status),
-    checkedIn: Boolean(item.checkedIn),
   };
 }
 
@@ -85,7 +84,6 @@ export function normalizeLegacyAppointment(item, index = 0) {
     eventTime: item.selectedTime || item.time || item.selectedTimeSlot || item.startTime || '',
     registeredAt: item.registeredAt || item.createdAt || null,
     status: normalizeBookingStatus(item.status),
-    checkedIn: Boolean(item.checkedIn),
   };
 }
 

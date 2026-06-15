@@ -262,7 +262,7 @@ async function findUidByEmail(email) {
 
 /**
  * Read all registrations for one event from the event roster.
- * Returns the same shape as before: { id, eventId, participantName, participantEmail, registeredAt, checkedIn, ... }
+ * Returns the same shape as before: { id, eventId, participantName, participantEmail, registeredAt, ... }
  */
 export async function getRegistrationsByEvent(eventId) {
   const [directSnap, templateDocs, parentDocs] = await Promise.all([
@@ -327,11 +327,6 @@ export async function updateRegistrationStatus(regId, eventId, status) {
     status: normalizedStatus,
     updatedAt: serverTimestamp(),
   };
-
-  if (normalizedStatus === 'completed') {
-    patch.checkedIn = true;
-    patch.checkedInAt = serverTimestamp();
-  }
 
   const batch = writeBatch(db);
   batch.set(doc(db, 'bookings', bookingId), patch, { merge: true });
@@ -493,7 +488,6 @@ export async function addRegistration(data) {
     userEmail: participantEmail || '',
     userPhone: participantPhone || '',
     status: resolvedStatus,
-    checkedIn: false,
     registeredAt: serverTimestamp(),
     cancelledAt: null,
     eventId: realEventId,
@@ -612,56 +606,6 @@ export async function removeRegistration(regId, participantName, eventId) {
       details: { removed: participantName },
     });
   } catch (_) {}
-}
-
-/**
- * Mark a registration as checked-in. Updates the central booking and event roster mirrors.
- */
-export async function checkInRegistration(regId, eventId) {
-  if (!eventId) throw new Error('checkInRegistration now requires eventId.');
-
-  const rosterRef = doc(db, 'events', eventId, 'registrations', regId);
-  const rosterSnap = await getDoc(rosterRef);
-  const registration = rosterSnap.exists() ? rosterSnap.data() : {};
-  const uid = registration.userId || null;
-  const bookingId = registration.bookingId || '';
-  const sessionEventId = registration.sessionEventId || registration.eventId || eventId;
-  const templateEventId = registration.eventTemplateId || registration.parentEventId || '';
-  const sessionRegistrationKey = registration.sessionRegistrationKey || registration.registrationKey || uid || regId;
-  const templateRosterKey = registration.templateRosterKey || (
-    templateEventId && templateEventId !== sessionEventId
-      ? `${sessionRegistrationKey}__${keyPart(sessionEventId, 'session')}`
-      : sessionRegistrationKey
-  );
-
-  const batch = writeBatch(db);
-  const checkInPatch = { checkedIn: true, checkedInAt: serverTimestamp() };
-  if (bookingId) {
-    batch.set(doc(db, 'bookings', bookingId), checkInPatch, { merge: true });
-    if (uid) {
-      batch.set(doc(db, 'users', uid, 'bookings', bookingId), checkInPatch, { merge: true });
-    }
-  }
-  batch.set(
-    rosterRef,
-    checkInPatch,
-    { merge: true }
-  );
-  if (sessionEventId && sessionEventId !== eventId) {
-    batch.set(
-      doc(db, 'events', sessionEventId, 'registrations', sessionRegistrationKey),
-      checkInPatch,
-      { merge: true }
-    );
-  }
-  if (templateEventId && templateEventId !== eventId) {
-    batch.set(
-      doc(db, 'events', templateEventId, 'registrations', templateRosterKey),
-      checkInPatch,
-      { merge: true }
-    );
-  }
-  await batch.commit();
 }
 
 /**

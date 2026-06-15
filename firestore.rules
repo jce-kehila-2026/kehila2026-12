@@ -26,7 +26,6 @@ service cloud.firestore {
         && request.resource.data.bookingId == bookingId
         && request.resource.data.eventId is string
         && request.resource.data.eventId.size() > 0
-        && request.resource.data.checkedIn == false
         && request.resource.data.status in ['pending', 'confirmed', 'approved']
         && eventAcceptsRegistrations(request.resource.data.eventId);
     }
@@ -47,7 +46,6 @@ service cloud.firestore {
       return request.auth != null
         && resource.data.userId == request.auth.uid
         && bookingIdentityIsUnchanged()
-        && request.resource.data.checkedIn == resource.data.checkedIn
         && request.resource.data.status == 'cancelled'
         && resource.data.status != 'cancelled'
         && resource.data.status != 'completed'
@@ -61,7 +59,6 @@ service cloud.firestore {
         && bookingIdentityIsUnchanged()
         && resource.data.status == 'cancelled'
         && request.resource.data.status in ['pending', 'confirmed', 'approved']
-        && request.resource.data.checkedIn == false
         && eventAcceptsRegistrations(resource.data.eventId);
     }
     // A signed-in non-author may touch ONLY engagement/aggregate fields on a
@@ -208,7 +205,6 @@ service cloud.firestore {
             && request.resource.data.userId == request.auth.uid
             && request.resource.data.eventId == eventId
             && request.resource.data.bookingId == rosterKey
-            && request.resource.data.checkedIn == false
             && request.resource.data.status in ['pending', 'confirmed', 'approved']
             && eventAcceptsRegistrations(eventId)
             && (

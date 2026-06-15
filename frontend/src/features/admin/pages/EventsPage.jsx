@@ -3,7 +3,6 @@ import { useSearchParams } from 'react-router-dom';
 import ArrowForward from '@mui/icons-material/ArrowForward';
 import CalendarMonth from '@mui/icons-material/CalendarMonth';
 import Category from '@mui/icons-material/Category';
-import CheckCircle from '@mui/icons-material/CheckCircle';
 import Close from '@mui/icons-material/Close';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EditOutlined from '@mui/icons-material/EditOutlined';
@@ -19,10 +18,9 @@ import Schedule from '@mui/icons-material/Schedule';
 import Search from '@mui/icons-material/Search';
 import Tune from '@mui/icons-material/Tune';
 import VisibilityOutlined from '@mui/icons-material/VisibilityOutlined';
-import WhatsApp from '@mui/icons-material/WhatsApp';
+import MailOutlineOutlinedIcon from '@mui/icons-material/MailOutlineOutlined';
 import { createEvent, deleteEvent, getAllEvents, updateEvent } from '../services/eventService';
 import {
-  checkInRegistration,
   getBookingsByEvent,
   getRegistrationCounts,
   getRegistrationsByEvent,
@@ -374,11 +372,10 @@ function getParticipantPhone(registration) {
 }
 
 function getParticipantStatus(registration) {
-  if (registration.checkedIn) return 'checked-in';
   const status = String(registration.status || 'confirmed').toLowerCase();
-  if (status === 'checked_in' || status === 'checked-in') return 'checked-in';
   if (status === 'cancelled' || status === 'canceled') return 'cancelled';
   if (status === 'pending' || status === 'waitlist') return status;
+  if (status === 'completed') return 'completed';
   return 'confirmed';
 }
 
@@ -443,7 +440,6 @@ function getRegistrationProviderName(registration) {
 
 function getAppointmentStatus(registration) {
   const status = getParticipantStatus(registration);
-  if (status === 'checked-in') return 'completed';
   return status === 'waitlist' ? 'pending' : status;
 }
 
@@ -451,6 +447,12 @@ function formatDateLabel(dateKey) {
   const date = toDate(dateKey);
   if (!date) return dateKey || 'Selected date';
   return new Intl.DateTimeFormat('en', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }).format(date);
+}
+
+function getNearestUpcomingDateKey(dateKeys) {
+  if (!dateKeys.length) return '';
+  const todayKey = toLocalDateKey(new Date());
+  return dateKeys.find((dateKey) => dateKey >= todayKey) || dateKeys[dateKeys.length - 1];
 }
 
 function csvEscape(value) {
@@ -574,10 +576,9 @@ export default function EventsPage() {
 
   const participantStats = useMemo(() => {
     const registered = registrations.length;
-    const checkedIn = registrations.filter((registration) => getParticipantStatus(registration) === 'checked-in').length;
     const waitlist = registrations.filter((registration) => getParticipantStatus(registration) === 'waitlist').length;
     const remaining = selectedEventCapacity ? Math.max(0, selectedEventCapacity - registered) : 0;
-    return { checkedIn, registered, remaining, waitlist };
+    return { registered, remaining, waitlist };
   }, [registrations, selectedEventCapacity]);
 
   const filteredRegistrations = useMemo(() => {
@@ -637,6 +638,23 @@ export default function EventsPage() {
     return Array.from(providers.values()).filter((provider) => provider.name || provider.count);
   }, [registrations, selectedEvent, selectedEventIsAppointment]);
 
+  const appointmentBookedDates = useMemo(() => {
+    if (!selectedEventIsAppointment || !selectedProviderId) return [];
+
+    const dateCounts = new Map();
+    registrations
+      .filter((registration) => getRegistrationProviderId(registration) === selectedProviderId)
+      .forEach((registration) => {
+        const dateKey = getBookingDateKey(registration);
+        if (!dateKey) return;
+        dateCounts.set(dateKey, (dateCounts.get(dateKey) || 0) + 1);
+      });
+
+    return Array.from(dateCounts.entries())
+      .sort(([leftDate], [rightDate]) => leftDate.localeCompare(rightDate))
+      .map(([dateKey, count]) => ({ dateKey, count }));
+  }, [registrations, selectedEventIsAppointment, selectedProviderId]);
+
   const appointmentScheduleRows = useMemo(() => {
     if (!selectedEventIsAppointment || !selectedProviderId) return [];
     return registrations
@@ -652,6 +670,20 @@ export default function EventsPage() {
     if (selectedProviderId && appointmentProviders.some((provider) => provider.id === selectedProviderId)) return;
     setSelectedProviderId(appointmentProviders[0]?.id || '');
   }, [appointmentProviders, selectedEventIsAppointment, selectedProviderId]);
+
+  useEffect(() => {
+    if (!selectedEventIsAppointment) return;
+    const dateKeys = appointmentBookedDates.map((item) => item.dateKey);
+
+    if (!dateKeys.length) {
+      if (selectedParticipantDate) setSelectedParticipantDate('');
+      return;
+    }
+
+    if (!dateKeys.includes(selectedParticipantDate)) {
+      setSelectedParticipantDate(getNearestUpcomingDateKey(dateKeys));
+    }
+  }, [appointmentBookedDates, selectedEventIsAppointment, selectedParticipantDate]);
 
   function updateForm(field, value) {
     setForm((current) => ({ ...current, [field]: value }));
@@ -767,7 +799,7 @@ export default function EventsPage() {
     setParticipantSort('newest');
     setRegistrationsError('');
     setSelectedProviderId('');
-    setSelectedParticipantDate(toLocalDateKey(new Date()));
+    setSelectedParticipantDate('');
     setSelectedBookingDetails(null);
     setRegistrationsLoading(true);
     try {
@@ -873,20 +905,6 @@ export default function EventsPage() {
     }
   }
 
-  async function handleCheckIn(registration) {
-    if (!selectedEvent) return;
-    try {
-      await checkInRegistration(registration.id, selectedEvent.id);
-      setRegistrations((current) =>
-        current.map((item) => (item.id === registration.id ? { ...item, checkedIn: true, status: 'checked-in' } : item))
-      );
-      setToast('Participant checked in.');
-    } catch (err) {
-      console.error('Check-in failed:', err);
-      setToast('Could not check in participant.');
-    }
-  }
-
   async function handleStatusUpdate(registration, status) {
     if (!selectedEvent) return;
     try {
@@ -894,7 +912,7 @@ export default function EventsPage() {
       setRegistrations((current) =>
         current.map((item) => (
           item.id === registration.id
-            ? { ...item, status, checkedIn: status === 'completed' ? true : item.checkedIn }
+            ? { ...item, status }
             : item
         ))
       );
@@ -927,16 +945,10 @@ export default function EventsPage() {
     }
   }
 
-  function handleReminder(registration) {
-    const phone = getParticipantPhone(registration);
+  function handleEmailParticipant(registration) {
     const email = getParticipantEmail(registration);
-    const message = encodeURIComponent(`Reminder for ${selectedEvent?.title || 'your She-Na event'}.`);
-    if (phone) {
-      window.open(`https://wa.me/${phone.replace(/[^0-9]/g, '')}?text=${message}`, '_blank', 'noopener,noreferrer');
-      return;
-    }
     if (email) {
-      window.location.href = `mailto:${email}?subject=${encodeURIComponent('She-Na event reminder')}&body=${message}`;
+      window.location.href = `mailto:${email}`;
     }
   }
 
@@ -1619,19 +1631,33 @@ export default function EventsPage() {
 
                   <section className="admin-events-schedule-toolbar">
                     <label>
-                      <span>Filter by date</span>
-                      <input
-                        type="date"
+                      <span>Booked dates</span>
+                      <select
                         value={selectedParticipantDate}
+                        disabled={!appointmentBookedDates.length}
                         onChange={(event) => setSelectedParticipantDate(event.target.value)}
-                      />
+                      >
+                        {appointmentBookedDates.length ? (
+                          appointmentBookedDates.map((item) => (
+                            <option value={item.dateKey} key={item.dateKey}>
+                              {formatDateLabel(item.dateKey)} ({item.count})
+                            </option>
+                          ))
+                        ) : (
+                          <option value="">No booked dates</option>
+                        )}
+                      </select>
                     </label>
-                    <p>{formatDateLabel(selectedParticipantDate)}</p>
+                    <p>
+                      {appointmentBookedDates.length
+                        ? 'Only dates with bookings are selectable'
+                        : 'No booked dates for this provider.'}
+                    </p>
                   </section>
 
                   <section className="admin-events-schedule-card" aria-label="Appointment schedule">
                     <header>
-                      <strong>{formatDateLabel(selectedParticipantDate)}</strong>
+                      <strong>{selectedParticipantDate ? formatDateLabel(selectedParticipantDate) : 'No booked dates'}</strong>
                       <span>{appointmentScheduleRows.length} booking{appointmentScheduleRows.length === 1 ? '' : 's'}</span>
                     </header>
                     <div className="admin-events-schedule-table">
@@ -1640,8 +1666,6 @@ export default function EventsPage() {
                         <span>Participant</span>
                         <span>Contact</span>
                         <span>Status</span>
-                        <span>Notes</span>
-                        <span>Actions</span>
                       </div>
                       {registrationsLoading ? (
                         Array.from({ length: 5 }).map((_, index) => <span className="admin-events-participant-skeleton" key={index} />)
@@ -1658,61 +1682,63 @@ export default function EventsPage() {
                           <strong>Select a provider</strong>
                           <p>Choose a provider above to view the appointment schedule.</p>
                         </div>
+                      ) : !appointmentBookedDates.length ? (
+                        <div className="admin-events-empty">
+                          <CalendarMonth />
+                          <strong>No booked dates for this provider.</strong>
+                          <p>Bookings will appear here after participants reserve a slot.</p>
+                        </div>
                       ) : appointmentScheduleRows.length ? (
                         appointmentScheduleRows.map((registration) => {
                           const name = getParticipantName(registration);
                           const email = getParticipantEmail(registration);
                           const phone = getParticipantPhone(registration);
                           const status = getAppointmentStatus(registration);
-                          const canReminder = Boolean(phone || email);
+                          const canEmail = Boolean(email);
 
                           return (
                             <article className="admin-events-schedule-row" key={registration.id}>
                               <time>{getAppointmentTime(registration)}</time>
                               <div className="admin-events-participant-person">
-                                <span className="admin-events-participant-avatar">{getInitials(name || email)}</span>
                                 <strong>{name}</strong>
                               </div>
                               <div className="admin-events-schedule-contact">
                                 {phone ? <span>{phone}</span> : null}
                                 {email ? <a href={`mailto:${email}`}>{email}</a> : <span>No email available</span>}
+                                {registration.notes || registration.adminNotes || registration.specialRequests ? (
+                                  <small>{registration.notes || registration.adminNotes || registration.specialRequests}</small>
+                                ) : null}
                               </div>
-                              <label className={`admin-events-status-select admin-events-participant-chip--${status}`}>
-                                <span>{status}</span>
-                                <select value={status} onChange={(event) => handleStatusUpdate(registration, event.target.value)}>
-                                  <option value="confirmed">Confirmed</option>
-                                  <option value="pending">Pending</option>
-                                  <option value="cancelled">Cancelled</option>
-                                  <option value="completed">Completed</option>
-                                </select>
-                              </label>
-                              <span className="admin-events-schedule-notes">
-                                {registration.notes || registration.adminNotes || registration.specialRequests || '-'}
-                              </span>
-                              <div className="admin-events-participant-actions">
-                                <button
-                                  type="button"
-                                  onClick={() => setSelectedBookingDetails(registration)}
-                                  aria-label="View booking"
-                                >
-                                  <VisibilityOutlined />
-                                </button>
-                                <button
-                                  type="button"
-                                  disabled={status === 'completed'}
-                                  onClick={() => handleCheckIn(registration)}
-                                  aria-label="Check in participant"
-                                >
-                                  <CheckCircle />
-                                </button>
-                                <button
-                                  type="button"
-                                  disabled={!canReminder}
-                                  onClick={() => handleReminder(registration)}
-                                  aria-label="Send reminder"
-                                >
-                                  <WhatsApp />
-                                </button>
+                              <div className="admin-events-schedule-status-cell">
+                                <label className={`admin-events-status-select admin-events-participant-chip--${status}`}>
+                                  <span>{status}</span>
+                                  <select value={status} onChange={(event) => handleStatusUpdate(registration, event.target.value)}>
+                                    <option value="confirmed">Confirmed</option>
+                                    <option value="pending">Pending</option>
+                                    <option value="cancelled">Cancelled</option>
+                                    <option value="completed">Completed</option>
+                                  </select>
+                                </label>
+                                <div className="admin-events-participant-actions">
+                                  <button
+                                    type="button"
+                                    title="View Details"
+                                    onClick={() => setSelectedBookingDetails(registration)}
+                                    aria-label="View details"
+                                  >
+                                    <VisibilityOutlined />
+                                  </button>
+                                  <button
+                                    className="is-email"
+                                    type="button"
+                                    title="Email Participant"
+                                    disabled={!canEmail}
+                                    onClick={() => handleEmailParticipant(registration)}
+                                    aria-label="Email participant"
+                                  >
+                                    <MailOutlineOutlinedIcon />
+                                  </button>
+                                </div>
                               </div>
                             </article>
                           );
@@ -1732,7 +1758,6 @@ export default function EventsPage() {
                   <section className="admin-events-participant-stats" aria-label="Participant stats">
                     <article><Groups /><strong>{participantStats.registered}</strong><span>Registered</span></article>
                     <article><EventAvailable /><strong>{participantStats.remaining}</strong><span>Remaining</span></article>
-                    <article><CheckCircle /><strong>{participantStats.checkedIn}</strong><span>Checked-In</span></article>
                     <article><Schedule /><strong>{participantStats.waitlist}</strong><span>Waitlist</span></article>
                   </section>
 
@@ -1775,7 +1800,7 @@ export default function EventsPage() {
                         const name = getParticipantName(registration);
                         const email = getParticipantEmail(registration);
                         const status = getParticipantStatus(registration);
-                        const canReminder = Boolean(getParticipantPhone(registration) || email);
+                        const canEmail = Boolean(email);
 
                         return (
                           <article className="admin-events-participant-row" key={registration.id}>
@@ -1786,26 +1811,21 @@ export default function EventsPage() {
                             </div>
                             <time>{formatRegistrationDate(registration.registeredAt)}</time>
                             <span className={`admin-events-participant-chip admin-events-participant-chip--${status}`}>
-                              {status === 'checked-in' ? 'Checked-In' : status}
+                              {status}
                             </span>
                             <div className="admin-events-participant-actions">
                               <button
+                                className="is-email"
                                 type="button"
-                                disabled={status === 'checked-in'}
-                                onClick={() => handleCheckIn(registration)}
-                                aria-label="Check in participant"
+                                title="Email Participant"
+                                disabled={!canEmail}
+                                onClick={() => handleEmailParticipant(registration)}
+                                aria-label="Email participant"
                               >
-                                <CheckCircle />
+                                <MailOutlineOutlinedIcon />
                               </button>
                               <button
-                                type="button"
-                                disabled={!canReminder}
-                                onClick={() => handleReminder(registration)}
-                                aria-label="Send reminder"
-                              >
-                                <WhatsApp />
-                              </button>
-                              <button
+                                className="is-remove"
                                 type="button"
                                 onClick={() => handleRemoveParticipant(registration)}
                                 aria-label="Remove participant"
