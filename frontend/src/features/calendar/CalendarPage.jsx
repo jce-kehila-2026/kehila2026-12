@@ -98,9 +98,11 @@ function buildMonthDays(activeDate) {
 
 function buildMonthGrid(activeDate) {
   const firstOfMonth = new Date(activeDate.getFullYear(), activeDate.getMonth(), 1);
+  const daysInMonth = new Date(activeDate.getFullYear(), activeDate.getMonth() + 1, 0).getDate();
+  const weeksInMonth = Math.ceil((firstOfMonth.getDay() + daysInMonth) / 7);
   const gridStart = getStartOfWeek(firstOfMonth);
 
-  return Array.from({ length: 42 }, (_, index) => {
+  return Array.from({ length: weeksInMonth * 7 }, (_, index) => {
     const date = new Date(gridStart);
     date.setDate(gridStart.getDate() + index);
 
@@ -166,6 +168,7 @@ export default function CalendarPage({ variant = 'standalone' }) {
   const [loadingCalendar, setLoadingCalendar] = useState(true);
   const [calendarError, setCalendarError] = useState('');
   const [savingNote, setSavingNote] = useState(false);
+  const [noteFormOpen, setNoteFormOpen] = useState(false);
   const [noteForm, setNoteForm] = useState({
     title: '',
     date: TODAY_KEY,
@@ -444,40 +447,53 @@ export default function CalendarPage({ variant = 'standalone' }) {
               )}
             </section>
 
-            <section className="calendar-card note-card">
-              <div className="card-heading">
-                <h2>Add a note</h2>
-                <span>Private reminder</span>
+            <section className={`calendar-card note-card${noteFormOpen ? ' is-open' : ''}`}>
+              <button
+                type="button"
+                className="note-card__toggle"
+                aria-expanded={noteFormOpen}
+                onClick={() => setNoteFormOpen((isOpen) => !isOpen)}
+              >
+                <span className="note-card__toggle-copy">
+                  <strong>Add a note</strong>
+                  <small>Private reminder</small>
+                </span>
+                <span className="note-card__toggle-icon" aria-hidden="true">
+                  +
+                </span>
+              </button>
+
+              <div className="note-card__body" aria-hidden={!noteFormOpen}>
+                <form onSubmit={handleSubmit} className="note-form">
+                  <label>
+                    Title
+                    <input name="title" value={noteForm.title} onChange={handleFormChange} placeholder="Personal Note" />
+                  </label>
+                  <div className="note-form__row">
+                    <label>
+                      Date
+                      <input name="date" type="date" value={noteForm.date} onChange={handleFormChange} />
+                    </label>
+                    <label>
+                      Time
+                      <input name="time" type="time" value={noteForm.time} onChange={handleFormChange} />
+                    </label>
+                  </div>
+                  <label>
+                    Note content
+                    <textarea
+                      name="content"
+                      value={noteForm.content}
+                      onChange={handleFormChange}
+                      placeholder="Write a reminder for yourself..."
+                      rows="4"
+                    />
+                  </label>
+                  <button type="submit" disabled={savingNote}>
+                    {savingNote ? 'Saving...' : 'Add note'}
+                  </button>
+                </form>
               </div>
-              <form onSubmit={handleSubmit} className="note-form">
-                <label>
-                  Title
-                  <input name="title" value={noteForm.title} onChange={handleFormChange} placeholder="Personal Note" />
-                </label>
-                <div className="note-form__row">
-                  <label>
-                    Date
-                    <input name="date" type="date" value={noteForm.date} onChange={handleFormChange} />
-                  </label>
-                  <label>
-                    Time
-                    <input name="time" type="time" value={noteForm.time} onChange={handleFormChange} />
-                  </label>
-                </div>
-                <label>
-                  Note content
-                  <textarea
-                    name="content"
-                    value={noteForm.content}
-                    onChange={handleFormChange}
-                    placeholder="Write a reminder for yourself..."
-                    rows="4"
-                  />
-                </label>
-                <button type="submit" disabled={savingNote}>
-                  {savingNote ? 'Saving...' : 'Add note'}
-                </button>
-              </form>
             </section>
           </aside>
 
@@ -532,10 +548,10 @@ export default function CalendarPage({ variant = 'standalone' }) {
                       >
                         <span className="month-calendar__date">{day.day}</span>
                         <span className="month-calendar__items">
-                          {items.slice(0, 3).map((item) => (
+                          {items.slice(0, 2).map((item) => (
                             <CalendarPill key={item.id} item={item} />
                           ))}
-                          {items.length > 3 && <small className="month-calendar__more">+{items.length - 3} more</small>}
+                          {items.length > 2 && <small className="month-calendar__more">+{items.length - 2} more</small>}
                         </span>
                       </button>
                     );

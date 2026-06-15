@@ -7,11 +7,16 @@
     linear-gradient(135deg, #fbf2f8 0%, #f5e6f2 36%, #eadff2 100%);
   color: #3a0f53;
   font-family: var(--font-sans);
-  padding: 1rem 1.5rem;
+  padding: 12px 20px;
 }
 
 .calendar-page--embedded {
   height: 100%;
+  padding: 0;
+}
+
+.calendar-page--embedded .calendar-board {
+  height: min(100%, 650px);
 }
 
 .calendar-shell {
@@ -145,7 +150,7 @@
 .calendar-layout {
   display: grid;
   grid-template-columns: minmax(280px, 360px) minmax(0, 1fr);
-  gap: 1.125rem;
+  gap: 16px;
   align-items: stretch;
   min-height: 0;
   overflow: hidden;
@@ -171,7 +176,7 @@
 .calendar-sidebar {
   display: grid;
   align-content: start;
-  gap: 0.75rem;
+  gap: 10px;
   min-height: 0;
   overflow: hidden;
 }
@@ -309,6 +314,95 @@
 .note-card {
   min-height: 0;
   padding: 1.125rem;
+}
+
+.note-card {
+  overflow: hidden;
+}
+
+.note-card__toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  border: 0;
+  border-radius: 18px;
+  background: rgba(255, 248, 252, 0.82);
+  color: #4b136b;
+  cursor: pointer;
+  font: inherit;
+  padding: 14px 16px;
+  text-align: left;
+  transition: background 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+}
+
+.note-card__toggle:hover {
+  background: #fff2f9;
+  box-shadow: 0 10px 24px rgba(236, 22, 140, 0.1);
+  transform: translateY(-1px);
+}
+
+.note-card__toggle-copy {
+  display: grid;
+  gap: 3px;
+}
+
+.note-card__toggle-copy strong {
+  color: #4b136b;
+  font-size: 1.02rem;
+  line-height: 1.2;
+}
+
+.note-card__toggle-copy small {
+  color: rgba(75, 19, 107, 0.56);
+  font-size: 0.78rem;
+  font-weight: 700;
+}
+
+.note-card__toggle-icon {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  flex: 0 0 auto;
+  border: 1px solid rgba(236, 22, 140, 0.18);
+  border-radius: 999px;
+  background: #ffffff;
+  color: #ec168c;
+  font-size: 1.2rem;
+  font-weight: 800;
+  box-shadow: 0 8px 18px rgba(75, 19, 107, 0.08);
+  transition: transform 220ms ease, background 180ms ease, color 180ms ease;
+}
+
+.note-card.is-open .note-card__toggle-icon {
+  background: #ec168c;
+  color: #ffffff;
+  transform: rotate(45deg);
+}
+
+.note-card__body {
+  display: grid;
+  grid-template-rows: 0fr;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+  visibility: hidden;
+  transition: grid-template-rows 260ms ease, opacity 180ms ease, margin-top 260ms ease, visibility 0ms linear 260ms;
+}
+
+.note-card.is-open .note-card__body {
+  grid-template-rows: 1fr;
+  opacity: 1;
+  margin-top: 14px;
+  pointer-events: auto;
+  visibility: visible;
+  transition: grid-template-rows 260ms ease, opacity 180ms ease, margin-top 260ms ease, visibility 0ms linear 0ms;
+}
+
+.note-card__body > .note-form {
+  min-height: 0;
 }
 
 .selected-day-list {
@@ -465,6 +559,8 @@
 .calendar-board {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
+  align-self: center;
+  height: min(100%, 680px);
   overflow: hidden;
   min-width: 0;
   min-height: 0;
@@ -474,8 +570,8 @@
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
-  gap: 0.875rem;
-  padding: 1rem 1.125rem;
+  gap: 12px;
+  padding: 13px 16px;
   background: #fffafd;
   border-bottom: 1px solid #f1dceb;
 }
@@ -483,7 +579,7 @@
 .calendar-board__toolbar h2 {
   margin: 0;
   color: #241332;
-  font-size: 1.45rem;
+  font-size: 1.35rem;
 }
 
 .calendar-view-toggle {
@@ -508,7 +604,7 @@
   border-radius: 9px;
   background: transparent;
   color: #6b3f97;
-  padding: 0.625rem 1rem;
+  padding: 9px 15px;
   text-transform: capitalize;
 }
 
@@ -535,7 +631,9 @@
 .month-calendar {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
+  align-self: stretch;
   background: #ffffff;
+  height: 100%;
   min-height: 0;
   overflow: hidden;
 }
@@ -555,12 +653,13 @@
 }
 
 .month-calendar__weekdays span {
-  padding: 0.625rem 0.5rem;
+  padding: 8px;
 }
 
 .month-calendar__grid {
-  grid-template-rows: repeat(6, minmax(0, 1fr));
+  grid-auto-rows: minmax(0, 1fr);
   border-left: 1px solid #ece9f6;
+  height: 100%;
   min-height: 0;
 }
 
@@ -568,7 +667,7 @@
   min-height: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.375rem;
+  gap: 5px;
   border: 0;
   border-right: 1px solid #ece9f6;
   border-bottom: 1px solid #ece9f6;
@@ -576,7 +675,8 @@
   color: #241332;
   cursor: pointer;
   font: inherit;
-  padding: 0.5rem 0.625rem;
+  overflow: hidden;
+  padding: 8px 10px;
   text-align: left;
 }
 
@@ -594,6 +694,7 @@
 .month-calendar__date {
   align-self: flex-end;
   color: rgba(75, 19, 107, 0.72);
+  font-size: 0.9rem;
   font-weight: 700;
 }
 
@@ -606,43 +707,57 @@
 
 .calendar-pill {
   display: grid;
-  gap: 0.0625rem;
+  gap: 0;
   border: 1px solid rgba(201, 168, 244, 0.34);
+  border-left: 4px solid #c9a8f4;
   border-radius: 10px;
   background: #efe5ff;
   color: #5b1e8c;
-  font-size: 0.68rem;
+  font-size: 0.7rem;
   font-weight: 700;
   line-height: 1.25;
   overflow: hidden;
   padding: 0.3125rem 0.4375rem;
 }
 
+.calendar-pill strong,
+.calendar-pill small {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .calendar-pill small {
   color: rgba(75, 19, 107, 0.64);
-  font-weight: 800;
+  font-size: 0.64rem;
+  font-weight: 700;
 }
 
 .calendar-pill--appointment {
   border-color: rgba(245, 167, 201, 0.42);
+  border-left-color: #f5a7c9;
   background: #ffe1ef;
   color: #b91b6b;
 }
 
 .calendar-pill--registration {
   border-color: rgba(201, 168, 244, 0.42);
+  border-left-color: #c9a8f4;
   background: #efe5ff;
   color: #5b1e8c;
 }
 
 .calendar-pill--note {
   border-color: rgba(167, 229, 221, 0.48);
+  border-left-color: #a7e5dd;
   background: #e3f8f4;
   color: #177c72;
 }
 
 .month-calendar__more {
   color: rgba(75, 19, 107, 0.58);
+  font-size: 0.66rem;
   font-weight: 700;
 }
 
@@ -1017,6 +1132,36 @@
   border-color: rgba(236, 72, 153, 0.25);
   color: #f8fafc;
   box-shadow: 0 18px 50px rgba(0, 0, 0, 0.32);
+}
+
+.participant-home--dark .note-card__toggle {
+  background: #1f2937;
+  color: #f8fafc;
+}
+
+.participant-home--dark .note-card__toggle:hover {
+  background: #263244;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
+}
+
+.participant-home--dark .note-card__toggle-copy strong {
+  color: #f8fafc;
+}
+
+.participant-home--dark .note-card__toggle-copy small {
+  color: #94a3b8;
+}
+
+.participant-home--dark .note-card__toggle-icon {
+  background: #111827;
+  border-color: rgba(236, 72, 153, 0.3);
+  color: #f472b6;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2);
+}
+
+.participant-home--dark .note-card.is-open .note-card__toggle-icon {
+  background: #ec4899;
+  color: #ffffff;
 }
 
 .participant-home--dark .mini-calendar {
