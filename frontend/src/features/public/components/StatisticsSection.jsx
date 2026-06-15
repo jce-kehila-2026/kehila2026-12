@@ -32,9 +32,7 @@ const STATISTIC_ICONS = {
 function formatStatisticDisplayValue(value) {
   if (typeof value === 'number' && Number.isFinite(value)) {
     const formatted = new Intl.NumberFormat('en-US').format(Math.max(0, Math.floor(value)));
-    // Leading LRM (‎) keeps the `+` rendered before the number (AnimatedCounter
-    // would otherwise swap a bare "+N" prefix to a "N+" suffix).
-    return `‎+${formatted}`;
+    return `${formatted}+`;
   }
   if (typeof value === 'string' && value.trim()) {
     return value;

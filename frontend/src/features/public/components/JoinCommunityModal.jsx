@@ -6,7 +6,8 @@ import { createJoinRequest } from '../services/joinRequestService';
 
 const INITIAL_FORM = {
   readyToJoin: false,
-  fullName: '',
+  firstName: '',
+  lastName: '',
   address: '',
   birthDate: '',
   cancerStory: '',
@@ -41,7 +42,8 @@ const HEBREW_WEEKDAYS = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ש'];
 function getInitialFieldErrors() {
   return {
     readyToJoin: '',
-    fullName: '',
+    firstName: '',
+    lastName: '',
     birthDate: '',
     consentToReceiveInfo: '',
     email: '',
@@ -402,8 +404,12 @@ export default function JoinCommunityModal({ isOpen, onClose }) {
       nextErrors.readyToJoin = 'נא לאשר הצטרפות';
     }
 
-    if (!formValues.fullName.trim()) {
-      nextErrors.fullName = 'נא למלא שם מלא';
+    if (!formValues.firstName.trim()) {
+      nextErrors.firstName = 'נא למלא שם פרטי';
+    }
+
+    if (!formValues.lastName.trim()) {
+      nextErrors.lastName = 'נא למלא שם משפחה';
     }
 
     const typedBirthDate = birthDateText.trim();
@@ -535,24 +541,45 @@ export default function JoinCommunityModal({ isOpen, onClose }) {
                 <h3>פרטים אישיים</h3>
                 <div className="join-modal__grid">
                   <div className="join-modal__field">
-                    <label htmlFor="join-full-name">
-                      שם מלא <span className="join-modal__required">*</span>
+                    <label htmlFor="join-first-name">
+                      שם פרטי <span className="join-modal__required">*</span>
                     </label>
-                    <small>שם פרטי ושם משפחה</small>
                     <input
-                      id="join-full-name"
-                      name="fullName"
+                      id="join-first-name"
+                      name="firstName"
                       type="text"
-                      autoComplete="name"
-                      value={formValues.fullName}
-                      onChange={(event) => updateField('fullName', event.target.value)}
+                      autoComplete="given-name"
+                      value={formValues.firstName}
+                      onChange={(event) => updateField('firstName', event.target.value)}
                       required
-                      aria-invalid={fieldErrors.fullName ? 'true' : undefined}
-                      aria-describedby={fieldErrors.fullName ? 'join-full-name-error' : undefined}
+                      aria-invalid={fieldErrors.firstName ? 'true' : undefined}
+                      aria-describedby={fieldErrors.firstName ? 'join-first-name-error' : undefined}
                     />
-                    {fieldErrors.fullName ? (
-                      <small className="join-modal__field-error" id="join-full-name-error">
-                        {fieldErrors.fullName}
+                    {fieldErrors.firstName ? (
+                      <small className="join-modal__field-error" id="join-first-name-error">
+                        {fieldErrors.firstName}
+                      </small>
+                    ) : null}
+                  </div>
+
+                  <div className="join-modal__field">
+                    <label htmlFor="join-last-name">
+                      שם משפחה <span className="join-modal__required">*</span>
+                    </label>
+                    <input
+                      id="join-last-name"
+                      name="lastName"
+                      type="text"
+                      autoComplete="family-name"
+                      value={formValues.lastName}
+                      onChange={(event) => updateField('lastName', event.target.value)}
+                      required
+                      aria-invalid={fieldErrors.lastName ? 'true' : undefined}
+                      aria-describedby={fieldErrors.lastName ? 'join-last-name-error' : undefined}
+                    />
+                    {fieldErrors.lastName ? (
+                      <small className="join-modal__field-error" id="join-last-name-error">
+                        {fieldErrors.lastName}
                       </small>
                     ) : null}
                   </div>
@@ -570,8 +597,9 @@ export default function JoinCommunityModal({ isOpen, onClose }) {
                     />
                   </div>
 
-                  <div className="join-modal__field join-modal__field--compact">
+                  <div className="join-modal__field">
                     <label htmlFor="join-birth-date">תאריך לידה</label>
+                    <small>יום / חודש / שנה</small>
                     <div className="join-modal__date" dir="rtl" ref={birthDateRef}>
                       <div className={`join-modal__date-control${fieldErrors.birthDate ? ' join-modal__date-control--error' : ''}`}>
                         <input
