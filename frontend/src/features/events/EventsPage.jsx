@@ -27,6 +27,7 @@ import appointmentsHero from '../../assets/appointments-hero.png';
 import eventsHeroBanner from '../../assets/lasteventBanner.png';
 import { useAdmin } from '../admin/context/AdminContext';
 import { getPublishedEvents } from '../admin/services/eventService';
+import { localizeField } from '../../i18n/localizeField';
 import {
   addRegistration,
   getRegistrationCounts,
@@ -1894,7 +1895,7 @@ function SuggestWorkshopModal({
   );
 }
 
-export default function EventsPage({ embedInDashboard = false }) {
+export default function EventsPage({ embedInDashboard = false, locale = 'he' }) {
   const navigate = useNavigate();
   const { currentUser, logout } = useAdmin();
   const [activeView, setActiveView] = useState(VIEW_WORKSHOPS);
@@ -1999,16 +2000,16 @@ export default function EventsPage({ embedInDashboard = false }) {
         const imageUrl = event.imageUrl || event.thumbnailUrl || event.coverImageUrl || appointmentsHero;
         const scheduleTemplate = findScheduleTemplate(event);
         const eventType = scheduleTemplate ? getScheduleTemplateEventType(scheduleTemplate) : inferEventType(event);
-        const displayTitle = scheduleTemplate ? getScheduleTemplateTitle(scheduleTemplate) : (event.title || 'Untitled Event');
+        const displayTitle = scheduleTemplate ? getScheduleTemplateTitle(scheduleTemplate) : (localizeField(event.translations?.title ?? event.title, locale) || 'Untitled Event');
         const displayCategory = eventType === 'appointment' ? 'Appointment' : 'Workshop';
         const templateStart = event.startTime || event.date;
         const providerSlots = getProviderSlots(event);
         const providerNames = [...new Set(providerSlots.map((slot) => slot.providerName))];
         const roomLabels = [...new Set(providerSlots.map((slot) => slot.room).filter(Boolean))];
-        const displayLocation = scheduleTemplate ? getScheduleTemplateLocation(scheduleTemplate) : (roomLabels.length > 1 ? 'Multiple rooms' : roomLabels[0] || event.location || 'She-Na Center');
+        const displayLocation = scheduleTemplate ? getScheduleTemplateLocation(scheduleTemplate) : (roomLabels.length > 1 ? 'Multiple rooms' : roomLabels[0] || localizeField(event.translations?.location ?? event.location, locale) || 'She-Na Center');
         const sessionStarts = getSessionStartsForEvent(event, scheduleTemplate, providerSlots);
         const weeklySchedule = getWeeklyScheduleLabel(event, scheduleTemplate, templateStart);
-        const templateDescription = scheduleTemplate?.description || event.description || 'More details will be added soon.';
+        const templateDescription = scheduleTemplate?.description || localizeField(event.translations?.description ?? event.description, locale) || 'More details will be added soon.';
         const sessions = sessionStarts.map((sessionStart) => {
           const dateKey = toDateKey(sessionStart);
           const options = providerSlots.map((slot) => {
@@ -2082,7 +2083,7 @@ export default function EventsPage({ embedInDashboard = false }) {
           sessionOptions,
         };
       }),
-    [counts, events, registeringId],
+    [counts, events, registeringId, locale],
   );
 
   const registeredEvents = useMemo(

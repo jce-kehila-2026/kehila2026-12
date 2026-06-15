@@ -412,7 +412,7 @@ export default function ParticipantHome({ initialView = 'home' }) {
 
           {activeView === 'events' && (
             <section className="participant-content participant-content--single participant-content--events">
-              <EventsPage embedInDashboard />
+              <EventsPage embedInDashboard locale={locale} />
             </section>
           )}
 
@@ -422,7 +422,7 @@ export default function ParticipantHome({ initialView = 'home' }) {
                 <div className="participant-section-heading">
                   <h2>Workshops</h2>
                 </div>
-                <WorkshopFeed />
+                <WorkshopFeed locale={locale} />
               </div>
             </section>
           )}
