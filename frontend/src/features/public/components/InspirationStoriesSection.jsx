@@ -8,6 +8,14 @@ import PublicSectionHeading from './PublicSectionHeading';
 import { usePublicLocale } from '../context/PublicLocaleContext';
 import useHorizontalCardCarousel from '../hooks/useHorizontalCardCarousel';
 
+function isEnglishOnlyStory({ name, story, occupation } = {}) {
+  const text = [name, occupation, story]
+    .filter((value) => typeof value === 'string' && value.trim())
+    .join(' ');
+
+  return /[A-Za-z]/.test(text) && !/[\u0590-\u08ff]/.test(text);
+}
+
 function getInitials(name) {
   return (name || '')
     .split(' ')
@@ -47,6 +55,7 @@ function StoryAvatar({ name, imageUrl }) {
 
 function StoryCard({ story, onReadMore, readMoreLabel }) {
   const { name, story: body, imageUrl, occupation } = story;
+  const isLtr = isEnglishOnlyStory(story);
   const textRef = useRef(null);
   const [isOverflowing, setIsOverflowing] = useState(false);
 
@@ -76,15 +85,17 @@ function StoryCard({ story, onReadMore, readMoreLabel }) {
   }, [body]);
 
   return (
-    <article className="public-team-card public-story-card reveal">
+    <article
+      className={`public-team-card public-story-card reveal${isLtr ? ' public-story-card--ltr' : ''}`}
+    >
       <StoryAvatar name={name} imageUrl={imageUrl} />
       {name || occupation ? (
-        <div className="public-story-card__identity">
+        <div className="public-story-card__identity" dir={isLtr ? 'ltr' : undefined}>
           {name ? <h3>{name}</h3> : null}
           {occupation ? <p className="public-team-card__role">{occupation}</p> : null}
         </div>
       ) : null}
-      <div className="public-story-card__content">
+      <div className="public-story-card__content" dir={isLtr ? 'ltr' : undefined}>
         {body ? (
           <p
             ref={textRef}
@@ -133,6 +144,7 @@ function StoryModal({ story, onClose, closeLabel }) {
   }
 
   const { name, story: body, imageUrl, occupation } = story;
+  const isLtr = isEnglishOnlyStory(story);
 
   return createPortal(
     <div
@@ -155,7 +167,7 @@ function StoryModal({ story, onClose, closeLabel }) {
         >
           <CloseRoundedIcon fontSize="inherit" aria-hidden="true" />
         </button>
-        <div className="public-story-modal__header">
+        <div className="public-story-modal__header" dir={isLtr ? 'ltr' : undefined}>
           <StoryAvatar name={name} imageUrl={imageUrl} />
           <div className="public-story-modal__identity">
             {name ? <h3 id={titleId}>{name}</h3> : null}
@@ -163,7 +175,10 @@ function StoryModal({ story, onClose, closeLabel }) {
           </div>
         </div>
         <div className="public-story-modal__scroll">
-          <div className="public-story-modal__body">
+          <div
+            className={`public-story-modal__body${isLtr ? ' public-story-modal__body--ltr' : ''}`}
+            dir={isLtr ? 'ltr' : undefined}
+          >
             {body ? (
               <p className="public-team-card__description public-story-modal__text">"{body}"</p>
             ) : null}
@@ -193,53 +208,64 @@ export default function InspirationStoriesSection({ stories = [] }) {
       id="stories"
       aria-labelledby="public-stories-title"
     >
-      <PublicSectionHeading
-        eyebrow={t('storiesEyebrow')}
-        title={t('storiesTitle')}
-        titleId="public-stories-title"
-        subtitle={t('storiesSubtitle')}
-      />
+      <div className="public-pink-section-decor" aria-hidden="true">
+        <span className="public-pink-section-decor__dots public-pink-section-decor__dots--mesh" />
+        <span className="public-pink-section-decor__blob public-pink-section-decor__blob--pink" />
+        <span className="public-pink-section-decor__blob public-pink-section-decor__blob--lavender" />
+        <span className="public-pink-section-decor__blob public-pink-section-decor__blob--purple" />
+        <span className="public-pink-section-decor__dots public-pink-section-decor__dots--one" />
+        <span className="public-pink-section-decor__dots public-pink-section-decor__dots--two" />
+      </div>
 
-      {!hasStories ? (
-        <EmptyState message={t('emptyStories')} />
-      ) : (
-        <div className={[
-          'public-stories-slider',
-          'public-card-carousel',
-          !carousel.showControls ? 'public-card-carousel--without-controls' : '',
-          carousel.fadeLeft ? 'public-card-carousel--fade-left' : '',
-          carousel.fadeRight ? 'public-card-carousel--fade-right' : '',
-        ].filter(Boolean).join(' ')}>
-          {carousel.showControls ? <button
-            type="button"
-            className="public-stories-slider__arrow public-stories-slider__arrow--prev public-card-carousel__button"
-            onClick={() => carousel.scrollByCards(-1)}
-            disabled={!carousel.canScrollPrev}
-            aria-label="Previous"
-          >
-            {direction === 'rtl' ? <ChevronRightIcon /> : <ChevronLeftIcon />}
-          </button> : null}
-          <div className="public-stories-slider__track public-card-carousel__track" ref={carousel.scrollerRef}>
-            {safeStories.map((story) => (
-              <StoryCard
-                key={story.id}
-                story={story}
-                onReadMore={setSelectedStory}
-                readMoreLabel={t('storyReadMore')}
-              />
-            ))}
+      <div className="public-stories-section__inner">
+        <PublicSectionHeading
+          eyebrow={t('storiesEyebrow')}
+          title={t('storiesTitle')}
+          titleId="public-stories-title"
+          subtitle={t('storiesSubtitle')}
+        />
+
+        {!hasStories ? (
+          <EmptyState message={t('emptyStories')} />
+        ) : (
+          <div className={[
+            'public-stories-slider',
+            'public-card-carousel',
+            !carousel.showControls ? 'public-card-carousel--without-controls' : '',
+            carousel.fadeLeft ? 'public-card-carousel--fade-left' : '',
+            carousel.fadeRight ? 'public-card-carousel--fade-right' : '',
+          ].filter(Boolean).join(' ')}>
+            {carousel.showControls ? <button
+              type="button"
+              className="public-stories-slider__arrow public-stories-slider__arrow--prev public-card-carousel__button"
+              onClick={() => carousel.scrollByCards(-1)}
+              disabled={!carousel.canScrollPrev}
+              aria-label="Previous"
+            >
+              {direction === 'rtl' ? <ChevronRightIcon /> : <ChevronLeftIcon />}
+            </button> : null}
+            <div className="public-stories-slider__track public-card-carousel__track" ref={carousel.scrollerRef}>
+              {safeStories.map((story) => (
+                <StoryCard
+                  key={story.id}
+                  story={story}
+                  onReadMore={setSelectedStory}
+                  readMoreLabel={t('storyReadMore')}
+                />
+              ))}
+            </div>
+            {carousel.showControls ? <button
+              type="button"
+              className="public-stories-slider__arrow public-stories-slider__arrow--next public-card-carousel__button"
+              onClick={() => carousel.scrollByCards(1)}
+              disabled={!carousel.canScrollNext}
+              aria-label="Next"
+            >
+              {direction === 'rtl' ? <ChevronLeftIcon /> : <ChevronRightIcon />}
+            </button> : null}
           </div>
-          {carousel.showControls ? <button
-            type="button"
-            className="public-stories-slider__arrow public-stories-slider__arrow--next public-card-carousel__button"
-            onClick={() => carousel.scrollByCards(1)}
-            disabled={!carousel.canScrollNext}
-            aria-label="Next"
-          >
-            {direction === 'rtl' ? <ChevronLeftIcon /> : <ChevronRightIcon />}
-          </button> : null}
-        </div>
-      )}
+        )}
+      </div>
 
       {selectedStory ? (
         <StoryModal

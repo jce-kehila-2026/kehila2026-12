@@ -49,6 +49,15 @@ export default function CommunitySupportCta({ onDonationClick, sectionId = 'dona
       id={sectionId}
       aria-labelledby="public-support-cta-title"
     >
+      <div className="public-pink-section-decor" aria-hidden="true">
+        <span className="public-pink-section-decor__dots public-pink-section-decor__dots--mesh" />
+        <span className="public-pink-section-decor__blob public-pink-section-decor__blob--pink" />
+        <span className="public-pink-section-decor__blob public-pink-section-decor__blob--lavender" />
+        <span className="public-pink-section-decor__blob public-pink-section-decor__blob--purple" />
+        <span className="public-pink-section-decor__dots public-pink-section-decor__dots--one" />
+        <span className="public-pink-section-decor__dots public-pink-section-decor__dots--two" />
+      </div>
+
       <div className="public-support-cta__inner">
         <div className="public-support-cta__content">
           <PublicSectionHeading

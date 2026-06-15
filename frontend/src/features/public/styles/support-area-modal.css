@@ -100,10 +100,10 @@
   color: var(--modal-purple);
   font-size: 1.15rem;
   cursor: pointer;
-  background: rgba(255, 255, 255, 0.88);
-  border: 1px solid rgba(217, 70, 161, 0.2);
+  background: #ffffff;
+  border: 1px solid rgba(91, 30, 140, 0.22);
   border-radius: 50%;
-  box-shadow: 0 4px 18px rgba(91, 30, 140, 0.1);
+  box-shadow: 0 10px 24px rgba(91, 30, 140, 0.14);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   transition:
@@ -117,10 +117,15 @@
 .support-area-modal__close:hover,
 .support-area-modal__close:focus-visible {
   color: #ffffff;
-  background: linear-gradient(135deg, var(--modal-pink) 0%, var(--modal-purple-mid) 100%);
+  background: linear-gradient(135deg, #df327b, #cf1f70);
   border-color: transparent;
-  box-shadow: 0 8px 22px rgba(217, 70, 161, 0.35);
-  transform: scale(1.06);
+  box-shadow: 0 16px 30px rgba(207, 31, 112, 0.34);
+  transform: translateY(-2px) scale(1.05);
+}
+
+.support-area-modal__close:focus-visible {
+  outline: 3px solid rgba(231, 51, 134, 0.28);
+  outline-offset: 3px;
 }
 
 .support-area-modal__header {
