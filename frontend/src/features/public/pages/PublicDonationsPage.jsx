@@ -53,7 +53,6 @@ function PublicDonationsPageContent() {
         organization={content.organization}
         onJoinClick={() => setIsJoinModalOpen(true)}
         onVolunteerClick={() => setIsVolunteerModalOpen(true)}
-        showHomeDropdown={false}
       />
       <main id="public-main">
         <CommunitySupportCta

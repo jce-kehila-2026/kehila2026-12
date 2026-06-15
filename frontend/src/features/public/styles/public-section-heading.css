@@ -48,7 +48,10 @@
 }
 
 .public-section-heading__title {
+  display: inline-block;
+  width: 100%;
   margin: 0;
+  padding-block: 0.04em 0.12em;
   background: linear-gradient(92deg, var(--section-heading-pink) 0%, #d04da8 38%, var(--section-heading-purple) 100%);
   background-clip: text;
   -webkit-background-clip: text;
@@ -59,6 +62,9 @@
   font-weight: 600;
   line-height: 1.1;
   letter-spacing: 0.03em;
+  overflow: visible;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
 }
 
 .public-section-heading__divider {
