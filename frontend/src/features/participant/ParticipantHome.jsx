@@ -399,6 +399,7 @@ export default function ParticipantHome({ initialView = 'home' }) {
               onViewCommunity={handleViewCommunity}
               latestNotification={notifications?.[0] ?? null}
               onOpenNotifications={handleOpenNotifications}
+              locale={locale}
             />
           )}
 

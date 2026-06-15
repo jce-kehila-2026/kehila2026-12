@@ -132,6 +132,7 @@ export function normalizeDashboardEvent(raw) {
     title: raw.title,
     category: raw.category,
     location: raw.location,
+    translations: raw.translations || null,
     targetDate,
     dateLabel: formatDashboardDateLabel(targetDate),
     timeLabel: formatDashboardTimeLabel(targetDate),

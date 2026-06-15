@@ -179,24 +179,35 @@ async function mapEventRowToRaw(row) {
   if (!startsAt) return null;
 
   let category = row.category || row.eventType || row.type;
+  let title = row.eventTitle || row.title || 'Event';
+  let location = row.eventLocation || row.room || row.location || '';
+  let translations = row.translations || null;
 
-  if ((!category || category === 'registration') && row.eventId) {
+  if (row.eventId) {
     try {
       const eventSnap = await getDoc(doc(db, 'events', row.eventId));
       if (eventSnap.exists()) {
         const eventData = eventSnap.data() || {};
-        category = eventData.category || eventData.type || category;
+        if (!category || category === 'registration') {
+          category = eventData.category || eventData.type || category;
+        }
+        // Pull the canonical title/location + stored translations from the event
+        // doc so the dashboard card can render in the participant's language.
+        title = eventData.title || title;
+        location = eventData.location || location;
+        translations = eventData.translations || translations;
       }
     } catch (error) {
-      console.warn('[Dashboard] Could not hydrate event category:', error);
+      console.warn('[Dashboard] Could not hydrate event:', error);
     }
   }
 
   return {
     id: row.bookingId || row.id,
-    title: row.eventTitle || row.title || 'Event',
+    title,
     category: category || 'Event',
-    location: row.eventLocation || row.room || row.location || '',
+    location,
+    translations,
     startsAt,
   };
 }
