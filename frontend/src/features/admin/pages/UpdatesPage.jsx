@@ -12,6 +12,7 @@ import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import GroupOutlinedIcon from '@mui/icons-material/GroupOutlined';
 import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
 import { useAdmin } from '../context/AdminContext';
+import { localizeField } from '../../../i18n/localizeField';
 import {
   createUpdate,
   fetchUpdates,
@@ -161,9 +162,9 @@ export default function UpdatesPage() {
   function handleProceedEmail() {
     if (!emailTarget || emailList.length === 0) return;
     const bcc = emailList.join(',');
-    const subject = encodeURIComponent(`She-Na Update: ${emailTarget.title}`);
+    const subject = encodeURIComponent(`She-Na Update: ${localizeField(emailTarget.title, 'he')}`);
     const body = encodeURIComponent(
-      `Hello,\n\n${emailTarget.body}\n\nBest regards,\nShe-Na Team`
+      `Hello,\n\n${localizeField(emailTarget.body, 'he')}\n\nBest regards,\nShe-Na Team`
     );
     window.location.href = `mailto:?bcc=${bcc}&subject=${subject}&body=${body}`;
     setEmailTarget(null);
@@ -238,8 +239,8 @@ export default function UpdatesPage() {
               </div>
 
               <div className="updates-page__card-body">
-                <h3 className="updates-page__card-title">{update.title}</h3>
-                <p className="updates-page__card-text">{update.body}</p>
+                <h3 className="updates-page__card-title">{localizeField(update.title, 'he')}</h3>
+                <p className="updates-page__card-text">{localizeField(update.body, 'he')}</p>
                 <div className="updates-page__card-meta">
                   <span>{relativeTime(update.createdAt)}</span>
                   {update.createdByName && <span>by {update.createdByName}</span>}
@@ -404,8 +405,8 @@ export default function UpdatesPage() {
               {/* Update preview */}
               <div className="updates-email-modal__preview">
                 <p className="updates-email-modal__preview-label">Update</p>
-                <p className="updates-email-modal__preview-title">{emailTarget.title}</p>
-                <p className="updates-email-modal__preview-body">{emailTarget.body}</p>
+                <p className="updates-email-modal__preview-title">{localizeField(emailTarget.title, 'he')}</p>
+                <p className="updates-email-modal__preview-body">{localizeField(emailTarget.body, 'he')}</p>
               </div>
 
               {/* Info / status */}

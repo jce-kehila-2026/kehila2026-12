@@ -36,6 +36,7 @@ import useDailyMotivation from './home/useDailyMotivation';
 import ParticipantSidebarProfile from './components/ParticipantSidebarProfile';
 import ParticipantHeader from './components/ParticipantHeader';
 import NotificationsDropdown from './NotificationsDropdown';
+import { localizeField } from '../../i18n/localizeField';
 import './ParticipantHome.css';
 import './styles/participant-dark-mode.css';
 
@@ -92,10 +93,17 @@ export default function ParticipantHome({ initialView = 'home' }) {
   const notifBellRef = useRef(null);
 
   const notifications = useMemo(
-    () => [...announcements, ...activity].sort(
-      (a, b) => (b.createdAt?.toMillis?.() ?? 0) - (a.createdAt?.toMillis?.() ?? 0),
-    ),
-    [announcements, activity],
+    () => [...announcements, ...activity]
+      .map((item) => ({
+        ...item,
+        // Admin announcements carry { he, en, ar } title/body; activity items
+        // are plain strings. localizeField handles both, picking the current
+        // locale with a graceful fallback.
+        title: localizeField(item.title, locale),
+        body: localizeField(item.body, locale),
+      }))
+      .sort((a, b) => (b.createdAt?.toMillis?.() ?? 0) - (a.createdAt?.toMillis?.() ?? 0)),
+    [announcements, activity, locale],
   );
 
   const unreadCount = useMemo(
