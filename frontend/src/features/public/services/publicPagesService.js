@@ -614,6 +614,7 @@ function mergePartner(partner, index) {
     logoUrl: safeString(safe.logoUrl) || (DEFAULT_PARTNERS.find((d) => d.id === safeString(safe.id))?.logoUrl ?? ''),
     description: safeString(safe.description),
     order,
+    ...(safe.translations ? { translations: safe.translations } : {}),
   };
 }
 

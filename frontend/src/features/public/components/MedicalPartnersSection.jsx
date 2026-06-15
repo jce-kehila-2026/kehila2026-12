@@ -1,7 +1,9 @@
+import { useMemo } from 'react';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import PublicSectionHeading from './PublicSectionHeading';
 import { usePublicLocale } from '../context/PublicLocaleContext';
+import { localizeField } from '../../../i18n/localizeField';
 import '../styles/public-medical-partners-section.css';
 import useHorizontalCardCarousel from '../hooks/useHorizontalCardCarousel';
 
@@ -16,11 +18,21 @@ function CardDivider() {
 }
 
 export default function MedicalPartnersSection({ partners = [] }) {
-  const { direction, t } = usePublicLocale();
+  const { direction, t, locale } = usePublicLocale();
+
+  // Localize admin-edited partner descriptions (org names left as-is).
+  const localizedPartners = useMemo(() => {
+    const list = Array.isArray(partners) ? partners : [];
+    return list.map((partner) => ({
+      ...partner,
+      description: localizeField(partner.translations?.description ?? partner.description, locale),
+    }));
+  }, [partners, locale]);
+
   const carousel = useHorizontalCardCarousel({
     cardSelector: '.medical-partners__card',
     direction,
-    itemCount: partners.length,
+    itemCount: localizedPartners.length,
   });
 
   return (
@@ -65,7 +77,7 @@ export default function MedicalPartnersSection({ partners = [] }) {
           </button> : null}
 
           <div className="medical-partners__scroll-track public-card-carousel__track stagger-children" ref={carousel.scrollerRef}>
-            {partners.map((partner) => (
+            {localizedPartners.map((partner) => (
               <article className="medical-partners__card reveal" key={partner.id}>
                 <div className="medical-partner-logo-wrap">
                   {partner.logoUrl ? (

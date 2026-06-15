@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db, auth } from '../../../firebase';
 import { logAuditEvent } from '../services/auditService';
+import { isTranslationConfigured, translateItems } from '../services/translationService';
 import {
   PUBLIC_PAGES_COLLECTION,
   PUBLIC_HOME_DOC_ID,
@@ -161,13 +162,23 @@ export default function PartnersManagementPage() {
     const user = auth.currentUser;
     const updatedBy = user?.email || user?.uid || '';
     const ref = doc(db, PUBLIC_PAGES_COLLECTION, PUBLIC_HOME_DOC_ID);
+    // Translate the description (not org names) to { he, en, ar } once on save.
+    let translatedPartners = nextPartners;
+    if (isTranslationConfigured()) {
+      try {
+        translatedPartners = await translateItems(nextPartners, ['description']);
+      } catch (err) {
+        console.error('Partners translation failed; saving original only:', err);
+      }
+    }
     await updateDoc(ref, {
-      partners: nextPartners.map((p) => ({
+      partners: translatedPartners.map((p) => ({
         id: p.id,
         name: p.name,
         logoUrl: p.logoUrl,
         description: p.description,
         order: p.order,
+        ...(p.translations ? { translations: p.translations } : {}),
       })),
       updatedAt: serverTimestamp(),
       updatedBy,
