@@ -123,19 +123,18 @@ export function localizeLearnTogetherCard(card, index, locale) {
   const pack = getLocalePack(locale);
   const localized =
     pack?.learnTogether?.cards?.[card.id] ??
-    Object.values(pack?.learnTogether?.cards ?? {})[index];
+    Object.values(pack?.learnTogether?.cards ?? {})[index] ??
+    null;
 
-  if (!localized) {
-    return card;
-  }
-
+  const fromAzure = (field) => localizeField(card.translations?.[field], locale);
   const popup = card.popup && typeof card.popup === 'object' ? card.popup : {};
-  const localizedPopup = localized.popup ?? {};
+  const localizedPopup = localized?.popup ?? {};
 
   return {
     ...card,
-    title: pickLocalized(locale, card.title, localized.title),
-    description: pickLocalized(locale, card.description, localized.description),
+    title: fromAzure('title') || pickLocalized(locale, card.title, localized?.title),
+    description: fromAzure('description') || pickLocalized(locale, card.description, localized?.description),
+    // Popup modal content still uses the hand pack / Hebrew source for now.
     popup: {
       ...popup,
       title: pickLocalized(locale, popup.title, localizedPopup.title),
@@ -155,17 +154,14 @@ export function localizeLearnTogether(learnTogether, locale) {
   }
 
   const pack = getLocalePack(locale);
-  if (!pack?.learnTogether) {
-    return learnTogether;
-  }
-
-  const { learnTogether: lt } = pack;
+  const lt = pack?.learnTogether || {};
+  const fromAzure = (field) => localizeField(learnTogether.translations?.[field], locale);
 
   return {
     ...learnTogether,
-    eyebrow: pickLocalized(locale, learnTogether.eyebrow, lt.eyebrow),
-    title: pickLocalized(locale, learnTogether.title, lt.title),
-    paragraph: pickLocalized(locale, learnTogether.paragraph, lt.paragraph),
+    eyebrow: fromAzure('eyebrow') || pickLocalized(locale, learnTogether.eyebrow, lt.eyebrow),
+    title: fromAzure('title') || pickLocalized(locale, learnTogether.title, lt.title),
+    paragraph: fromAzure('paragraph') || pickLocalized(locale, learnTogether.paragraph, lt.paragraph),
     cards: Array.isArray(learnTogether.cards)
       ? learnTogether.cards.map((card, index) => localizeLearnTogetherCard(card, index, locale))
       : learnTogether.cards,

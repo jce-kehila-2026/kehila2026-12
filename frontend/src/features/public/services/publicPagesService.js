@@ -517,6 +517,7 @@ function mergeLearnTogetherCard(card, index) {
     order,
     createdAt: safe.createdAt || null,
     popup: mergeLearnTogetherPopup(safe.popup),
+    ...(safe.translations ? { translations: safe.translations } : {}),
   };
 }
 
@@ -536,6 +537,7 @@ export function mergeLearnTogether(learnTogether) {
     paragraph:
       safeString(safe.paragraph).trim() || DEFAULT_LEARN_TOGETHER.paragraph,
     cards,
+    ...(safe.translations ? { translations: safe.translations } : {}),
   };
 }
 
