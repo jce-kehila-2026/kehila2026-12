@@ -260,7 +260,11 @@ export default function PublicNavbar({
 
               const isContactLink = link.href === '#contact';
               const isActive = isContactLink && activeSection === 'contact';
-              const href = link.href.startsWith('#') ? resolveHomepageHref(link.href) : link.href;
+              const href = isContactLink
+                ? '#contact'
+                : link.href.startsWith('#')
+                  ? resolveHomepageHref(link.href)
+                  : link.href;
 
               return (
                 <a
@@ -269,6 +273,11 @@ export default function PublicNavbar({
                   className={isActive ? 'public-navbar__link--active' : undefined}
                   aria-current={isActive ? 'page' : undefined}
                   onClick={(event) => {
+                    if (isContactLink) {
+                      handleCurrentPageSectionClick(event, link.href, location.pathname);
+                      return;
+                    }
+
                     if (link.href.startsWith('#')) {
                       handleCurrentPageSectionClick(event, link.href, '/public');
                       return;
@@ -291,10 +300,10 @@ export default function PublicNavbar({
               {t('navPersonalArea')}
             </a>
             <div className="public-navbar__actions-end">
-              <PublicLanguageSwitcher />
               <a className="public-navbar__cta public-navbar__cta--primary" href="#volunteer" onClick={handleVolunteerClick}>
                 {t('navVolunteer')}
               </a>
+              <PublicLanguageSwitcher />
             </div>
           </div>
         </div>

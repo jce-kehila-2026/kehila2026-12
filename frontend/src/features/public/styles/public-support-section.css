@@ -221,9 +221,9 @@
 .public-homepage .public-section--learn-together .public-support__scroll-btn:hover,
 .public-homepage .public-section--learn-together .public-support__scroll-btn:focus-visible {
   color: #ffffff;
-  background: linear-gradient(135deg, var(--support-pink) 0%, var(--support-purple-mid) 100%);
+  background: linear-gradient(135deg, #e73386, #dc2577);
   border-color: transparent;
-  box-shadow: 0 12px 28px rgba(217, 70, 161, 0.32);
+  box-shadow: 0 14px 26px rgba(223, 50, 123, 0.24);
   transform: translateY(-2px);
 }
 
@@ -243,13 +243,7 @@
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   -ms-overflow-style: none;
-  mask-image: linear-gradient(
-    to right,
-    transparent 0,
-    #000 40px,
-    #000 calc(100% - 40px),
-    transparent 100%
-  );
+  mask-image: none;
 }
 
 .public-homepage .public-section--learn-together .services-grid-wrapper::-webkit-scrollbar {
@@ -270,10 +264,11 @@
 }
 
 .public-homepage .public-section--learn-together .services-grid-wrapper .public-support__card {
-  flex: 0 0 auto;
-  width: clamp(280px, calc((100cqw - 2 * var(--services-scroll-gap)) / 3), 400px);
+  flex: 0 0 var(--public-home-card-width);
+  width: var(--public-home-card-width);
   height: auto;
   min-height: 0;
+  align-self: stretch;
   border-radius: 30px;
   scroll-snap-align: start;
 }
@@ -364,6 +359,7 @@
 }
 
 .public-homepage .public-section--learn-together .public-support__body {
+  flex: 1 1 auto;
   gap: 12px;
   min-height: 0;
   padding-block: 40px 32px;
@@ -421,23 +417,9 @@
   box-shadow: 0 6px 18px rgba(91, 30, 140, 0.08);
 }
 
-.public-homepage .public-section--learn-together .public-support__more-icon {
-  width: 1.65rem;
-  height: 1.65rem;
-  color: var(--support-pink);
-  background: rgba(247, 214, 234, 0.55);
-  box-shadow: none;
-}
-
 .public-homepage .public-section--learn-together .public-support__more:hover,
 .public-homepage .public-section--learn-together .public-support__more:focus-visible {
   transform: translateY(-3px);
-}
-
-.public-homepage .public-section--learn-together .public-support__more:hover .public-support__more-icon,
-.public-homepage .public-section--learn-together .public-support__more:focus-visible .public-support__more-icon {
-  color: #ffffff;
-  background: rgba(255, 255, 255, 0.22);
 }
 
 @media (max-width: 900px) {
@@ -459,13 +441,7 @@
   }
 
   .public-homepage .public-section--learn-together .services-grid-wrapper {
-    mask-image: linear-gradient(
-      to right,
-      transparent 0,
-      #000 20px,
-      #000 calc(100% - 20px),
-      transparent 100%
-    );
+    mask-image: none;
   }
 }
 
@@ -747,9 +723,9 @@
 .public-homepage .public-section--support .public-support__more:hover,
 .public-homepage .public-section--support .public-support__more:focus-visible {
   color: #ffffff;
-  background: linear-gradient(135deg, var(--support-pink) 0%, var(--support-purple-mid) 100%);
+  background: linear-gradient(135deg, #e73386, #dc2577);
   border-color: transparent;
-  box-shadow: 0 12px 28px rgba(217, 70, 161, 0.32);
+  box-shadow: 0 14px 26px rgba(223, 50, 123, 0.24);
   transform: translateY(-2px);
 }
 
@@ -763,6 +739,12 @@
 .public-homepage .public-section--support .public-support__more:focus-visible {
   outline: 2px solid rgba(138, 45, 168, 0.45);
   outline-offset: 3px;
+}
+
+.public-homepage .public-section--support.public-section--learn-together .public-support__more {
+  justify-content: center;
+  gap: 0;
+  padding-inline: 28px;
 }
 
 /* Loading / error inside section */
@@ -789,7 +771,7 @@
 
 @media (max-width: 1180px) {
   .public-homepage .public-section--learn-together .services-grid-wrapper .public-support__card {
-    width: clamp(260px, calc((100cqw - var(--services-scroll-gap)) / 2), 400px);
+    width: var(--public-home-card-width);
   }
 }
 
@@ -809,7 +791,7 @@
   }
 
   .public-homepage .public-section--learn-together .services-grid-wrapper .public-support__card {
-    width: clamp(260px, calc(100cqw - 24px), 400px);
+    width: var(--public-home-card-width);
   }
 
   .public-homepage .public-section--support .public-support__media {

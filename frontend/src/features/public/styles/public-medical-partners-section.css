@@ -113,6 +113,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  background: transparent;
 }
 
 .public-homepage .public-section--medical-partners .medical-partners__nav-btn {
@@ -149,10 +150,12 @@
   gap: var(--public-grid-gap, clamp(20px, 2.4vw, 28px));
   width: 100%;
   overflow-x: auto;
+  overflow-y: hidden;
   scroll-snap-type: x mandatory;
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
-  padding-block-end: 8px; /* room for the scrollbar (hidden but some browsers need space) */
+  padding-block: 10px 14px;
+  background: transparent;
   /* hide scrollbar cross-browser */
   scrollbar-width: none;
 }
@@ -167,7 +170,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  flex: 0 0 clamp(240px, 26vw, 300px);
+  flex: 0 0 var(--public-home-card-width);
   scroll-snap-align: start;
   padding-block-start: clamp(16px, 1.8vw, 22px);
   padding-block-end: clamp(26px, 2.8vw, 32px);
@@ -187,6 +190,15 @@
   border-color: rgba(217, 70, 161, 0.4);
   transform: translate3d(0, -8px, 0);
   box-shadow: var(--mp-card-shadow-hover);
+}
+
+.public-team-partners-page
+  .public-section--medical-partners
+  .medical-partners__card,
+.public-team-partners-page
+  .public-section--medical-partners
+  .medical-partners__card:hover {
+  box-shadow: none;
 }
 
 .public-homepage .public-section--medical-partners .medical-partners__name {
@@ -282,11 +294,8 @@
   }
 
   .public-homepage .public-section--medical-partners .medical-partners__card {
-    flex: 0 0 var(--partners-mobile-card-width);
-    width: var(--partners-mobile-card-width);
-    max-width: 100%;
-    height: auto;
-    min-width: 0;
+    flex: 0 0 var(--public-home-card-width);
+    width: var(--public-home-card-width);
     scroll-snap-align: start;
   }
 

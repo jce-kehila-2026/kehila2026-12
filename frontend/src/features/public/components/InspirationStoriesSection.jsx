@@ -1,12 +1,12 @@
-import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
+import { useEffect, useId, useLayoutEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
-import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import EmptyState from './EmptyState';
 import PublicSectionHeading from './PublicSectionHeading';
 import { usePublicLocale } from '../context/PublicLocaleContext';
+import useHorizontalCardCarousel from '../hooks/useHorizontalCardCarousel';
 
 function getInitials(name) {
   return (name || '')
@@ -53,16 +53,23 @@ function StoryCard({ story, onReadMore, readMoreLabel }) {
   useLayoutEffect(() => {
     const el = textRef.current;
     if (!el) return undefined;
+    let isMounted = true;
 
     function check() {
-      setIsOverflowing(el.scrollHeight - el.clientHeight > 1);
+      if (isMounted) {
+        setIsOverflowing(el.scrollHeight - el.clientHeight > 1);
+      }
     }
 
     check();
+    const frameId = window.requestAnimationFrame(check);
     const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(check) : null;
     if (ro) ro.observe(el);
+    document.fonts?.ready.then(check);
     window.addEventListener('resize', check);
     return () => {
+      isMounted = false;
+      window.cancelAnimationFrame(frameId);
       if (ro) ro.disconnect();
       window.removeEventListener('resize', check);
     };
@@ -70,9 +77,14 @@ function StoryCard({ story, onReadMore, readMoreLabel }) {
 
   return (
     <article className="public-team-card public-story-card reveal">
-      <span className="public-team-card__quote-mark" aria-hidden="true">”</span>
       <StoryAvatar name={name} imageUrl={imageUrl} />
-      <div className="public-team-card__body">
+      {name || occupation ? (
+        <div className="public-story-card__identity">
+          {name ? <h3>{name}</h3> : null}
+          {occupation ? <p className="public-team-card__role">{occupation}</p> : null}
+        </div>
+      ) : null}
+      <div className="public-story-card__content">
         {body ? (
           <p
             ref={textRef}
@@ -87,14 +99,9 @@ function StoryCard({ story, onReadMore, readMoreLabel }) {
             className="public-story-card__read-more"
             onClick={() => onReadMore(story)}
           >
-            <span className="public-story-card__read-more-icon" aria-hidden="true">
-              <ArrowBackRoundedIcon fontSize="inherit" />
-            </span>
             <span className="public-story-card__read-more-label">{readMoreLabel}</span>
           </button>
         ) : null}
-        {name ? <h3>{name}</h3> : null}
-        {occupation ? <p className="public-team-card__role">{occupation}</p> : null}
       </div>
     </article>
   );
@@ -149,16 +156,17 @@ function StoryModal({ story, onClose, closeLabel }) {
           <CloseRoundedIcon fontSize="inherit" aria-hidden="true" />
         </button>
         <div className="public-story-modal__header">
-          <span className="public-team-card__quote-mark" aria-hidden="true">”</span>
           <StoryAvatar name={name} imageUrl={imageUrl} />
+          <div className="public-story-modal__identity">
+            {name ? <h3 id={titleId}>{name}</h3> : null}
+            {occupation ? <p className="public-team-card__role">{occupation}</p> : null}
+          </div>
         </div>
         <div className="public-story-modal__scroll">
-          <div className="public-team-card__body public-story-modal__body">
+          <div className="public-story-modal__body">
             {body ? (
               <p className="public-team-card__description public-story-modal__text">"{body}"</p>
             ) : null}
-            {name ? <h3 id={titleId}>{name}</h3> : null}
-            {occupation ? <p className="public-team-card__role">{occupation}</p> : null}
           </div>
         </div>
       </article>
@@ -169,48 +177,15 @@ function StoryModal({ story, onClose, closeLabel }) {
 
 export default function InspirationStoriesSection({ stories = [] }) {
   const { t, direction } = usePublicLocale();
-  const scrollerRef = useRef(null);
-  const [canScrollPrev, setCanScrollPrev] = useState(false);
-  const [canScrollNext, setCanScrollNext] = useState(false);
   const [selectedStory, setSelectedStory] = useState(null);
-
-  const updateBoundaries = useCallback(() => {
-    const el = scrollerRef.current;
-    if (!el) return;
-    const maxScroll = el.scrollWidth - el.clientWidth;
-    if (maxScroll <= 1) {
-      setCanScrollPrev(false);
-      setCanScrollNext(false);
-      return;
-    }
-    const absScroll = Math.abs(el.scrollLeft);
-    setCanScrollPrev(absScroll > 1);
-    setCanScrollNext(absScroll < maxScroll - 1);
-  }, []);
-
-  useEffect(() => {
-    const el = scrollerRef.current;
-    if (!el) return undefined;
-    updateBoundaries();
-    el.addEventListener('scroll', updateBoundaries, { passive: true });
-    window.addEventListener('resize', updateBoundaries);
-    return () => {
-      el.removeEventListener('scroll', updateBoundaries);
-      window.removeEventListener('resize', updateBoundaries);
-    };
-  }, [updateBoundaries, stories.length]);
-
-  function scrollByCards(delta) {
-    const el = scrollerRef.current;
-    if (!el) return;
-    const card = el.querySelector('.public-story-card');
-    const step = card ? card.getBoundingClientRect().width + 24 : el.clientWidth * 0.8;
-    const dir = direction === 'rtl' ? -delta : delta;
-    el.scrollBy({ left: dir * step, behavior: 'smooth' });
-  }
 
   const safeStories = Array.isArray(stories) ? stories : [];
   const hasStories = safeStories.length > 0;
+  const carousel = useHorizontalCardCarousel({
+    cardSelector: '.public-story-card',
+    direction,
+    itemCount: safeStories.length,
+  });
 
   return (
     <section
@@ -228,17 +203,23 @@ export default function InspirationStoriesSection({ stories = [] }) {
       {!hasStories ? (
         <EmptyState message={t('emptyStories')} />
       ) : (
-        <div className="public-stories-slider">
-          <button
+        <div className={[
+          'public-stories-slider',
+          'public-card-carousel',
+          !carousel.showControls ? 'public-card-carousel--without-controls' : '',
+          carousel.fadeLeft ? 'public-card-carousel--fade-left' : '',
+          carousel.fadeRight ? 'public-card-carousel--fade-right' : '',
+        ].filter(Boolean).join(' ')}>
+          {carousel.showControls ? <button
             type="button"
-            className="public-stories-slider__arrow public-stories-slider__arrow--prev"
-            onClick={() => scrollByCards(-1)}
-            disabled={!canScrollPrev}
+            className="public-stories-slider__arrow public-stories-slider__arrow--prev public-card-carousel__button"
+            onClick={() => carousel.scrollByCards(-1)}
+            disabled={!carousel.canScrollPrev}
             aria-label="Previous"
           >
-            <ChevronRightIcon />
-          </button>
-          <div className="public-stories-slider__track" ref={scrollerRef}>
+            {direction === 'rtl' ? <ChevronRightIcon /> : <ChevronLeftIcon />}
+          </button> : null}
+          <div className="public-stories-slider__track public-card-carousel__track" ref={carousel.scrollerRef}>
             {safeStories.map((story) => (
               <StoryCard
                 key={story.id}
@@ -248,15 +229,15 @@ export default function InspirationStoriesSection({ stories = [] }) {
               />
             ))}
           </div>
-          <button
+          {carousel.showControls ? <button
             type="button"
-            className="public-stories-slider__arrow public-stories-slider__arrow--next"
-            onClick={() => scrollByCards(1)}
-            disabled={!canScrollNext}
+            className="public-stories-slider__arrow public-stories-slider__arrow--next public-card-carousel__button"
+            onClick={() => carousel.scrollByCards(1)}
+            disabled={!carousel.canScrollNext}
             aria-label="Next"
           >
-            <ChevronLeftIcon />
-          </button>
+            {direction === 'rtl' ? <ChevronLeftIcon /> : <ChevronRightIcon />}
+          </button> : null}
         </div>
       )}
 

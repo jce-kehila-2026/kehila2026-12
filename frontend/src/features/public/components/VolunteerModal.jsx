@@ -4,7 +4,8 @@ import 'react-phone-input-2/lib/material.css';
 import sheNaLogo from '../../../assets/she-na-logo.png';
 
 const INITIAL_FORM = {
-  fullName: '',
+  firstName: '',
+  lastName: '',
   phone: '',
   email: '',
   message: '',
@@ -17,7 +18,8 @@ const DEFAULT_PHONE_COUNTRY = {
 
 function getInitialFieldErrors() {
   return {
-    fullName: '',
+    firstName: '',
+    lastName: '',
     phone: '',
     email: '',
   };
@@ -141,8 +143,12 @@ export default function VolunteerModal({ isOpen, onClose }) {
   function validateForm() {
     const nextErrors = getInitialFieldErrors();
 
-    if (!formValues.fullName.trim()) {
-      nextErrors.fullName = 'נא למלא שם';
+    if (!formValues.firstName.trim()) {
+      nextErrors.firstName = 'נא למלא שם פרטי';
+    }
+
+    if (!formValues.lastName.trim()) {
+      nextErrors.lastName = 'נא למלא שם משפחה';
     }
 
     if (!getLocalPhoneDigits(formValues.phone, phoneCountry)) {
@@ -223,23 +229,45 @@ export default function VolunteerModal({ isOpen, onClose }) {
                 <h3>פרטים להתנדבות</h3>
                 <div className="join-modal__grid join-modal__grid--volunteer">
                   <div className="join-modal__field">
-                    <label htmlFor="volunteer-full-name">
-                      שם <span className="join-modal__required">*</span>
+                    <label htmlFor="volunteer-first-name">
+                      שם פרטי <span className="join-modal__required">*</span>
                     </label>
                     <input
-                      id="volunteer-full-name"
-                      name="fullName"
+                      id="volunteer-first-name"
+                      name="firstName"
                       type="text"
-                      autoComplete="name"
-                      value={formValues.fullName}
-                      onChange={(event) => updateField('fullName', event.target.value)}
+                      autoComplete="given-name"
+                      value={formValues.firstName}
+                      onChange={(event) => updateField('firstName', event.target.value)}
                       required
-                      aria-invalid={fieldErrors.fullName ? 'true' : undefined}
-                      aria-describedby={fieldErrors.fullName ? 'volunteer-full-name-error' : undefined}
+                      aria-invalid={fieldErrors.firstName ? 'true' : undefined}
+                      aria-describedby={fieldErrors.firstName ? 'volunteer-first-name-error' : undefined}
                     />
-                    {fieldErrors.fullName ? (
-                      <small className="join-modal__field-error" id="volunteer-full-name-error">
-                        {fieldErrors.fullName}
+                    {fieldErrors.firstName ? (
+                      <small className="join-modal__field-error" id="volunteer-first-name-error">
+                        {fieldErrors.firstName}
+                      </small>
+                    ) : null}
+                  </div>
+
+                  <div className="join-modal__field">
+                    <label htmlFor="volunteer-last-name">
+                      שם משפחה <span className="join-modal__required">*</span>
+                    </label>
+                    <input
+                      id="volunteer-last-name"
+                      name="lastName"
+                      type="text"
+                      autoComplete="family-name"
+                      value={formValues.lastName}
+                      onChange={(event) => updateField('lastName', event.target.value)}
+                      required
+                      aria-invalid={fieldErrors.lastName ? 'true' : undefined}
+                      aria-describedby={fieldErrors.lastName ? 'volunteer-last-name-error' : undefined}
+                    />
+                    {fieldErrors.lastName ? (
+                      <small className="join-modal__field-error" id="volunteer-last-name-error">
+                        {fieldErrors.lastName}
                       </small>
                     ) : null}
                   </div>

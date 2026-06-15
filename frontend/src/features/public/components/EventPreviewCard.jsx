@@ -1,17 +1,6 @@
 import { useMemo, useState } from 'react';
-import { CalendarHeart, Heart, UsersRound } from 'lucide-react';
 import { getEventPreviewImageMeta } from '../constants/eventPreviewImages';
 import { usePublicLocale } from '../context/PublicLocaleContext';
-
-const EVENT_ICONS = [UsersRound, Heart, CalendarHeart];
-
-const ICON_PROPS = {
-  size: 28,
-  strokeWidth: 1.85,
-  absoluteStrokeWidth: true,
-  color: '#ffffff',
-  'aria-hidden': true,
-};
 
 function CardTitleDivider() {
   return (
@@ -29,7 +18,6 @@ export default function EventPreviewCard({ event, index = 0 }) {
   const description = event.description || event.content;
   const imageMeta = useMemo(() => getEventPreviewImageMeta(event, index), [event, index]);
   const [imageSrc, setImageSrc] = useState(imageMeta.src);
-  const Icon = EVENT_ICONS[index % EVENT_ICONS.length];
 
   function handleImageError() {
     if (imageSrc !== imageMeta.fallbackSrc) {
@@ -50,9 +38,6 @@ export default function EventPreviewCard({ event, index = 0 }) {
           onError={handleImageError}
         />
         <div className="public-event-card__media-overlay" aria-hidden="true" />
-        <span className="public-event-card__badge" aria-hidden="true">
-          <Icon {...ICON_PROPS} />
-        </span>
       </div>
 
       <div className="public-event-card__body">
