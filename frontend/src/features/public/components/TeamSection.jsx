@@ -55,6 +55,15 @@ export default function TeamSection({ members }) {
       id="team"
       aria-labelledby="public-team-section-title"
     >
+      <div className="public-team-section__decor" aria-hidden="true">
+        <span className="public-team-section__dots public-team-section__dots--mesh" />
+        <span className="public-team-section__blob public-team-section__blob--pink" />
+        <span className="public-team-section__blob public-team-section__blob--lavender" />
+        <span className="public-team-section__blob public-team-section__blob--purple" />
+        <span className="public-team-section__dots public-team-section__dots--one" />
+        <span className="public-team-section__dots public-team-section__dots--two" />
+      </div>
+
       <div className="public-team-section__inner">
         <PublicSectionHeading
           className="public-team-section__heading"

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/material.css';
 import sheNaLogo from '../../../assets/she-na-logo.png';
@@ -494,7 +495,7 @@ export default function JoinCommunityModal({ isOpen, onClose }) {
           onClick={onClose}
           ref={closeButtonRef}
         >
-          ×
+          <CloseRoundedIcon aria-hidden="true" />
         </button>
 
         <div className="join-modal__header">
