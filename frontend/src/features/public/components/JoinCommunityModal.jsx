@@ -3,6 +3,7 @@ import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/material.css';
 import sheNaLogo from '../../../assets/she-na-logo.png';
 import { createJoinRequest } from '../services/joinRequestService';
+import { usePublicLocale } from '../context/PublicLocaleContext';
 
 const INITIAL_FORM = {
   readyToJoin: false,
@@ -23,21 +24,8 @@ const DEFAULT_PHONE_COUNTRY = {
   dialCode: '972',
   format: '+... ..-...-....',
 };
-const HEBREW_MONTHS = [
-  'ינואר',
-  'פברואר',
-  'מרץ',
-  'אפריל',
-  'מאי',
-  'יוני',
-  'יולי',
-  'אוגוסט',
-  'ספטמבר',
-  'אוקטובר',
-  'נובמבר',
-  'דצמבר',
-];
-const HEBREW_WEEKDAYS = ['א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ש'];
+// Month and weekday names are derived from the active locale via Intl
+// (see monthNames/weekdayNames in the component), so no hardcoded arrays here.
 
 function getInitialFieldErrors() {
   return {
@@ -154,6 +142,7 @@ function isValidPhoneForCountry(phone, country) {
 }
 
 export default function JoinCommunityModal({ isOpen, onClose }) {
+  const { t, locale, direction } = usePublicLocale();
   const [formValues, setFormValues] = useState(INITIAL_FORM);
   const [submitState, setSubmitState] = useState({ status: 'idle', message: '' });
   const [fieldErrors, setFieldErrors] = useState(() => getInitialFieldErrors());
@@ -191,6 +180,18 @@ export default function JoinCommunityModal({ isOpen, onClose }) {
 
     return [...emptyDays, ...monthDays];
   }, [visibleBirthMonth, visibleBirthYear]);
+
+  // Localized month and weekday names for the date picker.
+  const monthNames = useMemo(
+    () => Array.from({ length: 12 }, (_, index) =>
+      new Intl.DateTimeFormat(locale, { month: 'long' }).format(new Date(2000, index, 1))),
+    [locale],
+  );
+  const weekdayNames = useMemo(() => {
+    const formatter = new Intl.DateTimeFormat(locale, { weekday: 'narrow' });
+    // 2000-01-02 is a Sunday — build a Sunday-first week.
+    return Array.from({ length: 7 }, (_, index) => formatter.format(new Date(2000, 0, 2 + index)));
+  }, [locale]);
 
   useEffect(() => {
     if (!isOpen) {
@@ -261,11 +262,11 @@ export default function JoinCommunityModal({ isOpen, onClose }) {
 
       if (name === 'birthDate') {
         if (value && !isValidDateValue(value)) {
-          nextErrors.birthDate = 'נא לבחור תאריך תקין';
+          nextErrors.birthDate = t('joinErrDateInvalid');
         } else if (value && value > today) {
-          nextErrors.birthDate = 'לא ניתן לבחור תאריך עתידי';
+          nextErrors.birthDate = t('joinErrDateFuture');
         } else if (value && value < minBirthDate) {
-          nextErrors.birthDate = 'נא לבחור תאריך תקין';
+          nextErrors.birthDate = t('joinErrDateInvalid');
         } else {
           nextErrors.birthDate = '';
         }
@@ -358,12 +359,12 @@ export default function JoinCommunityModal({ isOpen, onClose }) {
 
     if (!normalizedValue || normalizedValue < minBirthDate) {
       updateField('birthDate', '');
-      return 'נא לבחור תאריך תקין';
+      return t('joinErrDateInvalid');
     }
 
     if (normalizedValue > today) {
       updateField('birthDate', '');
-      return 'לא ניתן לבחור תאריך עתידי';
+      return t('joinErrDateFuture');
     }
 
     updateField('birthDate', normalizedValue);
@@ -401,46 +402,46 @@ export default function JoinCommunityModal({ isOpen, onClose }) {
     const nextErrors = getInitialFieldErrors();
 
     if (!formValues.readyToJoin) {
-      nextErrors.readyToJoin = 'נא לאשר הצטרפות';
+      nextErrors.readyToJoin = t('joinErrConfirm');
     }
 
     if (!formValues.firstName.trim()) {
-      nextErrors.firstName = 'נא למלא שם פרטי';
+      nextErrors.firstName = t('joinErrFirstName');
     }
 
     if (!formValues.lastName.trim()) {
-      nextErrors.lastName = 'נא למלא שם משפחה';
+      nextErrors.lastName = t('joinErrLastName');
     }
 
     const typedBirthDate = birthDateText.trim();
     const normalizedTypedBirthDate = typedBirthDate ? parseBirthDateText(typedBirthDate) : null;
 
     if (typedBirthDate && !normalizedTypedBirthDate) {
-      nextErrors.birthDate = 'נא לבחור תאריך תקין';
+      nextErrors.birthDate = t('joinErrDateInvalid');
     } else if (normalizedTypedBirthDate && normalizedTypedBirthDate > today) {
-      nextErrors.birthDate = 'לא ניתן לבחור תאריך עתידי';
+      nextErrors.birthDate = t('joinErrDateFuture');
     } else if (normalizedTypedBirthDate && normalizedTypedBirthDate < minBirthDate) {
-      nextErrors.birthDate = 'נא לבחור תאריך תקין';
+      nextErrors.birthDate = t('joinErrDateInvalid');
     } else if (formValues.birthDate && !isValidDateValue(formValues.birthDate)) {
-      nextErrors.birthDate = 'נא לבחור תאריך תקין';
+      nextErrors.birthDate = t('joinErrDateInvalid');
     } else if (formValues.birthDate && formValues.birthDate > today) {
-      nextErrors.birthDate = 'לא ניתן לבחור תאריך עתידי';
+      nextErrors.birthDate = t('joinErrDateFuture');
     } else if (formValues.birthDate && formValues.birthDate < minBirthDate) {
-      nextErrors.birthDate = 'נא לבחור תאריך תקין';
+      nextErrors.birthDate = t('joinErrDateInvalid');
     }
 
     if (!formValues.email.trim() || !isValidEmail(formValues.email)) {
-      nextErrors.email = 'נא להזין כתובת אימייל תקינה';
+      nextErrors.email = t('joinErrEmail');
     }
 
     if (!getLocalPhoneDigits(formValues.phone, phoneCountry)) {
-      nextErrors.phone = 'נא להזין מספר טלפון';
+      nextErrors.phone = t('joinErrPhone');
     } else if (!isValidPhoneForCountry(formValues.phone, phoneCountry)) {
-      nextErrors.phone = 'נא להזין מספר טלפון תקין';
+      nextErrors.phone = t('joinErrPhoneInvalid');
     }
 
     if (!formValues.consentToReceiveInfo) {
-      nextErrors.consentToReceiveInfo = 'נא לבחור האם תרצי לקבל מידע';
+      nextErrors.consentToReceiveInfo = t('joinErrConsent');
     }
 
     setFieldErrors(nextErrors);
@@ -452,7 +453,7 @@ export default function JoinCommunityModal({ isOpen, onClose }) {
     event.preventDefault();
 
     if (!validateForm()) {
-      setSubmitState({ status: 'error', message: 'נא להשלים את השדות המסומנים' });
+      setSubmitState({ status: 'error', message: t('joinErrIncomplete') });
       return;
     }
 
@@ -460,13 +461,13 @@ export default function JoinCommunityModal({ isOpen, onClose }) {
 
     try {
       await createJoinRequest(formValues);
-      setSubmitState({ status: 'success', message: 'תודה! הפרטים נשלחו בהצלחה' });
+      setSubmitState({ status: 'success', message: t('joinSuccess') });
       setFormValues(INITIAL_FORM);
       setBirthDateText('');
     } catch (error) {
       setSubmitState({
         status: 'error',
-        message: 'לא הצלחנו לשלוח את הטופס כרגע. נסי שוב בעוד רגע.',
+        message: t('joinError'),
       });
     }
   }
@@ -484,12 +485,12 @@ export default function JoinCommunityModal({ isOpen, onClose }) {
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        dir="rtl"
+        dir={direction}
       >
         <button
           className="join-modal__close"
           type="button"
-          aria-label="סגירת טופס ההצטרפות"
+          aria-label={t('joinCloseAria')}
           onClick={onClose}
           ref={closeButtonRef}
         >
@@ -499,8 +500,8 @@ export default function JoinCommunityModal({ isOpen, onClose }) {
         <div className="join-modal__header">
           <img className="join-modal__logo" src={sheNaLogo} alt="She-Na" />
           <div>
-            <h2 id={titleId}>טופס הצטרפות לעמותה</h2>
-            <p>השאירי פרטים ונחזור אלייך בהקדם</p>
+            <h2 id={titleId}>{t('joinTitle')}</h2>
+            <p>{t('joinSubtitle')}</p>
           </div>
         </div>
 
@@ -508,7 +509,7 @@ export default function JoinCommunityModal({ isOpen, onClose }) {
           <div className="join-modal__success" role="status">
             <strong>{submitState.message}</strong>
             <button className="public-button public-button--primary join-modal__done" type="button" onClick={onClose}>
-              סגירה
+              {t('joinClose')}
             </button>
           </div>
         ) : (
@@ -525,10 +526,10 @@ export default function JoinCommunityModal({ isOpen, onClose }) {
                 />
                 <span>
                   <strong>
-                    <span>אני מאשרת הצטרפות לעמותה</span>
+                    <span>{t('joinConfirm')}</span>
                     <span className="join-modal__required">*</span>
                   </strong>
-                  <small>נשמח שתהיי חלק מאיתנו</small>
+                  <small>{t('joinConfirmHint')}</small>
                   {fieldErrors.readyToJoin ? (
                     <small className="join-modal__field-error" id="join-ready-error">
                       {fieldErrors.readyToJoin}
@@ -538,11 +539,11 @@ export default function JoinCommunityModal({ isOpen, onClose }) {
               </label>
 
               <section className="join-modal__section">
-                <h3>פרטים אישיים</h3>
+                <h3>{t('joinSectionPersonal')}</h3>
                 <div className="join-modal__grid">
                   <div className="join-modal__field">
                     <label htmlFor="join-first-name">
-                      שם פרטי <span className="join-modal__required">*</span>
+                      {t('joinFirstName')} <span className="join-modal__required">*</span>
                     </label>
                     <input
                       id="join-first-name"
@@ -564,7 +565,7 @@ export default function JoinCommunityModal({ isOpen, onClose }) {
 
                   <div className="join-modal__field">
                     <label htmlFor="join-last-name">
-                      שם משפחה <span className="join-modal__required">*</span>
+                      {t('joinLastName')} <span className="join-modal__required">*</span>
                     </label>
                     <input
                       id="join-last-name"
@@ -585,8 +586,8 @@ export default function JoinCommunityModal({ isOpen, onClose }) {
                   </div>
 
                   <div className="join-modal__field">
-                    <label htmlFor="join-address">כתובת</label>
-                    <small>אזור מגורים או כתובת מלאה</small>
+                    <label htmlFor="join-address">{t('joinAddress')}</label>
+                    <small>{t('joinAddressHint')}</small>
                     <input
                       id="join-address"
                       name="address"
@@ -598,8 +599,8 @@ export default function JoinCommunityModal({ isOpen, onClose }) {
                   </div>
 
                   <div className="join-modal__field">
-                    <label htmlFor="join-birth-date">תאריך לידה</label>
-                    <small>יום / חודש / שנה</small>
+                    <label htmlFor="join-birth-date">{t('joinBirthDate')}</label>
+                    <small>{t('joinBirthDateHint')}</small>
                     <div className="join-modal__date" dir="rtl" ref={birthDateRef}>
                       <div className={`join-modal__date-control${fieldErrors.birthDate ? ' join-modal__date-control--error' : ''}`}>
                         <input
@@ -626,7 +627,7 @@ export default function JoinCommunityModal({ isOpen, onClose }) {
                           className="join-modal__date-button"
                           type="button"
                           onClick={openBirthPicker}
-                          aria-label="פתיחת בורר תאריך"
+                          aria-label={t('joinOpenDatePicker')}
                           aria-expanded={isBirthPickerOpen}
                           aria-haspopup="dialog"
                         >
@@ -635,19 +636,19 @@ export default function JoinCommunityModal({ isOpen, onClose }) {
                       </div>
 
                       {isBirthPickerOpen ? (
-                        <div className="join-modal__date-popover" role="dialog" aria-label="בחירת תאריך לידה">
+                        <div className="join-modal__date-popover" role="dialog" aria-label={t('joinDatePickerAria')}>
                           <div className="join-modal__date-header">
                             <button
                               type="button"
                               onClick={() => changeVisibleMonth(1)}
                               disabled={new Date(visibleBirthYear, visibleBirthMonth + 1, 1) > new Date(maxBirthYear, Number(today.slice(5, 7)) - 1, 1)}
-                              aria-label="החודש הבא"
+                              aria-label={t('joinNextMonth')}
                             >
                               ›
                             </button>
                             <div className="join-modal__date-heading">
                               <button type="button" onClick={() => setBirthPickerView('months')}>
-                                {HEBREW_MONTHS[visibleBirthMonth]}
+                                {monthNames[visibleBirthMonth]}
                               </button>
                               <button type="button" onClick={() => setBirthPickerView('years')}>
                                 {visibleBirthYear}
@@ -657,7 +658,7 @@ export default function JoinCommunityModal({ isOpen, onClose }) {
                               type="button"
                               onClick={() => changeVisibleMonth(-1)}
                               disabled={new Date(visibleBirthYear, visibleBirthMonth - 1, 1) < new Date(minBirthYear, Number(minBirthDate.slice(5, 7)) - 1, 1)}
-                              aria-label="החודש הקודם"
+                              aria-label={t('joinPrevMonth')}
                             >
                               ‹
                             </button>
@@ -670,7 +671,7 @@ export default function JoinCommunityModal({ isOpen, onClose }) {
                                   type="button"
                                   onClick={() => setVisibleBirthYear((currentYear) => Math.max(minBirthYear, currentYear - 12))}
                                   disabled={yearRangeStart <= minBirthYear}
-                                  aria-label="שנים קודמות"
+                                  aria-label={t('joinPrevYears')}
                                 >
                                   ‹
                                 </button>
@@ -681,7 +682,7 @@ export default function JoinCommunityModal({ isOpen, onClose }) {
                                   type="button"
                                   onClick={() => setVisibleBirthYear((currentYear) => Math.min(maxBirthYear, currentYear + 12))}
                                   disabled={yearRangeStart + 11 >= maxBirthYear}
-                                  aria-label="שנים הבאות"
+                                  aria-label={t('joinNextYears')}
                                 >
                                   ›
                                 </button>
@@ -703,7 +704,7 @@ export default function JoinCommunityModal({ isOpen, onClose }) {
 
                           {birthPickerView === 'months' ? (
                             <div className="join-modal__date-options join-modal__date-options--months">
-                              {HEBREW_MONTHS.map((monthName, index) => {
+                              {monthNames.map((monthName, index) => {
                                 const monthValue = `${visibleBirthYear}-${String(index + 1).padStart(2, '0')}-01`;
                                 const minMonthValue = minBirthDate.slice(0, 8) + '01';
                                 const maxMonthValue = today.slice(0, 8) + '01';
@@ -727,7 +728,7 @@ export default function JoinCommunityModal({ isOpen, onClose }) {
                           {birthPickerView === 'days' ? (
                             <>
                               <div className="join-modal__date-weekdays" aria-hidden="true">
-                                {HEBREW_WEEKDAYS.map((weekday) => (
+                                {weekdayNames.map((weekday) => (
                                   <span key={weekday}>{weekday}</span>
                                 ))}
                               </div>
@@ -771,10 +772,10 @@ export default function JoinCommunityModal({ isOpen, onClose }) {
               </section>
 
               <section className="join-modal__section">
-                <h3>קצת עלייך</h3>
+                <h3>{t('joinSectionAbout')}</h3>
                 <div className="join-modal__field">
-                  <label htmlFor="join-cancer-story">האם את מחלימה מסרטן?</label>
-                  <small>נשמח שתכתבי לנו כמה מילים, רק אם מתאים לך</small>
+                  <label htmlFor="join-cancer-story">{t('joinCancerQuestion')}</label>
+                  <small>{t('joinCancerHint')}</small>
                   <textarea
                     id="join-cancer-story"
                     name="cancerStory"
@@ -786,13 +787,13 @@ export default function JoinCommunityModal({ isOpen, onClose }) {
               </section>
 
               <section className="join-modal__section join-modal__section--card">
-                <h3>יצירת קשר</h3>
+                <h3>{t('joinSectionContact')}</h3>
                 <div className="join-modal__grid">
                   <div className="join-modal__field">
                     <label htmlFor="join-email">
-                      אימייל <span className="join-modal__required">*</span>
+                      {t('joinEmail')} <span className="join-modal__required">*</span>
                     </label>
-                    <small>נשלח לך עדכונים ודברים חשובים</small>
+                    <small>{t('joinEmailHint')}</small>
                     <input
                       id="join-email"
                       name="email"
@@ -813,9 +814,9 @@ export default function JoinCommunityModal({ isOpen, onClose }) {
 
                   <div className="join-modal__field">
                     <label htmlFor="join-phone">
-                      מספר טלפון <span className="join-modal__required">*</span>
+                      {t('joinPhone')} <span className="join-modal__required">*</span>
                     </label>
-                    <small>נשתמש בו רק ליצירת קשר ועדכונים חשובים</small>
+                    <small>{t('joinPhoneHint')}</small>
                     <PhoneInput
                       country={phoneCountry.countryCode || DEFAULT_PHONE_COUNTRY.countryCode}
                       value={formValues.phone.replace(/^\+/, '')}
@@ -824,7 +825,7 @@ export default function JoinCommunityModal({ isOpen, onClose }) {
                         if (getLocalPhoneDigits(formValues.phone, phoneCountry) && !isValidPhoneForCountry(formValues.phone, phoneCountry)) {
                           setFieldErrors((currentErrors) => ({
                             ...currentErrors,
-                            phone: 'נא להזין מספר טלפון תקין',
+                            phone: t('joinErrPhoneInvalid'),
                           }));
                         }
                       }}
@@ -859,13 +860,13 @@ export default function JoinCommunityModal({ isOpen, onClose }) {
               </section>
 
               <section className="join-modal__section join-modal__section--card join-modal__section--updates">
-                <h3>עדכונים וקהילה</h3>
+                <h3>{t('joinSectionUpdates')}</h3>
                 <div className="join-modal__grid join-modal__updates-grid">
                   <div className="join-modal__updates-card join-modal__field">
                     <label htmlFor="join-consent-info">
-                      הסכמה לקבלת מידע <span className="join-modal__required">*</span>
+                      {t('joinConsentLabel')} <span className="join-modal__required">*</span>
                     </label>
-                    <small>עדכונים על סדנאות, מפגשים ופעילויות</small>
+                    <small>{t('joinConsentHint')}</small>
                     <select
                       id="join-consent-info"
                       name="consentToReceiveInfo"
@@ -876,10 +877,10 @@ export default function JoinCommunityModal({ isOpen, onClose }) {
                       aria-describedby={fieldErrors.consentToReceiveInfo ? 'join-consent-info-error' : undefined}
                     >
                       <option value="" disabled>
-                        בחרי תשובה
+                        {t('joinChooseAnswer')}
                       </option>
-                      <option value="yes">כן, אשמח לקבל מידע</option>
-                      <option value="not_now">לא כרגע</option>
+                      <option value="yes">{t('joinConsentYes')}</option>
+                      <option value="not_now">{t('joinConsentNo')}</option>
                     </select>
                     {fieldErrors.consentToReceiveInfo ? (
                       <small className="join-modal__field-error" id="join-consent-info-error">
@@ -889,21 +890,21 @@ export default function JoinCommunityModal({ isOpen, onClose }) {
                   </div>
 
                   <div className="join-modal__updates-card join-modal__field join-modal__whatsapp">
-                    <span className="join-modal__field-label">קהילת WhatsApp</span>
-                    <small>הצטרפי לקהילה שלנו לעדכונים ופעילויות</small>
+                    <span className="join-modal__field-label">{t('joinWhatsappTitle')}</span>
+                    <small>{t('joinWhatsappHint')}</small>
                     <a href={WHATSAPP_COMMUNITY_URL} target="_blank" rel="noreferrer">
-                      הצטרפות ל-WhatsApp
+                      {t('joinWhatsappJoin')}
                     </a>
                   </div>
                 </div>
 
                 <div className="join-modal__field join-modal__updates-note">
-                  <label htmlFor="join-whatsapp-note">הערה קצרה</label>
+                  <label htmlFor="join-whatsapp-note">{t('joinWhatsappNote')}</label>
                   <input
                     id="join-whatsapp-note"
                     name="whatsappNote"
                     type="text"
-                    placeholder="אפשר להשאיר הערה קצרה"
+                    placeholder={t('joinWhatsappNotePlaceholder')}
                     value={formValues.whatsappNote}
                     onChange={(event) => updateField('whatsappNote', event.target.value)}
                   />
@@ -920,10 +921,10 @@ export default function JoinCommunityModal({ isOpen, onClose }) {
 
               <div className="join-modal__actions">
                 <button className="join-modal__cancel" type="button" onClick={onClose}>
-                  ביטול
+                  {t('joinCancel')}
                 </button>
                 <button className="public-button public-button--primary join-modal__submit" type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? 'שולחות...' : 'שליחה'}
+                  {isSubmitting ? t('joinSubmitting') : t('joinSubmit')}
                 </button>
               </div>
             </div>
