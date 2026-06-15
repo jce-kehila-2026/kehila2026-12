@@ -3,6 +3,7 @@ import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/material.css';
 import sheNaLogo from '../../../assets/she-na-logo.png';
+import { usePublicLocale } from '../context/PublicLocaleContext';
 
 const INITIAL_FORM = {
   firstName: '',
@@ -72,6 +73,7 @@ function isValidPhoneForCountry(phone, country) {
 }
 
 export default function VolunteerModal({ isOpen, onClose }) {
+  const { t, direction } = usePublicLocale();
   const [formValues, setFormValues] = useState(INITIAL_FORM);
   const [fieldErrors, setFieldErrors] = useState(() => getInitialFieldErrors());
   const [submitState, setSubmitState] = useState({ status: 'idle', message: '' });
@@ -145,21 +147,21 @@ export default function VolunteerModal({ isOpen, onClose }) {
     const nextErrors = getInitialFieldErrors();
 
     if (!formValues.firstName.trim()) {
-      nextErrors.firstName = 'נא למלא שם פרטי';
+      nextErrors.firstName = t('joinErrFirstName');
     }
 
     if (!formValues.lastName.trim()) {
-      nextErrors.lastName = 'נא למלא שם משפחה';
+      nextErrors.lastName = t('joinErrLastName');
     }
 
     if (!getLocalPhoneDigits(formValues.phone, phoneCountry)) {
-      nextErrors.phone = 'נא להזין מספר טלפון';
+      nextErrors.phone = t('joinErrPhone');
     } else if (!isValidPhoneForCountry(formValues.phone, phoneCountry)) {
-      nextErrors.phone = 'נא להזין מספר טלפון תקין';
+      nextErrors.phone = t('joinErrPhoneInvalid');
     }
 
     if (!formValues.email.trim() || !isValidEmail(formValues.email)) {
-      nextErrors.email = 'נא להזין כתובת אימייל תקינה';
+      nextErrors.email = t('joinErrEmail');
     }
 
     setFieldErrors(nextErrors);
@@ -171,12 +173,12 @@ export default function VolunteerModal({ isOpen, onClose }) {
     event.preventDefault();
 
     if (!validateForm()) {
-      setSubmitState({ status: 'error', message: 'נא להשלים את השדות המסומנים' });
+      setSubmitState({ status: 'error', message: t('joinErrIncomplete') });
       return;
     }
 
     setSubmitState({ status: 'submitting', message: '' });
-    setSubmitState({ status: 'success', message: 'תודה! הפרטים נשלחו בהצלחה' });
+    setSubmitState({ status: 'success', message: t('joinSuccess') });
     setFormValues(INITIAL_FORM);
   }
 
@@ -193,12 +195,12 @@ export default function VolunteerModal({ isOpen, onClose }) {
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        dir="rtl"
+        dir={direction}
       >
         <button
           className="join-modal__close"
           type="button"
-          aria-label="סגירת טופס ההתנדבות"
+          aria-label={t('volunteerCloseAria')}
           onClick={onClose}
           ref={closeButtonRef}
         >
@@ -208,11 +210,8 @@ export default function VolunteerModal({ isOpen, onClose }) {
         <div className="join-modal__header">
           <img className="join-modal__logo" src={sheNaLogo} alt="She-Na" />
           <div>
-            <h2 id={titleId}>תודה!</h2>
-            <p>
-              נשמח שתצטרפי אלינו להתנדבות שמתאימה לך! כל אחת יכולה לתרום בדרך שלה, בזמן שלה.
-              השאירי פרטים ונחזור אלייך למצוא את האפשרות הנכונה עבורך.
-            </p>
+            <h2 id={titleId}>{t('donationThanksTitle')}</h2>
+            <p>{t('volunteerIntro')}</p>
           </div>
         </div>
 
@@ -220,18 +219,18 @@ export default function VolunteerModal({ isOpen, onClose }) {
           <div className="join-modal__success" role="status">
             <strong>{submitState.message}</strong>
             <button className="public-button public-button--primary join-modal__done" type="button" onClick={onClose}>
-              סגירה
+              {t('joinClose')}
             </button>
           </div>
         ) : (
           <form className="join-modal__form" onSubmit={handleSubmit} noValidate>
             <div className="join-modal__body">
               <section className="join-modal__section join-modal__section--card">
-                <h3>פרטים להתנדבות</h3>
+                <h3>{t('volunteerDetailsTitle')}</h3>
                 <div className="join-modal__grid join-modal__grid--volunteer">
                   <div className="join-modal__field">
                     <label htmlFor="volunteer-first-name">
-                      שם פרטי <span className="join-modal__required">*</span>
+                      {t('joinFirstName')} <span className="join-modal__required">*</span>
                     </label>
                     <input
                       id="volunteer-first-name"
@@ -253,7 +252,7 @@ export default function VolunteerModal({ isOpen, onClose }) {
 
                   <div className="join-modal__field">
                     <label htmlFor="volunteer-last-name">
-                      שם משפחה <span className="join-modal__required">*</span>
+                      {t('joinLastName')} <span className="join-modal__required">*</span>
                     </label>
                     <input
                       id="volunteer-last-name"
@@ -275,9 +274,9 @@ export default function VolunteerModal({ isOpen, onClose }) {
 
                   <div className="join-modal__field">
                     <label htmlFor="volunteer-phone">
-                      מספר טלפון <span className="join-modal__required">*</span>
+                      {t('joinPhone')} <span className="join-modal__required">*</span>
                     </label>
-                    <small>נשתמש בו רק ליצירת קשר ועדכונים חשובים</small>
+                    <small>{t('joinPhoneHint')}</small>
                     <PhoneInput
                       country={phoneCountry.countryCode || DEFAULT_PHONE_COUNTRY.countryCode}
                       value={formValues.phone.replace(/^\+/, '')}
@@ -286,7 +285,7 @@ export default function VolunteerModal({ isOpen, onClose }) {
                         if (getLocalPhoneDigits(formValues.phone, phoneCountry) && !isValidPhoneForCountry(formValues.phone, phoneCountry)) {
                           setFieldErrors((currentErrors) => ({
                             ...currentErrors,
-                            phone: 'נא להזין מספר טלפון תקין',
+                            phone: t('joinErrPhoneInvalid'),
                           }));
                         }
                       }}
@@ -320,7 +319,7 @@ export default function VolunteerModal({ isOpen, onClose }) {
 
                   <div className="join-modal__field">
                     <label htmlFor="volunteer-email">
-                      דוא&quot;ל <span className="join-modal__required">*</span>
+                      {t('joinEmail')} <span className="join-modal__required">*</span>
                     </label>
                     <input
                       id="volunteer-email"
@@ -341,7 +340,7 @@ export default function VolunteerModal({ isOpen, onClose }) {
                   </div>
 
                   <div className="join-modal__field join-modal__field--wide">
-                    <label htmlFor="volunteer-message">הודעה</label>
+                    <label htmlFor="volunteer-message">{t('donationMessage')}</label>
                     <textarea
                       id="volunteer-message"
                       name="message"
@@ -363,10 +362,10 @@ export default function VolunteerModal({ isOpen, onClose }) {
 
               <div className="join-modal__actions">
                 <button className="join-modal__cancel" type="button" onClick={onClose}>
-                  ביטול
+                  {t('joinCancel')}
                 </button>
                 <button className="public-button public-button--primary join-modal__submit" type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? 'שולחות...' : 'שליחה'}
+                  {isSubmitting ? t('joinSubmitting') : t('joinSubmit')}
                 </button>
               </div>
             </div>

@@ -27,6 +27,7 @@ import appointmentsHero from '../../assets/appointments-hero.png';
 import eventsHeroBanner from '../../assets/lasteventBanner.png';
 import { useAdmin } from '../admin/context/AdminContext';
 import { getPublishedEvents } from '../admin/services/eventService';
+import { localizeField } from '../../i18n/localizeField';
 import {
   addRegistration,
   getRegistrationCounts,
@@ -1668,7 +1669,7 @@ function SuggestWorkshopModal({
   );
 }
 
-export default function EventsPage({ embedInDashboard = false }) {
+export default function EventsPage({ embedInDashboard = false, locale = 'he' }) {
   const navigate = useNavigate();
   const { currentUser, logout } = useAdmin();
   const [activeView, setActiveView] = useState(VIEW_WORKSHOPS);
@@ -1772,16 +1773,16 @@ export default function EventsPage({ embedInDashboard = false }) {
       }).map((event, index) => {
         const imageUrl = event.imageUrl || event.thumbnailUrl || event.coverImageUrl || appointmentsHero;
         const eventType = inferEventType(event);
-        const displayTitle = event.title || 'Untitled Event';
+        const displayTitle = localizeField(event.translations?.title ?? event.title, locale) || 'Untitled Event';
         const displayCategory = eventType === 'appointment' ? 'Appointment' : 'Workshop';
         const templateStart = event.startTime || event.date;
         const providerSlots = getProviderSlots(event);
         const providerNames = [...new Set(providerSlots.map((slot) => slot.providerName))];
         const roomLabels = [...new Set(providerSlots.map((slot) => slot.room).filter(Boolean))];
-        const displayLocation = roomLabels.length > 1 ? 'Multiple rooms' : roomLabels[0] || event.location || 'She-Na Center';
+        const displayLocation = roomLabels.length > 1 ? 'Multiple rooms' : roomLabels[0] || localizeField(event.translations?.location ?? event.location, locale) || 'She-Na Center';
         const sessionStarts = getSessionStartsForEvent(event, providerSlots);
         const weeklySchedule = getWeeklyScheduleLabel(event, templateStart);
-        const templateDescription = event.description || 'More details will be added soon.';
+        const templateDescription = localizeField(event.translations?.description ?? event.description, locale) || 'More details will be added soon.';
         const sessions = sessionStarts.map((sessionStart) => {
           const dateKey = toDateKey(sessionStart);
           const options = providerSlots.map((slot) => {
@@ -1855,7 +1856,7 @@ export default function EventsPage({ embedInDashboard = false }) {
           sessionOptions,
         };
       }),
-    [counts, events, registeringId],
+    [counts, events, registeringId, locale],
   );
 
   const registeredEvents = useMemo(

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db, auth } from '../../../firebase';
 import { logAuditEvent } from '../services/auditService';
+import { isTranslationConfigured, translateItems } from '../services/translationService';
 import {
   PUBLIC_PAGES_COLLECTION,
   PUBLIC_HOME_DOC_ID,
@@ -173,11 +174,20 @@ export default function PublicHomePageTeamTab() {
 
   async function persistMembers(nextMembers, audit) {
     const ordered = reindexOrder(nextMembers);
+    // Translate role + bio (not personal names) to { he, en, ar } once on save.
+    let translatedMembers = ordered;
+    if (isTranslationConfigured()) {
+      try {
+        translatedMembers = await translateItems(ordered, ['role', 'bio']);
+      } catch (err) {
+        console.error('Team translation failed; saving without translations:', err);
+      }
+    }
     const user = auth.currentUser;
     const updatedBy = user?.email || user?.uid || '';
     const ref = doc(db, PUBLIC_PAGES_COLLECTION, PUBLIC_HOME_DOC_ID);
     await updateDoc(ref, {
-      teamMembers: ordered.map((m) => ({
+      teamMembers: translatedMembers.map((m) => ({
         id: m.id,
         name: m.name,
         role: m.role,
@@ -185,6 +195,7 @@ export default function PublicHomePageTeamTab() {
         imageUrl: m.imageUrl,
         email: m.email,
         order: m.order,
+        ...(m.translations ? { translations: m.translations } : {}),
       })),
       updatedAt: serverTimestamp(),
       updatedBy,

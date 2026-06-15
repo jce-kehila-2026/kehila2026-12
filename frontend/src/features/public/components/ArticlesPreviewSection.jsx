@@ -1,16 +1,26 @@
+import { useMemo } from 'react';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import ArticleCard from './ArticleCard';
 import EmptyState from './EmptyState';
 import PublicSectionHeading from './PublicSectionHeading';
 import { usePublicLocale } from '../context/PublicLocaleContext';
+import { localizeField } from '../../../i18n/localizeField';
 import useHorizontalCardCarousel from '../hooks/useHorizontalCardCarousel';
 import '../styles/public-articles-section.css';
 
 export default function ArticlesPreviewSection({ coverage = [] }) {
-  const { t, direction } = usePublicLocale();
+  const { t, direction, locale } = usePublicLocale();
 
-  const items = Array.isArray(coverage) ? coverage : [];
+  // Localize admin-edited press title/description for the current locale.
+  const items = useMemo(() => {
+    const list = Array.isArray(coverage) ? coverage : [];
+    return list.map((item) => ({
+      ...item,
+      title: localizeField(item.translations?.title ?? item.title, locale),
+      description: localizeField(item.translations?.description ?? item.description, locale),
+    }));
+  }, [coverage, locale]);
   const carousel = useHorizontalCardCarousel({
     cardSelector: '.press-article-card',
     direction,

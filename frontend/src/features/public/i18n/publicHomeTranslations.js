@@ -1,4 +1,5 @@
 import { publicHomeUiTranslations } from './publicHomeUiTranslations';
+import { localizeField } from '../../../i18n/localizeField';
 
 export const PUBLIC_LOCALE_STORAGE_KEY = 'shena-public-locale';
 export const DEFAULT_PUBLIC_LOCALE = 'he';
@@ -282,10 +283,12 @@ export function getLocalizedHero(hero = {}, locale, t) {
     };
   }
 
+  // Non-Hebrew: prefer the admin's Azure-translated hero text, falling back to
+  // the static UI translation when the hero hasn't been translated.
   return {
     ...hero,
-    title: t('heroTitle'),
-    subtitle: t('heroSubtitle'),
-    description: t('heroDescription'),
+    title: localizeField(hero.translations?.title, locale) || t('heroTitle'),
+    subtitle: localizeField(hero.translations?.subtitle, locale) || t('heroSubtitle'),
+    description: localizeField(hero.translations?.description, locale) || t('heroDescription'),
   };
 }

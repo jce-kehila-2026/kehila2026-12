@@ -312,6 +312,7 @@ function mergeStatistic(stat, index) {
     value,
     title: safeString(safe.title) || fallback.title,
     description: safeString(safe.description),
+    ...(safe.translations ? { translations: safe.translations } : {}),
   };
 }
 
@@ -406,6 +407,8 @@ function mergeTeamMember(member, index) {
     imageUrl: safeString(safe.imageUrl),
     email: safeString(safe.email),
     order,
+    // Preserve Azure translations so the public read path can localize.
+    ...(safe.translations ? { translations: safe.translations } : {}),
   };
 }
 
@@ -424,6 +427,7 @@ function mergePressCoverageItem(item, index) {
     description: safeString(safe.description),
     imageUrl: safeString(safe.imageUrl),
     articleUrl: safeString(safe.articleUrl),
+    ...(safe.translations ? { translations: safe.translations } : {}),
   };
 }
 
@@ -440,6 +444,7 @@ function mergeInspirationalStory(story, index) {
     story: safeString(safe.story),
     imageUrl: safeString(safe.imageUrl),
     occupation: safeString(safe.occupation),
+    ...(safe.translations ? { translations: safe.translations } : {}),
   };
 }
 
@@ -515,6 +520,7 @@ function mergeLearnTogetherCard(card, index) {
     order,
     createdAt: safe.createdAt || null,
     popup: mergeLearnTogetherPopup(safe.popup),
+    ...(safe.translations ? { translations: safe.translations } : {}),
   };
 }
 
@@ -534,6 +540,7 @@ export function mergeLearnTogether(learnTogether) {
     paragraph:
       safeString(safe.paragraph).trim() || DEFAULT_LEARN_TOGETHER.paragraph,
     cards,
+    ...(safe.translations ? { translations: safe.translations } : {}),
   };
 }
 
@@ -608,6 +615,7 @@ function mergePartner(partner, index) {
     logoUrl: safeString(safe.logoUrl) || (DEFAULT_PARTNERS.find((d) => d.id === safeString(safe.id))?.logoUrl ?? ''),
     description: safeString(safe.description),
     order,
+    ...(safe.translations ? { translations: safe.translations } : {}),
   };
 }
 
@@ -627,6 +635,7 @@ export function mergeHero(hero) {
     subtitle: safeHero.subtitle || DEFAULT_HOME_HERO.subtitle,
     description: safeHero.description || DEFAULT_HOME_HERO.description,
     backgroundImageUrl: safeHero.backgroundImageUrl || DEFAULT_HOME_HERO.backgroundImageUrl,
+    ...(safeHero.translations ? { translations: safeHero.translations } : {}),
   };
 }
 

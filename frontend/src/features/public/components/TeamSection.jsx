@@ -20,6 +20,11 @@ function adaptAdminMember(member) {
     photo: member.imageUrl || member.photo || '',
     fallbackPhoto: member.fallbackPhoto || '',
     email: member.email || '',
+    // Carry Azure translations, remapping the saved `bio` key to `description`
+    // so the read localizer can treat all sections uniformly.
+    translations: member.translations
+      ? { role: member.translations.role, description: member.translations.bio }
+      : undefined,
   };
 }
 

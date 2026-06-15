@@ -1,5 +1,6 @@
 import { useEffect, useId, useMemo, useRef, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
+import { localizeField } from '../../../i18n/localizeField';
 import {
   ArrowRight,
   CalendarDays,
@@ -483,7 +484,7 @@ function AppointmentCard({ appointment, onView }) {
   );
 }
 
-function EventCard({ event, onView }) {
+function EventCard({ event, onView, locale = 'he' }) {
   const countdown = useCountdownRing(event.targetDate, 'event');
 
   return (
@@ -491,12 +492,12 @@ function EventCard({ event, onView }) {
       <div className="pd-card__surface pd-feature__layout">
         <div className="pd-feature__body">
           <CardHeading icon={Sparkles} label="Upcoming Event" accent="pink" />
-          <h3 className="pd-feature__title">{event.title}</h3>
+          <h3 className="pd-feature__title">{localizeField(event.translations?.title ?? event.title, locale)}</h3>
           <p className="pd-feature__subtitle">{event.category}</p>
 
           <ul className="pd-feature__details">
             <FeatureSchedule dateLabel={event.dateLabel} timeLabel={event.timeLabel} />
-            <FeatureDetail icon={MapPin} value={event.location} />
+            <FeatureDetail icon={MapPin} value={localizeField(event.translations?.location ?? event.location, locale)} />
           </ul>
 
           <PremiumCta variant="soft" onClick={onView}>
@@ -1613,6 +1614,7 @@ export default function ParticipantDashboardHome({
   onViewCommunity,
   latestNotification = null,
   onOpenNotifications,
+  locale = 'he',
 }) {
   const { appointment, event, isLoading, appointmentError, eventError } = useParticipantDashboardHomeData(userId);
   const isBirthdayToday = useBirthdayToday(birthDate);
@@ -1670,7 +1672,7 @@ export default function ParticipantDashboardHome({
           <AppointmentEmptyCard onBook={goToAppointments} />
         )}
         {event ? (
-          <EventCard event={event} onView={goToEvents} />
+          <EventCard event={event} onView={goToEvents} locale={locale} />
         ) : eventError ? (
           <FeatureCardErrorState
             variant="event"

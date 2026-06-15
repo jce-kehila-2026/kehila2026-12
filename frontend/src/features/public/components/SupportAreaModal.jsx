@@ -108,7 +108,7 @@ export default function SupportAreaModal({ area, isOpen, onClose }) {
               href={actionPath}
               onClick={handlePrimaryActionClick}
             >
-              <span className="support-area-modal__action-label">{area.actionLabel || 'צרי קשר'}</span>
+              <span className="support-area-modal__action-label">{area.actionLabel || t('supportAreaContact')}</span>
             </a>
             <button
               type="button"

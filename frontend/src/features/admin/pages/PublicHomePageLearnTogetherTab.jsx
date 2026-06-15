@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db, auth } from '../../../firebase';
 import { logAuditEvent } from '../services/auditService';
+import { isTranslationConfigured, translateFields, translateItems } from '../services/translationService';
 import {
   PUBLIC_PAGES_COLLECTION,
   PUBLIC_HOME_DOC_ID,
@@ -257,13 +258,30 @@ export default function PublicHomePageLearnTogetherTab() {
       const user = auth.currentUser;
       const updatedBy = user?.email || user?.uid || '';
       const ref = doc(db, PUBLIC_PAGES_COLLECTION, PUBLIC_HOME_DOC_ID);
+      const headerFields = {
+        eyebrow: header.eyebrow.trim(),
+        title: header.title.trim(),
+        paragraph: header.paragraph.trim(),
+      };
       const payload = {
-        'learnTogether.eyebrow': header.eyebrow.trim(),
-        'learnTogether.title': header.title.trim(),
-        'learnTogether.paragraph': header.paragraph.trim(),
+        'learnTogether.eyebrow': headerFields.eyebrow,
+        'learnTogether.title': headerFields.title,
+        'learnTogether.paragraph': headerFields.paragraph,
         updatedAt: serverTimestamp(),
         updatedBy,
       };
+      // Translate the header to { he, en, ar } once on save.
+      if (isTranslationConfigured()) {
+        try {
+          payload['learnTogether.translations'] = await translateFields(headerFields, [
+            'eyebrow',
+            'title',
+            'paragraph',
+          ]);
+        } catch (err) {
+          console.error('Learn Together header translation failed; saving original only:', err);
+        }
+      }
       await updateDoc(ref, payload);
       await logAuditEvent({
         actionType: 'UPDATE_PUBLIC_HOME_LEARN_TOGETHER_HEADER',
@@ -312,17 +330,27 @@ export default function PublicHomePageLearnTogetherTab() {
 
   async function persistCards(nextCardsRaw, audit) {
     const nextCards = cardWithOrders(nextCardsRaw);
+    // Translate card title/description to { he, en, ar } once on save.
+    let translatedCards = nextCards;
+    if (isTranslationConfigured()) {
+      try {
+        translatedCards = await translateItems(nextCards, ['title', 'description']);
+      } catch (err) {
+        console.error('Learn Together cards translation failed; saving original only:', err);
+      }
+    }
     const user = auth.currentUser;
     const updatedBy = user?.email || user?.uid || '';
     const ref = doc(db, PUBLIC_PAGES_COLLECTION, PUBLIC_HOME_DOC_ID);
     await updateDoc(ref, {
-      'learnTogether.cards': nextCards.map((card) => ({
+      'learnTogether.cards': translatedCards.map((card) => ({
         id: card.id,
         imageUrl: card.imageUrl,
         title: card.title,
         description: card.description,
         order: card.order,
         createdAt: card.createdAt || null,
+        ...(card.translations ? { translations: card.translations } : {}),
         popup: {
           title: card.popup?.title || '',
           paragraph: card.popup?.paragraph || '',
