@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { isTranslationConfigured, translateFields, translateTexts } from './translationService';
+import { isTranslationConfigured, translateFields, translateItems, translateTexts } from './translationService';
 
 describe('translationService', () => {
   beforeEach(() => {
@@ -51,5 +51,29 @@ describe('translationService', () => {
   it('throws REQUEST_FAILED on a non-OK response', async () => {
     global.fetch.mockResolvedValue({ ok: false, status: 502 });
     await expect(translateTexts(['hi'])).rejects.toMatchObject({ code: 'REQUEST_FAILED' });
+  });
+
+  it('translateItems batches all items into one call and attaches translations', async () => {
+    global.fetch.mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        results: [
+          { he: 'מנהלת', en: 'Director', ar: 'مديرة' },
+          { he: 'מתנדבת', en: 'Volunteer', ar: 'متطوعة' },
+        ],
+      }),
+    });
+
+    const items = [
+      { id: 'a', name: 'Tali', role: 'מנהלת' },
+      { id: 'b', name: 'Dana', role: 'מתנדבת', bio: '' },
+    ];
+    const out = await translateItems(items, ['role', 'bio']);
+
+    expect(global.fetch).toHaveBeenCalledTimes(1); // one request for all items
+    expect(out[0].translations.role.en).toBe('Director');
+    expect(out[1].translations.role.ar).toBe('متطوعة');
+    expect(out[1].translations.bio).toBeUndefined(); // blank skipped
+    expect(out[0].name).toBe('Tali'); // untouched
   });
 });

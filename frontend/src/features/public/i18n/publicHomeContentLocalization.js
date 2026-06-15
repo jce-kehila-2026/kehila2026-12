@@ -213,22 +213,24 @@ export function localizeTeamStaff(members, locale) {
   }
 
   const pack = getLocalePack(locale);
-  if (!pack?.teamStaff) {
-    return members;
-  }
 
   return members.map((member) => {
-    const localized = member?.id ? pack.teamStaff[member.id] : null;
+    const packEntry = (pack?.teamStaff && member?.id) ? pack.teamStaff[member.id] : null;
 
-    if (!localized) {
+    // Nothing to localize this member with — leave the Hebrew source.
+    if (!packEntry && !member?.translations) {
       return member;
     }
 
+    // Prefer Azure translations on the doc; fall back to the hand pack, then
+    // source. Personal names are not Azure-translated (only the hand pack may).
+    const fromAzure = (field) => localizeField(member?.translations?.[field], locale);
+
     return {
       ...member,
-      name: pickLocalized(locale, member.name, localized.name),
-      role: pickLocalized(locale, member.role, localized.role),
-      description: pickLocalized(locale, member.description, localized.description),
+      name: pickLocalized(locale, member.name, packEntry?.name),
+      role: fromAzure('role') || pickLocalized(locale, member.role, packEntry?.role),
+      description: fromAzure('description') || pickLocalized(locale, member.description, packEntry?.description),
     };
   });
 }

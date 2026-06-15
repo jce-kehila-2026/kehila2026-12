@@ -85,3 +85,37 @@ export async function translateFields(source, fields, options) {
   });
   return out;
 }
+
+/**
+ * Translate the given string fields across an ARRAY of items in ONE proxy call.
+ * Returns new items, each with a merged `translations: { [field]: {he,en,ar} }`
+ * for the fields that had content. Empty/blank fields are skipped. Reused by the
+ * CMS sections (team, partners, stories, press, …), which are arrays of items.
+ *
+ * @param {Array<Record<string, any>>} items
+ * @param {string[]} fields
+ */
+export async function translateItems(items, fields, options) {
+  if (!Array.isArray(items) || items.length === 0) return items;
+
+  const jobs = []; // { itemIndex, field } for each non-empty cell
+  const texts = [];
+  items.forEach((item, itemIndex) => {
+    (fields || []).forEach((field) => {
+      const value = item?.[field];
+      if (value != null && String(value).trim() !== '') {
+        jobs.push({ itemIndex, field });
+        texts.push(String(value));
+      }
+    });
+  });
+  if (texts.length === 0) return items;
+
+  const results = await translateTexts(texts, options);
+
+  const out = items.map((item) => ({ ...item, translations: { ...(item.translations || {}) } }));
+  jobs.forEach((job, resultIndex) => {
+    out[job.itemIndex].translations[job.field] = results[resultIndex] || {};
+  });
+  return out;
+}
