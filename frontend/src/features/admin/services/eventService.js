@@ -3,6 +3,10 @@ import { collection, getDocs, getDoc, addDoc, updateDoc, deleteDoc, doc, query, 
 import { db } from '../../../firebase';
 import { logAuditEvent } from './auditService';
 
+function isPublishedEvent(event) {
+  return String(event?.status || '').trim().toLowerCase() === 'published';
+}
+
 /**
  * Fetch a single event by its Firestore document ID.
  * @param {string} id
@@ -31,7 +35,7 @@ export async function getPublishedEvents() {
   const snap = await getDocs(q);
   return snap.docs
     .map((d) => ({ id: d.id, ...d.data() }))
-    .filter((event) => event.status === 'published');
+    .filter(isPublishedEvent);
 }
 
 /**
@@ -50,7 +54,7 @@ export function subscribeToPublishedEvents(callback, onError) {
     callback(
       snap.docs
         .map((d) => ({ id: d.id, ...d.data() }))
-        .filter((event) => event.status === 'published')
+        .filter(isPublishedEvent)
     );
   }, onError);
 }

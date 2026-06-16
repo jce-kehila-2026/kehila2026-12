@@ -816,17 +816,6 @@ function AppointmentServicesPanel({
               />
             ))}
           </div>
-
-          <article className="appointments-waitlist-card">
-            <span aria-hidden="true">
-              <FavoriteBorderOutlinedIcon fontSize="small" />
-            </span>
-            <div>
-              <h3>Can't find a suitable time?</h3>
-              <p>Join the waiting list and we'll notify you when a slot opens up.</p>
-            </div>
-            <button type="button">Join Waiting List</button>
-          </article>
         </div>
 
         {selectedEvent && (
