@@ -328,10 +328,23 @@ function formatRelativeTime(timestamp) {
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
+function resolveNotificationText(value) {
+  if (!value) return '';
+  if (typeof value === 'string') return value;
+  if (typeof value === 'number') return String(value);
+  if (typeof value !== 'object') return '';
+
+  const localized = value.en || value.he || value.ar;
+  if (typeof localized === 'string') return localized;
+
+  const firstStringValue = Object.values(value).find((item) => typeof item === 'string' && item.trim());
+  return firstStringValue || '';
+}
+
 function LatestMessageCard({ notification, onOpenNotifications }) {
   const hasNotification = Boolean(notification?.title || notification?.body);
-  const notificationTitle = hasNotification ? notification.title || '' : '';
-  const notificationBody = hasNotification ? notification.body || '' : '';
+  const notificationTitle = hasNotification ? resolveNotificationText(notification.title) : '';
+  const notificationBody = hasNotification ? resolveNotificationText(notification.body) : '';
   const truncatedBody = notificationBody.length > 80 ? `${notificationBody.slice(0, 77)}...` : notificationBody;
 
   return (
