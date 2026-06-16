@@ -4,6 +4,7 @@ import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/material.css';
 import sheNaLogo from '../../../assets/she-na-logo.png';
 import { usePublicLocale } from '../context/PublicLocaleContext';
+import { createDonationSubmission } from '../services/formSubmissionService';
 
 const INITIAL_FORM = {
   firstName: '',
@@ -177,8 +178,12 @@ export default function DonationModal({ isOpen, onClose }) {
     return !Object.values(nextErrors).some(Boolean);
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
+
+    if (isSubmitting) {
+      return;
+    }
 
     if (!validateForm()) {
       setSubmitState({ status: 'error', message: t('joinErrIncomplete') });
@@ -186,8 +191,14 @@ export default function DonationModal({ isOpen, onClose }) {
     }
 
     setSubmitState({ status: 'submitting', message: '' });
-    setSubmitState({ status: 'success', message: t('joinSuccess') });
-    setFormValues(INITIAL_FORM);
+    try {
+      await createDonationSubmission(formValues);
+      setSubmitState({ status: 'success', message: t('joinSuccess') });
+      setFormValues(INITIAL_FORM);
+    } catch (error) {
+      console.error('Donation form submission failed:', error);
+      setSubmitState({ status: 'error', message: t('joinErrSubmit') });
+    }
   }
 
   function handleBackdropClick(event) {
