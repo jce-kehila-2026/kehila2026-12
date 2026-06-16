@@ -1,7 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { getPublishedEvents } from '../admin/services/eventService';
 import {
-  getRegistrationCounts,
   getUserRegisteredEventIds,
   addRegistration,
   removeRegistration,
@@ -31,15 +30,11 @@ export default function WorkshopFeed() {
   const [registering, setRegistering] = useState(null);
 
   const refreshRegistrationData = useCallback(async (eventList) => {
-    if (!eventList.length || !currentUser?.email) return;
-    const ids = eventList.map((e) => e.id);
-    const [countsData, userRegs] = await Promise.all([
-      getRegistrationCounts(ids),
-      getUserRegisteredEventIds(currentUser.email),
-    ]);
-    setCounts(countsData);
+    if (!eventList.length || !currentUser?.uid) return;
+    const userRegs = await getUserRegisteredEventIds(currentUser.uid);
+    setCounts({});
     setRegisteredMap(userRegs);
-  }, [currentUser?.email]);
+  }, [currentUser?.uid]);
 
   useEffect(() => {
     let cancelled = false;

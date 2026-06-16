@@ -29,7 +29,6 @@ import { useAdmin } from '../admin/context/AdminContext';
 import { getPublishedEvents } from '../admin/services/eventService';
 import {
   addRegistration,
-  getRegistrationCounts,
   getUserRegisteredEventIds,
   removeRegistration,
 } from '../admin/services/registrationService';
@@ -340,19 +339,6 @@ function getDisabledDateKeys(event) {
     event.closedDates,
     event.blockedDates,
   ].find((items) => Array.isArray(items) && items.length) || [];
-}
-
-function buildSessionIdsForEvents(eventList) {
-  return eventList.flatMap((event) => {
-    const providerSlots = getProviderSlots(event);
-
-    return getSessionStartsForEvent(event, providerSlots).flatMap((sessionStart) =>
-      providerSlots.map((slot) => {
-        const optionStart = copyTimeToDate(sessionStart, slot.startSource);
-        return buildSessionId(event.id, optionStart || sessionStart, slot.providerId, slot.slotId);
-      }),
-    );
-  });
 }
 
 function getWeeklyScheduleLabel(event, fallbackStart) {
@@ -1677,6 +1663,7 @@ export default function EventsPage({ embedInDashboard = false }) {
   const [registeredMap, setRegisteredMap] = useState({});
   const [loadingEvents, setLoadingEvents] = useState(true);
   const [eventsError, setEventsError] = useState('');
+  const [registrationWarning, setRegistrationWarning] = useState('');
   const [eventsReloadKey, setEventsReloadKey] = useState(0);
   const [registeringId, setRegisteringId] = useState(null);
   const [suggestions, setSuggestions] = useState([]);
@@ -1702,24 +1689,26 @@ export default function EventsPage({ embedInDashboard = false }) {
     }
 
     try {
-      const sessionIds = buildSessionIdsForEvents(eventList);
-      const [countsData, userRegistrations] = await Promise.all([
-        sessionIds.length ? getRegistrationCounts(sessionIds) : Promise.resolve({}),
-        currentUser?.email ? getUserRegisteredEventIds(currentUser.email) : Promise.resolve({}),
-      ]);
+      const userRegistrations = currentUser?.uid
+        ? await getUserRegisteredEventIds(currentUser.uid)
+        : {};
 
-      setCounts(countsData);
+      setCounts({});
       setRegisteredMap(userRegistrations);
+      setRegistrationWarning('');
     } catch (error) {
       console.error('Failed to load event registration data:', error);
-      setEventsError('Events loaded, but registration data could not be refreshed.');
+      setCounts({});
+      setRegisteredMap({});
+      setRegistrationWarning('Events loaded, but registration data could not be refreshed.');
     }
-  }, [currentUser?.email]);
+  }, [currentUser?.uid]);
 
   useEffect(() => {
     let cancelled = false;
     setLoadingEvents(true);
     setEventsError('');
+    setRegistrationWarning('');
 
     getPublishedEvents()
       .then((data) => {
@@ -1734,6 +1723,7 @@ export default function EventsPage({ embedInDashboard = false }) {
         setEvents([]);
         setCounts({});
         setRegisteredMap({});
+        setRegistrationWarning('');
         setEventsError('Could not load events from Firestore.');
         setLoadingEvents(false);
       });
@@ -1918,17 +1908,18 @@ export default function EventsPage({ embedInDashboard = false }) {
     if (!event || !session || registeredMap[session.id]) return;
 
     if (event.isScheduleTemplate) {
-      setEventsError('This schedule is not ready for registration yet. Please choose an admin-published event.');
+      setRegistrationWarning('This schedule is not ready for registration yet. Please choose an admin-published event.');
       return;
     }
 
     if (event.registrationOpen === false) {
-      setEventsError('Registration is closed for this event.');
+      setRegistrationWarning('Registration is closed for this event.');
       return;
     }
 
     setRegisteringId(session.id);
     setEventsError('');
+    setRegistrationWarning('');
 
     try {
       const newRegistrationId = await addRegistration({
@@ -1965,7 +1956,7 @@ export default function EventsPage({ embedInDashboard = false }) {
       }));
     } catch (error) {
       console.error('Registration action failed:', error);
-      setEventsError('Could not register for this session. Please try again.');
+      setRegistrationWarning('Could not register for this session. Please try again.');
     } finally {
       setRegisteringId(null);
     }
@@ -1978,12 +1969,13 @@ export default function EventsPage({ embedInDashboard = false }) {
     if (!registrationId) return;
 
     if (!canCancelSessionBooking(session)) {
-      setEventsError(CANCELLATION_CLOSED_MESSAGE);
+      setRegistrationWarning(CANCELLATION_CLOSED_MESSAGE);
       return;
     }
 
     setRegisteringId(session.id);
     setEventsError('');
+    setRegistrationWarning('');
 
     try {
       const realEventId = session.eventId || session.eventTemplateId || session.templateId || session.parentEventId || session.id;
@@ -2000,7 +1992,7 @@ export default function EventsPage({ embedInDashboard = false }) {
       }));
     } catch (error) {
       console.error('Cancel session registration failed:', error);
-      setEventsError('Could not cancel this session registration. Please try again.');
+      setRegistrationWarning('Could not cancel this session registration. Please try again.');
     } finally {
       setRegisteringId(null);
     }
@@ -2078,9 +2070,9 @@ export default function EventsPage({ embedInDashboard = false }) {
         <img className="events-hero-banner__image" src={eventsHeroBanner} alt="" />
       </section>
 
-      {(loadingEvents || eventsError) && (
-        <div className={`events-status${eventsError ? ' events-status--error' : ''}`}>
-          <span>{loadingEvents ? 'Loading live events from Firestore...' : eventsError}</span>
+      {(loadingEvents || eventsError || registrationWarning) && (
+        <div className={`events-status${eventsError || registrationWarning ? ' events-status--error' : ''}`}>
+          <span>{loadingEvents ? 'Loading live events from Firestore...' : (eventsError || registrationWarning)}</span>
           {eventsError && !loadingEvents && (
             <button type="button" onClick={() => setEventsReloadKey((current) => current + 1)}>
               Retry
