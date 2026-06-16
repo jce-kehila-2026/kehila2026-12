@@ -884,6 +884,17 @@ function AppointmentBookingDrawer({
     setSelectedOptionId(firstOpenOption?.option?.id || '');
   }, [selectedOptionId, timeOptions]);
 
+  useEffect(() => {
+    if (typeof document === 'undefined') return undefined;
+
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, []);
+
   if (!event) return null;
 
   const serviceLabel = getAppointmentServiceLabel(event.title);
@@ -906,10 +917,17 @@ function AppointmentBookingDrawer({
   }
 
   return (
+    <div className="appointment-drawer-modal" role="presentation">
+      <button
+        className="appointment-drawer__backdrop"
+        type="button"
+        onClick={onClose}
+        aria-label="Close appointment booking"
+      />
       <aside
         className="appointment-drawer"
         role="dialog"
-        aria-modal="false"
+        aria-modal="true"
         aria-labelledby="appointment-drawer-title"
         dir="ltr"
       >
@@ -1037,6 +1055,7 @@ function AppointmentBookingDrawer({
           </button>
         </div>
       </aside>
+    </div>
   );
 }
 
