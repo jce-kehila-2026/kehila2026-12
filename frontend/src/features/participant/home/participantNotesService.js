@@ -2,6 +2,7 @@ import {
   addDoc,
   collection,
   doc,
+  limit,
   onSnapshot,
   orderBy,
   query,
@@ -55,6 +56,7 @@ export function subscribeToParticipantNotes(userId, onUpdate, onError) {
   const notesQuery = query(
     collection(db, USERS_COLLECTION, participantId, NOTES_SUBCOLLECTION),
     orderBy('createdAt', 'desc'),
+    limit(50),
   );
 
   return onSnapshot(
