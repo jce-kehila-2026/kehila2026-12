@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { isCommunityContentVisible } from '../communityInteractionHelpers';
 import { COMMUNITY_POST_STATUS } from '../communityModels';
 import {
@@ -214,7 +214,11 @@ export default function useCommunityPosts({
     }, 2500);
   };
 
-  const visiblePosts = posts
+  // Memoized so the derived post objects keep a stable identity across renders
+  // that don't change the underlying data (e.g. typing in a comment composer,
+  // which only updates commentInputs). Combined with the memoized
+  // CommunityPostCard, this stops a keystroke from re-rendering the whole feed.
+  const visiblePosts = useMemo(() => posts
     .filter(isCommunityContentVisible)
     .filter((post) => !shouldHidePostReportedByUser(post, localUserId, reportVisibilityNow))
     .map((post) => ({
@@ -222,7 +226,7 @@ export default function useCommunityPosts({
       comments: Array.isArray(post.comments)
         ? post.comments.filter(isCommunityContentVisible)
         : [],
-    }));
+    })), [posts, localUserId, reportVisibilityNow]);
   const editingPost = posts.find((post) => post.id === editingPostId);
   const isEditPostUnchanged = editingPost
     ? normalizeEditablePostText(editPostText) === normalizeEditablePostText(editingPost.content ?? editingPost.body ?? '')

@@ -3,10 +3,17 @@ service cloud.firestore {
   match /databases/{database}/documents {
 
     // ── Helpers ─────────────────────────────────────────────
+    // Resolve a role from an already-fetched user doc. get() returns null for a
+    // missing document, so a null-check replaces the separate exists() call —
+    // halving the reads on every role check (getUserRole is reached via
+    // isAdmin() throughout the ruleset). The ?: short-circuits, so get() never
+    // runs for unauthenticated requests.
+    function userRoleFromDoc(userDoc) {
+      return userDoc != null ? userDoc.data.get('role', 'participant') : 'participant';
+    }
     function getUserRole() {
       return request.auth != null
-        && exists(/databases/$(database)/documents/users/$(request.auth.uid))
-        ? get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('role', 'participant')
+        ? userRoleFromDoc(get(/databases/$(database)/documents/users/$(request.auth.uid)))
         : 'participant';
     }
     function isAdmin() {
@@ -368,6 +375,36 @@ service cloud.firestore {
         && request.resource.data.cancerStory.size() <= 20000
         && request.resource.data.phone is string
         && request.resource.data.phone.size() <= 40
+        && request.resource.data.status == 'new'
+        && request.resource.data.source == 'public-website';
+      allow read, update, delete: if isAdmin();
+    }
+
+    // Public volunteer/donation contact forms from the website modals.
+    // Like joinRequests: unauthenticated create by design, but constrained to a
+    // fixed field set with bounded sizes and a pinned type/status/source so the
+    // endpoint can't be used to write arbitrary/oversized documents. Admins
+    // read and manage (mark handled / delete) from the Forms page.
+    // NOTE: enable Firebase App Check on this project for real bot protection.
+    match /formSubmissions/{submissionId} {
+      allow create: if request.resource.data.keys().hasOnly([
+            'type', 'firstName', 'lastName', 'fullName',
+            'email', 'phone', 'message', 'source', 'status', 'createdAt'
+          ])
+        && request.resource.data.type in ['volunteer', 'donation']
+        && request.resource.data.firstName is string
+        && request.resource.data.firstName.size() > 0
+        && request.resource.data.firstName.size() <= 200
+        && request.resource.data.lastName is string
+        && request.resource.data.lastName.size() <= 200
+        && request.resource.data.fullName is string
+        && request.resource.data.fullName.size() <= 400
+        && request.resource.data.email is string
+        && request.resource.data.email.size() <= 320
+        && request.resource.data.phone is string
+        && request.resource.data.phone.size() <= 40
+        && request.resource.data.message is string
+        && request.resource.data.message.size() <= 5000
         && request.resource.data.status == 'new'
         && request.resource.data.source == 'public-website';
       allow read, update, delete: if isAdmin();

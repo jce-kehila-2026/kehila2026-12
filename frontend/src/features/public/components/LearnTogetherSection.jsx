@@ -1,23 +1,13 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
-import ArrowBackRoundedIcon from '@mui/icons-material/ArrowBackRounded';
+import { useMemo, useState } from 'react';
 import ChevronLeftRoundedIcon from '@mui/icons-material/ChevronLeftRounded';
 import ChevronRightRoundedIcon from '@mui/icons-material/ChevronRightRounded';
-import { CalendarHeart, HandHeart, Heart, MessageCircle, Sparkles, UsersRound } from 'lucide-react';
 import LearnTogetherCardModal from './LearnTogetherCardModal';
 import PublicSectionHeading from './PublicSectionHeading';
 import SupportAreaCardImage from './SupportAreaCardImage';
 import { getLearnTogetherCardImageMeta } from '../constants/supportAreaImages';
 import { usePublicLocale } from '../context/PublicLocaleContext';
 import { localizeLearnTogether } from '../i18n/publicHomeContentLocalization';
-
-const CARD_ICONS = [UsersRound, Sparkles, CalendarHeart, MessageCircle, HandHeart, Heart];
-
-const ICON_PROPS = {
-  size: 26,
-  strokeWidth: 1.75,
-  absoluteStrokeWidth: true,
-  'aria-hidden': true,
-};
+import useHorizontalCardCarousel from '../hooks/useHorizontalCardCarousel';
 
 function CardTitleDivider() {
   return (
@@ -38,50 +28,12 @@ function prepareLearnTogetherCard(card, index) {
     imageUrl: imageMeta.bundledSrc,
     imagePosition: imageMeta.position,
     imageAlt: card.imageAlt || imageMeta.alt || card.title || '',
-    cardIcon: CARD_ICONS[index % CARD_ICONS.length],
   };
 }
 
-function getCarouselScrollStep(scroller) {
-  const firstCard = scroller.querySelector('.public-support__card');
-  if (!firstCard) {
-    return 0;
-  }
-
-  const grid = scroller.querySelector('.public-support__grid');
-  const gridStyles = grid ? getComputedStyle(grid) : getComputedStyle(scroller);
-  const scrollerStyles = getComputedStyle(scroller);
-  const cssGap = parseFloat(scrollerStyles.getPropertyValue('--services-scroll-gap'));
-  const gap = Number.isFinite(cssGap)
-    ? cssGap
-    : parseFloat(gridStyles.columnGap || gridStyles.gap || '0') || 0;
-
-  return firstCard.offsetWidth + gap;
-}
-
-function scrollCarouselByDirection(scroller, direction) {
-  const scrollAmount = getCarouselScrollStep(scroller);
-  if (!scrollAmount) {
-    return;
-  }
-
-  const isRtl = getComputedStyle(scroller).direction === 'rtl';
-  let left = direction === 'next' ? scrollAmount : -scrollAmount;
-
-  if (isRtl) {
-    left = -left;
-  }
-
-  scroller.scrollBy({
-    left,
-    behavior: 'smooth',
-  });
-}
-
 export default function LearnTogetherSection({ learnTogether }) {
-  const scrollerRef = useRef(null);
   const [selectedCard, setSelectedCard] = useState(null);
-  const { locale, t } = usePublicLocale();
+  const { direction, locale, t } = usePublicLocale();
 
   const localizedLearnTogether = useMemo(
     () => localizeLearnTogether(learnTogether, locale),
@@ -99,12 +51,12 @@ export default function LearnTogetherSection({ learnTogether }) {
     [localizedLearnTogether?.cards],
   );
 
-  const scrollCarousel = useCallback((direction) => {
-    const scroller = scrollerRef.current;
-    if (!scroller) return;
-
-    scrollCarouselByDirection(scroller, direction);
-  }, []);
+  const carousel = useHorizontalCardCarousel({
+    cardSelector: '.public-support__card',
+    direction,
+    itemCount: cards.length,
+    refreshKey: locale,
+  });
 
   function handleOpenCard(card) {
     setSelectedCard(card);
@@ -141,66 +93,72 @@ export default function LearnTogetherSection({ learnTogether }) {
         />
 
         {cards.length ? (
-          <div className="public-support__carousel">
-            <button
+          <div className={[
+            'public-support__carousel',
+            'public-card-carousel',
+            !carousel.showControls ? 'public-card-carousel--without-controls' : '',
+            carousel.fadeLeft ? 'public-card-carousel--fade-left' : '',
+            carousel.fadeRight ? 'public-card-carousel--fade-right' : '',
+          ].filter(Boolean).join(' ')}>
+            {carousel.showControls ? <button
               type="button"
-              className="public-support__scroll-btn public-support__scroll-btn--prev"
+              className="public-support__scroll-btn public-support__scroll-btn--prev public-card-carousel__button"
               aria-label={t('scrollPrevActivity')}
-              onClick={() => scrollCarousel('prev')}
+              onClick={() => carousel.scrollByCards(-1)}
+              disabled={!carousel.canScrollPrev}
             >
-              <ChevronRightRoundedIcon fontSize="inherit" aria-hidden="true" />
-            </button>
+              {direction === 'rtl' ? (
+                <ChevronRightRoundedIcon fontSize="inherit" aria-hidden="true" />
+              ) : (
+                <ChevronLeftRoundedIcon fontSize="inherit" aria-hidden="true" />
+              )}
+            </button> : null}
 
-            <div className="services-grid-wrapper" ref={scrollerRef}>
+            <div className="services-grid-wrapper public-card-carousel__track" ref={carousel.scrollerRef}>
               <div className="public-support__grid stagger-children">
-                {cards.map((card) => {
-                  const Icon = card.cardIcon;
-
-                  return (
-                    <article className="public-support__card reveal" key={card.id || card.title}>
-                      <div className="public-support__media">
-                        <SupportAreaCardImage
-                          src={card.imageUrl}
-                          alt={card.imageAlt || card.title || ''}
-                          areaId={card.areaId || ''}
-                          position={card.imagePosition}
-                        />
-                        <div className="public-support__media-overlay" aria-hidden="true" />
-                        <span className="public-support__card-icon" aria-hidden="true">
-                          <Icon {...ICON_PROPS} />
-                        </span>
+                {cards.map((card) => (
+                  <article className="public-support__card reveal" key={card.id || card.title}>
+                    <div className="public-support__media">
+                      <SupportAreaCardImage
+                        src={card.imageUrl}
+                        alt={card.imageAlt || card.title || ''}
+                        areaId={card.areaId || ''}
+                        position={card.imagePosition}
+                      />
+                      <div className="public-support__media-overlay" aria-hidden="true" />
+                    </div>
+                    <div className="public-support__body">
+                      <h3 className="public-support__title">{card.title}</h3>
+                      <CardTitleDivider />
+                      <p className="public-support__excerpt">{card.description}</p>
+                      <div className="public-support__actions">
+                        <button
+                          type="button"
+                          className="public-support__more"
+                          onClick={() => handleOpenCard(card)}
+                        >
+                          <span className="public-support__more-label">{t('learnMore')}</span>
+                        </button>
                       </div>
-                      <div className="public-support__body">
-                        <h3 className="public-support__title">{card.title}</h3>
-                        <CardTitleDivider />
-                        <p className="public-support__excerpt">{card.description}</p>
-                        <div className="public-support__actions">
-                          <button
-                            type="button"
-                            className="public-support__more"
-                            onClick={() => handleOpenCard(card)}
-                          >
-                            <span className="public-support__more-icon" aria-hidden="true">
-                              <ArrowBackRoundedIcon fontSize="inherit" />
-                            </span>
-                            <span className="public-support__more-label">{t('learnMore')}</span>
-                          </button>
-                        </div>
-                      </div>
-                    </article>
-                  );
-                })}
+                    </div>
+                  </article>
+                ))}
               </div>
             </div>
 
-            <button
+            {carousel.showControls ? <button
               type="button"
-              className="public-support__scroll-btn public-support__scroll-btn--next"
+              className="public-support__scroll-btn public-support__scroll-btn--next public-card-carousel__button"
               aria-label={t('scrollNextActivity')}
-              onClick={() => scrollCarousel('next')}
+              onClick={() => carousel.scrollByCards(1)}
+              disabled={!carousel.canScrollNext}
             >
-              <ChevronLeftRoundedIcon fontSize="inherit" aria-hidden="true" />
-            </button>
+              {direction === 'rtl' ? (
+                <ChevronLeftRoundedIcon fontSize="inherit" aria-hidden="true" />
+              ) : (
+                <ChevronRightRoundedIcon fontSize="inherit" aria-hidden="true" />
+              )}
+            </button> : null}
           </div>
         ) : null}
       </div>

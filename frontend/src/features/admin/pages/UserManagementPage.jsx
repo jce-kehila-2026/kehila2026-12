@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { collection, doc, getDoc, getDocs, limit, query, updateDoc } from 'firebase/firestore';
+import { collection, doc, documentId, getDoc, getDocs, limit, orderBy, query, updateDoc } from 'firebase/firestore';
 import { Ban, Pencil, ShieldCheck } from 'lucide-react';
 import { db } from '../../../firebase';
 import { logAuditEvent } from '../services/auditService';
@@ -218,7 +218,7 @@ export default function UserManagementPage() {
   useEffect(() => {
     async function fetchUsers() {
       try {
-        const snap = await getDocs(query(collection(db, 'users'), limit(200)));
+        const snap = await getDocs(query(collection(db, 'users'), orderBy(documentId()), limit(100)));
         const nextUsers = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
         setUsers(nextUsers);
         setSelectedUser((current) => current || nextUsers[0] || null);

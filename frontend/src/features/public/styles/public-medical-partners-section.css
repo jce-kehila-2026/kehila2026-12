@@ -15,8 +15,8 @@
   isolation: isolate;
   overflow: hidden;
   width: 100%;
-  padding-block: clamp(5.5rem, 10vw, 7.75rem);
-  padding-inline: clamp(1.75rem, 6vw, 6.5rem);
+  padding-block: clamp(88px, 10vw, 124px);
+  padding-inline: clamp(28px, 6vw, 104px);
   background-color: var(--mp-bg);
   background-image:
     radial-gradient(ellipse 65% 48% at 10% 14%, rgba(217, 70, 161, 0.16) 0%, transparent 62%),
@@ -40,24 +40,24 @@
 }
 
 .public-homepage .public-section--medical-partners .medical-partners__blob--pink {
-  width: min(30rem, 46vw);
-  height: min(30rem, 46vw);
+  width: min(480px, 46vw);
+  height: min(480px, 46vw);
   inset-block-start: -10%;
   inset-inline-end: -8%;
   background: rgba(217, 70, 161, 0.32);
 }
 
 .public-homepage .public-section--medical-partners .medical-partners__blob--lavender {
-  width: min(26.25rem, 40vw);
-  height: min(26.25rem, 40vw);
+  width: min(420px, 40vw);
+  height: min(420px, 40vw);
   inset-block-end: -8%;
   inset-inline-start: -10%;
   background: rgba(247, 214, 234, 0.88);
 }
 
 .public-homepage .public-section--medical-partners .medical-partners__blob--purple {
-  width: min(21.25rem, 32vw);
-  height: min(21.25rem, 32vw);
+  width: min(340px, 32vw);
+  height: min(340px, 32vw);
   inset-block-start: 40%;
   inset-inline-start: 36%;
   background: rgba(138, 45, 168, 0.2);
@@ -79,15 +79,15 @@
 }
 
 .public-homepage .public-section--medical-partners .medical-partners__dots--one {
-  width: 9.375rem;
-  height: 9.375rem;
+  width: 150px;
+  height: 150px;
   inset-block-start: 12%;
   inset-inline-start: 7%;
 }
 
 .public-homepage .public-section--medical-partners .medical-partners__dots--two {
-  width: 8.125rem;
-  height: 8.125rem;
+  width: 130px;
+  height: 130px;
   inset-block-end: 16%;
   inset-inline-end: 9%;
 }
@@ -96,8 +96,8 @@
   position: relative;
   z-index: 2;
   display: grid;
-  gap: clamp(2.75rem, 5vw, 4rem);
-  width: min(100%, 80rem);
+  gap: clamp(44px, 5vw, 64px);
+  width: min(100%, 1280px);
   margin-inline: auto;
 }
 
@@ -112,7 +112,8 @@
   position: relative;
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 12px;
+  background: transparent;
 }
 
 .public-homepage .public-section--medical-partners .medical-partners__nav-btn {
@@ -120,8 +121,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 3rem;
-  height: 3rem;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   border: none;
   background: #ffffff;
@@ -146,13 +147,15 @@
   flex-direction: row;
   flex-wrap: nowrap;
   align-items: stretch;
-  gap: var(--public-grid-gap, clamp(1.25rem, 2.4vw, 1.75rem));
+  gap: var(--public-grid-gap, clamp(20px, 2.4vw, 28px));
   width: 100%;
   overflow-x: auto;
+  overflow-y: hidden;
   scroll-snap-type: x mandatory;
   scroll-behavior: smooth;
   -webkit-overflow-scrolling: touch;
-  padding-block-end: 8px; /* room for the scrollbar (hidden but some browsers need space) */
+  padding-block: 10px 14px;
+  background: transparent;
   /* hide scrollbar cross-browser */
   scrollbar-width: none;
 }
@@ -167,11 +170,11 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  flex: 0 0 clamp(240px, 26vw, 300px);
+  flex: 0 0 var(--public-home-card-width);
   scroll-snap-align: start;
   padding-block-start: clamp(16px, 1.8vw, 22px);
   padding-block-end: clamp(26px, 2.8vw, 32px);
-  padding-inline: clamp(1.125rem, 2vw, 1.625rem);
+  padding-inline: clamp(18px, 2vw, 26px);
   text-align: center;
   background: #ffffff;
   border: 1.5px solid var(--mp-pink-soft);
@@ -189,6 +192,15 @@
   box-shadow: var(--mp-card-shadow-hover);
 }
 
+.public-team-partners-page
+  .public-section--medical-partners
+  .medical-partners__card,
+.public-team-partners-page
+  .public-section--medical-partners
+  .medical-partners__card:hover {
+  box-shadow: none;
+}
+
 .public-homepage .public-section--medical-partners .medical-partners__name {
   margin: 0;
   color: var(--mp-purple);
@@ -201,14 +213,14 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
-  width: min(100%, 7rem);
-  margin-block: 0.75rem;
+  gap: 8px;
+  width: min(100%, 112px);
+  margin-block: 12px;
 }
 
 .public-homepage .public-section--medical-partners .medical-partners__card-divider-line {
   flex: 1;
-  height: 0.0625rem;
+  height: 1px;
   border-radius: 999px;
   background: linear-gradient(90deg, transparent, rgba(236, 60, 151, 0.35));
 }
@@ -226,7 +238,7 @@
 
 .public-homepage .public-section--medical-partners .medical-partners__excerpt {
   flex: 1 1 auto;
-  margin: 0 0 1.125rem;
+  margin: 0 0 18px;
   color: var(--mp-muted);
   font-size: 0.9rem;
   line-height: 1.7;
@@ -244,14 +256,14 @@
     display: block;
     height: auto;
     min-height: calc(100svh - var(--public-header-height, var(--public-navbar-offset)));
-    padding-block: clamp(3rem, 8vw, 4rem);
-    padding-inline: clamp(1rem, 4vw, 1.75rem);
+    padding-block: clamp(48px, 8vw, 64px);
+    padding-inline: clamp(16px, 4vw, 28px);
     scroll-margin-top: var(--public-header-height, var(--public-navbar-offset));
   }
 
   .public-homepage .public-section--medical-partners .medical-partners__inner {
     align-content: start;
-    gap: clamp(1.25rem, 4vw, 1.75rem);
+    gap: clamp(20px, 4vw, 28px);
     height: auto;
     min-height: 0;
   }
@@ -273,7 +285,7 @@
     width: 100%;
     height: auto;
     min-height: 0;
-    padding-block: 0.5rem 0.875rem;
+    padding-block: 8px 14px;
     padding-inline:
       calc((100% - var(--partners-mobile-card-width)) / 2)
       calc((100% - var(--partners-mobile-card-width)) / 2 + clamp(16px, 4vw, 22px));
@@ -282,11 +294,8 @@
   }
 
   .public-homepage .public-section--medical-partners .medical-partners__card {
-    flex: 0 0 var(--partners-mobile-card-width);
-    width: var(--partners-mobile-card-width);
-    max-width: 100%;
-    height: auto;
-    min-width: 0;
+    flex: 0 0 var(--public-home-card-width);
+    width: var(--public-home-card-width);
     scroll-snap-align: start;
   }
 
@@ -294,8 +303,8 @@
     position: absolute;
     top: 50%;
     z-index: 4;
-    width: 2.5rem;
-    height: 2.5rem;
+    width: 40px;
+    height: 40px;
     transform: translateY(-50%);
   }
 
@@ -316,8 +325,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 3.5rem;
-  height: 3.5rem;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
   background: linear-gradient(135deg, rgba(138, 45, 168, 0.15), rgba(217, 70, 161, 0.15));
   color: var(--mp-purple);

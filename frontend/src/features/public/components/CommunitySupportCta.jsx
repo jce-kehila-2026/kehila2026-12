@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { BadgeCheck, HandHeart, Heart, ShieldCheck } from 'lucide-react';
+import { BadgeCheck, HandHeart, ShieldCheck } from 'lucide-react';
 import donationHandsImage from '../../../assets/images/donation-hands.png';
 import { PUBLIC_DONATION_TARGET } from '../constants/publicDonationLink';
 import PublicSectionHeading from './PublicSectionHeading';
@@ -49,15 +49,13 @@ export default function CommunitySupportCta({ onDonationClick, sectionId = 'dona
       id={sectionId}
       aria-labelledby="public-support-cta-title"
     >
-      <div className="public-support-cta__decor" aria-hidden="true">
-        <span className="public-support-cta__blob public-support-cta__blob--pink" />
-        <span className="public-support-cta__blob public-support-cta__blob--lavender" />
-        <span className="public-support-cta__blob public-support-cta__blob--purple" />
-        <span className="public-support-cta__petal public-support-cta__petal--one" />
-        <span className="public-support-cta__petal public-support-cta__petal--two" />
-        <span className="public-support-cta__petal public-support-cta__petal--three" />
-        <span className="public-support-cta__heart public-support-cta__heart--one">♥</span>
-        <span className="public-support-cta__heart public-support-cta__heart--two">♥</span>
+      <div className="public-pink-section-decor" aria-hidden="true">
+        <span className="public-pink-section-decor__dots public-pink-section-decor__dots--mesh" />
+        <span className="public-pink-section-decor__blob public-pink-section-decor__blob--pink" />
+        <span className="public-pink-section-decor__blob public-pink-section-decor__blob--lavender" />
+        <span className="public-pink-section-decor__blob public-pink-section-decor__blob--purple" />
+        <span className="public-pink-section-decor__dots public-pink-section-decor__dots--one" />
+        <span className="public-pink-section-decor__dots public-pink-section-decor__dots--two" />
       </div>
 
       <div className="public-support-cta__inner">
@@ -90,7 +88,6 @@ export default function CommunitySupportCta({ onDonationClick, sectionId = 'dona
             </ul>
 
             <a className="public-support-cta__button reveal" href={PUBLIC_DONATION_TARGET} onClick={handleDonationClick}>
-              <Heart className="public-support-cta__button-icon" strokeWidth={2} fill="currentColor" aria-hidden="true" />
               {t('donationButton')}
             </a>
           </div>
@@ -98,15 +95,6 @@ export default function CommunitySupportCta({ onDonationClick, sectionId = 'dona
 
         <div className="public-support-cta__visual reveal reveal-delay-2">
           <div className="public-support-cta__visual-stage">
-            <div className="public-support-cta__image-ambience" aria-hidden="true">
-              <span className="public-support-cta__ambience-field" />
-              <span className="public-support-cta__ambience-glow public-support-cta__ambience-glow--core" />
-              <span className="public-support-cta__ambience-bokeh public-support-cta__ambience-bokeh--one" />
-              <span className="public-support-cta__ambience-bokeh public-support-cta__ambience-bokeh--two" />
-              <span className="public-support-cta__ambience-heart public-support-cta__ambience-heart--one">♥</span>
-              <span className="public-support-cta__ambience-heart public-support-cta__ambience-heart--two">♥</span>
-              <span className="public-support-cta__ambience-heart public-support-cta__ambience-heart--three">♥</span>
-            </div>
             <div className="public-support-cta__image-wrap">
               <img
                 className="public-support-cta__image"

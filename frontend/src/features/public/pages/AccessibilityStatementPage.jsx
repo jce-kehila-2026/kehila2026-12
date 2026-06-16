@@ -1,10 +1,26 @@
 import { Link } from 'react-router-dom';
+import { usePublicLocale } from '../context/PublicLocaleContext';
+
+const HEADING_STYLE = {
+  fontSize: '1.3rem',
+  color: '#151126',
+  borderBottom: '2px solid #e5e7eb',
+  paddingBottom: '0.4rem',
+};
+const LABEL_STYLE = { fontWeight: 700 };
+const ROW_STYLE = { display: 'grid', gridTemplateColumns: '120px 1fr', gap: '0.5rem' };
+const ADAPTATION_KEYS = [
+  'a11yAdapt1', 'a11yAdapt2', 'a11yAdapt3', 'a11yAdapt4', 'a11yAdapt5',
+  'a11yAdapt6', 'a11yAdapt7', 'a11yAdapt8', 'a11yAdapt9', 'a11yAdapt10',
+];
 
 export default function AccessibilityStatementPage() {
+  const { t, direction, lang } = usePublicLocale();
+
   return (
     <div
-      dir="rtl"
-      lang="he"
+      dir={direction}
+      lang={lang}
       style={{
         maxWidth: '800px',
         margin: '0 auto',
@@ -19,98 +35,62 @@ export default function AccessibilityStatementPage() {
           to="/public"
           style={{ color: '#1a56a0', textDecoration: 'underline', fontSize: '0.9rem' }}
         >
-          ← חזרה לדף הבית
+          ← {t('a11yBackHome')}
         </Link>
       </nav>
 
       <h1 style={{ fontSize: '2rem', marginBottom: '0.5rem', color: '#151126' }}>
-        הצהרת נגישות
+        {t('a11yTitle')}
       </h1>
       <p style={{ color: '#555', marginBottom: '2rem', fontSize: '0.9rem' }}>
-        עודכן לאחרונה: מאי 2026
+        {t('a11yLastUpdated')}
       </p>
 
-      {/* 1. מבוא */}
       <section aria-labelledby="intro-heading" style={{ marginBottom: '2rem' }}>
-        <h2 id="intro-heading" style={{ fontSize: '1.3rem', color: '#151126', borderBottom: '2px solid #e5e7eb', paddingBottom: '0.4rem' }}>
-          מבוא
-        </h2>
-        <p>
-          עמותת <strong>שי-נא (SHE-NA)</strong> מחויבת להנגשת אתר האינטרנט שלה לכלל הציבור, לרבות אנשים עם מוגבלויות.
-          אנו שואפים לעמוד בדרישות תקן הנגישות הישראלי <strong>ת"י 5568</strong> ברמת התאמה <strong>AA</strong>,
-          המבוסס על הנחיות <strong>WCAG 2.0</strong> של ארגון W3C.
-        </p>
-        <p>
-          הצהרה זו חלה על האתר הציבורי של עמותת שי-נא, לרבות פורטל המשתתפות ופאנל הניהול.
-        </p>
+        <h2 id="intro-heading" style={HEADING_STYLE}>{t('a11yIntroHeading')}</h2>
+        <p>{t('a11yIntroP1')}</p>
+        <p>{t('a11yIntroP2')}</p>
       </section>
 
-      {/* 2. רמת נגישות */}
       <section aria-labelledby="level-heading" style={{ marginBottom: '2rem' }}>
-        <h2 id="level-heading" style={{ fontSize: '1.3rem', color: '#151126', borderBottom: '2px solid #e5e7eb', paddingBottom: '0.4rem' }}>
-          רמת הנגישות
-        </h2>
-        <p>
-          האתר עומד ברמת נגישות <strong>AA</strong> בהתאם לתקן <strong>ת"י 5568</strong> ולהנחיות <strong>WCAG 2.0 AA</strong>.
-        </p>
-        <p>
-          הבדיקות בוצעו על גבי דפדפנים מובילים (Chrome, Firefox, Edge, Safari) ועל מגוון מכשירים, לרבות טלפונים ניידים.
-        </p>
+        <h2 id="level-heading" style={HEADING_STYLE}>{t('a11yLevelHeading')}</h2>
+        <p>{t('a11yLevelP1')}</p>
+        <p>{t('a11yLevelP2')}</p>
       </section>
 
-      {/* 3. התאמות שבוצעו */}
       <section aria-labelledby="adaptations-heading" style={{ marginBottom: '2rem' }}>
-        <h2 id="adaptations-heading" style={{ fontSize: '1.3rem', color: '#151126', borderBottom: '2px solid #e5e7eb', paddingBottom: '0.4rem' }}>
-          התאמות הנגישות שבוצעו
-        </h2>
-        <ul style={{ paddingRight: '1.5rem', lineHeight: 2 }}>
-          <li>סרגל נגישות גלובלי הכולל: הגדלת טקסט, ניגודיות גבוהה, גווני אפור, הדגשת קישורים, פונט קריא ועצירת הבהובים.</li>
-          <li>שמירת העדפות הנגישות של המשתמש/ת בדפדפן (localStorage) לשמירה בין ביקורים.</li>
-          <li>תמיכה מלאה בכיוון טקסט מימין לשמאל (RTL) בעברית ובערבית.</li>
-          <li>כל התמונות מכילות תיאורי טקסט חלופי (alt text).</li>
-          <li>ניווט מלא במקלדת לכל רכיבי הממשק האינטראקטיביים.</li>
-          <li>קישור "דילוג לתוכן המרכזי" בראש כל עמוד.</li>
-          <li>שימוש בתגיות HTML סמנטיות (<code>main</code>, <code>nav</code>, <code>footer</code>, <code>section</code>, <code>h1</code>–<code>h6</code>).</li>
-          <li>ניגודיות צבעים מינימלית של 4.5:1 בין טקסט לרקע.</li>
-          <li>תמיכה בשינוי גודל טקסט עד 200% ללא אובדן תוכן.</li>
-          <li>הגדרות <code>aria-label</code>, <code>aria-expanded</code> ו-<code>role</code> על כל הרכיבים האינטראקטיביים.</li>
+        <h2 id="adaptations-heading" style={HEADING_STYLE}>{t('a11yAdaptHeading')}</h2>
+        <ul style={{ paddingInlineStart: '1.5rem', lineHeight: 2 }}>
+          {ADAPTATION_KEYS.map((key) => (
+            <li key={key}>{t(key)}</li>
+          ))}
         </ul>
       </section>
 
-      {/* 4. מגבלות ידועות */}
       <section aria-labelledby="limits-heading" style={{ marginBottom: '2rem' }}>
-        <h2 id="limits-heading" style={{ fontSize: '1.3rem', color: '#151126', borderBottom: '2px solid #e5e7eb', paddingBottom: '0.4rem' }}>
-          מגבלות ידועות
-        </h2>
-        <p>
-          אנו ממשיכים לשפר את הנגישות ולטפל בפערים שנמצאו. אם נתקלת בבעיה, אנא פנה/י לרכז/ת הנגישות שלנו (ראה/י פרטים למטה).
-        </p>
+        <h2 id="limits-heading" style={HEADING_STYLE}>{t('a11yLimitsHeading')}</h2>
+        <p>{t('a11yLimitsP')}</p>
       </section>
 
-      {/* 5. פרטי רכז נגישות */}
       <section aria-labelledby="coordinator-heading" style={{ marginBottom: '2rem' }}>
-        <h2 id="coordinator-heading" style={{ fontSize: '1.3rem', color: '#151126', borderBottom: '2px solid #e5e7eb', paddingBottom: '0.4rem' }}>
-          פרטי רכז/ת נגישות
-        </h2>
-        <p>
-          אם נתקלת בבעיית נגישות באתר או ברצונך לדווח על חוויה שאינה נגישה, ניתן לפנות לרכז/ת הנגישות שלנו:
-        </p>
+        <h2 id="coordinator-heading" style={HEADING_STYLE}>{t('a11yCoordHeading')}</h2>
+        <p>{t('a11yCoordIntro')}</p>
         <address style={{ fontStyle: 'normal', backgroundColor: '#f9fafb', padding: '1rem 1.25rem', borderRadius: '8px', border: '1px solid #e5e7eb' }}>
           <dl style={{ margin: 0, display: 'grid', gap: '0.5rem' }}>
-            <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: '0.5rem' }}>
-              <dt style={{ fontWeight: 700 }}>שם:</dt>
-              <dd style={{ margin: 0 }}>[שם רכז/ת הנגישות]</dd>
+            <div style={ROW_STYLE}>
+              <dt style={LABEL_STYLE}>{t('a11yLabelName')}</dt>
+              <dd style={{ margin: 0 }}>{t('a11yCoordNamePlaceholder')}</dd>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: '0.5rem' }}>
-              <dt style={{ fontWeight: 700 }}>דוא"ל:</dt>
+            <div style={ROW_STYLE}>
+              <dt style={LABEL_STYLE}>{t('a11yLabelEmail')}</dt>
               <dd style={{ margin: 0 }}>
                 <a href="mailto:[accessibility@she-na.org.il]" style={{ color: '#1a56a0' }}>
                   [accessibility@she-na.org.il]
                 </a>
               </dd>
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: '120px 1fr', gap: '0.5rem' }}>
-              <dt style={{ fontWeight: 700 }}>טלפון:</dt>
+            <div style={ROW_STYLE}>
+              <dt style={LABEL_STYLE}>{t('a11yLabelPhone')}</dt>
               <dd style={{ margin: 0 }}>
                 <a href="tel:[+972-XX-XXXXXXX]" style={{ color: '#1a56a0' }}>
                   [+972-XX-XXXXXXX]
@@ -120,22 +100,17 @@ export default function AccessibilityStatementPage() {
           </dl>
         </address>
         <p style={{ marginTop: '1rem', fontSize: '0.9rem', color: '#555' }}>
-          אנו מתחייבים להשיב לכל פנייה בנושא נגישות תוך <strong>7 ימי עסקים</strong>.
+          {t('a11yResponseCommitment')}
         </p>
       </section>
 
-      {/* 6. בסיס חוקי */}
       <section aria-labelledby="legal-heading" style={{ marginBottom: '2rem' }}>
-        <h2 id="legal-heading" style={{ fontSize: '1.3rem', color: '#151126', borderBottom: '2px solid #e5e7eb', paddingBottom: '0.4rem' }}>
-          בסיס חוקי
-        </h2>
-        <p>
-          הצהרה זו נכתבה בהתאם לחוק שוויון זכויות לאנשים עם מוגבלות, תשנ"ח-1998, ולתקנות שוויון זכויות לאנשים עם מוגבלות (התאמות נגישות לשירות), תשע"ג-2013.
-        </p>
+        <h2 id="legal-heading" style={HEADING_STYLE}>{t('a11yLegalHeading')}</h2>
+        <p>{t('a11yLegalP')}</p>
       </section>
 
       <p style={{ fontSize: '0.85rem', color: '#777', borderTop: '1px solid #e5e7eb', paddingTop: '1rem' }}>
-        © {new Date().getFullYear()} SHE-NA. הצהרה זו עודכנה לאחרונה במאי 2026.
+        © {new Date().getFullYear()} SHE-NA. {t('a11yFooterUpdated')}
       </p>
     </div>
   );

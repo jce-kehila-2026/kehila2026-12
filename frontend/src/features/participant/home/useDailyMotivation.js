@@ -9,21 +9,30 @@ import {
  * @typedef {{ text: string, author: string, source?: string }} DailyMotivationQuote
  */
 
-function getInitialQuote() {
-  const cached = readCachedMotivationQuote();
-  if (cached) {
-    return {
-      text: cached.text,
-      author: cached.author,
-      source: cached.source,
-    };
+function getSafeFallbackQuote() {
+  try {
+    const cached = readCachedMotivationQuote();
+    if (cached?.text) {
+      return {
+        text: cached.text,
+        author: cached.author,
+        source: cached.source,
+      };
+    }
+  } catch {
+    // Ignore cache read failures.
   }
 
-  return { ...DAILY_MOTIVATION_DEFAULT_FALLBACK };
+  return { ...DAILY_MOTIVATION_DEFAULT_FALLBACK, source: 'fallback' };
+}
+
+function getInitialQuote() {
+  return getSafeFallbackQuote();
 }
 
 /**
  * Loads a motivational quote — stable for 24 hours via localStorage.
+ * Never throws; always exposes a safe fallback quote.
  * @returns {{ quote: DailyMotivationQuote, isLoading: boolean }}
  */
 export default function useDailyMotivation() {
@@ -37,15 +46,9 @@ export default function useDailyMotivation() {
       try {
         const nextQuote = await getDailyMotivationQuote();
         if (!ignore) setQuote(nextQuote);
-      } catch {
-        const cached = readCachedMotivationQuote();
-        if (!ignore) {
-          setQuote(
-            cached
-              ? { text: cached.text, author: cached.author, source: cached.source }
-              : { ...DAILY_MOTIVATION_DEFAULT_FALLBACK, source: 'fallback' },
-          );
-        }
+      } catch (error) {
+        console.warn('[Daily motivation] Hook fallback after unexpected error:', error);
+        if (!ignore) setQuote(getSafeFallbackQuote());
       } finally {
         if (!ignore) setIsLoading(false);
       }

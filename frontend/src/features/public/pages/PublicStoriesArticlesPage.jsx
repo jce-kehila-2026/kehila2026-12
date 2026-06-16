@@ -14,15 +14,15 @@ import '../styles/PublicHomePage.css';
 
 function PublicStoriesArticlesPageContent() {
   const pageRef = useRef(null);
-  const { direction, lang, t } = usePublicLocale();
+  const { direction, lang, locale, t } = usePublicLocale();
   const [content, setContent] = useState(() => getFallbackPublicHomepageContent());
   const [publicHomeDoc, setPublicHomeDoc] = useState(() => getDefaultPublicHomeDoc());
   const [isContentLoading, setIsContentLoading] = useState(true);
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
   const [isVolunteerModalOpen, setIsVolunteerModalOpen] = useState(false);
   const revealRefreshKey = useMemo(
-    () => `${publicHomeDoc.inspirationalStories?.length || 0}:${publicHomeDoc.pressCoverage?.length || 0}`,
-    [publicHomeDoc.inspirationalStories?.length, publicHomeDoc.pressCoverage?.length],
+    () => `${locale}:${publicHomeDoc.inspirationalStories?.length || 0}:${publicHomeDoc.pressCoverage?.length || 0}`,
+    [locale, publicHomeDoc.inspirationalStories?.length, publicHomeDoc.pressCoverage?.length],
   );
 
   useRevealOnScroll(pageRef, revealRefreshKey);
@@ -74,7 +74,6 @@ function PublicStoriesArticlesPageContent() {
         organization={content.organization}
         onJoinClick={() => setIsJoinModalOpen(true)}
         onVolunteerClick={() => setIsVolunteerModalOpen(true)}
-        showHomeDropdown={false}
       />
       <main id="public-main">
         <InspirationStoriesSection stories={publicHomeDoc.inspirationalStories} />

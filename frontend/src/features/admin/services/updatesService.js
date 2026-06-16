@@ -13,6 +13,7 @@ import {
 } from 'firebase/firestore';
 
 import { db } from '../../../firebase';
+import { isTranslationConfigured, translateFields } from './translationService';
 
 const UPDATES_COL = 'updates';
 
@@ -22,9 +23,27 @@ const UPDATES_COL = 'updates';
  * @param {{ uid: string, displayName: string }} adminUser
  */
 export async function createUpdate(data, adminUser) {
+  // Translate title/body to { he, en, ar } once, at save time. If translation
+  // is unavailable, fall back to storing the original strings — localizeField
+  // on the read side handles both shapes, so announcements still publish.
+  let title = data.title;
+  let body = data.body;
+  if (isTranslationConfigured()) {
+    try {
+      const translated = await translateFields(
+        { title: data.title, body: data.body },
+        ['title', 'body'],
+      );
+      if (translated.title) title = translated.title;
+      if (translated.body) body = translated.body;
+    } catch (err) {
+      console.error('Announcement translation failed; saving original text only:', err);
+    }
+  }
+
   return addDoc(collection(db, UPDATES_COL), {
-    title: data.title,
-    body: data.body,
+    title,
+    body,
     type: data.type,
     createdAt: serverTimestamp(),
     createdBy: adminUser.uid,
@@ -158,4 +177,35 @@ export async function fetchParticipantEmails() {
     }
   }
   return emails;
+}
+
+/**
+ * Fetch the participant recipients an admin can pick from when sending an
+ * update by email. Like fetchParticipantEmails but keeps a display name
+ * alongside each address so the admin can recognise who they're sending to.
+ * Filtered client-side to avoid a composite index, deduplicated by email,
+ * and sorted by name for a tidy list.
+ *
+ * @returns {Promise<Array<{ name: string, email: string }>>}
+ */
+export async function fetchParticipants() {
+  const snap = await getDocs(collection(db, 'users'));
+  const seen = new Set();
+  const participants = [];
+  for (const d of snap.docs) {
+    const data = d.data();
+    const { role, email } = data;
+    if (role === 'participant' && email && !seen.has(email)) {
+      seen.add(email);
+      const name =
+        data.displayName ||
+        data.fullName ||
+        [data.firstName, data.lastName].filter(Boolean).join(' ').trim() ||
+        data.name ||
+        email;
+      participants.push({ name, email });
+    }
+  }
+  participants.sort((a, b) => a.name.localeCompare(b.name));
+  return participants;
 }

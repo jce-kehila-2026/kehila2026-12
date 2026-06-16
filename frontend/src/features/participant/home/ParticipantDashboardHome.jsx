@@ -1,5 +1,6 @@
 import { useEffect, useId, useMemo, useRef, useState, useCallback } from 'react';
 import { createPortal } from 'react-dom';
+import { localizeField } from '../../../i18n/localizeField';
 import {
   ArrowRight,
   CalendarDays,
@@ -22,6 +23,8 @@ import {
 import heroWellnessBanner from '../../../assets/hero-wellness-banner.png';
 import communityHighlightFallback from '../../../assets/images/support-groups.jpeg';
 import { auth } from '../../../firebase';
+import { getLocalizedText } from '../../../shared/i18n/getLocalizedText';
+import { getParticipantLocaleLang, getStoredParticipantLocale } from '../i18n/participantLocale';
 import { createCalendarNote } from '../../calendar/calendarService';
 import {
   buildCalendarMonthCells,
@@ -328,24 +331,14 @@ function formatRelativeTime(timestamp) {
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
 }
 
-function resolveNotificationText(value) {
-  if (!value) return '';
-  if (typeof value === 'string') return value;
-  if (typeof value === 'number') return String(value);
-  if (typeof value !== 'object') return '';
-
-  const localized = value.en || value.he || value.ar;
-  if (typeof localized === 'string') return localized;
-
-  const firstStringValue = Object.values(value).find((item) => typeof item === 'string' && item.trim());
-  return firstStringValue || '';
-}
-
 function LatestMessageCard({ notification, onOpenNotifications }) {
-  const hasNotification = Boolean(notification?.title || notification?.body);
-  const notificationTitle = hasNotification ? resolveNotificationText(notification.title) : '';
-  const notificationBody = hasNotification ? resolveNotificationText(notification.body) : '';
-  const truncatedBody = notificationBody.length > 80 ? `${notificationBody.slice(0, 77)}...` : notificationBody;
+  const lang = getParticipantLocaleLang(getStoredParticipantLocale());
+  const notificationTitle = getLocalizedText(notification?.title, lang);
+  const notificationBody = getLocalizedText(notification?.body, lang);
+  const senderText = getLocalizedText(notification?.sender ?? notification?.senderTitle, lang);
+  const previewText = notificationBody || senderText;
+  const hasNotification = Boolean(notification && (notificationTitle || previewText));
+  const truncatedBody = previewText.length > 80 ? `${previewText.slice(0, 77)}...` : previewText;
 
   return (
     <button
@@ -491,7 +484,7 @@ function AppointmentCard({ appointment, onView }) {
   );
 }
 
-function EventCard({ event, onView }) {
+function EventCard({ event, onView, locale = 'he' }) {
   const countdown = useCountdownRing(event.targetDate, 'event');
 
   return (
@@ -499,12 +492,12 @@ function EventCard({ event, onView }) {
       <div className="pd-card__surface pd-feature__layout">
         <div className="pd-feature__body">
           <CardHeading icon={Sparkles} label="Upcoming Event" accent="pink" />
-          <h3 className="pd-feature__title">{event.title}</h3>
+          <h3 className="pd-feature__title">{localizeField(event.translations?.title ?? event.title, locale)}</h3>
           <p className="pd-feature__subtitle">{event.category}</p>
 
           <ul className="pd-feature__details">
             <FeatureSchedule dateLabel={event.dateLabel} timeLabel={event.timeLabel} />
-            <FeatureDetail icon={MapPin} value={event.location} />
+            <FeatureDetail icon={MapPin} value={localizeField(event.translations?.location ?? event.location, locale)} />
           </ul>
 
           <PremiumCta variant="soft" onClick={onView}>
@@ -1621,6 +1614,7 @@ export default function ParticipantDashboardHome({
   onViewCommunity,
   latestNotification = null,
   onOpenNotifications,
+  locale = 'he',
 }) {
   const { appointment, event, isLoading, appointmentError, eventError } = useParticipantDashboardHomeData(userId);
   const isBirthdayToday = useBirthdayToday(birthDate);
@@ -1678,7 +1672,7 @@ export default function ParticipantDashboardHome({
           <AppointmentEmptyCard onBook={goToAppointments} />
         )}
         {event ? (
-          <EventCard event={event} onView={goToEvents} />
+          <EventCard event={event} onView={goToEvents} locale={locale} />
         ) : eventError ? (
           <FeatureCardErrorState
             variant="event"

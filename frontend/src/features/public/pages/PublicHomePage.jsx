@@ -3,8 +3,6 @@ import PublicNavbar from '../components/PublicNavbar';
 import HeroSection from '../components/HeroSection';
 import LearnTogetherSection from '../components/LearnTogetherSection';
 import EventsPreviewSection from '../components/EventsPreviewSection';
-import TeamSection from '../components/TeamSection';
-import MedicalPartnersSection from '../components/MedicalPartnersSection';
 import PublicFooter from '../components/PublicFooter';
 import JoinCommunityModal from '../components/JoinCommunityModal';
 import VolunteerModal from '../components/VolunteerModal';
@@ -19,7 +17,7 @@ import '../styles/PublicHomePage.css';
 
 function PublicHomePageContent() {
   const pageRef = useRef(null);
-  const { direction, lang, t } = usePublicLocale();
+  const { direction, lang, locale, t } = usePublicLocale();
   const [content, setContent] = useState(() => getFallbackPublicHomepageContent());
   const [publicHomeDoc, setPublicHomeDoc] = useState(() => getDefaultPublicHomeDoc());
   const [loading, setLoading] = useState(true);
@@ -29,6 +27,7 @@ function PublicHomePageContent() {
   const revealRefreshKey = useMemo(
     () => [
       loading ? 'loading' : 'ready',
+      locale,
       content.supportAreas?.length || 0,
       content.statistics?.length || 0,
       content.teamMembers?.length || 0,
@@ -41,6 +40,7 @@ function PublicHomePageContent() {
       content.supportAreas?.length,
       content.teamMembers?.length,
       loading,
+      locale,
       publicHomeDoc.learnTogether?.cards?.length,
     ],
   );
@@ -112,8 +112,6 @@ function PublicHomePageContent() {
         />
         <LearnTogetherSection learnTogether={publicHomeDoc.learnTogether} />
         <EventsPreviewSection events={content.events} isLoading={loading} hasError={error} />
-        <TeamSection members={publicHomeDoc.teamMembers} />
-        <MedicalPartnersSection partners={publicHomeDoc.partners} />
       </main>
       <PublicFooter organization={content.organization} contact={publicHomeDoc.contact} />
       <JoinCommunityModal isOpen={isJoinModalOpen} onClose={() => setIsJoinModalOpen(false)} />

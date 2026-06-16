@@ -1,9 +1,11 @@
-import { useRef } from 'react';
+import { useMemo } from 'react';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import PublicSectionHeading from './PublicSectionHeading';
 import { usePublicLocale } from '../context/PublicLocaleContext';
+import { localizeField } from '../../../i18n/localizeField';
 import '../styles/public-medical-partners-section.css';
+import useHorizontalCardCarousel from '../hooks/useHorizontalCardCarousel';
 
 function CardDivider() {
   return (
@@ -15,16 +17,24 @@ function CardDivider() {
   );
 }
 
-const SCROLL_AMOUNT = 320;
-
 export default function MedicalPartnersSection({ partners = [] }) {
-  const { t } = usePublicLocale();
-  const trackRef = useRef(null);
+  const { direction, t, locale } = usePublicLocale();
 
-  function scroll(direction) {
-    if (!trackRef.current) return;
-    trackRef.current.scrollBy({ left: direction * SCROLL_AMOUNT, behavior: 'smooth' });
-  }
+  // Localize admin-edited partner descriptions (org names left as-is).
+  const localizedPartners = useMemo(() => {
+    const list = Array.isArray(partners) ? partners : [];
+    return list.map((partner) => ({
+      ...partner,
+      description: localizeField(partner.translations?.description ?? partner.description, locale),
+    }));
+  }, [partners, locale]);
+
+  const carousel = useHorizontalCardCarousel({
+    cardSelector: '.medical-partners__card',
+    direction,
+    itemCount: localizedPartners.length,
+    refreshKey: locale,
+  });
 
   return (
     <section
@@ -50,18 +60,25 @@ export default function MedicalPartnersSection({ partners = [] }) {
           subtitle={t('medicalSubtitle')}
         />
 
-        <div className="medical-partners__carousel">
-          <button
+        <div className={[
+          'medical-partners__carousel',
+          'public-card-carousel',
+          !carousel.showControls ? 'public-card-carousel--without-controls' : '',
+          carousel.fadeLeft ? 'public-card-carousel--fade-left' : '',
+          carousel.fadeRight ? 'public-card-carousel--fade-right' : '',
+        ].filter(Boolean).join(' ')}>
+          {carousel.showControls ? <button
             type="button"
-            className="medical-partners__nav-btn medical-partners__nav-btn--prev"
-            onClick={() => scroll(1)}
+            className="medical-partners__nav-btn medical-partners__nav-btn--prev public-card-carousel__button"
+            onClick={() => carousel.scrollByCards(-1)}
+            disabled={!carousel.canScrollPrev}
             aria-label="הקודם"
           >
-            <ChevronRightIcon />
-          </button>
+            {direction === 'rtl' ? <ChevronRightIcon /> : <ChevronLeftIcon />}
+          </button> : null}
 
-          <div className="medical-partners__scroll-track stagger-children" ref={trackRef}>
-            {partners.map((partner) => (
+          <div className="medical-partners__scroll-track public-card-carousel__track stagger-children" ref={carousel.scrollerRef}>
+            {localizedPartners.map((partner) => (
               <article className="medical-partners__card reveal" key={partner.id}>
                 <div className="medical-partner-logo-wrap">
                   {partner.logoUrl ? (
@@ -83,14 +100,15 @@ export default function MedicalPartnersSection({ partners = [] }) {
             ))}
           </div>
 
-          <button
+          {carousel.showControls ? <button
             type="button"
-            className="medical-partners__nav-btn medical-partners__nav-btn--next"
-            onClick={() => scroll(-1)}
+            className="medical-partners__nav-btn medical-partners__nav-btn--next public-card-carousel__button"
+            onClick={() => carousel.scrollByCards(1)}
+            disabled={!carousel.canScrollNext}
             aria-label="הבא"
           >
-            <ChevronLeftIcon />
-          </button>
+            {direction === 'rtl' ? <ChevronLeftIcon /> : <ChevronRightIcon />}
+          </button> : null}
         </div>
       </div>
     </section>

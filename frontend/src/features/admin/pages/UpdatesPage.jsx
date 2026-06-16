@@ -12,12 +12,13 @@ import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import GroupOutlinedIcon from '@mui/icons-material/GroupOutlined';
 import WarningAmberOutlinedIcon from '@mui/icons-material/WarningAmberOutlined';
 import { useAdmin } from '../context/AdminContext';
+import { localizeField } from '../../../i18n/localizeField';
 import {
   createUpdate,
   fetchUpdates,
   archiveUpdate,
   deleteUpdate,
-  fetchParticipantEmails,
+  fetchParticipants,
 } from '../services/updatesService';
 import './UpdatesPage.css';
 
@@ -62,7 +63,8 @@ export default function UpdatesPage() {
   // ── Email modal state ────────────────────────────────────
   const [emailTarget, setEmailTarget] = useState(null); // the update being emailed
   const [emailLoading, setEmailLoading] = useState(false);
-  const [emailList, setEmailList] = useState([]);
+  const [recipients, setRecipients] = useState([]); // [{ name, email }]
+  const [selectedEmails, setSelectedEmails] = useState(() => new Set());
   const [emailFetchError, setEmailFetchError] = useState('');
 
   // ── Data loading ─────────────────────────────────────────
@@ -144,26 +146,47 @@ export default function UpdatesPage() {
   // ── Email handlers ───────────────────────────────────────
   async function handleEmailClick(update) {
     setEmailTarget(update);
-    setEmailList([]);
+    setRecipients([]);
+    setSelectedEmails(new Set());
     setEmailFetchError('');
     setEmailLoading(true);
     try {
-      const emails = await fetchParticipantEmails();
-      setEmailList(emails);
+      const people = await fetchParticipants();
+      setRecipients(people);
+      // Pre-select everyone by default — sending to all is the common case.
+      setSelectedEmails(new Set(people.map((p) => p.email)));
     } catch (err) {
-      console.error('Failed to fetch participant emails:', err);
-      setEmailFetchError('Could not load participant emails. Please try again.');
+      console.error('Failed to fetch participants:', err);
+      setEmailFetchError('Could not load participants. Please try again.');
     } finally {
       setEmailLoading(false);
     }
   }
 
+  function toggleRecipient(email) {
+    setSelectedEmails((prev) => {
+      const next = new Set(prev);
+      if (next.has(email)) next.delete(email);
+      else next.add(email);
+      return next;
+    });
+  }
+
+  const allSelected = recipients.length > 0 && selectedEmails.size === recipients.length;
+
+  function toggleSelectAll() {
+    setSelectedEmails(allSelected ? new Set() : new Set(recipients.map((p) => p.email)));
+  }
+
   function handleProceedEmail() {
-    if (!emailTarget || emailList.length === 0) return;
-    const bcc = emailList.join(',');
-    const subject = encodeURIComponent(`She-Na Update: ${emailTarget.title}`);
+    if (!emailTarget || selectedEmails.size === 0) return;
+    const bcc = recipients
+      .filter((p) => selectedEmails.has(p.email))
+      .map((p) => p.email)
+      .join(',');
+    const subject = encodeURIComponent(`She-Na Update: ${localizeField(emailTarget.title, 'he')}`);
     const body = encodeURIComponent(
-      `Hello,\n\n${emailTarget.body}\n\nBest regards,\nShe-Na Team`
+      `Hello,\n\n${localizeField(emailTarget.body, 'he')}\n\nBest regards,\nShe-Na Team`
     );
     window.location.href = `mailto:?bcc=${bcc}&subject=${subject}&body=${body}`;
     setEmailTarget(null);
@@ -238,8 +261,8 @@ export default function UpdatesPage() {
               </div>
 
               <div className="updates-page__card-body">
-                <h3 className="updates-page__card-title">{update.title}</h3>
-                <p className="updates-page__card-text">{update.body}</p>
+                <h3 className="updates-page__card-title">{localizeField(update.title, 'he')}</h3>
+                <p className="updates-page__card-text">{localizeField(update.body, 'he')}</p>
                 <div className="updates-page__card-meta">
                   <span>{relativeTime(update.createdAt)}</span>
                   {update.createdByName && <span>by {update.createdByName}</span>}
@@ -404,8 +427,8 @@ export default function UpdatesPage() {
               {/* Update preview */}
               <div className="updates-email-modal__preview">
                 <p className="updates-email-modal__preview-label">Update</p>
-                <p className="updates-email-modal__preview-title">{emailTarget.title}</p>
-                <p className="updates-email-modal__preview-body">{emailTarget.body}</p>
+                <p className="updates-email-modal__preview-title">{localizeField(emailTarget.title, 'he')}</p>
+                <p className="updates-email-modal__preview-body">{localizeField(emailTarget.body, 'he')}</p>
               </div>
 
               {/* Info / status */}
@@ -423,34 +446,72 @@ export default function UpdatesPage() {
 
                 {!emailLoading && !emailFetchError && (
                   <>
-                    <div className="updates-email-modal__count">
-                      <GroupOutlinedIcon style={{ fontSize: '1.125rem' }} />
-                      <span>
-                        <strong>{emailList.length}</strong> participant email{emailList.length !== 1 ? 's' : ''} found
-                      </span>
+                    <div className="updates-email-modal__recipients-head">
+                      <div className="updates-email-modal__count">
+                        <GroupOutlinedIcon style={{ fontSize: '1.125rem' }} />
+                        <span>
+                          <strong>{selectedEmails.size}</strong> of {recipients.length} selected
+                        </span>
+                      </div>
+                      {recipients.length > 0 && (
+                        <button
+                          type="button"
+                          className="updates-email-modal__select-all"
+                          onClick={toggleSelectAll}
+                        >
+                          {allSelected ? 'Clear all' : 'Select all'}
+                        </button>
+                      )}
                     </div>
 
-                    {emailList.length > 100 && (
+                    {recipients.length > 0 && (
+                      <ul className="updates-email-modal__recipients">
+                        {recipients.map((p) => {
+                          const checked = selectedEmails.has(p.email);
+                          return (
+                            <li key={p.email}>
+                              <label
+                                className={`updates-email-modal__recipient${checked ? ' is-checked' : ''}`}
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={checked}
+                                  onChange={() => toggleRecipient(p.email)}
+                                />
+                                <span className="updates-email-modal__recipient-info">
+                                  <span className="updates-email-modal__recipient-name">{p.name}</span>
+                                  <span className="updates-email-modal__recipient-email">{p.email}</span>
+                                </span>
+                              </label>
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    )}
+
+                    {selectedEmails.size > 100 && (
                       <div className="updates-email-modal__warning">
                         <WarningAmberOutlinedIcon style={{ fontSize: '1rem' }} />
                         <span>
-                          Large recipient list ({emailList.length}). Some email clients may truncate
+                          Large recipient list ({selectedEmails.size}). Some email clients may truncate
                           the BCC field. Consider splitting into batches.
                         </span>
                       </div>
                     )}
 
-                    {emailList.length === 0 && (
+                    {recipients.length === 0 && (
                       <p className="updates-email-modal__note">
                         No participant accounts found. Make sure participants have an email saved
                         in their profile.
                       </p>
                     )}
 
-                    <p className="updates-email-modal__note">
-                      This will open your default email client with all participant emails in the
-                      <strong> BCC</strong> field to protect privacy.
-                    </p>
+                    {recipients.length > 0 && (
+                      <p className="updates-email-modal__note">
+                        Opens your default email client with the selected participants in the
+                        <strong> BCC</strong> field to protect privacy.
+                      </p>
+                    )}
                   </>
                 )}
               </div>
@@ -466,11 +527,13 @@ export default function UpdatesPage() {
                 <button
                   type="button"
                   className="updates-modal__submit updates-email-modal__proceed"
-                  disabled={emailLoading || emailList.length === 0 || !!emailFetchError}
+                  disabled={emailLoading || selectedEmails.size === 0 || !!emailFetchError}
                   onClick={handleProceedEmail}
                 >
                   <ForwardToInboxOutlinedIcon style={{ fontSize: '1.0625rem' }} />
-                  {emailLoading ? 'Loading…' : 'Open Email Client'}
+                  {emailLoading
+                    ? 'Loading…'
+                    : `Open Email Client${selectedEmails.size ? ` (${selectedEmails.size})` : ''}`}
                 </button>
               </div>
             </div>

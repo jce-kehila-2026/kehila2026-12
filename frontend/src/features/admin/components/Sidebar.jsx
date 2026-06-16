@@ -16,6 +16,7 @@ import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import ForumOutlinedIcon from '@mui/icons-material/ForumOutlined';
 import HomeWorkOutlinedIcon from '@mui/icons-material/HomeWorkOutlined';
 import CampaignOutlinedIcon from '@mui/icons-material/CampaignOutlined';
+import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import KeyboardDoubleArrowRightRoundedIcon from '@mui/icons-material/KeyboardDoubleArrowRightRounded';
@@ -51,6 +52,13 @@ const NAV_ITEMS = [
     icon: <CalendarMonthIcon />,
     id: 'nav-bookings',
     active: (pathname) => pathname.startsWith('/admin/appointments'),
+  },
+  {
+    label: 'Forms',
+    path: '/admin/forms',
+    icon: <DescriptionOutlinedIcon />,
+    id: 'nav-forms',
+    active: (pathname) => pathname.startsWith('/admin/forms'),
   },
   {
     label: 'Public Home-page',

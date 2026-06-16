@@ -14,14 +14,14 @@ import '../styles/PublicHomePage.css';
 
 function PublicDonationsPageContent() {
   const pageRef = useRef(null);
-  const { direction, lang, t } = usePublicLocale();
+  const { direction, lang, locale, t } = usePublicLocale();
   const [content, setContent] = useState(() => getFallbackPublicHomepageContent());
   const [publicHomeDoc, setPublicHomeDoc] = useState(() => getDefaultPublicHomeDoc());
   const [isJoinModalOpen, setIsJoinModalOpen] = useState(false);
   const [isVolunteerModalOpen, setIsVolunteerModalOpen] = useState(false);
   const [isDonationModalOpen, setIsDonationModalOpen] = useState(false);
 
-  useRevealOnScroll(pageRef, 'donations');
+  useRevealOnScroll(pageRef, `donations:${locale}`);
   usePublicHomeScrollReset(pageRef);
 
   useEffect(() => {
@@ -53,7 +53,6 @@ function PublicDonationsPageContent() {
         organization={content.organization}
         onJoinClick={() => setIsJoinModalOpen(true)}
         onVolunteerClick={() => setIsVolunteerModalOpen(true)}
-        showHomeDropdown={false}
       />
       <main id="public-main">
         <CommunitySupportCta

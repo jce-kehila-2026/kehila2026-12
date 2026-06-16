@@ -1,7 +1,8 @@
-import { useMemo } from 'react';
+import { lazy, Suspense, useMemo } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { ThemeProvider } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
+import CircularProgress from '@mui/material/CircularProgress';
 import { CacheProvider } from '@emotion/react';
 import createCache from '@emotion/cache';
 import { prefixer } from 'stylis';
@@ -9,34 +10,48 @@ import rtlPlugin from 'stylis-plugin-rtl';
 import { createAppTheme } from './theme';
 import { DirectionProvider, useDirection } from './features/admin/context/DirectionContext';
 import AdminProvider from './features/admin/context/AdminProvider';
+// Eager: tiny route guards used by many routes; providers; redirect helpers.
 import AuthenticatedRoute from './features/admin/components/AuthenticatedRoute';
 import ProtectedRoute from './features/admin/components/ProtectedRoute';
-import AdminLayout from './features/admin/components/AdminLayout';
-import LoginPage from './features/admin/pages/LoginPage';
-import DashboardPage from './features/admin/pages/DashboardPage';
-import AdminEventsPage from './features/admin/pages/EventsPage';
-import EventDetailPage from './features/admin/pages/EventDetailPage';
-import AppointmentsPage from './features/admin/pages/AppointmentsPage';
-import CMSPage from './features/admin/pages/CMSPage';
-import UserManagementPage from './features/admin/pages/UserManagementPage';
-import AuditLogPage from './features/admin/pages/AuditLogPage';
-import CommunityModerationPage from './features/admin/pages/CommunityModerationPage';
-import UpdatesPage from './features/admin/pages/UpdatesPage';
-import ProfilePage from './features/profile/pages/ProfilePage';
-import ForcePasswordChange from './features/profile/pages/ForcePasswordChange';
-import ParticipantHome from './features/participant/ParticipantHome';
-import PublicHomePage from './features/public/pages/PublicHomePage';
-import PublicDonationsPage from './features/public/pages/PublicDonationsPage';
-import PublicStoriesArticlesPage from './features/public/pages/PublicStoriesArticlesPage';
-import AccessibilityStatementPage from './features/public/pages/AccessibilityStatementPage';
 import { useAdmin } from './features/admin/context/AdminContext';
 import { getPostLoginPath } from './features/admin/services/authRoleService';
 import { AccessibilityProvider } from './context/AccessibilityContext';
 import AccessibilityWidget from './components/AccessibilityWidget';
 
+// Lazy: route components are split into their own chunks so a first-time
+// visitor on /public no longer downloads the admin + participant portals.
+const AdminLayout = lazy(() => import('./features/admin/components/AdminLayout'));
+const LoginPage = lazy(() => import('./features/admin/pages/LoginPage'));
+const DashboardPage = lazy(() => import('./features/admin/pages/DashboardPage'));
+const AdminEventsPage = lazy(() => import('./features/admin/pages/EventsPage'));
+const EventDetailPage = lazy(() => import('./features/admin/pages/EventDetailPage'));
+const AppointmentsPage = lazy(() => import('./features/admin/pages/AppointmentsPage'));
+const CMSPage = lazy(() => import('./features/admin/pages/CMSPage'));
+const UserManagementPage = lazy(() => import('./features/admin/pages/UserManagementPage'));
+const FormsPage = lazy(() => import('./features/admin/pages/FormsPage'));
+const AuditLogPage = lazy(() => import('./features/admin/pages/AuditLogPage'));
+const CommunityModerationPage = lazy(() => import('./features/admin/pages/CommunityModerationPage'));
+const UpdatesPage = lazy(() => import('./features/admin/pages/UpdatesPage'));
+const ProfilePage = lazy(() => import('./features/profile/pages/ProfilePage'));
+const ForcePasswordChange = lazy(() => import('./features/profile/pages/ForcePasswordChange'));
+const ParticipantHome = lazy(() => import('./features/participant/ParticipantHome'));
+const PublicHomePage = lazy(() => import('./features/public/pages/PublicHomePage'));
+const PublicDonationsPage = lazy(() => import('./features/public/pages/PublicDonationsPage'));
+const PublicStoriesArticlesPage = lazy(() => import('./features/public/pages/PublicStoriesArticlesPage'));
+const PublicTeamPartnersPage = lazy(() => import('./features/public/pages/PublicTeamPartnersPage'));
+const AccessibilityStatementPage = lazy(() => import('./features/public/pages/AccessibilityStatementPage'));
+
 // Emotion caches for RTL and LTR
 const cacheRtl = createCache({ key: 'muirtl', stylisPlugins: [prefixer, rtlPlugin] });
 const cacheLtr = createCache({ key: 'muiltr', stylisPlugins: [prefixer] });
+
+function RouteFallback() {
+  return (
+    <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '60vh' }}>
+      <CircularProgress />
+    </div>
+  );
+}
 
 function RoleRedirect() {
   const { currentUser, userRole, loading } = useAdmin();
@@ -59,11 +74,13 @@ function ThemedApp() {
         <AccessibilityProvider>
           <AccessibilityWidget />
           <AdminProvider>
+            <Suspense fallback={<RouteFallback />}>
             <Routes>
               <Route path="/" element={<RoleRedirect />} />
               <Route path="/public" element={<PublicHomePage />} />
               <Route path="/public/donations" element={<PublicDonationsPage />} />
               <Route path="/public/stories-articles" element={<PublicStoriesArticlesPage />} />
+              <Route path="/public/team-partners" element={<PublicTeamPartnersPage />} />
               <Route path="/accessibility" element={<AccessibilityStatementPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/set-password" element={<ForcePasswordChange />} />
@@ -110,6 +127,7 @@ function ThemedApp() {
                 <Route path="calendar" element={<Navigate to="/home" replace />} />
                 <Route path="cms" element={<CMSPage />} />
                 <Route path="users" element={<UserManagementPage />} />
+                <Route path="forms" element={<FormsPage />} />
                 <Route path="roles" element={<Navigate to="/admin/users?tab=roles" replace />} />
                 <Route path="community" element={<CommunityModerationPage />} />
                 <Route path="updates" element={<UpdatesPage />} />
@@ -118,6 +136,7 @@ function ThemedApp() {
 
               <Route path="*" element={<Navigate to="/public" replace />} />
             </Routes>
+            </Suspense>
           </AdminProvider>
         </AccessibilityProvider>
       </ThemeProvider>

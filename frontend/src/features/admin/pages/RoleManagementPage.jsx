@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { collection, getDocs, updateDoc, doc, query, limit } from 'firebase/firestore';
+import { collection, getDocs, updateDoc, doc, query, limit, orderBy, documentId } from 'firebase/firestore';
 import { db } from '../../../firebase';
 import { logAuditEvent } from '../services/auditService';
 import Box from '@mui/material/Box';
@@ -19,7 +19,7 @@ export default function RoleManagementPage() {
   useEffect(() => {
     async function fetchUsers() {
       try {
-        const snap = await getDocs(query(collection(db, 'users'), limit(200)));
+        const snap = await getDocs(query(collection(db, 'users'), orderBy(documentId()), limit(100)));
         setUsers(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
       } catch (err) {
         console.error('Failed to fetch users:', err);

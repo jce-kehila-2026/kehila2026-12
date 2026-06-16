@@ -1,5 +1,6 @@
 import { publicHomeContentLocales } from './publicHomeContentLocales';
 import { DEFAULT_PUBLIC_LOCALE } from './publicHomeTranslations';
+import { localizeField } from '../../../i18n/localizeField';
 
 /**
  * Returns Hebrew source when locale is Hebrew; otherwise the localized string.
@@ -89,22 +90,23 @@ export function localizeStatistics(statistics, locale) {
   }
 
   const pack = getLocalePack(locale);
-  if (!pack?.statistics) {
-    return statistics;
-  }
 
   return statistics.map((statistic) => {
-    const key = statistic?.id;
-    const localized = key ? pack.statistics[key] : null;
+    const localized = (pack?.statistics && statistic?.id) ? pack.statistics[statistic.id] : null;
 
-    if (!localized) {
+    if (!localized && !statistic.translations) {
       return statistic;
     }
 
+    // The render adapter maps title->label and description->note, so the stored
+    // translations (keyed title/description) map onto label/note here.
+    const fromAzureLabel = localizeField(statistic.translations?.title, locale);
+    const fromAzureNote = localizeField(statistic.translations?.description, locale);
+
     return {
       ...statistic,
-      label: pickLocalized(locale, statistic.label, localized.label),
-      note: pickLocalized(locale, statistic.note, localized.note),
+      label: fromAzureLabel || pickLocalized(locale, statistic.label, localized?.label),
+      note: fromAzureNote || pickLocalized(locale, statistic.note, localized?.note),
     };
   });
 }
@@ -122,19 +124,18 @@ export function localizeLearnTogetherCard(card, index, locale) {
   const pack = getLocalePack(locale);
   const localized =
     pack?.learnTogether?.cards?.[card.id] ??
-    Object.values(pack?.learnTogether?.cards ?? {})[index];
+    Object.values(pack?.learnTogether?.cards ?? {})[index] ??
+    null;
 
-  if (!localized) {
-    return card;
-  }
-
+  const fromAzure = (field) => localizeField(card.translations?.[field], locale);
   const popup = card.popup && typeof card.popup === 'object' ? card.popup : {};
-  const localizedPopup = localized.popup ?? {};
+  const localizedPopup = localized?.popup ?? {};
 
   return {
     ...card,
-    title: pickLocalized(locale, card.title, localized.title),
-    description: pickLocalized(locale, card.description, localized.description),
+    title: fromAzure('title') || pickLocalized(locale, card.title, localized?.title),
+    description: fromAzure('description') || pickLocalized(locale, card.description, localized?.description),
+    // Popup modal content still uses the hand pack / Hebrew source for now.
     popup: {
       ...popup,
       title: pickLocalized(locale, popup.title, localizedPopup.title),
@@ -154,17 +155,14 @@ export function localizeLearnTogether(learnTogether, locale) {
   }
 
   const pack = getLocalePack(locale);
-  if (!pack?.learnTogether) {
-    return learnTogether;
-  }
-
-  const { learnTogether: lt } = pack;
+  const lt = pack?.learnTogether || {};
+  const fromAzure = (field) => localizeField(learnTogether.translations?.[field], locale);
 
   return {
     ...learnTogether,
-    eyebrow: pickLocalized(locale, learnTogether.eyebrow, lt.eyebrow),
-    title: pickLocalized(locale, learnTogether.title, lt.title),
-    paragraph: pickLocalized(locale, learnTogether.paragraph, lt.paragraph),
+    eyebrow: fromAzure('eyebrow') || pickLocalized(locale, learnTogether.eyebrow, lt.eyebrow),
+    title: fromAzure('title') || pickLocalized(locale, learnTogether.title, lt.title),
+    paragraph: fromAzure('paragraph') || pickLocalized(locale, learnTogether.paragraph, lt.paragraph),
     cards: Array.isArray(learnTogether.cards)
       ? learnTogether.cards.map((card, index) => localizeLearnTogetherCard(card, index, locale))
       : learnTogether.cards,
@@ -212,22 +210,24 @@ export function localizeTeamStaff(members, locale) {
   }
 
   const pack = getLocalePack(locale);
-  if (!pack?.teamStaff) {
-    return members;
-  }
 
   return members.map((member) => {
-    const localized = member?.id ? pack.teamStaff[member.id] : null;
+    const packEntry = (pack?.teamStaff && member?.id) ? pack.teamStaff[member.id] : null;
 
-    if (!localized) {
+    // Nothing to localize this member with — leave the Hebrew source.
+    if (!packEntry && !member?.translations) {
       return member;
     }
 
+    // Prefer Azure translations on the doc; fall back to the hand pack, then
+    // source. Personal names are not Azure-translated (only the hand pack may).
+    const fromAzure = (field) => localizeField(member?.translations?.[field], locale);
+
     return {
       ...member,
-      name: pickLocalized(locale, member.name, localized.name),
-      role: pickLocalized(locale, member.role, localized.role),
-      description: pickLocalized(locale, member.description, localized.description),
+      name: pickLocalized(locale, member.name, packEntry?.name),
+      role: fromAzure('role') || pickLocalized(locale, member.role, packEntry?.role),
+      description: fromAzure('description') || pickLocalized(locale, member.description, packEntry?.description),
     };
   });
 }
@@ -242,25 +242,28 @@ export function localizeEvents(events, locale) {
   }
 
   const pack = getLocalePack(locale);
-  if (!pack?.events) {
-    return events;
-  }
-
-  const eventKeys = Object.keys(pack.events);
+  const eventKeys = pack?.events ? Object.keys(pack.events) : [];
 
   return events.map((event, index) => {
-    const localized = (event?.id && pack.events[event.id]) || pack.events[eventKeys[index]] || null;
+    const packEntry = pack?.events
+      ? (event?.id && pack.events[event.id]) || pack.events[eventKeys[index]] || null
+      : null;
 
-    if (!localized) {
+    // Nothing to localize this event with — leave it as the Hebrew source.
+    if (!packEntry && !event?.translations) {
       return event;
     }
 
+    // Prefer Azure-stored translations on the doc; fall back to the hand-written
+    // pack, then to the Hebrew source.
+    const fromAzure = (field) => localizeField(event?.translations?.[field], locale);
+
     return {
       ...event,
-      title: pickLocalized(locale, event.title, localized.title),
-      description: pickLocalized(locale, event.description, localized.description),
-      dateLabel: pickLocalized(locale, event.dateLabel, localized.dateLabel),
-      location: pickLocalized(locale, event.location, localized.location),
+      title: fromAzure('title') || pickLocalized(locale, event.title, packEntry?.title),
+      description: fromAzure('description') || pickLocalized(locale, event.description, packEntry?.description),
+      dateLabel: pickLocalized(locale, event.dateLabel, packEntry?.dateLabel),
+      location: fromAzure('location') || pickLocalized(locale, event.location, packEntry?.location),
     };
   });
 }

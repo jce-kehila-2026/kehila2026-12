@@ -6,6 +6,7 @@ import {
   removeRegistration,
 } from '../admin/services/registrationService';
 import { useAdmin } from '../admin/context/AdminContext';
+import { localizeField } from '../../i18n/localizeField';
 
 function formatEventDate(ts) {
   if (!ts) return '—';
@@ -21,7 +22,7 @@ function formatEventDate(ts) {
   }).format(d);
 }
 
-export default function WorkshopFeed() {
+export default function WorkshopFeed({ locale = 'he' }) {
   const { currentUser } = useAdmin();
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -116,13 +117,13 @@ export default function WorkshopFeed() {
           <article className="workshop-card" key={event.id}>
             <div className="workshop-card__header">
               <span className="workshop-card__category">{event.category}</span>
-              <strong className="workshop-card__title">{event.title}</strong>
+              <strong className="workshop-card__title">{localizeField(event.translations?.title ?? event.title, locale)}</strong>
             </div>
             <time className="workshop-card__time">{formatEventDate(event.startTime)}</time>
             {event.location && (
-              <span className="workshop-card__location">{event.location}</span>
+              <span className="workshop-card__location">{localizeField(event.translations?.location ?? event.location, locale)}</span>
             )}
-            <p className="workshop-card__description">{event.description}</p>
+            <p className="workshop-card__description">{localizeField(event.translations?.description ?? event.description, locale)}</p>
 
             <div className="workshop-card__footer">
               {capacity > 0 && (

@@ -8,13 +8,14 @@ import InstagramIcon from '@mui/icons-material/Instagram';
 import FacebookIcon from '@mui/icons-material/Facebook';
 import { usePublicLocale } from '../context/PublicLocaleContext';
 import { getPublicNavLinks } from '../i18n/publicHomeTranslations';
+import { localizeAboutUs } from '../i18n/publicHomeContentLocalization';
 
 function hasValue(value) {
   return typeof value === 'string' && value.trim().length > 0;
 }
 
 export default function PublicFooter({ organization, contact = {} }) {
-  const { t } = usePublicLocale();
+  const { t, locale } = usePublicLocale();
   const location = useLocation();
   const organizationName = organization?.name || 'SHE-NA';
   const currentYear = new Date().getFullYear();
@@ -32,7 +33,14 @@ export default function PublicFooter({ organization, contact = {} }) {
         <div className="public-footer__brand reveal">
           <img className="public-footer__brand-logo" src={footerLogo} alt="She-Na logo" />
           <p className="public-footer__text">
-            {contact.footerText || organization?.description || t('footerDefaultText')}
+            {(() => {
+              const blurb = contact.footerText || organization?.description;
+              // Localize the org/about blurb via the same hand-pack the About
+              // section uses, so the footer matches (falls back to source, then
+              // the translated default tagline).
+              const localized = blurb ? localizeAboutUs({ paragraph: blurb }, locale).paragraph : '';
+              return localized || t('footerDefaultText');
+            })()}
           </p>
         </div>
 

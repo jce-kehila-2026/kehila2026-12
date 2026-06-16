@@ -1,10 +1,14 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
 import PhoneInput from 'react-phone-input-2';
 import 'react-phone-input-2/lib/material.css';
 import sheNaLogo from '../../../assets/she-na-logo.png';
+import { usePublicLocale } from '../context/PublicLocaleContext';
+import { createVolunteerSubmission } from '../services/formSubmissionService';
 
 const INITIAL_FORM = {
-  fullName: '',
+  firstName: '',
+  lastName: '',
   phone: '',
   email: '',
   message: '',
@@ -17,7 +21,8 @@ const DEFAULT_PHONE_COUNTRY = {
 
 function getInitialFieldErrors() {
   return {
-    fullName: '',
+    firstName: '',
+    lastName: '',
     phone: '',
     email: '',
   };
@@ -69,6 +74,7 @@ function isValidPhoneForCountry(phone, country) {
 }
 
 export default function VolunteerModal({ isOpen, onClose }) {
+  const { t, direction } = usePublicLocale();
   const [formValues, setFormValues] = useState(INITIAL_FORM);
   const [fieldErrors, setFieldErrors] = useState(() => getInitialFieldErrors());
   const [submitState, setSubmitState] = useState({ status: 'idle', message: '' });
@@ -141,18 +147,22 @@ export default function VolunteerModal({ isOpen, onClose }) {
   function validateForm() {
     const nextErrors = getInitialFieldErrors();
 
-    if (!formValues.fullName.trim()) {
-      nextErrors.fullName = 'נא למלא שם';
+    if (!formValues.firstName.trim()) {
+      nextErrors.firstName = t('joinErrFirstName');
+    }
+
+    if (!formValues.lastName.trim()) {
+      nextErrors.lastName = t('joinErrLastName');
     }
 
     if (!getLocalPhoneDigits(formValues.phone, phoneCountry)) {
-      nextErrors.phone = 'נא להזין מספר טלפון';
+      nextErrors.phone = t('joinErrPhone');
     } else if (!isValidPhoneForCountry(formValues.phone, phoneCountry)) {
-      nextErrors.phone = 'נא להזין מספר טלפון תקין';
+      nextErrors.phone = t('joinErrPhoneInvalid');
     }
 
     if (!formValues.email.trim() || !isValidEmail(formValues.email)) {
-      nextErrors.email = 'נא להזין כתובת אימייל תקינה';
+      nextErrors.email = t('joinErrEmail');
     }
 
     setFieldErrors(nextErrors);
@@ -160,17 +170,27 @@ export default function VolunteerModal({ isOpen, onClose }) {
     return !Object.values(nextErrors).some(Boolean);
   }
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
 
+    if (isSubmitting) {
+      return;
+    }
+
     if (!validateForm()) {
-      setSubmitState({ status: 'error', message: 'נא להשלים את השדות המסומנים' });
+      setSubmitState({ status: 'error', message: t('joinErrIncomplete') });
       return;
     }
 
     setSubmitState({ status: 'submitting', message: '' });
-    setSubmitState({ status: 'success', message: 'תודה! הפרטים נשלחו בהצלחה' });
-    setFormValues(INITIAL_FORM);
+    try {
+      await createVolunteerSubmission(formValues);
+      setSubmitState({ status: 'success', message: t('joinSuccess') });
+      setFormValues(INITIAL_FORM);
+    } catch (error) {
+      console.error('Volunteer form submission failed:', error);
+      setSubmitState({ status: 'error', message: t('joinErrSubmit') });
+    }
   }
 
   function handleBackdropClick(event) {
@@ -186,26 +206,23 @@ export default function VolunteerModal({ isOpen, onClose }) {
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        dir="rtl"
+        dir={direction}
       >
         <button
           className="join-modal__close"
           type="button"
-          aria-label="סגירת טופס ההתנדבות"
+          aria-label={t('volunteerCloseAria')}
           onClick={onClose}
           ref={closeButtonRef}
         >
-          ×
+          <CloseRoundedIcon aria-hidden="true" />
         </button>
 
         <div className="join-modal__header">
           <img className="join-modal__logo" src={sheNaLogo} alt="She-Na" />
           <div>
-            <h2 id={titleId}>תודה!</h2>
-            <p>
-              נשמח שתצטרפי אלינו להתנדבות שמתאימה לך! כל אחת יכולה לתרום בדרך שלה, בזמן שלה.
-              השאירי פרטים ונחזור אלייך למצוא את האפשרות הנכונה עבורך.
-            </p>
+            <h2 id={titleId}>{t('donationThanksTitle')}</h2>
+            <p>{t('volunteerIntro')}</p>
           </div>
         </div>
 
@@ -213,42 +230,64 @@ export default function VolunteerModal({ isOpen, onClose }) {
           <div className="join-modal__success" role="status">
             <strong>{submitState.message}</strong>
             <button className="public-button public-button--primary join-modal__done" type="button" onClick={onClose}>
-              סגירה
+              {t('joinClose')}
             </button>
           </div>
         ) : (
           <form className="join-modal__form" onSubmit={handleSubmit} noValidate>
             <div className="join-modal__body">
               <section className="join-modal__section join-modal__section--card">
-                <h3>פרטים להתנדבות</h3>
+                <h3>{t('volunteerDetailsTitle')}</h3>
                 <div className="join-modal__grid join-modal__grid--volunteer">
                   <div className="join-modal__field">
-                    <label htmlFor="volunteer-full-name">
-                      שם <span className="join-modal__required">*</span>
+                    <label htmlFor="volunteer-first-name">
+                      {t('joinFirstName')} <span className="join-modal__required">*</span>
                     </label>
                     <input
-                      id="volunteer-full-name"
-                      name="fullName"
+                      id="volunteer-first-name"
+                      name="firstName"
                       type="text"
-                      autoComplete="name"
-                      value={formValues.fullName}
-                      onChange={(event) => updateField('fullName', event.target.value)}
+                      autoComplete="given-name"
+                      value={formValues.firstName}
+                      onChange={(event) => updateField('firstName', event.target.value)}
                       required
-                      aria-invalid={fieldErrors.fullName ? 'true' : undefined}
-                      aria-describedby={fieldErrors.fullName ? 'volunteer-full-name-error' : undefined}
+                      aria-invalid={fieldErrors.firstName ? 'true' : undefined}
+                      aria-describedby={fieldErrors.firstName ? 'volunteer-first-name-error' : undefined}
                     />
-                    {fieldErrors.fullName ? (
-                      <small className="join-modal__field-error" id="volunteer-full-name-error">
-                        {fieldErrors.fullName}
+                    {fieldErrors.firstName ? (
+                      <small className="join-modal__field-error" id="volunteer-first-name-error">
+                        {fieldErrors.firstName}
+                      </small>
+                    ) : null}
+                  </div>
+
+                  <div className="join-modal__field">
+                    <label htmlFor="volunteer-last-name">
+                      {t('joinLastName')} <span className="join-modal__required">*</span>
+                    </label>
+                    <input
+                      id="volunteer-last-name"
+                      name="lastName"
+                      type="text"
+                      autoComplete="family-name"
+                      value={formValues.lastName}
+                      onChange={(event) => updateField('lastName', event.target.value)}
+                      required
+                      aria-invalid={fieldErrors.lastName ? 'true' : undefined}
+                      aria-describedby={fieldErrors.lastName ? 'volunteer-last-name-error' : undefined}
+                    />
+                    {fieldErrors.lastName ? (
+                      <small className="join-modal__field-error" id="volunteer-last-name-error">
+                        {fieldErrors.lastName}
                       </small>
                     ) : null}
                   </div>
 
                   <div className="join-modal__field">
                     <label htmlFor="volunteer-phone">
-                      מספר טלפון <span className="join-modal__required">*</span>
+                      {t('joinPhone')} <span className="join-modal__required">*</span>
                     </label>
-                    <small>נשתמש בו רק ליצירת קשר ועדכונים חשובים</small>
+                    <small>{t('joinPhoneHint')}</small>
                     <PhoneInput
                       country={phoneCountry.countryCode || DEFAULT_PHONE_COUNTRY.countryCode}
                       value={formValues.phone.replace(/^\+/, '')}
@@ -257,7 +296,7 @@ export default function VolunteerModal({ isOpen, onClose }) {
                         if (getLocalPhoneDigits(formValues.phone, phoneCountry) && !isValidPhoneForCountry(formValues.phone, phoneCountry)) {
                           setFieldErrors((currentErrors) => ({
                             ...currentErrors,
-                            phone: 'נא להזין מספר טלפון תקין',
+                            phone: t('joinErrPhoneInvalid'),
                           }));
                         }
                       }}
@@ -291,7 +330,7 @@ export default function VolunteerModal({ isOpen, onClose }) {
 
                   <div className="join-modal__field">
                     <label htmlFor="volunteer-email">
-                      דוא&quot;ל <span className="join-modal__required">*</span>
+                      {t('joinEmail')} <span className="join-modal__required">*</span>
                     </label>
                     <input
                       id="volunteer-email"
@@ -312,7 +351,7 @@ export default function VolunteerModal({ isOpen, onClose }) {
                   </div>
 
                   <div className="join-modal__field join-modal__field--wide">
-                    <label htmlFor="volunteer-message">הודעה</label>
+                    <label htmlFor="volunteer-message">{t('donationMessage')}</label>
                     <textarea
                       id="volunteer-message"
                       name="message"
@@ -334,10 +373,10 @@ export default function VolunteerModal({ isOpen, onClose }) {
 
               <div className="join-modal__actions">
                 <button className="join-modal__cancel" type="button" onClick={onClose}>
-                  ביטול
+                  {t('joinCancel')}
                 </button>
                 <button className="public-button public-button--primary join-modal__submit" type="submit" disabled={isSubmitting}>
-                  {isSubmitting ? 'שולחות...' : 'שליחה'}
+                  {isSubmitting ? t('joinSubmitting') : t('joinSubmit')}
                 </button>
               </div>
             </div>
