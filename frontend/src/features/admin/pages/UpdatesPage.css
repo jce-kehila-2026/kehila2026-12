@@ -576,6 +576,102 @@
   font-size: 1rem;
 }
 
+/* ── Email recipient picker ───────────────────────────── */
+
+.updates-email-modal__recipients-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.updates-email-modal__recipients-head .updates-email-modal__count {
+  flex: 1;
+  min-width: 0;
+}
+
+.updates-email-modal__select-all {
+  flex-shrink: 0;
+  height: 2.125rem;
+  padding: 0 0.875rem;
+  border-radius: 10px;
+  border: 1px solid var(--glass-border);
+  background: var(--glass);
+  color: var(--primary-purple);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.16s;
+}
+
+.updates-email-modal__select-all:hover {
+  background: rgba(167, 139, 250, 0.15);
+}
+
+.updates-email-modal__recipients {
+  list-style: none;
+  margin: 0;
+  padding: 0.375rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  max-height: 240px;
+  overflow-y: auto;
+  border-radius: 14px;
+  border: 1px solid rgba(167, 139, 250, 0.22);
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.updates-email-modal__recipient {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  padding: 0.5rem 0.625rem;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: background 0.14s;
+}
+
+.updates-email-modal__recipient:hover {
+  background: rgba(109, 53, 184, 0.06);
+}
+
+.updates-email-modal__recipient.is-checked {
+  background: rgba(109, 53, 184, 0.08);
+}
+
+.updates-email-modal__recipient input[type='checkbox'] {
+  width: 1.05rem;
+  height: 1.05rem;
+  flex-shrink: 0;
+  accent-color: var(--primary-purple);
+  cursor: pointer;
+}
+
+.updates-email-modal__recipient-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.0625rem;
+  min-width: 0;
+}
+
+.updates-email-modal__recipient-name {
+  font-size: 0.84375rem;
+  font-weight: 700;
+  color: var(--deep-purple);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.updates-email-modal__recipient-email {
+  font-size: 0.75rem;
+  color: rgba(36, 16, 79, 0.5);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .updates-email-modal__warning {
   display: flex;
   align-items: flex-start;
