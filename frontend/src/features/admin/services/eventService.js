@@ -1,5 +1,5 @@
 // Phase 1 changes: added limit() to bounded list queries.
-import { collection, getDocs, getDoc, addDoc, updateDoc, deleteDoc, doc, query, orderBy, limit, serverTimestamp } from 'firebase/firestore';
+import { collection, getDocs, getDoc, addDoc, updateDoc, deleteDoc, doc, query, orderBy, limit, onSnapshot, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../../firebase';
 import { logAuditEvent } from './auditService';
 import { isTranslationConfigured, translateFields } from './translationService';
@@ -24,6 +24,10 @@ async function withEventTranslations(data) {
     console.error('Event translation failed; saving without translations:', err);
   }
   return data;
+}
+
+function isPublishedEvent(event) {
+  return String(event?.status || '').trim().toLowerCase() === 'published';
 }
 
 /**
@@ -53,7 +57,28 @@ export async function getPublishedEvents() {
   const snap = await getDocs(q);
   return snap.docs
     .map((d) => ({ id: d.id, ...d.data() }))
-    .filter((event) => event.status === 'published');
+    .filter(isPublishedEvent);
+}
+
+/**
+ * Subscribe to published events in real time, sorted by createdAt descending.
+ * Returns an unsubscribe function — call it in a useEffect cleanup.
+ * @param {(events: Object[]) => void} callback
+ * @param {(error: Error) => void} [onError]
+ */
+export function subscribeToPublishedEvents(callback, onError) {
+  const q = query(
+    collection(db, 'events'),
+    orderBy('createdAt', 'desc'),
+    limit(50)
+  );
+  return onSnapshot(q, (snap) => {
+    callback(
+      snap.docs
+        .map((d) => ({ id: d.id, ...d.data() }))
+        .filter(isPublishedEvent)
+    );
+  }, onError);
 }
 
 /**

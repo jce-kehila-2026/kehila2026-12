@@ -615,43 +615,60 @@ export async function removeRegistration(regId, participantName, eventId) {
 export async function getUserRegisteredEventIds(emailOrUid) {
   if (!emailOrUid) return {};
   // If it looks like an email, resolve to uid first.
-  const uid = emailOrUid.includes('@') ? await findUidByEmail(emailOrUid) : emailOrUid;
+  let uid = emailOrUid;
+  if (emailOrUid.includes('@')) {
+    try {
+      uid = await findUidByEmail(emailOrUid);
+    } catch (error) {
+      console.warn('Could not resolve user id for registration state:', error);
+      return {};
+    }
+  }
   if (!uid) return {};
 
-  const bookingsSnap = await getDocs(
-    query(collection(db, 'users', uid, 'bookings'), limit(200))
-  );
   const map = {};
   const bookingIdentityKeys = new Set();
 
-  bookingsSnap.docs.forEach((d) => {
-    const data = d.data() || {};
-    if (isCancelledRegistration(data)) return;
+  try {
+    const bookingsSnap = await getDocs(
+      query(collection(db, 'users', uid, 'bookings'), limit(200))
+    );
 
-    getUserRegistrationIdentityKeys(data, d.id).forEach((key) => bookingIdentityKeys.add(key));
+    bookingsSnap.docs.forEach((d) => {
+      const data = d.data() || {};
+      if (isCancelledRegistration(data)) return;
 
-    const mapKey = getUserRegistrationMapKey(data, d.id);
-    const registrationKey = getUserRegistrationValue(data, d.id, uid);
-    if (mapKey && registrationKey) {
-      map[mapKey] = registrationKey;
-    }
-  });
+      getUserRegistrationIdentityKeys(data, d.id).forEach((key) => bookingIdentityKeys.add(key));
 
-  const legacySnap = await getDocs(
-    query(collection(db, 'users', uid, 'registrations'), limit(100))
-  );
-  legacySnap.docs.forEach((d) => {
-    const data = d.data() || {};
-    if (isCancelledRegistration(data)) return;
+      const mapKey = getUserRegistrationMapKey(data, d.id);
+      const registrationKey = getUserRegistrationValue(data, d.id, uid);
+      if (mapKey && registrationKey) {
+        map[mapKey] = registrationKey;
+      }
+    });
+  } catch (error) {
+    console.warn('Could not read user booking mirrors for registration state:', error);
+  }
 
-    const legacyKeys = getUserRegistrationIdentityKeys(data, d.id);
-    if (legacyKeys.some((key) => bookingIdentityKeys.has(key))) return;
+  try {
+    const legacySnap = await getDocs(
+      query(collection(db, 'users', uid, 'registrations'), limit(100))
+    );
+    legacySnap.docs.forEach((d) => {
+      const data = d.data() || {};
+      if (isCancelledRegistration(data)) return;
 
-    const mapKey = getUserRegistrationMapKey(data, d.id);
-    const registrationKey = getUserRegistrationValue(data, d.id, uid);
-    if (mapKey && registrationKey && !map[mapKey]) {
-      map[mapKey] = registrationKey;
-    }
-  });
+      const legacyKeys = getUserRegistrationIdentityKeys(data, d.id);
+      if (legacyKeys.some((key) => bookingIdentityKeys.has(key))) return;
+
+      const mapKey = getUserRegistrationMapKey(data, d.id);
+      const registrationKey = getUserRegistrationValue(data, d.id, uid);
+      if (mapKey && registrationKey && !map[mapKey]) {
+        map[mapKey] = registrationKey;
+      }
+    });
+  } catch (error) {
+    console.warn('Could not read legacy user registrations for registration state:', error);
+  }
   return map;
 }
