@@ -1886,6 +1886,12 @@
   background: rgba(255, 255, 255, 0.94);
   box-shadow: var(--community-card-shadow);
   padding: var(--community-card-padding);
+  /* Virtualize the feed cheaply: the browser skips layout/paint for off-screen
+     cards. `auto` in contain-intrinsic-size remembers each card's last rendered
+     height (cards are variable height), keeping the scrollbar stable. This is
+     accessibility-safe — find-in-page and screen readers force rendering. */
+  content-visibility: auto;
+  contain-intrinsic-size: auto 220px;
 }
 
 .community-page-post.is-reported-by-user > :not(.community-page-post__reported-overlay) {

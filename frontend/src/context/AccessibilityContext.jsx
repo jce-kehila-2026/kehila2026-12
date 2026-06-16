@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 const STORAGE_KEY = 'shena-a11y-prefs';
 
@@ -120,8 +120,17 @@ export function AccessibilityProvider({ children }) {
     setPrefs({ ...DEFAULT_PREFS });
   }, []);
 
+  // Memoized so the context value keeps a stable identity unless prefs change.
+  // (The callbacks are already stable via useCallback.) Without this, every
+  // re-render of this provider — which wraps AdminProvider and the whole route
+  // tree — would mint a new value object and re-render all a11y consumers.
+  const value = useMemo(
+    () => ({ prefs, setTextScale, toggle, setContrastScheme, reset }),
+    [prefs, setTextScale, toggle, setContrastScheme, reset],
+  );
+
   return (
-    <AccessibilityContext.Provider value={{ prefs, setTextScale, toggle, setContrastScheme, reset }}>
+    <AccessibilityContext.Provider value={value}>
       {children}
     </AccessibilityContext.Provider>
   );

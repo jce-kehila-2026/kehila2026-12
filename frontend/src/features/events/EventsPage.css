@@ -885,6 +885,14 @@
   gap: 0.875rem;
 }
 
+/* Cheap virtualization for the (potentially long) services list: the browser
+   skips layout/paint of off-screen cards. `auto` remembers each card's last
+   rendered height so the scrollbar stays stable. */
+.appointment-service-list > * {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 180px;
+}
+
 .appointment-service-card {
   position: relative;
   overflow: hidden;
