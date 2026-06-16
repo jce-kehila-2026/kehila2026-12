@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import ShieldOutlinedIcon from '@mui/icons-material/ShieldOutlined';
 import {
   formatRelativeCommunityTime,
@@ -10,7 +11,7 @@ import PostOverflowMenu from './PostOverflowMenu';
 
 const GENERIC_POST_TITLE = 'New community post';
 
-export default function CommunityPostCard({
+function CommunityPostCard({
   commentFeedback,
   commentText,
   isCommentsExpanded,
@@ -195,3 +196,19 @@ export default function CommunityPostCard({
     </article>
   );
 }
+
+// Handler props (on*) are recreated on every CommunityPage render (inline
+// closures / hook callbacks that aren't memoized), but their behavior is stable
+// per post — each only touches its own post via functional setState updaters.
+// So we compare data props only and ignore handler identity. This stops a
+// keystroke in one card's comment composer (which updates parent state) from
+// re-rendering every other card in the feed.
+function arePostCardPropsEqual(prevProps, nextProps) {
+  const keys = Object.keys(prevProps);
+  if (keys.length !== Object.keys(nextProps).length) return false;
+  return keys.every(
+    (key) => key.startsWith('on') || Object.is(prevProps[key], nextProps[key]),
+  );
+}
+
+export default memo(CommunityPostCard, arePostCardPropsEqual);
