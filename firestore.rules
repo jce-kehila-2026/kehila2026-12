@@ -380,6 +380,36 @@ service cloud.firestore {
       allow read, update, delete: if isAdmin();
     }
 
+    // Public volunteer/donation contact forms from the website modals.
+    // Like joinRequests: unauthenticated create by design, but constrained to a
+    // fixed field set with bounded sizes and a pinned type/status/source so the
+    // endpoint can't be used to write arbitrary/oversized documents. Admins
+    // read and manage (mark handled / delete) from the Forms page.
+    // NOTE: enable Firebase App Check on this project for real bot protection.
+    match /formSubmissions/{submissionId} {
+      allow create: if request.resource.data.keys().hasOnly([
+            'type', 'firstName', 'lastName', 'fullName',
+            'email', 'phone', 'message', 'source', 'status', 'createdAt'
+          ])
+        && request.resource.data.type in ['volunteer', 'donation']
+        && request.resource.data.firstName is string
+        && request.resource.data.firstName.size() > 0
+        && request.resource.data.firstName.size() <= 200
+        && request.resource.data.lastName is string
+        && request.resource.data.lastName.size() <= 200
+        && request.resource.data.fullName is string
+        && request.resource.data.fullName.size() <= 400
+        && request.resource.data.email is string
+        && request.resource.data.email.size() <= 320
+        && request.resource.data.phone is string
+        && request.resource.data.phone.size() <= 40
+        && request.resource.data.message is string
+        && request.resource.data.message.size() <= 5000
+        && request.resource.data.status == 'new'
+        && request.resource.data.source == 'public-website';
+      allow read, update, delete: if isAdmin();
+    }
+
     // ── Updates / Announcements ─────────────────────────────
     // Any authenticated user can read active announcements.
     // Only admins can create, update, and delete announcements.
