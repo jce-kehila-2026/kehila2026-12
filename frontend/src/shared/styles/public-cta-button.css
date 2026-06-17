@@ -68,6 +68,7 @@
   transform: translateX(3px);
 }
 
+.public-cta-scope[dir='rtl'] .public-button.public-button--primary:hover:not(:disabled) .public-button__arrow,
 .participant-home[dir='rtl'] .public-cta-scope .public-button.public-button--primary:hover:not(:disabled) .public-button__arrow {
   transform: translateX(-3px);
 }

@@ -324,20 +324,16 @@
     border-color 200ms ease;
 }
 
-.participant-nav button:hover {
-  background: #fff5f9;
-  color: #ec168c;
-  box-shadow: 0 4px 14px rgba(236, 22, 140, 0.06);
-}
-
-.participant-nav button:hover svg {
-  color: #ec168c;
-}
-
+.participant-nav button:hover,
 .participant-logout:hover {
   background: #fff5f9;
-  color: #8c77a8;
+  color: #ec168c;
   box-shadow: 0 4px 14px rgba(236, 22, 140, 0.06);
+}
+
+.participant-nav button:hover svg,
+.participant-logout:hover svg {
+  color: #ec168c;
 }
 
 .participant-nav button.is-active {
@@ -1557,20 +1553,16 @@
   color: #94a3b8;
 }
 
-.participant-home--dark .participant-nav button:hover {
-  background: rgba(255, 245, 249, 0.06);
-  color: #ec168c;
-  box-shadow: 0 4px 14px rgba(236, 22, 140, 0.08);
-}
-
-.participant-home--dark .participant-nav button:hover svg {
-  color: #ec168c;
-}
-
+.participant-home--dark .participant-nav button:hover,
 .participant-home--dark .participant-logout:hover {
   background: rgba(255, 245, 249, 0.06);
-  color: #94a3b8;
+  color: #ec168c;
   box-shadow: 0 4px 14px rgba(236, 22, 140, 0.08);
+}
+
+.participant-home--dark .participant-nav button:hover svg,
+.participant-home--dark .participant-logout:hover svg {
+  color: #ec168c;
 }
 
 .participant-home--dark .participant-nav button.is-active {
