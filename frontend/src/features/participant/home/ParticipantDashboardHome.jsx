@@ -447,9 +447,11 @@ function AppointmentCard({ appointment, onView }) {
             <FeatureDetail icon={MapPin} value={appointment.location} />
           </ul>
 
-          <PremiumCta variant="soft" onClick={onView}>
-            View Appointment
-          </PremiumCta>
+          <div className="pd-feature__footer">
+            <PremiumCta variant="soft" onClick={onView}>
+              View Appointment
+            </PremiumCta>
+          </div>
         </div>
 
         <div className="pd-feature__col pd-feature__col--countdown">
@@ -480,9 +482,11 @@ function EventCard({ event, onView, locale = 'he' }) {
             <FeatureDetail icon={MapPin} value={localizeField(event.translations?.location ?? event.location, locale)} />
           </ul>
 
-          <PremiumCta variant="soft" onClick={onView}>
-            View Event
-          </PremiumCta>
+          <div className="pd-feature__footer">
+            <PremiumCta variant="soft" onClick={onView}>
+              View Event
+            </PremiumCta>
+          </div>
         </div>
 
         <div className="pd-feature__col pd-feature__col--countdown">
@@ -528,9 +532,11 @@ function AppointmentEmptyCard({ onBook }) {
           <p className="pd-feature-empty__text">
             Take the next step in your wellness journey and book a session with one of our therapists.
           </p>
-          <PremiumCta variant="pink" onClick={onBook}>
-            Book Appointment
-          </PremiumCta>
+          <div className="pd-feature__footer">
+            <PremiumCta variant="pink" onClick={onBook}>
+              Book Appointment
+            </PremiumCta>
+          </div>
         </div>
 
         <div className="pd-feature__col pd-feature__col--badge">
@@ -551,9 +557,11 @@ function EventEmptyCard({ onExplore }) {
           <p className="pd-feature-empty__text">
             Explore upcoming workshops, support groups, and community activities.
           </p>
-          <PremiumCta variant="pink" onClick={onExplore}>
-            Explore Events
-          </PremiumCta>
+          <div className="pd-feature__footer">
+            <PremiumCta variant="pink" onClick={onExplore}>
+              Explore Events
+            </PremiumCta>
+          </div>
         </div>
 
         <div className="pd-feature__col pd-feature__col--badge">
@@ -1044,7 +1052,11 @@ export default function ParticipantDashboardHome({
   } = useLatestCommunityPost();
 
   const goToEventsView = useCallback(() => {
-    onNavigateToView?.('events');
+    onNavigateToView?.('events', { eventsTab: 'registered' });
+  }, [onNavigateToView]);
+
+  const goToExploreEvents = useCallback(() => {
+    onNavigateToView?.('events', { eventsTab: 'workshops' });
   }, [onNavigateToView]);
 
   const goToAppointments = useCallback(() => {
@@ -1076,7 +1088,7 @@ export default function ParticipantDashboardHome({
 
         <section className="pd-home__row" aria-label="Upcoming appointment and event">
         {appointment ? (
-          <AppointmentCard appointment={appointment} onView={goToAppointments} />
+          <AppointmentCard appointment={appointment} onView={goToEventsView} />
         ) : appointmentError ? (
           <FeatureCardErrorState
             variant="appointment"
@@ -1101,7 +1113,7 @@ export default function ParticipantDashboardHome({
         ) : isLoading ? (
           <FeatureCardLoadingShell variant="event" label="Loading event" />
         ) : (
-          <EventEmptyCard onExplore={goToEvents} />
+          <EventEmptyCard onExplore={goToExploreEvents} />
         )}
       </section>
 

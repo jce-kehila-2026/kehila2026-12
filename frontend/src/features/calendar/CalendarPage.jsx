@@ -375,14 +375,12 @@ export default function CalendarPage({ variant = 'standalone' }) {
           </div>
         </header>
 
-        {(loadingCalendar || calendarError) && (
-          <div className={`calendar-status${calendarError ? ' calendar-status--error' : ''}`}>
-            <span>{loadingCalendar ? 'Loading calendar from Firestore...' : calendarError}</span>
-            {calendarError && !loadingCalendar && (
-              <button type="button" onClick={() => setCalendarReloadKey((current) => current + 1)}>
-                Retry
-              </button>
-            )}
+        {calendarError && !loadingCalendar && (
+          <div className="calendar-status calendar-status--error">
+            <span>{calendarError}</span>
+            <button type="button" onClick={() => setCalendarReloadKey((current) => current + 1)}>
+              Retry
+            </button>
           </div>
         )}
 
@@ -462,7 +460,7 @@ export default function CalendarPage({ variant = 'standalone' }) {
                   <small>Private reminder</small>
                 </span>
                 <span className="note-card__toggle-icon" aria-hidden="true">
-                  +
+                  <span>+</span>
                 </span>
               </button>
             </section>

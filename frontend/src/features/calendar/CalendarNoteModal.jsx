@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useId } from 'react';
 import { createPortal } from 'react-dom';
 import { CalendarDays, X } from 'lucide-react';
-import PublicCtaButton from '../../shared/components/PublicCtaButton';
 import NotesScheduleModal from '../participant/home/NotesScheduleModal';
 import { formatReminderDateTimeLabel } from '../participant/home/participantNotesModel';
 
@@ -59,7 +58,7 @@ export default function CalendarNoteModal({
         }}
       />
       <div
-        className="calendar-note-modal__panel public-cta-scope"
+        className="calendar-note-modal__panel"
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
@@ -124,15 +123,13 @@ export default function CalendarNoteModal({
             </p>
           ) : null}
 
-          <PublicCtaButton
+          <button
             type="submit"
-            className="calendar-note-form__submit"
-            showArrow={false}
-            block
+            className="pd-btn pd-btn--soft calendar-note-form__submit"
             disabled={savingNote}
           >
             {savingNote ? 'Saving...' : 'Add note'}
-          </PublicCtaButton>
+          </button>
         </form>
       </div>
 

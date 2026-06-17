@@ -502,6 +502,7 @@ export default function NotesScheduleModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
+        dir="ltr"
         onMouseDown={(event) => event.stopPropagation()}
         onClick={(event) => event.stopPropagation()}
       >
@@ -549,7 +550,7 @@ export default function NotesScheduleModal({
           </p>
         ) : null}
 
-        <button type="button" className="pd-notes-schedule-modal__done" onClick={closeModal}>
+        <button type="button" className="pd-btn pd-btn--soft pd-notes-schedule-modal__done" onClick={closeModal}>
           Done
         </button>
       </div>

@@ -22,7 +22,7 @@ import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import StarRoundedIcon from '@mui/icons-material/StarRounded';
 import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivismOutlined';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import appointmentsHero from '../../assets/appointments-hero.png';
 import eventsHeroBanner from '../../assets/lasteventBanner.png';
 import { useAdmin } from '../admin/context/AdminContext';
@@ -39,6 +39,12 @@ import './EventsPage.css';
 const VIEW_WORKSHOPS = 'workshops';
 const VIEW_APPOINTMENTS = 'appointments';
 const VIEW_REGISTERED = 'registered';
+
+function resolveEventsTab(tab) {
+  if (tab === VIEW_APPOINTMENTS || tab === 'appointments') return VIEW_APPOINTMENTS;
+  if (tab === VIEW_WORKSHOPS || tab === 'workshops') return VIEW_WORKSHOPS;
+  return VIEW_REGISTERED;
+}
 const UPCOMING_SESSION_COUNT = 4;
 const CALENDAR_WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -1646,8 +1652,9 @@ function SuggestWorkshopModal({
 
 export default function EventsPage({ embedInDashboard = false, locale = 'he' }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const { currentUser, logout } = useAdmin();
-  const [activeView, setActiveView] = useState(VIEW_WORKSHOPS);
+  const [activeView, setActiveView] = useState(() => resolveEventsTab(location.state?.eventsTab));
   const [events, setEvents] = useState([]);
   const [counts, setCounts] = useState({});
   const [registeredMap, setRegisteredMap] = useState({});
@@ -1664,6 +1671,11 @@ export default function EventsPage({ embedInDashboard = false, locale = 'he' }) 
   const [isSubmittingSuggestion, setIsSubmittingSuggestion] = useState(false);
   const [isSuggestionModalOpen, setIsSuggestionModalOpen] = useState(false);
   const [bookingEventId, setBookingEventId] = useState(null);
+
+  useEffect(() => {
+    if (!location.state?.eventsTab) return;
+    setActiveView(resolveEventsTab(location.state.eventsTab));
+  }, [location.state?.eventsTab, location.key]);
 
   const displayName = useMemo(() => {
     if (currentUser?.displayName) return currentUser.displayName.split(' ')[0];
