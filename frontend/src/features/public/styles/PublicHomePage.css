@@ -18,6 +18,14 @@
 @import "./public-events-section.css";
 @import "./public-arabic-typography.css";
 
+/* Below-hero homepage canvas: pure white (no pink section washes) */
+.public-homepage--main main > section:not(.public-hero),
+.public-homepage.public-stories-articles-page .public-section:is(#stories, #articles),
+.public-homepage.public-donations-page .public-section#donations {
+  background-color: #ffffff;
+  background-image: none;
+}
+
 .public-homepage :where(.public-hero h1) {
   font-weight: 700;
   color: #ffffff;
