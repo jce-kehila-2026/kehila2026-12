@@ -331,7 +331,7 @@
 }
 
 .note-card {
-  overflow: hidden;
+  overflow: visible;
 }
 
 .note-card__toggle {
@@ -387,36 +387,7 @@
   font-size: 1.2rem;
   font-weight: 800;
   box-shadow: 0 8px 18px rgba(75, 19, 107, 0.08);
-  transition: transform 220ms ease, background 180ms ease, color 180ms ease;
-}
-
-.note-card.is-open .note-card__toggle-icon {
-  background: #ec168c;
-  color: #ffffff;
-  transform: rotate(45deg);
-}
-
-.note-card__body {
-  display: grid;
-  grid-template-rows: 0fr;
-  opacity: 0;
-  overflow: hidden;
-  pointer-events: none;
-  visibility: hidden;
-  transition: grid-template-rows 260ms ease, opacity 180ms ease, margin-top 260ms ease, visibility 0ms linear 260ms;
-}
-
-.note-card.is-open .note-card__body {
-  grid-template-rows: 1fr;
-  opacity: 1;
-  margin-top: 14px;
-  pointer-events: auto;
-  visibility: visible;
-  transition: grid-template-rows 260ms ease, opacity 180ms ease, margin-top 260ms ease, visibility 0ms linear 0ms;
-}
-
-.note-card__body > .note-form {
-  min-height: 0;
+  transition: transform 180ms ease, background 180ms ease, color 180ms ease;
 }
 
 .selected-day-list {
@@ -501,27 +472,103 @@
   text-transform: uppercase;
 }
 
-.note-form,
-.note-form label {
+.calendar-note-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1990;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  isolation: isolate;
+}
+
+.calendar-note-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border: 0;
+  background: rgba(36, 16, 63, 0.28);
+  backdrop-filter: blur(3px);
+  cursor: pointer;
+}
+
+.calendar-note-modal__panel {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 440px);
+  padding: 18px 20px 16px;
+  border-radius: 22px;
+  border: 1px solid rgba(236, 22, 140, 0.14);
+  background: linear-gradient(180deg, #ffffff 0%, #fff9fc 100%);
+  box-shadow: 0 24px 48px rgba(91, 30, 140, 0.16);
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  direction: ltr;
+  text-align: left;
+}
+
+.calendar-note-modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  gap: 12px;
+  margin-bottom: 6px;
+}
+
+.calendar-note-modal__header h4 {
+  margin: 0;
+  color: #c2185b;
+  font-size: 1rem;
+  font-weight: 800;
+  text-align: center;
+}
+
+.calendar-note-modal__close {
+  position: absolute;
+  top: 50%;
+  right: 0;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(236, 22, 140, 0.14);
+  border-radius: 10px;
+  background: #fff;
+  color: #d61f84;
+  cursor: pointer;
+}
+
+.calendar-note-modal__hint {
+  margin: 0 0 14px;
+  color: rgba(75, 19, 107, 0.62);
+  font-size: 0.84rem;
+  line-height: 1.45;
+  text-align: left;
+}
+
+.calendar-note-form,
+.calendar-note-form label {
   display: grid;
   gap: 0.5rem;
+  text-align: left;
 }
 
-.note-form {
-  max-height: min(18.75rem, 32vh);
-  overflow: auto;
-  gap: 0.625rem;
-  padding-right: 0.25rem;
+.calendar-note-form {
+  gap: 0.75rem;
 }
 
-.note-form label {
+.calendar-note-form label {
   color: #4b136b;
   font-size: 0.78rem;
   font-weight: 700;
+  justify-items: start;
 }
 
-.note-form input,
-.note-form textarea {
+.calendar-note-form input,
+.calendar-note-form textarea {
   width: 100%;
   border: 1px solid rgba(123, 63, 161, 0.24);
   border-radius: 14px;
@@ -529,42 +576,94 @@
   color: #3a0f53;
   font: inherit;
   padding: 0.75rem 0.8125rem;
+  box-sizing: border-box;
+  text-align: left;
+  direction: ltr;
 }
 
-.note-form textarea {
+.calendar-note-form textarea {
   resize: vertical;
+  min-height: 7rem;
 }
 
-.note-form input:focus,
-.note-form textarea:focus {
+.calendar-note-form input:focus,
+.calendar-note-form textarea:focus {
   border-color: #ec168c;
   box-shadow: 0 0 0 4px rgba(236, 22, 140, 0.14);
   outline: none;
 }
 
-.note-form__row {
+.calendar-note-form__schedule {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.75rem;
+  gap: 0.5rem;
+  text-align: left;
+  justify-items: start;
 }
 
-.note-form button {
-  border: 0;
-  border-radius: 999px;
-  background: linear-gradient(135deg, #4b136b, #ec168c);
-  color: #ffffff;
-  cursor: pointer;
-  font: inherit;
+.calendar-note-form__schedule-label {
+  color: #4b136b;
+  font-size: 0.78rem;
   font-weight: 700;
-  padding: 0.8125rem 1.125rem;
+  text-align: left;
 }
 
-.note-form button:hover {
+.calendar-note-form__schedule-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.75rem;
+  min-width: 0;
+  width: 100%;
+}
+
+.calendar-note-form__schedule-value {
+  color: #4b136b;
+  font-size: 0.84rem;
+  font-weight: 600;
+  line-height: 1.35;
+  min-width: 0;
+  text-align: left;
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
+.calendar-note-form__schedule-value.is-placeholder {
+  color: rgba(75, 19, 107, 0.56);
+  font-weight: 500;
+}
+
+.calendar-note-form__error {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(236, 22, 140, 0.08);
+  color: #9d174d;
+  font-size: 0.84rem;
+  font-weight: 600;
+  line-height: 1.4;
+  text-align: left;
+}
+
+.calendar-note-form__submit {
+  width: 100%;
+  margin-top: 4px;
+  min-height: 42px;
+  border: 0;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #ec168c 0%, #d946a1 50%, #7e22ce 100%);
+  color: #fff;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.calendar-note-form__submit:hover:not(:disabled) {
   box-shadow: 0 12px 24px rgba(236, 22, 140, 0.22);
   transform: translateY(-1px);
 }
 
-.note-form button:disabled {
+.calendar-note-form__submit:disabled {
   cursor: not-allowed;
   opacity: 0.65;
   transform: none;
@@ -1002,8 +1101,7 @@
   }
 
   .calendar-summary,
-  .calendar-sidebar,
-  .note-form__row {
+  .calendar-sidebar {
     grid-template-columns: 1fr;
   }
 
@@ -1173,11 +1271,6 @@
   box-shadow: 0 8px 18px rgba(0, 0, 0, 0.2);
 }
 
-.participant-home--dark .note-card.is-open .note-card__toggle-icon {
-  background: #ec4899;
-  color: #ffffff;
-}
-
 .participant-home--dark .mini-calendar {
   background: #111827;
   color: #f8fafc;
@@ -1267,15 +1360,28 @@
   color: #cbd5e1;
 }
 
-.participant-home--dark .note-form label {
+.participant-home--dark .calendar-note-form label {
   color: #cbd5e1;
 }
 
-.participant-home--dark .note-form input,
-.participant-home--dark .note-form textarea {
+.participant-home--dark .calendar-note-form input,
+.participant-home--dark .calendar-note-form textarea {
   background: #1f2937;
   border-color: rgba(236, 72, 153, 0.25);
   color: #f8fafc;
+}
+
+.participant-home--dark .calendar-note-modal__panel {
+  background: linear-gradient(180deg, #111827 0%, #0f172a 100%);
+  border-color: rgba(236, 72, 153, 0.25);
+}
+
+.participant-home--dark .calendar-note-modal__header h4 {
+  color: #f472b6;
+}
+
+.participant-home--dark .calendar-note-modal__hint {
+  color: #94a3b8;
 }
 
 .participant-home--dark .empty-state {
