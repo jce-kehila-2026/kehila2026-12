@@ -26,6 +26,10 @@ async function withEventTranslations(data) {
   return data;
 }
 
+function isPublishedEvent(event) {
+  return String(event?.status || '').trim().toLowerCase() === 'published';
+}
+
 /**
  * Fetch a single event by its Firestore document ID.
  * @param {string} id
@@ -47,14 +51,13 @@ export async function getAllEvents() {
 
 /**
  * One-shot fetch of published events.
- * Prefer this over subscribeToPublishedEvents() when the screen doesn't need live updates.
  */
 export async function getPublishedEvents() {
   const q = query(collection(db, 'events'), orderBy('createdAt', 'desc'), limit(50));
   const snap = await getDocs(q);
   return snap.docs
     .map((d) => ({ id: d.id, ...d.data() }))
-    .filter((event) => event.status === 'published');
+    .filter(isPublishedEvent);
 }
 
 /**
@@ -73,7 +76,7 @@ export function subscribeToPublishedEvents(callback, onError) {
     callback(
       snap.docs
         .map((d) => ({ id: d.id, ...d.data() }))
-        .filter((event) => event.status === 'published')
+        .filter(isPublishedEvent)
     );
   }, onError);
 }
