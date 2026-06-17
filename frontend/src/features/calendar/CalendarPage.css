@@ -645,28 +645,7 @@
 }
 
 .calendar-note-form__submit {
-  width: 100%;
   margin-top: 4px;
-  min-height: 42px;
-  border: 0;
-  border-radius: 12px;
-  background: linear-gradient(135deg, #ec168c 0%, #d946a1 50%, #7e22ce 100%);
-  color: #fff;
-  font: inherit;
-  font-size: 0.9rem;
-  font-weight: 700;
-  cursor: pointer;
-}
-
-.calendar-note-form__submit:hover:not(:disabled) {
-  box-shadow: 0 12px 24px rgba(236, 22, 140, 0.22);
-  transform: translateY(-1px);
-}
-
-.calendar-note-form__submit:disabled {
-  cursor: not-allowed;
-  opacity: 0.65;
-  transform: none;
 }
 
 .calendar-board {
