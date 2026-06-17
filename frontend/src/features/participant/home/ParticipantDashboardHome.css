@@ -1743,7 +1743,17 @@
 
 }
 
+.pd-card--event.pd-card--empty .pd-feature__cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding-top: 0;
+  line-height: 1;
+}
 
+.pd-card--event.pd-card--empty .pd-feature__cta span {
+  line-height: 1;
+}
 
 .pd-feature__col--badge {
 
