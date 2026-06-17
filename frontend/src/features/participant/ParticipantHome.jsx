@@ -243,7 +243,7 @@ export default function ParticipantHome({ initialView = 'home' }) {
   };
 
   const navigateParticipantView = useCallback(
-    (viewKey) => {
+    (viewKey, options = {}) => {
       const nextView = normalizeParticipantView(viewKey);
       if (viewKey === 'appointments') {
         setActiveView('home');
@@ -254,7 +254,11 @@ export default function ParticipantHome({ initialView = 'home' }) {
       const item = participantNavItems.find((nav) => nav.key === nextView);
       setActiveView(nextView);
       if (item?.path) {
-        navigate(item.path);
+        if (nextView === 'events' && options.eventsTab) {
+          navigate(item.path, { state: { eventsTab: options.eventsTab } });
+        } else {
+          navigate(item.path);
+        }
       }
     },
     [navigate],

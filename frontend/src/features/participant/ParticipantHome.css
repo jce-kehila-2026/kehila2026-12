@@ -1397,10 +1397,16 @@
   box-shadow: 0 14px 34px rgba(75, 19, 107, 0.08);
 }
 
-.participant-panel .calendar-page--embedded .mini-calendar,
-.participant-panel .calendar-page--embedded .selected-day-card,
+.participant-panel .calendar-page--embedded .mini-calendar {
+  padding: 16px;
+}
+
+.participant-panel .calendar-page--embedded .selected-day-card {
+  padding: 12px;
+}
+
 .participant-panel .calendar-page--embedded .note-card {
-  padding: 18px;
+  padding: 14px;
 }
 
 .participant-panel .calendar-page--embedded .weekly-calendar__grid {
