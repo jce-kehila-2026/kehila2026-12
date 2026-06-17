@@ -9,11 +9,7 @@
   overflow: hidden;
   padding-block: clamp(4rem, 7.5vw, 6.25rem);
   padding-inline: clamp(1.25rem, 6vw, 6rem);
-  background:
-    radial-gradient(ellipse 80% 55% at 50% -8%, rgba(233, 30, 143, 0.07) 0%, transparent 58%),
-    radial-gradient(ellipse 45% 40% at 0% 60%, rgba(186, 157, 255, 0.12) 0%, transparent 70%),
-    radial-gradient(ellipse 40% 38% at 100% 70%, rgba(252, 196, 224, 0.2) 0%, transparent 68%),
-    linear-gradient(180deg, #fffbfb 0%, #fff5fa 38%, #fef8fc 72%, #fdf6fb 100%);
+  background: #ffffff;
   text-align: center;
 }
 
@@ -25,11 +21,7 @@
 }
 
 .public-about__decor {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  overflow: hidden;
-  pointer-events: none;
+  display: none;
 }
 
 .public-about__dots {
