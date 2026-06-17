@@ -1,5 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useId, useMemo, useState } from 'react';
 import './CalendarPage.css';
+import '../participant/home/ParticipantDashboardHome.css';
+import CalendarNoteModal from './CalendarNoteModal';
 import { useAdmin } from '../admin/context/AdminContext';
 import { createCalendarNote, getCalendarData } from './calendarService';
 
@@ -159,7 +161,10 @@ export default function CalendarPage({ variant = 'standalone' }) {
   const [loadingCalendar, setLoadingCalendar] = useState(true);
   const [calendarError, setCalendarError] = useState('');
   const [savingNote, setSavingNote] = useState(false);
-  const [noteFormOpen, setNoteFormOpen] = useState(false);
+  const [noteModalOpen, setNoteModalOpen] = useState(false);
+  const [scheduleOpen, setScheduleOpen] = useState(false);
+  const datePickerId = useId();
+  const timePickerId = useId();
   const [calendarReloadKey, setCalendarReloadKey] = useState(0);
   const [noteForm, setNoteForm] = useState({
     title: '',
@@ -243,6 +248,7 @@ export default function CalendarPage({ variant = 'standalone' }) {
     year: 'numeric',
   }).format(activeWeekStart);
   const calendarTitle = calendarView === 'week' ? `Week of ${weekStartLabel}` : calendarView === 'day' ? selectedDateLabel : formatMonthTitle(activeDate);
+  const noteModalError = noteModalOpen ? calendarError : '';
 
   function handleSelectDate(dateKey, nextView = calendarView) {
     setSelectedDate(dateKey);
@@ -312,6 +318,8 @@ export default function CalendarPage({ variant = 'standalone' }) {
       time: noteForm.time,
       content: '',
     });
+    setNoteModalOpen(false);
+    setScheduleOpen(false);
 
     try {
       setSavingNote(true);
@@ -439,12 +447,15 @@ export default function CalendarPage({ variant = 'standalone' }) {
               )}
             </section>
 
-            <section className={`calendar-card note-card${noteFormOpen ? ' is-open' : ''}`}>
+            <section className="calendar-card note-card">
               <button
                 type="button"
                 className="note-card__toggle"
-                aria-expanded={noteFormOpen}
-                onClick={() => setNoteFormOpen((isOpen) => !isOpen)}
+                aria-haspopup="dialog"
+                onClick={() => {
+                  setCalendarError('');
+                  setNoteModalOpen(true);
+                }}
               >
                 <span className="note-card__toggle-copy">
                   <strong>Add a note</strong>
@@ -454,38 +465,6 @@ export default function CalendarPage({ variant = 'standalone' }) {
                   +
                 </span>
               </button>
-
-              <div className="note-card__body" aria-hidden={!noteFormOpen}>
-                <form onSubmit={handleSubmit} className="note-form">
-                  <label>
-                    Title
-                    <input name="title" value={noteForm.title} onChange={handleFormChange} placeholder="Personal Note" />
-                  </label>
-                  <div className="note-form__row">
-                    <label>
-                      Date
-                      <input name="date" type="date" value={noteForm.date} onChange={handleFormChange} />
-                    </label>
-                    <label>
-                      Time
-                      <input name="time" type="time" value={noteForm.time} onChange={handleFormChange} />
-                    </label>
-                  </div>
-                  <label>
-                    Note content
-                    <textarea
-                      name="content"
-                      value={noteForm.content}
-                      onChange={handleFormChange}
-                      placeholder="Write a reminder for yourself..."
-                      rows="4"
-                    />
-                  </label>
-                  <button type="submit" disabled={savingNote}>
-                    {savingNote ? 'Saving...' : 'Add note'}
-                  </button>
-                </form>
-              </div>
             </section>
           </aside>
 
@@ -624,6 +603,25 @@ export default function CalendarPage({ variant = 'standalone' }) {
           </section>
         </div>
       </section>
+
+      <CalendarNoteModal
+        open={noteModalOpen}
+        onClose={() => {
+          setNoteModalOpen(false);
+          setScheduleOpen(false);
+        }}
+        noteForm={noteForm}
+        onFormChange={handleFormChange}
+        onSubmit={handleSubmit}
+        savingNote={savingNote}
+        scheduleOpen={scheduleOpen}
+        onScheduleOpenChange={setScheduleOpen}
+        onDateChange={(nextDate) => setNoteForm((current) => ({ ...current, date: nextDate }))}
+        onTimeChange={(nextTime) => setNoteForm((current) => ({ ...current, time: nextTime }))}
+        datePickerId={datePickerId}
+        timePickerId={timePickerId}
+        errorMessage={noteModalError}
+      />
     </main>
   );
 }
