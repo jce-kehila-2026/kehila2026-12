@@ -377,8 +377,9 @@
 .note-card__toggle-icon {
   width: 34px;
   height: 34px;
-  display: grid;
-  place-items: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex: 0 0 auto;
   border: 1px solid rgba(236, 22, 140, 0.18);
   border-radius: 999px;
@@ -386,6 +387,7 @@
   color: #ec168c;
   font-size: 1.2rem;
   font-weight: 800;
+  line-height: 1;
   box-shadow: 0 8px 18px rgba(75, 19, 107, 0.08);
   transition: transform 180ms ease, background 180ms ease, color 180ms ease;
 }
@@ -480,6 +482,9 @@
   place-items: center;
   padding: 20px;
   isolation: isolate;
+  --pd-btn-pink: #db4f9f;
+  --pd-btn-pink-soft-bg: #fdf2f8;
+  --pd-btn-pink-soft-border: rgba(219, 79, 159, 0.18);
 }
 
 .calendar-note-modal__backdrop {
@@ -645,7 +650,13 @@
 }
 
 .calendar-note-form__submit {
+  width: 100%;
   margin-top: 4px;
+  height: 40px;
+  min-height: 40px;
+  padding: 0 14px;
+  font-size: 13px;
+  font-weight: 600;
 }
 
 .calendar-board {
@@ -680,7 +691,7 @@
   gap: 0.25rem;
   padding: 0.25rem;
   border-radius: 12px;
-  background: #f1ecfb;
+  background: #fdf2f8;
 }
 
 .calendar-view-toggle button,
@@ -695,15 +706,15 @@
   min-width: 5.375rem;
   border-radius: 9px;
   background: transparent;
-  color: #6b3f97;
+  color: #db4f9f;
   padding: 9px 15px;
   text-transform: capitalize;
 }
 
 .calendar-view-toggle button.is-active {
-  background: linear-gradient(135deg, #6b31db, #8b4be8);
+  background: #db4f9f;
   color: #ffffff;
-  box-shadow: 0 10px 20px rgba(107, 49, 219, 0.24);
+  box-shadow: 0 2px 8px rgba(219, 79, 159, 0.12);
 }
 
 .calendar-board__actions {
@@ -715,9 +726,18 @@
   width: 2.375rem;
   height: 2.375rem;
   border-radius: 999px;
-  background: linear-gradient(135deg, #6b31db, #8b4be8);
+  background: #db4f9f;
   color: #ffffff;
   font-size: 1rem;
+  box-shadow: 0 2px 8px rgba(219, 79, 159, 0.12);
+  transition:
+    background 220ms ease,
+    box-shadow 220ms ease;
+}
+
+.calendar-board__actions button:hover {
+  background: #c83f91;
+  box-shadow: 0 4px 12px rgba(219, 79, 159, 0.16);
 }
 
 .month-calendar {
@@ -1383,7 +1403,19 @@
 }
 
 .participant-home--dark .calendar-view-toggle button {
-  color: #cbd5e1;
+  color: #f9a8d4;
+}
+
+.participant-home--dark .calendar-view-toggle button.is-active,
+.participant-home--dark .calendar-board__actions button {
+  background: #db4f9f;
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(219, 79, 159, 0.24);
+}
+
+.participant-home--dark .calendar-board__actions button:hover {
+  background: #c83f91;
+  box-shadow: 0 4px 12px rgba(219, 79, 159, 0.28);
 }
 
 .participant-home--dark .month-calendar {

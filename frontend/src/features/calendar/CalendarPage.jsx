@@ -461,9 +461,7 @@ export default function CalendarPage({ variant = 'standalone' }) {
                   <strong>Add a note</strong>
                   <small>Private reminder</small>
                 </span>
-                <span className="note-card__toggle-icon" aria-hidden="true">
-                  +
-                </span>
+                <span className="note-card__toggle-icon" aria-hidden="true">+</span>
               </button>
             </section>
           </aside>
