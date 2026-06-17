@@ -1,5 +1,9 @@
 @import url("https://fonts.googleapis.com/css2?family=Assistant:wght@400;500;600;700;800&display=swap");
 
+.public-homepage main {
+  background-color: #ffffff;
+}
+
 .public-homepage {
   --public-purple: #4b136b;
   --public-purple-2: #7f22d9;
