@@ -43,45 +43,11 @@
   pointer-events: none;
 }
 
-.login-page__back-btn {
+.login-page__back-cta {
   position: fixed;
   bottom: 24px;
   left: 24px;
   z-index: 20;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.625rem;
-  height: 3.5rem;
-  padding: 0 1.5rem;
-  border: 1.5px solid rgba(236, 72, 153, 0.25);
-  border-radius: 999px;
-  background: #ffffff;
-  color: #ec4899;
-  font: inherit;
-  font-size: 0.9375rem;
-  font-weight: 700;
-  letter-spacing: 0.01em;
-  line-height: 1;
-  white-space: nowrap;
-  cursor: pointer;
-  box-shadow:
-    0 8px 24px rgba(236, 72, 153, 0.15),
-    0 2px 8px rgba(0, 0, 0, 0.05);
-  transition:
-    transform 0.25s ease,
-    box-shadow 0.25s ease,
-    background 0.25s ease;
-}
-
-.login-page__back-btn:hover,
-.login-page__back-btn:focus-visible {
-  transform: translateY(-3px);
-  background: #fff8fc;
-  box-shadow:
-    0 14px 36px rgba(236, 72, 153, 0.22),
-    0 4px 12px rgba(0, 0, 0, 0.08);
-  outline: none;
 }
 
 .login-page__back-btn-icon {
@@ -89,7 +55,6 @@
   width: 1.25rem !important;
   height: 1.25rem !important;
   font-size: 1.25rem !important;
-  color: #ec4899;
 }
 
 .login-page__hero-panel {
@@ -257,6 +222,7 @@
     0 8px 20px rgba(43, 18, 76, 0.04);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
+  --login-accent: #5b1e8c;
 }
 
 .login-page__card-leaf {
@@ -266,7 +232,11 @@
   width: 1.375rem;
   height: 2.125rem;
   border-radius: 70% 0 70% 0;
-  background: linear-gradient(145deg, rgba(247, 37, 133, 0.32), rgba(255, 160, 190, 0.22));
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--login-accent) 32%, transparent),
+    color-mix(in srgb, var(--login-accent) 14%, transparent)
+  );
   transform: rotate(-24deg);
   opacity: 0.75;
   pointer-events: none;
@@ -326,7 +296,7 @@
   transform: translateY(-50%);
   display: grid;
   place-items: center;
-  color: rgba(123, 44, 191, 0.55);
+  color: var(--login-accent);
   pointer-events: none;
 }
 
@@ -339,7 +309,7 @@
   min-height: 3.5rem;
   height: 3.5rem;
   padding: 0.75rem 2.5rem 0.75rem 0.75rem;
-  border: 1px solid rgba(123, 44, 191, 0.2);
+  border: 1px solid color-mix(in srgb, var(--login-accent) 20%, transparent);
   border-radius: 11px;
   background: rgba(255, 255, 255, 0.96);
   color: var(--shena-text);
@@ -355,8 +325,8 @@
 
 .login-page__input:focus {
   outline: none;
-  border-color: rgba(247, 37, 133, 0.42);
-  box-shadow: 0 0 0 3px rgba(247, 37, 133, 0.1);
+  border-color: color-mix(in srgb, var(--login-accent) 42%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--login-accent) 10%, transparent);
 }
 
 .login-page__input--password {
@@ -375,13 +345,13 @@
   border: 0;
   border-radius: 8px;
   background: transparent;
-  color: rgba(123, 44, 191, 0.48);
+  color: var(--login-accent);
   cursor: pointer;
 }
 
 .login-page__toggle-password:hover,
 .login-page__toggle-password:focus-visible {
-  background: rgba(243, 232, 255, 0.65);
+  background: color-mix(in srgb, var(--login-accent) 8%, white);
 }
 
 .login-page__row {
@@ -405,13 +375,13 @@
 .login-page__remember input {
   width: 0.875rem;
   height: 0.875rem;
-  accent-color: var(--shena-pink);
+  accent-color: var(--login-accent);
 }
 
 .login-page__link-btn {
   border: 0;
   background: transparent;
-  color: var(--shena-violet);
+  color: var(--login-accent);
   font: inherit;
   font-size: 0.78rem;
   font-weight: 700;
@@ -421,56 +391,7 @@
 }
 
 .login-page__submit {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  width: 100%;
-  min-height: 3.625rem;
-  height: 3.625rem;
-  border: 0;
-  border-radius: 999px;
-  background: linear-gradient(135deg, #f72585, #7b2cbf);
-  color: #fff;
-  font: inherit;
-  font-size: 0.94rem;
-  font-weight: 800;
-  cursor: pointer;
-  box-shadow: 0 8px 22px rgba(247, 37, 133, 0.24);
-  transition: transform 200ms ease, box-shadow 200ms ease, filter 200ms ease;
-}
-
-.login-page__submit:hover:not(:disabled),
-.login-page__submit:focus-visible:not(:disabled) {
-  transform: translateY(-2px);
-  filter: brightness(1.03);
-  box-shadow:
-    0 14px 32px rgba(247, 37, 133, 0.32),
-    0 0 28px rgba(247, 37, 133, 0.22),
-    0 0 48px rgba(123, 44, 191, 0.14);
-}
-
-.login-page__submit:disabled {
-  opacity: 0.7;
-  cursor: wait;
-}
-
-.login-page__submit-arrow {
-  display: inline-grid;
-  place-items: center;
-  width: 1.625rem;
-  height: 1.625rem;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.22);
-  opacity: 0;
-  transform: translateX(-4px);
-  transition: opacity 200ms ease, transform 200ms ease;
-}
-
-.login-page__submit:hover:not(:disabled) .login-page__submit-arrow,
-.login-page__submit:focus-visible:not(:disabled) .login-page__submit-arrow {
-  opacity: 1;
-  transform: translateX(0);
+  margin-top: 0.25rem;
 }
 
 .login-page__divider-text {
@@ -488,7 +409,12 @@
   content: "";
   flex: 1;
   height: 0.0625rem;
-  background: linear-gradient(90deg, transparent, rgba(123, 44, 191, 0.12), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    color-mix(in srgb, var(--login-accent) 12%, transparent),
+    transparent
+  );
 }
 
 .login-page__google {
@@ -500,7 +426,7 @@
   min-height: 3.5rem;
   height: 3.5rem;
   padding: 0 1.125rem;
-  border: 1px solid rgba(123, 44, 191, 0.16);
+  border: 1px solid color-mix(in srgb, var(--login-accent) 16%, transparent);
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.97);
   color: var(--shena-text);
@@ -521,8 +447,8 @@
 .login-page__google:hover:not(:disabled),
 .login-page__google:focus-visible:not(:disabled) {
   transform: translateY(-1px);
-  border-color: rgba(247, 37, 133, 0.22);
-  box-shadow: 0 8px 18px rgba(123, 44, 191, 0.08);
+  border-color: color-mix(in srgb, var(--login-accent) 22%, transparent);
+  box-shadow: 0 8px 18px color-mix(in srgb, var(--login-accent) 8%, transparent);
 }
 
 .login-page__google:disabled {
@@ -541,7 +467,7 @@
 .login-page__footer-link {
   border: 0;
   background: transparent;
-  color: var(--shena-pink);
+  color: var(--login-accent);
   font: inherit;
   font-weight: 800;
   text-decoration: underline;
@@ -603,12 +529,9 @@
     width: 9.4375rem;
   }
 
-  .login-page__back-btn {
+  .login-page__back-cta {
     bottom: 24px;
     left: 24px;
-    height: 3.5rem;
-    padding: 0 1.5rem;
-    font-size: 0.9375rem;
   }
 
   .login-page__card {
@@ -623,17 +546,13 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .login-page__back-btn,
-  .login-page__submit,
   .login-page__google,
-  .login-page__submit-arrow {
+  .public-cta-scope .public-button {
     transition: none;
   }
 
-  .login-page__submit:hover:not(:disabled),
   .login-page__google:hover:not(:disabled),
-  .login-page__back-btn:hover,
-  .login-page__back-btn:focus-visible {
+  .public-cta-scope .public-button.public-button--primary:hover:not(:disabled) {
     transform: none;
   }
 }

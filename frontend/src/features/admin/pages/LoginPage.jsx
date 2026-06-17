@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { sendPasswordResetEmail, signInWithEmailAndPassword, signInWithPopup } from 'firebase/auth';
-import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
 import GoogleIcon from '@mui/icons-material/Google';
 import VisibilityIcon from '@mui/icons-material/Visibility';
@@ -13,7 +12,7 @@ import loginBgImage from '../../../assets/stronger-together-banner.png';
 import { auth, googleProvider } from '../../../firebase';
 import { ensureParticipantProfile, getPostLoginPath, resolveUserRole } from '../services/authRoleService';
 import JoinCommunityModal from '../../public/components/JoinCommunityModal';
-import '../../public/styles/public-sections.css';
+import PublicCtaButton from '../../../shared/components/PublicCtaButton';
 import '../../public/styles/join-modal.css';
 import './LoginPage.css';
 
@@ -170,7 +169,7 @@ export default function LoginPage() {
 
         <aside className="login-page__login-stack">
           <main className="login-page__login-float">
-          <div className="login-page__card">
+          <div className="login-page__card public-cta-scope" dir="rtl">
             <span className="login-page__card-leaf" aria-hidden="true" />
 
             <h2 className="login-page__card-title">התחברי למרחב שלך</h2>
@@ -268,12 +267,15 @@ export default function LoginPage() {
                 </button>
               </div>
 
-              <button className="login-page__submit" type="submit" disabled={submitting} id="btn-login">
+              <PublicCtaButton
+                type="submit"
+                className="login-page__submit"
+                block
+                disabled={submitting}
+                id="btn-login"
+              >
                 <span>{submitting ? 'אנא המתיני...' : 'התחברי'}</span>
-                <span className="login-page__submit-arrow" aria-hidden="true">
-                  <ArrowBackIcon fontSize="small" />
-                </span>
-              </button>
+              </PublicCtaButton>
             </form>
 
             <div className="login-page__divider-text">או המשיכי עם</div>
@@ -305,10 +307,17 @@ export default function LoginPage() {
         </aside>
       </div>
 
-      <button type="button" className="login-page__back-btn" onClick={() => navigate('/')}>
-        <HomeOutlinedIcon className="login-page__back-btn-icon" aria-hidden="true" />
-        <span>חזרה לאתר</span>
-      </button>
+      <div className="login-page__back-cta public-cta-scope" dir="rtl">
+        <PublicCtaButton
+          type="button"
+          className="login-page__back-btn"
+          showArrow={false}
+          onClick={() => navigate('/')}
+        >
+          <HomeOutlinedIcon className="login-page__back-btn-icon" aria-hidden="true" />
+          <span>חזרה לאתר</span>
+        </PublicCtaButton>
+      </div>
 
       {/* Same membership questionnaire as the public homepage "להצטרף" button.
           The scope wrapper supplies the public theme variables + RTL the modal
