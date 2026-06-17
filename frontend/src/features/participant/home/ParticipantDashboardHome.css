@@ -2211,6 +2211,12 @@
 
   isolation: isolate;
 
+  --pd-btn-pink: #db4f9f;
+
+  --pd-btn-pink-soft-bg: #fdf2f8;
+
+  --pd-btn-pink-soft-border: rgba(219, 79, 159, 0.18);
+
 }
 
 
@@ -2259,21 +2265,29 @@
 
   overflow-x: hidden;
 
+  direction: ltr;
+
+  text-align: left;
+
 }
 
 
 
 .pd-notes-schedule-modal__header {
 
+  position: relative;
+
   display: flex;
 
   align-items: center;
 
-  justify-content: space-between;
+  justify-content: flex-start;
 
   gap: 12px;
 
   margin-bottom: 6px;
+
+  padding-right: 40px;
 
 }
 
@@ -2289,11 +2303,19 @@
 
   font-weight: 800;
 
+  text-align: left;
+
 }
 
 
 
 .pd-notes-schedule-modal__close {
+
+  position: absolute;
+
+  top: 0;
+
+  right: 0;
 
   width: 32px;
 
@@ -2327,6 +2349,8 @@
 
   line-height: 1.45;
 
+  text-align: left;
+
 }
 
 
@@ -2337,18 +2361,45 @@
 
   align-items: start;
 
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+
+  width: 100%;
+
+  min-width: 0;
+
 }
 
 
 
 .pd-notes__datetime--modal .pd-notes-picker {
   position: relative;
+  width: 100%;
   min-width: 0;
+  max-width: 100%;
   z-index: 1;
 }
 
 .pd-notes__datetime--modal .pd-notes-picker.is-open {
   z-index: 2;
+}
+
+.pd-notes__datetime--modal .pd-notes-picker__trigger {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  overflow: hidden;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.pd-notes__datetime--modal .pd-notes-picker__value {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
 }
 
 /* Open pickers render in the modal flow, directly below the inputs row, as a
@@ -2516,23 +2567,15 @@
 
   margin-top: 12px;
 
-  min-height: 42px;
+  height: 40px;
 
-  border: 0;
+  min-height: 40px;
 
-  border-radius: 12px;
+  padding: 0 14px;
 
-  background: linear-gradient(135deg, #ec168c 0%, #d946a1 50%, #7e22ce 100%);
+  font-size: 13px;
 
-  color: #fff;
-
-  font: inherit;
-
-  font-size: 0.9rem;
-
-  font-weight: 700;
-
-  cursor: pointer;
+  font-weight: 600;
 
 }
 
