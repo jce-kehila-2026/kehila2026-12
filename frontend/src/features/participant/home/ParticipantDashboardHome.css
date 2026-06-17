@@ -963,11 +963,29 @@
 
   align-items: flex-start;
 
+  align-self: stretch;
+
   gap: 0;
 
   min-width: 0;
 
   padding: 0;
+
+}
+
+.pd-feature__footer {
+
+  height: 48px;
+
+  min-height: 48px;
+
+  display: flex;
+
+  align-items: center;
+
+  width: 100%;
+
+  margin-top: auto;
 
 }
 
@@ -1027,8 +1045,8 @@
 
 
 
-.pd-card--feature .pd-feature__body > .pd-feature__cta,
-.pd-card--feature .pd-feature__body > .pd-community__cta {
+.pd-card--feature .pd-feature__footer > .pd-feature__cta,
+.pd-card--feature .pd-feature__footer > .pd-community__cta {
 
   margin-top: 10px;
 
@@ -1399,10 +1417,10 @@
 
 
 
-.pd-feature__body > .pd-feature__cta,
-.pd-feature__body > .pd-community__cta {
+.pd-feature__footer > .pd-feature__cta,
+.pd-feature__footer > .pd-community__cta {
 
-  margin-top: 8px;
+  margin-top: 0;
 
 }
 
