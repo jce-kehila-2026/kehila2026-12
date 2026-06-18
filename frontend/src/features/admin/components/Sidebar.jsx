@@ -22,7 +22,9 @@ import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import KeyboardDoubleArrowRightRoundedIcon from '@mui/icons-material/KeyboardDoubleArrowRightRounded';
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded';
 import LogoutIcon from '@mui/icons-material/Logout';
+import TranslateIcon from '@mui/icons-material/Translate';
 import { useAdmin } from '../context/AdminContext';
+import { useAdminLocale } from '../context/AdminLocaleContext';
 
 const NAV_ITEMS = [
   {
@@ -100,6 +102,8 @@ const NAV_ITEMS = [
 export default function Sidebar({ drawerWidth = 260, collapsed = false, onToggleSidebar }) {
   const location = useLocation();
   const { currentUser, logout } = useAdmin();
+  const { locale, setLocale, t } = useAdminLocale();
+  const currentLangLabel = locale === 'he' ? t('languageHebrew') : t('languageEnglish');
   const adminNameSource = currentUser?.displayName || currentUser?.email?.split('@')[0] || 'Tala Jabaren';
   const adminName = /tala/i.test(adminNameSource) ? 'Tala Jabaren' : adminNameSource;
   const initials = adminName
@@ -357,6 +361,58 @@ export default function Sidebar({ drawerWidth = 260, collapsed = false, onToggle
             </Tooltip>
           );
         })}
+
+        <Tooltip title={collapsed ? t('selectLanguage') : ''} placement="right" arrow disableHoverListener={!collapsed}>
+          <ListItemButton
+            onClick={() => setLocale(locale === 'he' ? 'en' : 'he')}
+            id="btn-admin-language"
+            aria-label={t('selectLanguage')}
+            sx={{
+              width: { xs: '3.25rem', md: collapsed ? 52 : 'auto' },
+              minHeight: '3.25rem',
+              mx: { xs: 'auto', md: collapsed ? 'auto' : 0 },
+              mb: '9px',
+              px: { xs: 1, md: collapsed ? 0 : '17px' },
+              borderRadius: collapsed ? '18px' : '16px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: { xs: 'center', md: collapsed ? 'center' : 'flex-end' },
+              color: 'rgba(36,16,79,0.64)',
+              gap: collapsed ? 0 : '14px',
+              transition: 'all 0.3s ease',
+              '&:hover': { bgcolor: 'rgba(255,255,255,0.52)', color: '#24104F' },
+            }}
+          >
+            <ListItemIcon
+              sx={{
+                order: 2,
+                minWidth: 0,
+                color: 'inherit',
+                justifyContent: 'center',
+                flex: '0 0 auto',
+                '& svg': { width: '1.375rem', height: '1.375rem' },
+              }}
+            >
+              <TranslateIcon />
+            </ListItemIcon>
+            <ListItemText
+              primary={currentLangLabel}
+              primaryTypographyProps={{ fontSize: '0.94rem', fontWeight: 650, noWrap: true }}
+              sx={{
+                order: 1,
+                display: { xs: 'none', md: 'block' },
+                flex: collapsed ? '0 0 0' : '0 1 auto',
+                width: collapsed ? 0 : 'auto',
+                maxWidth: collapsed ? 0 : 'none',
+                opacity: collapsed ? 0 : 1,
+                overflow: 'hidden',
+                whiteSpace: 'nowrap',
+                pointerEvents: collapsed ? 'none' : 'auto',
+                transition: 'all 0.3s ease',
+              }}
+            />
+          </ListItemButton>
+        </Tooltip>
       </List>
 
       <Tooltip title={collapsed ? 'Logout' : ''} placement="right" arrow disableHoverListener={!collapsed}>

@@ -26,7 +26,15 @@ export function DirectionProvider({ children }) {
     setDirection((prev) => (prev === 'rtl' ? 'ltr' : 'rtl'));
   }, []);
 
-  const value = useMemo(() => ({ direction, toggleDirection }), [direction, toggleDirection]);
+  const setDirectionValue = useCallback((next) => {
+    if (next !== 'rtl' && next !== 'ltr') return;
+    setDirection(next);
+  }, []);
+
+  const value = useMemo(
+    () => ({ direction, toggleDirection, setDirection: setDirectionValue }),
+    [direction, toggleDirection, setDirectionValue],
+  );
 
   return <DirectionContext.Provider value={value}>{children}</DirectionContext.Provider>;
 }

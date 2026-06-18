@@ -3,12 +3,22 @@ import { Outlet } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Sidebar from './Sidebar';
 import ImpersonationBanner from './ImpersonationBanner';
+import { AdminLocaleProvider, useAdminLocale } from '../context/AdminLocaleContext';
 import './AdminLayout.css';
 
 const DRAWER_WIDTH = 270;
 const COLLAPSED_DRAWER_WIDTH = 88;
 
 export default function AdminLayout() {
+  return (
+    <AdminLocaleProvider>
+      <AdminLayoutInner />
+    </AdminLocaleProvider>
+  );
+}
+
+function AdminLayoutInner() {
+  const { direction } = useAdminLocale();
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const drawerWidth = sidebarCollapsed ? COLLAPSED_DRAWER_WIDTH : DRAWER_WIDTH;
 
@@ -22,7 +32,7 @@ export default function AdminLayout() {
           '--admin-modal-offset': sidebarCollapsed ? '140px' : '320px',
           display: 'flex',
           flexDirection: 'row',
-          direction: 'ltr',
+          direction,
           minHeight: '100vh',
           background:
             'radial-gradient(circle at 18% 10%, rgba(252, 231, 243, 0.72), transparent 28%), radial-gradient(circle at 85% 5%, rgba(167, 139, 250, 0.24), transparent 34%), linear-gradient(135deg, #faf7ff 0%, #ffffff 46%, #fbf7ff 100%)',
@@ -40,7 +50,7 @@ export default function AdminLayout() {
             display: 'flex',
             flexDirection: 'column',
             minWidth: 0,
-            direction: 'ltr',
+            direction,
             transition: 'all 300ms ease-in-out',
           }}
         >
