@@ -7,7 +7,7 @@
   --support-purple-mid: #8a2da8;
   --support-pink: #d946a1;
   --support-pink-soft: #f7d6ea;
-  --support-bg: #ffffff;
+  --support-bg: #fdf6fb;
   --support-muted: #8a7a9c;
   --support-card-shadow: 0 20px 50px rgba(91, 30, 140, 0.12), 0 8px 20px rgba(217, 70, 161, 0.08);
   --support-card-shadow-hover: 0 28px 60px rgba(91, 30, 140, 0.18), 0 12px 28px rgba(217, 70, 161, 0.12);
@@ -20,13 +20,21 @@
   margin: 0;
   padding-block: clamp(88px, 10vw, 128px);
   padding-inline: clamp(28px, 6vw, 104px);
-  background-color: #ffffff;
-  background-image: none;
+  background-color: var(--support-bg);
+  background-image:
+    radial-gradient(ellipse 70% 50% at 8% 12%, rgba(217, 70, 161, 0.2) 0%, transparent 62%),
+    radial-gradient(ellipse 55% 48% at 92% 18%, rgba(138, 45, 168, 0.16) 0%, transparent 65%),
+    radial-gradient(ellipse 80% 55% at 50% 105%, rgba(247, 214, 234, 0.75) 0%, transparent 58%),
+    linear-gradient(180deg, #fff8fc 0%, var(--support-bg) 38%, #faeff6 72%, #f8eaf4 100%);
 }
 
 /* Decorative layer */
 .public-homepage .public-section--support .public-support__decor {
-  display: none;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
 }
 
 .public-homepage .public-section--support .public-support__blob {
