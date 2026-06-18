@@ -14,20 +14,32 @@
   width: 100%;
   padding-block: clamp(80px, 9vw, 116px);
   padding-inline: clamp(24px, 5vw, 88px);
-  background-color: #ffffff;
-  background-image: none;
+  background-color: #fdf6fb;
+  background-image:
+    radial-gradient(ellipse 65% 48% at 10% 14%, rgba(217, 70, 161, 0.16) 0%, transparent 62%),
+    radial-gradient(ellipse 50% 42% at 90% 20%, rgba(138, 45, 168, 0.12) 0%, transparent 65%),
+    radial-gradient(ellipse 75% 50% at 50% 100%, rgba(255, 255, 255, 0.9) 0%, transparent 55%),
+    linear-gradient(180deg, #fffafc 0%, #fdf6fb 40%, #faf2f7 100%);
 }
 
 .public-homepage .public-section.public-section--stories {
   position: relative;
   isolation: isolate;
   overflow: hidden;
-  background-color: #ffffff;
-  background-image: none;
+  background-color: #fdf6fb;
+  background-image:
+    radial-gradient(ellipse 65% 48% at 10% 14%, rgba(217, 70, 161, 0.16) 0%, transparent 62%),
+    radial-gradient(ellipse 50% 42% at 90% 20%, rgba(138, 45, 168, 0.12) 0%, transparent 65%),
+    radial-gradient(ellipse 75% 50% at 50% 100%, rgba(255, 255, 255, 0.9) 0%, transparent 55%),
+    linear-gradient(180deg, #fffafc 0%, #fdf6fb 40%, #faf2f7 100%);
 }
 
 .public-pink-section-decor {
-  display: none;
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
 }
 
 .public-pink-section-decor__blob {

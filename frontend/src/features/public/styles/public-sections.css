@@ -78,7 +78,7 @@
 
 .public-section--muted,
 .public-section--team-preview {
-  background: #ffffff;
+  background: linear-gradient(180deg, #ffffff 0%, var(--public-soft) 100%);
 }
 
 .public-section__header {
