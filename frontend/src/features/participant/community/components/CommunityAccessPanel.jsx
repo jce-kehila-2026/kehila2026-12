@@ -1,7 +1,9 @@
 import { useEffect, useRef } from 'react';
 import Diversity3OutlinedIcon from '@mui/icons-material/Diversity3Outlined';
+import { useParticipantLocale } from '../../context/ParticipantLocaleContext';
 
 export default function CommunityAccessPanel({ onGoToSettings }) {
+  const { t } = useParticipantLocale();
   const titleRef = useRef(null);
 
   useEffect(() => {
@@ -19,13 +21,13 @@ export default function CommunityAccessPanel({ onGoToSettings }) {
           <Diversity3OutlinedIcon />
         </span>
         <div>
-          <span>Community access</span>
-          <h2 id="community-access-title" ref={titleRef} tabIndex="-1">Complete your personal details</h2>
-          <p>Please complete your display name and birthday in Settings before using the community.</p>
+          <span>{t('communityAccessEyebrow')}</span>
+          <h2 id="community-access-title" ref={titleRef} tabIndex="-1">{t('completeDetailsTitle')}</h2>
+          <p>{t('completeDetailsBody')}</p>
         </div>
       </div>
       <button className="community-profile-setup__action" type="button" onClick={onGoToSettings}>
-        Go to Settings
+        {t('goToSettings')}
       </button>
     </section>
   );

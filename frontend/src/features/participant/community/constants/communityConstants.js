@@ -1,17 +1,21 @@
+// `labelKey` resolves to a participant-UI translation key (see
+// participantUiTranslations.js); the rendered label is localized at the call site.
 export const FEED_TABS = [
-  { id: 'all', label: 'All Posts' },
-  { id: 'following', label: 'Following' },
-  { id: 'my-posts', label: 'My Posts' },
-  { id: 'anonymous', label: 'Anonymous' },
+  { id: 'all', labelKey: 'tabAllPosts' },
+  { id: 'following', labelKey: 'tabFollowing' },
+  { id: 'my-posts', labelKey: 'tabMyPosts' },
+  { id: 'anonymous', labelKey: 'tabAnonymous' },
 ];
 
+// `value` is the canonical (stable) reason persisted with a report so admin
+// moderation stays language-independent; `labelKey` is only for display.
 export const REPORT_REASON_OPTIONS = [
-  'Offensive content',
-  'Harassment or bullying',
-  'False information',
-  'Spam',
-  'Inappropriate community content',
-  'Other',
+  { value: 'Offensive content', labelKey: 'reasonOffensive' },
+  { value: 'Harassment or bullying', labelKey: 'reasonHarassment' },
+  { value: 'False information', labelKey: 'reasonFalseInfo' },
+  { value: 'Spam', labelKey: 'reasonSpam' },
+  { value: 'Inappropriate community content', labelKey: 'reasonInappropriate' },
+  { value: 'Other', labelKey: 'reasonOther' },
 ];
 
 export const COMMUNITY_POSTS_STORAGE_KEY = 'community.posts';

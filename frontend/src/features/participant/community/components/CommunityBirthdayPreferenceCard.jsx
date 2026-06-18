@@ -1,7 +1,9 @@
 import { useEffect, useRef } from 'react';
 import Diversity3OutlinedIcon from '@mui/icons-material/Diversity3Outlined';
+import { useParticipantLocale } from '../../context/ParticipantLocaleContext';
 
 export default function CommunityBirthdayPreferenceCard({ onSave }) {
+  const { t } = useParticipantLocale();
   const firstActionRef = useRef(null);
 
   useEffect(() => {
@@ -19,17 +21,17 @@ export default function CommunityBirthdayPreferenceCard({ onSave }) {
           <Diversity3OutlinedIcon />
         </span>
         <div>
-          <span>Community preference</span>
-          <h2 id="community-birthday-preference-title">Birthday visibility</h2>
-          <p>Would you like your birthday to be visible to the community?</p>
+          <span>{t('communityPreferenceEyebrow')}</span>
+          <h2 id="community-birthday-preference-title">{t('birthdayVisibilityTitle')}</h2>
+          <p>{t('birthdayVisibilityBody')}</p>
         </div>
       </div>
       <div className="community-profile-setup__actions">
         <button type="button" ref={firstActionRef} onClick={() => onSave(true)}>
-          Show my birthday
+          {t('showMyBirthday')}
         </button>
         <button type="button" onClick={() => onSave(false)}>
-          Keep it private
+          {t('keepItPrivate')}
         </button>
       </div>
     </section>

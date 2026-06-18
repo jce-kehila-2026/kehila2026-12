@@ -5,6 +5,8 @@ import {
   getVisiblePreviewComments,
 } from '../utils/commentUtils';
 import { isCommentOwnedByCurrentUser } from '../utils/communityModerationUtils';
+import { useParticipantLocale } from '../../context/ParticipantLocaleContext';
+import { localizeField } from '../../../../i18n/localizeField';
 
 export default function CommentsPreview({
   comments = [],
@@ -15,24 +17,25 @@ export default function CommentsPreview({
   onToggleExpanded,
   relativeTimeNow,
 }) {
+  const { t, locale } = useParticipantLocale();
   const hasMoreComments = comments.length > COMMENTS_PREVIEW_LIMIT;
   const visibleComments = getVisiblePreviewComments(comments, isExpanded);
 
   if (visibleComments.length === 0) {
     return (
-      <section className="comments-preview comments-preview--empty" aria-label="Comments preview">
-        <p className="comments-preview__empty">Be the first to comment.</p>
+      <section className="comments-preview comments-preview--empty" aria-label={t('commentsPreviewAria')}>
+        <p className="comments-preview__empty">{t('beFirstToComment')}</p>
       </section>
     );
   }
 
   return (
-    <section className="comments-preview" aria-label="Comments preview">
+    <section className="comments-preview" aria-label={t('commentsPreviewAria')}>
       <div className="comments-preview__list">
         {visibleComments.map((comment) => {
-          const commentAuthor = comment.authorDisplayName ?? comment.author ?? 'Community member';
+          const commentAuthor = comment.authorDisplayName ?? comment.author ?? t('communityMember');
           const canDeleteComment = isCommentOwnedByCurrentUser(comment, localUserId, localUserName);
-          const commentTime = formatRelativeCommunityTime(comment.createdAt, relativeTimeNow);
+          const commentTime = formatRelativeCommunityTime(comment.createdAt, relativeTimeNow, t);
 
           return (
             <article className="comments-preview__item" key={comment.id ?? `${comment.author}-${comment.text}`}>
@@ -49,11 +52,11 @@ export default function CommentsPreview({
                       type="button"
                       onClick={() => onDeleteComment?.(comment.id)}
                     >
-                      Delete
+                      {t('delete')}
                     </button>
                   )}
                 </header>
-                <p>{comment.content ?? comment.text}</p>
+                <p>{localizeField(comment.translations?.content ?? (comment.content ?? comment.text), locale)}</p>
               </div>
             </article>
           );
@@ -61,7 +64,9 @@ export default function CommentsPreview({
       </div>
       {hasMoreComments && (
         <button className="comments-preview__view-all" onClick={onToggleExpanded} type="button">
-          {isExpanded ? 'Show less' : `Show ${comments.length - COMMENTS_PREVIEW_LIMIT} more comments`}
+          {isExpanded
+            ? t('showLess')
+            : t('showMoreComments').replace('{n}', String(comments.length - COMMENTS_PREVIEW_LIMIT))}
         </button>
       )}
     </section>

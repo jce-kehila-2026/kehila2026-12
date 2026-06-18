@@ -1,14 +1,20 @@
+import { useParticipantLocale } from '../../context/ParticipantLocaleContext';
+
 export default function DeletePostModal({
-  closeLabel = 'Close delete confirmation',
+  closeLabel,
   deleteModalRef,
-  description = 'Are you sure you want to delete this post?',
-  title = 'Delete post',
+  description,
+  title,
   titleId = 'community-delete-post-title',
   onBackdropMouseDown,
   onCancel,
   onConfirm,
   onKeyDown,
 }) {
+  const { t } = useParticipantLocale();
+  const resolvedTitle = title ?? t('deletePost');
+  const resolvedDescription = description ?? t('deletePostConfirm');
+  const resolvedCloseLabel = closeLabel ?? t('closeDeleteConfirmation');
   return (
     <div
       className="community-report-modal"
@@ -25,11 +31,11 @@ export default function DeletePostModal({
       >
         <header className="community-report-modal__header">
           <div>
-            <h3 id={titleId}>{title}</h3>
-            <p>{description}</p>
+            <h3 id={titleId}>{resolvedTitle}</h3>
+            <p>{resolvedDescription}</p>
           </div>
           <button
-            aria-label={closeLabel}
+            aria-label={resolvedCloseLabel}
             className="community-report-modal__close"
             type="button"
             onClick={onCancel}
@@ -39,10 +45,10 @@ export default function DeletePostModal({
         </header>
         <div className="community-report-modal__actions">
           <button className="community-report-modal__cancel" type="button" onClick={onCancel}>
-            Cancel
+            {t('cancel')}
           </button>
           <button className="community-report-modal__submit" type="button" onClick={onConfirm}>
-            Delete
+            {t('delete')}
           </button>
         </div>
       </section>

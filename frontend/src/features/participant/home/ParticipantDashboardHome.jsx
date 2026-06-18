@@ -19,7 +19,7 @@ import heroWellnessBanner from '../../../assets/hero-wellness-banner.png';
 import communityHighlightFallback from '../../../assets/images/support-groups.jpeg';
 import { auth } from '../../../firebase';
 import { getLocalizedText } from '../../../shared/i18n/getLocalizedText';
-import { getParticipantLocaleLang, getStoredParticipantLocale } from '../i18n/participantLocale';
+import { useParticipantLocale } from '../context/ParticipantLocaleContext';
 import { createCalendarNote } from '../../calendar/calendarService';
 import {
   formatReminderDateTimeLabel,
@@ -98,9 +98,9 @@ function buildCountdownDisplay(remainingMs, displayMode) {
 
     return {
       status: 'active',
-      eyebrow: 'Starts in',
+      eyebrowKey: 'countdownStartsIn',
       value: String(days),
-      unit: days === 1 ? 'day' : 'days',
+      unitKey: days === 1 ? 'unitDay' : 'unitDays',
       progress,
       display: 'days',
     };
@@ -108,9 +108,9 @@ function buildCountdownDisplay(remainingMs, displayMode) {
 
   return {
     status: 'active',
-    eyebrow: 'Starts in',
+    eyebrowKey: 'countdownStartsIn',
     value: formatHms(remainingMs),
-    unit: '',
+    unitKey: '',
     progress,
     display: 'hms',
   };
@@ -124,9 +124,9 @@ function buildEndedCountdown(displayMode) {
   if (displayMode === 'event') {
     return {
       status: 'started',
-      eyebrow: 'Started',
+      eyebrowKey: 'countdownStarted',
       value: '',
-      unit: '',
+      unitKey: '',
       progress: 0,
       remainingMs: 0,
       display: 'status',
@@ -135,9 +135,9 @@ function buildEndedCountdown(displayMode) {
 
   return {
     status: 'completed',
-    eyebrow: 'Completed',
+    eyebrowKey: 'countdownCompleted',
     value: '',
-    unit: '',
+    unitKey: '',
     progress: 0,
     remainingMs: 0,
     display: 'status',
@@ -179,9 +179,12 @@ function useCountdownRing(targetDate, displayMode = 'appointment') {
 }
 
 function CircularCountdownRing({ variant, targetDate, countdown }) {
+  const { t } = useParticipantLocale();
   const uid = useId().replace(/:/g, '');
   const gradientId = `pd-ring-grad-${variant}-${uid}`;
   const displayMode = variant === 'appointment' ? 'appointment' : 'event';
+  const eyebrow = t(countdown.eyebrowKey);
+  const unit = countdown.unitKey ? t(countdown.unitKey) : '';
   const targetMs = targetDate?.getTime?.() ?? NaN;
   const remainingMs =
     countdown.status === 'active' && Number.isFinite(targetMs) ? targetMs - Date.now() : 0;
@@ -214,8 +217,8 @@ function CircularCountdownRing({ variant, targetDate, countdown }) {
       aria-atomic="true"
       title={
         countdown.status === 'active'
-          ? `${countdown.eyebrow} ${countdown.value} ${countdown.unit}`.trim()
-          : countdown.eyebrow
+          ? `${eyebrow} ${countdown.value} ${unit}`.trim()
+          : eyebrow
       }
     >
       <svg
@@ -279,7 +282,7 @@ function CircularCountdownRing({ variant, targetDate, countdown }) {
       <div className="pd-countdown-ring__label">
         {countdown.status === 'active' ? (
           <>
-            <span>{countdown.eyebrow}</span>
+            <span>{eyebrow}</span>
             <strong
               className={
                 countdown.display === 'days'
@@ -289,30 +292,32 @@ function CircularCountdownRing({ variant, targetDate, countdown }) {
             >
               {countdown.value}
             </strong>
-            {countdown.unit ? <small>{countdown.unit}</small> : null}
+            {unit ? <small>{unit}</small> : null}
           </>
         ) : (
-          <strong className="pd-countdown-ring__status">{countdown.eyebrow}</strong>
+          <strong className="pd-countdown-ring__status">{eyebrow}</strong>
         )}
       </div>
     </div>
   );
 }
 
-function formatRelativeTime(timestamp) {
+const DATE_LOCALE_BY_LANG = { he: 'he-IL', ar: 'ar', en: 'en-US' };
+
+function formatRelativeTime(timestamp, t, lang = 'en') {
   if (!timestamp) return '';
   const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
   if (Number.isNaN(date.getTime())) return '';
   const diffSeconds = (Date.now() - date.getTime()) / 1000;
-  if (diffSeconds < 60) return 'Just now';
-  if (diffSeconds < 3600) return `${Math.floor(diffSeconds / 60)}m ago`;
-  if (diffSeconds < 86400) return `${Math.floor(diffSeconds / 3600)}h ago`;
-  if (diffSeconds < 172800) return 'Yesterday';
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  if (diffSeconds < 60) return t('timeJustNow');
+  if (diffSeconds < 3600) return t('timeMinutesAgo').replace('{n}', String(Math.floor(diffSeconds / 60)));
+  if (diffSeconds < 86400) return t('timeHoursAgo').replace('{n}', String(Math.floor(diffSeconds / 3600)));
+  if (diffSeconds < 172800) return t('timeYesterday');
+  return date.toLocaleDateString(DATE_LOCALE_BY_LANG[lang] || 'en-US', { month: 'short', day: 'numeric' });
 }
 
 function LatestMessageCard({ notification, onOpenNotifications }) {
-  const lang = getParticipantLocaleLang(getStoredParticipantLocale());
+  const { t, lang } = useParticipantLocale();
   const notificationTitle = getLocalizedText(notification?.title, lang);
   const notificationBody = getLocalizedText(notification?.body, lang);
   const senderText = getLocalizedText(notification?.sender ?? notification?.senderTitle, lang);
@@ -327,8 +332,8 @@ function LatestMessageCard({ notification, onOpenNotifications }) {
       onClick={onOpenNotifications}
       aria-label={
         hasNotification
-          ? `New admin message: ${notificationTitle || truncatedBody}`
-          : 'No new admin messages'
+          ? t('newAdminMessageAria').replace('{x}', notificationTitle || truncatedBody)
+          : t('noNewAdminMessages')
       }
     >
       <span className="pd-home__admin-message-badge" aria-hidden="true">
@@ -336,7 +341,7 @@ function LatestMessageCard({ notification, onOpenNotifications }) {
       </span>
 
       <span className="pd-home__admin-message-content">
-        <span className="pd-home__admin-message-label">New admin message</span>
+        <span className="pd-home__admin-message-label">{t('newAdminMessage')}</span>
         {hasNotification ? (
           <>
             {notificationTitle ? (
@@ -348,14 +353,14 @@ function LatestMessageCard({ notification, onOpenNotifications }) {
           </>
         ) : (
           <span className="pd-home__admin-message-preview pd-home__admin-message-preview--empty">
-            No new admin messages yet
+            {t('noNewAdminMessagesYet')}
           </span>
         )}
       </span>
 
       <span className="pd-home__admin-message-meta">
         {hasNotification ? (
-          <time className="pd-home__admin-message-time">{formatRelativeTime(notification.createdAt)}</time>
+          <time className="pd-home__admin-message-time">{formatRelativeTime(notification.createdAt, t, lang)}</time>
         ) : null}
         <ChevronRight className="pd-home__admin-message-arrow" size={16} strokeWidth={2} aria-hidden="true" />
       </span>
@@ -364,12 +369,13 @@ function LatestMessageCard({ notification, onOpenNotifications }) {
 }
 
 function HeroBanner() {
+  const { t } = useParticipantLocale();
   return (
-    <section className="pd-home__hero" aria-label="Welcome banner">
+    <section className="pd-home__hero" aria-label={t('welcomeBanner')}>
       <img
         className="pd-home__hero-image"
         src={heroWellnessBanner}
-        alt="Woman overlooking a pink sunset valley with blossoms"
+        alt={t('heroImageAlt')}
       />
       <div className="pd-home__hero-overlay" aria-hidden="true" />
     </section>
@@ -427,6 +433,7 @@ function PremiumCta({ variant = 'pink', children, onClick }) {
 }
 
 function AppointmentCard({ appointment, onView }) {
+  const { t } = useParticipantLocale();
   const countdown = useCountdownRing(appointment.targetDate, 'appointment');
 
   return (
@@ -435,7 +442,7 @@ function AppointmentCard({ appointment, onView }) {
         <div className="pd-feature__body">
           <CardHeading
             icon={CalendarHeart}
-            label="Next Appointment"
+            label={t('nextAppointment')}
             accent="pink"
             iconProps={{ strokeWidth: 1.75, absoluteStrokeWidth: true }}
           />
@@ -449,7 +456,7 @@ function AppointmentCard({ appointment, onView }) {
 
           <div className="pd-feature__footer">
             <PremiumCta variant="soft" onClick={onView}>
-              View Appointment
+              {t('viewAppointment')}
             </PremiumCta>
           </div>
         </div>
@@ -467,13 +474,14 @@ function AppointmentCard({ appointment, onView }) {
 }
 
 function EventCard({ event, onView, locale = 'he' }) {
+  const { t } = useParticipantLocale();
   const countdown = useCountdownRing(event.targetDate, 'event');
 
   return (
     <article className="pd-card pd-card--dashboard-skin pd-card--feature pd-card--event">
       <div className="pd-card__surface pd-feature__layout">
         <div className="pd-feature__body">
-          <CardHeading icon={Sparkles} label="Upcoming Event" accent="pink" />
+          <CardHeading icon={Sparkles} label={t('upcomingEvent')} accent="pink" />
           <h3 className="pd-feature__title">{localizeField(event.translations?.title ?? event.title, locale)}</h3>
           <p className="pd-feature__subtitle">{event.category}</p>
 
@@ -484,7 +492,7 @@ function EventCard({ event, onView, locale = 'he' }) {
 
           <div className="pd-feature__footer">
             <PremiumCta variant="soft" onClick={onView}>
-              View Event
+              {t('viewEvent')}
             </PremiumCta>
           </div>
         </div>
@@ -518,23 +526,24 @@ function FeatureCardLoadingShell({ variant, label }) {
 }
 
 function AppointmentEmptyCard({ onBook }) {
+  const { t } = useParticipantLocale();
   return (
     <article className="pd-card pd-card--dashboard-skin pd-card--feature pd-card--appointment pd-card--empty">
       <div className="pd-card__surface pd-feature__layout pd-feature__layout--empty">
         <div className="pd-feature__body pd-feature-empty__body">
           <CardHeading
             icon={CalendarHeart}
-            label="Next Appointment"
+            label={t('nextAppointment')}
             accent="pink"
             iconProps={{ strokeWidth: 1.75, absoluteStrokeWidth: true }}
           />
-          <h3 className="pd-feature-empty__headline">No upcoming appointments</h3>
+          <h3 className="pd-feature-empty__headline">{t('noUpcomingAppointments')}</h3>
           <p className="pd-feature-empty__text">
-            Take the next step in your wellness journey and book a session with one of our therapists.
+            {t('bookAppointmentText')}
           </p>
           <div className="pd-feature__footer">
             <PremiumCta variant="pink" onClick={onBook}>
-              Book Appointment
+              {t('bookAppointment')}
             </PremiumCta>
           </div>
         </div>
@@ -548,18 +557,19 @@ function AppointmentEmptyCard({ onBook }) {
 }
 
 function EventEmptyCard({ onExplore }) {
+  const { t } = useParticipantLocale();
   return (
     <article className="pd-card pd-card--dashboard-skin pd-card--feature pd-card--event pd-card--empty">
       <div className="pd-card__surface pd-feature__layout pd-feature__layout--empty">
         <div className="pd-feature__body pd-feature-empty__body">
-          <CardHeading icon={Sparkles} label="Upcoming Event" accent="pink" />
-          <h3 className="pd-feature-empty__headline">No upcoming events</h3>
+          <CardHeading icon={Sparkles} label={t('upcomingEvent')} accent="pink" />
+          <h3 className="pd-feature-empty__headline">{t('noUpcomingEvents')}</h3>
           <p className="pd-feature-empty__text">
-            Explore upcoming workshops, support groups, and community activities.
+            {t('exploreEventsText')}
           </p>
           <div className="pd-feature__footer">
             <PremiumCta variant="pink" onClick={onExplore}>
-              Explore Events
+              {t('exploreEvents')}
             </PremiumCta>
           </div>
         </div>
@@ -573,6 +583,7 @@ function EventEmptyCard({ onExplore }) {
 }
 
 function FeatureCardErrorState({ variant, headingIcon: HeadingIcon, headingLabel, headingAccent }) {
+  const { t } = useParticipantLocale();
   const badgeVariant = variant === 'event' ? 'event' : 'appointment';
 
   return (
@@ -588,7 +599,7 @@ function FeatureCardErrorState({ variant, headingIcon: HeadingIcon, headingLabel
             iconProps={variant === 'appointment' ? { strokeWidth: 1.75, absoluteStrokeWidth: true } : undefined}
           />
           <p className="pd-feature-error__message" role="status">
-            We couldn&apos;t load this right now.
+            {t('featureLoadError')}
           </p>
         </div>
 
@@ -603,6 +614,7 @@ function FeatureCardErrorState({ variant, headingIcon: HeadingIcon, headingLabel
 const NOTES_COMPLETION_FEEDBACK_MS = 650;
 
 function NotesCard({ userId }) {
+  const { t } = useParticipantLocale();
   const completionHideTimeoutsRef = useRef(new Map());
   const titleInputId = useId();
   const datePickerId = useId();
@@ -647,7 +659,7 @@ function NotesCard({ userId }) {
     const participantId = auth.currentUser?.uid || userId;
     if (!participantId) {
       console.error('[Dashboard notes] Cannot save — no participant id');
-      setSyncHint('Unable to save note. Please sign in again.');
+      setSyncHint(t('noteSaveSignIn'));
       return;
     }
 
@@ -657,7 +669,7 @@ function NotesCard({ userId }) {
     const validationError = getSyncValidationError(syncEnabled, date, time);
 
     if (validationError) {
-      setSyncHint(validationError);
+      setSyncHint(t('syncValidationMessage'));
       return;
     }
 
@@ -688,12 +700,12 @@ function NotesCard({ userId }) {
       setDraftTime('');
     } catch (error) {
       console.error('[Dashboard notes] Failed to create note:', error?.code, error?.message, error);
-      setSyncHint('Unable to save note right now.');
+      setSyncHint(t('noteSaveError'));
     } finally {
       isSavingRef.current = false;
       setIsSaving(false);
     }
-  }, [draftDate, draftTime, syncEnabled, userId]);
+  }, [draftDate, draftTime, syncEnabled, userId, t]);
 
   const handleAddNoteClick = (event) => {
     event.preventDefault();
@@ -768,11 +780,11 @@ function NotesCard({ userId }) {
   return (
     <article className="pd-card pd-card--dashboard-skin pd-card--notes">
       <div className="pd-card__surface">
-        <CardHeading icon={NotebookPen} label="My Notes &amp; Reminders" accent="pink" />
+        <CardHeading icon={NotebookPen} label={t('notesHeading')} accent="pink" />
 
         <form className="pd-notes__composer" noValidate onSubmit={handleNoteFormSubmit}>
           <label className="visually-hidden" htmlFor={titleInputId}>
-            Note title
+            {t('noteTitleLabel')}
           </label>
           <div className="pd-notes__input-row">
             <input
@@ -781,7 +793,7 @@ function NotesCard({ userId }) {
               name="noteTitle"
               type="text"
               value={draftTitle}
-              placeholder="Write a note..."
+              placeholder={t('notePlaceholder')}
               autoComplete="off"
               onChange={(event) => {
                 draftTitleRef.current = event.target.value;
@@ -793,17 +805,17 @@ function NotesCard({ userId }) {
             <button
               type="button"
               className="pd-notes__add-btn"
-              aria-label="Add note"
+              aria-label={t('addNote')}
               disabled={isSaving}
               onClick={handleAddNoteClick}
             >
               <Plus size={15} strokeWidth={2.5} aria-hidden="true" />
-              <span>Add</span>
+              <span>{t('add')}</span>
             </button>
             <button
               type="button"
               className={`pd-notes__schedule-btn${draftDate || draftTime ? ' has-schedule' : ''}`}
-              aria-label="Set reminder date and time"
+              aria-label={t('setReminderDateTime')}
               aria-haspopup="dialog"
               aria-expanded={scheduleOpen}
               onClick={() => setScheduleOpen(true)}
@@ -846,7 +858,7 @@ function NotesCard({ userId }) {
               <button
                 type="button"
                 className={`pd-notes__check${isCompleted ? ' is-checked' : ''}`}
-                aria-label="Mark note complete"
+                aria-label={t('markNoteComplete')}
                 aria-pressed={isCompleted}
                 onClick={() => completeNote(note.id)}
               >
@@ -857,7 +869,7 @@ function NotesCard({ userId }) {
                 {scheduleLabel ? (
                   <small>
                     {scheduleLabel}
-                    {note.syncToCalendar ? ' Â· Synced to calendar' : ''}
+                    {note.syncToCalendar ? ` · ${t('syncedToCalendar')}` : ''}
                   </small>
                 ) : null}
               </div>
@@ -869,14 +881,14 @@ function NotesCard({ userId }) {
       <div className="pd-notes__sync">
         <div>
           <CalendarSync size={16} />
-          <span>Sync to Calendar</span>
+          <span>{t('syncToCalendar')}</span>
         </div>
         <button
           type="button"
           className={`pd-toggle${syncEnabled ? ' is-on' : ''}`}
           role="switch"
           aria-checked={syncEnabled}
-          aria-label="Sync new reminders to calendar"
+          aria-label={t('syncNewReminders')}
           onClick={handleSyncToggle}
         >
           <span />
@@ -902,26 +914,28 @@ function getCommunityPostImageUrl(post) {
 }
 
 function CommunityCardLoading() {
+  const { t } = useParticipantLocale();
   return (
     <article className="pd-card pd-card--dashboard-skin pd-card--community pd-card--loading" aria-busy="true">
       <div className="pd-card__surface">
-        <CardHeading icon={Users} label="Community Highlight" accent="pink" />
-        <p className="pd-community__loading">Loading latest community postâ€¦</p>
+        <CardHeading icon={Users} label={t('communityHighlight')} accent="pink" />
+        <p className="pd-community__loading">{t('loadingCommunityPost')}</p>
       </div>
     </article>
   );
 }
 
-function CommunityEmptyCard({ onVisitCommunity, title, text, ctaLabel = 'Visit Community' }) {
+function CommunityEmptyCard({ onVisitCommunity, title, text, ctaLabel }) {
+  const { t } = useParticipantLocale();
   return (
     <article className="pd-card pd-card--dashboard-skin pd-card--community pd-card--community-empty">
       <div className="pd-card__surface">
-        <CardHeading icon={Users} label="Community Highlight" accent="pink" />
+        <CardHeading icon={Users} label={t('communityHighlight')} accent="pink" />
         <div className="pd-community-empty">
           <h3 className="pd-community-empty__title">{title}</h3>
           <p className="pd-community-empty__text">{text}</p>
           <button type="button" className="pd-btn pd-btn--soft pd-community__cta" onClick={onVisitCommunity}>
-            <span>{ctaLabel}</span>
+            <span>{ctaLabel ?? t('visitCommunity')}</span>
             <ArrowRight size={16} strokeWidth={2.5} className="pd-btn__arrow" aria-hidden="true" />
           </button>
         </div>
@@ -931,6 +945,7 @@ function CommunityEmptyCard({ onVisitCommunity, title, text, ctaLabel = 'Visit C
 }
 
 function CommunityCard({ post, relativeTime, onViewPost }) {
+  const { t, locale } = useParticipantLocale();
   const postImageUrl = getCommunityPostImageUrl(post);
   const thumbImageUrl = postImageUrl || communityHighlightFallback;
   const isFallbackThumb = !postImageUrl;
@@ -940,7 +955,7 @@ function CommunityCard({ post, relativeTime, onViewPost }) {
   return (
     <article className="pd-card pd-card--dashboard-skin pd-card--community">
       <div className="pd-card__surface">
-        <CardHeading icon={Users} label="Community Highlight" accent="pink" />
+        <CardHeading icon={Users} label={t('communityHighlight')} accent="pink" />
 
         <div className="pd-community__content">
           <div className="pd-community__copy">
@@ -960,7 +975,7 @@ function CommunityCard({ post, relativeTime, onViewPost }) {
               </div>
             </div>
 
-            <p className="pd-community__excerpt">{post.content || post.body}</p>
+            <p className="pd-community__excerpt">{localizeField(post.translations?.content ?? (post.content || post.body), locale)}</p>
           </div>
 
           <div
@@ -980,19 +995,19 @@ function CommunityCard({ post, relativeTime, onViewPost }) {
             <span className="pd-community__stat">
               <Heart size={16} strokeWidth={2} aria-hidden="true" />
               <span className="pd-community__stat-text">
-                <strong>{likesCount}</strong> Likes
+                <strong>{likesCount}</strong> {t('likesLabel')}
               </span>
             </span>
             <span className="pd-community__stat">
               <MessageCircle size={16} strokeWidth={2} aria-hidden="true" />
               <span className="pd-community__stat-text">
-                <strong>{commentsCount}</strong> Comments
+                <strong>{commentsCount}</strong> {t('commentsLabel')}
               </span>
             </span>
           </div>
 
           <button type="button" className="pd-btn pd-btn--soft pd-community__cta" onClick={() => onViewPost(post.id)}>
-            <span>View Post</span>
+            <span>{t('viewPost')}</span>
             <ArrowRight size={16} strokeWidth={2.5} className="pd-btn__arrow" aria-hidden="true" />
           </button>
         </div>
@@ -1002,6 +1017,8 @@ function CommunityCard({ post, relativeTime, onViewPost }) {
 }
 
 function CommunityCardSection({ post, isLoading, hasError, relativeTime, onViewPost, onVisitCommunity }) {
+  const { t } = useParticipantLocale();
+
   if (isLoading) {
     return <CommunityCardLoading />;
   }
@@ -1010,9 +1027,9 @@ function CommunityCardSection({ post, isLoading, hasError, relativeTime, onViewP
     return (
       <CommunityEmptyCard
         onVisitCommunity={onVisitCommunity}
-        title="Community highlight unavailable"
-        text="We couldn't load the latest post right now."
-        ctaLabel="Visit Community"
+        title={t('communityUnavailableTitle')}
+        text={t('communityUnavailableText')}
+        ctaLabel={t('visitCommunity')}
       />
     );
   }
@@ -1021,8 +1038,8 @@ function CommunityCardSection({ post, isLoading, hasError, relativeTime, onViewP
     return (
       <CommunityEmptyCard
         onVisitCommunity={onVisitCommunity}
-        title="No community posts yet"
-        text="Be the first to share with the community, or visit to see what others are posting."
+        title={t('noCommunityPostsTitle')}
+        text={t('noCommunityPostsText')}
       />
     );
   }
@@ -1042,6 +1059,7 @@ export default function ParticipantDashboardHome({
   onOpenNotifications,
   locale = 'he',
 }) {
+  const { t } = useParticipantLocale();
   const { appointment, event, isLoading, appointmentError, eventError } = useParticipantDashboardHomeData(userId);
   const isBirthdayToday = useBirthdayToday(birthDate);
   const {
@@ -1086,18 +1104,18 @@ export default function ParticipantDashboardHome({
       <section className="pd-home">
         {isBirthdayToday ? <BirthdayGreeting firstName={displayName} /> : null}
 
-        <section className="pd-home__row" aria-label="Upcoming appointment and event">
+        <section className="pd-home__row" aria-label={t('rowApptEventAria')}>
         {appointment ? (
           <AppointmentCard appointment={appointment} onView={goToEventsView} />
         ) : appointmentError ? (
           <FeatureCardErrorState
             variant="appointment"
             headingIcon={CalendarHeart}
-            headingLabel="Next Appointment"
+            headingLabel={t('nextAppointment')}
             headingAccent="pink"
           />
         ) : isLoading ? (
-          <FeatureCardLoadingShell variant="appointment" label="Loading appointment" />
+          <FeatureCardLoadingShell variant="appointment" label={t('loadingAppointment')} />
         ) : (
           <AppointmentEmptyCard onBook={goToAppointments} />
         )}
@@ -1107,17 +1125,17 @@ export default function ParticipantDashboardHome({
           <FeatureCardErrorState
             variant="event"
             headingIcon={Sparkles}
-            headingLabel="Upcoming Event"
+            headingLabel={t('upcomingEvent')}
             headingAccent="pink"
           />
         ) : isLoading ? (
-          <FeatureCardLoadingShell variant="event" label="Loading event" />
+          <FeatureCardLoadingShell variant="event" label={t('loadingEvent')} />
         ) : (
           <EventEmptyCard onExplore={goToExploreEvents} />
         )}
       </section>
 
-        <section className="pd-home__row" aria-label="Notes and community">
+        <section className="pd-home__row" aria-label={t('rowNotesCommunityAria')}>
           <NotesCard userId={userId} />
           <CommunityCardSection
             post={latestCommunityPost}

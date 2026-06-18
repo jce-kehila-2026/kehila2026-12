@@ -21,6 +21,22 @@ import {
 import { auth, db } from '../../../../firebase';
 import { formatRelativeCommunityTime } from '../utils/communityDateUtils';
 import { isCommunityContentVisible } from '../utils/communityModerationUtils';
+import { translateFields, isTranslationConfigured } from '../../../admin/services/translationService';
+
+// Best-effort Azure translation of participant-authored text. Returns a
+// `{ content: { he, en, ar } }` map to co-locate on the doc, or null when
+// translation is unconfigured/empty/failed — saves must never block on it.
+async function buildContentTranslations(content) {
+  if (!isTranslationConfigured() || !content || !String(content).trim()) {
+    return null;
+  }
+  try {
+    const out = await translateFields({ content }, ['content']);
+    return out && out.content ? out : null;
+  } catch {
+    return null;
+  }
+}
 
 const POSTS_COL = 'community_posts';
 const USERS_COL = 'users';
@@ -113,6 +129,7 @@ export const mapFirestoreCommunityPost = (docSnap) => {
     imageUrl,
     isAnonymous: isAnon,
     content: data.content ?? '',
+    translations: data.translations ?? null,
     title: data.title ?? null,
     createdAt: createdAt.toISOString(),
     updatedAt: updatedAt.toISOString(),
@@ -153,6 +170,7 @@ const firestoreCommentToLocal = (docSnap, postId) => {
     authorDisplayName: data.authorDisplayName ?? 'Unknown',
     content: data.content ?? '',
     text: data.content ?? '',
+    translations: data.translations ?? null,
     createdAt: createdAt.toISOString(),
     updatedAt: tsToDate(data.updatedAt).toISOString(),
     status: data.status ?? 'active',
@@ -232,12 +250,15 @@ export async function createCommunityPost({
     ? authorId
     : (auth.currentUser?.uid ?? null);
 
+  const translations = await buildContentTranslations(content);
+
   const postData = {
     authorId: resolvedAuthorId,
     authorDisplayName: displayName,
     authorAvatarUrl: '',
     isAnonymous: Boolean(isAnonymous),
     content: content ?? '',
+    ...(translations ? { translations } : {}),
     title: null,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
@@ -265,6 +286,7 @@ export async function createCommunityPost({
     authorAvatarUrl: '',
     isAnonymous: Boolean(isAnonymous),
     content: content ?? '',
+    translations: translations ?? null,
     title: null,
     createdAt: now.toISOString(),
     updatedAt: now.toISOString(),
@@ -293,8 +315,10 @@ export async function createCommunityPost({
 }
 
 export async function updateCommunityPost(postId, { content } = {}) {
+  const translations = await buildContentTranslations(content);
   await updateDoc(doc(db, POSTS_COL, postId), {
     content,
+    ...(translations ? { translations } : {}),
     updatedAt: serverTimestamp(),
   });
   return { success: true, postId };
@@ -380,6 +404,7 @@ export async function createCommunityComment(postId, {
   postExcerpt = '',
 } = {}) {
   const displayName = authorDisplayName || author || 'Current User';
+  const translations = await buildContentTranslations(content);
   const batch = writeBatch(db);
 
   const commentsRef = collection(db, POSTS_COL, postId, 'comments');
@@ -389,6 +414,7 @@ export async function createCommunityComment(postId, {
     authorId: authorId ?? null,
     authorDisplayName: displayName,
     content: content ?? '',
+    ...(translations ? { translations } : {}),
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
     status: 'active',
@@ -424,6 +450,7 @@ export async function createCommunityComment(postId, {
     authorDisplayName: displayName,
     content: content ?? '',
     text: content ?? '',
+    translations: translations ?? null,
     createdAt: now.toISOString(),
     updatedAt: now.toISOString(),
     status: 'active',

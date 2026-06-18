@@ -8,6 +8,7 @@ import {
   isCommunityContentVisible,
   isCommentOwnedByCurrentUser,
 } from '../utils/communityModerationUtils';
+import { createParticipantT } from '../../i18n/participantUiTranslations';
 
 export default function useCommunityComments({
   communityDisplayName,
@@ -15,6 +16,7 @@ export default function useCommunityComments({
   posts,
   registerCommunityActivity,
   updatePostById,
+  t = createParticipantT('en'),
 }) {
   const commentFeedbackTimersRef = useRef({});
   const [commentInputs, setCommentInputs] = useState({});
@@ -76,7 +78,7 @@ export default function useCommunityComments({
     if (!content) {
       setCommentFeedback(postId, {
         type: 'error',
-        message: 'Please write a comment before posting.',
+        message: t('commentRequired'),
       });
       return;
     }
@@ -97,7 +99,7 @@ export default function useCommunityComments({
     } catch {
       setCommentFeedback(postId, {
         type: 'error',
-        message: 'Unable to add your comment right now.',
+        message: t('commentAddError'),
       });
       return;
     }
@@ -123,7 +125,7 @@ export default function useCommunityComments({
     }));
     setCommentFeedback(postId, {
       type: 'success',
-      message: 'Comment added.',
+      message: t('commentAdded'),
     }, { autoHide: 2500 });
     registerCommunityActivity();
   };

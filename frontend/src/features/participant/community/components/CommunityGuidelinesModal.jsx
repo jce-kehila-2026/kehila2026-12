@@ -1,17 +1,26 @@
 import { useEffect, useRef, useState } from 'react';
 import Diversity3OutlinedIcon from '@mui/icons-material/Diversity3Outlined';
-import { modalGuidelines } from '../communityMockData';
 import { getCommunitySettingsGuidelines } from '../services/communityService';
+import { useParticipantLocale } from '../../context/ParticipantLocaleContext';
+import { getParticipantCommunityContent } from '../../i18n/participantUiTranslations';
 
 export default function CommunityGuidelinesModal({ mode = 'acceptance', onClose, onContinue }) {
+  const { t, locale } = useParticipantLocale();
   const [agreedToGuidelines, setAgreedToGuidelines] = useState(false);
-  const [guidelines, setGuidelines] = useState(modalGuidelines);
+  // Localized fallback; replaced by admin-authored guidelines when configured.
+  const [guidelines, setGuidelines] = useState(
+    () => getParticipantCommunityContent(locale).fullGuidelines,
+  );
   const titleRef = useRef(null);
   const isReadOnly = mode === 'read';
 
   useEffect(() => {
     titleRef.current?.focus();
   }, []);
+
+  useEffect(() => {
+    setGuidelines(getParticipantCommunityContent(locale).fullGuidelines);
+  }, [locale]);
 
   useEffect(() => {
     let cancelled = false;
@@ -31,7 +40,7 @@ export default function CommunityGuidelinesModal({ mode = 'acceptance', onClose,
         </span>
         {isReadOnly && (
           <button
-            aria-label="Close community guidelines"
+            aria-label={t('closeGuidelines')}
             className="community-guidelines-modal__close"
             type="button"
             onClick={onClose}
@@ -41,12 +50,10 @@ export default function CommunityGuidelinesModal({ mode = 'acceptance', onClose,
         )}
         <div className="community-guidelines-modal__copy">
           <h2 id="community-guidelines-modal-title" ref={titleRef} tabIndex="-1">
-            {isReadOnly ? 'Community Guidelines' : 'Welcome to the Community'}
+            {isReadOnly ? t('communityGuidelines') : t('welcomeToCommunity')}
           </h2>
           <p>
-            {isReadOnly
-              ? 'The full guidelines for keeping this space supportive and respectful.'
-              : 'This is a safe space for sharing, support, and respectful interaction.'}
+            {isReadOnly ? t('guidelinesReadDesc') : t('guidelinesWelcomeDesc')}
           </p>
         </div>
         <ul className="community-guidelines-modal__list">
@@ -62,16 +69,16 @@ export default function CommunityGuidelinesModal({ mode = 'acceptance', onClose,
                 checked={agreedToGuidelines}
                 onChange={(event) => setAgreedToGuidelines(event.target.checked)}
               />
-              <span>I agree to the community guidelines</span>
+              <span>{t('agreeToGuidelines')}</span>
             </label>
             <button type="button" disabled={!agreedToGuidelines} onClick={onContinue}>
-              Continue
+              {t('continue')}
             </button>
           </>
         )}
         {isReadOnly && (
           <button type="button" onClick={onClose}>
-            Close
+            {t('close')}
           </button>
         )}
       </div>

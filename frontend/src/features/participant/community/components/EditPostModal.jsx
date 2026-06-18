@@ -1,3 +1,5 @@
+import { useParticipantLocale } from '../../context/ParticipantLocaleContext';
+
 export default function EditPostModal({
   editModalRef,
   error = '',
@@ -10,6 +12,7 @@ export default function EditPostModal({
   onSubmit,
   postText = '',
 }) {
+  const { t } = useParticipantLocale();
   return (
     <div
       className="community-report-modal"
@@ -27,11 +30,11 @@ export default function EditPostModal({
       >
         <header className="community-report-modal__header">
           <div>
-            <h3 id="community-edit-post-title">Edit post</h3>
-            <p>Update the text of your post.</p>
+            <h3 id="community-edit-post-title">{t('editPostTitle')}</h3>
+            <p>{t('editPostDesc')}</p>
           </div>
           <button
-            aria-label="Close edit form"
+            aria-label={t('closeEditForm')}
             className="community-report-modal__close"
             type="button"
             onClick={onCancel}
@@ -40,7 +43,7 @@ export default function EditPostModal({
           </button>
         </header>
         <textarea
-          aria-label="Edit post text"
+          aria-label={t('editPostTextAria')}
           aria-invalid={Boolean(error)}
           className="birthday-card__textarea"
           onChange={(event) => onChange(event.target.value)}
@@ -61,10 +64,10 @@ export default function EditPostModal({
         )}
         <div className="community-report-modal__actions">
           <button className="community-report-modal__cancel" type="button" onClick={onCancel}>
-            Cancel
+            {t('cancel')}
           </button>
           <button className="community-report-modal__submit" disabled={isSaveDisabled} type="submit">
-            Save
+            {t('save')}
           </button>
         </div>
       </form>

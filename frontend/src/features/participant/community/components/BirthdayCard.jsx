@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import CakeOutlinedIcon from '@mui/icons-material/CakeOutlined';
-import { birthdayMessages } from '../communityMockData';
+import { useParticipantLocale } from '../../context/ParticipantLocaleContext';
+import { getParticipantCommunityContent } from '../../i18n/participantUiTranslations';
 
 const getBirthdayMonthDay = (birthday) => {
   if (typeof birthday !== 'string') return null;
@@ -40,6 +41,8 @@ const getTodaysBirthdayUsers = (users = [], today = new Date()) => users.filter(
 });
 
 export default function BirthdayCard({ birthdayUsers = [] }) {
+  const { t, locale } = useParticipantLocale();
+  const birthdayMessages = getParticipantCommunityContent(locale).birthdayMessages;
   const todaysBirthdayUsers = getTodaysBirthdayUsers(birthdayUsers);
   const birthdayUser = todaysBirthdayUsers[0];
   const [selectedMessage, setSelectedMessage] = useState('');
@@ -76,7 +79,7 @@ export default function BirthdayCard({ birthdayUsers = [] }) {
     const message = customMessage.trim();
 
     if (!message) {
-      setBirthdayWishError('Please choose or write a birthday message.');
+      setBirthdayWishError(t('birthdayWishRequired'));
       setSentBirthdayWish(false);
       return;
     }
@@ -89,13 +92,13 @@ export default function BirthdayCard({ birthdayUsers = [] }) {
 
   if (!birthdayUser) {
     return (
-      <section className="birthday-empty-state" aria-label="Birthday celebration">
+      <section className="birthday-empty-state" aria-label={t('birthdayCelebrationAria')}>
         <span className="birthday-empty-state__icon" aria-hidden="true">
           <CakeOutlinedIcon fontSize="small" />
         </span>
         <div>
-          <strong>No birthdays today</strong>
-          <p>Birthday celebrations will appear here when someone is celebrating.</p>
+          <strong>{t('noBirthdaysToday')}</strong>
+          <p>{t('noBirthdaysBody')}</p>
         </div>
       </section>
     );
@@ -108,13 +111,13 @@ export default function BirthdayCard({ birthdayUsers = [] }) {
           <CakeOutlinedIcon />
         </span>
         <div className="birthday-card__heading">
-          <span>Today’s Birthday</span>
+          <span>{t('todaysBirthday')}</span>
           <h2 id="birthday-card-title">{birthdayUser.name}</h2>
-          <p>Send a kind wish and make her day brighter.</p>
+          <p>{t('sendKindWish')}</p>
         </div>
       </div>
 
-      <div className="birthday-card__messages" aria-label="Ready-made birthday wishes">
+      <div className="birthday-card__messages" aria-label={t('readyWishesAria')}>
         {birthdayMessages.map((message) => (
           <button
             className={selectedMessage === message ? 'is-selected' : ''}
@@ -127,20 +130,20 @@ export default function BirthdayCard({ birthdayUsers = [] }) {
         ))}
       </div>
       <button className="birthday-card__custom" type="button" onClick={handleCustomMessageClick}>
-        Write your own message
+        {t('writeOwnMessage')}
       </button>
       {(showCustomMessage || birthdayWishError) && (
         <div className="birthday-card__custom-area">
           <textarea
             aria-describedby={birthdayWishError ? 'birthday-card-error' : undefined}
-            aria-label="Birthday wish message"
+            aria-label={t('birthdayWishAria')}
             aria-invalid={Boolean(birthdayWishError)}
             className="birthday-card__textarea"
             ref={customMessageRef}
             value={customMessage}
             onChange={handleCustomMessageChange}
             rows="3"
-            placeholder="Write a warm birthday message..."
+            placeholder={t('birthdayWishPlaceholder')}
           />
           {birthdayWishError && (
             <p className="birthday-card__error" id="birthday-card-error" role="alert">
@@ -154,11 +157,11 @@ export default function BirthdayCard({ birthdayUsers = [] }) {
         type="button"
         onClick={handleSendBirthdayWish}
       >
-        Send Birthday Wishes
+        {t('sendBirthdayWishes')}
       </button>
       {sentBirthdayWish && (
         <p className="birthday-card__success" aria-live="polite">
-          Birthday wish submitted successfully.
+          {t('birthdayWishSent')}
         </p>
       )}
     </section>

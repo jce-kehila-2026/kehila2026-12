@@ -10,6 +10,7 @@ import {
   getExistingDisplayName,
   hasRequiredCommunityPersonalDetails,
 } from '../utils/communityProfileUtils';
+import { createParticipantT } from '../../i18n/participantUiTranslations';
 
 const isRealUserId = (uid) => Boolean(uid) && uid !== 'current-user';
 
@@ -31,7 +32,7 @@ const defaultPreferences = {
   showBirthday: false,
 };
 
-export default function useCommunityProfile({ personalDetails = {} } = {}) {
+export default function useCommunityProfile({ personalDetails = {}, t = createParticipantT('en') } = {}) {
   const [communityUserProfile, setCommunityUserProfile] = useState(defaultProfile);
   const [communityPreferences, setCommunityPreferences] = useState(defaultPreferences);
   const [profileSuccessMessage, setProfileSuccessMessage] = useState('');
@@ -154,7 +155,7 @@ export default function useCommunityProfile({ personalDetails = {} } = {}) {
 
     setCommunityPreferences({ birthdayVisibilityCompleted: true, showBirthday });
     setCommunityUserProfile(nextProfile);
-    setProfileSuccessMessage('Community preference saved.');
+    setProfileSuccessMessage(t('communityPreferenceSaved'));
 
     if (isRealUserId(uid)) {
       updateCommunityProfile(uid, {
@@ -174,7 +175,7 @@ export default function useCommunityProfile({ personalDetails = {} } = {}) {
       if (!currentProfile.profileCompleted) return currentProfile;
       return { ...currentProfile, showBirthday };
     });
-    setProfileSuccessMessage('Birthday privacy updated.');
+    setProfileSuccessMessage(t('birthdayPrivacyUpdated'));
 
     if (isRealUserId(uid)) {
       updateCommunityProfile(uid, { showBirthdayInCommunity: showBirthday }).catch(() => {});

@@ -28,6 +28,7 @@ import {
   stepReminderMinute,
   toDateInputValue,
 } from './participantNotesModel';
+import { useParticipantLocale } from '../context/ParticipantLocaleContext';
 import './ParticipantDashboardHome.css';
 
 function usePickerDismiss(open, setOpen, rootRef, enabled = true) {
@@ -58,6 +59,7 @@ function NotesDatePicker({
   pickerRef,
   embeddedInModal = false,
 }) {
+  const { t } = useParticipantLocale();
   const internalRef = useRef(null);
   const rootRef = pickerRef ?? internalRef;
   const [internalOpen, setInternalOpen] = useState(false);
@@ -130,7 +132,7 @@ function NotesDatePicker({
         onClick={() => setOpen((current) => !current)}
       >
         <span className={`pd-notes-picker__value${displayLabel ? '' : ' is-placeholder'}`}>
-          {displayLabel || 'Select date'}
+          {displayLabel || t('selectDate')}
         </span>
         <CalendarDays size={15} strokeWidth={2} className="pd-notes-picker__icon" aria-hidden="true" />
       </button>
@@ -144,11 +146,11 @@ function NotesDatePicker({
           onClick={(event) => event.stopPropagation()}
         >
           <div className="pd-notes-calendar__nav">
-            <button type="button" className="pd-notes-calendar__nav-btn" onClick={goPrevMonth} aria-label="Previous month">
+            <button type="button" className="pd-notes-calendar__nav-btn" onClick={goPrevMonth} aria-label={t('prevMonth')}>
               <ChevronLeft size={16} strokeWidth={2.2} aria-hidden="true" />
             </button>
             <span className="pd-notes-calendar__month">{monthLabel}</span>
-            <button type="button" className="pd-notes-calendar__nav-btn" onClick={goNextMonth} aria-label="Next month">
+            <button type="button" className="pd-notes-calendar__nav-btn" onClick={goNextMonth} aria-label={t('nextMonth')}>
               <ChevronRight size={16} strokeWidth={2.2} aria-hidden="true" />
             </button>
           </div>
@@ -246,6 +248,7 @@ function NotesTimePicker({
   pickerRef,
   embeddedInModal = false,
 }) {
+  const { t } = useParticipantLocale();
   const hourInputId = useId();
   const minuteInputId = useId();
   const internalRef = useRef(null);
@@ -346,7 +349,7 @@ function NotesTimePicker({
         onClick={() => setOpen((current) => !current)}
       >
         <span className={`pd-notes-picker__value${displayLabel ? '' : ' is-placeholder'}`}>
-          {displayLabel || 'Select time'}
+          {displayLabel || t('selectTime')}
         </span>
         <Clock3 size={15} strokeWidth={2} className="pd-notes-picker__icon" aria-hidden="true" />
       </button>
@@ -361,29 +364,29 @@ function NotesTimePicker({
         >
           <div className="pd-notes-time__steppers">
             <div className="pd-notes-time__stepper">
-              <span className="pd-notes-time__column-label">Hour</span>
-              <button type="button" className="pd-notes-time__step-btn" aria-label="Increase hour" onClick={() => adjustHour(1)}>
+              <span className="pd-notes-time__column-label">{t('hour')}</span>
+              <button type="button" className="pd-notes-time__step-btn" aria-label={t('increaseHour')} onClick={() => adjustHour(1)}>
                 <Plus size={14} strokeWidth={2.4} aria-hidden="true" />
               </button>
-              <TimeStepperInput id={hourInputId} label="Hour" value={draftHour} maxLength={2} onCommit={handleHourCommit} />
-              <button type="button" className="pd-notes-time__step-btn" aria-label="Decrease hour" onClick={() => adjustHour(-1)}>
+              <TimeStepperInput id={hourInputId} label={t('hour')} value={draftHour} maxLength={2} onCommit={handleHourCommit} />
+              <button type="button" className="pd-notes-time__step-btn" aria-label={t('decreaseHour')} onClick={() => adjustHour(-1)}>
                 <Minus size={14} strokeWidth={2.4} aria-hidden="true" />
               </button>
             </div>
 
             <div className="pd-notes-time__stepper">
-              <span className="pd-notes-time__column-label">Minute</span>
-              <button type="button" className="pd-notes-time__step-btn" aria-label="Increase minute" onClick={() => adjustMinute(1)}>
+              <span className="pd-notes-time__column-label">{t('minute')}</span>
+              <button type="button" className="pd-notes-time__step-btn" aria-label={t('increaseMinute')} onClick={() => adjustMinute(1)}>
                 <Plus size={14} strokeWidth={2.4} aria-hidden="true" />
               </button>
-              <TimeStepperInput id={minuteInputId} label="Minute" value={draftMinute} maxLength={2} onCommit={handleMinuteCommit} />
-              <button type="button" className="pd-notes-time__step-btn" aria-label="Decrease minute" onClick={() => adjustMinute(-1)}>
+              <TimeStepperInput id={minuteInputId} label={t('minute')} value={draftMinute} maxLength={2} onCommit={handleMinuteCommit} />
+              <button type="button" className="pd-notes-time__step-btn" aria-label={t('decreaseMinute')} onClick={() => adjustMinute(-1)}>
                 <Minus size={14} strokeWidth={2.4} aria-hidden="true" />
               </button>
             </div>
 
             <div className="pd-notes-time__period">
-              <span className="pd-notes-time__column-label">Period</span>
+              <span className="pd-notes-time__column-label">{t('period')}</span>
               <div className="pd-notes-time__period-spacer" aria-hidden="true" />
               <div className="pd-notes-time__period-btns">
                 {REMINDER_PERIOD_OPTIONS.map((period) => (
@@ -417,6 +420,7 @@ export default function NotesScheduleModal({
   datePickerId,
   timePickerId,
 }) {
+  const { t } = useParticipantLocale();
   const titleId = useId();
   const panelRef = useRef(null);
   const datePickerRef = useRef(null);
@@ -507,19 +511,19 @@ export default function NotesScheduleModal({
         onClick={(event) => event.stopPropagation()}
       >
         <div className="pd-notes-schedule-modal__header">
-          <h4 id={titleId}>Reminder schedule</h4>
-          <button type="button" className="pd-notes-schedule-modal__close" aria-label="Close" onClick={closeModal}>
+          <h4 id={titleId}>{t('reminderSchedule')}</h4>
+          <button type="button" className="pd-notes-schedule-modal__close" aria-label={t('close')} onClick={closeModal}>
             <X size={16} strokeWidth={2.2} aria-hidden="true" />
           </button>
         </div>
 
-        <p className="pd-notes-schedule-modal__hint">Set an optional date and time for calendar sync.</p>
+        <p className="pd-notes-schedule-modal__hint">{t('reminderScheduleHint')}</p>
 
         <div className="pd-notes__datetime pd-notes__datetime--modal">
           <NotesDatePicker
             id={datePickerId}
             value={draftDate}
-            ariaLabel="Reminder date"
+            ariaLabel={t('reminderDate')}
             onChange={onDateChange}
             open={isDatePickerOpen}
             onOpenChange={(nextOpen) => {
@@ -532,7 +536,7 @@ export default function NotesScheduleModal({
           <NotesTimePicker
             id={timePickerId}
             value={draftTime}
-            ariaLabel="Reminder time"
+            ariaLabel={t('reminderTime')}
             onChange={onTimeChange}
             open={isTimePickerOpen}
             onOpenChange={(nextOpen) => {
@@ -551,7 +555,7 @@ export default function NotesScheduleModal({
         ) : null}
 
         <button type="button" className="pd-btn pd-btn--soft pd-notes-schedule-modal__done" onClick={closeModal}>
-          Done
+          {t('done')}
         </button>
       </div>
     </div>

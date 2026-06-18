@@ -4,6 +4,7 @@ import DarkModeToggle from '../../profile/components/DarkModeToggle';
 import { PublicSectionHeadingDivider } from '../../public/components/PublicSectionHeading';
 import DailyInspiration from '../home/DailyInspiration';
 import ParticipantLanguageSwitcher from './ParticipantLanguageSwitcher';
+import { useParticipantLocale } from '../context/ParticipantLocaleContext';
 import '../../public/styles/public-section-heading.css';
 import './ParticipantHeader.css';
 
@@ -18,7 +19,10 @@ export default function ParticipantHeader({
   className = '',
   dailyQuote = null,
 }) {
-  const headerTitle = title ?? (displayName ? `Welcome back, ${displayName}` : 'Welcome back');
+  const { t } = useParticipantLocale();
+  const headerTitle =
+    title ??
+    (displayName ? t('welcomeBackNamed').replace('{name}', displayName) : t('welcomeBack'));
 
   return (
     <header className={['pd-home__header', className].filter(Boolean).join(' ')}>
@@ -30,18 +34,22 @@ export default function ParticipantHeader({
 
       <div className="pd-home__header-actions">
         {notificationsBell ?? (
-          <button type="button" className="pd-header-icon-btn" aria-label="Notifications">
+          <button type="button" className="pd-header-icon-btn" aria-label={t('notifications')}>
             <Bell size={18} strokeWidth={2.2} />
           </button>
         )}
 
-        <ParticipantLanguageSwitcher locale={locale} onChange={onLocaleChange} />
+        <ParticipantLanguageSwitcher
+          locale={locale}
+          onChange={onLocaleChange}
+          ariaLabel={t('selectLanguage')}
+        />
 
         <DarkModeToggle
           darkMode={darkMode}
           onChange={onDarkModeChange}
           compact
-          ariaLabel="Toggle dark mode"
+          ariaLabel={t('toggleDarkMode')}
         />
 
         <span className="pd-home__header-divider" aria-hidden="true" />
