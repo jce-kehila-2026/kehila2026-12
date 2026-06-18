@@ -28,70 +28,70 @@ import { useAdminLocale } from '../context/AdminLocaleContext';
 
 const NAV_ITEMS = [
   {
-    label: 'Dashboard',
+    labelKey: 'navDashboard',
     path: '/admin/dashboard',
     icon: <DashboardIcon />,
     id: 'nav-dashboard',
     active: (pathname) => pathname.startsWith('/admin/dashboard'),
   },
   {
-    label: 'Events',
+    labelKey: 'navEvents',
     path: '/admin/events',
     icon: <EventIcon />,
     id: 'nav-events',
     active: (pathname) => pathname.startsWith('/admin/events'),
   },
   {
-    label: 'Users',
+    labelKey: 'navUsers',
     path: '/admin/users',
     icon: <PeopleIcon />,
     id: 'nav-users',
     active: (pathname) => pathname.startsWith('/admin/users'),
   },
   {
-    label: 'Bookings',
+    labelKey: 'navBookings',
     path: '/admin/appointments',
     icon: <CalendarMonthIcon />,
     id: 'nav-bookings',
     active: (pathname) => pathname.startsWith('/admin/appointments'),
   },
   {
-    label: 'Forms',
+    labelKey: 'navForms',
     path: '/admin/forms',
     icon: <DescriptionOutlinedIcon />,
     id: 'nav-forms',
     active: (pathname) => pathname.startsWith('/admin/forms'),
   },
   {
-    label: 'Public Home-page',
+    labelKey: 'navPublicHomePage',
     path: '/admin/cms',
     icon: <HomeWorkOutlinedIcon />,
     id: 'nav-public-home-page',
     active: (pathname) => pathname.startsWith('/admin/cms'),
   },
   {
-    label: 'Community',
+    labelKey: 'navCommunity',
     path: '/admin/community',
     icon: <ForumOutlinedIcon />,
     id: 'nav-community',
     active: (pathname) => pathname.startsWith('/admin/community'),
   },
   {
-    label: 'Updates',
+    labelKey: 'navUpdates',
     path: '/admin/updates',
     icon: <CampaignOutlinedIcon />,
     id: 'nav-updates',
     active: (pathname) => pathname.startsWith('/admin/updates'),
   },
   {
-    label: 'Audit Log',
+    labelKey: 'navAuditLog',
     path: '/admin/audit-log',
     icon: <ReceiptLongIcon />,
     id: 'nav-audit-log',
     active: (pathname) => pathname.startsWith('/admin/audit-log'),
   },
   {
-    label: 'Settings',
+    labelKey: 'navSettings',
     path: '/admin/users?tab=roles',
     icon: <SettingsOutlinedIcon />,
     id: 'nav-settings',
@@ -180,9 +180,9 @@ export default function Sidebar({ drawerWidth = 260, collapsed = false, onToggle
         onClick={onToggleSidebar}
         className="admin-sidebar-toggle"
         id="btn-toggle-sidebar"
-        aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        aria-label={collapsed ? t('expandSidebar') : t('collapseSidebar')}
         aria-expanded={!collapsed}
-        title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        title={collapsed ? t('expandSidebar') : t('collapseSidebar')}
       >
         {collapsed ? <KeyboardDoubleArrowRightRoundedIcon fontSize="small" /> : <MenuRoundedIcon fontSize="small" />}
       </IconButton>
@@ -231,7 +231,7 @@ export default function Sidebar({ drawerWidth = 260, collapsed = false, onToggle
                 lineHeight: 1,
               }}
           >
-            ADMIN
+            {t('adminBadge')}
           </Typography>
           </Box>
           <Avatar
@@ -323,7 +323,7 @@ export default function Sidebar({ drawerWidth = 260, collapsed = false, onToggle
                 {item.icon}
               </ListItemIcon>
               <ListItemText
-                primary={item.label}
+                primary={t(item.labelKey)}
                 primaryTypographyProps={{
                   fontSize: '0.94rem',
                   fontWeight: selected ? 800 : 650,
@@ -351,7 +351,7 @@ export default function Sidebar({ drawerWidth = 260, collapsed = false, onToggle
 
           return (
             <Tooltip
-              title={collapsed ? item.label : ''}
+              title={collapsed ? t(item.labelKey) : ''}
               placement="right"
               arrow
               disableHoverListener={!collapsed}
@@ -415,7 +415,7 @@ export default function Sidebar({ drawerWidth = 260, collapsed = false, onToggle
         </Tooltip>
       </List>
 
-      <Tooltip title={collapsed ? 'Logout' : ''} placement="right" arrow disableHoverListener={!collapsed}>
+      <Tooltip title={collapsed ? t('logout') : ''} placement="right" arrow disableHoverListener={!collapsed}>
         <ListItemButton
           onClick={logout}
           id="btn-logout"
@@ -458,7 +458,7 @@ export default function Sidebar({ drawerWidth = 260, collapsed = false, onToggle
             <LogoutIcon />
           </ListItemIcon>
           <ListItemText
-            primary="Logout"
+            primary={t('logout')}
             primaryTypographyProps={{
               fontSize: '0.94rem',
               fontWeight: 800,
