@@ -165,7 +165,7 @@ service cloud.firestore {
           && (
             (
               request.auth.uid != uid
-              && request.resource.data.type in ['comment', 'like', 'support']
+              && request.resource.data.type in ['comment', 'like', 'support', 'birthday_wish']
             )
             || (
               request.auth.uid == uid
