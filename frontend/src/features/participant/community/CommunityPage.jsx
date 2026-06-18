@@ -525,7 +525,11 @@ export default function CommunityPage({
             lastActivityDate={lastActivityDate}
             streakCount={communityStreakCount}
           />
-          <BirthdayCard birthdayUsers={followedBirthdayUsers} />
+          <BirthdayCard
+            birthdayUsers={followedBirthdayUsers}
+            localUserId={localUserId}
+            localUserName={communityDisplayName || 'Current User'}
+          />
         </aside>
       </div>
       <div className="community-guidelines-shortcut">

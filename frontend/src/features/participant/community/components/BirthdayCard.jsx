@@ -1,5 +1,11 @@
-import { useRef, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import ArrowBackIosNewIcon from '@mui/icons-material/ArrowBackIosNew';
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+import CakeOutlinedIcon from '@mui/icons-material/CakeOutlined';
+import FavoriteIcon from '@mui/icons-material/Favorite';
+import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import { birthdayMessages } from '../communityMockData';
+import { sendBirthdayWish } from '../services/communityService';
 
 const getBirthdayMonthDay = (birthday) => {
   if (typeof birthday !== 'string') return null;
@@ -38,52 +44,112 @@ const getTodaysBirthdayUsers = (users = [], today = new Date()) => users.filter(
     && birthdayMonthDay.day === today.getDate();
 });
 
-export default function BirthdayCard({ birthdayUsers = [] }) {
-  const todaysBirthdayUsers = getTodaysBirthdayUsers(birthdayUsers);
-  const birthdayUser = todaysBirthdayUsers[0];
+const getTodayStorageKey = (date = new Date()) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+
+  return `${year}-${month}-${day}`;
+};
+
+const readSentBirthdayWishIds = (storageKey) => {
+  if (!storageKey || typeof window === 'undefined') return [];
+
+  try {
+    const storedValue = window.localStorage.getItem(storageKey);
+    const parsedValue = storedValue ? JSON.parse(storedValue) : [];
+
+    return Array.isArray(parsedValue) ? parsedValue.filter(Boolean) : [];
+  } catch {
+    return [];
+  }
+};
+
+export default function BirthdayCard({
+  birthdayUsers = [],
+  localUserId = '',
+  localUserName = '',
+}) {
+  const sentStorageKey = `community-birthday-wishes:${localUserId || 'guest'}:${getTodayStorageKey()}`;
+  const todaysBirthdayUsers = useMemo(() => getTodaysBirthdayUsers(birthdayUsers), [birthdayUsers]);
+  const [sentBirthdayUserIds, setSentBirthdayUserIds] = useState(() => (
+    readSentBirthdayWishIds(sentStorageKey)
+  ));
+  const [activeBirthdayIndex, setActiveBirthdayIndex] = useState(0);
   const [selectedMessage, setSelectedMessage] = useState('');
-  const [showCustomMessage, setShowCustomMessage] = useState(false);
-  const [customMessage, setCustomMessage] = useState('');
-  const [sentBirthdayWish, setSentBirthdayWish] = useState(false);
   const [birthdayWishError, setBirthdayWishError] = useState('');
-  const customMessageRef = useRef(null);
+  const [isSendingBirthdayWish, setIsSendingBirthdayWish] = useState(false);
+  const visibleBirthdayUsers = todaysBirthdayUsers.filter((user) => (
+    user?.id && !sentBirthdayUserIds.includes(user.id)
+  ));
+  const birthdayUser = visibleBirthdayUsers[activeBirthdayIndex];
+  const hasBirthdayNavigation = visibleBirthdayUsers.length > 1;
+
+  useEffect(() => {
+    setSentBirthdayUserIds(readSentBirthdayWishIds(sentStorageKey));
+  }, [sentStorageKey]);
+
+  useEffect(() => {
+    setActiveBirthdayIndex((currentIndex) => {
+      if (visibleBirthdayUsers.length === 0) return 0;
+      return Math.min(currentIndex, visibleBirthdayUsers.length - 1);
+    });
+  }, [visibleBirthdayUsers.length]);
+
+  useEffect(() => {
+    setSelectedMessage('');
+    setBirthdayWishError('');
+    setIsSendingBirthdayWish(false);
+  }, [birthdayUser?.id]);
 
   const handleReadyMessageClick = (message) => {
     setSelectedMessage(message);
-    setShowCustomMessage(true);
-    setCustomMessage(message);
-    setSentBirthdayWish(false);
     setBirthdayWishError('');
   };
 
-  const handleCustomMessageClick = () => {
-    setShowCustomMessage(true);
-    setSelectedMessage('');
-    setSentBirthdayWish(false);
-    setBirthdayWishError('');
-    window.requestAnimationFrame(() => customMessageRef.current?.focus());
+  const handleBirthdayNavigation = (direction) => {
+    setActiveBirthdayIndex((currentIndex) => {
+      if (visibleBirthdayUsers.length <= 1) return currentIndex;
+
+      return (currentIndex + direction + visibleBirthdayUsers.length) % visibleBirthdayUsers.length;
+    });
   };
 
-  const handleCustomMessageChange = (event) => {
-    setCustomMessage(event.target.value);
-    setSelectedMessage('');
-    setSentBirthdayWish(false);
-    setBirthdayWishError('');
-  };
-
-  const handleSendBirthdayWish = () => {
-    const message = customMessage.trim();
-
-    if (!message) {
-      setBirthdayWishError('Please choose or write a birthday message.');
-      setSentBirthdayWish(false);
+  const handleSendBirthdayWish = async () => {
+    if (!selectedMessage) {
+      setBirthdayWishError('Please choose a birthday message.');
       return;
     }
 
-    setCustomMessage('');
-    setSelectedMessage('');
-    setSentBirthdayWish(true);
-    setBirthdayWishError('');
+    if (!birthdayUser?.id || isSendingBirthdayWish) return;
+
+    setIsSendingBirthdayWish(true);
+
+    try {
+      await sendBirthdayWish({
+        recipientId: birthdayUser.id,
+        senderId: localUserId,
+        senderName: localUserName,
+        message: selectedMessage,
+      });
+
+      const nextSentBirthdayUserIds = [...new Set([...sentBirthdayUserIds, birthdayUser.id])];
+      setSentBirthdayUserIds(nextSentBirthdayUserIds);
+      if (typeof window !== 'undefined') {
+        try {
+          window.localStorage.setItem(sentStorageKey, JSON.stringify(nextSentBirthdayUserIds));
+        } catch {
+          // The wish was already sent; blocked storage should not make the UI report a failed send.
+        }
+      }
+
+      setSelectedMessage('');
+      setBirthdayWishError('');
+    } catch {
+      setBirthdayWishError('Unable to send the birthday wish right now.');
+    } finally {
+      setIsSendingBirthdayWish(false);
+    }
   };
 
   if (!birthdayUser) {
@@ -92,14 +158,39 @@ export default function BirthdayCard({ birthdayUsers = [] }) {
 
   return (
     <section className="birthday-card" aria-labelledby="birthday-card-title">
+      {hasBirthdayNavigation && (
+        <div className="birthday-card__nav" aria-label="Birthday cards navigation">
+          <button
+            type="button"
+            onClick={() => handleBirthdayNavigation(-1)}
+            aria-label="Previous birthday"
+          >
+            <ArrowBackIosNewIcon />
+          </button>
+          <span>
+            {activeBirthdayIndex + 1}
+            {' '}
+            /
+            {' '}
+            {visibleBirthdayUsers.length}
+          </span>
+          <button
+            type="button"
+            onClick={() => handleBirthdayNavigation(1)}
+            aria-label="Next birthday"
+          >
+            <ArrowForwardIosIcon />
+          </button>
+        </div>
+      )}
+
       <div className="birthday-card__header">
         <span className="birthday-card__icon" aria-hidden="true">
           <CakeOutlinedIcon />
         </span>
         <div className="birthday-card__heading">
-          <span>Today’s Birthday</span>
           <h2 id="birthday-card-title">{birthdayUser.name}</h2>
-          <p>Send a kind wish and make her day brighter.</p>
+          <p>It's her birthday today!</p>
         </div>
       </div>
 
@@ -111,45 +202,26 @@ export default function BirthdayCard({ birthdayUsers = [] }) {
             onClick={() => handleReadyMessageClick(message)}
             key={message}
           >
-            {message}
+            <span className="birthday-card__message-icon" aria-hidden="true">
+              {selectedMessage === message ? <FavoriteIcon /> : <FavoriteBorderIcon />}
+            </span>
+            <span>{message}</span>
           </button>
         ))}
       </div>
-      <button className="birthday-card__custom" type="button" onClick={handleCustomMessageClick}>
-        Write your own message
-      </button>
-      {(showCustomMessage || birthdayWishError) && (
-        <div className="birthday-card__custom-area">
-          <textarea
-            aria-describedby={birthdayWishError ? 'birthday-card-error' : undefined}
-            aria-label="Birthday wish message"
-            aria-invalid={Boolean(birthdayWishError)}
-            className="birthday-card__textarea"
-            ref={customMessageRef}
-            value={customMessage}
-            onChange={handleCustomMessageChange}
-            rows="3"
-            placeholder="Write a warm birthday message..."
-          />
-          {birthdayWishError && (
-            <p className="birthday-card__error" id="birthday-card-error" role="alert">
-              {birthdayWishError}
-            </p>
-          )}
-        </div>
+      {birthdayWishError && (
+        <p className="birthday-card__error" id="birthday-card-error" role="alert">
+          {birthdayWishError}
+        </p>
       )}
       <button
         className="birthday-card__send"
         type="button"
         onClick={handleSendBirthdayWish}
+        disabled={isSendingBirthdayWish}
       >
-        Send Birthday Wishes
+        {isSendingBirthdayWish ? 'Sending...' : 'Send Wish'}
       </button>
-      {sentBirthdayWish && (
-        <p className="birthday-card__success" aria-live="polite">
-          Birthday wish submitted successfully.
-        </p>
-      )}
     </section>
   );
 }

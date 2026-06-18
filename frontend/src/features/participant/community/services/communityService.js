@@ -58,6 +58,8 @@ async function createActivityNotification({
   postId,
   postExcerpt = '',
   commentExcerpt = '',
+  title,
+  body,
 } = {}) {
   // The security rule requires actorId == request.auth.uid, so always attribute
   // to the authenticated user rather than the (possibly unresolved) community id.
@@ -73,6 +75,8 @@ async function createActivityNotification({
       postId: postId ?? null,
       postExcerpt,
       commentExcerpt,
+      ...(title ? { title } : {}),
+      ...(body ? { body } : {}),
       createdAt: serverTimestamp(),
     });
   } catch {
@@ -638,8 +642,32 @@ export async function getTodayCommunityBirthdays() {
     }));
 }
 
-export async function sendBirthdayWish(wishData = {}) {
-  return { success: true, ...wishData };
+export async function sendBirthdayWish({
+  recipientId,
+  senderId,
+  senderName,
+  message,
+} = {}) {
+  const resolvedSenderId = auth.currentUser?.uid ?? senderId;
+  if (!recipientId || !resolvedSenderId || !message) {
+    throw new Error('Missing birthday wish details.');
+  }
+
+  if (recipientId === resolvedSenderId) {
+    throw new Error('Birthday wishes cannot be sent to yourself.');
+  }
+
+  await addDoc(collection(db, USERS_COL, recipientId, ACTIVITY_NOTIFICATIONS_COL), {
+    recipientId,
+    actorId: resolvedSenderId,
+    actorName: senderName || 'Someone',
+    type: 'birthday_wish',
+    title: 'Birthday wish',
+    body: `${senderName || 'Someone'} sent you a birthday wish: "${message}"`,
+    createdAt: serverTimestamp(),
+  });
+
+  return { success: true, recipientId, senderId: resolvedSenderId, message };
 }
 
 // ── Guidelines ────────────────────────────────────────────────────────────────
