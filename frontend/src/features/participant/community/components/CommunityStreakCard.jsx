@@ -1,7 +1,5 @@
-import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
 import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
 import FavoriteRoundedIcon from '@mui/icons-material/FavoriteRounded';
-import HourglassEmptyOutlinedIcon from '@mui/icons-material/HourglassEmptyOutlined';
 import { getTodayKey } from '../utils/communityDateUtils';
 
 const WEEK_DAYS = [
@@ -33,9 +31,6 @@ export default function CommunityStreakCard({ isAtRisk = false, lastActivityDate
       aria-label={`Community streak, ${streakCount} ${streakCount === 1 ? 'day' : 'days'}`}
     >
       <div className="community-streak-card__topline">
-        <span className="community-streak-card__icon" aria-hidden="true">
-          {isAtRisk && hasStartedStreak ? <HourglassEmptyOutlinedIcon /> : <AutoAwesomeOutlinedIcon />}
-        </span>
         <div className="community-streak-card__title">
           <strong>Community streak</strong>
         </div>

@@ -6,6 +6,7 @@ import NewReleasesOutlinedIcon from '@mui/icons-material/NewReleasesOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import ChatBubbleOutlineOutlinedIcon from '@mui/icons-material/ChatBubbleOutlineOutlined';
 import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined';
+import HourglassEmptyOutlinedIcon from '@mui/icons-material/HourglassEmptyOutlined';
 import VolunteerActivismOutlinedIcon from '@mui/icons-material/VolunteerActivismOutlined';
 import DoneAllIcon from '@mui/icons-material/DoneAll';
 import { getParticipantLocaleLang, getStoredParticipantLocale } from './i18n/participantLocale';
@@ -30,6 +31,9 @@ const TYPE_META = {
   comment: { label: 'Comment', Icon: ChatBubbleOutlineOutlinedIcon, color: '#ec168c' },
   like: { label: 'Like', Icon: FavoriteBorderOutlinedIcon, color: '#e11d48' },
   support: { label: 'Support', Icon: VolunteerActivismOutlinedIcon, color: '#7b3fa1' },
+  streak_reminder: { label: 'Streak Reminder', Icon: NotificationsActiveOutlinedIcon, color: '#d97706' },
+  streak_grace: { label: 'Streak At Risk', Icon: HourglassEmptyOutlinedIcon, color: '#f59e0b' },
+  streak_lost: { label: 'Streak Lost', Icon: HourglassEmptyOutlinedIcon, color: '#dc2626' },
 };
 
 function relativeTime(ts) {
