@@ -28,6 +28,7 @@ import eventsHeroBanner from '../../assets/lasteventBanner.png';
 import { useAdmin } from '../admin/context/AdminContext';
 import { getPublishedEvents } from '../admin/services/eventService';
 import { localizeField } from '../../i18n/localizeField';
+import { useParticipantLocale } from '../participant/context/ParticipantLocaleContext';
 import {
   addRegistration,
   getUserRegisteredEventIds,
