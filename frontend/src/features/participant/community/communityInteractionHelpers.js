@@ -7,6 +7,7 @@ import {
   getDateKeyTimestamp,
   getTodayKey,
   isStreakAtRiskForDate,
+  isStreakReminderDueForDate,
   normalizeCommunityDateKey,
   parseCommunityDate,
 } from './utils/communityDateUtils';
@@ -25,6 +26,7 @@ export {
   getDayDifference,
   getTodayKey,
   isStreakAtRiskForDate,
+  isStreakReminderDueForDate,
   normalizeCommunityDateKey,
   parseCommunityDate,
 } from './utils/communityDateUtils';

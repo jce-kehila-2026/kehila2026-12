@@ -1,5 +1,4 @@
 import { useRef, useState } from 'react';
-import CakeOutlinedIcon from '@mui/icons-material/CakeOutlined';
 import { birthdayMessages } from '../communityMockData';
 
 const getBirthdayMonthDay = (birthday) => {
@@ -88,17 +87,7 @@ export default function BirthdayCard({ birthdayUsers = [] }) {
   };
 
   if (!birthdayUser) {
-    return (
-      <section className="birthday-empty-state" aria-label="Birthday celebration">
-        <span className="birthday-empty-state__icon" aria-hidden="true">
-          <CakeOutlinedIcon fontSize="small" />
-        </span>
-        <div>
-          <strong>No birthdays today</strong>
-          <p>Birthday celebrations will appear here when someone is celebrating.</p>
-        </div>
-      </section>
-    );
+    return null;
   }
 
   return (

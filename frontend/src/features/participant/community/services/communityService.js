@@ -500,12 +500,22 @@ export async function getCommunityProfile(uid) {
   if (!snap.exists()) return null;
 
   const data = snap.data();
+  const hasBirthdayVisibilityPreference = Object.prototype.hasOwnProperty.call(
+    data,
+    'showBirthdayInCommunity'
+  );
+
   return {
     communityDisplayName: data.communityDisplayName ?? '',
     communityBirthday: data.communityBirthday ?? '',
     showBirthdayInCommunity: Boolean(data.showBirthdayInCommunity),
     allowAnonymousPosting: data.allowAnonymousPosting !== false,
     communityProfileCompleted: Boolean(data.communityProfileCompleted),
+    communityBirthdayPreferenceCompleted: Boolean(
+      data.communityBirthdayPreferenceCompleted
+      || data.communityProfileCompleted
+      || hasBirthdayVisibilityPreference
+    ),
     communityJoinedAt: data.communityJoinedAt ? tsToDate(data.communityJoinedAt) : new Date(),
     communityFollowedAuthors: Array.isArray(data.communityFollowedAuthors)
       ? data.communityFollowedAuthors
@@ -544,15 +554,35 @@ export async function getCommunityStreak(uid) {
   return {
     communityStreakCount: data.communityStreakCount ?? 0,
     communityLastActivityDate: data.communityLastActivityDate ?? null,
+    communityStreakReminderDate: data.communityStreakReminderDate ?? null,
+    communityStreakGraceDate: data.communityStreakGraceDate ?? null,
+    communityStreakLostDate: data.communityStreakLostDate ?? null,
   };
 }
 
-export async function updateCommunityStreak(uid, { communityStreakCount, communityLastActivityDate } = {}) {
+export async function updateCommunityStreak(uid, streakData = {}) {
   if (!uid) return;
-  await setDoc(doc(db, USERS_COL, uid), {
-    communityStreakCount,
-    communityLastActivityDate,
-  }, { merge: true });
+  await setDoc(doc(db, USERS_COL, uid), streakData, { merge: true });
+}
+
+export async function createCommunityStreakNotification(uid, {
+  notificationKey,
+  type,
+  title,
+  body,
+} = {}) {
+  const resolvedActorId = auth.currentUser?.uid ?? uid;
+  if (!uid || !notificationKey || !type || !title || !body || resolvedActorId !== uid) return;
+
+  await setDoc(doc(db, USERS_COL, uid, ACTIVITY_NOTIFICATIONS_COL, notificationKey), {
+    recipientId: uid,
+    actorId: uid,
+    actorName: 'Community streak',
+    type,
+    title,
+    body,
+    createdAt: serverTimestamp(),
+  }, { merge: false });
 }
 
 // ── Follows (users/{uid}) ─────────────────────────────────────────────────────
