@@ -339,6 +339,14 @@ export const participantUiTranslations = {
     birthdayWishRequired: 'Please choose or write a birthday message.',
     sendBirthdayWishes: 'Send Birthday Wishes',
     birthdayWishSent: 'Birthday wish submitted successfully.',
+    birthdayChooseMessage: 'Please choose a birthday message.',
+    birthdayWishSendError: 'Unable to send the birthday wish right now.',
+    birthdayItsHerDay: "It's her birthday today!",
+    birthdaySending: 'Sending...',
+    birthdaySendWish: 'Send Wish',
+    birthdayNavAria: 'Birthday cards navigation',
+    birthdayPrev: 'Previous birthday',
+    birthdayNext: 'Next birthday',
 
     // ── Community: hook feedback messages ─────────────────────────────────
     alreadyReported: 'You already reported this post.',
@@ -882,6 +890,14 @@ export const participantUiTranslations = {
     birthdayWishRequired: 'נא לבחור או לכתוב הודעת יום הולדת.',
     sendBirthdayWishes: 'שליחת ברכות יום הולדת',
     birthdayWishSent: 'ברכת יום ההולדת נשלחה בהצלחה.',
+    birthdayChooseMessage: 'נא לבחור ברכת יום הולדת.',
+    birthdayWishSendError: 'לא ניתן לשלוח את ברכת יום ההולדת כרגע.',
+    birthdayItsHerDay: 'היום יום ההולדת שלה!',
+    birthdaySending: 'שולח...',
+    birthdaySendWish: 'שליחת ברכה',
+    birthdayNavAria: 'ניווט בכרטיסי ימי הולדת',
+    birthdayPrev: 'יום הולדת קודם',
+    birthdayNext: 'יום הולדת הבא',
 
     // ── Community: hook feedback messages ─────────────────────────────────
     alreadyReported: 'כבר דיווחת על הפוסט הזה.',
@@ -1425,6 +1441,14 @@ export const participantUiTranslations = {
     birthdayWishRequired: 'يرجى اختيار أو كتابة رسالة عيد ميلاد.',
     sendBirthdayWishes: 'إرسال أمنيات عيد الميلاد',
     birthdayWishSent: 'تم إرسال أمنية عيد الميلاد بنجاح.',
+    birthdayChooseMessage: 'يرجى اختيار رسالة عيد ميلاد.',
+    birthdayWishSendError: 'تعذّر إرسال أمنية عيد الميلاد الآن.',
+    birthdayItsHerDay: 'اليوم عيد ميلادها!',
+    birthdaySending: 'جارٍ الإرسال...',
+    birthdaySendWish: 'إرسال أمنية',
+    birthdayNavAria: 'التنقّل بين بطاقات أعياد الميلاد',
+    birthdayPrev: 'عيد الميلاد السابق',
+    birthdayNext: 'عيد الميلاد التالي',
 
     // ── Community: hook feedback messages ─────────────────────────────────
     alreadyReported: 'لقد أبلغت عن هذا المنشور بالفعل.',
