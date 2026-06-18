@@ -99,7 +99,13 @@ const ACTIVITY_TITLE = {
   comment: 'New comment',
   like: 'New like',
   support: 'New support',
+  birthday_wish: 'Birthday wish',
 };
+const STREAK_NOTIFICATION_TYPES = new Set([
+  'streak_reminder',
+  'streak_grace',
+  'streak_lost',
+]);
 
 /**
  * Map a stored activity_notifications doc into the same display shape the
@@ -108,6 +114,30 @@ const ACTIVITY_TITLE = {
  */
 function activityDocToItem(docSnap) {
   const data = docSnap.data();
+  if (data.type === 'birthday_wish') {
+    return {
+      id: docSnap.id,
+      kind: 'activity',
+      type: data.type,
+      title: data.title ?? ACTIVITY_TITLE.birthday_wish,
+      body: data.body ?? data.message ?? '',
+      createdAt: data.createdAt,
+      active: true,
+    };
+  }
+
+  if (STREAK_NOTIFICATION_TYPES.has(data.type)) {
+    return {
+      id: docSnap.id,
+      kind: 'activity',
+      type: data.type,
+      title: data.title ?? 'Community streak',
+      body: data.body ?? data.message ?? '',
+      createdAt: data.createdAt,
+      active: true,
+    };
+  }
+
   const actor = data.actorName || 'Someone';
   let body = `${actor} ${ACTIVITY_VERB[data.type] ?? 'interacted with your post'}`;
   if (data.type === 'comment' && data.commentExcerpt) {

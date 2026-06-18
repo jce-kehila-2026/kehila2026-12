@@ -19,7 +19,9 @@ export const filterPostsByTab = (
   localUserId = '',
   localUserName = '',
 ) => posts.filter((post) => {
-  if (activeTab === 'following') return isAuthorFollowed(post, followedAuthors);
+  if (activeTab === 'following') {
+    return !post.isAnonymous && isAuthorFollowed(post, followedAuthors);
+  }
   if (activeTab === 'my-posts') return isPostOwnedByCurrentUser(post, localUserId, localUserName);
   if (activeTab === 'anonymous') return post.isAnonymous === true;
 

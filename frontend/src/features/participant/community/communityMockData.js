@@ -66,9 +66,10 @@ export const communityPosts = [
 ];
 
 export const birthdayMessages = [
-  'Wishing you happiness and beautiful days ahead 💜',
-  'Happy Birthday! Your journey inspires us 🌸',
-  'Sending you love and warm wishes today 🎂',
+  'Happy birthday, sending love',
+  'Wishing you a beautiful day',
+  'You are appreciated today',
+  'Have a wonderful year ahead',
 ];
 
 export const communityGuidelines = [

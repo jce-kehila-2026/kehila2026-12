@@ -29,6 +29,7 @@ import {
   storeParticipantLocale,
 } from './i18n/participantLocale';
 import CommunityPage from './community/CommunityPage';
+import useCommunityStreak from './community/hooks/useCommunityStreak';
 import WorkshopFeed from './WorkshopFeed';
 import { createParticipantT } from './i18n/participantUiTranslations';
 import { ParticipantLocaleProvider } from './context/ParticipantLocaleContext';
@@ -85,6 +86,7 @@ export default function ParticipantHome({ initialView = 'home' }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(getStoredSidebarCollapsed);
   const { quote: dailyQuote } = useDailyMotivation();
   const t = useMemo(() => createParticipantT(locale), [locale]);
+  useCommunityStreak({ localUserId: effectiveUID || currentUser?.uid || '' });
 
   // ── Notifications ────────────────────────────────────────────────────────
   // The bell shows a unified feed: admin announcements + auto-generated
@@ -134,6 +136,14 @@ export default function ParticipantHome({ initialView = 'home' }) {
   useEffect(() => {
     loadNotifications();
   }, [loadNotifications]);
+
+  useEffect(() => {
+    if (!currentUser) return undefined;
+
+    const intervalId = window.setInterval(loadNotifications, 60 * 1000);
+
+    return () => window.clearInterval(intervalId);
+  }, [currentUser, loadNotifications]);
 
   const handleBellClick = useCallback(() => {
     if (notifOpen) {
@@ -449,6 +459,7 @@ export default function ParticipantHome({ initialView = 'home' }) {
               }}
               isPersonalDetailsLoading={loadingParticipantProfile}
               onGoToSettings={() => navigateParticipantView('profile')}
+              onParticipantProfileSync={handleParticipantProfileSync}
             />
           )}
 

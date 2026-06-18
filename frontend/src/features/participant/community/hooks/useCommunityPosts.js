@@ -281,9 +281,6 @@ export default function useCommunityPosts({
   };
 
   const handleToggleSupport = (postId) => {
-    const postToUpdate = posts.find((post) => post.id === postId);
-    const shouldIncreaseStreak = postToUpdate ? !postToUpdate.isSupported : false;
-
     toggleCommunityPostSupport(postId, localUserId, { actorName: localUserName }).catch(() => {});
 
     updatePostById(postId, (post) => {
@@ -300,10 +297,6 @@ export default function useCommunityPosts({
         support: nextSupportCount,
       };
     });
-
-    if (shouldIncreaseStreak) {
-      registerCommunityActivity();
-    }
   };
 
   const handleToggleLike = (postId) => {

@@ -121,3 +121,12 @@ export const getDayDifference = (previousDateKey, currentDateKey = getTodayKey()
 export const isStreakAtRiskForDate = (lastActivityDate, todayKey = getTodayKey()) => (
   getDayDifference(lastActivityDate, todayKey) === 2
 );
+
+export const isStreakReminderDueForDate = (
+  lastActivityDate,
+  now = new Date(),
+  reminderHour = 21
+) => (
+  getDayDifference(lastActivityDate, getTodayKey(now)) === 1
+  && now.getHours() >= reminderHour
+);

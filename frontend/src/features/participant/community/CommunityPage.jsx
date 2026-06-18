@@ -43,6 +43,7 @@ export default function CommunityPage({
   onGoToSettings,
   focusPostId = null,
   onFocusPostHandled,
+  onParticipantProfileSync,
 }) {
   const { t } = useParticipantLocale();
   const postInputRef = useRef(null);
@@ -101,7 +102,7 @@ export default function CommunityPage({
     visibleBirthdayUsers,
     profileSuccessMessage,
     handleBirthdayPreferenceSave,
-  } = useCommunityProfile({ personalDetails, t });
+  } = useCommunityProfile({ personalDetails, onProfileSync: onParticipantProfileSync, t });
   const handleCancelEditPost = () => {
     setEditingPostId(null);
     setEditPostText('');
@@ -225,6 +226,9 @@ export default function CommunityPage({
     localUserId,
     communityDisplayName || 'Current User',
   );
+  const followedBirthdayUsers = visibleBirthdayUsers.filter((user) => (
+    user?.id && followedAuthors.includes(user.id)
+  ));
   const sortedVisiblePosts = sortFeedPosts(filteredPosts);
   const emptyFeedMessage = getEmptyFeedMessage(activeFeedTab, followedAuthors.length);
 
@@ -526,7 +530,11 @@ export default function CommunityPage({
             lastActivityDate={lastActivityDate}
             streakCount={communityStreakCount}
           />
-          <BirthdayCard birthdayUsers={visibleBirthdayUsers} />
+          <BirthdayCard
+            birthdayUsers={followedBirthdayUsers}
+            localUserId={localUserId}
+            localUserName={communityDisplayName || 'Current User'}
+          />
         </aside>
       </div>
       <div className="community-guidelines-shortcut">

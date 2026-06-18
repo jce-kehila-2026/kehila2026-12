@@ -160,10 +160,18 @@ service cloud.firestore {
       match /activity_notifications/{notificationId} {
         allow read, delete: if isSelf(uid) || isAdmin();
         allow create: if request.auth != null
-          && request.auth.uid != uid
           && request.resource.data.recipientId == uid
           && request.resource.data.actorId == request.auth.uid
-          && request.resource.data.type in ['comment', 'like', 'support'];
+          && (
+            (
+              request.auth.uid != uid
+              && request.resource.data.type in ['comment', 'like', 'support', 'birthday_wish']
+            )
+            || (
+              request.auth.uid == uid
+              && request.resource.data.type in ['streak_reminder', 'streak_grace', 'streak_lost']
+            )
+          );
         allow update: if false;
       }
     }
