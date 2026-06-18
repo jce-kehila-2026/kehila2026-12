@@ -38,37 +38,38 @@ export const sortFeedPosts = (posts) => posts
   })
   .map(({ post }) => post);
 
+// Returns participant-UI translation keys; the caller localizes them with `t`.
 export const getEmptyFeedMessage = (activeTab, followedAuthorsCount = 0) => {
   if (activeTab === 'following') {
     if (followedAuthorsCount === 0) {
       return {
-        title: 'No followed authors yet',
-        description: 'Use the Follow button on posts to build a local following feed on this device.',
+        titleKey: 'emptyFollowingNoneTitle',
+        descriptionKey: 'emptyFollowingNoneDesc',
       };
     }
 
     return {
-      title: 'No posts from followed authors yet',
-      description: 'Posts from authors you follow locally will appear here.',
+      titleKey: 'emptyFollowingTitle',
+      descriptionKey: 'emptyFollowingDesc',
     };
   }
 
   if (activeTab === 'anonymous') {
     return {
-      title: 'No anonymous posts yet',
-      description: 'Anonymous shares will appear here when members choose that option.',
+      titleKey: 'emptyAnonymousTitle',
+      descriptionKey: 'emptyAnonymousDesc',
     };
   }
 
   if (activeTab === 'my-posts') {
     return {
-      title: 'No posts from you yet',
-      description: 'Posts you create, including anonymous shares, will appear here.',
+      titleKey: 'emptyMyPostsTitle',
+      descriptionKey: 'emptyMyPostsDesc',
     };
   }
 
   return {
-    title: 'No posts yet',
-    description: 'Be the first to share something with the community.',
+    titleKey: 'emptyAllTitle',
+    descriptionKey: 'emptyAllDesc',
   };
 };

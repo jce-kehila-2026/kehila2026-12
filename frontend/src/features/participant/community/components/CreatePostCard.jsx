@@ -7,11 +7,14 @@ import { MAX_LOCAL_MEDIA_BYTES } from '../utils/postComposerUtils';
 import AttachmentPreview from './AttachmentPreview';
 import EmojiPicker from './EmojiPicker';
 import VoiceRecorderControls from './VoiceRecorderControls';
+import { useParticipantLocale } from '../../context/ParticipantLocaleContext';
 
+// `label` stays the stable logic key (drives picker open/close); `labelKey`
+// is only for the displayed/aria text.
 const composerActions = [
-  { label: 'Photo', icon: AddPhotoAlternateOutlinedIcon },
-  { label: 'Voice', icon: KeyboardVoiceOutlinedIcon },
-  { label: 'Emoji', icon: EmojiEmotionsOutlinedIcon },
+  { label: 'Photo', labelKey: 'actionPhoto', icon: AddPhotoAlternateOutlinedIcon },
+  { label: 'Voice', labelKey: 'actionVoice', icon: KeyboardVoiceOutlinedIcon },
+  { label: 'Emoji', labelKey: 'actionEmoji', icon: EmojiEmotionsOutlinedIcon },
 ];
 
 export default function CreatePostCard({
@@ -27,6 +30,7 @@ export default function CreatePostCard({
   postText,
   successMessage = '',
 }) {
+  const { t } = useParticipantLocale();
   const [openPicker, setOpenPicker] = useState(null);
   const [localFeedback, setLocalFeedback] = useState('');
   const [isRecording, setIsRecording] = useState(false);
@@ -82,12 +86,12 @@ export default function CreatePostCard({
     if (!file) return;
 
     if (!file.type.startsWith('image/')) {
-      setLocalFeedback('Please choose an image file.');
+      setLocalFeedback(t('chooseImageFile'));
       return;
     }
 
     if (file.size > MAX_LOCAL_MEDIA_BYTES) {
-      setLocalFeedback('Please choose an image smaller than 1.5 MB for local storage.');
+      setLocalFeedback(t('imageTooLarge'));
       return;
     }
 
@@ -100,7 +104,7 @@ export default function CreatePostCard({
       });
       setLocalFeedback('');
     };
-    reader.onerror = () => setLocalFeedback('Unable to preview this image.');
+    reader.onerror = () => setLocalFeedback(t('unablePreviewImage'));
     reader.readAsDataURL(file);
   };
 
@@ -127,7 +131,7 @@ export default function CreatePostCard({
 
   const handleStartRecording = async () => {
     if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === 'undefined') {
-      setLocalFeedback('Voice recording is not available in this browser.');
+      setLocalFeedback(t('voiceUnavailable'));
       return;
     }
 
@@ -151,7 +155,7 @@ export default function CreatePostCard({
         });
 
         if (audioBlob.size > MAX_LOCAL_MEDIA_BYTES) {
-          setLocalFeedback('Voice note is too large for local storage. Please record a shorter note.');
+          setLocalFeedback(t('voiceTooLarge'));
           onAttachmentChange?.(null);
           stopRecordingStream(stream);
           return;
@@ -169,7 +173,7 @@ export default function CreatePostCard({
           stopRecordingStream(stream);
         };
         reader.onerror = () => {
-          setLocalFeedback('Unable to save this voice note locally.');
+          setLocalFeedback(t('unableSaveVoice'));
           stopRecordingStream(stream);
         };
         reader.readAsDataURL(audioBlob);
@@ -177,9 +181,9 @@ export default function CreatePostCard({
 
       mediaRecorder.start();
       setIsRecording(true);
-      setLocalFeedback('Recording voice note...');
+      setLocalFeedback(t('recordingVoice'));
     } catch {
-      setLocalFeedback('Microphone permission was not granted.');
+      setLocalFeedback(t('micPermissionDenied'));
       stopRecordingStream();
     }
   };
@@ -210,7 +214,7 @@ export default function CreatePostCard({
   };
 
   return (
-    <section className="create-post-card" aria-label="Create a community post">
+    <section className="create-post-card" aria-label={t('createPostAria')}>
       <input
         accept="image/*"
         className="create-post-card__file-input"
@@ -222,11 +226,11 @@ export default function CreatePostCard({
         <span className="create-post-card__avatar">ME</span>
         <div className="create-post-card__input-area">
           <textarea
-            aria-label="Write a community post"
+            aria-label={t('writePostAria')}
             aria-describedby={feedbackId}
             aria-invalid={Boolean(error)}
             onChange={(event) => onPostTextChange(event.target.value)}
-            placeholder="What’s on your mind today?"
+            placeholder={t('postPlaceholder')}
             ref={setTextareaRef}
             rows="2"
             value={postText}
@@ -247,28 +251,31 @@ export default function CreatePostCard({
           {successMessage}
         </p>
       )}
-      <div className="create-post-card__toolbar" aria-label="Post options">
-        <div className="create-post-card__actions" aria-label="Attachment options">
-          {composerActions.map(({ label, icon: Icon }) => (
-            <button
-              aria-label={`Add ${label}`}
-              aria-expanded={openPicker === label}
-              className={`create-post-card__action${openPicker === label ? ' is-active' : ''}`}
-              key={label}
-              onClick={() => handleComposerAction(label)}
-              ref={label === 'Emoji' ? emojiButtonRef : undefined}
-              type="button"
-            >
-              <Icon fontSize="small" />
-              <span>{label}</span>
-            </button>
-          ))}
+      <div className="create-post-card__toolbar" aria-label={t('postOptionsAria')}>
+        <div className="create-post-card__actions" aria-label={t('attachmentOptionsAria')}>
+          {composerActions.map(({ label, labelKey, icon: Icon }) => {
+            const displayLabel = t(labelKey);
+            return (
+              <button
+                aria-label={t('addAction').replace('{label}', displayLabel)}
+                aria-expanded={openPicker === label}
+                className={`create-post-card__action${openPicker === label ? ' is-active' : ''}`}
+                key={label}
+                onClick={() => handleComposerAction(label)}
+                ref={label === 'Emoji' ? emojiButtonRef : undefined}
+                type="button"
+              >
+                <Icon fontSize="small" />
+                <span>{displayLabel}</span>
+              </button>
+            );
+          })}
         </div>
 
         {allowAnonymousPosting && (
           <label className={`create-post-card__anonymous${isAnonymous ? ' is-active' : ''}`}>
             <input
-              aria-label="Post anonymously"
+              aria-label={t('postAnonymously')}
               type="checkbox"
               checked={isAnonymous}
               onChange={(event) => onAnonymousChange(event.target.checked)}
@@ -277,13 +284,13 @@ export default function CreatePostCard({
               <LockOutlinedIcon fontSize="small" />
             </span>
             <span className="create-post-card__anonymous-copy">
-              <strong>Post anonymously</strong>
-              <small>Your name and profile will be hidden</small>
+              <strong>{t('postAnonymously')}</strong>
+              <small>{t('anonymousHint')}</small>
             </span>
             <span className="create-post-card__anonymous-switch" aria-hidden="true" />
           </label>
         )}
-        <button className="create-post-card__submit" type="button" onClick={onSubmit}>Share Post</button>
+        <button className="create-post-card__submit" type="button" onClick={onSubmit}>{t('sharePost')}</button>
       </div>
       {openPicker === 'Emoji' && (
         <EmojiPicker

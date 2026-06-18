@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import MoreHorizOutlinedIcon from '@mui/icons-material/MoreHorizOutlined';
+import { useParticipantLocale } from '../../context/ParticipantLocaleContext';
 
 export default function PostOverflowMenu({
   isOwnPost = false,
@@ -10,6 +11,7 @@ export default function PostOverflowMenu({
   post,
   reportFeedbackId,
 }) {
+  const { t } = useParticipantLocale();
   const postMenuRef = useRef(null);
   const [isPostMenuOpen, setIsPostMenuOpen] = useState(false);
   const postMenuId = `community-post-menu-${post.id}`;
@@ -62,7 +64,7 @@ export default function PostOverflowMenu({
         aria-controls={postMenuId}
         aria-expanded={isPostMenuOpen}
         aria-haspopup="menu"
-        aria-label={`Open actions for ${post.author}'s post`}
+        aria-label={t('openActionsAria').replace('{author}', post.author)}
         className="community-page-post__more"
         type="button"
         onClick={() => setIsPostMenuOpen((isOpen) => !isOpen)}
@@ -79,7 +81,7 @@ export default function PostOverflowMenu({
                 role="menuitem"
                 type="button"
               >
-                Edit post
+                {t('editPostTitle')}
               </button>
               <button
                 className="community-page-post__menu-item"
@@ -87,7 +89,7 @@ export default function PostOverflowMenu({
                 role="menuitem"
                 type="button"
               >
-                Delete post
+                {t('deletePost')}
               </button>
             </>
           ) : (
@@ -99,7 +101,7 @@ export default function PostOverflowMenu({
               role="menuitem"
               type="button"
             >
-              {isReportedByCurrentUser ? 'Reported' : 'Report post'}
+              {isReportedByCurrentUser ? t('reported') : t('reportPost')}
             </button>
           )}
         </div>

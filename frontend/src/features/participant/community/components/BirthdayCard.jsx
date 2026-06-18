@@ -4,8 +4,9 @@ import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 import CakeOutlinedIcon from '@mui/icons-material/CakeOutlined';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
-import { birthdayMessages } from '../communityMockData';
 import { sendBirthdayWish } from '../services/communityService';
+import { useParticipantLocale } from '../../context/ParticipantLocaleContext';
+import { getParticipantCommunityContent } from '../../i18n/participantUiTranslations';
 
 const getBirthdayMonthDay = (birthday) => {
   if (typeof birthday !== 'string') return null;
@@ -70,6 +71,8 @@ export default function BirthdayCard({
   localUserId = '',
   localUserName = '',
 }) {
+  const { t, locale } = useParticipantLocale();
+  const birthdayMessages = getParticipantCommunityContent(locale).birthdayMessages;
   const sentStorageKey = `community-birthday-wishes:${localUserId || 'guest'}:${getTodayStorageKey()}`;
   const todaysBirthdayUsers = useMemo(() => getTodaysBirthdayUsers(birthdayUsers), [birthdayUsers]);
   const [sentBirthdayUserIds, setSentBirthdayUserIds] = useState(() => (
@@ -117,7 +120,7 @@ export default function BirthdayCard({
 
   const handleSendBirthdayWish = async () => {
     if (!selectedMessage) {
-      setBirthdayWishError('Please choose a birthday message.');
+      setBirthdayWishError(t('birthdayChooseMessage'));
       return;
     }
 
@@ -146,7 +149,7 @@ export default function BirthdayCard({
       setSelectedMessage('');
       setBirthdayWishError('');
     } catch {
-      setBirthdayWishError('Unable to send the birthday wish right now.');
+      setBirthdayWishError(t('birthdayWishSendError'));
     } finally {
       setIsSendingBirthdayWish(false);
     }
@@ -159,11 +162,11 @@ export default function BirthdayCard({
   return (
     <section className="birthday-card" aria-labelledby="birthday-card-title">
       {hasBirthdayNavigation && (
-        <div className="birthday-card__nav" aria-label="Birthday cards navigation">
+        <div className="birthday-card__nav" aria-label={t('birthdayNavAria')}>
           <button
             type="button"
             onClick={() => handleBirthdayNavigation(-1)}
-            aria-label="Previous birthday"
+            aria-label={t('birthdayPrev')}
           >
             <ArrowBackIosNewIcon />
           </button>
@@ -177,7 +180,7 @@ export default function BirthdayCard({
           <button
             type="button"
             onClick={() => handleBirthdayNavigation(1)}
-            aria-label="Next birthday"
+            aria-label={t('birthdayNext')}
           >
             <ArrowForwardIosIcon />
           </button>
@@ -190,11 +193,11 @@ export default function BirthdayCard({
         </span>
         <div className="birthday-card__heading">
           <h2 id="birthday-card-title">{birthdayUser.name}</h2>
-          <p>It's her birthday today!</p>
+          <p>{t('birthdayItsHerDay')}</p>
         </div>
       </div>
 
-      <div className="birthday-card__messages" aria-label="Ready-made birthday wishes">
+      <div className="birthday-card__messages" aria-label={t('readyWishesAria')}>
         {birthdayMessages.map((message) => (
           <button
             className={selectedMessage === message ? 'is-selected' : ''}
@@ -220,7 +223,7 @@ export default function BirthdayCard({
         onClick={handleSendBirthdayWish}
         disabled={isSendingBirthdayWish}
       >
-        {isSendingBirthdayWish ? 'Sending...' : 'Send Wish'}
+        {isSendingBirthdayWish ? t('birthdaySending') : t('birthdaySendWish')}
       </button>
     </section>
   );

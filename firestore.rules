@@ -370,13 +370,19 @@ service cloud.firestore {
     // NOTE: enable Firebase App Check on this project for real bot protection.
     match /joinRequests/{requestId} {
       allow create: if request.resource.data.keys().hasOnly([
-            'fullName', 'address', 'birthDate', 'cancerStory',
+            'firstName', 'lastName', 'fullName', 'address', 'birthDate', 'cancerStory',
             'consentToReceiveInfo', 'email', 'phone', 'whatsappNote',
             'readyToJoin', 'source', 'status', 'createdAt'
           ])
+        && request.resource.data.firstName is string
+        && request.resource.data.firstName.size() > 0
+        && request.resource.data.firstName.size() <= 200
+        && request.resource.data.lastName is string
+        && request.resource.data.lastName.size() > 0
+        && request.resource.data.lastName.size() <= 200
         && request.resource.data.fullName is string
         && request.resource.data.fullName.size() > 0
-        && request.resource.data.fullName.size() <= 200
+        && request.resource.data.fullName.size() <= 400
         && request.resource.data.email is string
         && request.resource.data.email.size() <= 320
         && request.resource.data.cancerStory is string

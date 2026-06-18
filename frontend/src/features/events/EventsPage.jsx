@@ -28,6 +28,7 @@ import eventsHeroBanner from '../../assets/lasteventBanner.png';
 import { useAdmin } from '../admin/context/AdminContext';
 import { getPublishedEvents } from '../admin/services/eventService';
 import { localizeField } from '../../i18n/localizeField';
+import { useParticipantLocale } from '../participant/context/ParticipantLocaleContext';
 import {
   addRegistration,
   getUserRegisteredEventIds,
@@ -70,12 +71,12 @@ const emptySuggestionForm = {
 };
 
 const participantNavItems = [
-  { key: 'home', label: 'Home', icon: HomeRoundedIcon, path: '/home' },
-  { key: 'calendar', label: 'Calendar', icon: CalendarMonthIcon, path: '/calendar' },
-  { key: 'events', label: 'Events', icon: EventAvailableIcon, path: '/events' },
-  { key: 'community', label: 'Community', icon: Diversity3Icon, path: '/home' },
-  { key: 'messages', label: 'Messages', icon: ChatBubbleOutlineIcon, path: '/home', badge: 3 },
-  { key: 'settings', label: 'Settings', icon: SettingsIcon, path: '/home' },
+  { key: 'home', labelKey: 'navHome', icon: HomeRoundedIcon, path: '/home' },
+  { key: 'calendar', labelKey: 'navCalendar', icon: CalendarMonthIcon, path: '/calendar' },
+  { key: 'events', labelKey: 'navEvents', icon: EventAvailableIcon, path: '/events' },
+  { key: 'community', labelKey: 'navCommunity', icon: Diversity3Icon, path: '/home' },
+  { key: 'messages', labelKey: 'evMessages', icon: ChatBubbleOutlineIcon, path: '/home', badge: 3 },
+  { key: 'settings', labelKey: 'navSettings', icon: SettingsIcon, path: '/home' },
 ];
 
 function toDate(value) {
@@ -86,29 +87,36 @@ function toDate(value) {
 
 const CANCELLATION_WINDOW_MS = 48 * 60 * 60 * 1000;
 const CANCELLATION_CLOSED_MESSAGE = 'Booking can no longer be cancelled (less than 48h remaining)';
+const INTL_LOCALE_BY_LANG = { he: 'he-IL', ar: 'ar', en: 'en' };
+
+// Translation helper for module-level formatters: uses `t` when supplied,
+// otherwise the English fallback so any non-localized call still works.
+function tr(t, key, fallback) {
+  return typeof t === 'function' ? t(key) : fallback;
+}
 
 function canCancelSessionBooking(session, now = new Date()) {
   const startDate = toDate(session?.startDate || session?.eventDate);
   return Boolean(startDate && startDate.getTime() - now.getTime() > CANCELLATION_WINDOW_MS);
 }
 
-function formatEventDate(value) {
+function formatEventDate(value, t = null, intlLocale = 'en') {
   const date = toDate(value);
-  if (!date) return 'To be scheduled';
+  if (!date) return tr(t, 'evToBeScheduled', 'To be scheduled');
 
-  return new Intl.DateTimeFormat('en', {
+  return new Intl.DateTimeFormat(intlLocale, {
     month: 'long',
     day: 'numeric',
     year: 'numeric',
   }).format(date);
 }
 
-function formatEventTime(startValue, endValue) {
+function formatEventTime(startValue, endValue, t = null, intlLocale = 'en') {
   const start = toDate(startValue);
   const end = toDate(endValue);
-  if (!start) return 'Time TBD';
+  if (!start) return tr(t, 'evTimeTBD', 'Time TBD');
 
-  const formatter = new Intl.DateTimeFormat('en', {
+  const formatter = new Intl.DateTimeFormat(intlLocale, {
     hour: '2-digit',
     minute: '2-digit',
   });
@@ -125,65 +133,69 @@ function toDateKey(date) {
   ].join('-');
 }
 
-function formatWeekday(value) {
+function formatWeekday(value, intlLocale = 'en') {
   const date = toDate(value);
-  if (!date) return 'Schedule TBD';
+  if (!date) return null;
 
-  return new Intl.DateTimeFormat('en', { weekday: 'long' }).format(date);
+  return new Intl.DateTimeFormat(intlLocale, { weekday: 'long' }).format(date);
 }
 
-function formatWeeklySchedule(value) {
-  const weekday = formatWeekday(value);
-  return weekday === 'Schedule TBD' ? weekday : `Every ${weekday}`;
+function formatWeeklySchedule(value, t = null, intlLocale = 'en') {
+  const weekday = formatWeekday(value, intlLocale);
+  return weekday ? tr(t, 'evEveryDay', 'Every {day}').replace('{day}', weekday) : tr(t, 'evScheduleTBD', 'Schedule TBD');
 }
 
-function formatWeeklyScheduleFromDay(dayIndex) {
-  if (!Number.isInteger(dayIndex)) return 'Schedule TBD';
-  return `Every ${CALENDAR_WEEKDAYS[dayIndex]}`;
+function formatWeeklyScheduleFromDay(dayIndex, t = null, intlLocale = 'en') {
+  if (!Number.isInteger(dayIndex)) return tr(t, 'evScheduleTBD', 'Schedule TBD');
+  // Build a real date for the weekday so the day name is localized.
+  const reference = new Date();
+  reference.setDate(reference.getDate() + ((dayIndex - reference.getDay() + 7) % 7));
+  const weekday = new Intl.DateTimeFormat(intlLocale, { weekday: 'long' }).format(reference);
+  return tr(t, 'evEveryDay', 'Every {day}').replace('{day}', weekday);
 }
 
-function formatSessionDate(value) {
+function formatSessionDate(value, t = null, intlLocale = 'en') {
   const date = toDate(value);
-  if (!date) return 'Date TBD';
+  if (!date) return tr(t, 'evDateTBD', 'Date TBD');
 
-  return new Intl.DateTimeFormat('en', {
+  return new Intl.DateTimeFormat(intlLocale, {
     weekday: 'long',
     month: 'long',
     day: 'numeric',
   }).format(date);
 }
 
-function formatSessionTabDate(value) {
+function formatSessionTabDate(value, t = null, intlLocale = 'en') {
   const date = toDate(value);
-  if (!date) return 'Date TBD';
+  if (!date) return tr(t, 'evDateTBD', 'Date TBD');
 
-  return new Intl.DateTimeFormat('en', {
+  return new Intl.DateTimeFormat(intlLocale, {
     weekday: 'short',
     month: 'short',
     day: 'numeric',
   }).format(date);
 }
 
-function formatAvailableSpots(availableSpots) {
-  if (availableSpots === null) return 'Spots available';
-  if (availableSpots === 1) return '1 spot left';
-  return `${availableSpots} spots left`;
+function formatAvailableSpots(availableSpots, t = null) {
+  if (availableSpots === null) return tr(t, 'evSpotsAvailable', 'Spots available');
+  if (availableSpots === 1) return tr(t, 'evOneSpotLeft', '1 spot left');
+  return tr(t, 'evSpotsLeft', '{n} spots left').replace('{n}', String(availableSpots));
 }
 
-function getCalendarTitle(sessions) {
+function getCalendarTitle(sessions, t = null, intlLocale = 'en') {
   const dates = sessions.map((session) => toDate(session.startDate)).filter(Boolean);
-  if (!dates.length) return 'Upcoming dates';
+  if (!dates.length) return tr(t, 'evUpcomingDates', 'Upcoming dates');
 
   const firstDate = dates[0];
-  return new Intl.DateTimeFormat('en', {
+  return new Intl.DateTimeFormat(intlLocale, {
     month: 'long',
     year: 'numeric',
   }).format(firstDate);
 }
 
-function buildBookingCalendar(sessions) {
+function buildBookingCalendar(sessions, t = null, intlLocale = 'en') {
   const dates = sessions.map((session) => toDate(session.startDate)).filter(Boolean);
-  if (!dates.length) return { title: 'Upcoming dates', days: [] };
+  if (!dates.length) return { title: tr(t, 'evUpcomingDates', 'Upcoming dates'), days: [] };
 
   const firstDate = new Date(dates[0]);
   const lastDate = new Date(dates[dates.length - 1]);
@@ -207,7 +219,7 @@ function buildBookingCalendar(sessions) {
   }
 
   return {
-    title: getCalendarTitle(sessions),
+    title: getCalendarTitle(sessions, t, intlLocale),
     days,
   };
 }
@@ -348,18 +360,18 @@ function getDisabledDateKeys(event) {
   ].find((items) => Array.isArray(items) && items.length) || [];
 }
 
-function getWeeklyScheduleLabel(event, fallbackStart) {
-  if (event.weeklyDay) return `Every ${event.weeklyDay}`;
+function getWeeklyScheduleLabel(event, fallbackStart, t = null, intlLocale = 'en') {
+  if (event.weeklyDay) return tr(t, 'evEveryDay', 'Every {day}').replace('{day}', event.weeklyDay);
 
   const eventDayIndex = getEventWeeklyDayIndex(event);
   if (Number.isInteger(eventDayIndex)) {
-    return formatWeeklyScheduleFromDay(eventDayIndex);
+    return formatWeeklyScheduleFromDay(eventDayIndex, t, intlLocale);
   }
 
-  return formatWeeklySchedule(fallbackStart);
+  return formatWeeklySchedule(fallbackStart, t, intlLocale);
 }
 
-function formatSlotsTimeRange(providerSlots, dateSource) {
+function formatSlotsTimeRange(providerSlots, dateSource, t = null, intlLocale = 'en') {
   const slotDates = providerSlots
     .map((slot) => ({
       start: copyTimeToDate(dateSource, slot.startSource),
@@ -367,10 +379,10 @@ function formatSlotsTimeRange(providerSlots, dateSource) {
     }))
     .filter((slot) => slot.start);
 
-  if (!slotDates.length) return 'Time TBD';
+  if (!slotDates.length) return tr(t, 'evTimeTBD', 'Time TBD');
 
   if (slotDates.length === 1) {
-    return formatEventTime(slotDates[0].start, slotDates[0].end);
+    return formatEventTime(slotDates[0].start, slotDates[0].end, t, intlLocale);
   }
 
   const earliestStart = slotDates.reduce((earliest, slot) =>
@@ -380,10 +392,10 @@ function formatSlotsTimeRange(providerSlots, dateSource) {
     .map((slot) => slot.end || slot.start)
     .reduce((latest, date) => (date.getTime() > latest.getTime() ? date : latest), slotDates[0].end || slotDates[0].start);
 
-  return formatEventTime(earliestStart, latestEnd);
+  return formatEventTime(earliestStart, latestEnd, t, intlLocale);
 }
 
-function getInstructorLabel(event) {
+function getInstructorLabel(event, t = null) {
   return (
     event.therapist ||
     event.instructor ||
@@ -392,11 +404,11 @@ function getInstructorLabel(event) {
     event.host ||
     event.provider ||
     event.organizer ||
-    'She-Na Team'
+    tr(t, 'evSheNaTeam', 'She-Na Team')
   );
 }
 
-function getProviderName(provider, fallback) {
+function getProviderName(provider, fallback, t = null) {
   return (
     provider.providerName ||
     provider.therapistName ||
@@ -405,18 +417,18 @@ function getProviderName(provider, fallback) {
     provider.instructor ||
     provider.name ||
     fallback ||
-    'She-Na Team'
+    tr(t, 'evSheNaTeam', 'She-Na Team')
   );
 }
 
-function getProviderSpecialty(provider, event) {
+function getProviderSpecialty(provider, event, t = null) {
   return (
     provider.specialty ||
     provider.role ||
     provider.title ||
     provider.category ||
     event.category ||
-    (inferEventType(event) === 'appointment' ? 'Therapist' : 'Instructor')
+    (inferEventType(event) === 'appointment' ? tr(t, 'evTherapist', 'Therapist') : tr(t, 'evInstructor', 'Instructor'))
   );
 }
 
@@ -448,12 +460,12 @@ function getLooseTimeSlots(event) {
   ].find((items) => Array.isArray(items) && items.length) || [];
 }
 
-function getProviderSlots(event) {
+function getProviderSlots(event, t = null) {
   const providerEntries = getProviderSlotArrays(event);
 
   if (providerEntries.length) {
     return providerEntries.flatMap((provider, providerIndex) => {
-      const providerName = getProviderName(provider, getInstructorLabel(event));
+      const providerName = getProviderName(provider, getInstructorLabel(event, t), t);
       const providerId = slugifyIdentifier(provider.id || provider.uid || provider.email || providerName || `provider-${providerIndex + 1}`);
       const providerSlots = [
         provider.timeSlots,
@@ -469,7 +481,7 @@ function getProviderSlots(event) {
         return {
           providerId,
           providerName,
-          providerSpecialty: getProviderSpecialty(provider, event),
+          providerSpecialty: getProviderSpecialty(provider, event, t),
           providerAvatar: getProviderAvatar(provider),
           slotId,
           startSource,
@@ -484,7 +496,7 @@ function getProviderSlots(event) {
   const looseSlots = getLooseTimeSlots(event);
   if (looseSlots.length) {
     return looseSlots.map((slot, slotIndex) => {
-      const providerName = getProviderName(slot, getInstructorLabel(event));
+      const providerName = getProviderName(slot, getInstructorLabel(event, t), t);
       const providerId = slugifyIdentifier(slot.providerId || slot.therapistId || slot.instructorId || providerName || `provider-${slotIndex + 1}`);
       const startSource = slot.startTime || slot.start || slot.from || event.startTime || event.date;
       const endSource = slot.endTime || slot.end || slot.to || event.endTime;
@@ -492,7 +504,7 @@ function getProviderSlots(event) {
       return {
         providerId,
         providerName,
-        providerSpecialty: getProviderSpecialty(slot, event),
+        providerSpecialty: getProviderSpecialty(slot, event, t),
         providerAvatar: getProviderAvatar(slot),
         slotId: slugifyIdentifier(slot.id || `${providerId}-${getTimeKey(startSource)}-${getTimeKey(endSource)}-${slotIndex + 1}`),
         startSource,
@@ -503,14 +515,14 @@ function getProviderSlots(event) {
     });
   }
 
-  const fallbackProvider = getInstructorLabel(event);
+  const fallbackProvider = getInstructorLabel(event, t);
   const providerId = slugifyIdentifier(event.providerId || event.therapistId || event.instructorId || fallbackProvider);
 
   return [
     {
       providerId,
       providerName: fallbackProvider,
-      providerSpecialty: event.category || (inferEventType(event) === 'appointment' ? 'Therapist' : 'Instructor'),
+      providerSpecialty: event.category || (inferEventType(event) === 'appointment' ? tr(t, 'evTherapist', 'Therapist') : tr(t, 'evInstructor', 'Instructor')),
       providerAvatar: event.providerAvatarUrl || event.therapistAvatarUrl || '',
       slotId: slugifyIdentifier(`${providerId}-${getTimeKey(event.startTime || event.date)}-${getTimeKey(event.endTime)}`),
       startSource: event.startTime || event.date,
@@ -569,7 +581,8 @@ function EventCard({
   registeredSessionIds,
   onOpenBooking,
 }) {
-  const typeLabel = event.eventType === 'appointment' ? 'Appointment' : 'Workshop';
+  const { t } = useParticipantLocale();
+  const typeLabel = event.eventType === 'appointment' ? t('evAppointment') : t('evWorkshop');
   const hasRegisteredSessions = event.sessionOptions.some((session) => registeredSessionIds.has(session.id));
   const registrationClosed = event.registrationOpen === false;
   const [isDescriptionOpen, setIsDescriptionOpen] = useState(false);
@@ -583,10 +596,10 @@ function EventCard({
           type="button"
           onClick={() => setIsDescriptionOpen((current) => !current)}
           aria-expanded={isDescriptionOpen}
-          aria-label={`About ${typeLabel.toLowerCase()}`}
+          aria-label={t('evAboutAria').replace('{type}', typeLabel)}
         >
           <KeyboardArrowDownIcon fontSize="small" />
-          <span>About</span>
+          <span>{t('evAbout')}</span>
         </button>
       </div>
 
@@ -605,7 +618,7 @@ function EventCard({
           disabled={registrationClosed}
           aria-haspopup="dialog"
         >
-          {registrationClosed ? 'Registration Closed' : hasRegisteredSessions ? 'Choose More Dates' : 'View Dates'}
+          {registrationClosed ? t('evRegistrationClosed') : hasRegisteredSessions ? t('evChooseMoreDates') : t('evViewDates')}
           <ArrowForwardIcon fontSize="small" />
         </button>
       </div>
@@ -613,15 +626,15 @@ function EventCard({
   );
 }
 
-function getAppointmentServiceLabel(title = '') {
+function getAppointmentServiceLabel(title = '', t = null) {
   const cleanTitle = title.trim();
-  if (!cleanTitle) return 'Wellness Session';
+  if (!cleanTitle) return tr(t, 'evWellnessSession', 'Wellness Session');
 
   const normalized = cleanTitle.toLowerCase();
-  if (normalized === 'yoga') return 'Yoga Therapy';
-  if (normalized.includes('massage') && !normalized.includes('therapy')) return `${cleanTitle} Therapy`;
-  if (normalized.includes('acupuncture')) return 'Acupuncture';
-  if (normalized.includes('reflexology')) return 'Reflexology';
+  if (normalized === 'yoga') return tr(t, 'evYogaTherapy', 'Yoga Therapy');
+  if (normalized.includes('massage') && !normalized.includes('therapy')) return tr(t, 'evTherapySuffix', '{title} Therapy').replace('{title}', cleanTitle);
+  if (normalized.includes('acupuncture')) return tr(t, 'evAcupuncture', 'Acupuncture');
+  if (normalized.includes('reflexology')) return tr(t, 'evReflexology', 'Reflexology');
   return cleanTitle;
 }
 
@@ -654,7 +667,7 @@ function sortSessionsByDate(left, right) {
   return leftDate.getTime() - rightDate.getTime();
 }
 
-function getAppointmentProviders(event) {
+function getAppointmentProviders(event, t = null) {
   const providers = new Map();
 
   event.sessionOptions.forEach((option) => {
@@ -668,8 +681,8 @@ function getAppointmentProviders(event) {
 
     providers.set(providerId, {
       id: providerId,
-      name: option.providerName || 'She-Na Team',
-      specialty: option.providerSpecialty || event.category || 'Wellness Teacher',
+      name: option.providerName || tr(t, 'evSheNaTeam', 'She-Na Team'),
+      specialty: option.providerSpecialty || event.category || tr(t, 'evWellnessTeacher', 'Wellness Teacher'),
       avatar: option.providerAvatar || '',
       dateKeys: nextDates,
       sessions: (existing?.sessions || 0) + 1,
@@ -679,14 +692,14 @@ function getAppointmentProviders(event) {
   return Array.from(providers.values()).sort((left, right) => left.name.localeCompare(right.name));
 }
 
-function getAppointmentDayPills(event) {
+function getAppointmentDayPills(event, intlLocale = 'en') {
   const days = new Map();
 
   event.sessionOptions.forEach((option) => {
     const date = toDate(option.startDate);
     if (!date) return;
     const dayIndex = date.getDay();
-    days.set(dayIndex, new Intl.DateTimeFormat('en', { weekday: 'short' }).format(date));
+    days.set(dayIndex, new Intl.DateTimeFormat(intlLocale, { weekday: 'short' }).format(date));
   });
 
   return Array.from(days.entries())
@@ -694,13 +707,13 @@ function getAppointmentDayPills(event) {
     .map(([, label]) => label);
 }
 
-function getAppointmentDateOptions(event, providerId) {
+function getAppointmentDateOptions(event, providerId, intlLocale = 'en') {
   return event.sessions
     .filter((session) => session.options.some((option) => option.providerId === providerId))
     .sort(sortSessionsByDate)
     .map((session) => ({
       dateKey: session.dateKey,
-      label: new Intl.DateTimeFormat('en', {
+      label: new Intl.DateTimeFormat(intlLocale, {
         weekday: 'long',
         month: 'long',
         day: 'numeric',
@@ -711,7 +724,7 @@ function getAppointmentDateOptions(event, providerId) {
     }));
 }
 
-function getAppointmentTimeOptions(event, dateKey, providerId, registeredSessionIds) {
+function getAppointmentTimeOptions(event, dateKey, providerId, registeredSessionIds, t = null) {
   const session = event.sessions.find((item) => item.dateKey === dateKey);
   if (!session) return [];
 
@@ -737,7 +750,7 @@ function getAppointmentTimeOptions(event, dateKey, providerId, registeredSession
       if (!existing) {
         orderedTimes.set(key, {
           id: `unavailable-${key}`,
-          label: option.time || option.selectedTimeSlot || 'Time TBD',
+          label: option.time || option.selectedTimeSlot || tr(t, 'evTimeTBD', 'Time TBD'),
           option: isProviderOption ? option : null,
           unavailable: !isProviderOption,
           isFull: isProviderOption ? isFull : false,
@@ -763,9 +776,13 @@ function getAppointmentTimeOptions(event, dateKey, providerId, registeredSession
 }
 
 function AppointmentServiceCard({ event, isSelected, onOpenBooking }) {
-  const providers = getAppointmentProviders(event);
-  const days = getAppointmentDayPills(event);
-  const serviceLabel = getAppointmentServiceLabel(event.title);
+  const { t, lang } = useParticipantLocale();
+  const intlLocale = INTL_LOCALE_BY_LANG[lang] || 'en';
+  const providers = getAppointmentProviders(event, t);
+  const days = getAppointmentDayPills(event, intlLocale);
+  const serviceLabel = getAppointmentServiceLabel(event.title, t);
+  const providerCount = providers.length || 1;
+  const providerUnit = providers.length === 1 ? t('evInstructorSingular') : t('evInstructorPlural');
 
   return (
     <article className={`appointment-service-card${isSelected ? ' is-selected' : ''}`}>
@@ -776,12 +793,12 @@ function AppointmentServiceCard({ event, isSelected, onOpenBooking }) {
       <div className="appointment-service-card__copy">
         <h3>{serviceLabel}</h3>
         <p>{event.description}</p>
-        <div className="appointment-service-card__meta" aria-label={`Available days for ${serviceLabel}`}>
-          {(days.length ? days : ['Soon']).map((day) => (
+        <div className="appointment-service-card__meta" aria-label={t('evAvailableDaysAria').replace('{service}', serviceLabel)}>
+          {(days.length ? days : [t('evSoon')]).map((day) => (
             <span key={day}>{day}</span>
           ))}
           <span className="appointment-service-card__provider-count">
-            Available with {providers.length || 1} {providers.length === 1 ? 'instructor' : 'instructors'}
+            {t('evAvailableWith').replace('{count}', String(providerCount)).replace('{unit}', providerUnit)}
           </span>
         </div>
       </div>
@@ -793,7 +810,7 @@ function AppointmentServiceCard({ event, isSelected, onOpenBooking }) {
         disabled={event.registrationOpen === false}
         aria-haspopup="dialog"
       >
-        View Available Times
+        {t('evViewAvailableTimes')}
         <ArrowForwardIcon fontSize="small" />
       </button>
     </article>
@@ -809,8 +826,9 @@ function AppointmentServicesPanel({
   onCancelSession,
   onCloseBooking,
 }) {
+  const { t } = useParticipantLocale();
   return (
-    <section className={`appointments-tab-panel${selectedEvent ? ' has-panel' : ''}`} aria-label="Appointment services">
+    <section className={`appointments-tab-panel${selectedEvent ? ' has-panel' : ''}`} aria-label={t('evAppointmentServicesAria')}>
       <div className="appointments-tab-panel__body">
         <div className="appointments-tab-panel__list">
           <div className="appointment-service-list">
@@ -846,7 +864,9 @@ function AppointmentBookingDrawer({
   onCancelSession,
   onClose,
 }) {
-  const providers = useMemo(() => getAppointmentProviders(event), [event]);
+  const { t, lang } = useParticipantLocale();
+  const intlLocale = INTL_LOCALE_BY_LANG[lang] || 'en';
+  const providers = useMemo(() => getAppointmentProviders(event, t), [event, t]);
   const [selectedProviderId, setSelectedProviderId] = useState('');
   const [dateIndex, setDateIndex] = useState(0);
   const [selectedOptionId, setSelectedOptionId] = useState('');
@@ -859,13 +879,13 @@ function AppointmentBookingDrawer({
 
   const selectedProvider = providers.find((provider) => provider.id === selectedProviderId) || providers[0] || null;
   const dateOptions = useMemo(
-    () => (selectedProvider ? getAppointmentDateOptions(event, selectedProvider.id) : []),
-    [event, selectedProvider],
+    () => (selectedProvider ? getAppointmentDateOptions(event, selectedProvider.id, intlLocale) : []),
+    [event, selectedProvider, intlLocale],
   );
   const selectedDate = dateOptions[dateIndex] || dateOptions[0] || null;
   const timeOptions = useMemo(
-    () => getAppointmentTimeOptions(event, selectedDate?.dateKey, selectedProvider?.id, registeredSessionIds),
-    [event, registeredSessionIds, selectedDate?.dateKey, selectedProvider?.id],
+    () => getAppointmentTimeOptions(event, selectedDate?.dateKey, selectedProvider?.id, registeredSessionIds, t),
+    [event, registeredSessionIds, selectedDate?.dateKey, selectedProvider?.id, t],
   );
 
   useEffect(() => {
@@ -892,7 +912,7 @@ function AppointmentBookingDrawer({
 
   if (!event) return null;
 
-  const serviceLabel = getAppointmentServiceLabel(event.title);
+  const serviceLabel = getAppointmentServiceLabel(event.title, t);
   const ServiceIcon = getAppointmentServiceIcon(event.title);
   const selectedTime = timeOptions.find((timeOption) => timeOption.option?.id === selectedOptionId) || null;
   const selectedOption = selectedTime?.option || null;
@@ -919,7 +939,7 @@ function AppointmentBookingDrawer({
         aria-labelledby="appointment-drawer-title"
         dir="ltr"
       >
-        <button className="appointment-drawer__close" type="button" onClick={onClose} aria-label="Close appointment booking">
+        <button className="appointment-drawer__close" type="button" onClick={onClose} aria-label={t('evCloseAppointmentBooking')}>
           <CloseIcon fontSize="small" />
         </button>
 
@@ -929,12 +949,12 @@ function AppointmentBookingDrawer({
           </span>
           <div>
             <h2 id="appointment-drawer-title">{serviceLabel}</h2>
-            <p>Book a session</p>
+            <p>{t('evBookASession')}</p>
           </div>
         </header>
 
         <section className="appointment-booking-step">
-          <h3><span>1</span> Choose your instructor</h3>
+          <h3><span>1</span> {t('evStep1Instructor')}</h3>
           <div className="appointment-instructor-grid">
             {providers.map((provider) => {
               const isSelected = provider.id === selectedProvider?.id;
@@ -967,25 +987,25 @@ function AppointmentBookingDrawer({
         </section>
 
         <section className="appointment-booking-step">
-          <h3><span>2</span> Choose a date</h3>
+          <h3><span>2</span> {t('evStep2Date')}</h3>
           <div className="appointment-date-selector">
             <button
               type="button"
               onClick={() => setDateIndex((current) => Math.max(0, current - 1))}
               disabled={dateIndex <= 0}
-              aria-label="Previous available date"
+              aria-label={t('evPrevDate')}
             >
               <ArrowBackIcon fontSize="small" />
             </button>
             <strong>
               <CalendarMonthIcon fontSize="small" />
-              {selectedDate?.label || 'Dates coming soon'}
+              {selectedDate?.label || t('evDatesComingSoon')}
             </strong>
             <button
               type="button"
               onClick={() => setDateIndex((current) => Math.min(dateOptions.length - 1, current + 1))}
               disabled={dateIndex >= dateOptions.length - 1}
-              aria-label="Next available date"
+              aria-label={t('evNextDate')}
             >
               <ArrowForwardIcon fontSize="small" />
             </button>
@@ -993,7 +1013,7 @@ function AppointmentBookingDrawer({
         </section>
 
         <section className="appointment-booking-step">
-          <h3><span>3</span> Available times</h3>
+          <h3><span>3</span> {t('evStep3Times')}</h3>
           {timeOptions.length ? (
             <div className="appointment-time-grid">
               {timeOptions.map((timeOption) => {
@@ -1016,11 +1036,11 @@ function AppointmentBookingDrawer({
               })}
             </div>
           ) : (
-            <p className="appointment-drawer__empty">No times are currently available for this instructor.</p>
+            <p className="appointment-drawer__empty">{t('evNoTimesInstructor')}</p>
           )}
           <p className="appointment-drawer__timezone">
             <AccessTimeIcon fontSize="small" />
-            All times are displayed in your local time (GMT +3)
+            {t('evLocalTime')}
           </p>
         </section>
 
@@ -1032,14 +1052,14 @@ function AppointmentBookingDrawer({
             disabled={confirmDisabled}
           >
             {selectedOption?.isRegistering
-              ? 'Please wait...'
+              ? t('evPleaseWait')
               : isRegistered
-                ? 'Cancel Booking'
-                : 'Confirm Booking'}
+                ? t('evCancelBooking')
+                : t('evConfirmBooking')}
             <ArrowForwardIcon fontSize="small" />
           </button>
           <button className="appointment-drawer__cancel" type="button" onClick={onClose}>
-            Cancel
+            {t('evCancel')}
           </button>
         </div>
       </aside>
@@ -1058,15 +1078,18 @@ function getWorkshopActiveSession(event, registeredSessionIds) {
   return getWorkshopRegisteredSession(event, registeredSessionIds) || getWorkshopPrimarySession(event);
 }
 
-function getWorkshopAvailabilityLabel(session) {
-  if (!session) return 'Availability coming soon';
-  if (!session.capacity || session.capacity <= 0) return 'Open registration';
+function getWorkshopAvailabilityLabel(session, t = null) {
+  if (!session) return tr(t, 'evAvailabilityComingSoon', 'Availability coming soon');
+  if (!session.capacity || session.capacity <= 0) return tr(t, 'evOpenRegistration', 'Open registration');
 
   const remaining = Math.max(0, session.capacity - (session.participants || 0));
-  return `${remaining} of ${session.capacity} spots available`;
+  return tr(t, 'evRemainingSpots', '{remaining} of {capacity} spots available')
+    .replace('{remaining}', String(remaining))
+    .replace('{capacity}', String(session.capacity));
 }
 
 function WorkshopListCard({ event, registeredSessionIds, isSelected, onOpenBooking }) {
+  const { t } = useParticipantLocale();
   const session = getWorkshopActiveSession(event, registeredSessionIds);
   const isRegistered = Boolean(session && registeredSessionIds.has(session.id));
   const registrationClosed = event.registrationOpen === false;
@@ -1086,11 +1109,11 @@ function WorkshopListCard({ event, registeredSessionIds, isSelected, onOpenBooki
         <div className="workshop-list-card__meta">
           <span>
             <EventAvailableIcon fontSize="small" />
-            {session?.date || event.date || 'Date TBD'}
+            {session?.date || event.date || t('evDateTBD')}
           </span>
           <span>
             <AccessTimeIcon fontSize="small" />
-            {session?.time || event.time || 'Time TBD'}
+            {session?.time || event.time || t('evTimeTBD')}
           </span>
           <span>
             <HomeRoundedIcon fontSize="small" />
@@ -1098,7 +1121,7 @@ function WorkshopListCard({ event, registeredSessionIds, isSelected, onOpenBooki
           </span>
           <span>
             <GroupsRoundedIcon fontSize="small" />
-            {getWorkshopAvailabilityLabel(session)}
+            {getWorkshopAvailabilityLabel(session, t)}
           </span>
         </div>
       </div>
@@ -1110,7 +1133,7 @@ function WorkshopListCard({ event, registeredSessionIds, isSelected, onOpenBooki
         disabled={registrationClosed}
         aria-haspopup="dialog"
       >
-        {registrationClosed ? 'Registration Closed' : isRegistered ? 'View Registration' : 'View Details / Register'}
+        {registrationClosed ? t('evRegistrationClosed') : isRegistered ? t('evViewRegistration') : t('evViewDetailsRegister')}
         <ArrowForwardIcon fontSize="small" />
       </button>
     </article>
@@ -1124,6 +1147,7 @@ function WorkshopDetailsPanel({
   onCancelSession,
   onClose,
 }) {
+  const { t } = useParticipantLocale();
   const session = getWorkshopActiveSession(event, registeredSessionIds);
   const isRegistered = Boolean(session && registeredSessionIds.has(session.id));
   const canCancelBooking = isRegistered && canCancelSessionBooking(session);
@@ -1150,7 +1174,7 @@ function WorkshopDetailsPanel({
       aria-labelledby="workshop-details-title"
       dir="ltr"
     >
-      <button className="workshop-details-panel__close" type="button" onClick={onClose} aria-label="Close workshop details">
+      <button className="workshop-details-panel__close" type="button" onClick={onClose} aria-label={t('evCloseWorkshopDetails')}>
         <CloseIcon fontSize="small" />
       </button>
 
@@ -1164,7 +1188,7 @@ function WorkshopDetailsPanel({
         </span>
         <div>
           <h2 id="workshop-details-title">{event.title}</h2>
-          <p>{isRegistered ? 'You are registered' : 'Workshop details'}</p>
+          <p>{isRegistered ? t('evYouAreRegistered') : t('evWorkshopDetails')}</p>
         </div>
       </header>
 
@@ -1173,38 +1197,38 @@ function WorkshopDetailsPanel({
       <div className="workshop-details-panel__details">
         <span>
           <EventAvailableIcon fontSize="small" />
-          <strong>Date</strong>
-          {session?.date || event.date || 'Date TBD'}
+          <strong>{t('evDate')}</strong>
+          {session?.date || event.date || t('evDateTBD')}
         </span>
         <span>
           <AccessTimeIcon fontSize="small" />
-          <strong>Time</strong>
-          {session?.time || event.time || 'Time TBD'}
+          <strong>{t('evTime')}</strong>
+          {session?.time || event.time || t('evTimeTBD')}
         </span>
         <span>
           <HomeRoundedIcon fontSize="small" />
-          <strong>Location</strong>
+          <strong>{t('evLocation')}</strong>
           {session?.location || event.location || 'She-Na Center'}
         </span>
         <span>
           <PersonIcon fontSize="small" />
-          <strong>Instructor</strong>
-          {session?.providerName || event.instructor || 'She-Na Team'}
+          <strong>{t('evInstructorLabel')}</strong>
+          {session?.providerName || event.instructor || t('evSheNaTeam')}
         </span>
         <span>
           <GroupsRoundedIcon fontSize="small" />
-          <strong>Spots</strong>
-          {getWorkshopAvailabilityLabel(session)}
+          <strong>{t('evSpots')}</strong>
+          {getWorkshopAvailabilityLabel(session, t)}
         </span>
         <span>
           <CalendarMonthIcon fontSize="small" />
-          <strong>Status</strong>
-          {isRegistered ? 'Registered' : registrationClosed ? 'Closed' : isFull ? 'Full' : 'Open'}
+          <strong>{t('evStatus')}</strong>
+          {isRegistered ? t('evRegistered') : registrationClosed ? t('evClosed') : isFull ? t('evFull') : t('evOpen')}
         </span>
       </div>
 
       {isRegistered && !canCancelBooking && (
-        <p className="workshop-details-panel__notice">{CANCELLATION_CLOSED_MESSAGE}</p>
+        <p className="workshop-details-panel__notice">{t('evCancellationClosed')}</p>
       )}
 
       <div className="workshop-details-panel__actions">
@@ -1215,18 +1239,18 @@ function WorkshopDetailsPanel({
           disabled={actionDisabled}
         >
           {session?.isRegistering
-            ? 'Please wait...'
+            ? t('evPleaseWait')
             : isRegistered
-              ? 'Cancel Registration'
+              ? t('evCancelRegistration')
               : isFull
-                ? 'Workshop Full'
+                ? t('evWorkshopFull')
                 : registrationClosed
-                  ? 'Registration Closed'
-                  : 'Register'}
+                  ? t('evRegistrationClosed')
+                  : t('evRegister')}
           <ArrowForwardIcon fontSize="small" />
         </button>
         <button className="workshop-details-panel__secondary" type="button" onClick={onClose}>
-          Close
+          {t('evClose')}
         </button>
       </div>
     </aside>
@@ -1242,8 +1266,9 @@ function WorkshopListPanel({
   onCancelSession,
   onCloseBooking,
 }) {
+  const { t } = useParticipantLocale();
   return (
-    <section className={`workshops-tab-panel${selectedEvent ? ' has-panel' : ''}`} aria-label="Workshop sessions">
+    <section className={`workshops-tab-panel${selectedEvent ? ' has-panel' : ''}`} aria-label={t('evWorkshopSessionsAria')}>
       <div className="workshops-tab-panel__body">
         <div className="workshop-list">
           {events.map((event) => (
@@ -1278,6 +1303,8 @@ function EventBookingModal({
   onCancelSession,
   onClose,
 }) {
+  const { t, lang } = useParticipantLocale();
+  const intlLocale = INTL_LOCALE_BY_LANG[lang] || 'en';
   const [selectedDateKey, setSelectedDateKey] = useState('');
   const [isCalendarExiting, setIsCalendarExiting] = useState(false);
   const dateSelectionTimeoutRef = useRef(null);
@@ -1327,12 +1354,12 @@ function EventBookingModal({
 
   const selectedSession = event.sessions.find((session) => session.dateKey === selectedDateKey) || null;
   const selectedOptions = selectedSession?.options || [];
-  const bookingCalendar = buildBookingCalendar(event.sessions);
+  const bookingCalendar = buildBookingCalendar(event.sessions, t, intlLocale);
   const sessionsByDateKey = new Map(event.sessions.map((session) => [session.dateKey, session]));
 
   return (
     <div className="events-booking-modal" role="presentation">
-      <button className="events-booking-modal__backdrop" type="button" aria-label="Close booking calendar" onClick={onClose} />
+      <button className="events-booking-modal__backdrop" type="button" aria-label={t('evCloseBookingCalendar')} onClick={onClose} />
       <section
         className="events-booking-modal__dialog"
         role="dialog"
@@ -1340,7 +1367,7 @@ function EventBookingModal({
         aria-labelledby="events-booking-modal-title"
         dir="ltr"
       >
-        <button className="events-booking-modal__close" type="button" onClick={onClose} aria-label="Close booking calendar">
+        <button className="events-booking-modal__close" type="button" onClick={onClose} aria-label={t('evCloseBookingCalendar')}>
           <CloseIcon fontSize="small" />
         </button>
 
@@ -1352,12 +1379,12 @@ function EventBookingModal({
                   <div>
                     <h4 id="events-booking-modal-title">{bookingCalendar.title}</h4>
                     <strong>{event.title}</strong>
-                    <p>Only available dates are highlighted</p>
-                    <p>Select a date to view time and provider options</p>
+                    <p>{t('evOnlyAvailableHighlighted')}</p>
+                    <p>{t('evSelectDateToView')}</p>
                   </div>
                 </header>
 
-                <div className="events-card__calendar" aria-label={`Available calendar dates for ${event.title}`}>
+                <div className="events-card__calendar" aria-label={t('evAvailableCalendarDatesAria').replace('{title}', event.title)}>
                   <div className="events-card__calendar-weekdays" aria-hidden="true">
                     {CALENDAR_WEEKDAYS.map((weekday) => (
                       <span key={weekday}>{weekday}</span>
@@ -1375,7 +1402,7 @@ function EventBookingModal({
                           type="button"
                           onClick={() => handleDateSelection(day.dateKey)}
                           disabled={!isAvailable || isCalendarExiting}
-                          aria-label={session ? `Choose ${session.date}` : 'Unavailable date'}
+                          aria-label={session ? t('evChooseDate').replace('{date}', session.date) : t('evUnavailableDate')}
                           key={day.id}
                         >
                           {day.dayNumber}
@@ -1391,20 +1418,20 @@ function EventBookingModal({
                   <header className="events-card__session-panel-header">
                     <div>
                       <h4 id="events-booking-modal-title">{selectedSession.date}</h4>
-                      <p>Available Sessions</p>
+                      <p>{t('evAvailableSessions')}</p>
                       <button
                         className="events-card__change-date events-card__change-date--back"
                         type="button"
                         onClick={handleChangeDate}
                       >
                         <ArrowBackIcon fontSize="small" />
-                        Back to calendar
+                        {t('evBackToCalendar')}
                       </button>
                     </div>
                   </header>
 
                   {selectedOptions.length === 0 ? (
-                    <p className="events-card__booking-empty">No available sessions for this date.</p>
+                    <p className="events-card__booking-empty">{t('evNoSessionsForDate')}</p>
                   ) : (
                     <div className="events-card__session-list">
                       {selectedOptions.map((option) => {
@@ -1445,15 +1472,15 @@ function EventBookingModal({
                                 disabled={actionDisabled}
                               >
                                 {option.isRegistering
-                                  ? 'Wait...'
+                                  ? t('evWait')
                                   : isRegistered
-                                    ? 'Cancel Booking'
+                                    ? t('evCancelBooking')
                                     : isFull
-                                      ? 'Full'
-                                      : 'Register'}
+                                      ? t('evFull')
+                                      : t('evRegister')}
                               </button>
                               {isRegistered && !canCancelBooking && (
-                                <small>{CANCELLATION_CLOSED_MESSAGE}</small>
+                                <small>{t('evCancellationClosed')}</small>
                               )}
                             </div>
                           </article>
@@ -1466,7 +1493,7 @@ function EventBookingModal({
             )}
           </div>
         ) : (
-          <p className="events-card__booking-empty">Upcoming dates will appear soon.</p>
+          <p className="events-card__booking-empty">{t('evUpcomingDatesSoon')}</p>
         )}
       </section>
     </div>
@@ -1474,6 +1501,7 @@ function EventBookingModal({
 }
 
 function RegisteredSessionCard({ session, onCancelRegistration }) {
+  const { t } = useParticipantLocale();
   return (
     <article className="registered-session-card">
       <div className="registered-session-card__media">
@@ -1507,7 +1535,7 @@ function RegisteredSessionCard({ session, onCancelRegistration }) {
       </div>
 
       <div className="registered-session-card__actions">
-        <span className="registered-session-card__status">Registered</span>
+        <span className="registered-session-card__status">{t('evRegistered')}</span>
         <button
           className="registered-session-card__cancel"
           type="button"
@@ -1515,7 +1543,7 @@ function RegisteredSessionCard({ session, onCancelRegistration }) {
           disabled={session.isRegistering}
         >
           <CalendarMonthIcon fontSize="small" />
-          {session.isRegistering ? 'Please wait...' : 'Cancel Registration'}
+          {session.isRegistering ? t('evPleaseWait') : t('evCancelRegistration')}
         </button>
       </div>
     </article>
@@ -1526,8 +1554,9 @@ function RegisteredEventsPanel({
   events,
   onCancelRegistration,
 }) {
+  const { t } = useParticipantLocale();
   return (
-    <section className="registered-tab-panel" aria-label="Registered events">
+    <section className="registered-tab-panel" aria-label={t('evRegisteredEventsAria')}>
       <div className="registered-session-list">
         {events.map((session) => (
           <RegisteredSessionCard
@@ -1551,11 +1580,12 @@ function SuggestWorkshopModal({
   onSubmit,
   onClose,
 }) {
+  const { t } = useParticipantLocale();
   return (
     <div className="suggest-modal" role="presentation">
       <div className="suggest-modal__overlay" onClick={onClose} />
       <section className="suggest-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="suggest-modal-title">
-        <button className="suggest-modal__close" type="button" onClick={onClose} aria-label="Close suggestion form">
+        <button className="suggest-modal__close" type="button" onClick={onClose} aria-label={t('evCloseSuggestionForm')}>
           <CloseIcon />
         </button>
 
@@ -1563,8 +1593,8 @@ function SuggestWorkshopModal({
           <span className="suggest-modal__mark">
             <FavoriteBorderOutlinedIcon />
           </span>
-          <h2 id="suggest-modal-title">What would you like to see next?</h2>
-          <p>Suggest a workshop, session, or support circle you would love to see in our community.</p>
+          <h2 id="suggest-modal-title">{t('evSuggestTitle')}</h2>
+          <p>{t('evSuggestSubtitle')}</p>
         </div>
 
         {successMessage && <div className="suggest-modal__success">{successMessage}</div>}
@@ -1572,24 +1602,24 @@ function SuggestWorkshopModal({
 
         <form className="suggest-form" onSubmit={onSubmit}>
           <label className="suggest-form__field">
-            <span>Workshop title *</span>
+            <span>{t('evWorkshopTitleField')}</span>
             <div className="suggest-form__control">
               <EditOutlinedIcon />
               <input
                 value={form.title}
                 onChange={(event) => onChange('title', event.target.value)}
-                placeholder="Example: Anxiety support circle"
+                placeholder={t('evTitlePlaceholder')}
               />
             </div>
             {errors.title && <small>{errors.title}</small>}
           </label>
 
           <label className="suggest-form__field">
-            <span>Category *</span>
+            <span>{t('evCategoryField')}</span>
             <div className="suggest-form__control">
               <GroupsRoundedIcon />
               <select value={form.category} onChange={(event) => onChange('category', event.target.value)}>
-                <option value="">Select a category</option>
+                <option value="">{t('evSelectCategory')}</option>
                 {suggestionCategories.map((category) => (
                   <option value={category} key={category}>{category}</option>
                 ))}
@@ -1599,13 +1629,13 @@ function SuggestWorkshopModal({
           </label>
 
           <label className="suggest-form__field">
-            <span>Short description *</span>
+            <span>{t('evShortDescField')}</span>
             <div className="suggest-form__control suggest-form__control--textarea">
               <MenuBookIcon />
               <textarea
                 value={form.description}
                 onChange={(event) => onChange('description', event.target.value)}
-                placeholder="Describe the workshop or session idea..."
+                placeholder={t('evDescPlaceholder')}
                 rows={3}
               />
             </div>
@@ -1613,13 +1643,13 @@ function SuggestWorkshopModal({
           </label>
 
           <label className="suggest-form__field">
-            <span>Why would this help you?</span>
+            <span>{t('evWhyHelpField')}</span>
             <div className="suggest-form__control suggest-form__control--textarea">
               <FavoriteBorderIcon />
               <textarea
                 value={form.reason}
                 onChange={(event) => onChange('reason', event.target.value)}
-                placeholder="Tell us why this topic would be meaningful or helpful..."
+                placeholder={t('evReasonPlaceholder')}
                 rows={3}
               />
             </div>
@@ -1632,16 +1662,16 @@ function SuggestWorkshopModal({
               onChange={(event) => onChange('anonymous', event.target.checked)}
             />
             <span>
-              Submit anonymously
-              <small>Your name will not be visible.</small>
+              {t('evSubmitAnonymously')}
+              <small>{t('evNameNotVisible')}</small>
             </span>
           </label>
 
           <div className="suggest-form__actions">
-            <button className="suggest-form__cancel" type="button" onClick={onClose}>Cancel</button>
+            <button className="suggest-form__cancel" type="button" onClick={onClose}>{t('evCancel')}</button>
             <button className="suggest-form__submit" type="submit" disabled={isSubmitting}>
               <SendOutlinedIcon fontSize="small" />
-              {isSubmitting ? 'Submitting...' : 'Submit Suggestion'}
+              {isSubmitting ? t('evSubmitting') : t('evSubmitSuggestion')}
             </button>
           </div>
         </form>
@@ -1651,6 +1681,8 @@ function SuggestWorkshopModal({
 }
 
 export default function EventsPage({ embedInDashboard = false, locale = 'he' }) {
+  const { t, lang, direction } = useParticipantLocale();
+  const intlLocale = INTL_LOCALE_BY_LANG[lang] || 'en';
   const navigate = useNavigate();
   const location = useLocation();
   const { currentUser, logout } = useAdmin();
@@ -1680,8 +1712,8 @@ export default function EventsPage({ embedInDashboard = false, locale = 'he' }) 
   const displayName = useMemo(() => {
     if (currentUser?.displayName) return currentUser.displayName.split(' ')[0];
     if (currentUser?.email) return currentUser.email.split('@')[0];
-    return 'Participant';
-  }, [currentUser]);
+    return t('evParticipant');
+  }, [currentUser, t]);
 
   const refreshRegistrationData = useCallback(async (eventList) => {
     if (!eventList.length) {
@@ -1702,7 +1734,7 @@ export default function EventsPage({ embedInDashboard = false, locale = 'he' }) 
       console.error('Failed to load event registration data:', error);
       setCounts({});
       setRegisteredMap({});
-      setRegistrationWarning('Events loaded, but registration data could not be refreshed.');
+      setRegistrationWarning(t('evRegDataWarning'));
     }
   }, [currentUser?.uid]);
 
@@ -1726,7 +1758,7 @@ export default function EventsPage({ embedInDashboard = false, locale = 'he' }) 
         setCounts({});
         setRegisteredMap({});
         setRegistrationWarning('');
-        setEventsError('Could not load events from Firestore.');
+        setEventsError(t('evLoadError'));
         setLoadingEvents(false);
       });
 
@@ -1764,16 +1796,16 @@ export default function EventsPage({ embedInDashboard = false, locale = 'he' }) 
       }).map((event, index) => {
         const imageUrl = event.imageUrl || event.thumbnailUrl || event.coverImageUrl || appointmentsHero;
         const eventType = inferEventType(event);
-        const displayTitle = localizeField(event.translations?.title ?? event.title, locale) || 'Untitled Event';
-        const displayCategory = eventType === 'appointment' ? 'Appointment' : 'Workshop';
+        const displayTitle = localizeField(event.translations?.title ?? event.title, locale) || t('evUntitledEvent');
+        const displayCategory = eventType === 'appointment' ? t('evAppointment') : t('evWorkshop');
         const templateStart = event.startTime || event.date;
-        const providerSlots = getProviderSlots(event);
+        const providerSlots = getProviderSlots(event, t);
         const providerNames = [...new Set(providerSlots.map((slot) => slot.providerName))];
         const roomLabels = [...new Set(providerSlots.map((slot) => slot.room).filter(Boolean))];
-        const displayLocation = roomLabels.length > 1 ? 'Multiple rooms' : roomLabels[0] || localizeField(event.translations?.location ?? event.location, locale) || 'She-Na Center';
+        const displayLocation = roomLabels.length > 1 ? t('evMultipleRooms') : roomLabels[0] || localizeField(event.translations?.location ?? event.location, locale) || 'She-Na Center';
         const sessionStarts = getSessionStartsForEvent(event, providerSlots);
-        const weeklySchedule = getWeeklyScheduleLabel(event, templateStart);
-        const templateDescription = localizeField(event.translations?.description ?? event.description, locale) || 'More details will be added soon.';
+        const weeklySchedule = getWeeklyScheduleLabel(event, templateStart, t, intlLocale);
+        const templateDescription = localizeField(event.translations?.description ?? event.description, locale) || t('evMoreDetailsSoon');
         const sessions = sessionStarts.map((sessionStart) => {
           const dateKey = toDateKey(sessionStart);
           const options = providerSlots.map((slot) => {
@@ -1790,13 +1822,13 @@ export default function EventsPage({ embedInDashboard = false, locale = 'he' }) 
               title: displayTitle,
               category: displayCategory,
               description: templateDescription,
-              date: formatSessionDate(optionStart || sessionStart),
+              date: formatSessionDate(optionStart || sessionStart, t, intlLocale),
               dateKey,
               selectedDate: dateKey,
               startDate: optionStart || sessionStart,
               endDate: optionEnd,
-              time: formatEventTime(optionStart || sessionStart, optionEnd),
-              selectedTimeSlot: formatEventTime(optionStart || sessionStart, optionEnd),
+              time: formatEventTime(optionStart || sessionStart, optionEnd, t, intlLocale),
+              selectedTimeSlot: formatEventTime(optionStart || sessionStart, optionEnd, t, intlLocale),
               providerId: slot.providerId,
               providerName: slot.providerName,
               providerSpecialty: slot.providerSpecialty,
@@ -1816,8 +1848,8 @@ export default function EventsPage({ embedInDashboard = false, locale = 'he' }) 
 
           return {
             id: `${event.id}__${dateKey}`,
-            date: formatSessionDate(sessionStart),
-            tabLabel: formatSessionTabDate(sessionStart),
+            date: formatSessionDate(sessionStart, t, intlLocale),
+            tabLabel: formatSessionTabDate(sessionStart, t, intlLocale),
             dateKey,
             startDate: sessionStart,
             options,
@@ -1830,16 +1862,16 @@ export default function EventsPage({ embedInDashboard = false, locale = 'he' }) 
           title: displayTitle,
           category: displayCategory,
           description: templateDescription,
-          date: formatEventDate(templateStart),
-          time: formatSlotsTimeRange(providerSlots, sessionStarts[0] || templateStart),
+          date: formatEventDate(templateStart, t, intlLocale),
+          time: formatSlotsTimeRange(providerSlots, sessionStarts[0] || templateStart, t, intlLocale),
           participants: sessionOptions.reduce((total, session) => total + session.participants, 0),
           capacity: sessionOptions.reduce((total, session) => total + session.capacity, 0),
           location: displayLocation,
           tone: getEventTone(eventType, index),
           imageUrl,
           eventType,
-          instructor: getInstructorLabel(event),
-          providerSummary: providerNames.length > 1 ? `${providerNames.length} providers available` : providerNames[0] || getInstructorLabel(event),
+          instructor: getInstructorLabel(event, t),
+          providerSummary: providerNames.length > 1 ? t('evProvidersAvailable').replace('{n}', String(providerNames.length)) : providerNames[0] || getInstructorLabel(event, t),
           registrationOpen: event.registrationOpen !== false,
           weeklySchedule,
           temporalStatus: getTemporalStatus(sessions[0]?.startDate || templateStart),
@@ -1847,7 +1879,7 @@ export default function EventsPage({ embedInDashboard = false, locale = 'he' }) 
           sessionOptions,
         };
       }),
-    [counts, events, registeringId, locale],
+    [counts, events, registeringId, locale, t, intlLocale],
   );
 
   const registeredEvents = useMemo(
@@ -1877,30 +1909,30 @@ export default function EventsPage({ embedInDashboard = false, locale = 'he' }) 
     return [
       {
         type: VIEW_WORKSHOPS,
-        title: 'Workshops',
+        title: t('evCatWorkshops'),
         color: 'lavender',
         icon: VolunteerActivismIcon,
       },
       {
         type: VIEW_APPOINTMENTS,
-        title: 'Appointments',
+        title: t('evCatAppointments'),
         color: 'blush',
         icon: CalendarMonthIcon,
       },
       {
         type: VIEW_REGISTERED,
-        title: 'Registered Events',
+        title: t('evCatRegisteredEvents'),
         color: 'peach',
         icon: PersonIcon,
       },
     ];
-  }, []);
+  }, [t]);
 
   const sectionTitle = useMemo(() => {
-    if (activeView === VIEW_APPOINTMENTS) return 'Upcoming Appointments';
-    if (activeView === VIEW_REGISTERED) return 'My Registered Events';
-    return 'Upcoming Workshops';
-  }, [activeView]);
+    if (activeView === VIEW_APPOINTMENTS) return t('evSecUpcomingAppointments');
+    if (activeView === VIEW_REGISTERED) return t('evSecMyRegistered');
+    return t('evSecUpcomingWorkshops');
+  }, [activeView, t]);
 
   const registeredSessionIds = useMemo(() => new Set(Object.keys(registeredMap)), [registeredMap]);
 
@@ -1910,12 +1942,12 @@ export default function EventsPage({ embedInDashboard = false, locale = 'he' }) 
     if (!event || !session || registeredMap[session.id]) return;
 
     if (event.isScheduleTemplate) {
-      setRegistrationWarning('This schedule is not ready for registration yet. Please choose an admin-published event.');
+      setRegistrationWarning(t('evScheduleNotReady'));
       return;
     }
 
     if (event.registrationOpen === false) {
-      setRegistrationWarning('Registration is closed for this event.');
+      setRegistrationWarning(t('evRegClosedForEvent'));
       return;
     }
 
@@ -1958,7 +1990,7 @@ export default function EventsPage({ embedInDashboard = false, locale = 'he' }) 
       }));
     } catch (error) {
       console.error('Registration action failed:', error);
-      setRegistrationWarning('Could not register for this session. Please try again.');
+      setRegistrationWarning(t('evRegisterFailed'));
     } finally {
       setRegisteringId(null);
     }
@@ -1971,7 +2003,7 @@ export default function EventsPage({ embedInDashboard = false, locale = 'he' }) 
     if (!registrationId) return;
 
     if (!canCancelSessionBooking(session)) {
-      setRegistrationWarning(CANCELLATION_CLOSED_MESSAGE);
+      setRegistrationWarning(t('evCancellationClosed'));
       return;
     }
 
@@ -1994,7 +2026,7 @@ export default function EventsPage({ embedInDashboard = false, locale = 'he' }) 
       }));
     } catch (error) {
       console.error('Cancel session registration failed:', error);
-      setRegistrationWarning('Could not cancel this session registration. Please try again.');
+      setRegistrationWarning(t('evCancelFailed'));
     } finally {
       setRegisteringId(null);
     }
@@ -2031,9 +2063,9 @@ export default function EventsPage({ embedInDashboard = false, locale = 'he' }) 
   function validateSuggestionForm() {
     const nextErrors = {};
 
-    if (!suggestionForm.title.trim()) nextErrors.title = 'Please enter a workshop title.';
-    if (!suggestionForm.category) nextErrors.category = 'Please choose a category.';
-    if (!suggestionForm.description.trim()) nextErrors.description = 'Please add a short description.';
+    if (!suggestionForm.title.trim()) nextErrors.title = t('evTitleRequired');
+    if (!suggestionForm.category) nextErrors.category = t('evCategoryRequired');
+    if (!suggestionForm.description.trim()) nextErrors.description = t('evDescRequired');
 
     setSuggestionErrors(nextErrors);
 
@@ -2051,7 +2083,7 @@ export default function EventsPage({ embedInDashboard = false, locale = 'he' }) 
     try {
       const suggestion = await createWorkshopSuggestion(suggestionForm, currentUser);
       setSuggestions((current) => [suggestion, ...current]);
-      setSuggestionSuccess('Thank you. Your suggestion was submitted successfully.');
+      setSuggestionSuccess(t('evSuggestSuccess'));
       setSuggestionForm(emptySuggestionForm);
 
       window.setTimeout(() => {
@@ -2060,7 +2092,7 @@ export default function EventsPage({ embedInDashboard = false, locale = 'he' }) 
       }, 1200);
     } catch (error) {
       console.error('Failed to submit workshop suggestion:', error);
-      setSuggestionSubmitError('Could not submit your suggestion. Please check Firestore rules and try again.');
+      setSuggestionSubmitError(t('evSuggestError'));
     } finally {
       setIsSubmittingSuggestion(false);
     }
@@ -2068,22 +2100,22 @@ export default function EventsPage({ embedInDashboard = false, locale = 'he' }) 
 
   const eventsContent = (
     <>
-      <section className="events-hero-banner" aria-label="Events wellness banner">
+      <section className="events-hero-banner" aria-label={t('evHeroAria')}>
         <img className="events-hero-banner__image" src={eventsHeroBanner} alt="" />
       </section>
 
       {(loadingEvents || eventsError || registrationWarning) && (
         <div className={`events-status${eventsError || registrationWarning ? ' events-status--error' : ''}`}>
-          <span>{loadingEvents ? 'Loading live events from Firestore...' : (eventsError || registrationWarning)}</span>
+          <span>{loadingEvents ? t('evLoadingEvents') : (eventsError || registrationWarning)}</span>
           {eventsError && !loadingEvents && (
             <button type="button" onClick={() => setEventsReloadKey((current) => current + 1)}>
-              Retry
+              {t('evRetry')}
             </button>
           )}
         </div>
       )}
 
-      <section className="events-categories" aria-label="Event categories">
+      <section className="events-categories" aria-label={t('evCategoriesAria')}>
         <div className="events-category-grid">
           {categoryCards.map((card) => (
               <EventCategoryButton
@@ -2130,8 +2162,8 @@ export default function EventsPage({ embedInDashboard = false, locale = 'he' }) 
       {!loadingEvents && !eventsError && filteredEvents.length === 0 && (
         <section className="events-empty">
           <AutoAwesomeIcon />
-          <h2>No events here yet</h2>
-          <p>When matching published events are available, they will appear in this section.</p>
+          <h2>{t('evNoEventsTitle')}</h2>
+          <p>{t('evNoEventsBody')}</p>
         </section>
       )}
 
@@ -2153,20 +2185,20 @@ export default function EventsPage({ embedInDashboard = false, locale = 'he' }) 
 
   if (embedInDashboard) {
     return (
-      <section className="events-main events-main--embedded" dir="rtl">
+      <section className="events-main events-main--embedded" dir={direction}>
         {eventsContent}
       </section>
     );
   }
 
   return (
-    <main className="events-page" dir="rtl">
-      <aside className="events-sidebar" aria-label="Participant navigation">
+    <main className="events-page" dir={direction}>
+      <aside className="events-sidebar" aria-label={t('evNavAria')}>
         <button className="events-brand" type="button" onClick={() => navigate('/home')}>
           <span className="events-brand__mark">S</span>
           <span className="events-brand__text">
             <strong>She-Na</strong>
-            <small>Your journey matters</small>
+            <small>{t('evJourneyMatters')}</small>
           </span>
         </button>
 
@@ -2181,7 +2213,7 @@ export default function EventsPage({ embedInDashboard = false, locale = 'he' }) 
                 key={item.key}
               >
                 <Icon fontSize="small" />
-                <span>{item.label}</span>
+                <span>{t(item.labelKey)}</span>
                 {item.badge && <small>{item.badge}</small>}
               </button>
             );
@@ -2190,27 +2222,27 @@ export default function EventsPage({ embedInDashboard = false, locale = 'he' }) 
 
         <div className="events-support-card">
           <VolunteerActivismIcon />
-          <strong>Need Support?</strong>
-          <span>We are here for you.</span>
+          <strong>{t('evNeedSupport')}</strong>
+          <span>{t('evHereForYou')}</span>
           <button type="button" onClick={() => navigate('/home')}>
-            Contact Us
+            {t('evContactUs')}
           </button>
         </div>
 
         <button className="events-logout" type="button" onClick={logout}>
           <LogoutIcon fontSize="small" />
-          <span>Logout</span>
+          <span>{t('logout')}</span>
         </button>
       </aside>
 
       <section className="events-main">
         <header className="events-topbar">
           <div>
-            <p>Hi, {displayName}</p>
-            <strong>{new Intl.DateTimeFormat('en', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }).format(new Date())}</strong>
+            <p>{t('evHi').replace('{name}', displayName)}</p>
+            <strong>{new Intl.DateTimeFormat(intlLocale, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }).format(new Date())}</strong>
           </div>
           <div className="events-profile">
-            <span>{currentUser?.email || 'Participant'}</span>
+            <span>{currentUser?.email || t('evParticipant')}</span>
             <strong>{displayName.slice(0, 2).toUpperCase()}</strong>
           </div>
         </header>

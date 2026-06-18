@@ -1,10 +1,19 @@
 import { useEffect, useState } from 'react';
 import VolunteerActivismOutlinedIcon from '@mui/icons-material/VolunteerActivismOutlined';
-import { communityGuidelines } from '../communityMockData';
 import { getCommunitySettingsGuidelines } from '../services/communityService';
+import { useParticipantLocale } from '../../context/ParticipantLocaleContext';
+import { getParticipantCommunityContent } from '../../i18n/participantUiTranslations';
 
 export default function CommunityGuidelinesCard({ onReadFullGuidelines }) {
-  const [guidelines, setGuidelines] = useState(communityGuidelines);
+  const { t, locale } = useParticipantLocale();
+  // Localized fallback; replaced by admin-authored guidelines when configured.
+  const [guidelines, setGuidelines] = useState(
+    () => getParticipantCommunityContent(locale).shortGuidelines,
+  );
+
+  useEffect(() => {
+    setGuidelines(getParticipantCommunityContent(locale).shortGuidelines);
+  }, [locale]);
 
   useEffect(() => {
     let cancelled = false;
@@ -23,18 +32,18 @@ export default function CommunityGuidelinesCard({ onReadFullGuidelines }) {
           <VolunteerActivismOutlinedIcon />
         </span>
         <div>
-          <span>Safe space</span>
-          <h2 id="community-guidelines-title">Community Guidelines</h2>
+          <span>{t('safeSpace')}</span>
+          <h2 id="community-guidelines-title">{t('communityGuidelines')}</h2>
         </div>
       </div>
-      <p className="guidelines-card__intro">A quick reminder for keeping this space warm and supportive.</p>
+      <p className="guidelines-card__intro">{t('guidelinesIntro')}</p>
       <ul>
         {guidelines.map((rule) => (
           <li key={rule}>{rule}</li>
         ))}
       </ul>
       <button type="button" onClick={onReadFullGuidelines}>
-        Read full guidelines
+        {t('readFullGuidelines')}
       </button>
     </section>
   );

@@ -1,6 +1,7 @@
 import ChatBubbleOutlineOutlinedIcon from '@mui/icons-material/ChatBubbleOutlineOutlined';
 import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined';
 import VolunteerActivismOutlinedIcon from '@mui/icons-material/VolunteerActivismOutlined';
+import { useParticipantLocale } from '../../context/ParticipantLocaleContext';
 
 export default function PostActions({
   commentsCount = 0,
@@ -13,31 +14,44 @@ export default function PostActions({
   post,
   supportCount = 0,
 }) {
+  const { t } = useParticipantLocale();
+  const likeAria = t('likePostAria')
+    .replace('{action}', post.isLiked ? t('unlikeAction') : t('likeAction'))
+    .replace('{author}', post.author)
+    .replace('{n}', String(likesCount));
+  const commentAria = t('commentsOnPostAria')
+    .replace('{n}', String(commentsCount))
+    .replace('{author}', post.author);
+  const supportAria = t('supportPostAria')
+    .replace('{action}', post.isSupported ? t('removeSupportAction') : t('supportAction'))
+    .replace('{author}', post.author)
+    .replace('{n}', String(supportCount));
+
   return (
     <footer className="community-page-post__actions">
       <div className="community-page-post__primary-actions">
         <button
           aria-pressed={post.isLiked}
-          aria-label={`${post.isLiked ? 'Unlike' : 'Like'} ${post.author}'s post. ${likesCount} likes`}
+          aria-label={likeAria}
           className={post.isLiked ? 'is-liked' : undefined}
           disabled={isReportedByCurrentUser}
           onClick={() => onToggleLike(post.id)}
           type="button"
         >
           <FavoriteBorderOutlinedIcon fontSize="small" />
-          Like
+          {t('like')}
           <span>{likesCount}</span>
         </button>
         <button
           type="button"
           aria-expanded={isCommentComposerOpen}
-          aria-label={`${commentsCount} comments on ${post.author}'s post`}
+          aria-label={commentAria}
           className={isCommentComposerOpen ? 'is-commenting' : undefined}
           disabled={isReportedByCurrentUser}
           onClick={onOpenCommentComposer}
         >
           <ChatBubbleOutlineOutlinedIcon fontSize="small" />
-          Comment
+          {t('comment')}
           <span>{commentsCount}</span>
         </button>
         <button
@@ -45,11 +59,11 @@ export default function PostActions({
           className={post.isSupported ? 'is-supported' : undefined}
           type="button"
           disabled={isReportedByCurrentUser}
-          aria-label={`${post.isSupported ? 'Remove support from' : 'Support'} ${post.author}'s post. ${supportCount} support reactions`}
+          aria-label={supportAria}
           onClick={() => onToggleSupport(post.id)}
         >
           <VolunteerActivismOutlinedIcon fontSize="small" />
-          Support
+          {t('support')}
           <span>{supportCount}</span>
         </button>
       </div>

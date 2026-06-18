@@ -8,6 +8,8 @@ import CommentComposer from './CommentComposer';
 import CommentsPreview from './CommentsPreview';
 import PostActions from './PostActions';
 import PostOverflowMenu from './PostOverflowMenu';
+import { useParticipantLocale } from '../../context/ParticipantLocaleContext';
+import { localizeField } from '../../../../i18n/localizeField';
 
 const GENERIC_POST_TITLE = 'New community post';
 
@@ -37,16 +39,21 @@ function CommunityPostCard({
   relativeTimeNow,
   reportFeedback,
 }) {
+  const { t, locale } = useParticipantLocale();
   const likesCount = post.likesCount ?? post.likes ?? 0;
   const supportCount = post.supportCount ?? post.support ?? 0;
   const comments = (Array.isArray(post.comments) ? post.comments : post.previewComments ?? [])
     .filter(isCommunityContentVisible);
   const commentsCount = comments.length;
-  const postBody = post.content ?? post.body;
+  // Prefer the stored Azure translation of the author's text; fall back to the
+  // original (handles legacy posts saved before translate-on-save existed).
+  const postBody = localizeField(post.translations?.content ?? (post.content ?? post.body), locale);
+  const authorName = post.isAnonymous ? t('anonymousUser') : post.author;
+  const topicLabel = post.topic === 'Community share' ? t('communityShareTopic') : post.topic;
   const postTitle = typeof post.title === 'string' && post.title.trim() !== GENERIC_POST_TITLE
     ? post.title.trim()
     : '';
-  const postTime = formatRelativeCommunityTime(post.createdAt, relativeTimeNow);
+  const postTime = formatRelativeCommunityTime(post.createdAt, relativeTimeNow, t);
   const commentFeedbackId = commentFeedback ? `comment-feedback-${post.id}` : undefined;
   const reportFeedbackId = reportFeedback ? `report-feedback-${post.id}` : undefined;
 
@@ -56,7 +63,7 @@ function CommunityPostCard({
     if (post.attachment.type === 'image') {
       return (
         <figure className="community-page-post__attachment">
-          <img src={post.attachment.url} alt={post.attachment.name || 'Community post attachment'} />
+          <img src={post.attachment.url} alt={post.attachment.name || t('postAttachmentAlt')} />
         </figure>
       );
     }
@@ -64,7 +71,7 @@ function CommunityPostCard({
     if (post.attachment.type === 'voice') {
       return (
         <div className="community-page-post__attachment community-page-post__attachment--voice">
-          <audio controls src={post.attachment.url} aria-label="Community post voice note" />
+          <audio controls src={post.attachment.url} aria-label={t('postVoiceNoteAria')} />
         </div>
       );
     }
@@ -79,18 +86,18 @@ function CommunityPostCard({
     >
       {isReportedByCurrentUser && (
         <div className="community-page-post__reported-overlay" aria-live="polite">
-          <span>You reported this post</span>
+          <span>{t('youReportedPost')}</span>
         </div>
       )}
       <header className="community-page-post__header">
         <span className="community-page-post__avatar">{post.initials}</span>
         <div className="community-page-post__meta">
           <div className="community-page-post__author-row">
-            <strong>{post.author}</strong>
+            <strong>{authorName}</strong>
             {post.isAnonymous && (
               <span className="community-page-post__anonymous-badge">
                 <ShieldOutlinedIcon fontSize="inherit" />
-                Anonymous
+                {t('anonymous')}
               </span>
             )}
             {!post.isAnonymous && !isOwnPost && (
@@ -100,13 +107,13 @@ function CommunityPostCard({
                 type="button"
                 onClick={onFollowAuthor}
               >
-                {isFollowingAuthor ? 'Following' : 'Follow'}
+                {isFollowingAuthor ? t('following') : t('follow')}
               </button>
             )}
           </div>
           <small>{postTime}</small>
         </div>
-        <span className="community-page-post__topic">{post.topic}</span>
+        <span className="community-page-post__topic">{topicLabel}</span>
         <PostOverflowMenu
           isOwnPost={isOwnPost}
           isReportedByCurrentUser={isReportedByCurrentUser}

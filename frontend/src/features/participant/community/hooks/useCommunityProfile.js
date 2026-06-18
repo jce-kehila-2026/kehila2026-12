@@ -10,6 +10,7 @@ import {
   getExistingDisplayName,
   hasRequiredCommunityPersonalDetails,
 } from '../utils/communityProfileUtils';
+import { createParticipantT } from '../../i18n/participantUiTranslations';
 
 const isRealUserId = (uid) => Boolean(uid) && uid !== 'current-user';
 
@@ -34,6 +35,7 @@ const defaultPreferences = {
 export default function useCommunityProfile({
   personalDetails = {},
   onProfileSync,
+  t = createParticipantT('en'),
 } = {}) {
   const [communityUserProfile, setCommunityUserProfile] = useState(defaultProfile);
   const [communityPreferences, setCommunityPreferences] = useState(defaultPreferences);
@@ -176,7 +178,7 @@ export default function useCommunityProfile({
 
     setCommunityPreferences({ birthdayVisibilityCompleted: true, showBirthday });
     setCommunityUserProfile(nextProfile);
-    setProfileSuccessMessage('Community preference saved.');
+    setProfileSuccessMessage(t('communityPreferenceSaved'));
     onProfileSync?.({
       communityDisplayName: resolvedDisplayName,
       communityBirthday: resolvedBirthday,
@@ -206,7 +208,7 @@ export default function useCommunityProfile({
       if (!currentProfile.profileCompleted) return currentProfile;
       return { ...currentProfile, showBirthday };
     });
-    setProfileSuccessMessage('Birthday privacy updated.');
+    setProfileSuccessMessage(t('birthdayPrivacyUpdated'));
     onProfileSync?.({
       showBirthdayInCommunity: showBirthday,
       communityBirthdayPreferenceCompleted: true,

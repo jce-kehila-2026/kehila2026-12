@@ -3,19 +3,24 @@ import './CalendarPage.css';
 import '../participant/home/ParticipantDashboardHome.css';
 import CalendarNoteModal from './CalendarNoteModal';
 import { useAdmin } from '../admin/context/AdminContext';
+import { useParticipantLocale } from '../participant/context/ParticipantLocaleContext';
 import { createCalendarNote, getCalendarData } from './calendarService';
 
 const TODAY_KEY = toDateKey(new Date());
 const TIME_SLOTS = Array.from({ length: 24 }, (_, hour) => `${String(hour).padStart(2, '0')}:00`);
-const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+// Indexed by Date.getDay(); resolved to localized labels via participant t().
+const WEEKDAY_KEYS = ['daySunShort', 'dayMonShort', 'dayTueShort', 'dayWedShort', 'dayThuShort', 'dayFriShort', 'daySatShort'];
 const CALENDAR_VIEWS = ['month', 'week', 'day'];
+const INTL_LOCALE_BY_LANG = { he: 'he-IL', ar: 'ar', en: 'en' };
 
-const itemTypeLabels = {
-  event: 'Upcoming',
-  registration: 'Registered',
-  appointment: 'Appointment',
-  note: 'Note',
+const itemTypeKeys = {
+  event: 'itemEvent',
+  registration: 'itemRegistration',
+  appointment: 'itemAppointment',
+  note: 'itemNote',
 };
+
+const viewLabelKeys = { month: 'viewMonth', week: 'viewWeek', day: 'viewDay' };
 
 function getCalendarCategory(item) {
   if (item.type === 'appointment') return 'appointment';
@@ -56,15 +61,15 @@ function getStartOfWeek(date) {
   return start;
 }
 
-function formatMonthTitle(date) {
-  return new Intl.DateTimeFormat('en', { month: 'long', year: 'numeric' }).format(date);
+function formatMonthTitle(date, intlLocale = 'en') {
+  return new Intl.DateTimeFormat(intlLocale, { month: 'long', year: 'numeric' }).format(date);
 }
 
-function formatDayNumber(date) {
-  return new Intl.DateTimeFormat('en', { day: '2-digit' }).format(date);
+function formatDayNumber(date, intlLocale = 'en') {
+  return new Intl.DateTimeFormat(intlLocale, { day: '2-digit' }).format(date);
 }
 
-function buildWeekDays(startDate) {
+function buildWeekDays(startDate, intlLocale = 'en') {
   return Array.from({ length: 7 }, (_, index) => {
     const date = new Date(startDate);
     date.setDate(startDate.getDate() + index);
@@ -72,8 +77,8 @@ function buildWeekDays(startDate) {
     return {
       date,
       key: toDateKey(date),
-      dayName: WEEKDAYS[date.getDay()],
-      dayNumber: formatDayNumber(date),
+      dayKey: WEEKDAY_KEYS[date.getDay()],
+      dayNumber: formatDayNumber(date, intlLocale),
     };
   });
 }
@@ -121,13 +126,14 @@ function getHour(time) {
 }
 
 function CalendarItem({ item }) {
+  const { t } = useParticipantLocale();
   const details = item.content || item.description;
 
   return (
     <article className={`calendar-item calendar-item--${item.type}`}>
       <div className="calendar-item__meta">
-        <span>{itemTypeLabels[item.type]}</span>
-        {item.registered && <span>Registered</span>}
+        <span>{t(itemTypeKeys[item.type] ?? 'itemNote')}</span>
+        {item.registered && <span>{t('itemRegistration')}</span>}
       </div>
       <h3>{item.title}</h3>
       <p>
@@ -150,6 +156,8 @@ function CalendarPill({ item }) {
 }
 
 export default function CalendarPage({ variant = 'standalone' }) {
+  const { t, lang } = useParticipantLocale();
+  const intlLocale = INTL_LOCALE_BY_LANG[lang] || 'en';
   const { currentUser, effectiveUID, loading: authLoading } = useAdmin();
   const calendarUser = useMemo(
     () => (currentUser ? { uid: effectiveUID || currentUser.uid, email: currentUser.email } : null),
@@ -192,7 +200,7 @@ export default function CalendarPage({ variant = 'standalone' }) {
         console.error('Failed to load calendar data:', error);
 
         if (!ignore) {
-          setCalendarError('Could not load calendar data from Firestore.');
+          setCalendarError(t('calErrorLoad'));
           setCalendarData({ events: [], appointments: [], notes: [] });
         }
       } finally {
@@ -211,7 +219,7 @@ export default function CalendarPage({ variant = 'standalone' }) {
 
   const activeDate = useMemo(() => fromDateKey(selectedDate), [selectedDate]);
   const activeWeekStart = useMemo(() => getStartOfWeek(activeDate), [activeDate]);
-  const weekDays = useMemo(() => buildWeekDays(activeWeekStart), [activeWeekStart]);
+  const weekDays = useMemo(() => buildWeekDays(activeWeekStart, intlLocale), [activeWeekStart, intlLocale]);
   const monthDays = useMemo(() => buildMonthDays(activeDate), [activeDate]);
   const monthGridDays = useMemo(() => buildMonthGrid(activeDate), [activeDate]);
   const calendarItems = useMemo(
@@ -237,17 +245,21 @@ export default function CalendarPage({ variant = 'standalone' }) {
 
   const registeredItems = calendarItems.filter((item) => item.registered || item.type === 'appointment');
   const selectedDateItems = calendarItems.filter((item) => item.date === selectedDate);
-  const selectedDateLabel = new Intl.DateTimeFormat('en', {
+  const selectedDateLabel = new Intl.DateTimeFormat(intlLocale, {
     weekday: 'long',
     month: 'long',
     day: 'numeric',
   }).format(activeDate);
-  const weekStartLabel = new Intl.DateTimeFormat('en', {
+  const weekStartLabel = new Intl.DateTimeFormat(intlLocale, {
     month: 'long',
     day: 'numeric',
     year: 'numeric',
   }).format(activeWeekStart);
-  const calendarTitle = calendarView === 'week' ? `Week of ${weekStartLabel}` : calendarView === 'day' ? selectedDateLabel : formatMonthTitle(activeDate);
+  const calendarTitle = calendarView === 'week'
+    ? t('calWeekOf').replace('{label}', weekStartLabel)
+    : calendarView === 'day'
+      ? selectedDateLabel
+      : formatMonthTitle(activeDate, intlLocale);
   const noteModalError = noteModalOpen ? calendarError : '';
 
   function handleSelectDate(dateKey, nextView = calendarView) {
@@ -283,12 +295,12 @@ export default function CalendarPage({ variant = 'standalone' }) {
     const trimmedContent = noteForm.content.trim();
 
     if (!trimmedTitle || !trimmedContent) {
-      setCalendarError('Please add a title and note content before saving.');
+      setCalendarError(t('calNoteRequired'));
       return;
     }
 
     if (!calendarUser?.uid) {
-      setCalendarError('You must be signed in before adding a note.');
+      setCalendarError(t('calSignInRequired'));
       return;
     }
 
@@ -335,7 +347,7 @@ export default function CalendarPage({ variant = 'standalone' }) {
       }));
     } catch (error) {
       console.error('Failed to save calendar note:', error);
-      setCalendarError(`The note is shown here, but Firestore did not save it: ${error.code || error.message || 'unknown error'}`);
+      setCalendarError(t('calNoteNotSaved').replace('{error}', error.code || error.message || 'unknown error'));
     } finally {
       setSavingNote(false);
     }
@@ -355,22 +367,22 @@ export default function CalendarPage({ variant = 'standalone' }) {
               </span>
               <span className="calendar-brand__text">SHENA</span>
             </div>
-            <span className="calendar-kicker">She-Na participant space</span>
-            <h1>My Calendar</h1>
-            <p>Upcoming workshops, registered activities, appointments, and personal notes in one calm place.</p>
+            <span className="calendar-kicker">{t('calKicker')}</span>
+            <h1>{t('calMyCalendar')}</h1>
+            <p>{t('calSubtitle')}</p>
           </div>
-          <div className="calendar-summary" aria-label="Calendar summary">
+          <div className="calendar-summary" aria-label={t('calSummaryAria')}>
             <div>
               <strong>{calendarData.events.length}</strong>
-              <span>Upcoming</span>
+              <span>{t('summaryUpcoming')}</span>
             </div>
             <div>
               <strong>{registeredItems.length}</strong>
-              <span>Registered</span>
+              <span>{t('summaryRegistered')}</span>
             </div>
             <div>
               <strong>{calendarData.notes.length}</strong>
-              <span>Notes</span>
+              <span>{t('summaryNotes')}</span>
             </div>
           </div>
         </header>
@@ -379,22 +391,22 @@ export default function CalendarPage({ variant = 'standalone' }) {
           <div className="calendar-status calendar-status--error">
             <span>{calendarError}</span>
             <button type="button" onClick={() => setCalendarReloadKey((current) => current + 1)}>
-              Retry
+              {t('calRetry')}
             </button>
           </div>
         )}
 
         <div className="calendar-layout">
-          <aside className="calendar-sidebar" aria-label="Calendar overview">
+          <aside className="calendar-sidebar" aria-label={t('calOverviewAria')}>
             <section className="calendar-card mini-calendar">
               <div className="card-heading">
-                <h2>{formatMonthTitle(activeDate)}</h2>
-                <span>Month view</span>
+                <h2>{formatMonthTitle(activeDate, intlLocale)}</h2>
+                <span>{t('calMonthView')}</span>
               </div>
 
               <div className="mini-calendar__weekdays">
-                {WEEKDAYS.map((day) => (
-                  <span key={day}>{day}</span>
+                {WEEKDAY_KEYS.map((key) => (
+                  <span key={key}>{t(key)}</span>
                 ))}
               </div>
 
@@ -432,7 +444,7 @@ export default function CalendarPage({ variant = 'standalone' }) {
             <section className="calendar-card selected-day-card">
               <div className="card-heading">
                 <h2>{selectedDateLabel}</h2>
-                <span>{selectedDateItems.length} item(s)</span>
+                <span>{t('calItemsCount').replace('{n}', String(selectedDateItems.length))}</span>
               </div>
               {selectedDateItems.length > 0 ? (
                 <div className="selected-day-list">
@@ -441,7 +453,7 @@ export default function CalendarPage({ variant = 'standalone' }) {
                   ))}
                 </div>
               ) : (
-                <p className="empty-state">No events, appointments, or notes for this date yet.</p>
+                <p className="empty-state">{t('calNoItemsDate')}</p>
               )}
             </section>
 
@@ -456,8 +468,8 @@ export default function CalendarPage({ variant = 'standalone' }) {
                 }}
               >
                 <span className="note-card__toggle-copy">
-                  <strong>Add a note</strong>
-                  <small>Private reminder</small>
+                  <strong>{t('calAddNote')}</strong>
+                  <small>{t('calPrivateReminder')}</small>
                 </span>
                 <span className="note-card__toggle-icon" aria-hidden="true">
                   <span>+</span>
@@ -466,9 +478,9 @@ export default function CalendarPage({ variant = 'standalone' }) {
             </section>
           </aside>
 
-          <section className="calendar-card calendar-board" aria-label="Calendar board">
+          <section className="calendar-card calendar-board" aria-label={t('calBoardAria')}>
             <div className="calendar-board__toolbar">
-              <div className="calendar-view-toggle" aria-label="Calendar view">
+              <div className="calendar-view-toggle" aria-label={t('calViewAria')}>
                 {CALENDAR_VIEWS.map((view) => (
                   <button
                     type="button"
@@ -476,21 +488,21 @@ export default function CalendarPage({ variant = 'standalone' }) {
                     onClick={() => setCalendarView(view)}
                     key={view}
                   >
-                    {view}
+                    {t(viewLabelKeys[view])}
                   </button>
                 ))}
               </div>
 
               <div>
-                <span className="calendar-kicker">{calendarView} view</span>
+                <span className="calendar-kicker">{t('calViewKicker').replace('{view}', t(viewLabelKeys[calendarView]))}</span>
                 <h2>{calendarTitle}</h2>
               </div>
 
               <div className="calendar-board__actions">
-                <button type="button" aria-label="Previous" onClick={() => changeVisibleDate(-1)}>
+                <button type="button" aria-label={t('calPrev')} onClick={() => changeVisibleDate(-1)}>
                   {'<'}
                 </button>
-                <button type="button" aria-label="Next" onClick={() => changeVisibleDate(1)}>
+                <button type="button" aria-label={t('calNext')} onClick={() => changeVisibleDate(1)}>
                   {'>'}
                 </button>
               </div>
@@ -499,8 +511,8 @@ export default function CalendarPage({ variant = 'standalone' }) {
             {calendarView === 'month' && (
               <div className="month-calendar">
                 <div className="month-calendar__weekdays">
-                  {WEEKDAYS.map((day) => (
-                    <span key={day}>{day}</span>
+                  {WEEKDAY_KEYS.map((key) => (
+                    <span key={key}>{t(key)}</span>
                   ))}
                 </div>
                 <div className="month-calendar__grid">
@@ -520,7 +532,7 @@ export default function CalendarPage({ variant = 'standalone' }) {
                           {items.slice(0, 2).map((item) => (
                             <CalendarPill key={item.id} item={item} />
                           ))}
-                          {items.length > 2 && <small className="month-calendar__more">+{items.length - 2} more</small>}
+                          {items.length > 2 && <small className="month-calendar__more">{t('calMore').replace('{n}', String(items.length - 2))}</small>}
                         </span>
                       </button>
                     );
@@ -541,7 +553,7 @@ export default function CalendarPage({ variant = 'standalone' }) {
                       onClick={() => handleSelectDate(day.key, 'day')}
                     >
                       <strong>{day.dayNumber}</strong>
-                      <span>{day.dayName}</span>
+                      <span>{t(day.dayKey)}</span>
                     </button>
                   ))}
 
@@ -573,7 +585,7 @@ export default function CalendarPage({ variant = 'standalone' }) {
               <div className="day-calendar">
                 <div className="day-calendar__summary">
                   <h3>{selectedDateLabel}</h3>
-                  <span>{selectedDateItems.length} item(s)</span>
+                  <span>{t('calItemsCount').replace('{n}', String(selectedDateItems.length))}</span>
                 </div>
                 <div className="day-calendar__timeline">
                   {TIME_SLOTS.map((slot) => {
@@ -585,7 +597,7 @@ export default function CalendarPage({ variant = 'standalone' }) {
                           {items.length > 0 ? (
                             items.map((item) => <CalendarItem key={item.id} item={item} />)
                           ) : (
-                            <span className="day-calendar__empty">No items</span>
+                            <span className="day-calendar__empty">{t('calNoItems')}</span>
                           )}
                         </div>
                       </div>
@@ -596,7 +608,7 @@ export default function CalendarPage({ variant = 'standalone' }) {
             )}
 
             {!loadingCalendar && !calendarError && calendarItems.length === 0 && (
-              <p className="empty-state empty-state--wide">No workshops, registrations, appointments, or notes yet.</p>
+              <p className="empty-state empty-state--wide">{t('calNoItemsYet')}</p>
             )}
           </section>
         </div>

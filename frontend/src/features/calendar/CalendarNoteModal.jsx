@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom';
 import { CalendarDays, X } from 'lucide-react';
 import NotesScheduleModal from '../participant/home/NotesScheduleModal';
 import { formatReminderDateTimeLabel } from '../participant/home/participantNotesModel';
+import { useParticipantLocale } from '../participant/context/ParticipantLocaleContext';
 
 export default function CalendarNoteModal({
   open,
@@ -19,6 +20,7 @@ export default function CalendarNoteModal({
   timePickerId,
   errorMessage = '',
 }) {
+  const { t } = useParticipantLocale();
   const titleId = useId();
   const scheduleLabel = formatReminderDateTimeLabel(noteForm.date, noteForm.time);
 
@@ -67,33 +69,33 @@ export default function CalendarNoteModal({
         onClick={(event) => event.stopPropagation()}
       >
         <div className="calendar-note-modal__header">
-          <h4 id={titleId}>Add a note</h4>
-          <button type="button" className="calendar-note-modal__close" aria-label="Close" onClick={closeModal}>
+          <h4 id={titleId}>{t('calAddNote')}</h4>
+          <button type="button" className="calendar-note-modal__close" aria-label={t('close')} onClick={closeModal}>
             <X size={16} strokeWidth={2.2} aria-hidden="true" />
           </button>
         </div>
 
-        <p className="calendar-note-modal__hint">Private reminder for your calendar.</p>
+        <p className="calendar-note-modal__hint">{t('calNoteModalHint')}</p>
 
         <form onSubmit={onSubmit} className="calendar-note-form">
           <label>
-            Title
+            {t('calTitleLabel')}
             <input
               name="title"
               value={noteForm.title}
               onChange={onFormChange}
-              placeholder="Personal Note"
+              placeholder={t('calPersonalNotePlaceholder')}
               autoComplete="off"
             />
           </label>
 
           <div className="calendar-note-form__schedule">
-            <span className="calendar-note-form__schedule-label">Reminder</span>
+            <span className="calendar-note-form__schedule-label">{t('calReminderLabel')}</span>
             <div className="calendar-note-form__schedule-row">
               <button
                 type="button"
                 className={`pd-notes__schedule-btn${noteForm.date || noteForm.time ? ' has-schedule' : ''}`}
-                aria-label="Set reminder date and time"
+                aria-label={t('setReminderDateTime')}
                 aria-haspopup="dialog"
                 aria-expanded={scheduleOpen}
                 onClick={() => onScheduleOpenChange(true)}
@@ -101,18 +103,18 @@ export default function CalendarNoteModal({
                 <CalendarDays size={17} strokeWidth={2} aria-hidden="true" />
               </button>
               <span className={`calendar-note-form__schedule-value${scheduleLabel ? '' : ' is-placeholder'}`}>
-                {scheduleLabel || 'Optional date and time'}
+                {scheduleLabel || t('calOptionalDateTime')}
               </span>
             </div>
           </div>
 
           <label>
-            Note content
+            {t('calNoteContentLabel')}
             <textarea
               name="content"
               value={noteForm.content}
               onChange={onFormChange}
-              placeholder="Write a reminder for yourself..."
+              placeholder={t('calNoteContentPlaceholder')}
               rows="4"
             />
           </label>
@@ -128,7 +130,7 @@ export default function CalendarNoteModal({
             className="pd-btn pd-btn--soft calendar-note-form__submit"
             disabled={savingNote}
           >
-            {savingNote ? 'Saving...' : 'Add note'}
+            {savingNote ? t('calSaving') : t('calAddNoteSubmit')}
           </button>
         </form>
       </div>

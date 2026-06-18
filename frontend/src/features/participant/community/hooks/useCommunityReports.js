@@ -6,12 +6,14 @@ import {
   isPostOwnedByCurrentUser,
   isPostReportedByUser,
 } from '../utils/communityModerationUtils';
+import { createParticipantT } from '../../i18n/participantUiTranslations';
 
 export default function useCommunityReports({
   communityDisplayName,
   localUserId,
   posts,
   updatePostById,
+  t = createParticipantT('en'),
 }) {
   const [reportFeedbackByPostId, setReportFeedbackByPostId] = useState({});
   const [confirmingReportPostId, setConfirmingReportPostId] = useState(null);
@@ -34,7 +36,7 @@ export default function useCommunityReports({
         ...currentFeedback,
         [postId]: {
           type: 'error',
-          message: 'You already reported this post.',
+          message: t('alreadyReported'),
         },
       }));
       return;
@@ -67,7 +69,7 @@ export default function useCommunityReports({
     if (!confirmingReportPostId) return;
 
     if (!selectedReportReason) {
-      setReportReasonError('Please choose a report reason before submitting.');
+      setReportReasonError(t('reportReasonRequired'));
       return;
     }
 
@@ -92,7 +94,7 @@ export default function useCommunityReports({
         ...currentFeedback,
         [postId]: {
           type: 'error',
-          message: 'You already reported this post.',
+          message: t('alreadyReported'),
         },
       }));
       return;
@@ -142,7 +144,7 @@ export default function useCommunityReports({
       ...currentFeedback,
       [postId]: {
         type: 'success',
-        message: 'Thanks, your report was saved locally for review.',
+        message: t('reportSaved'),
       },
     }));
   };
