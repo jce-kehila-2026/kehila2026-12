@@ -18,15 +18,18 @@ import CloseIcon from '@mui/icons-material/Close';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import SearchIcon from '@mui/icons-material/Search';
 import { db } from '../../../firebase';
+import { useAdminLocale } from '../context/AdminLocaleContext';
+
+const INTL_LOCALE_BY_LANG = { he: 'he-IL', en: 'en' };
 
 const ACTIVITY_FILTERS = [
-  { value: 'all', label: 'All activities' },
-  { value: 'event', label: 'Events' },
-  { value: 'booking', label: 'Bookings' },
-  { value: 'public', label: 'Public home page' },
-  { value: 'user', label: 'Users and roles' },
-  { value: 'settings', label: 'Settings' },
-  { value: 'community', label: 'Community' },
+  { value: 'all', labelKey: 'filterAll' },
+  { value: 'event', labelKey: 'filterEvents' },
+  { value: 'booking', labelKey: 'filterBookings' },
+  { value: 'public', labelKey: 'filterPublicHome' },
+  { value: 'user', labelKey: 'filterUsersRoles' },
+  { value: 'settings', labelKey: 'filterSettings' },
+  { value: 'community', labelKey: 'filterCommunity' },
 ];
 
 const ACTION_LABELS = {
@@ -69,45 +72,87 @@ const ACTION_LABELS = {
   IMPERSONATE_START: 'Started participant preview',
 };
 
+// Hebrew labels for the (bounded) set of known action types. Picked by locale in
+// getActionLabel; unknown actions fall back to the humanized English form.
+const ACTION_LABELS_HE = {
+  UPDATE_EVENT: 'עודכן אירוע',
+  CREATE_EVENT: 'נוצר אירוע',
+  DELETE_EVENT: 'נמחק אירוע',
+  ADD_REGISTRATION: 'נוספה הרשמה',
+  REMOVE_REGISTRATION: 'הוסרה הרשמה',
+  UPDATE_BOOKING: 'עודכנה הזמנה',
+  CHECK_IN_PARTICIPANT: 'בוצע צ\'ק-אין למשתתפת',
+  UPDATE_PUBLIC_HOME: 'עודכן דף הבית הציבורי',
+  UPDATE_PUBLIC_HOME_CONTACT: 'עודכן אזור יצירת הקשר',
+  UPDATE_PUBLIC_HOME_HERO: 'עודכן אזור הכותרת',
+  UPDATE_PUBLIC_HOME_PARTNER: 'עודכן שותף',
+  CREATE_PUBLIC_HOME_PARTNER: 'נוצר שותף',
+  DELETE_PUBLIC_HOME_PARTNER: 'נמחק שותף',
+  UPDATE_PUBLIC_HOME_PRESS_COVERAGE: 'עודכן סיקור תקשורתי',
+  CREATE_PUBLIC_HOME_PRESS_COVERAGE: 'נוצר סיקור תקשורתי',
+  DELETE_PUBLIC_HOME_PRESS_COVERAGE: 'נמחק סיקור תקשורתי',
+  UPDATE_PUBLIC_HOME_LEARN_TOGETHER_HEADER: 'עודכנה כותרת "ללמוד יחד"',
+  UPDATE_PUBLIC_HOME_LEARN_TOGETHER_CARD: 'עודכן כרטיס "ללמוד יחד"',
+  CREATE_PUBLIC_HOME_LEARN_TOGETHER_CARD: 'נוצר כרטיס "ללמוד יחד"',
+  DELETE_PUBLIC_HOME_LEARN_TOGETHER_CARD: 'נמחק כרטיס "ללמוד יחד"',
+  REORDER_PUBLIC_HOME_LEARN_TOGETHER_CARDS: 'סודרו מחדש כרטיסי "ללמוד יחד"',
+  UPDATE_PUBLIC_HOME_INSPIRATION_STORY: 'עודכן סיפור השראה',
+  CREATE_PUBLIC_HOME_INSPIRATION_STORY: 'נוצר סיפור השראה',
+  DELETE_PUBLIC_HOME_INSPIRATION_STORY: 'נמחק סיפור השראה',
+  UPDATE_PUBLIC_HOME_TEAM_MEMBER: 'עודכנה חברת צוות',
+  CREATE_PUBLIC_HOME_TEAM_MEMBER: 'נוצרה חברת צוות',
+  DELETE_PUBLIC_HOME_TEAM_MEMBER: 'נמחקה חברת צוות',
+  REORDER_PUBLIC_HOME_TEAM_MEMBERS: 'סודרו מחדש חברות הצוות',
+  ROLE_CHANGE: 'שונה תפקיד משתמשת',
+  JOIN_REQUEST_APPROVED: 'אושרה בקשת הצטרפות',
+  JOIN_REQUEST_REJECTED: 'נדחתה בקשת הצטרפות',
+  HIDE_COMMUNITY_POST: 'הוסתר פוסט בקהילה',
+  RESTORE_COMMUNITY_POST: 'שוחזר פוסט בקהילה',
+  DELETE_COMMUNITY_POST: 'נמחק פוסט בקהילה',
+  DISMISS_REPORTS: 'נדחו דיווחים',
+  UPDATE_COMMUNITY_GUIDELINES: 'עודכנו כללי הקהילה',
+  IMPERSONATE_START: 'התחילה תצוגת משתתפת',
+};
+
 const AREA_CONFIG = {
   event: {
-    label: 'Events',
+    labelKey: 'areaEvent',
     icon: EventIcon,
     color: '#6d35b8',
     background: 'rgba(109, 53, 184, 0.12)',
   },
   booking: {
-    label: 'Bookings',
+    labelKey: 'areaBooking',
     icon: ReceiptLongIcon,
     color: '#d94682',
     background: 'rgba(224, 82, 151, 0.13)',
   },
   public: {
-    label: 'Public home page',
+    labelKey: 'areaPublic',
     icon: HomeWorkOutlinedIcon,
     color: '#7c3aed',
     background: 'rgba(167, 139, 250, 0.16)',
   },
   user: {
-    label: 'Users',
+    labelKey: 'areaUser',
     icon: PersonIcon,
     color: '#21835a',
     background: 'rgba(134, 209, 124, 0.22)',
   },
   community: {
-    label: 'Community',
+    labelKey: 'areaCommunity',
     icon: PersonIcon,
     color: '#0f766e',
     background: 'rgba(45, 212, 191, 0.16)',
   },
   settings: {
-    label: 'Settings',
+    labelKey: 'areaSettings',
     icon: SettingsOutlinedIcon,
     color: '#f97316',
     background: 'rgba(253, 186, 116, 0.2)',
   },
   general: {
-    label: 'General',
+    labelKey: 'areaGeneral',
     icon: SettingsOutlinedIcon,
     color: '#64748b',
     background: 'rgba(100, 116, 139, 0.12)',
@@ -144,10 +189,10 @@ function toDate(value) {
   return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
 
-function formatDateTime(value) {
+function formatDateTime(value, intlLocale = 'en') {
   const date = toDate(value);
   if (!date) return 'Date unavailable';
-  return new Intl.DateTimeFormat('en', {
+  return new Intl.DateTimeFormat(intlLocale, {
     month: 'short',
     day: '2-digit',
     year: 'numeric',
@@ -181,9 +226,10 @@ function getActionType(log) {
   return String(log.actionType || log.type || log.action || '').trim();
 }
 
-function getActionLabel(actionType) {
-  if (!actionType) return 'Recorded activity';
-  if (ACTION_LABELS[actionType]) return ACTION_LABELS[actionType];
+function getActionLabel(actionType, locale = 'en') {
+  if (!actionType) return locale === 'he' ? 'פעילות נרשמה' : 'Recorded activity';
+  const map = locale === 'he' ? ACTION_LABELS_HE : ACTION_LABELS;
+  if (map[actionType] || ACTION_LABELS[actionType]) return map[actionType] || ACTION_LABELS[actionType];
 
   const words = actionType
     .toLowerCase()
@@ -317,6 +363,8 @@ function normalizeLog(log) {
 }
 
 export default function AuditLogPage() {
+  const { t, lang } = useAdminLocale();
+  const intlLocale = INTL_LOCALE_BY_LANG[lang] || 'en';
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -335,11 +383,11 @@ export default function AuditLogPage() {
       setLogs(snap.docs.map((docSnap) => normalizeLog({ id: docSnap.id, ...docSnap.data() })));
     } catch (err) {
       console.error('Failed to fetch audit logs:', err);
-      setError('Could not load admin activity history.');
+      setError(t('auditError'));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     fetchLogs();
@@ -374,10 +422,10 @@ export default function AuditLogPage() {
     >
       <Box sx={{ mb: 2.75 }}>
         <Typography variant="h4" sx={{ fontWeight: 900, letterSpacing: 0, color: '#171239' }}>
-          Admin Activity History
+          {t('auditTitle')}
         </Typography>
-        <Typography variant="subtitle1" sx={{ mt: 0.5, color: 'rgba(36, 16, 79, 0.66)', fontWeight: 600 }} dir="ltr">
-          Track changes made by admins across the platform.
+        <Typography variant="subtitle1" sx={{ mt: 0.5, color: 'rgba(36, 16, 79, 0.66)', fontWeight: 600 }}>
+          {t('auditSubtitle')}
         </Typography>
       </Box>
 
@@ -394,7 +442,7 @@ export default function AuditLogPage() {
       >
         <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.5} alignItems={{ xs: 'stretch', md: 'center' }}>
           <TextField
-            placeholder="Search admin email or name"
+            placeholder={t('auditSearchPlaceholder')}
             value={adminFilter}
             onChange={(event) => setAdminFilter(event.target.value)}
             id="audit-admin-filter"
@@ -403,18 +451,18 @@ export default function AuditLogPage() {
           />
           <TextField
             select
-            label="Activity type"
+            label={t('auditActivityType')}
             value={activityFilter}
             onChange={(event) => setActivityFilter(event.target.value)}
             sx={{ minWidth: { md: 210 } }}
           >
             {ACTIVITY_FILTERS.map((option) => (
-              <MenuItem value={option.value} key={option.value}>{option.label}</MenuItem>
+              <MenuItem value={option.value} key={option.value}>{t(option.labelKey)}</MenuItem>
             ))}
           </TextField>
           <TextField
             type="date"
-            label="Date from"
+            label={t('auditDateFrom')}
             value={dateFrom}
             onChange={(event) => setDateFrom(event.target.value)}
             InputLabelProps={{ shrink: true }}
@@ -422,7 +470,7 @@ export default function AuditLogPage() {
           />
           <TextField
             type="date"
-            label="Date to"
+            label={t('auditDateTo')}
             value={dateTo}
             onChange={(event) => setDateTo(event.target.value)}
             InputLabelProps={{ shrink: true }}
@@ -438,7 +486,7 @@ export default function AuditLogPage() {
             }}
             sx={{ minHeight: 54, color: '#6d35b8', fontWeight: 900 }}
           >
-            Clear
+            {t('auditClear')}
           </Button>
         </Stack>
       </Box>
@@ -466,21 +514,21 @@ export default function AuditLogPage() {
             fontWeight: 900,
           }}
         >
-          <span>Date & Time</span>
-          <span>Admin</span>
-          <span>Activity</span>
-          <span>Area</span>
-          <span>Summary</span>
-          <span>Details</span>
+          <span>{t('colDateTime')}</span>
+          <span>{t('colAdmin')}</span>
+          <span>{t('colActivity')}</span>
+          <span>{t('colArea')}</span>
+          <span>{t('colSummary')}</span>
+          <span>{t('colDetails')}</span>
         </Box>
 
         <Box sx={{ maxHeight: 'calc(100vh - 300px)', minHeight: 360, overflowY: 'auto' }}>
           {loading ? (
-            <Box sx={{ p: 4, textAlign: 'center', color: '#6d35b8', fontWeight: 800 }}>Loading activity history...</Box>
+            <Box sx={{ p: 4, textAlign: 'center', color: '#6d35b8', fontWeight: 800 }}>{t('auditLoading')}</Box>
           ) : error ? (
             <Box sx={{ p: 4, textAlign: 'center' }}>
               <Typography sx={{ mb: 1, color: '#b42355', fontWeight: 900 }}>{error}</Typography>
-              <Button onClick={fetchLogs} variant="outlined">Retry</Button>
+              <Button onClick={fetchLogs} variant="outlined">{t('retry')}</Button>
             </Box>
           ) : filteredLogs.length ? (
             filteredLogs.map((log) => {
@@ -502,13 +550,13 @@ export default function AuditLogPage() {
                   }}
                 >
                   <Typography sx={{ color: '#303a58', fontSize: '0.82rem', fontWeight: 800 }}>
-                    {formatDateTime(log.timestamp)}
+                    {formatDateTime(log.timestamp, intlLocale)}
                   </Typography>
                   <Typography sx={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', color: '#303a58', fontSize: '0.82rem', fontWeight: 700 }}>
                     {log.adminLabel}
                   </Typography>
                   <Chip
-                    label={log.actionLabel}
+                    label={getActionLabel(log.actionType, lang)}
                     size="small"
                     sx={{
                       justifySelf: 'start',
@@ -534,7 +582,7 @@ export default function AuditLogPage() {
                       <AreaIcon fontSize="small" />
                     </Box>
                     <Typography sx={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: '#303a58', fontSize: '0.8rem', fontWeight: 800 }}>
-                      {area.label}
+                      {t(area.labelKey)}
                     </Typography>
                   </Stack>
                   <Typography sx={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'rgba(36, 16, 79, 0.72)', fontSize: '0.82rem', fontWeight: 650 }}>
@@ -554,14 +602,14 @@ export default function AuditLogPage() {
                     }}
                     variant="outlined"
                   >
-                    View
+                    {t('view')}
                   </Button>
                 </Box>
               );
             })
           ) : (
             <Box sx={{ p: 4, textAlign: 'center', color: 'rgba(36, 16, 79, 0.68)', fontWeight: 800 }}>
-              No admin activity matches these filters.
+              {t('auditNoMatch')}
             </Box>
           )}
         </Box>
@@ -571,7 +619,7 @@ export default function AuditLogPage() {
         <Box
           role="dialog"
           aria-modal="true"
-          aria-label="Activity details"
+          aria-label={t('auditDetailsAria')}
           sx={{
             position: 'fixed',
             inset: 0,
@@ -614,36 +662,36 @@ export default function AuditLogPage() {
                 </Box>
                 <Box>
                   <Typography variant="h6" sx={{ color: '#171239', fontWeight: 900 }}>
-                    {selectedLog.actionLabel}
+                    {getActionLabel(selectedLog.actionType, lang)}
                   </Typography>
                   <Typography sx={{ color: 'rgba(36, 16, 79, 0.62)', fontWeight: 700 }}>
-                    {selectedLog.areaLabel}
+                    {t(selectedArea.labelKey)}
                   </Typography>
                 </Box>
               </Stack>
-              <IconButton onClick={() => setSelectedLog(null)} aria-label="Close activity details">
+              <IconButton onClick={() => setSelectedLog(null)} aria-label={t('closeActivityDetails')}>
                 <CloseIcon />
               </IconButton>
             </Stack>
 
             <Box sx={{ mt: 2.5, p: 2, borderRadius: '18px', background: 'rgba(252, 231, 243, 0.5)' }}>
-              <Typography sx={{ color: '#171239', fontWeight: 900 }}>Summary</Typography>
+              <Typography sx={{ color: '#171239', fontWeight: 900 }}>{t('auditSummaryHeading')}</Typography>
               <Typography sx={{ mt: 0.5, color: 'rgba(36, 16, 79, 0.75)', fontWeight: 650 }}>
                 {selectedLog.summaryText}
               </Typography>
             </Box>
 
             <Stack spacing={1.25} sx={{ mt: 2.25 }}>
-              <DetailLine label="Admin" value={selectedLog.adminLabel} />
-              <DetailLine label="Timestamp" value={formatDateTime(selectedLog.timestamp)} />
-              <DetailLine label="Area" value={selectedLog.areaLabel} />
-              <DetailLine label="Target" value={selectedLog.targetId || 'Not specified'} />
+              <DetailLine label={t('detailAdmin')} value={selectedLog.adminLabel} />
+              <DetailLine label={t('detailTimestamp')} value={formatDateTime(selectedLog.timestamp, intlLocale)} />
+              <DetailLine label={t('detailArea')} value={t(selectedArea.labelKey)} />
+              <DetailLine label={t('detailTarget')} value={selectedLog.targetId || t('detailNotSpecified')} />
             </Stack>
 
             <Divider sx={{ my: 2.25 }} />
 
             <Typography sx={{ mb: 1.25, color: '#171239', fontWeight: 900 }}>
-              What changed
+              {t('whatChanged')}
             </Typography>
             {changeRows.length ? (
               <Stack spacing={1}>
@@ -665,10 +713,10 @@ export default function AuditLogPage() {
                     </Typography>
                     <Box>
                       <Typography sx={{ color: 'rgba(36, 16, 79, 0.58)', fontSize: '0.76rem', fontWeight: 800 }}>
-                        Before: {row.before}
+                        {t('beforeLabel')}: {row.before}
                       </Typography>
                       <Typography sx={{ mt: 0.25, color: '#24104f', fontSize: '0.82rem', fontWeight: 850 }}>
-                        After: {row.after}
+                        {t('afterLabel')}: {row.after}
                       </Typography>
                     </Box>
                   </Box>
@@ -676,13 +724,13 @@ export default function AuditLogPage() {
               </Stack>
             ) : (
               <Typography sx={{ color: 'rgba(36, 16, 79, 0.66)', fontWeight: 700 }}>
-                No field-level details were saved for this activity.
+                {t('noFieldDetails')}
               </Typography>
             )}
 
             <Box component="details" sx={{ mt: 2.25 }}>
               <Typography component="summary" sx={{ cursor: 'pointer', color: '#6d35b8', fontWeight: 900 }}>
-                Advanced developer details
+                {t('advancedDetails')}
               </Typography>
               <Box
                 component="pre"

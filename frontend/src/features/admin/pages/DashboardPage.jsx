@@ -10,7 +10,10 @@ import {
 } from 'lucide-react';
 import { db } from '../../../firebase';
 import { useAdmin } from '../context/AdminContext';
+import { useAdminLocale } from '../context/AdminLocaleContext';
 import { getAdminSummary } from '../services/statsService';
+
+const INTL_LOCALE_BY_LANG = { he: 'he-IL', en: 'en-US' };
 import { getAllEvents } from '../services/eventService';
 import { getAllAppointments } from '../services/appointmentService';
 import './DashboardPage.css';
@@ -148,6 +151,8 @@ function MetricCard({ accent, icon, label, value, subtext }) {
 
 export default function DashboardPage() {
   const { currentUser } = useAdmin();
+  const { t, lang } = useAdminLocale();
+  const intlLocale = INTL_LOCALE_BY_LANG[lang] || 'en-US';
   const [stats, setStats] = useState({ events: 0, users: 0, bookings: 0 });
   const [events, setEvents] = useState([]);
   const [bookings, setBookings] = useState([]);
@@ -263,15 +268,15 @@ export default function DashboardPage() {
     const upcoming = events.filter(isUpcoming).length;
 
     const rows = [
-      { key: 'workshops', label: 'Workshops', value: workshops },
-      { key: 'appointments', label: 'Appointments', value: appointments },
-      { key: 'upcoming', label: 'Upcoming', value: upcoming },
-      { key: 'completed', label: 'Completed', value: completed },
-      { key: 'cancelled', label: 'Cancelled', value: cancelled },
+      { key: 'workshops', label: t('ovWorkshops'), value: workshops },
+      { key: 'appointments', label: t('ovAppointments'), value: appointments },
+      { key: 'upcoming', label: t('ovUpcoming'), value: upcoming },
+      { key: 'completed', label: t('ovCompleted'), value: completed },
+      { key: 'cancelled', label: t('ovCancelled'), value: cancelled },
     ];
 
     return { total, rows };
-  }, [events, stats.events]);
+  }, [events, stats.events, t]);
 
   const donutStops = useMemo(() => {
     let cursor = 0;
@@ -287,49 +292,70 @@ export default function DashboardPage() {
 
   const adminName = currentUser?.email?.split('@')[0] || currentUser?.displayName || 'talajabaren12';
 
+  const typeLabel = (type) => (type === 'Appointment' ? t('typeAppointment') : t('typeWorkshop'));
+  const statusLabel = (status) => {
+    const key = {
+      confirmed: 'statusConfirmed',
+      pending: 'statusPending',
+      cancelled: 'statusCancelled',
+      canceled: 'statusCancelled',
+      completed: 'statusCompleted',
+    }[String(status).toLowerCase()];
+    return key ? t(key) : status;
+  };
+  const actionLabel = (action) => {
+    const key = {
+      CREATE: 'actionCreate',
+      UPDATE: 'actionUpdate',
+      DELETE: 'actionDelete',
+      REORDER: 'actionReorder',
+    }[action];
+    return key ? t(key) : action;
+  };
+
   return (
     <section className="admin-dashboard-page">
       <header className="admin-dashboard-hero">
         <div>
-          <h1><span aria-hidden="true">👋</span> Welcome back, {adminName}</h1>
-          <p>Here's an overview of the She-Na platform</p>
+          <h1><span aria-hidden="true">👋</span> {t('dashWelcome').replace('{name}', adminName)}</h1>
+          <p>{t('dashOverviewSubtitle')}</p>
         </div>
         <button className="admin-dashboard-date-pill" type="button">
           <CalendarDays size={18} />
-          May 26, 2026
+          {new Intl.DateTimeFormat(intlLocale, { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date())}
           <ChevronDown size={16} />
         </button>
       </header>
 
-      <section className="admin-dashboard-metrics" aria-label="Dashboard metrics">
+      <section className="admin-dashboard-metrics" aria-label={t('dashMetricsAria')}>
         <MetricCard
           accent="purple"
           icon={<CalendarDays size={25} />}
-          label="Total Events"
+          label={t('dashTotalEvents')}
           value={stats.events}
-          subtext="Active platform events"
+          subtext={t('dashActivePlatformEvents')}
         />
         <MetricCard
           accent="pink"
           icon={<UsersRound size={25} />}
-          label="Registered Users"
+          label={t('dashRegisteredUsers')}
           value={stats.users}
-          subtext="Community members"
+          subtext={t('dashCommunityMembers')}
         />
         <MetricCard
           accent="peach"
           icon={<CalendarCheck size={25} />}
-          label="Total Bookings"
+          label={t('dashTotalBookings')}
           value={stats.bookings}
-          subtext="Workshop & appointment bookings"
+          subtext={t('dashBookingsSubtext')}
         />
       </section>
 
       <section className="admin-dashboard-main-grid">
         <article className="admin-dashboard-card admin-dashboard-overview">
           <div className="admin-dashboard-card__header">
-            <h2>Events Overview</h2>
-            <a href="/admin/events">View all events</a>
+            <h2>{t('dashEventsOverview')}</h2>
+            <a href="/admin/events">{t('dashViewAllEvents')}</a>
           </div>
           <div className="admin-dashboard-overview__body">
             <div
@@ -338,7 +364,7 @@ export default function DashboardPage() {
               aria-label={`${eventOverview.total} total events`}
             >
               <strong>{eventOverview.total}</strong>
-              <span>Total</span>
+              <span>{t('dashTotal')}</span>
             </div>
             <div className="admin-dashboard-breakdown">
               {eventOverview.rows.map((row) => (
@@ -355,8 +381,8 @@ export default function DashboardPage() {
 
         <article className="admin-dashboard-card admin-dashboard-bookings">
           <div className="admin-dashboard-card__header">
-            <h2>Recent Bookings</h2>
-            <a href="/admin/appointments">View all bookings</a>
+            <h2>{t('dashRecentBookings')}</h2>
+            <a href="/admin/appointments">{t('dashViewAllBookings')}</a>
           </div>
           <div className="admin-dashboard-booking-list">
             {bookings.map((booking) => (
@@ -369,7 +395,7 @@ export default function DashboardPage() {
                   <span>{booking.participant}</span>
                 </div>
                 <span className={`admin-dashboard-type admin-dashboard-type--${booking.type.toLowerCase()}`}>
-                  {booking.type}
+                  {typeLabel(booking.type)}
                 </span>
                 <div className="admin-dashboard-booking__date">
                   <CalendarDays size={17} />
@@ -378,7 +404,7 @@ export default function DashboardPage() {
                   <small>{booking.time}</small>
                 </div>
                 <span className={`admin-dashboard-status admin-dashboard-status--${String(booking.status).toLowerCase()}`}>
-                  {booking.status}
+                  {statusLabel(booking.status)}
                 </span>
               </div>
             ))}
@@ -388,16 +414,16 @@ export default function DashboardPage() {
 
       <article className="admin-dashboard-card admin-dashboard-activity">
         <div className="admin-dashboard-card__header">
-          <h2>Recent Activity</h2>
-          <a href="/admin/audit-log">View all activity</a>
+          <h2>{t('dashRecentActivity')}</h2>
+          <a href="/admin/audit-log">{t('dashViewAllActivity')}</a>
         </div>
         <div className="admin-dashboard-activity__table">
           <div className="admin-dashboard-activity__head">
-            <span>Time</span>
-            <span>Admin</span>
-            <span>Action</span>
-            <span>Target</span>
-            <span>Details</span>
+            <span>{t('colTime')}</span>
+            <span>{t('colAdmin')}</span>
+            <span>{t('colAction')}</span>
+            <span>{t('colTarget')}</span>
+            <span>{t('colDetails')}</span>
           </div>
           {activity.map((item) => (
             <div className="admin-dashboard-activity__row" key={item.id}>
@@ -408,7 +434,7 @@ export default function DashboardPage() {
               </span>
               <span>
                 <b className={`admin-dashboard-action admin-dashboard-action--${item.action.toLowerCase()}`}>
-                  {item.action}
+                  {actionLabel(item.action)}
                 </b>
               </span>
               <span>{item.target}</span>
