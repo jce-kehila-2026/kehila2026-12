@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutlineOutlined';
@@ -71,6 +72,22 @@ const participantNavItems = [
   { key: 'messages', label: 'Messages', icon: ChatBubbleOutlineIcon, path: '/home', badge: 3 },
   { key: 'settings', label: 'Settings', icon: SettingsIcon, path: '/home' },
 ];
+
+function useLockBodyScroll() {
+  useEffect(() => {
+    if (typeof document === 'undefined') return undefined;
+
+    const previousOverflow = document.body.style.overflow;
+    const previousRootOverflow = document.documentElement.style.overflow;
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.documentElement.style.overflow = previousRootOverflow;
+    };
+  }, []);
+}
 
 function toDate(value) {
   if (!value) return null;
@@ -840,6 +857,8 @@ function AppointmentBookingDrawer({
   onCancelSession,
   onClose,
 }) {
+  useLockBodyScroll();
+
   const providers = useMemo(() => getAppointmentProviders(event), [event]);
   const [selectedProviderId, setSelectedProviderId] = useState('');
   const [dateIndex, setDateIndex] = useState(0);
@@ -884,17 +903,6 @@ function AppointmentBookingDrawer({
     setSelectedOptionId(firstOpenOption?.option?.id || '');
   }, [selectedOptionId, timeOptions]);
 
-  useEffect(() => {
-    if (typeof document === 'undefined') return undefined;
-
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-
-    return () => {
-      document.body.style.overflow = previousOverflow;
-    };
-  }, []);
-
   if (!event) return null;
 
   const serviceLabel = getAppointmentServiceLabel(event.title);
@@ -916,10 +924,10 @@ function AppointmentBookingDrawer({
     await onRegisterSession(event, selectedOption);
   }
 
-  return (
-    <div className="appointment-drawer-modal" role="presentation">
+  const modalContent = (
+    <div className="booking-flow-modal appointment-drawer-modal" role="presentation">
       <button
-        className="appointment-drawer__backdrop"
+        className="booking-flow-modal__backdrop appointment-drawer__backdrop"
         type="button"
         onClick={onClose}
         aria-label="Close appointment booking"
@@ -1057,6 +1065,8 @@ function AppointmentBookingDrawer({
       </aside>
     </div>
   );
+
+  return typeof document === 'undefined' ? modalContent : createPortal(modalContent, document.body);
 }
 
 function getWorkshopPrimarySession(event) {
@@ -1137,6 +1147,8 @@ function WorkshopDetailsPanel({
   onCancelSession,
   onClose,
 }) {
+  useLockBodyScroll();
+
   const session = getWorkshopActiveSession(event, registeredSessionIds);
   const isRegistered = Boolean(session && registeredSessionIds.has(session.id));
   const canCancelBooking = isRegistered && canCancelSessionBooking(session);
@@ -1155,11 +1167,18 @@ function WorkshopDetailsPanel({
     await onRegisterSession(event, session);
   }
 
-  return (
+  const modalContent = (
+    <div className="booking-flow-modal" role="presentation">
+      <button
+        className="booking-flow-modal__backdrop"
+        type="button"
+        onClick={onClose}
+        aria-label="Close workshop details"
+      />
     <aside
       className="workshop-details-panel"
       role="dialog"
-      aria-modal="false"
+      aria-modal="true"
       aria-labelledby="workshop-details-title"
       dir="ltr"
     >
@@ -1243,7 +1262,10 @@ function WorkshopDetailsPanel({
         </button>
       </div>
     </aside>
+    </div>
   );
+
+  return typeof document === 'undefined' ? modalContent : createPortal(modalContent, document.body);
 }
 
 function WorkshopListPanel({
