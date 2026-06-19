@@ -34,6 +34,7 @@ import useCommunityPosts from './hooks/useCommunityPosts';
 import useCommunityProfile from './hooks/useCommunityProfile';
 import useCommunityReports from './hooks/useCommunityReports';
 import useCommunityStreak from './hooks/useCommunityStreak';
+import { useParticipantLocale } from '../context/ParticipantLocaleContext';
 import './styles/community.css';
 
 export default function CommunityPage({
@@ -42,7 +43,9 @@ export default function CommunityPage({
   onGoToSettings,
   focusPostId = null,
   onFocusPostHandled,
+  onParticipantProfileSync,
 }) {
+  const { t } = useParticipantLocale();
   const postInputRef = useRef(null);
   const reportModalRef = useRef(null);
   const deletePostModalRef = useRef(null);
@@ -99,7 +102,7 @@ export default function CommunityPage({
     visibleBirthdayUsers,
     profileSuccessMessage,
     handleBirthdayPreferenceSave,
-  } = useCommunityProfile({ personalDetails });
+  } = useCommunityProfile({ personalDetails, onProfileSync: onParticipantProfileSync, t });
   const handleCancelEditPost = () => {
     setEditingPostId(null);
     setEditPostText('');
@@ -154,6 +157,7 @@ export default function CommunityPage({
     setEditPostError,
     setEditPostText,
     setEditingPostId,
+    t,
   });
   const {
     commentInputs,
@@ -174,6 +178,7 @@ export default function CommunityPage({
     posts,
     registerCommunityActivity,
     updatePostById,
+    t,
   });
   const {
     reportFeedbackByPostId,
@@ -189,6 +194,7 @@ export default function CommunityPage({
     localUserId,
     posts,
     updatePostById,
+    t,
   });
   const {
     followedAuthors,
@@ -220,6 +226,9 @@ export default function CommunityPage({
     localUserId,
     communityDisplayName || 'Current User',
   );
+  const followedBirthdayUsers = visibleBirthdayUsers.filter((user) => (
+    user?.id && followedAuthors.includes(user.id)
+  ));
   const sortedVisiblePosts = sortFeedPosts(filteredPosts);
   const emptyFeedMessage = getEmptyFeedMessage(activeFeedTab, followedAuthors.length);
 
@@ -371,10 +380,10 @@ export default function CommunityPage({
 
   const deleteCommentModal = pendingCommentDeletion ? (
     <DeletePostModal
-      closeLabel="Close comment delete confirmation"
+      closeLabel={t('closeCommentDeleteConfirmation')}
       deleteModalRef={deleteCommentModalRef}
-      description="Are you sure you want to delete this comment?"
-      title="Delete comment"
+      description={t('deleteCommentConfirm')}
+      title={t('deleteComment')}
       titleId="community-delete-comment-title"
       onBackdropMouseDown={handleDeleteCommentModalBackdropClick}
       onCancel={handleCancelDeleteComment}
@@ -384,7 +393,7 @@ export default function CommunityPage({
   ) : null;
 
   return (
-    <section className="community-page" aria-label="Community">
+    <section className="community-page" aria-label={t('communityAria')}>
       {showGuidelinesModal && <CommunityGuidelinesModal onContinue={handleGuidelinesContinue} />}
       {reportModal && typeof document !== 'undefined' ? createPortal(reportModal, document.body) : reportModal}
       {editPostModal && typeof document !== 'undefined' ? createPortal(editPostModal, document.body) : editPostModal}
@@ -392,17 +401,17 @@ export default function CommunityPage({
       {deleteCommentModal && typeof document !== 'undefined' ? createPortal(deleteCommentModal, document.body) : deleteCommentModal}
 
       <div className="community-page-shell">
-        <main className="community-main-feed" aria-label="Community feed">
+        <main className="community-main-feed" aria-label={t('communityFeedAria')}>
           {isPersonalDetailsLoading && (
-            <section className="community-profile-setup" aria-label="Loading community profile">
+            <section className="community-profile-setup" aria-label={t('loadingProfileAria')}>
               <div className="community-profile-setup__heading">
                 <span className="community-profile-setup__icon" aria-hidden="true">
                   <Diversity3OutlinedIcon />
                 </span>
                 <div>
-                  <span>Community access</span>
-                  <h2>Checking your personal details</h2>
-                  <p>Preparing your community profile...</p>
+                  <span>{t('communityAccessEyebrow')}</span>
+                  <h2>{t('checkingDetails')}</h2>
+                  <p>{t('preparingProfile')}</p>
                 </div>
               </div>
             </section>
@@ -435,7 +444,7 @@ export default function CommunityPage({
                 successMessage={postSuccessMessage}
               />
 
-              <section className="community-feed-controls" aria-label="Community feed controls">
+              <section className="community-feed-controls" aria-label={t('communityFeedControlsAria')}>
                 <FeedTabs
                   activeTab={activeFeedTab}
                   onTabChange={setActiveFeedTab}
@@ -443,16 +452,16 @@ export default function CommunityPage({
                 />
 
                 <button
-                  aria-label="Refresh local community feed"
+                  aria-label={t('refreshFeedAria')}
                   aria-busy={isRefreshingFeed}
                   className={`community-feed-refresh${isRefreshingFeed ? ' is-refreshing' : ''}`}
                   disabled={isRefreshingFeed}
-                  title="Refresh local community feed"
+                  title={t('refreshFeedAria')}
                   type="button"
                   onClick={() => refreshCommunityFeed({ showFeedback: true })}
                 >
                   <RefreshOutlinedIcon className="community-feed-refresh__icon" fontSize="small" />
-                  <span>{isRefreshingFeed ? 'Refreshing...' : 'Refresh'}</span>
+                  <span>{isRefreshingFeed ? t('refreshing') : t('refresh')}</span>
                 </button>
               </section>
               {refreshFeedback && (
@@ -469,8 +478,8 @@ export default function CommunityPage({
                   key={`empty-${activeFeedTab}-${refreshPulseKey}`}
                   role="tabpanel"
                 >
-                  <h2>{emptyFeedMessage.title}</h2>
-                  <p>{emptyFeedMessage.description}</p>
+                  <h2>{t(emptyFeedMessage.titleKey)}</h2>
+                  <p>{t(emptyFeedMessage.descriptionKey)}</p>
                 </section>
               ) : (
                 <section
@@ -515,18 +524,22 @@ export default function CommunityPage({
           )}
         </main>
 
-        <aside className="community-right-sidebar" aria-label="Community sidebar">
+        <aside className="community-right-sidebar" aria-label={t('communitySidebarAria')}>
           <CommunityStreakCard
             isAtRisk={isCommunityStreakAtRisk}
             lastActivityDate={lastActivityDate}
             streakCount={communityStreakCount}
           />
-          <BirthdayCard birthdayUsers={visibleBirthdayUsers} />
+          <BirthdayCard
+            birthdayUsers={followedBirthdayUsers}
+            localUserId={localUserId}
+            localUserName={communityDisplayName || 'Current User'}
+          />
         </aside>
       </div>
       <div className="community-guidelines-shortcut">
         <button type="button" onClick={handleReadFullGuidelines}>
-          Community Guidelines
+          {t('communityGuidelines')}
         </button>
       </div>
       {showFullGuidelinesModal && (

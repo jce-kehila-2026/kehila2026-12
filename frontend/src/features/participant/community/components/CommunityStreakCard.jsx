@@ -1,20 +1,20 @@
-import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
 import CheckRoundedIcon from '@mui/icons-material/CheckRounded';
 import FavoriteRoundedIcon from '@mui/icons-material/FavoriteRounded';
-import HourglassEmptyOutlinedIcon from '@mui/icons-material/HourglassEmptyOutlined';
 import { getTodayKey } from '../utils/communityDateUtils';
+import { useParticipantLocale } from '../../context/ParticipantLocaleContext';
 
 const WEEK_DAYS = [
-  { short: 'Sun', label: 'Sunday' },
-  { short: 'Mon', label: 'Monday' },
-  { short: 'Tue', label: 'Tuesday' },
-  { short: 'Wed', label: 'Wednesday' },
-  { short: 'Thu', label: 'Thursday' },
-  { short: 'Fri', label: 'Friday' },
-  { short: 'Sat', label: 'Saturday' },
+  { shortKey: 'daySunShort', labelKey: 'daySun' },
+  { shortKey: 'dayMonShort', labelKey: 'dayMon' },
+  { shortKey: 'dayTueShort', labelKey: 'dayTue' },
+  { shortKey: 'dayWedShort', labelKey: 'dayWed' },
+  { shortKey: 'dayThuShort', labelKey: 'dayThu' },
+  { shortKey: 'dayFriShort', labelKey: 'dayFri' },
+  { shortKey: 'daySatShort', labelKey: 'daySat' },
 ];
 
 export default function CommunityStreakCard({ isAtRisk = false, lastActivityDate = null, streakCount = 0 }) {
+  const { t } = useParticipantLocale();
   const hasStartedStreak = streakCount > 0;
   const todayIndex = new Date().getDay();
   const hasCompletedToday = lastActivityDate === getTodayKey();
@@ -22,32 +22,32 @@ export default function CommunityStreakCard({ isAtRisk = false, lastActivityDate
   const weeklyProgressPercent = (weeklyProgressCount / WEEK_DAYS.length) * 100;
   const ringProgress = `${weeklyProgressPercent}%`;
   const statusText = !hasStartedStreak
-    ? 'Share, like, or comment to begin your streak.'
+    ? t('streakStart')
     : isAtRisk
-      ? 'Your streak is waiting. Interact today to keep it.'
-      : 'Keep showing up for your community.';
+      ? t('streakAtRiskMsg')
+      : t('streakKeepUp');
+  const streakAria = t('communityStreakAria')
+    .replace('{n}', String(streakCount))
+    .replace('{unit}', streakCount === 1 ? t('unitDay') : t('unitDays'));
 
   return (
     <section
       className={`community-streak-card${isAtRisk && hasStartedStreak ? ' is-at-risk' : ''}`}
-      aria-label={`Community streak, ${streakCount} ${streakCount === 1 ? 'day' : 'days'}`}
+      aria-label={streakAria}
     >
       <div className="community-streak-card__topline">
-        <span className="community-streak-card__icon" aria-hidden="true">
-          {isAtRisk && hasStartedStreak ? <HourglassEmptyOutlinedIcon /> : <AutoAwesomeOutlinedIcon />}
-        </span>
         <div className="community-streak-card__title">
-          <strong>Community streak</strong>
+          <strong>{t('communityStreak')}</strong>
         </div>
         {isAtRisk && hasStartedStreak && (
-          <span className="community-streak-card__risk">At risk</span>
+          <span className="community-streak-card__risk">{t('atRisk')}</span>
         )}
       </div>
 
       <div
         className="community-streak-card__ring"
         role="progressbar"
-        aria-label="Weekly streak progress"
+        aria-label={t('weeklyProgressAria')}
         aria-valuemin="0"
         aria-valuemax={WEEK_DAYS.length}
         aria-valuenow={weeklyProgressCount}
@@ -55,34 +55,35 @@ export default function CommunityStreakCard({ isAtRisk = false, lastActivityDate
       >
         <div className="community-streak-card__ring-inner">
           <strong className="community-streak-card__count">{streakCount}</strong>
-          <span>day streak</span>
+          <span>{t('dayStreak')}</span>
         </div>
       </div>
 
       {hasCompletedToday && (
-        <div className="community-streak-card__completion-badge" aria-label="Today completed">
+        <div className="community-streak-card__completion-badge" aria-label={t('todayCompleted')}>
           <FavoriteRoundedIcon aria-hidden="true" />
-          <span>Today completed</span>
+          <span>{t('todayCompleted')}</span>
         </div>
       )}
 
       <p className="community-streak-card__subtitle">{statusText}</p>
 
-      <div className="community-streak-card__week" aria-label="Weekly tracker">
+      <div className="community-streak-card__week" aria-label={t('weeklyTrackerAria')}>
         {WEEK_DAYS.map((day, index) => {
           const isToday = index === todayIndex;
           const isActiveToday = hasCompletedToday && isToday;
+          const dayAria = `${t(day.labelKey)}${isToday ? t('todaySuffix') : ''}${isActiveToday ? t('activeSuffix') : ''}`;
 
           return (
-            <span className="community-streak-card__day-wrap" key={day.short}>
-              <span className="community-streak-card__day-label">{day.short}</span>
+            <span className="community-streak-card__day-wrap" key={day.shortKey}>
+              <span className="community-streak-card__day-label">{t(day.shortKey)}</span>
               <span
                 className={[
                   'community-streak-card__day',
                   isToday ? 'is-today' : '',
                   isActiveToday ? 'is-active' : '',
                 ].filter(Boolean).join(' ')}
-                aria-label={`${day.label}${isToday ? ', today' : ''}${isActiveToday ? ', active' : ''}`}
+                aria-label={dayAria}
               >
                 {isActiveToday && <CheckRoundedIcon aria-hidden="true" />}
               </span>

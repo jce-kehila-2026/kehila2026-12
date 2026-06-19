@@ -1,17 +1,20 @@
+import { useParticipantLocale } from '../../context/ParticipantLocaleContext';
+
 export default function VoiceRecorderControls({
   isRecording,
   onStartRecording,
   onStopRecording,
 }) {
+  const { t } = useParticipantLocale();
   return (
-    <div className="create-post-card__voice-panel" aria-label="Voice note recorder">
-      <p>{isRecording ? 'Recording locally. Stop when you are done.' : 'Record a short local voice note.'}</p>
+    <div className="create-post-card__voice-panel" aria-label={t('voiceRecorderAria')}>
+      <p>{isRecording ? t('recordingLocally') : t('recordShortNote')}</p>
       <div>
         <button type="button" onClick={onStartRecording} disabled={isRecording}>
-          Start recording
+          {t('startRecording')}
         </button>
         <button type="button" onClick={onStopRecording} disabled={!isRecording}>
-          Stop recording
+          {t('stopRecording')}
         </button>
       </div>
     </div>

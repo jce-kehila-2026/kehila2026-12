@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { useParticipantLocale } from '../context/ParticipantLocaleContext';
 
 function getInitials(name) {
   const parts = String(name || '')
@@ -18,13 +19,14 @@ function getInitials(name) {
 export default function ParticipantSidebarProfile({
   fullName = '',
   avatarUrl = '',
-  email = 'No email available',
+  email = '',
   isLoading = false,
   collapsed = false,
   onToggleCollapse,
 }) {
-  const displayName = fullName.trim() || 'Participant';
-  const displayEmail = String(email || '').trim() || 'No email available';
+  const { t } = useParticipantLocale();
+  const displayName = fullName.trim() || t('participantName');
+  const displayEmail = String(email || '').trim() || t('noEmail');
   const initials = getInitials(displayName);
   const hasCustomAvatar = Boolean(String(avatarUrl || '').trim());
   const [avatarFailed, setAvatarFailed] = useState(false);
@@ -55,8 +57,8 @@ export default function ParticipantSidebarProfile({
         </div>
 
         <div className="participant-sidebar-profile__copy">
-          <strong>{isLoading ? 'Loading…' : displayName}</strong>
-          <small title={isLoading ? undefined : displayEmail}>{isLoading ? 'Loading…' : displayEmail}</small>
+          <strong>{isLoading ? t('loading') : displayName}</strong>
+          <small title={isLoading ? undefined : displayEmail}>{isLoading ? t('loading') : displayEmail}</small>
         </div>
       </div>
 
@@ -64,7 +66,7 @@ export default function ParticipantSidebarProfile({
         type="button"
         className="participant-sidebar-collapse-btn"
         onClick={onToggleCollapse}
-        aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
+        aria-label={collapsed ? t('expandSidebar') : t('collapseSidebar')}
         aria-expanded={!collapsed}
       >
         <span className="participant-sidebar-collapse-btn__icon" aria-hidden="true">

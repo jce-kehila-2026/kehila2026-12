@@ -223,6 +223,9 @@ function PersonalDetailsForm({
       id: participantId,
       ...profile,
     },
+    onProfileSync: (patch) => {
+      onProfileUpdated?.({ ...(profile || {}), ...patch });
+    },
   });
 
   const hasUnsavedChanges = useMemo(

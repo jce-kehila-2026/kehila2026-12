@@ -10,6 +10,7 @@ import {
   getExistingDisplayName,
   hasRequiredCommunityPersonalDetails,
 } from '../utils/communityProfileUtils';
+import { createParticipantT } from '../../i18n/participantUiTranslations';
 
 const isRealUserId = (uid) => Boolean(uid) && uid !== 'current-user';
 
@@ -31,13 +32,17 @@ const defaultPreferences = {
   showBirthday: false,
 };
 
-export default function useCommunityProfile({ personalDetails = {} } = {}) {
+export default function useCommunityProfile({
+  personalDetails = {},
+  onProfileSync,
+  t = createParticipantT('en'),
+} = {}) {
   const [communityUserProfile, setCommunityUserProfile] = useState(defaultProfile);
   const [communityPreferences, setCommunityPreferences] = useState(defaultPreferences);
   const [profileSuccessMessage, setProfileSuccessMessage] = useState('');
   const [communityBirthdayUsers, setCommunityBirthdayUsers] = useState([]);
 
-  const uid = personalDetails?.uid ?? null;
+  const uid = personalDetails?.uid ?? personalDetails?.userId ?? personalDetails?.id ?? null;
 
   // Load today's community birthdays from Firestore (opted-in members in the
   // public_profiles collection, which holds only community-visible display data).
@@ -63,6 +68,25 @@ export default function useCommunityProfile({ personalDetails = {} } = {}) {
     return () => window.clearTimeout(timerId);
   }, [profileSuccessMessage]);
 
+  const hasBirthdayPreferenceFromDetails = Object.prototype.hasOwnProperty.call(
+    personalDetails,
+    'showBirthdayInCommunity'
+  );
+  const hasCompletedBirthdayPreferenceFromDetails = Boolean(
+    personalDetails.communityBirthdayPreferenceCompleted
+    || personalDetails.communityProfileCompleted
+    || hasBirthdayPreferenceFromDetails
+  );
+
+  useEffect(() => {
+    if (!hasCompletedBirthdayPreferenceFromDetails) return;
+
+    setCommunityPreferences({
+      birthdayVisibilityCompleted: true,
+      showBirthday: Boolean(personalDetails.showBirthdayInCommunity),
+    });
+  }, [hasCompletedBirthdayPreferenceFromDetails, personalDetails.showBirthdayInCommunity]);
+
   useEffect(() => {
     if (!isRealUserId(uid)) return;
     let cancelled = false;
@@ -85,7 +109,7 @@ export default function useCommunityProfile({ personalDetails = {} } = {}) {
         });
       }
 
-      if (profile.communityProfileCompleted) {
+      if (profile.communityBirthdayPreferenceCompleted) {
         setCommunityPreferences({
           birthdayVisibilityCompleted: true,
           showBirthday: Boolean(profile.showBirthdayInCommunity),
@@ -154,13 +178,23 @@ export default function useCommunityProfile({ personalDetails = {} } = {}) {
 
     setCommunityPreferences({ birthdayVisibilityCompleted: true, showBirthday });
     setCommunityUserProfile(nextProfile);
-    setProfileSuccessMessage('Community preference saved.');
+    setProfileSuccessMessage(t('communityPreferenceSaved'));
+    onProfileSync?.({
+      communityDisplayName: resolvedDisplayName,
+      communityBirthday: resolvedBirthday,
+      showBirthdayInCommunity: showBirthday,
+      communityBirthdayPreferenceCompleted: true,
+      allowAnonymousPosting: resolvedAllowAnon,
+      communityProfileCompleted: true,
+      communityJoinedAt: resolvedJoinedAt,
+    });
 
     if (isRealUserId(uid)) {
       updateCommunityProfile(uid, {
         communityDisplayName: resolvedDisplayName,
         communityBirthday: resolvedBirthday,
         showBirthdayInCommunity: showBirthday,
+        communityBirthdayPreferenceCompleted: true,
         allowAnonymousPosting: resolvedAllowAnon,
         communityProfileCompleted: true,
         communityJoinedAt: resolvedJoinedAt,
@@ -174,10 +208,17 @@ export default function useCommunityProfile({ personalDetails = {} } = {}) {
       if (!currentProfile.profileCompleted) return currentProfile;
       return { ...currentProfile, showBirthday };
     });
-    setProfileSuccessMessage('Birthday privacy updated.');
+    setProfileSuccessMessage(t('birthdayPrivacyUpdated'));
+    onProfileSync?.({
+      showBirthdayInCommunity: showBirthday,
+      communityBirthdayPreferenceCompleted: true,
+    });
 
     if (isRealUserId(uid)) {
-      updateCommunityProfile(uid, { showBirthdayInCommunity: showBirthday }).catch(() => {});
+      updateCommunityProfile(uid, {
+        showBirthdayInCommunity: showBirthday,
+        communityBirthdayPreferenceCompleted: true,
+      }).catch(() => {});
     }
   };
 

@@ -160,10 +160,18 @@ service cloud.firestore {
       match /activity_notifications/{notificationId} {
         allow read, delete: if isSelf(uid) || isAdmin();
         allow create: if request.auth != null
-          && request.auth.uid != uid
           && request.resource.data.recipientId == uid
           && request.resource.data.actorId == request.auth.uid
-          && request.resource.data.type in ['comment', 'like', 'support'];
+          && (
+            (
+              request.auth.uid != uid
+              && request.resource.data.type in ['comment', 'like', 'support', 'birthday_wish']
+            )
+            || (
+              request.auth.uid == uid
+              && request.resource.data.type in ['streak_reminder', 'streak_grace', 'streak_lost']
+            )
+          );
         allow update: if false;
       }
     }
@@ -362,13 +370,19 @@ service cloud.firestore {
     // NOTE: enable Firebase App Check on this project for real bot protection.
     match /joinRequests/{requestId} {
       allow create: if request.resource.data.keys().hasOnly([
-            'fullName', 'address', 'birthDate', 'cancerStory',
+            'firstName', 'lastName', 'fullName', 'address', 'birthDate', 'cancerStory',
             'consentToReceiveInfo', 'email', 'phone', 'whatsappNote',
             'readyToJoin', 'source', 'status', 'createdAt'
           ])
+        && request.resource.data.firstName is string
+        && request.resource.data.firstName.size() > 0
+        && request.resource.data.firstName.size() <= 200
+        && request.resource.data.lastName is string
+        && request.resource.data.lastName.size() > 0
+        && request.resource.data.lastName.size() <= 200
         && request.resource.data.fullName is string
         && request.resource.data.fullName.size() > 0
-        && request.resource.data.fullName.size() <= 200
+        && request.resource.data.fullName.size() <= 400
         && request.resource.data.email is string
         && request.resource.data.email.size() <= 320
         && request.resource.data.cancerStory is string

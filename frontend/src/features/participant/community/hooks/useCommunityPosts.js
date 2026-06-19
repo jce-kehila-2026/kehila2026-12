@@ -15,6 +15,7 @@ import {
   REPORTED_POST_HIDE_DELAY_MS,
   shouldHidePostReportedByUser,
 } from '../utils/communityModerationUtils';
+import { createParticipantT } from '../../i18n/participantUiTranslations';
 
 const normalizeEditablePostText = (value = '') => String(value).replace(/\r\n/g, '\n').trim();
 
@@ -46,6 +47,7 @@ export default function useCommunityPosts({
   setEditPostError,
   setEditPostText,
   setEditingPostId,
+  t = createParticipantT('en'),
 }) {
   const editFeedbackTimersRef = useRef({});
   const postSuccessTimerRef = useRef(null);
@@ -73,11 +75,11 @@ export default function useCommunityPosts({
       setRelativeTimeNow(new Date());
       if (showFeedback) {
         setRefreshPulseKey((currentKey) => currentKey + 1);
-        setRefreshFeedback('Community feed refreshed');
+        setRefreshFeedback(t('feedRefreshed'));
       }
     } catch {
       if (showFeedback) {
-        setRefreshFeedback('Community feed refreshed');
+        setRefreshFeedback(t('feedRefreshed'));
       }
     } finally {
       if (showFeedback) {
@@ -245,7 +247,7 @@ export default function useCommunityPosts({
 
     if (!content && !postAttachment) {
       clearPostSuccessTimer();
-      setPostError('Please write something or add a local attachment before sharing.');
+      setPostError(t('postRequired'));
       setPostSuccessMessage('');
       return;
     }
@@ -264,7 +266,7 @@ export default function useCommunityPosts({
       });
     } catch {
       clearPostSuccessTimer();
-      setPostError('Unable to publish your post right now.');
+      setPostError(t('postPublishError'));
       setPostSuccessMessage('');
       return;
     }
@@ -279,9 +281,6 @@ export default function useCommunityPosts({
   };
 
   const handleToggleSupport = (postId) => {
-    const postToUpdate = posts.find((post) => post.id === postId);
-    const shouldIncreaseStreak = postToUpdate ? !postToUpdate.isSupported : false;
-
     toggleCommunityPostSupport(postId, localUserId, { actorName: localUserName }).catch(() => {});
 
     updatePostById(postId, (post) => {
@@ -298,10 +297,6 @@ export default function useCommunityPosts({
         support: nextSupportCount,
       };
     });
-
-    if (shouldIncreaseStreak) {
-      registerCommunityActivity();
-    }
   };
 
   const handleToggleLike = (postId) => {
@@ -357,7 +352,7 @@ export default function useCommunityPosts({
     if (isEditPostUnchanged) return;
 
     if (!content && !postToEdit.attachment) {
-      setEditPostError('Please write something or keep an attachment before saving.');
+      setEditPostError(t('editPostRequired'));
       return;
     }
 
@@ -368,7 +363,7 @@ export default function useCommunityPosts({
     } catch {
       setTemporaryEditFeedback(editingPostId, {
         type: 'error',
-        message: 'Failed to update post.',
+        message: t('postUpdateError'),
       });
       return;
     }
@@ -381,7 +376,7 @@ export default function useCommunityPosts({
     }));
     setTemporaryEditFeedback(editingPostId, {
       type: 'success',
-      message: 'Post updated successfully.',
+      message: t('postUpdated'),
     });
     onCancelEditPost();
   };

@@ -21,6 +21,22 @@ import {
 import { auth, db } from '../../../../firebase';
 import { formatRelativeCommunityTime } from '../utils/communityDateUtils';
 import { isCommunityContentVisible } from '../utils/communityModerationUtils';
+import { translateFields, isTranslationConfigured } from '../../../admin/services/translationService';
+
+// Best-effort Azure translation of participant-authored text. Returns a
+// `{ content: { he, en, ar } }` map to co-locate on the doc, or null when
+// translation is unconfigured/empty/failed — saves must never block on it.
+async function buildContentTranslations(content) {
+  if (!isTranslationConfigured() || !content || !String(content).trim()) {
+    return null;
+  }
+  try {
+    const out = await translateFields({ content }, ['content']);
+    return out && out.content ? out : null;
+  } catch {
+    return null;
+  }
+}
 
 const POSTS_COL = 'community_posts';
 const USERS_COL = 'users';
@@ -58,6 +74,8 @@ async function createActivityNotification({
   postId,
   postExcerpt = '',
   commentExcerpt = '',
+  title,
+  body,
 } = {}) {
   // The security rule requires actorId == request.auth.uid, so always attribute
   // to the authenticated user rather than the (possibly unresolved) community id.
@@ -73,6 +91,8 @@ async function createActivityNotification({
       postId: postId ?? null,
       postExcerpt,
       commentExcerpt,
+      ...(title ? { title } : {}),
+      ...(body ? { body } : {}),
       createdAt: serverTimestamp(),
     });
   } catch {
@@ -113,6 +133,7 @@ export const mapFirestoreCommunityPost = (docSnap) => {
     imageUrl,
     isAnonymous: isAnon,
     content: data.content ?? '',
+    translations: data.translations ?? null,
     title: data.title ?? null,
     createdAt: createdAt.toISOString(),
     updatedAt: updatedAt.toISOString(),
@@ -153,6 +174,7 @@ const firestoreCommentToLocal = (docSnap, postId) => {
     authorDisplayName: data.authorDisplayName ?? 'Unknown',
     content: data.content ?? '',
     text: data.content ?? '',
+    translations: data.translations ?? null,
     createdAt: createdAt.toISOString(),
     updatedAt: tsToDate(data.updatedAt).toISOString(),
     status: data.status ?? 'active',
@@ -232,12 +254,15 @@ export async function createCommunityPost({
     ? authorId
     : (auth.currentUser?.uid ?? null);
 
+  const translations = await buildContentTranslations(content);
+
   const postData = {
     authorId: resolvedAuthorId,
     authorDisplayName: displayName,
     authorAvatarUrl: '',
     isAnonymous: Boolean(isAnonymous),
     content: content ?? '',
+    ...(translations ? { translations } : {}),
     title: null,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
@@ -265,6 +290,7 @@ export async function createCommunityPost({
     authorAvatarUrl: '',
     isAnonymous: Boolean(isAnonymous),
     content: content ?? '',
+    translations: translations ?? null,
     title: null,
     createdAt: now.toISOString(),
     updatedAt: now.toISOString(),
@@ -293,8 +319,10 @@ export async function createCommunityPost({
 }
 
 export async function updateCommunityPost(postId, { content } = {}) {
+  const translations = await buildContentTranslations(content);
   await updateDoc(doc(db, POSTS_COL, postId), {
     content,
+    ...(translations ? { translations } : {}),
     updatedAt: serverTimestamp(),
   });
   return { success: true, postId };
@@ -380,6 +408,7 @@ export async function createCommunityComment(postId, {
   postExcerpt = '',
 } = {}) {
   const displayName = authorDisplayName || author || 'Current User';
+  const translations = await buildContentTranslations(content);
   const batch = writeBatch(db);
 
   const commentsRef = collection(db, POSTS_COL, postId, 'comments');
@@ -389,6 +418,7 @@ export async function createCommunityComment(postId, {
     authorId: authorId ?? null,
     authorDisplayName: displayName,
     content: content ?? '',
+    ...(translations ? { translations } : {}),
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
     status: 'active',
@@ -424,6 +454,7 @@ export async function createCommunityComment(postId, {
     authorDisplayName: displayName,
     content: content ?? '',
     text: content ?? '',
+    translations: translations ?? null,
     createdAt: now.toISOString(),
     updatedAt: now.toISOString(),
     status: 'active',
@@ -500,12 +531,22 @@ export async function getCommunityProfile(uid) {
   if (!snap.exists()) return null;
 
   const data = snap.data();
+  const hasBirthdayVisibilityPreference = Object.prototype.hasOwnProperty.call(
+    data,
+    'showBirthdayInCommunity'
+  );
+
   return {
     communityDisplayName: data.communityDisplayName ?? '',
     communityBirthday: data.communityBirthday ?? '',
     showBirthdayInCommunity: Boolean(data.showBirthdayInCommunity),
     allowAnonymousPosting: data.allowAnonymousPosting !== false,
     communityProfileCompleted: Boolean(data.communityProfileCompleted),
+    communityBirthdayPreferenceCompleted: Boolean(
+      data.communityBirthdayPreferenceCompleted
+      || data.communityProfileCompleted
+      || hasBirthdayVisibilityPreference
+    ),
     communityJoinedAt: data.communityJoinedAt ? tsToDate(data.communityJoinedAt) : new Date(),
     communityFollowedAuthors: Array.isArray(data.communityFollowedAuthors)
       ? data.communityFollowedAuthors
@@ -544,15 +585,35 @@ export async function getCommunityStreak(uid) {
   return {
     communityStreakCount: data.communityStreakCount ?? 0,
     communityLastActivityDate: data.communityLastActivityDate ?? null,
+    communityStreakReminderDate: data.communityStreakReminderDate ?? null,
+    communityStreakGraceDate: data.communityStreakGraceDate ?? null,
+    communityStreakLostDate: data.communityStreakLostDate ?? null,
   };
 }
 
-export async function updateCommunityStreak(uid, { communityStreakCount, communityLastActivityDate } = {}) {
+export async function updateCommunityStreak(uid, streakData = {}) {
   if (!uid) return;
-  await setDoc(doc(db, USERS_COL, uid), {
-    communityStreakCount,
-    communityLastActivityDate,
-  }, { merge: true });
+  await setDoc(doc(db, USERS_COL, uid), streakData, { merge: true });
+}
+
+export async function createCommunityStreakNotification(uid, {
+  notificationKey,
+  type,
+  title,
+  body,
+} = {}) {
+  const resolvedActorId = auth.currentUser?.uid ?? uid;
+  if (!uid || !notificationKey || !type || !title || !body || resolvedActorId !== uid) return;
+
+  await setDoc(doc(db, USERS_COL, uid, ACTIVITY_NOTIFICATIONS_COL, notificationKey), {
+    recipientId: uid,
+    actorId: uid,
+    actorName: 'Community streak',
+    type,
+    title,
+    body,
+    createdAt: serverTimestamp(),
+  }, { merge: false });
 }
 
 // ── Follows (users/{uid}) ─────────────────────────────────────────────────────
@@ -608,8 +669,32 @@ export async function getTodayCommunityBirthdays() {
     }));
 }
 
-export async function sendBirthdayWish(wishData = {}) {
-  return { success: true, ...wishData };
+export async function sendBirthdayWish({
+  recipientId,
+  senderId,
+  senderName,
+  message,
+} = {}) {
+  const resolvedSenderId = auth.currentUser?.uid ?? senderId;
+  if (!recipientId || !resolvedSenderId || !message) {
+    throw new Error('Missing birthday wish details.');
+  }
+
+  if (recipientId === resolvedSenderId) {
+    throw new Error('Birthday wishes cannot be sent to yourself.');
+  }
+
+  await addDoc(collection(db, USERS_COL, recipientId, ACTIVITY_NOTIFICATIONS_COL), {
+    recipientId,
+    actorId: resolvedSenderId,
+    actorName: senderName || 'Someone',
+    type: 'birthday_wish',
+    title: 'Birthday wish',
+    body: `${senderName || 'Someone'} sent you a birthday wish: "${message}"`,
+    createdAt: serverTimestamp(),
+  });
+
+  return { success: true, recipientId, senderId: resolvedSenderId, message };
 }
 
 // ── Guidelines ────────────────────────────────────────────────────────────────

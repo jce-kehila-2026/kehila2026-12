@@ -1,0 +1,79 @@
+/* Shared primary CTA — matches Public Homepage navbar join / public-button */
+.public-cta-scope {
+  --public-purple: #4b136b;
+  --public-purple-2: #7f22d9;
+  --public-pink: #ec168c;
+  font-family: "Assistant", "Segoe UI", Arial, sans-serif;
+}
+
+.public-cta-scope .public-button.public-button--primary,
+.public-cta-scope .public-button.public-button--primary.public-cta-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-width: 150px;
+  min-height: 52px;
+  padding: 12px 28px;
+  border: 2px solid rgba(91, 30, 140, 0.2);
+  border-radius: 999px;
+  color: #5b1e8c;
+  background: rgba(255, 255, 255, 0.97);
+  box-shadow: 0 9px 24px rgba(91, 30, 140, 0.12);
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1;
+  text-align: center;
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    color 180ms ease,
+    background 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.public-cta-scope .public-button.public-button--primary:is(:hover, :focus-visible):not(:disabled) {
+  color: #fff;
+  background: linear-gradient(135deg, #e73386, #dc2577);
+  border-color: transparent;
+  box-shadow: 0 14px 26px rgba(223, 50, 123, 0.24);
+  transform: translateY(-2px);
+}
+
+.public-cta-scope .public-button.public-button--primary:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.public-cta-scope .public-button.public-button--primary:focus-visible {
+  outline: 3px solid rgba(236, 72, 153, 0.28);
+  outline-offset: 3px;
+}
+
+.public-cta-scope .public-button.public-button--primary:disabled {
+  cursor: wait;
+  opacity: 0.72;
+  transform: none;
+}
+
+.public-cta-scope .public-button__arrow {
+  flex-shrink: 0;
+  opacity: 0.95;
+  transition: transform 200ms ease;
+}
+
+.public-cta-scope .public-button.public-button--primary:hover:not(:disabled) .public-button__arrow {
+  transform: translateX(3px);
+}
+
+.public-cta-scope[dir='rtl'] .public-button.public-button--primary:hover:not(:disabled) .public-button__arrow,
+.participant-home[dir='rtl'] .public-cta-scope .public-button.public-button--primary:hover:not(:disabled) .public-button__arrow {
+  transform: translateX(-3px);
+}
+
+.public-cta-scope .public-button--block {
+  width: 100%;
+  min-width: 0;
+}

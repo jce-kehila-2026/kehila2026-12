@@ -7,12 +7,15 @@ import {
 } from '../admin/services/registrationService';
 import { useAdmin } from '../admin/context/AdminContext';
 import { localizeField } from '../../i18n/localizeField';
+import { useParticipantLocale } from './context/ParticipantLocaleContext';
 
-function formatEventDate(ts) {
+const INTL_LOCALE_BY_LANG = { he: 'he-IL', ar: 'ar', en: 'en' };
+
+function formatEventDate(ts, lang = 'en') {
   if (!ts) return '—';
   const d = ts.toDate ? ts.toDate() : new Date(ts);
   if (isNaN(d)) return '—';
-  return new Intl.DateTimeFormat('en', {
+  return new Intl.DateTimeFormat(INTL_LOCALE_BY_LANG[lang] || 'en', {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
@@ -23,6 +26,7 @@ function formatEventDate(ts) {
 }
 
 export default function WorkshopFeed({ locale = 'he' }) {
+  const { t, lang } = useParticipantLocale();
   const { currentUser } = useAdmin();
   const [events, setEvents] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -97,11 +101,11 @@ export default function WorkshopFeed({ locale = 'he' }) {
   }
 
   if (loading) {
-    return <p className="participant-empty-view">Loading workshops...</p>;
+    return <p className="participant-empty-view">{t('loadingWorkshops')}</p>;
   }
 
   if (events.length === 0) {
-    return <p className="participant-empty-view">No workshops published yet. Check back soon.</p>;
+    return <p className="participant-empty-view">{t('noWorkshops')}</p>;
   }
 
   return (
@@ -119,7 +123,7 @@ export default function WorkshopFeed({ locale = 'he' }) {
               <span className="workshop-card__category">{event.category}</span>
               <strong className="workshop-card__title">{localizeField(event.translations?.title ?? event.title, locale)}</strong>
             </div>
-            <time className="workshop-card__time">{formatEventDate(event.startTime)}</time>
+            <time className="workshop-card__time">{formatEventDate(event.startTime, lang)}</time>
             {event.location && (
               <span className="workshop-card__location">{localizeField(event.translations?.location ?? event.location, locale)}</span>
             )}
@@ -128,7 +132,7 @@ export default function WorkshopFeed({ locale = 'he' }) {
             <div className="workshop-card__footer">
               {capacity > 0 && (
                 <span className={`workshop-card__count${isFull ? ' workshop-card__count--full' : ''}`}>
-                  {registered} / {capacity} registered
+                  {t('registeredCount').replace('{registered}', String(registered)).replace('{capacity}', String(capacity))}
                 </span>
               )}
               {isRegistered ? (
@@ -137,7 +141,7 @@ export default function WorkshopFeed({ locale = 'he' }) {
                   onClick={() => handleCancel(event)}
                   disabled={isLoading}
                 >
-                  {isLoading ? 'Cancelling…' : 'Cancel Registration'}
+                  {isLoading ? t('cancellingStatus') : t('cancelRegistration')}
                 </button>
               ) : (
                 <button
@@ -145,7 +149,7 @@ export default function WorkshopFeed({ locale = 'he' }) {
                   onClick={() => handleRegister(event)}
                   disabled={isFull || isLoading}
                 >
-                  {isLoading ? 'Registering…' : isFull ? 'Full' : 'Register'}
+                  {isLoading ? t('registeringStatus') : isFull ? t('full') : t('register')}
                 </button>
               )}
             </div>

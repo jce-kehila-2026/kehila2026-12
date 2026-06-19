@@ -1,6 +1,9 @@
+import { useParticipantLocale } from '../../context/ParticipantLocaleContext';
+
 export default function FeedTabs({ activeTab, onTabChange, tabs = [] }) {
+  const { t } = useParticipantLocale();
   return (
-    <div className="community-feed-tabs" role="tablist" aria-label="Community feed filters">
+    <div className="community-feed-tabs" role="tablist" aria-label={t('feedFiltersAria')}>
       {tabs.map((tab) => (
         <button
           aria-controls="community-feed-panel"
@@ -12,7 +15,7 @@ export default function FeedTabs({ activeTab, onTabChange, tabs = [] }) {
           role="tab"
           type="button"
         >
-          {tab.label}
+          {tab.labelKey ? t(tab.labelKey) : tab.label}
         </button>
       ))}
     </div>

@@ -1,3 +1,5 @@
+import { useParticipantLocale } from '../../context/ParticipantLocaleContext';
+
 export default function ReportPostModal({
   onBackdropMouseDown,
   onCancel,
@@ -9,6 +11,7 @@ export default function ReportPostModal({
   reportModalRef,
   selectedReason = '',
 }) {
+  const { t } = useParticipantLocale();
   return (
     <div
       className="community-report-modal"
@@ -26,11 +29,11 @@ export default function ReportPostModal({
       >
         <header className="community-report-modal__header">
           <div>
-            <h3 id="community-report-title">Report post</h3>
-            <p>Choose a reason for reporting this post.</p>
+            <h3 id="community-report-title">{t('reportPostTitle')}</h3>
+            <p>{t('reportPostDesc')}</p>
           </div>
           <button
-            aria-label="Close report form"
+            aria-label={t('closeReportForm')}
             className="community-report-modal__close"
             type="button"
             onClick={onCancel}
@@ -38,32 +41,36 @@ export default function ReportPostModal({
             ×
           </button>
         </header>
-        <div className="community-report-modal__reasons" role="radiogroup" aria-label="Report reason">
-          {reasons.map((reason) => (
-            <label
-              className={`community-report-modal__reason${selectedReason === reason ? ' is-selected' : ''}`}
-              key={reason}
-            >
-              <input
-                checked={selectedReason === reason}
-                name="community-report-reason"
-                type="radio"
-                value={reason}
-                onChange={() => onReasonChange(reason)}
-              />
-              <span>{reason}</span>
-            </label>
-          ))}
+        <div className="community-report-modal__reasons" role="radiogroup" aria-label={t('reportReasonAria')}>
+          {reasons.map((reason) => {
+            const reasonValue = typeof reason === 'string' ? reason : reason.value;
+            const reasonLabel = typeof reason === 'string' ? reason : t(reason.labelKey);
+            return (
+              <label
+                className={`community-report-modal__reason${selectedReason === reasonValue ? ' is-selected' : ''}`}
+                key={reasonValue}
+              >
+                <input
+                  checked={selectedReason === reasonValue}
+                  name="community-report-reason"
+                  type="radio"
+                  value={reasonValue}
+                  onChange={() => onReasonChange(reasonValue)}
+                />
+                <span>{reasonLabel}</span>
+              </label>
+            );
+          })}
         </div>
         {reasonError && (
           <p className="community-report-modal__error" role="alert">{reasonError}</p>
         )}
         <div className="community-report-modal__actions">
           <button className="community-report-modal__cancel" type="button" onClick={onCancel}>
-            Cancel
+            {t('cancel')}
           </button>
           <button className="community-report-modal__submit" disabled={!selectedReason} type="submit">
-            Submit report
+            {t('submitReport')}
           </button>
         </div>
       </form>

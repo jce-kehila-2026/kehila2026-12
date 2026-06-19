@@ -29,7 +29,10 @@ import {
   storeParticipantLocale,
 } from './i18n/participantLocale';
 import CommunityPage from './community/CommunityPage';
+import useCommunityStreak from './community/hooks/useCommunityStreak';
 import WorkshopFeed from './WorkshopFeed';
+import { createParticipantT } from './i18n/participantUiTranslations';
+import { ParticipantLocaleProvider } from './context/ParticipantLocaleContext';
 import { useAdmin } from '../admin/context/AdminContext';
 import ParticipantDashboardHome from './home/ParticipantDashboardHome';
 import useDailyMotivation from './home/useDailyMotivation';
@@ -41,11 +44,11 @@ import './ParticipantHome.css';
 import './styles/participant-dark-mode.css';
 
 const participantNavItems = [
-  { key: 'home', label: 'Home', icon: HomeOutlinedIcon, path: '/home' },
-  { key: 'calendar', label: 'Calendar', icon: CalendarMonthOutlinedIcon, path: '/calendar' },
-  { key: 'events', label: 'Events', icon: EventAvailableOutlinedIcon, path: '/events' },
-  { key: 'community', label: 'Community', icon: Diversity3OutlinedIcon },
-  { key: 'profile', label: 'Settings', icon: SettingsOutlinedIcon },
+  { key: 'home', labelKey: 'navHome', icon: HomeOutlinedIcon, path: '/home' },
+  { key: 'calendar', labelKey: 'navCalendar', icon: CalendarMonthOutlinedIcon, path: '/calendar' },
+  { key: 'events', labelKey: 'navEvents', icon: EventAvailableOutlinedIcon, path: '/events' },
+  { key: 'community', labelKey: 'navCommunity', icon: Diversity3OutlinedIcon },
+  { key: 'profile', labelKey: 'navSettings', icon: SettingsOutlinedIcon },
 ];
 
 const PARTICIPANT_SIDEBAR_COLLAPSED_KEY = 'shena-participant-sidebar-collapsed';
@@ -82,6 +85,8 @@ export default function ParticipantHome({ initialView = 'home' }) {
   const [loadingParticipantProfile, setLoadingParticipantProfile] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(getStoredSidebarCollapsed);
   const { quote: dailyQuote } = useDailyMotivation();
+  const t = useMemo(() => createParticipantT(locale), [locale]);
+  useCommunityStreak({ localUserId: effectiveUID || currentUser?.uid || '' });
 
   // ── Notifications ────────────────────────────────────────────────────────
   // The bell shows a unified feed: admin announcements + auto-generated
@@ -132,6 +137,14 @@ export default function ParticipantHome({ initialView = 'home' }) {
     loadNotifications();
   }, [loadNotifications]);
 
+  useEffect(() => {
+    if (!currentUser) return undefined;
+
+    const intervalId = window.setInterval(loadNotifications, 60 * 1000);
+
+    return () => window.clearInterval(intervalId);
+  }, [currentUser, loadNotifications]);
+
   const handleBellClick = useCallback(() => {
     if (notifOpen) {
       setNotifOpen(false);
@@ -160,7 +173,7 @@ export default function ParticipantHome({ initialView = 'home' }) {
     <div className="participant-notif-wrap" ref={notifBellRef}>
       <button
         type="button"
-        aria-label="Notifications"
+        aria-label={t('notifications')}
         aria-expanded={notifOpen}
         className={notifOpen ? 'is-active' : ''}
         onClick={handleBellClick}
@@ -243,7 +256,7 @@ export default function ParticipantHome({ initialView = 'home' }) {
   };
 
   const navigateParticipantView = useCallback(
-    (viewKey) => {
+    (viewKey, options = {}) => {
       const nextView = normalizeParticipantView(viewKey);
       if (viewKey === 'appointments') {
         setActiveView('home');
@@ -254,7 +267,11 @@ export default function ParticipantHome({ initialView = 'home' }) {
       const item = participantNavItems.find((nav) => nav.key === nextView);
       setActiveView(nextView);
       if (item?.path) {
-        navigate(item.path);
+        if (nextView === 'events' && options.eventsTab) {
+          navigate(item.path, { state: { eventsTab: options.eventsTab } });
+        } else {
+          navigate(item.path);
+        }
       }
     },
     [navigate],
@@ -315,12 +332,12 @@ export default function ParticipantHome({ initialView = 'home' }) {
   }, [currentUser, effectiveUID]);
 
   return (
-    <>
+    <ParticipantLocaleProvider locale={locale} setLocale={handleLocaleChange}>
       {userRole === 'admin' && (
         <div className="participant-admin-preview">
-          <span>Admin Preview - This is how the participant dashboard looks to participants.</span>
+          <span>{t('adminPreviewText')}</span>
           <button type="button" onClick={() => navigate('/admin/users')}>
-            Back to Admin
+            {t('backToAdmin')}
           </button>
         </div>
       )}
@@ -329,7 +346,7 @@ export default function ParticipantHome({ initialView = 'home' }) {
         dir={layoutDirection}
         lang={layoutLang}
       >
-        <aside className="participant-sidebar" aria-label="Participant navigation">
+        <aside className="participant-sidebar" aria-label={t('sidebarNavAria')}>
           <ParticipantSidebarProfile
             fullName={fullName}
             avatarUrl={avatarUrl}
@@ -342,25 +359,26 @@ export default function ParticipantHome({ initialView = 'home' }) {
           <nav className="participant-nav">
             {participantNavItems.map((item) => {
               const Icon = item.icon;
+              const itemLabel = t(item.labelKey);
               return (
                 <button
                   className={activeView === item.key ? 'is-active' : ''}
                   type="button"
                   onClick={() => navigateParticipantView(item.key)}
-                  key={item.label}
-                  title={sidebarCollapsed ? item.label : undefined}
+                  key={item.key}
+                  title={sidebarCollapsed ? itemLabel : undefined}
                 >
                   <Icon fontSize="small" />
-                  <span>{item.label}</span>
+                  <span>{itemLabel}</span>
                   {item.badge && <small>{item.badge}</small>}
                 </button>
               );
             })}
           </nav>
 
-          <button className="participant-logout" type="button" onClick={logout} title={sidebarCollapsed ? 'Logout' : undefined}>
+          <button className="participant-logout" type="button" onClick={logout} title={sidebarCollapsed ? t('logout') : undefined}>
             <LogoutIcon fontSize="small" />
-            <span>Logout</span>
+            <span>{t('logout')}</span>
           </button>
         </aside>
 
@@ -372,13 +390,13 @@ export default function ParticipantHome({ initialView = 'home' }) {
             displayName={displayName}
             title={
               activeView === 'calendar'
-                ? 'My Schedule'
+                ? t('titleMySchedule')
                 : activeView === 'events'
-                  ? 'Upcoming Activities'
+                  ? t('titleUpcomingActivities')
                   : activeView === 'community'
-                    ? 'Community Space'
+                    ? t('titleCommunitySpace')
                     : activeView === 'profile'
-                      ? 'Personal Details'
+                      ? t('titlePersonalDetails')
                       : undefined
             }
             darkMode={darkMode}
@@ -421,7 +439,7 @@ export default function ParticipantHome({ initialView = 'home' }) {
             <section className="participant-content participant-content--single">
               <div className="participant-panel participant-panel--wide">
                 <div className="participant-section-heading">
-                  <h2>Workshops</h2>
+                  <h2>{t('workshopsHeading')}</h2>
                 </div>
                 <WorkshopFeed locale={locale} />
               </div>
@@ -441,6 +459,7 @@ export default function ParticipantHome({ initialView = 'home' }) {
               }}
               isPersonalDetailsLoading={loadingParticipantProfile}
               onGoToSettings={() => navigateParticipantView('profile')}
+              onParticipantProfileSync={handleParticipantProfileSync}
             />
           )}
 
@@ -464,15 +483,18 @@ export default function ParticipantHome({ initialView = 'home' }) {
               <div className="participant-panel participant-panel--wide participant-placeholder-view">
                 <MoodOutlinedIcon />
                 <div>
-                  <span>Participant space</span>
-                  <h2>{participantNavItems.find((item) => item.key === activeView)?.label}</h2>
-                  <p>This section is ready for the next feature and can connect to Firestore later.</p>
+                  <span>{t('placeholderEyebrow')}</span>
+                  <h2>{(() => {
+                    const navItem = participantNavItems.find((item) => item.key === activeView);
+                    return navItem ? t(navItem.labelKey) : activeView;
+                  })()}</h2>
+                  <p>{t('placeholderBody')}</p>
                 </div>
               </div>
             </section>
           )}
         </section>
       </main>
-    </>
+    </ParticipantLocaleProvider>
   );
 }
