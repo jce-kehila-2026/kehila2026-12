@@ -635,15 +635,6 @@ function getAppointmentServiceLabel(title = '') {
   return cleanTitle;
 }
 
-function getAppointmentServiceIcon(title = '') {
-  const normalized = title.toLowerCase();
-  if (normalized.includes('yoga') || normalized.includes('qi')) return VolunteerActivismIcon;
-  if (normalized.includes('reflex')) return FavoriteBorderOutlinedIcon;
-  if (normalized.includes('acupuncture') || normalized.includes('herbal')) return AutoAwesomeIcon;
-  if (normalized.includes('massage')) return EventAvailableIcon;
-  return FavoriteBorderIcon;
-}
-
 function getProviderInitials(name = 'SN') {
   const parts = String(name).trim().split(/\s+/).filter(Boolean);
   if (!parts.length) return 'SN';
@@ -905,7 +896,6 @@ function AppointmentBookingDrawer({
   if (!event) return null;
 
   const serviceLabel = getAppointmentServiceLabel(event.title);
-  const ServiceIcon = getAppointmentServiceIcon(event.title);
   const selectedTime = timeOptions.find((timeOption) => timeOption.option?.id === selectedOptionId) || null;
   const selectedOption = selectedTime?.option || null;
   const isRegistered = selectedOption ? registeredSessionIds.has(selectedOption.id) : false;
@@ -943,13 +933,8 @@ function AppointmentBookingDrawer({
         </button>
 
         <header className="appointment-drawer__header">
-          <span className="appointment-drawer__mark">
-            <ServiceIcon fontSize="small" />
-          </span>
-          <div>
-            <h2 id="appointment-drawer-title">{serviceLabel}</h2>
-            <p>Book a session</p>
-          </div>
+          <h2 id="appointment-drawer-title">{serviceLabel}</h2>
+          <p>Book a session</p>
         </header>
 
         <section className="appointment-booking-step">
@@ -1190,13 +1175,8 @@ function WorkshopDetailsPanel({
       </div>
 
       <header className="workshop-details-panel__header">
-        <span>
-          <VolunteerActivismIcon fontSize="small" />
-        </span>
-        <div>
-          <h2 id="workshop-details-title">{event.title}</h2>
-          <p>{isRegistered ? 'You are registered' : 'Workshop details'}</p>
-        </div>
+        <h2 id="workshop-details-title">{event.title}</h2>
+        <p>{isRegistered ? 'You are registered' : 'Workshop details'}</p>
       </header>
 
       <p className="workshop-details-panel__description">{event.description}</p>

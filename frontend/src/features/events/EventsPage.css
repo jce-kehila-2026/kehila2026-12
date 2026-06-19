@@ -1479,26 +1479,8 @@
 }
 
 .workshop-details-panel__header {
-  display: grid;
-  grid-template-columns: 52px minmax(0, 1fr);
-  align-items: center;
-  gap: 0.8125rem;
+  display: block;
   padding-inline-end: 2.5rem;
-}
-
-.workshop-details-panel__header > span {
-  width: 3.125rem;
-  height: 3.125rem;
-  display: inline-grid;
-  place-items: center;
-  border-radius: 18px;
-  background:
-    radial-gradient(circle at 26% 18%, rgba(255, 255, 255, 0.88), transparent 3.5rem),
-    linear-gradient(145deg, rgba(255, 222, 238, 0.88), rgba(226, 210, 255, 0.76));
-  color: #d94f92;
-  box-shadow:
-    0 16px 30px rgba(216, 76, 136, 0.14),
-    inset 0 1px 0 rgba(255, 255, 255, 0.88);
 }
 
 .workshop-details-panel__header h2,
@@ -2296,33 +2278,9 @@
 }
 
 .appointment-drawer__header {
-  display: grid;
-  grid-template-columns: 58px minmax(0, 1fr);
-  align-items: center;
-  gap: 0.875rem;
+  display: block;
   padding-inline-end: 2.625rem;
   margin-block-end: 26px;
-}
-
-.appointment-drawer__mark {
-  width: 3.375rem;
-  height: 3.375rem;
-  display: inline-grid;
-  place-items: center;
-  border-radius: 20px;
-  background:
-    radial-gradient(circle at 26% 18%, rgba(255, 255, 255, 0.88), transparent 3.5rem),
-    linear-gradient(145deg, rgba(255, 222, 238, 0.88), rgba(226, 210, 255, 0.76));
-  color: #d94f92;
-  box-shadow:
-    0 16px 30px rgba(216, 76, 136, 0.16),
-    0 0 26px rgba(207, 181, 255, 0.24),
-    inset 0 1px 0 rgba(255, 255, 255, 0.88);
-}
-
-.appointment-drawer__mark svg {
-  width: 1.875rem;
-  height: 1.875rem;
 }
 
 .appointment-drawer__header h2,
@@ -4311,28 +4269,6 @@
 
   .workshop-details-panel__image {
     height: 9.375rem;
-  }
-
-  .appointment-drawer__header {
-    grid-template-columns: 48px minmax(0, 1fr);
-    gap: 0.75rem;
-  }
-
-  .workshop-details-panel__header {
-    grid-template-columns: 48px minmax(0, 1fr);
-    gap: 0.75rem;
-  }
-
-  .appointment-drawer__mark {
-    width: 2.875rem;
-    height: 2.875rem;
-    border-radius: 17px;
-  }
-
-  .workshop-details-panel__header > span {
-    width: 2.875rem;
-    height: 2.875rem;
-    border-radius: 17px;
   }
 
   .workshop-details-panel__details span {
