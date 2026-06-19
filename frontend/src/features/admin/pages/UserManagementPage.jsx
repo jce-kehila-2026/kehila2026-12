@@ -5,6 +5,7 @@ import { Ban, Pencil, ShieldCheck } from 'lucide-react';
 import { db } from '../../../firebase';
 import { logAuditEvent } from '../services/auditService';
 import { listJoinRequests } from '../services/joinRequestAdminService';
+import { useAdminLocale } from '../context/AdminLocaleContext';
 import JoinRequestsTab from './JoinRequestsTab';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
@@ -40,6 +41,14 @@ import SortIcon from '@mui/icons-material/Sort';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 
 const ROLES = ['participant', 'volunteer', 'therapist', 'admin'];
+
+const ROLE_LABEL_KEYS = {
+  participant: 'roleParticipant',
+  volunteer: 'roleVolunteer',
+  therapist: 'roleTherapist',
+  admin: 'roleAdmin',
+  editor: 'roleEditor',
+};
 
 const ROLE_STYLES = {
   admin: { color: '#15803D', backgroundColor: 'rgba(34, 197, 94, 0.14)' },
@@ -81,13 +90,8 @@ function formatDateValue(value) {
   return String(value);
 }
 
-function humanizeValue(value) {
-  if (!value) return '-';
-  return String(value).replace(/_/g, ' ');
-}
-
-function getFullName(user) {
-  return user?.fullName || user?.displayName || user?.name || 'Unnamed user';
+function getFullName(user, fallback = 'Unnamed user') {
+  return user?.fullName || user?.displayName || user?.name || fallback;
 }
 
 function initials(user) {
@@ -112,13 +116,13 @@ function getEmergencyContact(user) {
   return [user?.emergencyContactName, user?.emergencyPhone].filter(Boolean).join(' ');
 }
 
-function RoleChip({ role }) {
+function RoleChip({ role, t }) {
   const key = role || 'participant';
   const style = ROLE_STYLES[key] || ROLE_STYLES.participant;
 
   return (
     <Chip
-      label={humanizeValue(key)}
+      label={t(ROLE_LABEL_KEYS[key] || 'roleParticipant')}
       size="small"
       sx={{
         ...style,
@@ -131,22 +135,22 @@ function RoleChip({ role }) {
   );
 }
 
-function getFieldIcon(label) {
+function getFieldIcon(fieldKey) {
   const iconSx = { fontSize: '1.125rem' };
   const map = {
-    'Full Name': <PersonIcon sx={iconSx} />,
-    Email: <EmailOutlinedIcon sx={iconSx} />,
-    'Phone Number': <PhoneOutlinedIcon sx={iconSx} />,
-    Address: <PlaceOutlinedIcon sx={iconSx} />,
-    'Date of Birth': <CakeOutlinedIcon sx={iconSx} />,
-    'Emergency Contact': <PhoneOutlinedIcon sx={iconSx} />,
-    'How did you hear about us?': <ShareOutlinedIcon sx={iconSx} />,
-    'Bio/About': <FavoriteBorderIcon sx={iconSx} />,
+    fullName: <PersonIcon sx={iconSx} />,
+    email: <EmailOutlinedIcon sx={iconSx} />,
+    phone: <PhoneOutlinedIcon sx={iconSx} />,
+    address: <PlaceOutlinedIcon sx={iconSx} />,
+    dob: <CakeOutlinedIcon sx={iconSx} />,
+    emergencyContact: <PhoneOutlinedIcon sx={iconSx} />,
+    howHeard: <ShareOutlinedIcon sx={iconSx} />,
+    bio: <FavoriteBorderIcon sx={iconSx} />,
   };
-  return map[label] || <PersonIcon sx={iconSx} />;
+  return map[fieldKey] || <PersonIcon sx={iconSx} />;
 }
 
-function InfoCard({ label, value, icon }) {
+function InfoCard({ label, value, icon, iconKey }) {
   return (
     <Box
       sx={{
@@ -181,7 +185,7 @@ function InfoCard({ label, value, icon }) {
           bgcolor: 'rgba(124, 58, 237, 0.08)',
         }}
       >
-        {icon || getFieldIcon(label)}
+        {icon || getFieldIcon(iconKey)}
       </Box>
       <Box sx={{ minWidth: 0, flex: 1 }}>
         <Typography variant="caption" color="text.secondary" fontWeight={800} sx={{ display: 'block', lineHeight: 1.1, fontSize: '0.8125rem' }}>
@@ -202,6 +206,8 @@ function InfoCard({ label, value, icon }) {
 
 export default function UserManagementPage() {
   const navigate = useNavigate();
+  const { t, direction } = useAdminLocale();
+  const roleLabel = (role) => t(ROLE_LABEL_KEYS[role] || 'roleParticipant');
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(null);
@@ -311,26 +317,15 @@ export default function UserManagementPage() {
     });
   }, [roleFilter, search, sortBy, users]);
 
-  const personalSections = selectedUser
+  const compactDetails = selectedUser
     ? [
-        {
-          title: 'Contact Information',
-          fields: [
-            ['Full Name', getFullName(selectedUser)],
-            ['Email', selectedUser.email],
-            ['Phone Number', selectedUser.phoneNumber],
-            ['Address', getAddress(selectedUser)],
-          ],
-        },
-        {
-          title: 'Personal Information',
-          fields: [
-            ['Date of Birth', formatDateValue(selectedUser.birthDate || selectedUser.dateOfBirth)],
-          ],
-        },
+        { fieldKey: 'fullName', labelKey: 'fieldFullName', value: getFullName(selectedUser, t('umUnnamedUser')) },
+        { fieldKey: 'email', labelKey: 'fieldEmail', value: selectedUser.email },
+        { fieldKey: 'phone', labelKey: 'fieldPhone', value: selectedUser.phoneNumber },
+        { fieldKey: 'address', labelKey: 'fieldAddress', value: getAddress(selectedUser) },
+        { fieldKey: 'dob', labelKey: 'fieldDOB', value: formatDateValue(selectedUser.birthDate || selectedUser.dateOfBirth) },
       ]
     : [];
-  const compactDetails = personalSections.flatMap((section) => section.fields);
 
   const rowGrid = {
     display: 'grid',
@@ -377,7 +372,7 @@ export default function UserManagementPage() {
 
   return (
     <Box
-      dir="ltr"
+      dir={direction}
       sx={{
         width: '100%',
         maxWidth: 'none',
@@ -394,10 +389,10 @@ export default function UserManagementPage() {
         <Stack direction={{ xs: 'column', lg: 'row' }} spacing={2} alignItems={{ lg: 'center' }} justifyContent="space-between">
           <Box>
             <Typography variant="h3" sx={{ fontSize: { xs: '1.875rem', md: '2.4375rem' }, fontWeight: 950, color: '#100B2F', lineHeight: 1.05 }}>
-              User Management
+              {t('umTitle')}
             </Typography>
             <Typography variant="subtitle1" sx={{ mt: 0.9, color: '#4F4A70', fontWeight: 600 }}>
-              Manage participants, admin users, and permissions.
+              {t('umSubtitle')}
             </Typography>
           </Box>
           <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} alignItems={{ sm: 'center' }}>
@@ -420,7 +415,7 @@ export default function UserManagementPage() {
                 },
               }}
             >
-              Preview Participant View
+              {t('umPreviewParticipant')}
             </Button>
             <Button
               variant="contained"
@@ -439,15 +434,15 @@ export default function UserManagementPage() {
                 },
               }}
             >
-              Add User
+              {t('umAddUser')}
             </Button>
           </Stack>
         </Stack>
 
-        <Stack direction="row" spacing={1.2} sx={{ flexShrink: 0 }} role="tablist" aria-label="User management sections">
+        <Stack direction="row" spacing={1.2} sx={{ flexShrink: 0 }} role="tablist" aria-label={t('umSectionsAria')}>
           {[
-            { key: 'users', label: 'Users' },
-            { key: 'applications', label: 'Membership Applications' },
+            { key: 'users', label: t('tabUsers') },
+            { key: 'applications', label: t('tabApplications') },
           ].map((tab) => {
             const selected = activeTab === tab.key;
             return (
@@ -491,7 +486,7 @@ export default function UserManagementPage() {
                       color: selected ? '#fff' : '#C52A72',
                     }}
                   >
-                    {pendingApplications} new
+                    {t('umNewBadge').replace('{n}', pendingApplications)}
                   </Box>
                 ) : null}
               </Button>
@@ -528,9 +523,9 @@ export default function UserManagementPage() {
             >
           <Stack direction={{ xs: 'column', xl: 'row' }} spacing={2} alignItems={{ xl: 'center' }} justifyContent="space-between" sx={{ p: { xs: 2.2, md: 3 }, flexShrink: 0 }}>
             <Stack direction="row" spacing={1.1} alignItems="center">
-              <Typography variant="h5" fontWeight={950} sx={{ color: '#100B2F' }}>Users</Typography>
+              <Typography variant="h5" fontWeight={950} sx={{ color: '#100B2F' }}>{t('umUsersHeading')}</Typography>
               <Chip
-                label={`${users.length} total`}
+                label={t('umTotalChip').replace('{n}', users.length)}
                 sx={{
                   height: '1.875rem',
                   bgcolor: '#F2ECFF',
@@ -544,7 +539,7 @@ export default function UserManagementPage() {
 
             <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.4} sx={{ flex: 1, justifyContent: 'flex-end' }}>
               <TextField
-                placeholder="Search users..."
+                placeholder={t('umSearchPlaceholder')}
                 value={search}
                 onChange={(event) => setSearch(event.target.value)}
                 sx={{
@@ -579,8 +574,8 @@ export default function UserManagementPage() {
                     '& fieldset': { borderColor: 'rgba(130, 92, 206, 0.16)' },
                   }}
                 >
-                  <MenuItem value="all">All Roles</MenuItem>
-                  {ROLES.map((role) => <MenuItem key={role} value={role}>{humanizeValue(role)}</MenuItem>)}
+                  <MenuItem value="all">{t('umAllRoles')}</MenuItem>
+                  {ROLES.map((role) => <MenuItem key={role} value={role}>{roleLabel(role)}</MenuItem>)}
                 </Select>
               </FormControl>
               <FormControl size="small" sx={{ minWidth: '10rem' }}>
@@ -596,10 +591,10 @@ export default function UserManagementPage() {
                   }}
                   startAdornment={<SortIcon fontSize="small" sx={{ ml: 1, mr: 0.5, color: '#6D3CCF' }} />}
                 >
-                  <MenuItem value="newest">Newest</MenuItem>
-                  <MenuItem value="oldest">Oldest</MenuItem>
-                  <MenuItem value="name">Name</MenuItem>
-                  <MenuItem value="role">Role</MenuItem>
+                  <MenuItem value="newest">{t('sortNewest')}</MenuItem>
+                  <MenuItem value="oldest">{t('sortOldest')}</MenuItem>
+                  <MenuItem value="name">{t('sortName')}</MenuItem>
+                  <MenuItem value="role">{t('sortRole')}</MenuItem>
                 </Select>
               </FormControl>
             </Stack>
@@ -629,19 +624,24 @@ export default function UserManagementPage() {
                 flexShrink: 0,
               }}
             >
-              {['User', 'Role', 'Joined', 'Actions'].map((label) => (
+              {[
+                { key: 'user', label: t('colUser') },
+                { key: 'role', label: t('colRole') },
+                { key: 'joined', label: t('colJoined') },
+                { key: 'actions', label: t('colActions') },
+              ].map((col) => (
                 <Typography
-                  key={label}
+                  key={col.key}
                   variant="caption"
                   sx={{
                     fontWeight: 950,
                     color: '#625B84',
                     textTransform: 'uppercase',
                     letterSpacing: 0.3,
-                    textAlign: label === 'Actions' ? 'right' : 'left',
+                    textAlign: col.key === 'actions' ? 'right' : 'left',
                   }}
                 >
-                  {label}
+                  {col.label}
                 </Typography>
               ))}
             </Box>
@@ -714,8 +714,8 @@ export default function UserManagementPage() {
                         {initials(user)}
                       </Avatar>
                       <Box sx={{ minWidth: 0 }}>
-                        <Typography fontWeight={950} noWrap sx={{ color: '#17122E' }}>{getFullName(user)}</Typography>
-                        <Typography color="#5E587E" noWrap sx={{ fontSize: '0.84375rem' }}>{user.email || 'No email provided'}</Typography>
+                        <Typography fontWeight={950} noWrap sx={{ color: '#17122E' }}>{getFullName(user, t('umUnnamedUser'))}</Typography>
+                        <Typography color="#5E587E" noWrap sx={{ fontSize: '0.84375rem' }}>{user.email || t('umNoEmail')}</Typography>
                       </Box>
                     </Stack>
 
@@ -735,11 +735,11 @@ export default function UserManagementPage() {
                           '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.65)' },
                         }}
                       >
-                        {ROLES.map((role) => <MenuItem key={role} value={role}>{humanizeValue(role)}</MenuItem>)}
+                        {ROLES.map((role) => <MenuItem key={role} value={role}>{roleLabel(role)}</MenuItem>)}
                       </Select>
                     </Box>
 
-                    <Typography fontWeight={800} color="#4F4A70">{formatDateValue(getJoinedDate(user))}</Typography>
+                    <Typography fontWeight={800} color="#4F4A70" sx={{ textAlign: 'start' }}>{formatDateValue(getJoinedDate(user))}</Typography>
 
                     <Stack
                       direction="row"
@@ -747,21 +747,21 @@ export default function UserManagementPage() {
                       justifyContent={{ xs: 'flex-start', md: 'flex-end' }}
                       onClick={(event) => event.stopPropagation()}
                     >
-                      <IconButton aria-label={`View ${getFullName(user)}`} onClick={() => selectUser(user)} sx={actionIconSx('purple')}>
+                      <IconButton aria-label={t('umViewAria').replace('{name}', getFullName(user, t('umUnnamedUser')))} onClick={() => selectUser(user)} sx={actionIconSx('purple')}>
                         <VisibilityOutlinedIcon fontSize="small" />
                       </IconButton>
-                      <IconButton aria-label={`Edit ${getFullName(user)}`} onClick={() => selectUser(user)} sx={actionIconSx('purple')}>
+                      <IconButton aria-label={t('umEditAria').replace('{name}', getFullName(user, t('umUnnamedUser')))} onClick={() => selectUser(user)} sx={actionIconSx('purple')}>
                         <EditOutlinedIcon fontSize="small" />
                       </IconButton>
-                      <IconButton aria-label={`Delete ${getFullName(user)}`} sx={actionIconSx('pink')}>
+                      <IconButton aria-label={t('umDeleteAria').replace('{name}', getFullName(user, t('umUnnamedUser')))} sx={actionIconSx('pink')}>
                         <DeleteOutlinedIcon fontSize="small" />
                       </IconButton>
                     </Stack>
                   </Box>
                 )) : (
                   <Box sx={{ py: 8, textAlign: 'center' }}>
-                    <Typography fontWeight={900}>No users found</Typography>
-                    <Typography color="text.secondary" sx={{ mt: 1 }}>Try changing your search or filters.</Typography>
+                    <Typography fontWeight={900}>{t('umNoUsers')}</Typography>
+                    <Typography color="text.secondary" sx={{ mt: 1 }}>{t('umNoUsersHint')}</Typography>
                   </Box>
                 )}
               </Stack>
@@ -775,7 +775,7 @@ export default function UserManagementPage() {
                 sx={{ pt: 2, flexShrink: 0 }}
               >
                 <Typography color="#4F4A70" fontWeight={750}>
-                  Showing 1 to {filteredUsers.length} of {filteredUsers.length} results
+                  {t('umShowingResults').replace('{shown}', filteredUsers.length).replace('{total}', filteredUsers.length)}
                 </Typography>
                 <Stack direction="row" spacing={1} alignItems="center">
                   <IconButton size="small" disabled sx={{ color: '#B8B0D0' }}>{'<'}</IconButton>
@@ -819,7 +819,7 @@ export default function UserManagementPage() {
           },
         }}
         PaperProps={{
-          dir: 'ltr',
+          dir: direction,
           sx: {
             width: { xs: 'calc(100vw - 24px)', sm: '35rem' },
             maxWidth: 560,
@@ -854,14 +854,14 @@ export default function UserManagementPage() {
                   </Avatar>
                   <Box sx={{ minWidth: 0, flex: 1 }}>
                     <Stack direction="row-reverse" spacing={0.75} alignItems="center" justifyContent="flex-start" flexWrap="nowrap" sx={{ minWidth: 0 }}>
-                      <Typography variant="h5" fontWeight={950} noWrap sx={{ fontSize: '1.3125rem', textAlign: 'right', minWidth: 0, flex: 1 }}>{getFullName(selectedUser)}</Typography>
+                      <Typography variant="h5" fontWeight={950} noWrap sx={{ fontSize: '1.3125rem', textAlign: 'right', minWidth: 0, flex: 1 }}>{getFullName(selectedUser, t('umUnnamedUser'))}</Typography>
                       <Box sx={{ flexShrink: 0 }}>
-                        <RoleChip role={selectedUser.role || 'participant'} />
+                        <RoleChip role={selectedUser.role || 'participant'} t={t} />
                       </Box>
                       <IconButton
                         size="small"
                         onClick={closeDetails}
-                        aria-label="Close user details"
+                        aria-label={t('umCloseDetails')}
                         sx={{
                           width: '1.875rem',
                           height: '1.875rem',
@@ -874,9 +874,9 @@ export default function UserManagementPage() {
                       </IconButton>
                       {detailsLoading ? <CircularProgress size={16} /> : null}
                     </Stack>
-                    <Typography color="text.secondary" noWrap sx={{ mt: 0.45, fontSize: '0.84375rem', textAlign: 'right' }}>{selectedUser.email || 'No email provided'}</Typography>
+                    <Typography color="text.secondary" noWrap sx={{ mt: 0.45, fontSize: '0.84375rem', textAlign: 'right' }}>{selectedUser.email || t('umNoEmail')}</Typography>
                     <Stack direction="row-reverse" spacing={1.1} justifyContent="flex-start" alignItems="center" flexWrap="wrap" sx={{ mt: 0.75 }}>
-                      <Typography color="text.secondary" sx={{ fontSize: '0.8125rem' }}>Joined {formatDateValue(getJoinedDate(selectedUser))}</Typography>
+                      <Typography color="text.secondary" sx={{ fontSize: '0.8125rem' }}>{t('umJoinedLabel').replace('{date}', formatDateValue(getJoinedDate(selectedUser)))}</Typography>
                     </Stack>
                   </Box>
                 </Stack>
@@ -897,7 +897,7 @@ export default function UserManagementPage() {
                       },
                     }}
                   >
-                    Edit
+                    {t('btnEdit')}
                   </Button>
                   <Button
                     size="small"
@@ -914,7 +914,7 @@ export default function UserManagementPage() {
                       },
                     }}
                   >
-                    Change Role
+                    {t('umChangeRole')}
                   </Button>
                   <Button
                     size="small"
@@ -931,7 +931,7 @@ export default function UserManagementPage() {
                       },
                     }}
                   >
-                    Suspend
+                    {t('umSuspend')}
                   </Button>
                 </Stack>
               </Stack>
@@ -939,9 +939,9 @@ export default function UserManagementPage() {
 
             <Box sx={{ flex: 1, overflow: 'auto', p: { xs: 2, md: 2.6 }, borderTop: '1px solid rgba(130, 92, 206, 0.08)' }}>
               <Stack spacing={1.35}>
-                {compactDetails.map(([label, value]) => (
-                  <Box key={label} sx={{ width: '100%' }}>
-                    <InfoCard label={label} value={value} />
+                {compactDetails.map(({ fieldKey, labelKey, value }) => (
+                  <Box key={fieldKey} sx={{ width: '100%' }}>
+                    <InfoCard label={t(labelKey)} value={value} iconKey={fieldKey} />
                   </Box>
                 ))}
               </Stack>
