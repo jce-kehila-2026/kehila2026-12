@@ -963,96 +963,98 @@ function AppointmentBookingDrawer({
           <p>{t('evBookASession')}</p>
         </header>
 
-        <section className="appointment-booking-step">
-          <h3><span>1</span> {t('evStep1Instructor')}</h3>
-          <div className="appointment-instructor-grid">
-            {providers.map((provider) => {
-              const isSelected = provider.id === selectedProvider?.id;
-
-              return (
-                <button
-                  className={`appointment-instructor-card${isSelected ? ' is-selected' : ''}`}
-                  type="button"
-                  onClick={() => setSelectedProviderId(provider.id)}
-                  aria-pressed={isSelected}
-                  key={provider.id}
-                >
-                  {provider.avatar ? (
-                    <img src={provider.avatar} alt="" />
-                  ) : (
-                    <span className="appointment-instructor-card__avatar">
-                      {getProviderInitials(provider.name)}
-                    </span>
-                  )}
-                  <strong>{provider.name}</strong>
-                  <small>{provider.specialty}</small>
-                  <em>
-                    <StarRoundedIcon fontSize="small" />
-                    {getProviderRating(provider.name)}
-                  </em>
-                </button>
-              );
-            })}
-          </div>
-        </section>
-
-        <section className="appointment-booking-step">
-          <h3><span>2</span> {t('evStep2Date')}</h3>
-          <div className="appointment-date-selector">
-            <button
-              type="button"
-              onClick={() => setDateIndex((current) => Math.max(0, current - 1))}
-              disabled={dateIndex <= 0}
-              aria-label={t('evPrevDate')}
-            >
-              <ArrowBackIcon fontSize="small" />
-            </button>
-            <strong>
-              <CalendarMonthIcon fontSize="small" />
-              {selectedDate?.label || t('evDatesComingSoon')}
-            </strong>
-            <button
-              type="button"
-              onClick={() => setDateIndex((current) => Math.min(dateOptions.length - 1, current + 1))}
-              disabled={dateIndex >= dateOptions.length - 1}
-              aria-label={t('evNextDate')}
-            >
-              <ArrowForwardIcon fontSize="small" />
-            </button>
-          </div>
-        </section>
-
-        <section className="appointment-booking-step">
-          <h3><span>3</span> {t('evStep3Times')}</h3>
-          {timeOptions.length ? (
-            <div className="appointment-time-grid">
-              {timeOptions.map((timeOption) => {
-                const option = timeOption.option;
-                const isSelected = option?.id === selectedOptionId;
-                const disabled = !option || timeOption.unavailable || timeOption.isFull || option.isRegistering;
+        <div className="appointment-drawer__body">
+          <section className="appointment-booking-step">
+            <h3><span>1</span> {t('evStep1Instructor')}</h3>
+            <div className="appointment-instructor-grid">
+              {providers.map((provider) => {
+                const isSelected = provider.id === selectedProvider?.id;
 
                 return (
                   <button
-                    className={`${isSelected ? 'is-selected' : ''}${disabled ? ' is-disabled' : ''}`}
+                    className={`appointment-instructor-card${isSelected ? ' is-selected' : ''}`}
                     type="button"
-                    onClick={() => option && setSelectedOptionId(option.id)}
-                    disabled={disabled}
-                    key={timeOption.id}
+                    onClick={() => setSelectedProviderId(provider.id)}
+                    aria-pressed={isSelected}
+                    key={provider.id}
                   >
-                    {timeOption.label}
-                    {disabled && <LockOutlinedIcon fontSize="small" />}
+                    {provider.avatar ? (
+                      <img src={provider.avatar} alt="" />
+                    ) : (
+                      <span className="appointment-instructor-card__avatar">
+                        {getProviderInitials(provider.name)}
+                      </span>
+                    )}
+                    <strong>{provider.name}</strong>
+                    <small>{provider.specialty}</small>
+                    <em>
+                      <StarRoundedIcon fontSize="small" />
+                      {getProviderRating(provider.name)}
+                    </em>
                   </button>
                 );
               })}
             </div>
-          ) : (
-            <p className="appointment-drawer__empty">{t('evNoTimesInstructor')}</p>
-          )}
-          <p className="appointment-drawer__timezone">
-            <AccessTimeIcon fontSize="small" />
-            {t('evLocalTime')}
-          </p>
-        </section>
+          </section>
+
+          <section className="appointment-booking-step">
+            <h3><span>2</span> {t('evStep2Date')}</h3>
+            <div className="appointment-date-selector">
+              <button
+                type="button"
+                onClick={() => setDateIndex((current) => Math.max(0, current - 1))}
+                disabled={dateIndex <= 0}
+                aria-label={t('evPrevDate')}
+              >
+                <ArrowBackIcon fontSize="small" />
+              </button>
+              <strong>
+                <CalendarMonthIcon fontSize="small" />
+                {selectedDate?.label || t('evDatesComingSoon')}
+              </strong>
+              <button
+                type="button"
+                onClick={() => setDateIndex((current) => Math.min(dateOptions.length - 1, current + 1))}
+                disabled={dateIndex >= dateOptions.length - 1}
+                aria-label={t('evNextDate')}
+              >
+                <ArrowForwardIcon fontSize="small" />
+              </button>
+            </div>
+          </section>
+
+          <section className="appointment-booking-step">
+            <h3><span>3</span> {t('evStep3Times')}</h3>
+            {timeOptions.length ? (
+              <div className="appointment-time-grid">
+                {timeOptions.map((timeOption) => {
+                  const option = timeOption.option;
+                  const isSelected = option?.id === selectedOptionId;
+                  const disabled = !option || timeOption.unavailable || timeOption.isFull || option.isRegistering;
+
+                  return (
+                    <button
+                      className={`${isSelected ? 'is-selected' : ''}${disabled ? ' is-disabled' : ''}`}
+                      type="button"
+                      onClick={() => option && setSelectedOptionId(option.id)}
+                      disabled={disabled}
+                      key={timeOption.id}
+                    >
+                      {timeOption.label}
+                      {disabled && <LockOutlinedIcon fontSize="small" />}
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="appointment-drawer__empty">{t('evNoTimesInstructor')}</p>
+            )}
+            <p className="appointment-drawer__timezone">
+              <AccessTimeIcon fontSize="small" />
+              {t('evLocalTime')}
+            </p>
+          </section>
+        </div>
 
         <div className="appointment-drawer__actions">
           <button
@@ -1199,53 +1201,54 @@ function WorkshopDetailsPanel({
         <CloseIcon fontSize="small" />
       </button>
 
-      <div className="workshop-details-panel__image">
-        <img src={event.imageUrl || appointmentsHero} alt="" />
-      </div>
-
       <header className="workshop-details-panel__header">
         <h2 id="workshop-details-title">{event.title}</h2>
         <p>{isRegistered ? t('evYouAreRegistered') : t('evWorkshopDetails')}</p>
       </header>
 
-      <p className="workshop-details-panel__description">{event.description}</p>
+      <div className="workshop-details-panel__body">
+        <section className="workshop-details-panel__section">
+          <h3>{t('evWorkshopDetails')}</h3>
+          <p className="workshop-details-panel__description">{event.description}</p>
+        </section>
 
-      <div className="workshop-details-panel__details">
-        <span>
-          <EventAvailableIcon fontSize="small" />
-          <strong>{t('evDate')}</strong>
-          {session?.date || event.date || t('evDateTBD')}
-        </span>
-        <span>
-          <AccessTimeIcon fontSize="small" />
-          <strong>{t('evTime')}</strong>
-          {session?.time || event.time || t('evTimeTBD')}
-        </span>
-        <span>
-          <HomeRoundedIcon fontSize="small" />
-          <strong>{t('evLocation')}</strong>
-          {session?.location || event.location || 'She-Na Center'}
-        </span>
-        <span>
-          <PersonIcon fontSize="small" />
-          <strong>{t('evInstructorLabel')}</strong>
-          {session?.providerName || event.instructor || t('evSheNaTeam')}
-        </span>
-        <span>
-          <GroupsRoundedIcon fontSize="small" />
-          <strong>{t('evSpots')}</strong>
-          {getWorkshopAvailabilityLabel(session, t)}
-        </span>
-        <span>
-          <CalendarMonthIcon fontSize="small" />
-          <strong>{t('evStatus')}</strong>
-          {isRegistered ? t('evRegistered') : registrationClosed ? t('evClosed') : isFull ? t('evFull') : t('evOpen')}
-        </span>
+        <div className="workshop-details-panel__details">
+          <span>
+            <EventAvailableIcon fontSize="small" />
+            <strong>{t('evDate')}</strong>
+            {session?.date || event.date || t('evDateTBD')}
+          </span>
+          <span>
+            <AccessTimeIcon fontSize="small" />
+            <strong>{t('evTime')}</strong>
+            {session?.time || event.time || t('evTimeTBD')}
+          </span>
+          <span>
+            <HomeRoundedIcon fontSize="small" />
+            <strong>{t('evLocation')}</strong>
+            {session?.location || event.location || 'She-Na Center'}
+          </span>
+          <span>
+            <PersonIcon fontSize="small" />
+            <strong>{t('evInstructorLabel')}</strong>
+            {session?.providerName || event.instructor || t('evSheNaTeam')}
+          </span>
+          <span>
+            <GroupsRoundedIcon fontSize="small" />
+            <strong>{t('evSpots')}</strong>
+            {getWorkshopAvailabilityLabel(session, t)}
+          </span>
+          <span>
+            <CalendarMonthIcon fontSize="small" />
+            <strong>{t('evStatus')}</strong>
+            {isRegistered ? t('evRegistered') : registrationClosed ? t('evClosed') : isFull ? t('evFull') : t('evOpen')}
+          </span>
+        </div>
+
+        {isRegistered && !canCancelBooking && (
+          <p className="workshop-details-panel__notice">{t('evCancellationClosed')}</p>
+        )}
       </div>
-
-      {isRegistered && !canCancelBooking && (
-        <p className="workshop-details-panel__notice">{t('evCancellationClosed')}</p>
-      )}
 
       <div className="workshop-details-panel__actions">
         <button
