@@ -25,7 +25,6 @@ import StarRoundedIcon from '@mui/icons-material/StarRounded';
 import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivismOutlined';
 import { useNavigate } from 'react-router-dom';
 import appointmentsHero from '../../assets/appointments-hero.png';
-import eventsHeroBanner from '../../assets/lasteventBanner.png';
 import { useAdmin } from '../admin/context/AdminContext';
 import { getPublishedEvents } from '../admin/services/eventService';
 import { localizeField } from '../../i18n/localizeField';
@@ -1905,10 +1904,10 @@ export default function EventsPage({ embedInDashboard = false, locale = 'he' }) 
   const categoryCards = useMemo(() => {
     return [
       {
-        type: VIEW_WORKSHOPS,
-        title: 'Workshops',
-        color: 'lavender',
-        icon: VolunteerActivismIcon,
+        type: VIEW_REGISTERED,
+        title: 'Registered Events',
+        color: 'peach',
+        icon: PersonIcon,
       },
       {
         type: VIEW_APPOINTMENTS,
@@ -1917,10 +1916,10 @@ export default function EventsPage({ embedInDashboard = false, locale = 'he' }) 
         icon: CalendarMonthIcon,
       },
       {
-        type: VIEW_REGISTERED,
-        title: 'Registered Events',
-        color: 'peach',
-        icon: PersonIcon,
+        type: VIEW_WORKSHOPS,
+        title: 'Workshops',
+        color: 'lavender',
+        icon: VolunteerActivismIcon,
       },
     ];
   }, []);
@@ -2097,21 +2096,6 @@ export default function EventsPage({ embedInDashboard = false, locale = 'he' }) 
 
   const eventsContent = (
     <>
-      <section className="events-hero-banner" aria-label="Events wellness banner">
-        <img className="events-hero-banner__image" src={eventsHeroBanner} alt="" />
-      </section>
-
-      {(loadingEvents || eventsError || registrationWarning) && (
-        <div className={`events-status${eventsError || registrationWarning ? ' events-status--error' : ''}`}>
-          <span>{loadingEvents ? 'Loading live events from Firestore...' : (eventsError || registrationWarning)}</span>
-          {eventsError && !loadingEvents && (
-            <button type="button" onClick={() => setEventsReloadKey((current) => current + 1)}>
-              Retry
-            </button>
-          )}
-        </div>
-      )}
-
       <section className="events-categories" aria-label="Event categories">
         <div className="events-category-grid">
           {categoryCards.map((card) => (
@@ -2124,6 +2108,17 @@ export default function EventsPage({ embedInDashboard = false, locale = 'he' }) 
           ))}
         </div>
       </section>
+
+      {(loadingEvents || eventsError || registrationWarning) && (
+        <div className={`events-status${eventsError || registrationWarning ? ' events-status--error' : ''}`}>
+          <span>{loadingEvents ? 'Loading live events from Firestore...' : (eventsError || registrationWarning)}</span>
+          {eventsError && !loadingEvents && (
+            <button type="button" onClick={() => setEventsReloadKey((current) => current + 1)}>
+              Retry
+            </button>
+          )}
+        </div>
+      )}
 
       {!loadingEvents && !eventsError && (
         <section className="events-list-panel">
