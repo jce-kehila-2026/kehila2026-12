@@ -60,6 +60,40 @@ const makeExcerpt = (text, max = 80) => {
   return `${clean.slice(0, max - 1).trimEnd()}…`;
 };
 
+function buildActivityNotificationWrite({
+  recipientId,
+  actorId,
+  actorName,
+  type,
+  postId,
+  notificationKey,
+  postExcerpt = '',
+  commentExcerpt = '',
+  title,
+  body,
+} = {}) {
+  // The security rule requires actorId == request.auth.uid, so always attribute
+  // to the authenticated user rather than the (possibly unresolved) community id.
+  const resolvedActorId = auth.currentUser?.uid ?? actorId;
+  if (!recipientId || !resolvedActorId || recipientId === resolvedActorId || !notificationKey) return null;
+
+  return {
+    ref: doc(db, USERS_COL, recipientId, ACTIVITY_NOTIFICATIONS_COL, notificationKey),
+    data: {
+      recipientId,
+      actorId: resolvedActorId,
+      actorName: actorName || 'Someone',
+      type,
+      postId: postId ?? null,
+      postExcerpt,
+      commentExcerpt,
+      ...(title ? { title } : {}),
+      ...(body ? { body } : {}),
+      createdAt: serverTimestamp(),
+    },
+  };
+}
+
 /**
  * Best-effort: write an activity notification into the recipient's
  * users/{recipientId}/activity_notifications subcollection. Fire-and-forget —
@@ -72,29 +106,28 @@ async function createActivityNotification({
   actorName,
   type,
   postId,
+  notificationKey,
   postExcerpt = '',
   commentExcerpt = '',
   title,
   body,
 } = {}) {
-  // The security rule requires actorId == request.auth.uid, so always attribute
-  // to the authenticated user rather than the (possibly unresolved) community id.
-  const resolvedActorId = auth.currentUser?.uid ?? actorId;
-  if (!recipientId || !resolvedActorId || recipientId === resolvedActorId) return;
+  const notificationWrite = buildActivityNotificationWrite({
+    recipientId,
+    actorId,
+    actorName,
+    type,
+    postId,
+    notificationKey: notificationKey || `activity-${Date.now()}-${Math.random().toString(36).slice(2)}`,
+    postExcerpt,
+    commentExcerpt,
+    title,
+    body,
+  });
+  if (!notificationWrite) return;
 
   try {
-    await addDoc(collection(db, USERS_COL, recipientId, ACTIVITY_NOTIFICATIONS_COL), {
-      recipientId,
-      actorId: resolvedActorId,
-      actorName: actorName || 'Someone',
-      type,
-      postId: postId ?? null,
-      postExcerpt,
-      commentExcerpt,
-      ...(title ? { title } : {}),
-      ...(body ? { body } : {}),
-      createdAt: serverTimestamp(),
-    });
+    await setDoc(notificationWrite.ref, notificationWrite.data, { merge: false });
   } catch {
     // Notifications are non-critical; swallow errors.
   }
@@ -343,10 +376,31 @@ export async function updateCommunityPost(postId, { content } = {}) {
 }
 
 export async function deleteCommunityPost(postId) {
-  await updateDoc(doc(db, POSTS_COL, postId), {
+  const postRef = doc(db, POSTS_COL, postId);
+  const postSnap = await getDoc(postRef);
+  if (!postSnap.exists()) return { success: false, postId };
+
+  const postData = postSnap.data();
+  const batch = writeBatch(db);
+
+  batch.update(postRef, {
     status: 'deleted',
     updatedAt: serverTimestamp(),
   });
+
+  if (postData.authorId) {
+    const notificationsSnap = await getDocs(query(
+      collection(db, USERS_COL, postData.authorId, ACTIVITY_NOTIFICATIONS_COL),
+      where('postId', '==', postId),
+    ));
+
+    notificationsSnap.docs.forEach((notificationDoc) => {
+      batch.delete(notificationDoc.ref);
+    });
+  }
+
+  await batch.commit();
+
   return { success: true, postId };
 }
 
@@ -360,24 +414,32 @@ export async function toggleCommunityPostLike(postId, userId, { actorName } = {}
   const postData = snap.data();
   const likedBy = postData.likedBy ?? [];
   const isCurrentlyLiked = likedBy.includes(userId);
+  const notificationKey = userId ? `like-${postId}-${userId}` : '';
 
-  await updateDoc(postRef, {
+  const batch = writeBatch(db);
+  batch.update(postRef, {
     likedBy: isCurrentlyLiked ? arrayRemove(userId) : arrayUnion(userId),
     likesCount: increment(isCurrentlyLiked ? -1 : 1),
   });
 
-  // Notify the post owner only when newly liking (not when un-liking).
-  // Reuses the snapshot above, so no extra read.
   if (!isCurrentlyLiked) {
-    createActivityNotification({
+    const notificationWrite = buildActivityNotificationWrite({
       recipientId: postData.authorId,
       actorId: userId,
       actorName,
       type: 'like',
       postId,
+      notificationKey,
       postExcerpt: makeExcerpt(postData.content),
     });
+    if (notificationWrite) {
+      batch.set(notificationWrite.ref, notificationWrite.data);
+    }
+  } else {
+    batch.delete(doc(db, USERS_COL, postData.authorId, ACTIVITY_NOTIFICATIONS_COL, notificationKey));
   }
+
+  await batch.commit();
 
   return { success: true, postId, userId, liked: !isCurrentlyLiked };
 }
@@ -448,18 +510,21 @@ export async function createCommunityComment(postId, {
     commentsCount: increment(1),
   });
 
-  await batch.commit();
-
-  // Best-effort: notify the post owner of the new comment (skips self-comments).
-  createActivityNotification({
+  const notificationWrite = buildActivityNotificationWrite({
     recipientId: postAuthorId,
     actorId: resolvedAuthorId,
     actorName: displayName,
     type: 'comment',
     postId,
+    notificationKey: `comment-${postId}-${commentRef.id}`,
     postExcerpt,
     commentExcerpt: makeExcerpt(content),
   });
+  if (notificationWrite) {
+    batch.set(notificationWrite.ref, notificationWrite.data);
+  }
+
+  await batch.commit();
 
   const now = new Date();
   return {
@@ -489,14 +554,37 @@ export async function addCommunityPostComment(postId, commentData = {}) {
 }
 
 export async function deleteCommunityComment(postId, commentId) {
+  const postRef = doc(db, POSTS_COL, postId);
+  const commentRef = doc(db, POSTS_COL, postId, 'comments', commentId);
+  const [postSnap, commentSnap] = await Promise.all([
+    getDoc(postRef),
+    getDoc(commentRef),
+  ]);
+  if (!postSnap.exists() || !commentSnap.exists()) {
+    return { success: false, postId, commentId };
+  }
+
+  const postAuthorId = postSnap.exists() ? postSnap.data().authorId : null;
+  const commentAuthorId = commentSnap.exists() ? commentSnap.data().authorId : null;
   const batch = writeBatch(db);
 
-  batch.delete(doc(db, POSTS_COL, postId, 'comments', commentId));
-  batch.update(doc(db, POSTS_COL, postId), {
+  batch.delete(commentRef);
+  batch.update(postRef, {
     commentsCount: increment(-1),
   });
 
+  if (postAuthorId && commentAuthorId && postAuthorId !== commentAuthorId) {
+    batch.delete(doc(
+      db,
+      USERS_COL,
+      postAuthorId,
+      ACTIVITY_NOTIFICATIONS_COL,
+      `comment-${postId}-${commentId}`,
+    ));
+  }
+
   await batch.commit();
+
   return { success: true, postId, commentId };
 }
 

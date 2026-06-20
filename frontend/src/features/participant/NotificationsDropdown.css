@@ -88,6 +88,77 @@
   opacity: 1;
 }
 
+/* ── Tabs ─────────────────────────────────────────────── */
+
+.notif-dropdown__tabs {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+  padding: 0 1rem;
+  border-bottom: 1px solid rgba(167, 139, 250, 0.1);
+  background: rgba(255, 255, 255, 0.74);
+}
+
+.notif-dropdown__tab {
+  position: relative;
+  min-width: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  padding: 0.625rem 0.375rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3125rem;
+  color: rgba(75, 19, 107, 0.52) !important;
+  cursor: pointer;
+  transition: color 0.16s, background 0.16s;
+}
+
+.notif-dropdown__tab:hover {
+  background: rgba(247, 241, 251, 0.48);
+  color: #4b136b !important;
+}
+
+.notif-dropdown__tab.is-active {
+  background: transparent;
+  color: #4b136b !important;
+}
+
+.notif-dropdown__tab.is-active::after {
+  content: '';
+  position: absolute;
+  right: 0.625rem;
+  bottom: -1px;
+  left: 0.625rem;
+  height: 2px;
+  border-radius: 999px;
+  background: #ec168c;
+}
+
+.notif-dropdown__tab span {
+  min-width: 0;
+  font-size: 0.75rem !important;
+  font-weight: 800 !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.notif-dropdown__tab strong {
+  min-width: 1rem;
+  height: 1rem;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 0.25rem;
+  background: #ec168c;
+  color: #fff !important;
+  font-size: 0.625rem !important;
+  font-weight: 800 !important;
+}
+
 /* ── List ─────────────────────────────────────────────── */
 
 .notif-dropdown__list {
@@ -152,6 +223,16 @@
 
 .notif-dropdown__item:hover {
   background: rgba(247, 241, 251, 0.7);
+}
+
+.notif-dropdown__item.is-clickable {
+  cursor: pointer;
+}
+
+.notif-dropdown__item.is-clickable:focus-visible {
+  outline: 2px solid rgba(236, 22, 140, 0.42);
+  outline-offset: -2px;
+  background: rgba(255, 235, 246, 0.86);
 }
 
 .notif-dropdown__item.is-unread {
