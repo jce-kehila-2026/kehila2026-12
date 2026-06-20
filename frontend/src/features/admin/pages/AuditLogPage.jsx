@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, useCallback } from 'react';
-import { collection, getDocs, query, orderBy, limit } from 'firebase/firestore';
+import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
@@ -9,6 +9,7 @@ import Stack from '@mui/material/Stack';
 import MenuItem from '@mui/material/MenuItem';
 import IconButton from '@mui/material/IconButton';
 import Divider from '@mui/material/Divider';
+import Pagination from '@mui/material/Pagination';
 import EventIcon from '@mui/icons-material/Event';
 import HomeWorkOutlinedIcon from '@mui/icons-material/HomeWorkOutlined';
 import PersonIcon from '@mui/icons-material/Person';
@@ -21,6 +22,7 @@ import { db } from '../../../firebase';
 import { useAdminLocale } from '../context/AdminLocaleContext';
 
 const INTL_LOCALE_BY_LANG = { he: 'he-IL', en: 'en' };
+const PAGE_SIZE = 10;
 
 const ACTIVITY_FILTERS = [
   { value: 'all', labelKey: 'filterAll' },
@@ -208,6 +210,16 @@ function formatDateTime(value, intlLocale = 'en') {
   }).format(date);
 }
 
+function formatTableDateTime(value) {
+  const date = toDate(value);
+  if (!date) return 'Date unavailable';
+  const pad = (number) => String(number).padStart(2, '0');
+  return [
+    `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()}`,
+    `${pad(date.getHours())}:${pad(date.getMinutes())}`,
+  ].join(', ');
+}
+
 function humanizeKey(value = '') {
   return COMMON_FIELD_LABELS[value] || String(value)
     .replace(/[_-]/g, ' ')
@@ -264,7 +276,26 @@ function getAreaKey(log) {
 }
 
 function getAdminLabel(log) {
-  return log.adminEmail || log.actorEmail || log.actorName || log.adminId || 'Unknown admin';
+  const name = log.actorName || log.adminName || log.displayName;
+  if (name && !String(name).includes('@')) return name;
+  const email = log.adminEmail || log.actorEmail || '';
+  return email ? email.split('@')[0] : log.adminId || 'Unknown admin';
+}
+
+function getAdminSearchText(log) {
+  return [
+    log.adminLabel,
+    log.actorName,
+    log.adminName,
+    log.displayName,
+    log.adminEmail,
+    log.actorEmail,
+    log.adminId,
+  ].filter(Boolean).join(' ').toLowerCase();
+}
+
+function getAdminEmail(log) {
+  return log.adminEmail || log.actorEmail || '';
 }
 
 function getReadableSection(details) {
@@ -362,6 +393,8 @@ function normalizeLog(log) {
     actionType: getActionType(log),
     actionLabel: getActionLabel(getActionType(log)),
     adminLabel: getAdminLabel(log),
+    adminEmailLabel: getAdminEmail(log),
+    adminSearchText: getAdminSearchText(log),
     areaKey,
     areaLabel: area.label,
     summaryText: getSummaryFromDetails(log),
@@ -379,13 +412,14 @@ export default function AuditLogPage() {
   const [activityFilter, setActivityFilter] = useState('all');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
+  const [page, setPage] = useState(1);
   const [selectedLog, setSelectedLog] = useState(null);
 
   const fetchLogs = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
-      const q = query(collection(db, 'audit_logs'), orderBy('timestamp', 'desc'), limit(200));
+      const q = query(collection(db, 'audit_logs'), orderBy('timestamp', 'desc'));
       const snap = await getDocs(q);
       setLogs(snap.docs.map((docSnap) => normalizeLog({ id: docSnap.id, ...docSnap.data() })));
     } catch (err) {
@@ -407,7 +441,7 @@ export default function AuditLogPage() {
 
     return logs.filter((log) => {
       const matchesAdmin = adminSearch
-        ? log.adminLabel.toLowerCase().includes(adminSearch) || String(log.adminId || '').toLowerCase().includes(adminSearch)
+        ? log.adminSearchText.includes(adminSearch)
         : true;
       const matchesActivity = activityFilter === 'all' ? true : log.areaKey === activityFilter;
       const matchesFrom = from && log.timestampDate ? log.timestampDate >= from : true;
@@ -415,6 +449,21 @@ export default function AuditLogPage() {
       return matchesAdmin && matchesActivity && matchesFrom && matchesTo;
     });
   }, [activityFilter, adminFilter, dateFrom, dateTo, logs]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [activityFilter, adminFilter, dateFrom, dateTo]);
+
+  const pageCount = Math.max(1, Math.ceil(filteredLogs.length / PAGE_SIZE));
+
+  useEffect(() => {
+    if (page > pageCount) setPage(pageCount);
+  }, [page, pageCount]);
+
+  const paginatedLogs = useMemo(() => {
+    const start = (page - 1) * PAGE_SIZE;
+    return filteredLogs.slice(start, start + PAGE_SIZE);
+  }, [filteredLogs, page]);
 
   const selectedArea = selectedLog ? AREA_CONFIG[selectedLog.areaKey] || AREA_CONFIG.general : AREA_CONFIG.general;
   const SelectedIcon = selectedArea.icon;
@@ -529,7 +578,7 @@ export default function AuditLogPage() {
         <Box
           sx={{
             display: 'grid',
-            gridTemplateColumns: '1.15fr 1.25fr 1.25fr 1fr 2.1fr 120px',
+            gridTemplateColumns: '1.15fr 1.25fr 1.35fr 1fr 120px',
             gap: 2,
             px: 2.25,
             py: 1.5,
@@ -544,7 +593,6 @@ export default function AuditLogPage() {
           <span>{t('colAdmin')}</span>
           <span>{t('colActivity')}</span>
           <span>{t('colArea')}</span>
-          <span>{t('colSummary')}</span>
           <span>{t('colDetails')}</span>
         </Box>
 
@@ -557,7 +605,7 @@ export default function AuditLogPage() {
               <Button onClick={fetchLogs} variant="outlined">{t('retry')}</Button>
             </Box>
           ) : filteredLogs.length ? (
-            filteredLogs.map((log) => {
+            paginatedLogs.map((log) => {
               const area = AREA_CONFIG[log.areaKey] || AREA_CONFIG.general;
               const AreaIcon = area.icon;
 
@@ -566,7 +614,7 @@ export default function AuditLogPage() {
                   key={log.id}
                   sx={{
                     display: 'grid',
-                    gridTemplateColumns: '1.15fr 1.25fr 1.25fr 1fr 2.1fr 120px',
+                    gridTemplateColumns: '1.15fr 1.25fr 1.35fr 1fr 120px',
                     gap: 2,
                     alignItems: 'center',
                     px: 2.25,
@@ -576,7 +624,7 @@ export default function AuditLogPage() {
                   }}
                 >
                   <Typography sx={{ color: '#303a58', fontSize: '0.82rem', fontWeight: 800 }}>
-                    {formatDateTime(log.timestamp, intlLocale)}
+                    {formatTableDateTime(log.timestamp)}
                   </Typography>
                   <Typography sx={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', color: '#303a58', fontSize: '0.82rem', fontWeight: 700 }}>
                     {log.adminLabel}
@@ -611,9 +659,6 @@ export default function AuditLogPage() {
                       {t(area.labelKey)}
                     </Typography>
                   </Stack>
-                  <Typography sx={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'rgba(36, 16, 79, 0.72)', fontSize: '0.82rem', fontWeight: 650 }}>
-                    {log.summaryText}
-                  </Typography>
                   <Button
                     type="button"
                     size="small"
@@ -639,6 +684,40 @@ export default function AuditLogPage() {
             </Box>
           )}
         </Box>
+        {!loading && !error && filteredLogs.length > PAGE_SIZE ? (
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              flex: '0 0 auto',
+              px: 2,
+              py: 1.5,
+              borderTop: '1px solid rgba(167, 139, 250, 0.16)',
+              background: 'rgba(255, 255, 255, 0.72)',
+              '& .MuiPaginationItem-root': {
+                color: '#6d35b8',
+                fontWeight: 900,
+              },
+              '& .MuiPaginationItem-root.Mui-selected': {
+                color: '#fff',
+                backgroundColor: '#6d35b8',
+                '&:hover': {
+                  backgroundColor: '#5b2da0',
+                },
+              },
+            }}
+          >
+            <Pagination
+              count={pageCount}
+              page={page}
+              onChange={(event, value) => setPage(value)}
+              siblingCount={1}
+              boundaryCount={1}
+              shape="rounded"
+            />
+          </Box>
+        ) : null}
       </Box>
 
       {selectedLog ? (
@@ -709,6 +788,7 @@ export default function AuditLogPage() {
 
             <Stack spacing={1.25} sx={{ mt: 2.25 }}>
               <DetailLine label={t('detailAdmin')} value={selectedLog.adminLabel} />
+              <DetailLine label={t('detailAdminEmail')} value={selectedLog.adminEmailLabel || t('detailNotSpecified')} />
               <DetailLine label={t('detailTimestamp')} value={formatDateTime(selectedLog.timestamp, intlLocale)} />
               <DetailLine label={t('detailArea')} value={t(selectedArea.labelKey)} />
               <DetailLine label={t('detailTarget')} value={selectedLog.targetId || t('detailNotSpecified')} />
