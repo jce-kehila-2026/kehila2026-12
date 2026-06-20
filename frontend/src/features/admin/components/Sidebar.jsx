@@ -18,7 +18,6 @@ import HomeWorkOutlinedIcon from '@mui/icons-material/HomeWorkOutlined';
 import CampaignOutlinedIcon from '@mui/icons-material/CampaignOutlined';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
-import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import KeyboardDoubleArrowRightRoundedIcon from '@mui/icons-material/KeyboardDoubleArrowRightRounded';
 import MenuRoundedIcon from '@mui/icons-material/MenuRounded';
 import LogoutIcon from '@mui/icons-material/Logout';
@@ -88,13 +87,6 @@ const NAV_ITEMS = [
     icon: <ReceiptLongIcon />,
     id: 'nav-audit-log',
     active: (pathname) => pathname.startsWith('/admin/audit-log'),
-  },
-  {
-    labelKey: 'navSettings',
-    path: '/admin/users?tab=roles',
-    icon: <SettingsOutlinedIcon />,
-    id: 'nav-settings',
-    active: (pathname, search) => pathname.startsWith('/admin/users') && search.includes('tab=roles'),
   },
 ];
 
