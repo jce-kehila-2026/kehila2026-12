@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db, auth } from '../../../firebase';
+import { useAdminLocale } from '../context/AdminLocaleContext';
 import { logAuditEvent } from '../services/auditService';
 import { isTranslationConfigured, translateItems } from '../services/translationService';
 import {
@@ -62,6 +63,7 @@ function emptyDraft() {
 }
 
 export default function PublicHomePagePressCoverageTab() {
+  const { t, direction } = useAdminLocale();
   const [loading, setLoading] = useState(true);
   const [items, setItems] = useState([]);
   const [toast, setToast] = useState({ open: false, severity: 'success', message: '' });
@@ -106,7 +108,7 @@ export default function PublicHomePagePressCoverageTab() {
       } catch (err) {
         console.error('Failed to load pressCoverage:', err);
         if (active) {
-          setToast({ open: true, severity: 'error', message: 'Failed to load press coverage.' });
+          setToast({ open: true, severity: 'error', message: t('cmsLoadPressFailed') });
         }
       } finally {
         if (active) setLoading(false);
@@ -120,9 +122,9 @@ export default function PublicHomePagePressCoverageTab() {
 
   const errors = useMemo(() => {
     const next = {};
-    if (!draft.title.trim()) next.title = 'Title is required.';
-    if (!isValidUrlOrEmpty(draft.imageUrl)) next.imageUrl = 'Invalid URL.';
-    if (!isValidUrlOrEmpty(draft.articleUrl)) next.articleUrl = 'Invalid URL.';
+    if (!draft.title.trim()) next.title = t('cmsTitleRequired');
+    if (!isValidUrlOrEmpty(draft.imageUrl)) next.imageUrl = t('cmsInvalidUrl');
+    if (!isValidUrlOrEmpty(draft.articleUrl)) next.articleUrl = t('cmsInvalidUrl');
     return next;
   }, [draft]);
 
@@ -218,11 +220,11 @@ export default function PublicHomePagePressCoverageTab() {
       setToast({
         open: true,
         severity: 'success',
-        message: editorMode === 'create' ? 'Press card added.' : 'Press card updated.',
+        message: editorMode === 'create' ? t('cmsPressAdded') : t('cmsPressUpdated'),
       });
     } catch (err) {
       console.error('Failed to save press card:', err);
-      setToast({ open: true, severity: 'error', message: 'Save failed. Please try again.' });
+      setToast({ open: true, severity: 'error', message: t('cmsSaveFailed') });
     } finally {
       setSaving(false);
     }
@@ -240,10 +242,10 @@ export default function PublicHomePagePressCoverageTab() {
         change: 'delete',
       });
       setConfirmDeleteId(null);
-      setToast({ open: true, severity: 'success', message: 'Press card deleted.' });
+      setToast({ open: true, severity: 'success', message: t('cmsPressDeleted') });
     } catch (err) {
       console.error('Failed to delete press card:', err);
-      setToast({ open: true, severity: 'error', message: 'Delete failed. Please try again.' });
+      setToast({ open: true, severity: 'error', message: t('cmsDeleteFailed') });
     } finally {
       setDeleting(false);
     }
@@ -262,23 +264,23 @@ export default function PublicHomePagePressCoverageTab() {
   }
 
   return (
-    <Box sx={{ pb: 12 }}>
+    <Box sx={{ pb: 12 }} dir={direction}>
       <Paper sx={{ p: 3 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
           <Box>
-            <Typography variant="h6">Press Coverage</Typography>
+            <Typography variant="h6">{t('cmsPressTitle')}</Typography>
             <Typography variant="body2" color="text.secondary">
-              Cards shown in the "מה כתבו עלינו" section on the public home page. New entries appear first.
+              {t('cmsPressSubtitle')}
             </Typography>
           </Box>
           <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate}>
-            Add new card
+            {t('cmsAddNewCard')}
           </Button>
         </Box>
 
         {items.length === 0 ? (
           <Box sx={{ py: 6, textAlign: 'center' }}>
-            <Typography color="text.secondary">No press coverage yet.</Typography>
+            <Typography color="text.secondary">{t('cmsNoPressYet')}</Typography>
           </Box>
         ) : (
           <Stack spacing={1.5} sx={{ mt: 2 }}>
@@ -318,12 +320,12 @@ export default function PublicHomePagePressCoverageTab() {
                     </Typography>
                   ) : null}
                 </Box>
-                <IconButton onClick={() => openEdit(p)} aria-label="Edit">
+                <IconButton onClick={() => openEdit(p)} aria-label={t('cmsEditAria')}>
                   <EditIcon />
                 </IconButton>
                 <IconButton
                   onClick={() => setConfirmDeleteId(p.id)}
-                  aria-label="Delete"
+                  aria-label={t('cmsDeleteAria')}
                   color="error"
                 >
                   <DeleteOutlineIcon />
@@ -335,11 +337,11 @@ export default function PublicHomePagePressCoverageTab() {
       </Paper>
 
       <Dialog open={editorOpen} onClose={closeEditor} fullWidth maxWidth="sm">
-        <DialogTitle>{editorMode === 'create' ? 'Add press card' : 'Edit press card'}</DialogTitle>
+        <DialogTitle>{editorMode === 'create' ? t('cmsAddPressCard') : t('cmsEditPressCard')}</DialogTitle>
         <DialogContent dividers>
           <Stack spacing={2.5} sx={{ mt: 1 }}>
             <TextField
-              label="Title (כותרת הכתבה)"
+              label={t('cmsFieldTitle')}
               value={draft.title}
               onChange={(e) => setField('title', e.target.value)}
               inputProps={{ maxLength: LIMITS.title }}
@@ -349,7 +351,7 @@ export default function PublicHomePagePressCoverageTab() {
               fullWidth
             />
             <TextField
-              label="Description (תיאור קצר)"
+              label={t('cmsFieldDescription')}
               value={draft.description}
               onChange={(e) => setField('description', e.target.value)}
               inputProps={{ maxLength: LIMITS.description }}
@@ -359,23 +361,23 @@ export default function PublicHomePagePressCoverageTab() {
               fullWidth
             />
             <TextField
-              label="Image URL"
+              label={t('cmsImageUrl')}
               value={draft.imageUrl}
               onChange={(e) => setField('imageUrl', e.target.value)}
               inputProps={{ maxLength: LIMITS.imageUrl }}
               error={showError('imageUrl')}
-              helperText={(showError('imageUrl') && errors.imageUrl) || 'Plain text URL (https://…).'}
+              helperText={(showError('imageUrl') && errors.imageUrl) || t('cmsPlainUrlHelper')}
               fullWidth
             />
             <TextField
-              label="Article URL (קישור לכתבה המלאה)"
+              label={t('cmsArticleUrl')}
               value={draft.articleUrl}
               onChange={(e) => setField('articleUrl', e.target.value)}
               inputProps={{ maxLength: LIMITS.articleUrl }}
               error={showError('articleUrl')}
               helperText={
                 (showError('articleUrl') && errors.articleUrl) ||
-                'Plain text URL. The card button opens this link in a new tab.'
+                t('cmsArticleUrlHelper')
               }
               fullWidth
             />
@@ -383,27 +385,27 @@ export default function PublicHomePagePressCoverageTab() {
         </DialogContent>
         <DialogActions>
           <Button onClick={closeEditor} disabled={saving}>
-            Cancel
+            {t('cmsCancel')}
           </Button>
           <Button variant="contained" onClick={handleSave} disabled={saving}>
-            {saving ? 'Saving…' : 'Save'}
+            {saving ? t('cmsSaving') : t('cmsSave')}
           </Button>
         </DialogActions>
       </Dialog>
 
       <Dialog open={Boolean(confirmDeleteId)} onClose={() => !deleting && setConfirmDeleteId(null)}>
-        <DialogTitle>Delete this press card?</DialogTitle>
+        <DialogTitle>{t('cmsDeletePressConfirm')}</DialogTitle>
         <DialogContent>
           <Typography variant="body2" color="text.secondary">
-            This action cannot be undone.
+            {t('cmsCannotUndo')}
           </Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setConfirmDeleteId(null)} disabled={deleting}>
-            Cancel
+            {t('cmsCancel')}
           </Button>
           <Button onClick={handleDelete} color="error" variant="contained" disabled={deleting}>
-            {deleting ? 'Deleting…' : 'Delete'}
+            {deleting ? t('cmsDeleting') : t('cmsDelete')}
           </Button>
         </DialogActions>
       </Dialog>

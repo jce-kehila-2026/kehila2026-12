@@ -19,52 +19,54 @@ import PublicHomePagePressCoverageTab from './PublicHomePagePressCoverageTab';
 import PublicHomePageTeamTab from './PublicHomePageTeamTab';
 import PartnersManagementPage from './PartnersManagementPage';
 import PublicHomePageContactTab from './PublicHomePageContactTab';
+import { useAdminLocale } from '../context/AdminLocaleContext';
 
 const TABS = [
-  { key: 'home', label: 'Home', icon: <HomeIcon />, Component: PublicHomePageHomeTab },
-  { key: 'aboutUs', label: 'About Us', icon: <InfoIcon />, Component: PublicHomePageLearnTogetherTab },
+  { key: 'home', labelKey: 'cmsTabHome', icon: <HomeIcon />, Component: PublicHomePageHomeTab },
+  { key: 'aboutUs', labelKey: 'cmsTabAboutUs', icon: <InfoIcon />, Component: PublicHomePageLearnTogetherTab },
   {
     key: 'inspirationStories',
-    label: 'Inspirational Stories',
+    labelKey: 'cmsTabInspiration',
     icon: <AutoStoriesIcon />,
     Component: PublicHomePageInspirationStoriesTab,
   },
   {
     key: 'pressCoverage',
-    label: 'Press Coverage',
+    labelKey: 'cmsTabPress',
     icon: <NewspaperIcon />,
     Component: PublicHomePagePressCoverageTab,
   },
   {
     key: 'team',
-    label: 'Team',
+    labelKey: 'cmsTabTeam',
     icon: <GroupsIcon />,
     Component: PublicHomePageTeamTab,
   },
   {
     key: 'partners',
-    label: 'Partners',
+    labelKey: 'cmsTabPartners',
     icon: <HandshakeIcon />,
     Component: PartnersManagementPage,
   },
   {
     key: 'contact',
-    label: 'Contact Us',
+    labelKey: 'cmsTabContact',
     icon: <ContactMailIcon />,
     Component: PublicHomePageContactTab,
   },
 ];
 
 export default function CMSPage() {
+  const { t, direction } = useAdminLocale();
   const [tabIndex, setTabIndex] = useState(0);
 
   return (
-    <Box sx={{ pb: 12 }}>
+    <Box sx={{ pb: 12 }} dir={direction}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3, gap: '1rem' }}>
         <Box>
-          <Typography variant="h4">Public Home-page</Typography>
+          <Typography variant="h4">{t('cmsHomePageTitle')}</Typography>
           <Typography variant="subtitle1" sx={{ mt: 0.5 }}>
-            Edit the public home page content. Changes are visible to all visitors after save.
+            {t('cmsHomePageSubtitle')}
           </Typography>
         </Box>
         <Button
@@ -76,7 +78,7 @@ export default function CMSPage() {
           rel="noopener noreferrer"
           sx={{ flexShrink: 0 }}
         >
-          Preview Home-page
+          {t('cmsPreviewHomePage')}
         </Button>
       </Box>
 
@@ -86,7 +88,7 @@ export default function CMSPage() {
         sx={{ mb: 3, borderBottom: 1, borderColor: 'divider' }}
       >
         {TABS.map((tab) => (
-          <Tab key={tab.key} label={tab.label} icon={tab.icon} iconPosition="start" />
+          <Tab key={tab.key} label={t(tab.labelKey)} icon={tab.icon} iconPosition="start" />
         ))}
       </Tabs>
 

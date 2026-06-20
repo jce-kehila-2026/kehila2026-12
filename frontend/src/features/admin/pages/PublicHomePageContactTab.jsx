@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { doc, getDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db, auth } from '../../../firebase';
+import { useAdminLocale } from '../context/AdminLocaleContext';
 import { logAuditEvent } from '../services/auditService';
 import {
   PUBLIC_PAGES_COLLECTION,
@@ -48,6 +49,7 @@ function contactToForm(contact) {
 }
 
 export default function PublicHomePageContactTab() {
+  const { t, direction } = useAdminLocale();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState(() => contactToForm(DEFAULT_CONTACT));
@@ -71,7 +73,7 @@ export default function PublicHomePageContactTab() {
         setPristine(next);
       } catch (err) {
         console.error('Failed to load contact settings:', err);
-        if (active) setToast({ open: true, severity: 'error', message: 'Failed to load contact settings.' });
+        if (active) setToast({ open: true, severity: 'error', message: t('cmsLoadContactFailed') });
       } finally {
         if (active) setLoading(false);
       }
@@ -84,9 +86,9 @@ export default function PublicHomePageContactTab() {
 
   const errors = useMemo(() => {
     const next = {};
-    if (form.linkedinUrl && !isValidUrlOrEmpty(form.linkedinUrl)) next.linkedinUrl = 'Enter a valid URL.';
-    if (form.instagramUrl && !isValidUrlOrEmpty(form.instagramUrl)) next.instagramUrl = 'Enter a valid URL.';
-    if (form.facebookUrl && !isValidUrlOrEmpty(form.facebookUrl)) next.facebookUrl = 'Enter a valid URL.';
+    if (form.linkedinUrl && !isValidUrlOrEmpty(form.linkedinUrl)) next.linkedinUrl = t('cmsEnterValidUrl');
+    if (form.instagramUrl && !isValidUrlOrEmpty(form.instagramUrl)) next.instagramUrl = t('cmsEnterValidUrl');
+    if (form.facebookUrl && !isValidUrlOrEmpty(form.facebookUrl)) next.facebookUrl = t('cmsEnterValidUrl');
     return next;
   }, [form]);
 
@@ -131,10 +133,10 @@ export default function PublicHomePageContactTab() {
       setPristine(form);
       setTouched({});
       setSubmitted(false);
-      setToast({ open: true, severity: 'success', message: 'Contact settings saved.' });
+      setToast({ open: true, severity: 'success', message: t('cmsContactSaved') });
     } catch (err) {
       console.error('Failed to save contact settings:', err);
-      setToast({ open: true, severity: 'error', message: 'Save failed. Please try again.' });
+      setToast({ open: true, severity: 'error', message: t('cmsSaveFailed') });
     } finally {
       setSaving(false);
     }
@@ -155,48 +157,48 @@ export default function PublicHomePageContactTab() {
   }
 
   return (
-    <Box sx={{ pb: 12 }}>
+    <Box sx={{ pb: 12 }} dir={direction}>
       <Stack spacing={3}>
         <Paper sx={{ p: 3 }}>
-          <Typography variant="h6" sx={{ mb: 0.5 }}>Contact Us — צרי קשר</Typography>
+          <Typography variant="h6" sx={{ mb: 0.5 }}>{t('cmsContactHeader')}</Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            Content shown in the "צרי קשר" section at the bottom of the public home page.
+            {t('cmsContactSubtitle')}
           </Typography>
 
           <Stack spacing={3}>
             <Box>
-              <Typography variant="subtitle2" sx={{ mb: 1.5 }}>Direct Contact</Typography>
+              <Typography variant="subtitle2" sx={{ mb: 1.5 }}>{t('cmsDirectContact')}</Typography>
               <Stack spacing={2} direction={{ xs: 'column', sm: 'row' }}>
                 <TextField
-                  label="Email Address"
+                  label={t('cmsEmailAddress')}
                   value={form.email}
                   onChange={(e) => setField('email', e.target.value)}
                   onBlur={() => handleBlur('email')}
                   inputProps={{ maxLength: LIMITS.email }}
-                  helperText="Shown as a mailto: link"
+                  helperText={t('cmsEmailHelper')}
                   type="email"
                   fullWidth
                 />
                 <TextField
-                  label="Phone Number"
+                  label={t('cmsPhoneNumber')}
                   value={form.phone}
                   onChange={(e) => setField('phone', e.target.value)}
                   onBlur={() => handleBlur('phone')}
                   inputProps={{ maxLength: LIMITS.phone }}
-                  helperText="Shown as a tel: link"
+                  helperText={t('cmsPhoneHelper')}
                   fullWidth
                 />
               </Stack>
             </Box>
 
             <Box>
-              <Typography variant="subtitle2" sx={{ mb: 1.5 }}>Social Networks</Typography>
+              <Typography variant="subtitle2" sx={{ mb: 1.5 }}>{t('cmsSocialNetworks')}</Typography>
               <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
-                Leave a field empty to hide that social network from the public page.
+                {t('cmsSocialCaption')}
               </Typography>
               <Stack spacing={2}>
                 <TextField
-                  label="LinkedIn URL"
+                  label={t('cmsLinkedinUrl')}
                   value={form.linkedinUrl}
                   onChange={(e) => setField('linkedinUrl', e.target.value)}
                   onBlur={() => handleBlur('linkedinUrl')}
@@ -207,7 +209,7 @@ export default function PublicHomePageContactTab() {
                   fullWidth
                 />
                 <TextField
-                  label="Instagram URL"
+                  label={t('cmsInstagramUrl')}
                   value={form.instagramUrl}
                   onChange={(e) => setField('instagramUrl', e.target.value)}
                   onBlur={() => handleBlur('instagramUrl')}
@@ -218,7 +220,7 @@ export default function PublicHomePageContactTab() {
                   fullWidth
                 />
                 <TextField
-                  label="Facebook URL"
+                  label={t('cmsFacebookUrl')}
                   value={form.facebookUrl}
                   onChange={(e) => setField('facebookUrl', e.target.value)}
                   onBlur={() => handleBlur('facebookUrl')}
@@ -252,10 +254,10 @@ export default function PublicHomePageContactTab() {
         }}
       >
         <Button onClick={handleDiscard} disabled={!dirty || saving}>
-          Discard changes
+          {t('cmsDiscardChanges')}
         </Button>
         <Button variant="contained" onClick={handleSave} disabled={!canSave}>
-          {saving ? 'Saving…' : 'Save'}
+          {saving ? t('cmsSaving') : t('cmsSave')}
         </Button>
       </Paper>
 
