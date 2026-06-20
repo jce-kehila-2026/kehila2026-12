@@ -7,7 +7,7 @@ import { logAuditEvent } from '../services/auditService';
 import { listJoinRequests } from '../services/joinRequestAdminService';
 import { useAdminLocale } from '../context/AdminLocaleContext';
 import JoinRequestsTab from './JoinRequestsTab';
-import Avatar from '@mui/material/Avatar';
+import AdminDetailInfoCard from '../components/AdminDetailInfoCard';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
@@ -24,21 +24,14 @@ import Select from '@mui/material/Select';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import CakeOutlinedIcon from '@mui/icons-material/CakeOutlined';
 import CloseIcon from '@mui/icons-material/Close';
 import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
-import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
-import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
-import PersonIcon from '@mui/icons-material/Person';
-import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined';
-import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined';
 import PreviewIcon from '@mui/icons-material/Preview';
 import SearchIcon from '@mui/icons-material/Search';
-import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined';
-import ShieldOutlinedIcon from '@mui/icons-material/ShieldOutlined';
 import SortIcon from '@mui/icons-material/Sort';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
+import Avatar from '@mui/material/Avatar';
 
 const ROLES = ['participant', 'volunteer', 'therapist', 'admin'];
 
@@ -132,94 +125,6 @@ function RoleChip({ role, t }) {
         border: '1px solid rgba(255,255,255,0.7)',
       }}
     />
-  );
-}
-
-function getFieldIcon(fieldKey) {
-  const iconSx = { fontSize: '1.125rem' };
-  const map = {
-    fullName: <PersonIcon sx={iconSx} />,
-    email: <EmailOutlinedIcon sx={iconSx} />,
-    phone: <PhoneOutlinedIcon sx={iconSx} />,
-    address: <PlaceOutlinedIcon sx={iconSx} />,
-    dob: <CakeOutlinedIcon sx={iconSx} />,
-    role: <ShieldOutlinedIcon sx={iconSx} />,
-    emergencyContact: <PhoneOutlinedIcon sx={iconSx} />,
-    howHeard: <ShareOutlinedIcon sx={iconSx} />,
-    bio: <FavoriteBorderIcon sx={iconSx} />,
-  };
-  return map[fieldKey] || <PersonIcon sx={iconSx} />;
-}
-
-function InfoCard({ label, value, icon, iconKey }) {
-  const displayValue = value || '-';
-
-  return (
-    <Box
-      sx={{
-        px: 1.5,
-        py: 1.125,
-        width: '100%',
-        height: '100%',
-        minHeight: '4.875rem',
-        boxSizing: 'border-box',
-        borderRadius: '16px',
-        border: '1px solid rgba(130, 92, 206, 0.12)',
-        bgcolor: 'rgba(255, 255, 255, 0.72)',
-        boxShadow: '0 8px 20px rgba(91, 57, 145, 0.045)',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '0.75rem',
-        flexDirection: 'row-reverse',
-        justifyContent: 'flex-start',
-        textAlign: 'right',
-      }}
-    >
-      <Box
-        sx={{
-          width: '2.375rem',
-          height: '2.375rem',
-          borderRadius: '50%',
-          display: 'grid',
-          placeItems: 'center',
-          flexShrink: 0,
-          color: '#7C3AED',
-          bgcolor: 'rgba(124, 58, 237, 0.08)',
-          '& .MuiSvgIcon-root': {
-            fontSize: '1.0625rem',
-          },
-        }}
-      >
-        {icon || getFieldIcon(iconKey)}
-      </Box>
-      <Box sx={{ minWidth: 0, flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-        <Typography
-          variant="caption"
-          color="text.secondary"
-          fontWeight={800}
-          sx={{ display: 'block', lineHeight: 1.15, fontSize: '0.6875rem', letterSpacing: '0.02em', textTransform: 'uppercase' }}
-        >
-          {label}
-        </Typography>
-        <Typography
-          fontWeight={850}
-          title={displayValue}
-          sx={{
-            color: '#17122E',
-            fontSize: '0.875rem',
-            mt: 0.35,
-            lineHeight: 1.3,
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-            overflow: 'hidden',
-            wordBreak: 'break-word',
-          }}
-        >
-          {displayValue}
-        </Typography>
-      </Box>
-    </Box>
   );
 }
 
@@ -887,8 +792,8 @@ export default function UserManagementPage() {
                 <CloseIcon sx={{ fontSize: '1rem' }} />
               </IconButton>
 
-              <Stack spacing={1.125} alignItems="stretch" textAlign="right" sx={{ pr: 3.5 }}>
-                <Stack direction="row-reverse" spacing={1.125} alignItems="center" sx={{ width: '100%' }}>
+              <Stack spacing={1.125} alignItems="stretch" sx={{ pr: 3.5 }} dir="ltr">
+                <Stack direction="row" spacing={1.125} alignItems="flex-start" sx={{ width: '100%' }}>
                   <Avatar
                     src={selectedUser.avatarUrl || ''}
                     sx={{
@@ -904,85 +809,78 @@ export default function UserManagementPage() {
                   >
                     {initials(selectedUser)}
                   </Avatar>
-                  <Box sx={{ minWidth: 0, flex: 1 }}>
-                    <Stack
-                      direction="row-reverse"
-                      spacing={0.75}
-                      alignItems="center"
-                      justifyContent="flex-start"
-                      flexWrap="wrap"
-                      useFlexGap
-                      sx={{ minWidth: 0 }}
-                    >
-                      <Typography variant="h5" fontWeight={950} noWrap sx={{ fontSize: '1.125rem', textAlign: 'right', minWidth: 0 }}>
+                  <Box sx={{ minWidth: 0, flex: 1, textAlign: 'left' }}>
+                    <Stack spacing={0.5} alignItems="flex-start">
+                      <Stack direction="row" spacing={0.75} alignItems="center" flexWrap="wrap" useFlexGap>
+                        <RoleChip role={selectedUser.role || 'participant'} t={t} />
+                        {detailsLoading ? <CircularProgress size={14} /> : null}
+                      </Stack>
+                      <Typography variant="h5" fontWeight={950} noWrap sx={{ fontSize: '1.125rem', textAlign: 'left', minWidth: 0, width: '100%' }}>
                         {getFullName(selectedUser, t('umUnnamedUser'))}
                       </Typography>
-                      <RoleChip role={selectedUser.role || 'participant'} t={t} />
-                      {detailsLoading ? <CircularProgress size={14} /> : null}
+                      <Typography color="text.secondary" sx={{ fontSize: '0.8125rem', textAlign: 'left', lineHeight: 1.35 }}>
+                        {t('umJoinedLabel').replace('{date}', formatDateValue(getJoinedDate(selectedUser)))}
+                      </Typography>
                     </Stack>
-                    <Typography color="text.secondary" sx={{ mt: 0.35, fontSize: '0.8125rem', textAlign: 'right', lineHeight: 1.35 }}>
-                      {t('umJoinedLabel').replace('{date}', formatDateValue(getJoinedDate(selectedUser)))}
-                    </Typography>
+                    <Stack direction="row" spacing={0.625} justifyContent="flex-start" flexWrap="wrap" useFlexGap sx={{ mt: 1.125 }}>
+                      <Button
+                        size="small"
+                        startIcon={<Pencil />}
+                        sx={{
+                          ...actionButtonBaseSx,
+                          color: '#6D3CCF',
+                          bgcolor: 'rgba(109, 60, 207, 0.09)',
+                          borderColor: 'rgba(109, 60, 207, 0.10)',
+                          '&:hover': {
+                            ...actionButtonBaseSx['&:hover'],
+                            bgcolor: 'rgba(109, 60, 207, 0.14)',
+                            boxShadow: '0 10px 22px rgba(109, 60, 207, 0.14)',
+                          },
+                        }}
+                      >
+                        {t('btnEdit')}
+                      </Button>
+                      <Button
+                        size="small"
+                        startIcon={<ShieldCheck />}
+                        sx={{
+                          ...actionButtonBaseSx,
+                          color: '#5B21B6',
+                          background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.13), rgba(223, 50, 123, 0.12))',
+                          borderColor: 'rgba(181, 123, 232, 0.18)',
+                          '&:hover': {
+                            ...actionButtonBaseSx['&:hover'],
+                            background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.18), rgba(223, 50, 123, 0.16))',
+                            boxShadow: '0 10px 24px rgba(181, 123, 232, 0.20)',
+                          },
+                        }}
+                      >
+                        {t('umChangeRole')}
+                      </Button>
+                      <Button
+                        size="small"
+                        startIcon={<Ban />}
+                        sx={{
+                          ...actionButtonBaseSx,
+                          color: '#C2415B',
+                          bgcolor: 'rgba(244, 63, 94, 0.08)',
+                          borderColor: 'rgba(244, 63, 94, 0.12)',
+                          '&:hover': {
+                            ...actionButtonBaseSx['&:hover'],
+                            bgcolor: 'rgba(244, 63, 94, 0.13)',
+                            boxShadow: '0 10px 22px rgba(244, 63, 94, 0.12)',
+                          },
+                        }}
+                      >
+                        {t('umSuspend')}
+                      </Button>
+                    </Stack>
                   </Box>
-                </Stack>
-
-                <Stack direction="row-reverse" spacing={0.625} justifyContent="flex-start" flexWrap="wrap" useFlexGap>
-                  <Button
-                    size="small"
-                    startIcon={<Pencil />}
-                    sx={{
-                      ...actionButtonBaseSx,
-                      color: '#6D3CCF',
-                      bgcolor: 'rgba(109, 60, 207, 0.09)',
-                      borderColor: 'rgba(109, 60, 207, 0.10)',
-                      '&:hover': {
-                        ...actionButtonBaseSx['&:hover'],
-                        bgcolor: 'rgba(109, 60, 207, 0.14)',
-                        boxShadow: '0 10px 22px rgba(109, 60, 207, 0.14)',
-                      },
-                    }}
-                  >
-                    {t('btnEdit')}
-                  </Button>
-                  <Button
-                    size="small"
-                    startIcon={<ShieldCheck />}
-                    sx={{
-                      ...actionButtonBaseSx,
-                      color: '#5B21B6',
-                      background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.13), rgba(223, 50, 123, 0.12))',
-                      borderColor: 'rgba(181, 123, 232, 0.18)',
-                      '&:hover': {
-                        ...actionButtonBaseSx['&:hover'],
-                        background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.18), rgba(223, 50, 123, 0.16))',
-                        boxShadow: '0 10px 24px rgba(181, 123, 232, 0.20)',
-                      },
-                    }}
-                  >
-                    {t('umChangeRole')}
-                  </Button>
-                  <Button
-                    size="small"
-                    startIcon={<Ban />}
-                    sx={{
-                      ...actionButtonBaseSx,
-                      color: '#C2415B',
-                      bgcolor: 'rgba(244, 63, 94, 0.08)',
-                      borderColor: 'rgba(244, 63, 94, 0.12)',
-                      '&:hover': {
-                        ...actionButtonBaseSx['&:hover'],
-                        bgcolor: 'rgba(244, 63, 94, 0.13)',
-                        boxShadow: '0 10px 22px rgba(244, 63, 94, 0.12)',
-                      },
-                    }}
-                  >
-                    {t('umSuspend')}
-                  </Button>
                 </Stack>
               </Stack>
             </Box>
 
-            <Box sx={{ flexShrink: 0, px: { xs: 2, sm: 2.25 }, py: { xs: 1.5, sm: 1.875 } }}>
+            <Box sx={{ flexShrink: 0, px: { xs: 2, sm: 2.25 }, py: { xs: 1.5, sm: 1.875 } }} dir="ltr">
               <Stack spacing={0.875}>
                 {userDetailRows.map((row, rowIndex) => (
                   <Box
@@ -996,7 +894,7 @@ export default function UserManagementPage() {
                   >
                     {row.map(({ fieldKey, labelKey, value }) => (
                       <Box key={fieldKey} sx={{ minWidth: 0, display: 'flex' }}>
-                        <InfoCard label={t(labelKey)} value={value} iconKey={fieldKey} />
+                        <AdminDetailInfoCard label={t(labelKey)} value={value} iconKey={fieldKey} />
                       </Box>
                     ))}
                   </Box>
