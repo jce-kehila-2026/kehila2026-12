@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNoneOutlined';
 import EventNoteOutlinedIcon from '@mui/icons-material/EventNoteOutlined';
 import NotificationsActiveOutlinedIcon from '@mui/icons-material/NotificationsActiveOutlined';
@@ -60,14 +60,20 @@ function isUnread(update, lastSeenAt) {
   return (update.createdAt?.toMillis?.() ?? 0) > seenMs;
 }
 
+function isCommunityNotification(update) {
+  return update.kind === 'activity';
+}
+
 export default function NotificationsDropdown({
   updates,
   lastSeenAt,
   onMarkAllRead,
+  onNotificationClick,
   onClose,
   ignoreOutsideClickRef,
 }) {
   const panelRef = useRef(null);
+  const [activeTab, setActiveTab] = useState('community');
   const { t, lang: currentLanguage } = useParticipantLocale();
 
   // Close on Escape
@@ -99,6 +105,12 @@ export default function NotificationsDropdown({
   }, [ignoreOutsideClickRef, onClose]);
 
   const activeUpdates = updates.filter((u) => u.active !== false);
+  const communityUpdates = activeUpdates.filter(isCommunityNotification);
+  const generalUpdates = activeUpdates.filter((update) => !isCommunityNotification(update));
+  const visibleUpdates = activeTab === 'community' ? communityUpdates : generalUpdates;
+  const unreadCommunityCount = communityUpdates.filter((update) => isUnread(update, lastSeenAt)).length;
+  const unreadGeneralCount = generalUpdates.filter((update) => isUnread(update, lastSeenAt)).length;
+  const unreadTotalCount = unreadCommunityCount + unreadGeneralCount;
 
   return (
     <div className="notif-dropdown" ref={panelRef} role="dialog" aria-label={t('notifications')}>
@@ -107,7 +119,7 @@ export default function NotificationsDropdown({
           <NotificationsNoneOutlinedIcon className="notif-dropdown__header-icon" />
           <span>{t('notifUpdates')}</span>
         </div>
-        {activeUpdates.length > 0 && (
+        {unreadTotalCount > 0 && (
           <button type="button" className="notif-dropdown__mark-all" onClick={onMarkAllRead}>
             <DoneAllIcon style={{ fontSize: '0.875rem' }} />
             {t('notifMarkAllRead')}
@@ -115,25 +127,65 @@ export default function NotificationsDropdown({
         )}
       </div>
 
+      <div className="notif-dropdown__tabs" role="tablist" aria-label={t('notifCategories')}>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === 'community'}
+          className={`notif-dropdown__tab${activeTab === 'community' ? ' is-active' : ''}`}
+          onClick={() => setActiveTab('community')}
+        >
+          <span>{t('notifCommunityUpdates')}</span>
+          {unreadCommunityCount > 0 && <strong>{unreadCommunityCount}</strong>}
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={activeTab === 'general'}
+          className={`notif-dropdown__tab${activeTab === 'general' ? ' is-active' : ''}`}
+          onClick={() => setActiveTab('general')}
+        >
+          <span>{t('notifGeneral')}</span>
+          {unreadGeneralCount > 0 && <strong>{unreadGeneralCount}</strong>}
+        </button>
+      </div>
+
       <div className="notif-dropdown__list">
-        {activeUpdates.length === 0 && (
+        {visibleUpdates.length === 0 && (
           <div className="notif-dropdown__empty">
             <NotificationsNoneOutlinedIcon className="notif-dropdown__empty-icon" />
             <p>{t('notifCaughtUp')}</p>
-            <span>{t('notifNoUpdates')}</span>
+            <span>
+              {activeTab === 'community'
+                ? t('notifNoCommunityUpdates')
+                : t('notifNoGeneralUpdates')}
+            </span>
           </div>
         )}
 
-        {activeUpdates.map((update) => {
+        {visibleUpdates.map((update) => {
           const meta = TYPE_META[update.type] ?? TYPE_META.general;
           const { Icon } = meta;
           const unread = isUnread(update, lastSeenAt);
           const title = getLocalizedText(update.title, currentLanguage);
           const body = getLocalizedText(update.body || update.text || update.message, currentLanguage);
+          const canOpenTarget = Boolean(update.postId && update.kind === 'activity');
+          const handleOpenTarget = () => {
+            if (canOpenTarget) onNotificationClick?.(update);
+          };
+          const handleItemKeyDown = (event) => {
+            if (!canOpenTarget || (event.key !== 'Enter' && event.key !== ' ')) return;
+            event.preventDefault();
+            handleOpenTarget();
+          };
           return (
             <div
               key={`${update.kind ?? 'update'}-${update.id}`}
-              className={`notif-dropdown__item${unread ? ' is-unread' : ''}`}
+              className={`notif-dropdown__item${unread ? ' is-unread' : ''}${canOpenTarget ? ' is-clickable' : ''}`}
+              role={canOpenTarget ? 'button' : undefined}
+              tabIndex={canOpenTarget ? 0 : undefined}
+              onClick={handleOpenTarget}
+              onKeyDown={handleItemKeyDown}
             >
               {unread && <span className="notif-dropdown__unread-dot" style={{ '--dot-color': meta.color }} />}
               <span
