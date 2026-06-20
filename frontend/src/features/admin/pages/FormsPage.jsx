@@ -611,31 +611,61 @@ export default function FormsPage() {
         {selected ? (
           <Box sx={{ display: 'flex', flexDirection: 'column', maxHeight: 'calc(100vh - 32px)' }}>
             <Box sx={{ p: { xs: 2, md: 2.6 }, pb: 1.6, flexShrink: 0, background: 'radial-gradient(circle at 50% 0%, rgba(223, 50, 123, 0.08), transparent 32%), linear-gradient(180deg, #FFFFFF 0%, #FFFBFE 100%)' }}>
-              <Stack direction="row" spacing={1.5} alignItems="center">
-                <Avatar sx={{ width: '4rem', height: '4rem', bgcolor: '#EEE7FF', color: '#6D3CCF', fontSize: '1.5rem', fontWeight: 950 }}>
-                  {initialsOf(selected.fullName)}
-                </Avatar>
-                <Box sx={{ minWidth: 0, flex: 1 }}>
-                  <Typography dir="auto" variant="h6" fontWeight={950} sx={{ color: '#17122E', lineHeight: 1.15 }}>
-                    {selected.fullName || t('fmUnnamed')}
-                  </Typography>
-                  <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 0.6 }} flexWrap="wrap" useFlexGap>
-                    <TypeChip type={selected.type} t={t} />
-                    <StatusChip status={selected.status} t={t} />
-                    <Typography color="text.secondary" sx={{ fontSize: '0.8125rem' }}>
-                      {t('fmSubmittedAt').replace('{date}', formatDate(selected.createdAt, intlLocale))}
+              <Box
+                dir="ltr"
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: 1.5,
+                }}
+              >
+                <Box
+                  dir="ltr"
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: 1.5,
+                    minWidth: 0,
+                    flex: '0 1 auto',
+                  }}
+                >
+                  <Avatar sx={{ width: '4rem', height: '4rem', bgcolor: '#EEE7FF', color: '#6D3CCF', fontSize: '1.5rem', fontWeight: 950, flexShrink: 0 }}>
+                    {initialsOf(selected.fullName)}
+                  </Avatar>
+                  <Box
+                    dir="ltr"
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'flex-start',
+                      gap: 0.5,
+                      minWidth: 0,
+                    }}
+                  >
+                    <Typography dir="auto" variant="h6" fontWeight={950} noWrap sx={{ color: '#17122E', lineHeight: 1.15, minWidth: 0, textAlign: 'left' }}>
+                      {selected.fullName || t('fmUnnamed')}
                     </Typography>
-                  </Stack>
+                    <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
+                      <TypeChip type={selected.type} t={t} />
+                      <StatusChip status={selected.status} t={t} />
+                      <Typography color="text.secondary" sx={{ fontSize: '0.8125rem', whiteSpace: 'nowrap' }}>
+                        {t('fmSubmittedAt').replace('{date}', formatDate(selected.createdAt, intlLocale))}
+                      </Typography>
+                    </Stack>
+                  </Box>
                 </Box>
                 <IconButton
                   size="small"
                   onClick={() => setDetailsOpen(false)}
                   aria-label={t('fmCloseDetails')}
-                  sx={{ bgcolor: 'rgba(109, 60, 207, 0.06)', color: '#4E466B', '&:hover': { bgcolor: 'rgba(109, 60, 207, 0.12)' } }}
+                  sx={{ bgcolor: 'rgba(109, 60, 207, 0.06)', color: '#4E466B', flexShrink: 0, '&:hover': { bgcolor: 'rgba(109, 60, 207, 0.12)' } }}
                 >
                   <CloseIcon fontSize="small" />
                 </IconButton>
-              </Stack>
+              </Box>
             </Box>
 
             <Box sx={{ flex: 1, overflow: 'auto', p: { xs: 2, md: 2.6 }, borderTop: '1px solid rgba(130, 92, 206, 0.08)' }}>
