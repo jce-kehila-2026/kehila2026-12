@@ -1,16 +1,18 @@
 import { useEffect, useMemo, useState } from 'react';
 import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db, auth } from '../../../firebase';
+import { useAdminLocale } from '../context/AdminLocaleContext';
 import { logAuditEvent } from '../services/auditService';
 import { isTranslationConfigured, translateFields, translateItems } from '../services/translationService';
 import {
   PUBLIC_PAGES_COLLECTION,
   PUBLIC_HOME_DOC_ID,
-  DEFAULT_HOME_HERO,
+  DEFAULT_HERO_CONTENT,
   DEFAULT_STATISTICS,
   STATISTIC_ICON_KEYS,
   STATISTICS_MAX,
-  mergeHero,
+  HERO_CONTENT_STEPS_COUNT,
+  mergeHeroContent,
   mergeStatistics,
 } from '../../public/services/publicPagesService';
 import { BookOpen, HandHeart, Heart, Megaphone, Sparkles, UsersRound } from 'lucide-react';
@@ -26,9 +28,13 @@ import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
 
 const LIMITS = {
-  title: 80,
-  subtitle: 120,
-  description: 400,
+  titleAccent: 60,
+  titleRest: 60,
+  intro: 300,
+  ctaJoin: 40,
+  ctaHowItWorks: 40,
+  stepTitle: 40,
+  stepText: 120,
   statTitle: 40,
   statDescription: 120,
   statValueMax: 999999999,
@@ -43,14 +49,17 @@ const STAT_ICON_COMPONENTS = {
   sparkles: Sparkles,
 };
 
-const STAT_ICON_LABELS = {
-  'hands-heart': 'Hands & Heart',
-  megaphone: 'Megaphone',
-  'users-round': 'Users',
-  'book-open': 'Book',
-  heart: 'Heart',
-  sparkles: 'Sparkles',
+// Icon keys stay English (stored values); only the display labels are translated.
+const STAT_ICON_LABEL_KEYS = {
+  'hands-heart': 'cmsIconHandsHeart',
+  megaphone: 'cmsIconMegaphone',
+  'users-round': 'cmsIconUsers',
+  'book-open': 'cmsIconBook',
+  heart: 'cmsIconHeart',
+  sparkles: 'cmsIconSparkles',
 };
+
+const INTL_LOCALE_BY_LANG = { he: 'he-IL', en: 'en-US' };
 
 function StatIconGlyph({ iconKey, size = 20 }) {
   const Icon = STAT_ICON_COMPONENTS[iconKey];
@@ -66,13 +75,6 @@ function StatIconGlyph({ iconKey, size = 20 }) {
   );
 }
 
-const SEED_HERO = {
-  title: 'את לא לבד במסע שלך',
-  subtitle: 'קהילה תומכת לנשים ולמתמודדות עם סרטן',
-  description: 'מרחב חם, בטוח ומקצועי לתמיכה, ליווי, למידה ותקווה לאורך הדרך.',
-  backgroundImageUrl: '',
-};
-
 function statisticsToForm(statistics) {
   return statistics.map((stat) => ({
     id: stat.id || '',
@@ -83,51 +85,40 @@ function statisticsToForm(statistics) {
   }));
 }
 
+function heroContentToForm(heroContent) {
+  return {
+    titleAccent: heroContent.titleAccent || '',
+    titleRest: heroContent.titleRest || '',
+    intro: heroContent.intro || '',
+    ctaJoin: heroContent.ctaJoin || '',
+    ctaHowItWorks: heroContent.ctaHowItWorks || '',
+    steps: (heroContent.steps || DEFAULT_HERO_CONTENT.steps).map((s) => ({
+      title: s.title || '',
+      text: s.text || '',
+    })),
+  };
+}
+
 function emptyForm() {
   return {
-    title: '',
-    subtitle: '',
-    description: '',
-    backgroundImageUrl: '',
+    heroContent: heroContentToForm(DEFAULT_HERO_CONTENT),
     statistics: statisticsToForm(DEFAULT_STATISTICS),
   };
 }
 
-function heroToForm(hero, statistics) {
-  return {
-    title: hero.title || '',
-    subtitle: hero.subtitle || '',
-    description: hero.description || '',
-    backgroundImageUrl: hero.backgroundImageUrl || '',
-    statistics: statisticsToForm(
-      Array.isArray(statistics) && statistics.length ? statistics : DEFAULT_STATISTICS,
-    ),
-  };
-}
-
-function isValidUrlOrAnchor(value) {
-  if (!value) return true;
-  if (value.startsWith('#') || value.startsWith('/')) return true;
-  try {
-    // eslint-disable-next-line no-new
-    new URL(value);
-    return true;
-  } catch {
-    return false;
-  }
-}
-
-function formatTimestamp(value) {
+function formatTimestamp(value, intlLocale) {
   if (!value) return '';
   const date = typeof value.toDate === 'function' ? value.toDate() : new Date(value);
   if (Number.isNaN(date.getTime())) return '';
-  return new Intl.DateTimeFormat('en-US', {
+  return new Intl.DateTimeFormat(intlLocale, {
     dateStyle: 'medium',
     timeStyle: 'short',
   }).format(date);
 }
 
 export default function PublicHomePageHomeTab() {
+  const { t, lang, direction } = useAdminLocale();
+  const intlLocale = INTL_LOCALE_BY_LANG[lang] || 'en-US';
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState(emptyForm);
@@ -146,7 +137,7 @@ export default function PublicHomePageHomeTab() {
         let snap = await getDoc(ref);
         if (!snap.exists()) {
           await setDoc(ref, {
-            hero: { ...SEED_HERO },
+            heroContent: { ...DEFAULT_HERO_CONTENT },
             updatedAt: serverTimestamp(),
             updatedBy: 'system-seed',
           });
@@ -154,9 +145,12 @@ export default function PublicHomePageHomeTab() {
         }
         if (!active) return;
         const data = snap.data() || {};
-        const merged = mergeHero(data.hero);
+        const mergedHeroContent = mergeHeroContent(data.heroContent);
         const mergedStats = mergeStatistics(data.statistics);
-        const next = heroToForm(merged, mergedStats);
+        const next = {
+          heroContent: heroContentToForm(mergedHeroContent),
+          statistics: statisticsToForm(mergedStats),
+        };
         setForm(next);
         setPristine(next);
         setDocMeta({
@@ -166,11 +160,11 @@ export default function PublicHomePageHomeTab() {
         });
       } catch (err) {
         console.error('Failed to load public_pages/home:', err);
-        const next = heroToForm(DEFAULT_HOME_HERO, DEFAULT_STATISTICS);
+        const next = emptyForm();
         setForm(next);
         setPristine(next);
         setDocMeta({ updatedAt: null, updatedBy: '', exists: false });
-        setToast({ open: true, severity: 'error', message: 'Failed to load home page content.' });
+        setToast({ open: true, severity: 'error', message: t('cmsHomeLoadFailed') });
       } finally {
         if (active) setLoading(false);
       }
@@ -188,24 +182,30 @@ export default function PublicHomePageHomeTab() {
 
   const errors = useMemo(() => {
     const next = {};
-    if (!form.title.trim()) next.title = 'Title is required.';
-    if (form.backgroundImageUrl && !isValidUrlOrAnchor(form.backgroundImageUrl)) {
-      next.backgroundImageUrl = 'Enter a valid URL.';
-    }
+    const hc = form.heroContent;
+    if (!hc.titleAccent.trim()) next['hc.titleAccent'] = t('cmsTitleRequired');
+    if (!hc.titleRest.trim()) next['hc.titleRest'] = t('cmsTitleRequired');
+    if (!hc.intro.trim()) next['hc.intro'] = t('cmsTitleRequired');
+    if (!hc.ctaJoin.trim()) next['hc.ctaJoin'] = t('cmsTitleRequired');
+    if (!hc.ctaHowItWorks.trim()) next['hc.ctaHowItWorks'] = t('cmsTitleRequired');
+    (hc.steps || []).forEach((step, index) => {
+      if (!step.title.trim()) next[`step.${index}.title`] = t('cmsTitleRequired');
+    });
+    // Statistics validation
     (form.statistics || []).forEach((stat, index) => {
-      if (!stat.title.trim()) next[`stat.${index}.title`] = 'Title is required.';
+      if (!stat.title.trim()) next[`stat.${index}.title`] = t('cmsTitleRequired');
       if (stat.value === '' || stat.value === null || stat.value === undefined) {
-        next[`stat.${index}.value`] = 'Value is required.';
+        next[`stat.${index}.value`] = t('cmsValueRequired');
       } else {
         const parsed = Number(stat.value);
         if (!Number.isFinite(parsed) || parsed < 0 || !Number.isInteger(parsed)) {
-          next[`stat.${index}.value`] = 'Enter a non-negative whole number.';
+          next[`stat.${index}.value`] = t('cmsValueWholeNumber');
         } else if (parsed > LIMITS.statValueMax) {
-          next[`stat.${index}.value`] = 'Value is too large.';
+          next[`stat.${index}.value`] = t('cmsValueTooLarge');
         }
       }
       if (!STATISTIC_ICON_KEYS.includes(stat.icon)) {
-        next[`stat.${index}.icon`] = 'Pick a valid icon.';
+        next[`stat.${index}.icon`] = t('cmsPickIcon');
       }
     });
     return next;
@@ -217,12 +217,30 @@ export default function PublicHomePageHomeTab() {
   function shouldShowError(field) {
     return Boolean(errors[field]) && (submitted || touched[field]);
   }
-  function setField(key, value) {
-    setForm((prev) => ({ ...prev, [key]: value }));
+
+  // ── Hero content field setters ──────────────────────────
+  function setHeroField(key, value) {
+    setForm((prev) => ({
+      ...prev,
+      heroContent: { ...prev.heroContent, [key]: value },
+    }));
+  }
+  function setStepField(index, key, value) {
+    setForm((prev) => ({
+      ...prev,
+      heroContent: {
+        ...prev.heroContent,
+        steps: prev.heroContent.steps.map((s, i) =>
+          i === index ? { ...s, [key]: value } : s,
+        ),
+      },
+    }));
   }
   function handleBlur(key) {
     setTouched((prev) => ({ ...prev, [key]: true }));
   }
+
+  // ── Statistics field setters ─────────────────────────────
   function setStatField(index, key, value) {
     setForm((prev) => ({
       ...prev,
@@ -240,6 +258,9 @@ export default function PublicHomePageHomeTab() {
     try {
       const user = auth.currentUser;
       const updatedBy = user?.email || user?.uid || '';
+      const hc = form.heroContent;
+
+      // Build the statistics payload
       const statisticsPayload = form.statistics.slice(0, STATISTICS_MAX).map((stat, index) => {
         const fallback = DEFAULT_STATISTICS[index] || DEFAULT_STATISTICS[0];
         const parsed = Number(stat.value);
@@ -252,67 +273,76 @@ export default function PublicHomePageHomeTab() {
         };
       });
 
-      // Translate hero (title/subtitle/description) and each statistic
-      // (title/description) to { he, en, ar } once on save.
+      // Build the hero content payload
+      const stepsPayload = hc.steps.slice(0, HERO_CONTENT_STEPS_COUNT).map((step) => ({
+        title: step.title.trim(),
+        text: step.text.trim(),
+      }));
+
+      const heroContentPayload = {
+        titleAccent: hc.titleAccent.trim(),
+        titleRest: hc.titleRest.trim(),
+        intro: hc.intro.trim(),
+        ctaJoin: hc.ctaJoin.trim(),
+        ctaHowItWorks: hc.ctaHowItWorks.trim(),
+        steps: stepsPayload,
+      };
+
+      // Translate via Azure if configured
       let heroTranslations = null;
-      let statisticsToSave = statisticsPayload;
+      let translatedSteps = stepsPayload;
+      let translatedStats = statisticsPayload;
       if (isTranslationConfigured()) {
         try {
-          const [hero, stats] = await Promise.all([
+          const [heroTr, stepsTr, statsTr] = await Promise.all([
             translateFields(
-              { title: form.title.trim(), subtitle: form.subtitle.trim(), description: form.description.trim() },
-              ['title', 'subtitle', 'description'],
+              {
+                titleAccent: heroContentPayload.titleAccent,
+                titleRest: heroContentPayload.titleRest,
+                intro: heroContentPayload.intro,
+                ctaJoin: heroContentPayload.ctaJoin,
+                ctaHowItWorks: heroContentPayload.ctaHowItWorks,
+              },
+              ['titleAccent', 'titleRest', 'intro', 'ctaJoin', 'ctaHowItWorks'],
             ),
+            translateItems(stepsPayload, ['title', 'text']),
             translateItems(statisticsPayload, ['title', 'description']),
           ]);
-          heroTranslations = Object.keys(hero).length ? hero : null;
-          statisticsToSave = stats;
+          if (Object.keys(heroTr).length) heroTranslations = heroTr;
+          translatedSteps = stepsTr;
+          translatedStats = statsTr;
         } catch (err) {
           console.error('Home content translation failed; saving original only:', err);
         }
       }
 
+      const heroContentToSave = {
+        ...heroContentPayload,
+        steps: translatedSteps,
+      };
+      if (heroTranslations) heroContentToSave.translations = heroTranslations;
+
       const fieldUpdates = {
-        'hero.title': form.title.trim(),
-        'hero.subtitle': form.subtitle.trim(),
-        'hero.description': form.description.trim(),
-        'hero.backgroundImageUrl': form.backgroundImageUrl.trim(),
-        statistics: statisticsToSave,
+        heroContent: heroContentToSave,
+        statistics: translatedStats,
         updatedAt: serverTimestamp(),
         updatedBy,
       };
-      if (heroTranslations) fieldUpdates['hero.translations'] = heroTranslations;
 
       const ref = doc(db, PUBLIC_PAGES_COLLECTION, PUBLIC_HOME_DOC_ID);
       if (docMeta.exists) {
         await updateDoc(ref, fieldUpdates);
       } else {
-        await setDoc(ref, {
-          hero: {
-            title: fieldUpdates['hero.title'],
-            subtitle: fieldUpdates['hero.subtitle'],
-            description: fieldUpdates['hero.description'],
-            backgroundImageUrl: fieldUpdates['hero.backgroundImageUrl'],
-            ...(heroTranslations ? { translations: heroTranslations } : {}),
-          },
-          statistics: statisticsToSave,
-          updatedAt: serverTimestamp(),
-          updatedBy,
-        });
+        await setDoc(ref, fieldUpdates);
       }
 
       await logAuditEvent({
         actionType: 'UPDATE_PUBLIC_HOME_HERO',
         targetId: `${PUBLIC_PAGES_COLLECTION}/${PUBLIC_HOME_DOC_ID}`,
         details: {
-          section: 'hero+statistics',
+          section: 'heroContent+statistics',
           after: {
-            hero: {
-              title: form.title,
-              subtitle: form.subtitle,
-              description: form.description,
-              backgroundImageUrl: form.backgroundImageUrl,
-            },
+            heroContent: heroContentPayload,
             statistics: statisticsPayload,
           },
         },
@@ -326,10 +356,10 @@ export default function PublicHomePageHomeTab() {
         updatedBy,
         exists: true,
       });
-      setToast({ open: true, severity: 'success', message: 'Home page updated.' });
+      setToast({ open: true, severity: 'success', message: t('cmsHomeUpdated') });
     } catch (err) {
       console.error('Failed to save home page content:', err);
-      setToast({ open: true, severity: 'error', message: 'Save failed. Please try again.' });
+      setToast({ open: true, severity: 'error', message: t('cmsSaveFailed') });
     } finally {
       setSaving(false);
     }
@@ -349,90 +379,189 @@ export default function PublicHomePageHomeTab() {
     );
   }
 
-  const lastUpdatedLabel = formatTimestamp(docMeta.updatedAt);
+  const lastUpdatedLabel = formatTimestamp(docMeta.updatedAt, intlLocale);
+  const hc = form.heroContent;
 
   return (
-    <Box sx={{ pb: 12 }}>
+    <Box sx={{ pb: 12 }} dir={direction}>
       {lastUpdatedLabel || docMeta.updatedBy ? (
         <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
-          Last updated: {lastUpdatedLabel || '—'}
-          {docMeta.updatedBy ? ` by ${docMeta.updatedBy}` : ''}
+          {t('cmsLastUpdated').replace('{date}', lastUpdatedLabel || '—')}
+          {docMeta.updatedBy ? t('cmsLastUpdatedBy').replace('{user}', docMeta.updatedBy) : ''}
         </Typography>
       ) : null}
 
       <Stack spacing={3}>
+        {/* ── Hero Title ─────────────────────────────── */}
         <Paper sx={{ p: 3 }}>
-          <Typography variant="h6" sx={{ mb: 2 }}>Hero Text</Typography>
+          <Typography variant="h6" sx={{ mb: 2 }}>{t('cmsHeroText')}</Typography>
           <Stack spacing={2}>
             <TextField
-              label="Title"
-              value={form.title}
-              onChange={(e) => setField('title', e.target.value)}
-              onBlur={() => handleBlur('title')}
-              inputProps={{ maxLength: LIMITS.title }}
-              helperText={(shouldShowError('title') && errors.title) || `${form.title.length} / ${LIMITS.title}`}
-              error={shouldShowError('title')}
+              label={t('cmsHeroTitleAccent')}
+              value={hc.titleAccent}
+              onChange={(e) => setHeroField('titleAccent', e.target.value)}
+              onBlur={() => handleBlur('hc.titleAccent')}
+              inputProps={{ maxLength: LIMITS.titleAccent }}
+              helperText={
+                (shouldShowError('hc.titleAccent') && errors['hc.titleAccent']) ||
+                t('cmsHeroTitleAccentHelper')
+              }
+              error={shouldShowError('hc.titleAccent')}
               required
               fullWidth
-              id="hero-title"
+              id="hero-title-accent"
             />
             <TextField
-              label="Subtitle"
-              value={form.subtitle}
-              onChange={(e) => setField('subtitle', e.target.value)}
-              onBlur={() => handleBlur('subtitle')}
-              inputProps={{ maxLength: LIMITS.subtitle }}
-              helperText={`${form.subtitle.length} / ${LIMITS.subtitle}`}
-              fullWidth
-              id="hero-subtitle"
-            />
-            <TextField
-              label="Description"
-              value={form.description}
-              onChange={(e) => setField('description', e.target.value)}
-              onBlur={() => handleBlur('description')}
-              inputProps={{ maxLength: LIMITS.description }}
-              helperText={`${form.description.length} / ${LIMITS.description}`}
-              multiline
-              minRows={3}
-              fullWidth
-              id="hero-description"
-            />
-          </Stack>
-        </Paper>
-
-        <Paper sx={{ p: 3 }}>
-          <Typography variant="h6" sx={{ mb: 2 }}>Background Image</Typography>
-          <Stack spacing={2}>
-            <TextField
-              label="Background Image URL"
-              value={form.backgroundImageUrl}
-              onChange={(e) => setField('backgroundImageUrl', e.target.value)}
-              onBlur={() => handleBlur('backgroundImageUrl')}
+              label={t('cmsHeroTitleRest')}
+              value={hc.titleRest}
+              onChange={(e) => setHeroField('titleRest', e.target.value)}
+              onBlur={() => handleBlur('hc.titleRest')}
+              inputProps={{ maxLength: LIMITS.titleRest }}
               helperText={
-                (shouldShowError('backgroundImageUrl') && errors.backgroundImageUrl) ||
-                'Paste a public URL (Firebase Storage, Unsplash, etc.).'
+                (shouldShowError('hc.titleRest') && errors['hc.titleRest']) ||
+                t('cmsHeroTitleRestHelper')
               }
-              error={shouldShowError('backgroundImageUrl')}
+              error={shouldShowError('hc.titleRest')}
+              required
               fullWidth
-              id="hero-background-image-url"
-              type="url"
+              id="hero-title-rest"
             />
-            <Box>
-              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
-                Preview
-              </Typography>
-              <BackgroundPreview url={form.backgroundImageUrl} />
-            </Box>
+            <TextField
+              label={t('cmsHeroIntro')}
+              value={hc.intro}
+              onChange={(e) => setHeroField('intro', e.target.value)}
+              onBlur={() => handleBlur('hc.intro')}
+              inputProps={{ maxLength: LIMITS.intro }}
+              helperText={
+                (shouldShowError('hc.intro') && errors['hc.intro']) ||
+                `${hc.intro.length} / ${LIMITS.intro}`
+              }
+              error={shouldShowError('hc.intro')}
+              multiline
+              minRows={2}
+              required
+              fullWidth
+              id="hero-intro"
+            />
           </Stack>
         </Paper>
 
+        {/* ── Journey Steps ──────────────────────────── */}
         <Paper sx={{ p: 3 }}>
           <Typography variant="h6" sx={{ mb: 0.5 }}>
-            Impact Statistics
+            {t('cmsJourneySteps')}
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Four cards shown on the public home page. Numbers display as +N,NNN (e.g. 2500 → +2,500).
+            {t('cmsJourneyStepsHelper')}
+          </Typography>
+          <Stack spacing={2}>
+            {hc.steps.map((step, index) => (
+              <Paper
+                key={index}
+                variant="outlined"
+                sx={{ p: 2, bgcolor: 'grey.50' }}
+              >
+                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1.5 }}>
+                  {t('cmsStepNumber').replace('{n}', index + 1)}
+                </Typography>
+                <Box
+                  sx={{
+                    display: 'grid',
+                    gap: '1rem',
+                    alignItems: 'flex-start',
+                    gridTemplateColumns: {
+                      xs: 'minmax(0, 1fr)',
+                      md: 'minmax(0, 1fr) minmax(0, 2fr)',
+                    },
+                  }}
+                >
+                  <TextField
+                    label={t('cmsStepTitle')}
+                    value={step.title}
+                    onChange={(e) => setStepField(index, 'title', e.target.value)}
+                    onBlur={() => handleBlur(`step.${index}.title`)}
+                    inputProps={{ maxLength: LIMITS.stepTitle }}
+                    error={shouldShowError(`step.${index}.title`)}
+                    helperText={
+                      (shouldShowError(`step.${index}.title`) && errors[`step.${index}.title`]) ||
+                      `${step.title.length} / ${LIMITS.stepTitle}`
+                    }
+                    required
+                    fullWidth
+                  />
+                  <TextField
+                    label={t('cmsStepText')}
+                    value={step.text}
+                    onChange={(e) => setStepField(index, 'text', e.target.value)}
+                    onBlur={() => handleBlur(`step.${index}.text`)}
+                    inputProps={{ maxLength: LIMITS.stepText }}
+                    helperText={`${step.text.length} / ${LIMITS.stepText}`}
+                    fullWidth
+                  />
+                </Box>
+              </Paper>
+            ))}
+          </Stack>
+        </Paper>
+
+        {/* ── CTA Buttons ────────────────────────────── */}
+        <Paper sx={{ p: 3 }}>
+          <Typography variant="h6" sx={{ mb: 0.5 }}>
+            {t('cmsCtaButtons')}
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            {t('cmsCtaButtonsHelper')}
+          </Typography>
+          <Box
+            sx={{
+              display: 'grid',
+              gap: '1rem',
+              gridTemplateColumns: {
+                xs: '1fr',
+                sm: '1fr 1fr',
+              },
+            }}
+          >
+            <TextField
+              label={t('cmsCtaJoinLabel')}
+              value={hc.ctaJoin}
+              onChange={(e) => setHeroField('ctaJoin', e.target.value)}
+              onBlur={() => handleBlur('hc.ctaJoin')}
+              inputProps={{ maxLength: LIMITS.ctaJoin }}
+              error={shouldShowError('hc.ctaJoin')}
+              helperText={
+                (shouldShowError('hc.ctaJoin') && errors['hc.ctaJoin']) ||
+                `${hc.ctaJoin.length} / ${LIMITS.ctaJoin}`
+              }
+              required
+              fullWidth
+              id="hero-cta-join"
+            />
+            <TextField
+              label={t('cmsCtaHowItWorksLabel')}
+              value={hc.ctaHowItWorks}
+              onChange={(e) => setHeroField('ctaHowItWorks', e.target.value)}
+              onBlur={() => handleBlur('hc.ctaHowItWorks')}
+              inputProps={{ maxLength: LIMITS.ctaHowItWorks }}
+              error={shouldShowError('hc.ctaHowItWorks')}
+              helperText={
+                (shouldShowError('hc.ctaHowItWorks') && errors['hc.ctaHowItWorks']) ||
+                `${hc.ctaHowItWorks.length} / ${LIMITS.ctaHowItWorks}`
+              }
+              required
+              fullWidth
+              id="hero-cta-how"
+            />
+          </Box>
+        </Paper>
+
+        {/* ── Impact Statistics ──────────────────────── */}
+        <Paper sx={{ p: 3 }}>
+          <Typography variant="h6" sx={{ mb: 0.5 }}>
+            {t('cmsImpactStatistics')}
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            {t('cmsImpactStatisticsHelper')}
           </Typography>
           <Stack spacing={2}>
             {form.statistics.map((stat, index) => (
@@ -442,7 +571,7 @@ export default function PublicHomePageHomeTab() {
                 sx={{ p: 2, bgcolor: 'grey.50' }}
               >
                 <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1.5 }}>
-                  Statistic #{index + 1}
+                  {t('cmsStatisticNumber').replace('{n}', index + 1)}
                 </Typography>
                 <Box
                   sx={{
@@ -456,7 +585,7 @@ export default function PublicHomePageHomeTab() {
                   }}
                 >
                   <TextField
-                    label="Value"
+                    label={t('cmsFieldValue')}
                     type="number"
                     value={stat.value}
                     onChange={(e) => setStatField(index, 'value', e.target.value)}
@@ -465,13 +594,13 @@ export default function PublicHomePageHomeTab() {
                     error={shouldShowError(`stat.${index}.value`)}
                     helperText={
                       (shouldShowError(`stat.${index}.value`) && errors[`stat.${index}.value`]) ||
-                      'e.g. 2500'
+                      t('cmsStatValueHelper')
                     }
                     required
                     fullWidth
                   />
                   <TextField
-                    label="Title"
+                    label={t('cmsFieldTitle')}
                     value={stat.title}
                     onChange={(e) => setStatField(index, 'title', e.target.value)}
                     onBlur={() => handleStatBlur(index, 'title')}
@@ -485,7 +614,7 @@ export default function PublicHomePageHomeTab() {
                     fullWidth
                   />
                   <TextField
-                    label="Description"
+                    label={t('cmsFieldDescription')}
                     value={stat.description}
                     onChange={(e) => setStatField(index, 'description', e.target.value)}
                     onBlur={() => handleStatBlur(index, 'description')}
@@ -495,7 +624,7 @@ export default function PublicHomePageHomeTab() {
                   />
                   <TextField
                     select
-                    label="Icon"
+                    label={t('cmsFieldIcon')}
                     value={stat.icon}
                     onChange={(e) => setStatField(index, 'icon', e.target.value)}
                     error={shouldShowError(`stat.${index}.icon`)}
@@ -505,7 +634,7 @@ export default function PublicHomePageHomeTab() {
                       renderValue: (selected) => (
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                           <StatIconGlyph iconKey={selected} />
-                          <span>{STAT_ICON_LABELS[selected] || selected}</span>
+                          <span>{STAT_ICON_LABEL_KEYS[selected] ? t(STAT_ICON_LABEL_KEYS[selected]) : selected}</span>
                         </Box>
                       ),
                     }}
@@ -514,7 +643,7 @@ export default function PublicHomePageHomeTab() {
                       <MenuItem key={key} value={key}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
                           <StatIconGlyph iconKey={key} />
-                          <span>{STAT_ICON_LABELS[key] || key}</span>
+                          <span>{STAT_ICON_LABEL_KEYS[key] ? t(STAT_ICON_LABEL_KEYS[key]) : key}</span>
                         </Box>
                       </MenuItem>
                     ))}
@@ -544,7 +673,7 @@ export default function PublicHomePageHomeTab() {
         }}
       >
         <Button onClick={handleDiscard} disabled={!dirty || saving}>
-          Discard changes
+          {t('cmsDiscardChanges')}
         </Button>
         <Button
           variant="contained"
@@ -552,7 +681,7 @@ export default function PublicHomePageHomeTab() {
           disabled={!canSave}
           id="btn-save-public-home"
         >
-          {saving ? 'Saving…' : 'Save'}
+          {saving ? t('cmsSaving') : t('cmsSave')}
         </Button>
       </Paper>
 
@@ -571,72 +700,5 @@ export default function PublicHomePageHomeTab() {
         </Alert>
       </Snackbar>
     </Box>
-  );
-}
-
-function BackgroundPreview({ url }) {
-  const [errored, setErrored] = useState(false);
-  useEffect(() => {
-    setErrored(false);
-  }, [url]);
-
-  if (!url) {
-    return (
-      <Box
-        sx={{
-          width: '15rem',
-          height: '8.4375rem',
-          border: '1px dashed',
-          borderColor: 'divider',
-          borderRadius: 1,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: 'text.secondary',
-          fontSize: '0.75rem',
-        }}
-      >
-        No image set
-      </Box>
-    );
-  }
-
-  if (errored) {
-    return (
-      <Box
-        sx={{
-          width: '15rem',
-          height: '8.4375rem',
-          border: '1px dashed',
-          borderColor: 'error.main',
-          borderRadius: 1,
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          color: 'error.main',
-          fontSize: '0.75rem',
-        }}
-      >
-        Image failed to load
-      </Box>
-    );
-  }
-
-  return (
-    <Box
-      component="img"
-      src={url}
-      alt="Hero background preview"
-      onError={() => setErrored(true)}
-      sx={{
-        width: '15rem',
-        height: '8.4375rem',
-        objectFit: 'cover',
-        borderRadius: 1,
-        border: 1,
-        borderColor: 'divider',
-        display: 'block',
-      }}
-    />
   );
 }

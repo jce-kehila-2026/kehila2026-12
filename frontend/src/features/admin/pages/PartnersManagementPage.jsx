@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db, auth } from '../../../firebase';
+import { useAdminLocale } from '../context/AdminLocaleContext';
 import { logAuditEvent } from '../services/auditService';
 import { isTranslationConfigured, translateItems } from '../services/translationService';
 import {
@@ -65,6 +66,7 @@ function emptyDraft() {
 }
 
 export default function PartnersManagementPage() {
+  const { t, direction } = useAdminLocale();
   const [loading, setLoading] = useState(true);
   const [partners, setPartners] = useState([]);
   const [toast, setToast] = useState({ open: false, severity: 'success', message: '' });
@@ -109,7 +111,7 @@ export default function PartnersManagementPage() {
       } catch (err) {
         console.error('Failed to load partners:', err);
         if (active) {
-          setToast({ open: true, severity: 'error', message: 'Failed to load partners.' });
+          setToast({ open: true, severity: 'error', message: t('cmsLoadPartnersFailed') });
         }
       } finally {
         if (active) setLoading(false);
@@ -121,9 +123,9 @@ export default function PartnersManagementPage() {
 
   const errors = useMemo(() => {
     const next = {};
-    if (!draft.name.trim()) next.name = 'Name is required.';
-    if (!isValidUrlOrEmpty(draft.logoUrl)) next.logoUrl = 'Invalid URL.';
-    if (!draft.description.trim()) next.description = 'Description is required.';
+    if (!draft.name.trim()) next.name = t('cmsNameRequired');
+    if (!isValidUrlOrEmpty(draft.logoUrl)) next.logoUrl = t('cmsInvalidUrl');
+    if (!draft.description.trim()) next.description = t('cmsDescriptionRequired');
     return next;
   }, [draft]);
 
@@ -219,11 +221,11 @@ export default function PartnersManagementPage() {
       setToast({
         open: true,
         severity: 'success',
-        message: editorMode === 'create' ? 'Partner added.' : 'Partner updated.',
+        message: editorMode === 'create' ? t('cmsPartnerAdded') : t('cmsPartnerUpdated'),
       });
     } catch (err) {
       console.error('Failed to save partner:', err);
-      setToast({ open: true, severity: 'error', message: 'Save failed. Please try again.' });
+      setToast({ open: true, severity: 'error', message: t('cmsSaveFailed') });
     } finally {
       setSaving(false);
     }
@@ -241,17 +243,17 @@ export default function PartnersManagementPage() {
         change: 'delete',
       });
       setConfirmDeleteId(null);
-      setToast({ open: true, severity: 'success', message: 'Partner deleted.' });
+      setToast({ open: true, severity: 'success', message: t('cmsPartnerDeleted') });
     } catch (err) {
       console.error('Failed to delete partner:', err);
-      setToast({ open: true, severity: 'error', message: 'Delete failed. Please try again.' });
+      setToast({ open: true, severity: 'error', message: t('cmsDeleteFailed') });
     } finally {
       setDeleting(false);
     }
   }
 
-  async function handleMove(index, direction) {
-    const swapIndex = index + direction;
+  async function handleMove(index, delta) {
+    const swapIndex = index + delta;
     if (swapIndex < 0 || swapIndex >= partners.length) return;
     const next = [...partners];
     [next[index], next[swapIndex]] = [next[swapIndex], next[index]];
@@ -260,7 +262,7 @@ export default function PartnersManagementPage() {
       await persistPartners(reindexed, null);
     } catch (err) {
       console.error('Failed to reorder partners:', err);
-      setToast({ open: true, severity: 'error', message: 'Reorder failed.' });
+      setToast({ open: true, severity: 'error', message: t('cmsReorderFailed') });
     }
   }
 
@@ -277,16 +279,16 @@ export default function PartnersManagementPage() {
   }
 
   return (
-    <Box sx={{ pb: 12 }}>
+    <Box sx={{ pb: 12 }} dir={direction}>
       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3, gap: '1rem' }}>
         <Box>
-          <Typography variant="h4">Partners Management — ניהול שותפים</Typography>
+          <Typography variant="h4">{t('cmsPartnersTitle')}</Typography>
           <Typography variant="subtitle1" sx={{ mt: 0.5 }}>
-            Manage the partner cards shown in the "השותפים שלנו" section on the public home page.
+            {t('cmsPartnersSubtitle')}
           </Typography>
         </Box>
         <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate} sx={{ flexShrink: 0 }}>
-          Add Partner
+          {t('cmsAddPartner')}
         </Button>
       </Box>
 
@@ -294,7 +296,7 @@ export default function PartnersManagementPage() {
         {partners.length === 0 ? (
           <Box sx={{ py: 6, textAlign: 'center' }}>
             <HandshakeIcon sx={{ fontSize: '3rem', color: 'text.disabled', mb: 1 }} />
-            <Typography color="text.secondary">No partners yet. Click "Add Partner" to get started.</Typography>
+            <Typography color="text.secondary">{t('cmsNoPartnersYet')}</Typography>
           </Box>
         ) : (
           <Stack spacing={1.5}>
@@ -352,18 +354,18 @@ export default function PartnersManagementPage() {
 
                 {/* Reorder */}
                 <Box sx={{ display: 'flex', flexDirection: 'column' }}>
-                  <IconButton size="small" onClick={() => handleMove(index, -1)} disabled={index === 0} aria-label="Move up">
+                  <IconButton size="small" onClick={() => handleMove(index, -1)} disabled={index === 0} aria-label={t('cmsMoveUp')}>
                     <ArrowUpwardIcon fontSize="small" />
                   </IconButton>
-                  <IconButton size="small" onClick={() => handleMove(index, 1)} disabled={index === partners.length - 1} aria-label="Move down">
+                  <IconButton size="small" onClick={() => handleMove(index, 1)} disabled={index === partners.length - 1} aria-label={t('cmsMoveDown')}>
                     <ArrowDownwardIcon fontSize="small" />
                   </IconButton>
                 </Box>
 
-                <IconButton onClick={() => openEdit(p)} aria-label="Edit partner">
+                <IconButton onClick={() => openEdit(p)} aria-label={t('cmsEditPartnerAria')}>
                   <EditIcon />
                 </IconButton>
-                <IconButton onClick={() => setConfirmDeleteId(p.id)} aria-label="Delete partner" color="error">
+                <IconButton onClick={() => setConfirmDeleteId(p.id)} aria-label={t('cmsDeletePartnerAria')} color="error">
                   <DeleteOutlineIcon />
                 </IconButton>
               </Paper>
@@ -374,11 +376,11 @@ export default function PartnersManagementPage() {
 
       {/* Create / Edit dialog */}
       <Dialog open={editorOpen} onClose={closeEditor} fullWidth maxWidth="sm">
-        <DialogTitle>{editorMode === 'create' ? 'Add Partner' : 'Edit Partner'}</DialogTitle>
+        <DialogTitle>{editorMode === 'create' ? t('cmsAddPartner') : t('cmsEditPartner')}</DialogTitle>
         <DialogContent dividers>
           <Stack spacing={2.5} sx={{ mt: 1 }}>
             <TextField
-              label="Partner Name (שם השותף) *"
+              label={t('cmsPartnerName')}
               value={draft.name}
               onChange={(e) => setField('name', e.target.value)}
               inputProps={{ maxLength: LIMITS.name }}
@@ -388,19 +390,19 @@ export default function PartnersManagementPage() {
               fullWidth
             />
             <TextField
-              label="Logo URL"
+              label={t('cmsLogoUrl')}
               value={draft.logoUrl}
               onChange={(e) => setField('logoUrl', e.target.value)}
               inputProps={{ maxLength: LIMITS.logoUrl }}
               error={showError('logoUrl')}
               helperText={
                 (showError('logoUrl') && errors.logoUrl) ||
-                'Direct image URL (https://…). Leave empty to show initials.'
+                t('cmsLogoHelper')
               }
               fullWidth
             />
             <TextField
-              label="Description (תיאור קצר) *"
+              label={t('cmsFieldDescription')}
               value={draft.description}
               onChange={(e) => setField('description', e.target.value)}
               inputProps={{ maxLength: LIMITS.description }}
@@ -415,28 +417,28 @@ export default function PartnersManagementPage() {
         </DialogContent>
         <DialogActions>
           <Button onClick={closeEditor} disabled={saving}>
-            Cancel
+            {t('cmsCancel')}
           </Button>
           <Button variant="contained" onClick={handleSave} disabled={saving}>
-            {saving ? 'Saving…' : 'Save'}
+            {saving ? t('cmsSaving') : t('cmsSave')}
           </Button>
         </DialogActions>
       </Dialog>
 
       {/* Delete confirm dialog */}
       <Dialog open={Boolean(confirmDeleteId)} onClose={() => !deleting && setConfirmDeleteId(null)}>
-        <DialogTitle>Delete this partner?</DialogTitle>
+        <DialogTitle>{t('cmsDeletePartnerConfirm')}</DialogTitle>
         <DialogContent>
           <Typography variant="body2" color="text.secondary">
-            This action cannot be undone. The partner card will be removed from the public website.
+            {t('cmsDeletePartnerBody')}
           </Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setConfirmDeleteId(null)} disabled={deleting}>
-            Cancel
+            {t('cmsCancel')}
           </Button>
           <Button onClick={handleDelete} color="error" variant="contained" disabled={deleting}>
-            {deleting ? 'Deleting…' : 'Delete'}
+            {deleting ? t('cmsDeleting') : t('cmsDelete')}
           </Button>
         </DialogActions>
       </Dialog>

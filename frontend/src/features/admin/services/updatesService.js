@@ -19,7 +19,7 @@ const UPDATES_COL = 'updates';
 
 /**
  * Publish a new announcement.
- * @param {{ title: string, body: string, type: string }} data
+ * @param {{ title: string, body: string, type: string, targetUids?: string[] }} data
  * @param {{ uid: string, displayName: string }} adminUser
  */
 export async function createUpdate(data, adminUser) {
@@ -41,7 +41,7 @@ export async function createUpdate(data, adminUser) {
     }
   }
 
-  return addDoc(collection(db, UPDATES_COL), {
+  const doc = {
     title,
     body,
     type: data.type,
@@ -49,18 +49,33 @@ export async function createUpdate(data, adminUser) {
     createdBy: adminUser.uid,
     createdByName: adminUser.displayName || adminUser.email || 'Admin',
     active: true,
-  });
+  };
+
+  // When targetUids is provided, the update is only visible to those users.
+  // An empty array or omission means "send to everyone" (no field stored).
+  if (Array.isArray(data.targetUids) && data.targetUids.length > 0) {
+    doc.targetUids = data.targetUids;
+  }
+
+  return addDoc(collection(db, UPDATES_COL), doc);
 }
 
 /**
  * Fetch all updates, most recent first.
  * Active filtering is done client-side to avoid a composite index requirement.
  * @param {boolean} onlyActive – if true, filters out archived (active === false) docs
+ * @param {string} [forUid] – when supplied, filters out updates whose targetUids
+ *   array exists but does not include this user (targeted updates for other people).
+ *   Updates without a targetUids field are visible to everyone.
  */
-export async function fetchUpdates(onlyActive = true) {
+export async function fetchUpdates(onlyActive = true, forUid) {
   const snap = await getDocs(query(collection(db, UPDATES_COL), orderBy('createdAt', 'desc')));
-  const all = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-  return onlyActive ? all.filter((u) => u.active !== false) : all;
+  let all = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  if (onlyActive) all = all.filter((u) => u.active !== false);
+  if (forUid) {
+    all = all.filter((u) => !u.targetUids || u.targetUids.includes(forUid));
+  }
+  return all;
 }
 
 /**
@@ -306,7 +321,7 @@ export async function fetchParticipants() {
         [data.firstName, data.lastName].filter(Boolean).join(' ').trim() ||
         data.name ||
         email;
-      participants.push({ name, email });
+      participants.push({ uid: d.id, name, email });
     }
   }
   participants.sort((a, b) => a.name.localeCompare(b.name));

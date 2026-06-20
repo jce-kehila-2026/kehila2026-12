@@ -3,9 +3,11 @@ import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import Box from '@mui/material/Box';
 import { useAdmin } from '../context/AdminContext';
+import { useAdminLocale } from '../context/AdminLocaleContext';
 
 export default function ImpersonationBanner() {
   const navigate = useNavigate();
+  const { t } = useAdminLocale();
   const { isImpersonating, impersonatedDisplayName, impersonatedUserUID, stopImpersonation } =
     useAdmin();
 
@@ -60,11 +62,11 @@ export default function ImpersonationBanner() {
               '&:hover': { borderColor: '#fff', backgroundColor: 'rgba(255,255,255,0.15)' },
             }}
           >
-            ✕ Exit Impersonation
+            ✕ {t('exitImpersonation')}
           </Button>
         }
       >
-        ⚠️ Impersonation Active — Viewing as{' '}
+        ⚠️ {t('impersonationViewingAs')}{' '}
         <strong>{impersonatedDisplayName || impersonatedUserUID}</strong>
       </Alert>
     </Box>

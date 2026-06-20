@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db, auth } from '../../../firebase';
+import { useAdminLocale } from '../context/AdminLocaleContext';
 import { logAuditEvent } from '../services/auditService';
 import { isTranslationConfigured, translateFields, translateItems } from '../services/translationService';
 import {
@@ -68,11 +69,13 @@ function generateCardId() {
   return `card-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
-function formatTimestamp(value) {
+const INTL_LOCALE_BY_LANG = { he: 'he-IL', en: 'en-US' };
+
+function formatTimestamp(value, intlLocale) {
   if (!value) return '';
   const date = typeof value.toDate === 'function' ? value.toDate() : new Date(value);
   if (Number.isNaN(date.getTime())) return '';
-  return new Intl.DateTimeFormat('en-US', {
+  return new Intl.DateTimeFormat(intlLocale, {
     dateStyle: 'medium',
     timeStyle: 'short',
   }).format(date);
@@ -93,6 +96,8 @@ function emptyCardDraft() {
 }
 
 export default function PublicHomePageLearnTogetherTab() {
+  const { t, lang, direction } = useAdminLocale();
+  const intlLocale = INTL_LOCALE_BY_LANG[lang] || 'en-US';
   const [loading, setLoading] = useState(true);
   const [savingHeader, setSavingHeader] = useState(false);
   const [docMeta, setDocMeta] = useState({ updatedAt: null, updatedBy: '' });
@@ -214,7 +219,7 @@ export default function PublicHomePageLearnTogetherTab() {
         setToast({
           open: true,
           severity: 'error',
-          message: 'Failed to load Learn Together content.',
+          message: t('cmsLearnLoadFailed'),
         });
       } finally {
         if (active) setLoading(false);
@@ -228,9 +233,9 @@ export default function PublicHomePageLearnTogetherTab() {
 
   const headerErrors = useMemo(() => {
     const next = {};
-    if (!header.eyebrow.trim()) next.eyebrow = 'Eyebrow is required.';
-    if (!header.title.trim()) next.title = 'Title is required.';
-    if (!header.paragraph.trim()) next.paragraph = 'Intro paragraph is required.';
+    if (!header.eyebrow.trim()) next.eyebrow = t('cmsEyebrowRequired');
+    if (!header.title.trim()) next.title = t('cmsTitleRequired');
+    if (!header.paragraph.trim()) next.paragraph = t('cmsIntroParagraphRequired');
     return next;
   }, [header]);
 
@@ -308,14 +313,14 @@ export default function PublicHomePageLearnTogetherTab() {
       setToast({
         open: true,
         severity: 'success',
-        message: 'Learn Together header updated.',
+        message: t('cmsLearnHeaderUpdated'),
       });
     } catch (err) {
       console.error('Failed to save Learn Together header:', err);
       setToast({
         open: true,
         severity: 'error',
-        message: 'Save failed. Please try again.',
+        message: t('cmsSaveFailed'),
       });
     } finally {
       setSavingHeader(false);
@@ -405,22 +410,22 @@ export default function PublicHomePageLearnTogetherTab() {
   const editorErrors = useMemo(() => {
     const next = {};
     const d = editorDraft;
-    if (!d.title.trim()) next.title = 'Title is required.';
-    if (!d.description.trim()) next.description = 'Description is required.';
-    if (!isValidUrlOrAnchorOrEmpty(d.imageUrl)) next.imageUrl = 'Invalid URL.';
-    if (!d.popup.title.trim()) next['popup.title'] = 'Popup title is required.';
-    if (!d.popup.paragraph.trim()) next['popup.paragraph'] = 'Popup paragraph is required.';
+    if (!d.title.trim()) next.title = t('cmsTitleRequired');
+    if (!d.description.trim()) next.description = t('cmsDescriptionRequired');
+    if (!isValidUrlOrAnchorOrEmpty(d.imageUrl)) next.imageUrl = t('cmsInvalidUrl');
+    if (!d.popup.title.trim()) next['popup.title'] = t('cmsPopupTitleRequired');
+    if (!d.popup.paragraph.trim()) next['popup.paragraph'] = t('cmsPopupParagraphRequired');
     const sections = Array.isArray(d.popup.sections) ? d.popup.sections : [];
     sections.forEach((section, index) => {
       const label = (section.label || '').trim();
       const text = (section.text || '').trim();
-      if (label && !text) next[`popup.sections.${index}.text`] = 'Text is required when label is set.';
-      if (!label && text) next[`popup.sections.${index}.label`] = 'Label is required when text is set.';
+      if (label && !text) next[`popup.sections.${index}.text`] = t('cmsTextRequiredWhenLabel');
+      if (!label && text) next[`popup.sections.${index}.label`] = t('cmsLabelRequiredWhenText');
       if (!label && !text) {
-        next[`popup.sections.${index}.label`] = 'Remove this sub-section or fill both fields.';
+        next[`popup.sections.${index}.label`] = t('cmsRemoveOrFillBoth');
       }
     });
-    if (!isValidUrlOrAnchorOrEmpty(d.popup.sideImageUrl)) next['popup.sideImageUrl'] = 'Invalid URL.';
+    if (!isValidUrlOrAnchorOrEmpty(d.popup.sideImageUrl)) next['popup.sideImageUrl'] = t('cmsInvalidUrl');
     return next;
   }, [editorDraft]);
 
@@ -480,14 +485,14 @@ export default function PublicHomePageLearnTogetherTab() {
       setToast({
         open: true,
         severity: 'success',
-        message: editorMode === 'create' ? 'Card created.' : 'Card updated.',
+        message: editorMode === 'create' ? t('cmsCardCreated') : t('cmsCardUpdated'),
       });
     } catch (err) {
       console.error('Failed to save Learn Together card:', err);
       setToast({
         open: true,
         severity: 'error',
-        message: 'Save failed. Please try again.',
+        message: t('cmsSaveFailed'),
       });
     } finally {
       setEditorSaving(false);
@@ -506,10 +511,10 @@ export default function PublicHomePageLearnTogetherTab() {
         change: 'delete',
       });
       setConfirmDeleteId(null);
-      setToast({ open: true, severity: 'success', message: 'Card deleted.' });
+      setToast({ open: true, severity: 'success', message: t('cmsCardDeleted') });
     } catch (err) {
       console.error('Failed to delete Learn Together card:', err);
-      setToast({ open: true, severity: 'error', message: 'Delete failed. Please try again.' });
+      setToast({ open: true, severity: 'error', message: t('cmsDeleteFailed') });
     } finally {
       setDeleting(false);
     }
@@ -527,10 +532,10 @@ export default function PublicHomePageLearnTogetherTab() {
         cardId: moved.id,
         change: `move ${fromIndex} -> ${toIndex}`,
       });
-      setToast({ open: true, severity: 'success', message: 'Cards reordered.' });
+      setToast({ open: true, severity: 'success', message: t('cmsCardsReordered') });
     } catch (err) {
       console.error('Failed to reorder Learn Together cards:', err);
-      setToast({ open: true, severity: 'error', message: 'Reorder failed. Please try again.' });
+      setToast({ open: true, severity: 'error', message: t('cmsReorderFailedRetry') });
     }
   }
 
@@ -557,28 +562,28 @@ export default function PublicHomePageLearnTogetherTab() {
     );
   }
 
-  const lastUpdatedLabel = formatTimestamp(docMeta.updatedAt);
+  const lastUpdatedLabel = formatTimestamp(docMeta.updatedAt, intlLocale);
 
   return (
-    <Box sx={{ pb: 12 }}>
+    <Box sx={{ pb: 12 }} dir={direction}>
       {lastUpdatedLabel || docMeta.updatedBy ? (
         <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
-          Last updated: {lastUpdatedLabel || '—'}
-          {docMeta.updatedBy ? ` by ${docMeta.updatedBy}` : ''}
+          {t('cmsLastUpdated').replace('{date}', lastUpdatedLabel || '—')}
+          {docMeta.updatedBy ? t('cmsLastUpdatedBy').replace('{user}', docMeta.updatedBy) : ''}
         </Typography>
       ) : null}
 
       <Stack spacing={3}>
         <Paper sx={{ p: 3 }}>
           <Typography variant="h6" sx={{ mb: 0.5 }}>
-            Section Header
+            {t('cmsSectionHeader')}
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            Eyebrow, title, and intro paragraph above the cards.
+            {t('cmsSectionHeaderSubtitle')}
           </Typography>
           <Stack spacing={2.5}>
             <TextField
-              label="Eyebrow"
+              label={t('cmsFieldEyebrow')}
               value={header.eyebrow}
               onChange={(e) => setHeader((prev) => ({ ...prev, eyebrow: e.target.value }))}
               onBlur={() => markHeaderTouched('eyebrow')}
@@ -592,7 +597,7 @@ export default function PublicHomePageLearnTogetherTab() {
               fullWidth
             />
             <TextField
-              label="Title"
+              label={t('cmsFieldTitle')}
               value={header.title}
               onChange={(e) => setHeader((prev) => ({ ...prev, title: e.target.value }))}
               onBlur={() => markHeaderTouched('title')}
@@ -606,7 +611,7 @@ export default function PublicHomePageLearnTogetherTab() {
               fullWidth
             />
             <TextField
-              label="Intro paragraph"
+              label={t('cmsFieldIntroParagraph')}
               value={header.paragraph}
               onChange={(e) => setHeader((prev) => ({ ...prev, paragraph: e.target.value }))}
               onBlur={() => markHeaderTouched('paragraph')}
@@ -623,14 +628,14 @@ export default function PublicHomePageLearnTogetherTab() {
             />
             <Stack direction="row" spacing={1.5} justifyContent="flex-end">
               <Button onClick={handleDiscardHeader} disabled={!headerDirty || savingHeader}>
-                Discard changes
+                {t('cmsDiscardChanges')}
               </Button>
               <Button
                 variant="contained"
                 onClick={handleSaveHeader}
                 disabled={!canSaveHeader}
               >
-                {savingHeader ? 'Saving…' : 'Save header'}
+                {savingHeader ? t('cmsSaving') : t('cmsSaveHeader')}
               </Button>
             </Stack>
           </Stack>
@@ -639,25 +644,26 @@ export default function PublicHomePageLearnTogetherTab() {
         <Paper sx={{ p: 3 }}>
           <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
             <Box>
-              <Typography variant="h6">Cards</Typography>
+              <Typography variant="h6">{t('cmsCards')}</Typography>
               <Typography variant="body2" color="text.secondary">
-                Add, edit, delete, and reorder cards. New cards appear at the top.
+                {t('cmsCardsSubtitle')}
               </Typography>
             </Box>
             <Button variant="contained" startIcon={<AddIcon />} onClick={openCreateEditor}>
-              Add new card
+              {t('cmsAddNewCard')}
             </Button>
           </Box>
 
           {cards.length === 0 ? (
             <Box sx={{ py: 6, textAlign: 'center' }}>
-              <Typography color="text.secondary">No cards yet.</Typography>
+              <Typography color="text.secondary">{t('cmsNoCardsYet')}</Typography>
             </Box>
           ) : (
             <Stack spacing={1.5} sx={{ mt: 2 }}>
               {cards.map((card, index) => (
                 <CardRow
                   key={card.id}
+                  t={t}
                   card={card}
                   index={index}
                   total={cards.length}
@@ -676,6 +682,7 @@ export default function PublicHomePageLearnTogetherTab() {
       </Stack>
 
       <CardEditorDialog
+        t={t}
         open={editorOpen}
         mode={editorMode}
         draft={editorDraft}
@@ -689,16 +696,16 @@ export default function PublicHomePageLearnTogetherTab() {
       />
 
       <Dialog open={Boolean(confirmDeleteId)} onClose={() => !deleting && setConfirmDeleteId(null)}>
-        <DialogTitle>Delete this card?</DialogTitle>
+        <DialogTitle>{t('cmsDeleteCardConfirm')}</DialogTitle>
         <DialogContent>
-          <Typography>This cannot be undone.</Typography>
+          <Typography>{t('cmsCannotUndo')}</Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setConfirmDeleteId(null)} disabled={deleting}>
-            Cancel
+            {t('cmsCancel')}
           </Button>
           <Button color="error" variant="contained" onClick={handleConfirmDelete} disabled={deleting}>
-            {deleting ? 'Deleting…' : 'Delete'}
+            {deleting ? t('cmsDeleting') : t('cmsDelete')}
           </Button>
         </DialogActions>
       </Dialog>
@@ -722,6 +729,7 @@ export default function PublicHomePageLearnTogetherTab() {
 }
 
 function CardRow({
+  t,
   card,
   index,
   total,
@@ -768,33 +776,33 @@ function CardRow({
       />
       <Box sx={{ flex: 1, minWidth: 0 }}>
         <Typography variant="subtitle1" sx={{ fontWeight: 700 }} noWrap>
-          {card.title || '(untitled)'}
+          {card.title || t('cmsUntitled')}
         </Typography>
         <Typography variant="body2" color="text.secondary" noWrap>
           {card.description || '—'}
         </Typography>
       </Box>
       <Stack direction="row" spacing={0.5}>
-        <Tooltip title="Move up">
+        <Tooltip title={t('cmsMoveUp')}>
           <span>
             <IconButton size="small" onClick={onMoveUp} disabled={index === 0}>
               <ArrowUpwardIcon fontSize="small" />
             </IconButton>
           </span>
         </Tooltip>
-        <Tooltip title="Move down">
+        <Tooltip title={t('cmsMoveDown')}>
           <span>
             <IconButton size="small" onClick={onMoveDown} disabled={index === total - 1}>
               <ArrowDownwardIcon fontSize="small" />
             </IconButton>
           </span>
         </Tooltip>
-        <Tooltip title="Edit">
+        <Tooltip title={t('cmsEditAria')}>
           <IconButton size="small" onClick={onEdit}>
             <EditIcon fontSize="small" />
           </IconButton>
         </Tooltip>
-        <Tooltip title="Delete">
+        <Tooltip title={t('cmsDeleteAria')}>
           <IconButton size="small" color="error" onClick={onDelete}>
             <DeleteOutlineIcon fontSize="small" />
           </IconButton>
@@ -805,6 +813,7 @@ function CardRow({
 }
 
 function CardEditorDialog({
+  t,
   open,
   mode,
   draft,
@@ -822,17 +831,17 @@ function CardEditorDialog({
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle>{mode === 'create' ? 'Add new card' : 'Edit card'}</DialogTitle>
+      <DialogTitle>{mode === 'create' ? t('cmsAddNewCard') : t('cmsEditCard')}</DialogTitle>
       <DialogContent dividers>
         <Stack spacing={2.5}>
           <Box>
             <TextField
-              label="Card image URL"
+              label={t('cmsCardImageUrl')}
               value={draft.imageUrl}
               onChange={(e) => onChangeField('imageUrl', e.target.value)}
               helperText={
                 (show('imageUrl') && errors.imageUrl) ||
-                'Paste an image URL. Leave empty to show a placeholder.'
+                t('cmsCardImageHelper')
               }
               error={show('imageUrl')}
               fullWidth
@@ -857,7 +866,7 @@ function CardEditorDialog({
           </Box>
 
           <TextField
-            label="Card title"
+            label={t('cmsCardTitle')}
             value={draft.title}
             onChange={(e) => onChangeField('title', e.target.value)}
             inputProps={{ maxLength: LIMITS.cardTitle }}
@@ -869,7 +878,7 @@ function CardEditorDialog({
             fullWidth
           />
           <TextField
-            label="Card description"
+            label={t('cmsCardDescription')}
             value={draft.description}
             onChange={(e) => onChangeField('description', e.target.value)}
             inputProps={{ maxLength: LIMITS.cardDescription }}
@@ -884,10 +893,10 @@ function CardEditorDialog({
             fullWidth
           />
 
-          <Divider textAlign="left">Popup Content</Divider>
+          <Divider textAlign="left">{t('cmsPopupContent')}</Divider>
 
           <TextField
-            label="Popup title"
+            label={t('cmsPopupTitle')}
             value={draft.popup.title}
             onChange={(e) => onChangePopupField('title', e.target.value)}
             inputProps={{ maxLength: LIMITS.popupTitle }}
@@ -900,7 +909,7 @@ function CardEditorDialog({
             fullWidth
           />
           <TextField
-            label="Popup intro paragraph"
+            label={t('cmsPopupIntroParagraph')}
             value={draft.popup.paragraph}
             onChange={(e) => onChangePopupField('paragraph', e.target.value)}
             inputProps={{ maxLength: LIMITS.popupParagraph }}
@@ -916,6 +925,7 @@ function CardEditorDialog({
           />
 
           <SectionsEditor
+            t={t}
             sections={Array.isArray(draft.popup.sections) ? draft.popup.sections : []}
             errors={errors}
             submitted={submitted}
@@ -924,12 +934,12 @@ function CardEditorDialog({
 
           <Box>
             <TextField
-              label="Popup side image URL"
+              label={t('cmsPopupSideImageUrl')}
               value={draft.popup.sideImageUrl}
               onChange={(e) => onChangePopupField('sideImageUrl', e.target.value)}
               helperText={
                 (show('popup.sideImageUrl') && errors['popup.sideImageUrl']) ||
-                'Image shown beside the popup content.'
+                t('cmsPopupSideImageHelper')
               }
               error={show('popup.sideImageUrl')}
               fullWidth
@@ -956,17 +966,17 @@ function CardEditorDialog({
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} disabled={saving}>
-          Cancel
+          {t('cmsCancel')}
         </Button>
         <Button variant="contained" onClick={onSave} disabled={saving}>
-          {saving ? 'Saving…' : 'Save'}
+          {saving ? t('cmsSaving') : t('cmsSave')}
         </Button>
       </DialogActions>
     </Dialog>
   );
 }
 
-function SectionsEditor({ sections, errors, submitted, onChange }) {
+function SectionsEditor({ t, sections, errors, submitted, onChange }) {
   function updateAt(index, key, value) {
     const next = sections.map((section, i) =>
       i === index ? { ...section, [key]: value } : section,
@@ -991,16 +1001,18 @@ function SectionsEditor({ sections, errors, submitted, onChange }) {
     <Stack spacing={1.5}>
       <Box sx={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
         <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-          Sub-sections ({sections.length} / {LEARN_TOGETHER_MAX_SECTIONS})
+          {t('cmsSubsectionsLabel')
+            .replace('{n}', sections.length)
+            .replace('{max}', LEARN_TOGETHER_MAX_SECTIONS)}
         </Typography>
         <Typography variant="caption" color="text.secondary">
-          Add up to {LEARN_TOGETHER_MAX_SECTIONS} labeled blocks.
+          {t('cmsSubsectionsHelper').replace('{max}', LEARN_TOGETHER_MAX_SECTIONS)}
         </Typography>
       </Box>
 
       {sections.length === 0 ? (
         <Typography variant="body2" color="text.secondary">
-          No sub-sections — the popup will show only the title and intro paragraph.
+          {t('cmsNoSubsections')}
         </Typography>
       ) : null}
 
@@ -1014,20 +1026,20 @@ function SectionsEditor({ sections, errors, submitted, onChange }) {
           >
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
               <Typography variant="caption" color="text.secondary">
-                Sub-section {index + 1}
+                {t('cmsSubsectionNumber').replace('{n}', index + 1)}
               </Typography>
               <Button
                 size="small"
                 color="error"
                 onClick={() => removeAt(index)}
-                aria-label={`Remove sub-section ${index + 1}`}
+                aria-label={t('cmsRemoveSubsectionAria').replace('{n}', index + 1)}
               >
-                Remove
+                {t('cmsRemove')}
               </Button>
             </Box>
             <Stack spacing={1.5}>
               <TextField
-                label="Label"
+                label={t('cmsFieldLabel')}
                 value={section.label || ''}
                 onChange={(e) => updateAt(index, 'label', e.target.value)}
                 inputProps={{ maxLength: LIMITS.popupSectionLabel }}
@@ -1040,7 +1052,7 @@ function SectionsEditor({ sections, errors, submitted, onChange }) {
                 fullWidth
               />
               <TextField
-                label="Text"
+                label={t('cmsFieldText')}
                 value={section.text || ''}
                 onChange={(e) => updateAt(index, 'text', e.target.value)}
                 inputProps={{ maxLength: LIMITS.popupSectionText }}
@@ -1061,7 +1073,7 @@ function SectionsEditor({ sections, errors, submitted, onChange }) {
 
       {sections.length < LEARN_TOGETHER_MAX_SECTIONS ? (
         <Button startIcon={<AddIcon />} onClick={addSection} sx={{ alignSelf: 'flex-start' }}>
-          Add sub-section
+          {t('cmsAddSubsection')}
         </Button>
       ) : null}
     </Stack>

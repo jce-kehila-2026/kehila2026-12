@@ -43,25 +43,28 @@ import {
   listFormSubmissions,
   setSubmissionHandled,
 } from '../services/formSubmissionAdminService';
+import { useAdminLocale } from '../context/AdminLocaleContext';
+
+const INTL_LOCALE_BY_LANG = { he: 'he-IL', en: 'en-US' };
 
 const STATUS_META = {
-  [FORM_SUBMISSION_STATUS.NEW]: { label: 'New', color: '#B45309', bg: 'rgba(245, 158, 11, 0.16)' },
-  [FORM_SUBMISSION_STATUS.HANDLED]: { label: 'Handled', color: '#15803D', bg: 'rgba(34, 197, 94, 0.16)' },
+  [FORM_SUBMISSION_STATUS.NEW]: { labelKey: 'fmStatusNew', color: '#B45309', bg: 'rgba(245, 158, 11, 0.16)' },
+  [FORM_SUBMISSION_STATUS.HANDLED]: { labelKey: 'fmStatusHandled', color: '#15803D', bg: 'rgba(34, 197, 94, 0.16)' },
 };
 
 const TYPE_META = {
-  [FORM_SUBMISSION_TYPE.VOLUNTEER]: { label: 'Volunteer', color: '#6D3CCF', bg: 'rgba(124, 58, 237, 0.12)', icon: <VolunteerActivismOutlinedIcon fontSize="small" /> },
-  [FORM_SUBMISSION_TYPE.DONATION]: { label: 'Donation', color: '#C52A72', bg: 'rgba(223, 50, 123, 0.12)', icon: <FavoriteBorderIcon fontSize="small" /> },
+  [FORM_SUBMISSION_TYPE.VOLUNTEER]: { labelKey: 'fmTypeVolunteer', color: '#6D3CCF', bg: 'rgba(124, 58, 237, 0.12)', icon: <VolunteerActivismOutlinedIcon fontSize="small" /> },
+  [FORM_SUBMISSION_TYPE.DONATION]: { labelKey: 'fmTypeDonation', color: '#C52A72', bg: 'rgba(223, 50, 123, 0.12)', icon: <FavoriteBorderIcon fontSize="small" /> },
 };
 
-function formatDate(value) {
+function formatDate(value, intlLocale) {
   if (!value) return '-';
-  if (typeof value.toDate === 'function') return value.toDate().toLocaleDateString();
+  if (typeof value.toDate === 'function') return value.toDate().toLocaleDateString(intlLocale);
   if (typeof value === 'object' && typeof value.seconds === 'number') {
-    return new Date(value.seconds * 1000).toLocaleDateString();
+    return new Date(value.seconds * 1000).toLocaleDateString(intlLocale);
   }
   const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? String(value) : parsed.toLocaleDateString();
+  return Number.isNaN(parsed.getTime()) ? String(value) : parsed.toLocaleDateString(intlLocale);
 }
 
 function initialsOf(name) {
@@ -75,23 +78,23 @@ function initialsOf(name) {
   );
 }
 
-function StatusChip({ status }) {
+function StatusChip({ status, t }) {
   const meta = STATUS_META[status] || STATUS_META[FORM_SUBMISSION_STATUS.NEW];
   return (
     <Chip
-      label={meta.label}
+      label={t(meta.labelKey)}
       size="small"
       sx={{ color: meta.color, bgcolor: meta.bg, borderRadius: 999, fontWeight: 900, border: '1px solid rgba(255,255,255,0.7)' }}
     />
   );
 }
 
-function TypeChip({ type }) {
+function TypeChip({ type, t }) {
   const meta = TYPE_META[type] || TYPE_META[FORM_SUBMISSION_TYPE.VOLUNTEER];
   return (
     <Chip
       icon={meta.icon}
-      label={meta.label}
+      label={t(meta.labelKey)}
       size="small"
       sx={{ color: meta.color, bgcolor: meta.bg, borderRadius: 999, fontWeight: 850, border: '1px solid rgba(255,255,255,0.7)', '& .MuiChip-icon': { color: meta.color } }}
     />
@@ -209,6 +212,8 @@ function DetailRow({ icon, label, value }) {
 }
 
 export default function FormsPage() {
+  const { t, lang, direction } = useAdminLocale();
+  const intlLocale = INTL_LOCALE_BY_LANG[lang] || 'en-US';
   const [submissions, setSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -268,7 +273,7 @@ export default function FormsPage() {
       await load();
     } catch (err) {
       console.error('Update failed:', err);
-      setActionError(err?.message || 'Could not update this submission. Please try again.');
+      setActionError(err?.message || t('fmErrUpdate'));
     } finally {
       setBusyId(null);
     }
@@ -285,20 +290,20 @@ export default function FormsPage() {
       await load();
     } catch (err) {
       console.error('Delete failed:', err);
-      setActionError(err?.message || 'Could not delete this submission. Please try again.');
+      setActionError(err?.message || t('fmErrDelete'));
     } finally {
       setBusyId(null);
     }
   }
 
   return (
-    <Box sx={{ minHeight: '100%', color: '#24104f' }}>
+    <Box sx={{ minHeight: '100%', color: '#24104f' }} dir={direction}>
       <Box sx={{ mb: 2.75 }}>
         <Typography variant="h4" sx={{ fontWeight: 900, letterSpacing: 0, color: '#171239' }}>
-          Forms
+          {t('fmTitle')}
         </Typography>
-        <Typography variant="subtitle1" sx={{ mt: 0.5, color: 'rgba(36, 16, 79, 0.66)', fontWeight: 600 }} dir="ltr">
-          Volunteer and donation enquiries submitted from the public website.
+        <Typography variant="subtitle1" sx={{ mt: 0.5, color: 'rgba(36, 16, 79, 0.66)', fontWeight: 600 }}>
+          {t('fmSubtitle')}
         </Typography>
       </Box>
 
@@ -324,15 +329,15 @@ export default function FormsPage() {
         >
           <Stack direction="row" spacing={1.1} alignItems="center">
             <Typography variant="h5" fontWeight={950} sx={{ color: '#100B2F' }}>
-              Submissions
+              {t('fmSubmissions')}
             </Typography>
             <Chip
-              label={`${submissions.length} total`}
+              label={t('fmTotal').replace('{n}', submissions.length)}
               sx={{ height: '1.875rem', bgcolor: '#F2ECFF', color: '#6D3CCF', fontWeight: 950, borderRadius: 999, border: '1px solid rgba(124, 58, 237, 0.08)' }}
             />
             {newCount > 0 ? (
               <Chip
-                label={`${newCount} new`}
+                label={t('fmNewCount').replace('{n}', newCount)}
                 sx={{ height: '1.875rem', bgcolor: 'rgba(223, 50, 123, 0.14)', color: '#C52A72', fontWeight: 950, borderRadius: 999, border: '1px solid rgba(223, 50, 123, 0.12)' }}
               />
             ) : null}
@@ -340,7 +345,7 @@ export default function FormsPage() {
 
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.4} sx={{ flex: 1, justifyContent: 'flex-end' }}>
             <TextField
-              placeholder="Search submissions..."
+              placeholder={t('fmSearchPlaceholder')}
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               sx={{
@@ -368,9 +373,9 @@ export default function FormsPage() {
                 onChange={(event) => setTypeFilter(event.target.value)}
                 sx={{ height: '3.125rem', borderRadius: '16px', bgcolor: 'rgba(255,255,255,0.72)', fontWeight: 750, '& fieldset': { borderColor: 'rgba(130, 92, 206, 0.16)' } }}
               >
-                <MenuItem value="all">All Types</MenuItem>
-                <MenuItem value={FORM_SUBMISSION_TYPE.VOLUNTEER}>Volunteer</MenuItem>
-                <MenuItem value={FORM_SUBMISSION_TYPE.DONATION}>Donation</MenuItem>
+                <MenuItem value="all">{t('fmAllTypes')}</MenuItem>
+                <MenuItem value={FORM_SUBMISSION_TYPE.VOLUNTEER}>{t('fmTypeVolunteer')}</MenuItem>
+                <MenuItem value={FORM_SUBMISSION_TYPE.DONATION}>{t('fmTypeDonation')}</MenuItem>
               </Select>
             </FormControl>
             <FormControl size="small" sx={{ minWidth: '9rem' }}>
@@ -379,9 +384,9 @@ export default function FormsPage() {
                 onChange={(event) => setStatusFilter(event.target.value)}
                 sx={{ height: '3.125rem', borderRadius: '16px', bgcolor: 'rgba(255,255,255,0.72)', fontWeight: 750, '& fieldset': { borderColor: 'rgba(130, 92, 206, 0.16)' } }}
               >
-                <MenuItem value="all">All Statuses</MenuItem>
-                <MenuItem value={FORM_SUBMISSION_STATUS.NEW}>New</MenuItem>
-                <MenuItem value={FORM_SUBMISSION_STATUS.HANDLED}>Handled</MenuItem>
+                <MenuItem value="all">{t('fmAllStatuses')}</MenuItem>
+                <MenuItem value={FORM_SUBMISSION_STATUS.NEW}>{t('fmStatusNew')}</MenuItem>
+                <MenuItem value={FORM_SUBMISSION_STATUS.HANDLED}>{t('fmStatusHandled')}</MenuItem>
               </Select>
             </FormControl>
           </Stack>
@@ -481,14 +486,14 @@ export default function FormsPage() {
                             {initialsOf(sub.fullName)}
                           </Avatar>
                           <Typography dir="auto" fontWeight={950} noWrap sx={{ color: '#17122E', minWidth: 0 }}>
-                            {sub.fullName || 'Unnamed'}
+                            {sub.fullName || t('fmUnnamed')}
                           </Typography>
                         </Stack>
                       </Box>
 
                       <Box sx={formsTableContactCellSx}>
                         <Typography color="#5E587E" noWrap sx={{ fontSize: '0.84375rem', display: 'block' }} dir="ltr">
-                          {sub.email || 'No email provided'}
+                          {sub.email || t('fmNoEmail')}
                         </Typography>
                         {sub.phone ? (
                           <Typography color="#5E587E" noWrap sx={{ fontSize: '0.8125rem', mt: 0.25, display: 'block' }} dir="ltr">
@@ -498,23 +503,23 @@ export default function FormsPage() {
                       </Box>
 
                       <Box sx={formsTableCellCenterSx}>
-                        <TypeChip type={sub.type} />
+                        <TypeChip type={sub.type} t={t} />
                       </Box>
 
                       <Box sx={formsTableCellCenterSx}>
                         <Typography fontWeight={800} color="#4F4A70" noWrap component="span">
-                          {formatDate(sub.createdAt)}
+                          {formatDate(sub.createdAt, intlLocale)}
                         </Typography>
                       </Box>
 
                       <Box sx={formsTableCellCenterSx}>
-                        <StatusChip status={sub.status} />
+                        <StatusChip status={sub.status} t={t} />
                       </Box>
 
                       <Box sx={formsTableCellCenterSx}>
                         <Stack direction="row" spacing={0.75} onClick={(event) => event.stopPropagation()}>
                         <IconButton
-                          aria-label={isHandled ? `Reopen ${sub.fullName || 'submission'}` : `Mark ${sub.fullName || 'submission'} handled`}
+                          aria-label={(isHandled ? t('fmReopenAria') : t('fmMarkHandledAria')).replace('{name}', sub.fullName || t('fmSubmissionWord'))}
                           onClick={() => toggleHandled(sub)}
                           disabled={isBusy}
                           sx={{
@@ -529,7 +534,7 @@ export default function FormsPage() {
                           {isBusy ? <CircularProgress size={16} color="inherit" /> : isHandled ? <ReplayIcon fontSize="small" /> : <CheckCircleIcon fontSize="small" />}
                         </IconButton>
                         <IconButton
-                          aria-label={`Delete ${sub.fullName || 'submission'}`}
+                          aria-label={t('fmDeleteAria').replace('{name}', sub.fullName || t('fmSubmissionWord'))}
                           onClick={() => setDeleteTarget(sub)}
                           disabled={isBusy}
                           sx={{
@@ -544,7 +549,7 @@ export default function FormsPage() {
                           <DeleteOutlineIcon fontSize="small" />
                         </IconButton>
                         <IconButton
-                          aria-label={`View ${sub.fullName || 'submission'}`}
+                          aria-label={t('fmViewAria').replace('{name}', sub.fullName || t('fmSubmissionWord'))}
                           onClick={() => openDetails(sub)}
                           sx={{
                             width: '2.5rem',
@@ -564,11 +569,11 @@ export default function FormsPage() {
                 })
               ) : (
                 <Box sx={{ py: 8, textAlign: 'center' }}>
-                  <Typography fontWeight={900}>No submissions found</Typography>
+                  <Typography fontWeight={900}>{t('fmNoSubmissions')}</Typography>
                   <Typography color="text.secondary" sx={{ mt: 1 }}>
                     {submissions.length === 0
-                      ? 'Volunteer and donation enquiries from the public website will appear here.'
-                      : 'Try changing your search or filters.'}
+                      ? t('fmEmptyHint')
+                      : t('fmEmptyFilterHint')}
                   </Typography>
                 </Box>
               )}
@@ -584,7 +589,7 @@ export default function FormsPage() {
         maxWidth={false}
         TransitionComponent={Fade}
         PaperProps={{
-          dir: 'ltr',
+          dir: direction,
           sx: {
             width: { xs: 'calc(100vw - 24px)', sm: '37rem' },
             maxWidth: 600,
@@ -612,20 +617,20 @@ export default function FormsPage() {
                 </Avatar>
                 <Box sx={{ minWidth: 0, flex: 1 }}>
                   <Typography dir="auto" variant="h6" fontWeight={950} sx={{ color: '#17122E', lineHeight: 1.15 }}>
-                    {selected.fullName || 'Unnamed'}
+                    {selected.fullName || t('fmUnnamed')}
                   </Typography>
                   <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 0.6 }} flexWrap="wrap" useFlexGap>
-                    <TypeChip type={selected.type} />
-                    <StatusChip status={selected.status} />
+                    <TypeChip type={selected.type} t={t} />
+                    <StatusChip status={selected.status} t={t} />
                     <Typography color="text.secondary" sx={{ fontSize: '0.8125rem' }}>
-                      Submitted {formatDate(selected.createdAt)}
+                      {t('fmSubmittedAt').replace('{date}', formatDate(selected.createdAt, intlLocale))}
                     </Typography>
                   </Stack>
                 </Box>
                 <IconButton
                   size="small"
                   onClick={() => setDetailsOpen(false)}
-                  aria-label="Close submission details"
+                  aria-label={t('fmCloseDetails')}
                   sx={{ bgcolor: 'rgba(109, 60, 207, 0.06)', color: '#4E466B', '&:hover': { bgcolor: 'rgba(109, 60, 207, 0.12)' } }}
                 >
                   <CloseIcon fontSize="small" />
@@ -635,14 +640,14 @@ export default function FormsPage() {
 
             <Box sx={{ flex: 1, overflow: 'auto', p: { xs: 2, md: 2.6 }, borderTop: '1px solid rgba(130, 92, 206, 0.08)' }}>
               <Stack spacing={1.35}>
-                <DetailRow icon={<EmailOutlinedIcon fontSize="small" />} label="Email" value={selected.email} />
-                <DetailRow icon={<PhoneOutlinedIcon fontSize="small" />} label="Phone" value={selected.phone} />
-                <DetailRow icon={<ChatBubbleOutlineIcon fontSize="small" />} label="Message" value={selected.message} />
+                <DetailRow icon={<EmailOutlinedIcon fontSize="small" />} label={t('fmEmail')} value={selected.email} />
+                <DetailRow icon={<PhoneOutlinedIcon fontSize="small" />} label={t('fmPhone')} value={selected.phone} />
+                <DetailRow icon={<ChatBubbleOutlineIcon fontSize="small" />} label={t('fmMessage')} value={selected.message} />
                 {selected.status === FORM_SUBMISSION_STATUS.HANDLED ? (
                   <DetailRow
                     icon={<CheckCircleIcon fontSize="small" />}
-                    label={`Handled • ${formatDate(selected.handledAt)}`}
-                    value={selected.handledBy ? `by ${selected.handledBy}` : '-'}
+                    label={t('fmHandledLabel').replace('{date}', formatDate(selected.handledAt, intlLocale))}
+                    value={selected.handledBy ? t('fmHandledBy').replace('{name}', selected.handledBy) : '-'}
                   />
                 ) : null}
               </Stack>
@@ -655,7 +660,7 @@ export default function FormsPage() {
                   startIcon={<DeleteOutlineIcon />}
                   sx={{ px: 2.4, height: '2.75rem', borderRadius: 999, fontWeight: 900, textTransform: 'none', color: '#B91C1C', border: '1px solid rgba(239, 68, 68, 0.3)', bgcolor: 'rgba(239, 68, 68, 0.06)', '&:hover': { bgcolor: 'rgba(239, 68, 68, 0.12)' } }}
                 >
-                  Delete
+                  {t('fmDeleteBtn')}
                 </Button>
                 <Button
                   onClick={() => toggleHandled(selected).then(() => setSelected((cur) => (cur ? { ...cur, status: (cur.status || 'new') === FORM_SUBMISSION_STATUS.HANDLED ? FORM_SUBMISSION_STATUS.NEW : FORM_SUBMISSION_STATUS.HANDLED } : cur)))}
@@ -673,7 +678,7 @@ export default function FormsPage() {
                     boxShadow: '0 14px 30px rgba(22, 163, 74, 0.26)',
                   }}
                 >
-                  {(selected.status || 'new') === FORM_SUBMISSION_STATUS.HANDLED ? 'Reopen' : 'Mark as handled'}
+                  {(selected.status || 'new') === FORM_SUBMISSION_STATUS.HANDLED ? t('fmReopenBtn') : t('fmMarkAsHandled')}
                 </Button>
               </Stack>
             </Box>
@@ -685,17 +690,17 @@ export default function FormsPage() {
       <Dialog
         open={Boolean(deleteTarget)}
         onClose={() => (busyId ? null : setDeleteTarget(null))}
-        PaperProps={{ dir: 'ltr', sx: { borderRadius: '24px', width: { xs: 'calc(100vw - 32px)', sm: '30rem' }, maxWidth: 480 } }}
+        PaperProps={{ dir: direction, sx: { borderRadius: '24px', width: { xs: 'calc(100vw - 32px)', sm: '30rem' }, maxWidth: 480 } }}
       >
-        <DialogTitle sx={{ fontWeight: 950, color: '#100B2F' }}>Delete submission?</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 950, color: '#100B2F' }}>{t('fmDeleteTitle')}</DialogTitle>
         <DialogContent>
           <Typography sx={{ color: '#4F4A70' }}>
-            Permanently delete the submission from <strong dir="auto">{deleteTarget?.fullName || deleteTarget?.email || 'this contact'}</strong>? This cannot be undone.
+            {t('fmDeleteConfirmPre')}<strong dir="auto">{deleteTarget?.fullName || deleteTarget?.email || t('fmThisContact')}</strong>{t('fmDeleteConfirmPost')}
           </Typography>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2.4 }}>
           <Button onClick={() => setDeleteTarget(null)} disabled={Boolean(busyId)} sx={{ borderRadius: 999, textTransform: 'none', fontWeight: 800, color: '#6F6890' }}>
-            Cancel
+            {t('fmCancel')}
           </Button>
           <Button
             onClick={confirmDelete}
@@ -705,7 +710,7 @@ export default function FormsPage() {
             startIcon={busyId ? <CircularProgress size={16} color="inherit" /> : <DeleteOutlineIcon />}
             sx={{ borderRadius: 999, textTransform: 'none', fontWeight: 950, px: 2.8 }}
           >
-            {busyId ? 'Deleting…' : 'Delete'}
+            {busyId ? t('fmDeleting') : t('fmDeleteBtn')}
           </Button>
         </DialogActions>
       </Dialog>

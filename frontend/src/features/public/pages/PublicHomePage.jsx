@@ -105,6 +105,7 @@ function PublicHomePageContent() {
         ) : null}
         <HeroSection
           hero={publicHomeDoc.hero}
+          heroContent={publicHomeDoc.heroContent}
           statistics={publicHomeDoc.statistics}
           isLoading={loading}
           hasError={Boolean(error)}

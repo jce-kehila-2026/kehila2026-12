@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db, auth } from '../../../firebase';
+import { useAdminLocale } from '../context/AdminLocaleContext';
 import { logAuditEvent } from '../services/auditService';
 import { isTranslationConfigured, translateItems } from '../services/translationService';
 import {
@@ -75,6 +76,7 @@ function reindexOrder(list) {
 }
 
 export default function PublicHomePageTeamTab() {
+  const { t, direction } = useAdminLocale();
   const [loading, setLoading] = useState(true);
   const [members, setMembers] = useState([]);
   const [toast, setToast] = useState({ open: false, severity: 'success', message: '' });
@@ -119,7 +121,7 @@ export default function PublicHomePageTeamTab() {
       } catch (err) {
         console.error('Failed to load teamMembers:', err);
         if (active) {
-          setToast({ open: true, severity: 'error', message: 'Failed to load team members.' });
+          setToast({ open: true, severity: 'error', message: t('cmsTeamLoadFailed') });
         }
       } finally {
         if (active) setLoading(false);
@@ -133,10 +135,10 @@ export default function PublicHomePageTeamTab() {
 
   const errors = useMemo(() => {
     const next = {};
-    if (!draft.name.trim()) next.name = 'Name is required.';
-    if (!draft.role.trim()) next.role = 'Role is required.';
-    if (!isValidUrlOrEmpty(draft.imageUrl)) next.imageUrl = 'Invalid URL.';
-    if (!isValidEmailOrEmpty(draft.email)) next.email = 'Invalid email.';
+    if (!draft.name.trim()) next.name = t('cmsNameRequired');
+    if (!draft.role.trim()) next.role = t('cmsRoleRequired');
+    if (!isValidUrlOrEmpty(draft.imageUrl)) next.imageUrl = t('cmsInvalidUrl');
+    if (!isValidEmailOrEmpty(draft.email)) next.email = t('cmsInvalidEmail');
     return next;
   }, [draft]);
 
@@ -239,11 +241,11 @@ export default function PublicHomePageTeamTab() {
       setToast({
         open: true,
         severity: 'success',
-        message: editorMode === 'create' ? 'Team member added.' : 'Team member updated.',
+        message: editorMode === 'create' ? t('cmsTeamMemberAdded') : t('cmsTeamMemberUpdated'),
       });
     } catch (err) {
       console.error('Failed to save team member:', err);
-      setToast({ open: true, severity: 'error', message: 'Save failed. Please try again.' });
+      setToast({ open: true, severity: 'error', message: t('cmsSaveFailed') });
     } finally {
       setSaving(false);
     }
@@ -261,10 +263,10 @@ export default function PublicHomePageTeamTab() {
         change: 'delete',
       });
       setConfirmDeleteId(null);
-      setToast({ open: true, severity: 'success', message: 'Team member deleted.' });
+      setToast({ open: true, severity: 'success', message: t('cmsTeamMemberDeleted') });
     } catch (err) {
       console.error('Failed to delete team member:', err);
-      setToast({ open: true, severity: 'error', message: 'Delete failed. Please try again.' });
+      setToast({ open: true, severity: 'error', message: t('cmsDeleteFailed') });
     } finally {
       setDeleting(false);
     }
@@ -283,7 +285,7 @@ export default function PublicHomePageTeamTab() {
       });
     } catch (err) {
       console.error('Failed to reorder team members:', err);
-      setToast({ open: true, severity: 'error', message: 'Reorder failed.' });
+      setToast({ open: true, severity: 'error', message: t('cmsReorderFailed') });
     }
   }
 
@@ -300,13 +302,13 @@ export default function PublicHomePageTeamTab() {
   }
 
   return (
-    <Box sx={{ pb: 12 }}>
+    <Box sx={{ pb: 12 }} dir={direction}>
       <Paper sx={{ p: 3 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2, gap: '1rem' }}>
           <Box>
-            <Typography variant="h6">Team Members</Typography>
+            <Typography variant="h6">{t('cmsTeamMembers')}</Typography>
             <Typography variant="body2" color="text.secondary">
-              Members shown in the "הכירו את הצוות שלנו" section on the public home page.
+              {t('cmsTeamMembersSubtitle')}
             </Typography>
           </Box>
           <Button
@@ -315,13 +317,13 @@ export default function PublicHomePageTeamTab() {
             onClick={openCreate}
             sx={{ flexShrink: 0 }}
           >
-            Add team member
+            {t('cmsAddTeamMember')}
           </Button>
         </Box>
 
         {members.length === 0 ? (
           <Box sx={{ py: 6, textAlign: 'center' }}>
-            <Typography color="text.secondary">No team members yet.</Typography>
+            <Typography color="text.secondary">{t('cmsNoTeamMembers')}</Typography>
           </Box>
         ) : (
           <Stack spacing={1.5}>
@@ -365,7 +367,7 @@ export default function PublicHomePageTeamTab() {
                     size="small"
                     onClick={() => moveMember(index, index - 1)}
                     disabled={index === 0}
-                    aria-label="Move up"
+                    aria-label={t('cmsMoveUp')}
                   >
                     <ArrowUpwardIcon fontSize="small" />
                   </IconButton>
@@ -373,15 +375,15 @@ export default function PublicHomePageTeamTab() {
                     size="small"
                     onClick={() => moveMember(index, index + 1)}
                     disabled={index === members.length - 1}
-                    aria-label="Move down"
+                    aria-label={t('cmsMoveDown')}
                   >
                     <ArrowDownwardIcon fontSize="small" />
                   </IconButton>
                 </Stack>
-                <IconButton onClick={() => openEdit(m)} aria-label="Edit">
+                <IconButton onClick={() => openEdit(m)} aria-label={t('cmsEditAria')}>
                   <EditIcon />
                 </IconButton>
-                <IconButton onClick={() => setConfirmDeleteId(m.id)} aria-label="Delete" color="error">
+                <IconButton onClick={() => setConfirmDeleteId(m.id)} aria-label={t('cmsDeleteAria')} color="error">
                   <DeleteOutlineIcon />
                 </IconButton>
               </Paper>
@@ -391,11 +393,11 @@ export default function PublicHomePageTeamTab() {
       </Paper>
 
       <Dialog open={editorOpen} onClose={closeEditor} fullWidth maxWidth="sm">
-        <DialogTitle>{editorMode === 'create' ? 'Add team member' : 'Edit team member'}</DialogTitle>
+        <DialogTitle>{editorMode === 'create' ? t('cmsAddTeamMember') : t('cmsEditTeamMember')}</DialogTitle>
         <DialogContent dividers>
           <Stack spacing={2.5} sx={{ mt: 1 }}>
             <TextField
-              label="Name"
+              label={t('cmsFieldName')}
               value={draft.name}
               onChange={(e) => setField('name', e.target.value)}
               inputProps={{ maxLength: LIMITS.name }}
@@ -405,7 +407,7 @@ export default function PublicHomePageTeamTab() {
               fullWidth
             />
             <TextField
-              label="Role"
+              label={t('cmsFieldRole')}
               value={draft.role}
               onChange={(e) => setField('role', e.target.value)}
               inputProps={{ maxLength: LIMITS.role }}
@@ -415,7 +417,7 @@ export default function PublicHomePageTeamTab() {
               fullWidth
             />
             <TextField
-              label="Biography"
+              label={t('cmsFieldBiography')}
               value={draft.bio}
               onChange={(e) => setField('bio', e.target.value)}
               inputProps={{ maxLength: LIMITS.bio }}
@@ -425,24 +427,24 @@ export default function PublicHomePageTeamTab() {
               fullWidth
             />
             <TextField
-              label="Image URL"
+              label={t('cmsImageUrl')}
               value={draft.imageUrl}
               onChange={(e) => setField('imageUrl', e.target.value)}
               inputProps={{ maxLength: LIMITS.imageUrl }}
               error={showError('imageUrl')}
               helperText={
                 (showError('imageUrl') && errors.imageUrl) ||
-                'Plain text URL (https://…). Leave empty to show an initial.'
+                t('cmsTeamImageHelper')
               }
               fullWidth
             />
             <TextField
-              label="Email"
+              label={t('cmsFieldEmail')}
               value={draft.email}
               onChange={(e) => setField('email', e.target.value)}
               inputProps={{ maxLength: LIMITS.email }}
               error={showError('email')}
-              helperText={(showError('email') && errors.email) || 'Used for the contact button on the card.'}
+              helperText={(showError('email') && errors.email) || t('cmsTeamEmailHelper')}
               fullWidth
               type="email"
             />
@@ -450,27 +452,27 @@ export default function PublicHomePageTeamTab() {
         </DialogContent>
         <DialogActions>
           <Button onClick={closeEditor} disabled={saving}>
-            Cancel
+            {t('cmsCancel')}
           </Button>
           <Button variant="contained" onClick={handleSave} disabled={saving}>
-            {saving ? 'Saving…' : 'Save'}
+            {saving ? t('cmsSaving') : t('cmsSave')}
           </Button>
         </DialogActions>
       </Dialog>
 
       <Dialog open={Boolean(confirmDeleteId)} onClose={() => !deleting && setConfirmDeleteId(null)}>
-        <DialogTitle>Delete this team member?</DialogTitle>
+        <DialogTitle>{t('cmsDeleteTeamMemberConfirm')}</DialogTitle>
         <DialogContent>
           <Typography variant="body2" color="text.secondary">
-            This action cannot be undone.
+            {t('cmsCannotUndo')}
           </Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setConfirmDeleteId(null)} disabled={deleting}>
-            Cancel
+            {t('cmsCancel')}
           </Button>
           <Button onClick={handleDelete} color="error" variant="contained" disabled={deleting}>
-            {deleting ? 'Deleting…' : 'Delete'}
+            {deleting ? t('cmsDeleting') : t('cmsDelete')}
           </Button>
         </DialogActions>
       </Dialog>

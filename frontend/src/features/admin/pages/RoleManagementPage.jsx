@@ -8,10 +8,24 @@ import Chip from '@mui/material/Chip';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import { DataGrid } from '@mui/x-data-grid';
+import { heIL } from '@mui/x-data-grid/locales';
+import { useAdminLocale } from '../context/AdminLocaleContext';
 
 const ROLES = ['participant', 'admin'];
 
+const ROLE_LABEL_KEYS = {
+  participant: 'roleParticipant',
+  volunteer: 'roleVolunteer',
+  therapist: 'roleTherapist',
+  admin: 'roleAdmin',
+  editor: 'roleEditor',
+};
+
+const HE_DATAGRID_LOCALE_TEXT = heIL.components.MuiDataGrid.defaultProps.localeText;
+
 export default function RoleManagementPage() {
+  const { t, lang } = useAdminLocale();
+  const roleLabel = (role) => t(ROLE_LABEL_KEYS[role] || 'roleParticipant');
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(null);
@@ -57,19 +71,19 @@ export default function RoleManagementPage() {
   const columns = [
     {
       field: 'displayName',
-      headerName: 'User',
+      headerName: t('colUser'),
       flex: 1,
       minWidth: 160,
-      valueGetter: (value) => value || '(No name)',
+      valueGetter: (value) => value || t('rmNoName'),
     },
-    { field: 'email', headerName: 'Email', flex: 1, minWidth: 200 },
+    { field: 'email', headerName: t('fieldEmail'), flex: 1, minWidth: 200 },
     {
       field: 'role',
-      headerName: 'Current Role',
+      headerName: t('rmCurrentRole'),
       width: 150,
       renderCell: (params) => (
         <Chip
-          label={(params.value || 'participant').replace('_', ' ')}
+          label={roleLabel(params.value || 'participant')}
           size="small"
           color={roleColor(params.value)}
           variant="outlined"
@@ -78,7 +92,7 @@ export default function RoleManagementPage() {
     },
     {
       field: 'changeRole',
-      headerName: 'Change Role',
+      headerName: t('umChangeRole'),
       width: 180,
       sortable: false,
       filterable: false,
@@ -92,7 +106,7 @@ export default function RoleManagementPage() {
           id={`role-select-${params.row.id}`}
         >
           {ROLES.map((r) => (
-            <MenuItem key={r} value={r}>{r.replace('_', ' ')}</MenuItem>
+            <MenuItem key={r} value={r}>{roleLabel(r)}</MenuItem>
           ))}
         </Select>
       ),
@@ -102,9 +116,9 @@ export default function RoleManagementPage() {
   return (
     <Box>
       <Box sx={{ mb: 3 }}>
-        <Typography variant="h4">Role Management</Typography>
+        <Typography variant="h4">{t('rmTitle')}</Typography>
         <Typography variant="subtitle1" sx={{ mt: 0.5 }}>
-          Change user permissions. All changes are logged in Admin Changes.
+          {t('rmSubtitle')}
         </Typography>
       </Box>
 
@@ -116,6 +130,7 @@ export default function RoleManagementPage() {
           pageSizeOptions={[10, 25, 50]}
           initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
           disableRowSelectionOnClick
+          localeText={lang === 'he' ? HE_DATAGRID_LOCALE_TEXT : undefined}
           sx={{ bgcolor: 'background.paper' }}
         />
       </Box>

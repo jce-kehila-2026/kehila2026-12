@@ -26,6 +26,22 @@ export const DEFAULT_HOME_HERO = {
   backgroundImageUrl: heroSupportJourney,
 };
 
+export const HERO_CONTENT_STEPS_COUNT = 4;
+
+export const DEFAULT_HERO_CONTENT = {
+  titleAccent: 'אנחנו כאן,',
+  titleRest: 'מהרגע הראשון',
+  intro: 'עמותת SHE-NA מלווה נשים המתמודדות עם סרטן ומעניקה להן תמיכה רגשית, מידע אמין וקהילה שמבינה.',
+  ctaJoin: 'להצטרף',
+  ctaHowItWorks: 'איך זה עובד?',
+  steps: [
+    { title: 'יוצרות קשר', text: 'פונות אלינו ופותחות את הצעד הראשון.' },
+    { title: 'מתאימות תמיכה', text: 'אנחנו מתאימות עבורך את התמיכה המדויקת לך.' },
+    { title: 'מלוות אותך', text: 'מלוות אותך לאורך הדרך בתמיכה אישית ומקצועית.' },
+    { title: 'נשארות יחד', text: 'קהילה תומכת שנשארת לצידך, תמיד.' },
+  ],
+};
+
 export const ABOUT_US_CARD_COUNT = 4;
 
 export const DEFAULT_ABOUT_US = {
@@ -639,6 +655,37 @@ export function mergeHero(hero) {
   };
 }
 
+function mergeHeroStep(step, index) {
+  const safe = step && typeof step === 'object' ? step : {};
+  const fallback = DEFAULT_HERO_CONTENT.steps[index] || DEFAULT_HERO_CONTENT.steps[0];
+  return {
+    title: safeString(safe.title) || fallback.title,
+    text: safeString(safe.text) || fallback.text,
+    ...(safe.translations ? { translations: safe.translations } : {}),
+  };
+}
+
+export function mergeHeroContent(heroContent) {
+  const safe = heroContent && typeof heroContent === 'object' ? heroContent : {};
+  const incomingSteps = Array.isArray(safe.steps) ? safe.steps : null;
+  const steps = (incomingSteps && incomingSteps.length
+    ? incomingSteps
+    : DEFAULT_HERO_CONTENT.steps
+  )
+    .slice(0, HERO_CONTENT_STEPS_COUNT)
+    .map((step, index) => mergeHeroStep(step, index));
+
+  return {
+    titleAccent: safeString(safe.titleAccent) || DEFAULT_HERO_CONTENT.titleAccent,
+    titleRest: safeString(safe.titleRest) || DEFAULT_HERO_CONTENT.titleRest,
+    intro: safeString(safe.intro) || DEFAULT_HERO_CONTENT.intro,
+    ctaJoin: safeString(safe.ctaJoin) || DEFAULT_HERO_CONTENT.ctaJoin,
+    ctaHowItWorks: safeString(safe.ctaHowItWorks) || DEFAULT_HERO_CONTENT.ctaHowItWorks,
+    steps,
+    ...(safe.translations ? { translations: safe.translations } : {}),
+  };
+}
+
 function mergeAboutCard(card, fallback) {
   const safe = card && typeof card === 'object' ? card : {};
   const iconKey = isKnownAboutUsIconKey(safe.iconKey) ? safe.iconKey : fallback.iconKey || DEFAULT_ABOUT_US_ICON_KEY;
@@ -687,6 +734,7 @@ export function getDefaultPublicHomeDoc() {
     statistics: DEFAULT_STATISTICS.map((s) => ({ ...s })),
     teamMembers: DEFAULT_TEAM_MEMBERS.map((m) => ({ ...m })),
     partners: DEFAULT_PARTNERS.map((p) => ({ ...p })),
+    heroContent: { ...DEFAULT_HERO_CONTENT, steps: DEFAULT_HERO_CONTENT.steps.map((s) => ({ ...s })) },
     contact: { ...DEFAULT_CONTACT },
     updatedAt: null,
     updatedBy: '',
@@ -703,6 +751,7 @@ export async function getPublicHomeDoc() {
     return {
       ...data,
       hero: mergeHero(data.hero),
+      heroContent: mergeHeroContent(data.heroContent),
       aboutUs: mergeAboutUs(data.aboutUs),
       learnTogether: mergeLearnTogether(data.learnTogether),
       inspirationalStories: mergeInspirationalStories(data.inspirationalStories),
