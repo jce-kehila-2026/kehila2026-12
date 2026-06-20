@@ -12,9 +12,11 @@ import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
 import Chip from '@mui/material/Chip';
 import { DataGrid } from '@mui/x-data-grid';
+import { heIL } from '@mui/x-data-grid/locales';
 import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EmailIcon from '@mui/icons-material/Email';
+import { useAdminLocale } from '../context/AdminLocaleContext';
 
 const EVENT_CATEGORIES = [
   'Workshop',
@@ -25,7 +27,26 @@ const EVENT_CATEGORIES = [
   'Other',
 ];
 
+const CATEGORY_LABEL_KEYS = {
+  Workshop: 'catWorkshop',
+  'Support Group': 'catSupportGroup',
+  'Therapy Session': 'catTherapySession',
+  'Community Activity': 'catCommunityActivity',
+  'Awareness Event': 'catAwarenessEvent',
+  Other: 'catOther',
+};
+
 const EVENT_STATUSES = ['published', 'draft', 'cancelled'];
+
+const STATUS_LABEL_KEYS = {
+  published: 'evStatusPublished',
+  draft: 'evStatusDraft',
+  cancelled: 'evStatusCancelled',
+};
+
+const INTL_LOCALE_BY_LANG = { he: 'he-IL', en: 'en-US' };
+
+const HE_DATAGRID_LOCALE_TEXT = heIL.components.MuiDataGrid.defaultProps.localeText;
 
 function formatTimestampForInput(ts) {
   if (!ts) return '';
@@ -42,6 +63,10 @@ function TabPanel({ children, value, index }) {
 export default function EventDetailPage() {
   const { eventId } = useParams();
   const navigate = useNavigate();
+  const { t, lang, direction } = useAdminLocale();
+  const intlLocale = INTL_LOCALE_BY_LANG[lang] || 'en-US';
+  const categoryLabel = (cat) => (CATEGORY_LABEL_KEYS[cat] ? t(CATEGORY_LABEL_KEYS[cat]) : cat);
+  const statusLabel = (s) => (STATUS_LABEL_KEYS[s] ? t(STATUS_LABEL_KEYS[s]) : s);
 
   const [event, setEvent] = useState(null);
   const [eventLoading, setEventLoading] = useState(true);
@@ -122,7 +147,7 @@ export default function EventDetailPage() {
   }
 
   async function handleRemove(regId, name) {
-    if (!window.confirm(`Remove "${name}" from this event?`)) return;
+    if (!window.confirm(t('edConfirmRemove').replace('{name}', name))) return;
     try {
       await removeRegistration(regId, name, eventId);
       setRegistrations((prev) => prev.filter((r) => r.id !== regId));
@@ -140,21 +165,21 @@ export default function EventDetailPage() {
   }
 
   const columns = [
-    { field: 'participantName', headerName: 'Name', flex: 1, minWidth: 160 },
-    { field: 'participantEmail', headerName: 'Email', flex: 1, minWidth: 200 },
+    { field: 'participantName', headerName: t('edColName'), flex: 1, minWidth: 160 },
+    { field: 'participantEmail', headerName: t('edColEmail'), flex: 1, minWidth: 200 },
     {
       field: 'registeredAt',
-      headerName: 'Registration Date',
+      headerName: t('edColRegDate'),
       width: 190,
-      valueGetter: (value) => (value?.toDate ? value.toDate().toLocaleString() : '—'),
+      valueGetter: (value) => (value?.toDate ? value.toDate().toLocaleString(intlLocale) : '—'),
     },
     {
       field: 'status',
-      headerName: 'Status',
+      headerName: t('edColStatus'),
       width: 130,
       renderCell: (params) => (
         <Chip
-          label={params.value || 'Registered'}
+          label={params.value ? statusLabel(params.value) : t('edRegistered')}
           size="small"
           color={params.value === 'cancelled' ? 'error' : 'default'}
           variant="outlined"
@@ -163,7 +188,7 @@ export default function EventDetailPage() {
     },
     {
       field: 'actions',
-      headerName: 'Actions',
+      headerName: t('edColActions'),
       width: 100,
       sortable: false,
       filterable: false,
@@ -173,7 +198,7 @@ export default function EventDetailPage() {
             size="small"
             color="error"
             onClick={() => handleRemove(params.row.id, params.row.participantName)}
-            title="Remove"
+            title={t('edRemove')}
           >
             <DeleteIcon fontSize="small" />
           </IconButton>
@@ -182,22 +207,22 @@ export default function EventDetailPage() {
     },
   ];
 
-  if (eventLoading) return <Typography sx={{ p: 4 }}>Loading…</Typography>;
-  if (!event) return <Typography sx={{ p: 4 }}>Event not found.</Typography>;
+  if (eventLoading) return <Typography sx={{ p: 4 }}>{t('edLoading')}</Typography>;
+  if (!event) return <Typography sx={{ p: 4 }}>{t('edNotFound')}</Typography>;
 
   return (
-    <Box>
+    <Box dir={direction}>
       <Box sx={{ display: 'flex', alignItems: 'center', gap: '0.75rem', mb: 1 }}>
         <IconButton onClick={() => navigate('/admin/events')} size="small">
           <ArrowBackIcon />
         </IconButton>
-        <Typography variant="h4">Details: {event.title}</Typography>
+        <Typography variant="h4">{t('edDetailsTitle').replace('{title}', event.title)}</Typography>
       </Box>
 
       <Box sx={{ borderBottom: 1, borderColor: 'divider', mt: 2 }}>
         <Tabs value={tab} onChange={(_, v) => setTab(v)}>
-          <Tab label="General Information" />
-          <Tab label={`Registered Participants (${registrations.length})`} />
+          <Tab label={t('edTabGeneral')} />
+          <Tab label={t('edTabParticipants').replace('{n}', registrations.length)} />
         </Tabs>
       </Box>
 
@@ -209,24 +234,24 @@ export default function EventDetailPage() {
           sx={{ maxWidth: 560, display: 'flex', flexDirection: 'column', gap: '1.25rem' }}
         >
           <TextField
-            label="Event Title"
+            label={t('edEventTitle')}
             value={form.title}
             onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
             required
           />
           <TextField
-            label="Category"
+            label={t('edCategory')}
             select
             value={form.category}
             onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
             required
           >
             {EVENT_CATEGORIES.map((cat) => (
-              <MenuItem key={cat} value={cat}>{cat}</MenuItem>
+              <MenuItem key={cat} value={cat}>{categoryLabel(cat)}</MenuItem>
             ))}
           </TextField>
           <TextField
-            helperText="Start Date & Time"
+            helperText={t('edStartDateTime')}
             type="datetime-local"
             value={form.startTime}
             onChange={(e) => setForm((f) => ({ ...f, startTime: e.target.value }))}
@@ -234,26 +259,26 @@ export default function EventDetailPage() {
             inputProps={{ dir: 'ltr' }}
           />
           <TextField
-            helperText="End Date & Time (optional)"
+            helperText={t('edEndDateTime')}
             type="datetime-local"
             value={form.endTime}
             onChange={(e) => setForm((f) => ({ ...f, endTime: e.target.value }))}
             inputProps={{ dir: 'ltr' }}
           />
           <TextField
-            label="Instructor / Therapist"
+            label={t('edInstructor')}
             value={form.instructor}
             onChange={(e) => setForm((f) => ({ ...f, instructor: e.target.value }))}
-            placeholder="She-Na team"
+            placeholder={t('edInstructorPlaceholder')}
           />
           <TextField
-            label="Location"
+            label={t('edLocation')}
             value={form.location}
             onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))}
             required
           />
           <TextField
-            label="Max Participants (Capacity)"
+            label={t('edMaxParticipants')}
             type="number"
             value={form.maxParticipants}
             onChange={(e) => setForm((f) => ({ ...f, maxParticipants: e.target.value }))}
@@ -261,19 +286,19 @@ export default function EventDetailPage() {
             required
           />
           <TextField
-            label="Status"
+            label={t('edStatus')}
             select
             value={form.status}
             onChange={(e) => setForm((f) => ({ ...f, status: e.target.value }))}
           >
             {EVENT_STATUSES.map((s) => (
               <MenuItem key={s} value={s}>
-                {s.charAt(0).toUpperCase() + s.slice(1)}
+                {statusLabel(s)}
               </MenuItem>
             ))}
           </TextField>
           <TextField
-            label="Description"
+            label={t('edDescription')}
             value={form.description}
             onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
             multiline
@@ -282,7 +307,7 @@ export default function EventDetailPage() {
           />
           <Box>
             <Button type="submit" variant="contained" disabled={saving}>
-              {saving ? 'Saving…' : 'Save Changes'}
+              {saving ? t('edSaving') : t('edSaveChanges')}
             </Button>
           </Box>
         </Box>
@@ -302,7 +327,7 @@ export default function EventDetailPage() {
               '&.Mui-disabled': { bgcolor: 'rgba(0,0,0,0.12)' },
             }}
           >
-            Email All
+            {t('edEmailAll')}
           </Button>
         </Box>
         <Box sx={{ height: 450 }}>
@@ -313,6 +338,7 @@ export default function EventDetailPage() {
             pageSizeOptions={[10, 25, 50]}
             initialState={{ pagination: { paginationModel: { pageSize: 10 } } }}
             disableRowSelectionOnClick
+            localeText={lang === 'he' ? HE_DATAGRID_LOCALE_TEXT : undefined}
             sx={{ bgcolor: 'background.paper' }}
           />
         </Box>

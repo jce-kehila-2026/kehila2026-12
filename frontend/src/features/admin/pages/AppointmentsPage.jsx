@@ -12,9 +12,24 @@ import {
 import { db } from '../../../firebase';
 import { getAllAppointments } from '../services/appointmentService';
 import { mergeBookingRows, paginateRows, toDateKey } from './bookingsPageUtils';
+import { useAdminLocale } from '../context/AdminLocaleContext';
 import './AppointmentsPage.css';
 
 const PAGE_SIZE = 7;
+
+const INTL_LOCALE_BY_LANG = { he: 'he-IL', en: 'en-US' };
+
+const STATUS_LABEL_KEYS = {
+  approved: 'bkStatusApproved',
+  pending: 'bkStatusPending',
+  completed: 'bkStatusCompleted',
+  cancelled: 'bkStatusCancelled',
+};
+
+const TYPE_LABEL_KEYS = {
+  Workshop: 'apTypeWorkshop',
+  Appointment: 'apTypeAppointment',
+};
 
 function getInitials(name = 'Participant') {
   return name
@@ -32,42 +47,44 @@ function toDate(value) {
   return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
 
-function formatDate(dateValue) {
+function formatDate(dateValue, intlLocale, tbd) {
   const date = toDate(dateValue);
-  if (!date) return 'Date TBD';
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  if (!date) return tbd;
+  return date.toLocaleDateString(intlLocale, { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
-function formatTime(timeValue) {
-  if (!timeValue) return 'Time TBD';
+function formatTime(timeValue, intlLocale, tbd) {
+  if (!timeValue) return tbd;
   if (timeValue?.toDate) {
-    return timeValue.toDate().toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    return timeValue.toDate().toLocaleTimeString(intlLocale, { hour: '2-digit', minute: '2-digit' });
   }
   if (/am|pm/i.test(String(timeValue))) return timeValue;
   const match = String(timeValue).match(/(\d{1,2}):(\d{2})/);
   if (!match) {
     const date = toDate(timeValue);
     return date
-      ? date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
-      : 'Time TBD';
+      ? date.toLocaleTimeString(intlLocale, { hour: '2-digit', minute: '2-digit' })
+      : tbd;
   }
   const date = new Date();
   date.setHours(Number(match[1]), Number(match[2]));
-  return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  return date.toLocaleTimeString(intlLocale, { hour: '2-digit', minute: '2-digit' });
 }
 
-function formatRegisteredAt(value) {
+function formatRegisteredAt(value, intlLocale, notRecorded) {
   const date = toDate(value);
-  if (!date) return { date: 'Not recorded', time: '' };
+  if (!date) return { date: notRecorded, time: '' };
   return {
-    date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
-    time: date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+    date: date.toLocaleDateString(intlLocale, { month: 'short', day: 'numeric', year: 'numeric' }),
+    time: date.toLocaleTimeString(intlLocale, { hour: '2-digit', minute: '2-digit' }),
   };
 }
 
-function BookingDetailsDialog({ booking, onClose }) {
+function BookingDetailsDialog({ booking, onClose, t, intlLocale }) {
   if (!booking) return null;
-  const registeredAt = formatRegisteredAt(booking.registeredAt);
+  const registeredAt = formatRegisteredAt(booking.registeredAt, intlLocale, t('apNotRecorded'));
+  const typeLabel = TYPE_LABEL_KEYS[booking.eventType] ? t(TYPE_LABEL_KEYS[booking.eventType]) : booking.eventType;
+  const statusLabel = STATUS_LABEL_KEYS[booking.status] ? t(STATUS_LABEL_KEYS[booking.status]) : booking.status;
 
   return (
     <div className="appointments-details-backdrop" role="presentation" onMouseDown={onClose}>
@@ -80,19 +97,19 @@ function BookingDetailsDialog({ booking, onClose }) {
       >
         <header>
           <div>
-            <span>{booking.eventType}</span>
+            <span>{typeLabel}</span>
             <h2 id="booking-details-title">{booking.eventName}</h2>
           </div>
-          <button type="button" aria-label="Close booking details" onClick={onClose}><X size={18} /></button>
+          <button type="button" aria-label={t('apCloseDetails')} onClick={onClose}><X size={18} /></button>
         </header>
         <dl>
-          <div><dt>Participant</dt><dd>{booking.participantName}</dd></div>
-          <div><dt>Email</dt><dd>{booking.participantEmail}</dd></div>
-          <div><dt>Provider</dt><dd>{booking.providerName}</dd></div>
-          <div><dt>Event date</dt><dd>{formatDate(booking.eventDate)} at {formatTime(booking.eventTime)}</dd></div>
-          <div><dt>Registered</dt><dd>{registeredAt.date} {registeredAt.time}</dd></div>
-          <div><dt>Status</dt><dd>{booking.status}</dd></div>
-          <div><dt>Source</dt><dd>{booking.source === 'booking' ? 'Central booking' : 'Legacy appointment'}</dd></div>
+          <div><dt>{t('apDetailParticipant')}</dt><dd>{booking.participantName}</dd></div>
+          <div><dt>{t('apDetailEmail')}</dt><dd>{booking.participantEmail}</dd></div>
+          <div><dt>{t('apDetailProvider')}</dt><dd>{booking.providerName}</dd></div>
+          <div><dt>{t('apDetailEventDate')}</dt><dd>{t('apEventDateAt').replace('{date}', formatDate(booking.eventDate, intlLocale, t('apDateTBD'))).replace('{time}', formatTime(booking.eventTime, intlLocale, t('apTimeTBD')))}</dd></div>
+          <div><dt>{t('apDetailRegistered')}</dt><dd>{registeredAt.date} {registeredAt.time}</dd></div>
+          <div><dt>{t('apDetailStatus')}</dt><dd>{statusLabel}</dd></div>
+          <div><dt>{t('apDetailSource')}</dt><dd>{booking.source === 'booking' ? t('apSourceCentral') : t('apSourceLegacy')}</dd></div>
         </dl>
       </section>
     </div>
@@ -100,6 +117,10 @@ function BookingDetailsDialog({ booking, onClose }) {
 }
 
 export default function AppointmentsPage() {
+  const { t, lang, direction } = useAdminLocale();
+  const intlLocale = INTL_LOCALE_BY_LANG[lang] || 'en-US';
+  const typeLabel = (val) => (TYPE_LABEL_KEYS[val] ? t(TYPE_LABEL_KEYS[val]) : val);
+  const statusLabel = (val) => (STATUS_LABEL_KEYS[val] ? t(STATUS_LABEL_KEYS[val]) : val);
   const [bookings, setBookings] = useState([]);
   const [search, setSearch] = useState('');
   const [type, setType] = useState('All Types');
@@ -132,11 +153,11 @@ export default function AppointmentsPage() {
     } catch (error) {
       console.error('Failed to load bookings:', error);
       setBookings([]);
-      setLoadError('Could not load bookings from Firestore.');
+      setLoadError(t('apLoadError'));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     loadBookings();
@@ -164,38 +185,38 @@ export default function AppointmentsPage() {
   const resultEnd = Math.min(pagination.startIndex + pagination.rows.length, filtered.length);
 
   return (
-    <section className={`appointments-admin-page${selectedDate ? ' has-date-filter' : ''}`}>
+    <section className={`appointments-admin-page${selectedDate ? ' has-date-filter' : ''}`} dir={direction}>
       <header className="appointments-admin-header">
         <div>
-          <h1>Bookings Management</h1>
-          <p>Manage all participant bookings for workshops and appointments.</p>
+          <h1>{t('apTitle')}</h1>
+          <p>{t('apSubtitle')}</p>
         </div>
       </header>
 
       <div className="appointments-admin-layout">
         <main className="appointments-admin-main">
-          <section className="appointments-filter-card" aria-label="Booking filters">
+          <section className="appointments-filter-card" aria-label={t('apFiltersAria')}>
             <label className="appointments-search-field">
               <Search size={18} />
-              <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search participant, event, or provider..." />
+              <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder={t('apSearchPlaceholder')} />
             </label>
             <select value={type} onChange={(event) => setType(event.target.value)}>
-              <option>All Types</option>
-              <option>Workshop</option>
-              <option>Appointment</option>
+              <option value="All Types">{t('apAllTypes')}</option>
+              <option value="Workshop">{t('apTypeWorkshop')}</option>
+              <option value="Appointment">{t('apTypeAppointment')}</option>
             </select>
             <select value={status} onChange={(event) => setStatus(event.target.value)}>
-              <option>All Statuses</option>
-              <option>Approved</option>
-              <option>Pending</option>
-              <option>Completed</option>
-              <option>Cancelled</option>
+              <option value="All Statuses">{t('apAllStatuses')}</option>
+              <option value="Approved">{t('bkStatusApproved')}</option>
+              <option value="Pending">{t('bkStatusPending')}</option>
+              <option value="Completed">{t('bkStatusCompleted')}</option>
+              <option value="Cancelled">{t('bkStatusCancelled')}</option>
             </select>
             <div className="appointments-calendar-popover-wrap appointments-calendar-filter">
               <button
                 className="appointments-calendar-icon-btn"
                 type="button"
-                aria-label="Open calendar date filter"
+                aria-label={t('apOpenCalendar')}
                 aria-expanded={calendarOpen}
                 onClick={() => setCalendarOpen((current) => !current)}
               >
@@ -204,7 +225,7 @@ export default function AppointmentsPage() {
               {calendarOpen && (
                 <div className="appointments-calendar-popover appointments-date-picker-popover">
                   <label>
-                    Filter by event date
+                    {t('apFilterByDate')}
                     <input
                       type="date"
                       value={selectedDate}
@@ -219,42 +240,44 @@ export default function AppointmentsPage() {
               )}
             </div>
             <select value={provider} onChange={(event) => setProvider(event.target.value)}>
-              {providers.map((name) => <option key={name}>{name}</option>)}
+              {providers.map((name) => (
+                <option key={name} value={name}>{name === 'All Providers' ? t('apAllProviders') : name}</option>
+              ))}
             </select>
           </section>
 
           {selectedDate && (
             <div className="appointments-active-filter-pill">
-              <span>{formatDate(selectedDate)}</span>
-              <button type="button" aria-label="Clear selected date" onClick={() => setSelectedDate('')}>x</button>
+              <span>{formatDate(selectedDate, intlLocale, t('apDateTBD'))}</span>
+              <button type="button" aria-label={t('apClearDate')} onClick={() => setSelectedDate('')}>x</button>
             </div>
           )}
 
           <section className="appointments-table-card" aria-busy={loading}>
             <div className="appointments-table appointments-table--head">
-              <span>Participant</span>
-              <span>Event Type</span>
-              <span>Event Name</span>
-              <span>Provider</span>
-              <span>Event Date & Time</span>
-              <span>Registered At</span>
-              <span>Status</span>
-              <span>Actions</span>
+              <span>{t('apColParticipant')}</span>
+              <span>{t('apColEventType')}</span>
+              <span>{t('apColEventName')}</span>
+              <span>{t('apColProvider')}</span>
+              <span>{t('apColEventDateTime')}</span>
+              <span>{t('apColRegisteredAt')}</span>
+              <span>{t('apColStatus')}</span>
+              <span>{t('apColActions')}</span>
             </div>
             <div className="appointments-table-body appointments-table-wrapper">
               {loading ? (
-                <div className="appointments-table-state">Loading bookings...</div>
+                <div className="appointments-table-state">{t('apLoading')}</div>
               ) : loadError ? (
                 <div className="appointments-table-state appointments-table-state--error">
                   <span>{loadError}</span>
-                  <button type="button" onClick={loadBookings}>Retry</button>
+                  <button type="button" onClick={loadBookings}>{t('apRetry')}</button>
                 </div>
               ) : pagination.rows.length === 0 ? (
                 <div className="appointments-table-state">
-                  {bookings.length ? 'No bookings match the selected filters.' : 'No bookings have been created yet.'}
+                  {bookings.length ? t('apNoMatch') : t('apNoBookings')}
                 </div>
               ) : pagination.rows.map((item) => {
-                const registeredAt = formatRegisteredAt(item.registeredAt);
+                const registeredAt = formatRegisteredAt(item.registeredAt, intlLocale, t('apNotRecorded'));
                 return (
                   <div className="appointments-table appointments-table--row" key={item.id}>
                     <div className="appointments-participant-cell">
@@ -262,46 +285,46 @@ export default function AppointmentsPage() {
                       <div><strong>{item.participantName}</strong><small>{item.participantEmail}</small></div>
                     </div>
                     <span className={`appointments-event-type appointments-event-type--${item.eventType.toLowerCase()}`}>
-                      {item.eventType}
+                      {typeLabel(item.eventType)}
                     </span>
                     <span className="appointments-event-name">{item.eventName}</span>
                     <span className="appointments-provider"><UserRound size={18} /> {item.providerName}</span>
-                    <span className="appointments-date-time"><strong>{formatDate(item.eventDate)}</strong><small>{formatTime(item.eventTime)}</small></span>
+                    <span className="appointments-date-time"><strong>{formatDate(item.eventDate, intlLocale, t('apDateTBD'))}</strong><small>{formatTime(item.eventTime, intlLocale, t('apTimeTBD'))}</small></span>
                     <span className="appointments-date-time"><strong>{registeredAt.date}</strong><small>{registeredAt.time}</small></span>
-                    <span className={`appointments-status appointments-status--${item.status}`}>{item.status}</span>
+                    <span className={`appointments-status appointments-status--${item.status}`}>{statusLabel(item.status)}</span>
                     <span className="appointments-actions">
-                      <button type="button" aria-label="View booking" title="View booking" onClick={() => setSelectedBooking(item)}><Eye size={15} /></button>
-                      <button type="button" aria-label="Edit booking unavailable" title="Edit is not available yet" disabled><Edit3 size={15} /></button>
-                      <button type="button" aria-label="Reschedule booking unavailable" title="Reschedule is not available yet" disabled><CalendarDays size={15} /></button>
-                      <button type="button" aria-label="Delete booking unavailable" title="Delete is not available yet" disabled><Trash2 size={15} /></button>
+                      <button type="button" aria-label={t('apViewBooking')} title={t('apViewBooking')} onClick={() => setSelectedBooking(item)}><Eye size={15} /></button>
+                      <button type="button" aria-label={t('apEditUnavailableAria')} title={t('apEditUnavailableTitle')} disabled><Edit3 size={15} /></button>
+                      <button type="button" aria-label={t('apRescheduleUnavailableAria')} title={t('apRescheduleUnavailableTitle')} disabled><CalendarDays size={15} /></button>
+                      <button type="button" aria-label={t('apDeleteUnavailableAria')} title={t('apDeleteUnavailableTitle')} disabled><Trash2 size={15} /></button>
                     </span>
                   </div>
                 );
               })}
             </div>
             <footer className="appointments-table-footer">
-              <span>Showing {resultStart} to {resultEnd} of {filtered.length} results</span>
+              <span>{t('apShowingResults').replace('{start}', resultStart).replace('{end}', resultEnd).replace('{total}', filtered.length)}</span>
               <div>
-                <button type="button" aria-label="Previous page" disabled={pagination.page <= 1} onClick={() => setPage((current) => Math.max(1, current - 1))}>&lt;</button>
+                <button type="button" aria-label={t('apPrevPage')} disabled={pagination.page <= 1} onClick={() => setPage((current) => Math.max(1, current - 1))}>&lt;</button>
                 {Array.from({ length: pagination.pageCount }, (_, index) => index + 1).map((pageNumber) => (
                   <button
                     type="button"
                     className={pageNumber === pagination.page ? 'is-active' : ''}
-                    aria-label={`Page ${pageNumber}`}
+                    aria-label={t('apPageAria').replace('{n}', pageNumber)}
                     onClick={() => setPage(pageNumber)}
                     key={pageNumber}
                   >
                     {pageNumber}
                   </button>
                 ))}
-                <button type="button" aria-label="Next page" disabled={pagination.page >= pagination.pageCount} onClick={() => setPage((current) => Math.min(pagination.pageCount, current + 1))}>&gt;</button>
+                <button type="button" aria-label={t('apNextPage')} disabled={pagination.page >= pagination.pageCount} onClick={() => setPage((current) => Math.min(pagination.pageCount, current + 1))}>&gt;</button>
               </div>
             </footer>
           </section>
         </main>
       </div>
 
-      <BookingDetailsDialog booking={selectedBooking} onClose={() => setSelectedBooking(null)} />
+      <BookingDetailsDialog booking={selectedBooking} onClose={() => setSelectedBooking(null)} t={t} intlLocale={intlLocale} />
     </section>
   );
 }
