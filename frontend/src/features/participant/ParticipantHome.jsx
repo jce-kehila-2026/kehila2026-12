@@ -121,7 +121,7 @@ export default function ParticipantHome({ initialView = 'home' }) {
     const uid = effectiveUID || currentUser.uid;
     try {
       const [data, activityItems, seen] = await Promise.all([
-        fetchUpdates(true),
+        fetchUpdates(true, uid),
         fetchActivityNotifications(uid),
         getLastSeenAt(uid),
       ]);

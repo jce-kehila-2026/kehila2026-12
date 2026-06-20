@@ -729,6 +729,7 @@ export default function PublicHomePageLearnTogetherTab() {
 }
 
 function CardRow({
+  t,
   card,
   index,
   total,
@@ -775,33 +776,33 @@ function CardRow({
       />
       <Box sx={{ flex: 1, minWidth: 0 }}>
         <Typography variant="subtitle1" sx={{ fontWeight: 700 }} noWrap>
-          {card.title || '(untitled)'}
+          {card.title || t('cmsUntitled')}
         </Typography>
         <Typography variant="body2" color="text.secondary" noWrap>
           {card.description || '—'}
         </Typography>
       </Box>
       <Stack direction="row" spacing={0.5}>
-        <Tooltip title="Move up">
+        <Tooltip title={t('cmsMoveUp')}>
           <span>
             <IconButton size="small" onClick={onMoveUp} disabled={index === 0}>
               <ArrowUpwardIcon fontSize="small" />
             </IconButton>
           </span>
         </Tooltip>
-        <Tooltip title="Move down">
+        <Tooltip title={t('cmsMoveDown')}>
           <span>
             <IconButton size="small" onClick={onMoveDown} disabled={index === total - 1}>
               <ArrowDownwardIcon fontSize="small" />
             </IconButton>
           </span>
         </Tooltip>
-        <Tooltip title="Edit">
+        <Tooltip title={t('cmsEditAria')}>
           <IconButton size="small" onClick={onEdit}>
             <EditIcon fontSize="small" />
           </IconButton>
         </Tooltip>
-        <Tooltip title="Delete">
+        <Tooltip title={t('cmsDeleteAria')}>
           <IconButton size="small" color="error" onClick={onDelete}>
             <DeleteOutlineIcon fontSize="small" />
           </IconButton>
@@ -812,6 +813,7 @@ function CardRow({
 }
 
 function CardEditorDialog({
+  t,
   open,
   mode,
   draft,
@@ -829,17 +831,17 @@ function CardEditorDialog({
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle>{mode === 'create' ? 'Add new card' : 'Edit card'}</DialogTitle>
+      <DialogTitle>{mode === 'create' ? t('cmsAddNewCard') : t('cmsEditCard')}</DialogTitle>
       <DialogContent dividers>
         <Stack spacing={2.5}>
           <Box>
             <TextField
-              label="Card image URL"
+              label={t('cmsCardImageUrl')}
               value={draft.imageUrl}
               onChange={(e) => onChangeField('imageUrl', e.target.value)}
               helperText={
                 (show('imageUrl') && errors.imageUrl) ||
-                'Paste an image URL. Leave empty to show a placeholder.'
+                t('cmsCardImageHelper')
               }
               error={show('imageUrl')}
               fullWidth
@@ -864,7 +866,7 @@ function CardEditorDialog({
           </Box>
 
           <TextField
-            label="Card title"
+            label={t('cmsCardTitle')}
             value={draft.title}
             onChange={(e) => onChangeField('title', e.target.value)}
             inputProps={{ maxLength: LIMITS.cardTitle }}
@@ -876,7 +878,7 @@ function CardEditorDialog({
             fullWidth
           />
           <TextField
-            label="Card description"
+            label={t('cmsCardDescription')}
             value={draft.description}
             onChange={(e) => onChangeField('description', e.target.value)}
             inputProps={{ maxLength: LIMITS.cardDescription }}
@@ -891,10 +893,10 @@ function CardEditorDialog({
             fullWidth
           />
 
-          <Divider textAlign="left">Popup Content</Divider>
+          <Divider textAlign="left">{t('cmsPopupContent')}</Divider>
 
           <TextField
-            label="Popup title"
+            label={t('cmsPopupTitle')}
             value={draft.popup.title}
             onChange={(e) => onChangePopupField('title', e.target.value)}
             inputProps={{ maxLength: LIMITS.popupTitle }}
@@ -907,7 +909,7 @@ function CardEditorDialog({
             fullWidth
           />
           <TextField
-            label="Popup intro paragraph"
+            label={t('cmsPopupIntroParagraph')}
             value={draft.popup.paragraph}
             onChange={(e) => onChangePopupField('paragraph', e.target.value)}
             inputProps={{ maxLength: LIMITS.popupParagraph }}
@@ -923,6 +925,7 @@ function CardEditorDialog({
           />
 
           <SectionsEditor
+            t={t}
             sections={Array.isArray(draft.popup.sections) ? draft.popup.sections : []}
             errors={errors}
             submitted={submitted}
@@ -931,12 +934,12 @@ function CardEditorDialog({
 
           <Box>
             <TextField
-              label="Popup side image URL"
+              label={t('cmsPopupSideImageUrl')}
               value={draft.popup.sideImageUrl}
               onChange={(e) => onChangePopupField('sideImageUrl', e.target.value)}
               helperText={
                 (show('popup.sideImageUrl') && errors['popup.sideImageUrl']) ||
-                'Image shown beside the popup content.'
+                t('cmsPopupSideImageHelper')
               }
               error={show('popup.sideImageUrl')}
               fullWidth
@@ -963,17 +966,17 @@ function CardEditorDialog({
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} disabled={saving}>
-          Cancel
+          {t('cmsCancel')}
         </Button>
         <Button variant="contained" onClick={onSave} disabled={saving}>
-          {saving ? 'Saving…' : 'Save'}
+          {saving ? t('cmsSaving') : t('cmsSave')}
         </Button>
       </DialogActions>
     </Dialog>
   );
 }
 
-function SectionsEditor({ sections, errors, submitted, onChange }) {
+function SectionsEditor({ t, sections, errors, submitted, onChange }) {
   function updateAt(index, key, value) {
     const next = sections.map((section, i) =>
       i === index ? { ...section, [key]: value } : section,
@@ -998,16 +1001,18 @@ function SectionsEditor({ sections, errors, submitted, onChange }) {
     <Stack spacing={1.5}>
       <Box sx={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between' }}>
         <Typography variant="subtitle2" sx={{ fontWeight: 700 }}>
-          Sub-sections ({sections.length} / {LEARN_TOGETHER_MAX_SECTIONS})
+          {t('cmsSubsectionsLabel')
+            .replace('{n}', sections.length)
+            .replace('{max}', LEARN_TOGETHER_MAX_SECTIONS)}
         </Typography>
         <Typography variant="caption" color="text.secondary">
-          Add up to {LEARN_TOGETHER_MAX_SECTIONS} labeled blocks.
+          {t('cmsSubsectionsHelper').replace('{max}', LEARN_TOGETHER_MAX_SECTIONS)}
         </Typography>
       </Box>
 
       {sections.length === 0 ? (
         <Typography variant="body2" color="text.secondary">
-          No sub-sections — the popup will show only the title and intro paragraph.
+          {t('cmsNoSubsections')}
         </Typography>
       ) : null}
 
@@ -1021,20 +1026,20 @@ function SectionsEditor({ sections, errors, submitted, onChange }) {
           >
             <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
               <Typography variant="caption" color="text.secondary">
-                Sub-section {index + 1}
+                {t('cmsSubsectionNumber').replace('{n}', index + 1)}
               </Typography>
               <Button
                 size="small"
                 color="error"
                 onClick={() => removeAt(index)}
-                aria-label={`Remove sub-section ${index + 1}`}
+                aria-label={t('cmsRemoveSubsectionAria').replace('{n}', index + 1)}
               >
-                Remove
+                {t('cmsRemove')}
               </Button>
             </Box>
             <Stack spacing={1.5}>
               <TextField
-                label="Label"
+                label={t('cmsFieldLabel')}
                 value={section.label || ''}
                 onChange={(e) => updateAt(index, 'label', e.target.value)}
                 inputProps={{ maxLength: LIMITS.popupSectionLabel }}
@@ -1047,7 +1052,7 @@ function SectionsEditor({ sections, errors, submitted, onChange }) {
                 fullWidth
               />
               <TextField
-                label="Text"
+                label={t('cmsFieldText')}
                 value={section.text || ''}
                 onChange={(e) => updateAt(index, 'text', e.target.value)}
                 inputProps={{ maxLength: LIMITS.popupSectionText }}
@@ -1068,7 +1073,7 @@ function SectionsEditor({ sections, errors, submitted, onChange }) {
 
       {sections.length < LEARN_TOGETHER_MAX_SECTIONS ? (
         <Button startIcon={<AddIcon />} onClick={addSection} sx={{ alignSelf: 'flex-start' }}>
-          Add sub-section
+          {t('cmsAddSubsection')}
         </Button>
       ) : null}
     </Stack>

@@ -49,6 +49,7 @@ function relativeTime(ts, t, intlLocale) {
 }
 
 const BLANK_FORM = { title: '', body: '', type: 'general' };
+const SEND_ALL = '__all__';
 
 export default function UpdatesPage() {
   const { currentUser } = useAdmin();
@@ -64,6 +65,12 @@ export default function UpdatesPage() {
   const [error, setError] = useState('');
   const [showArchived, setShowArchived] = useState(false);
   const modalRef = useRef(null);
+
+  // ── Compose recipient picker state ───────────────────────
+  const [composeRecipients, setComposeRecipients] = useState([]);
+  const [composeRecipientsLoading, setComposeRecipientsLoading] = useState(false);
+  const [composeRecipientsFetchError, setComposeRecipientsFetchError] = useState('');
+  const [composeSelectedUids, setComposeSelectedUids] = useState(SEND_ALL);
 
   // ── Email modal state ────────────────────────────────────
   const [emailTarget, setEmailTarget] = useState(null); // the update being emailed
@@ -100,11 +107,56 @@ export default function UpdatesPage() {
   }, [showModal, emailTarget]);
 
   // ── Compose handlers ─────────────────────────────────────
-  function openModal() {
+  async function openModal() {
     setForm(BLANK_FORM);
     setError('');
+    setComposeSelectedUids(SEND_ALL);
+    setComposeRecipients([]);
+    setComposeRecipientsFetchError('');
     setShowModal(true);
+
+    // Load participants for the recipient picker
+    setComposeRecipientsLoading(true);
+    try {
+      const people = await fetchParticipants();
+      setComposeRecipients(people);
+    } catch (err) {
+      console.error('Failed to fetch participants for compose:', err);
+      setComposeRecipientsFetchError(t('upErrLoadParticipants'));
+    } finally {
+      setComposeRecipientsLoading(false);
+    }
   }
+
+  function toggleComposeRecipient(uid) {
+    setComposeSelectedUids((prev) => {
+      // If switching from "all" to individual selection,
+      // start with everyone selected except the toggled one
+      if (prev === SEND_ALL) {
+        const allUids = new Set(composeRecipients.map((p) => p.uid));
+        allUids.delete(uid);
+        return allUids;
+      }
+      const next = new Set(prev);
+      if (next.has(uid)) next.delete(uid);
+      else next.add(uid);
+      // If all are now selected, switch back to SEND_ALL
+      if (next.size === composeRecipients.length) return SEND_ALL;
+      return next;
+    });
+  }
+
+  function toggleComposeSelectAll() {
+    setComposeSelectedUids((prev) => {
+      if (prev === SEND_ALL) return new Set();
+      return SEND_ALL;
+    });
+  }
+
+  const composeAllSelected = composeSelectedUids === SEND_ALL;
+  const composeSelectedCount = composeAllSelected
+    ? composeRecipients.length
+    : composeSelectedUids.size;
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -115,7 +167,12 @@ export default function UpdatesPage() {
     setSubmitting(true);
     setError('');
     try {
-      await createUpdate(form, {
+      // Build targetUids from the compose recipient selection
+      let targetUids;
+      if (composeSelectedUids !== SEND_ALL && composeSelectedUids.size > 0) {
+        targetUids = Array.from(composeSelectedUids);
+      }
+      await createUpdate({ ...form, targetUids }, {
         uid: currentUser.uid,
         displayName: currentUser.displayName || currentUser.email,
       });
@@ -383,6 +440,78 @@ export default function UpdatesPage() {
                 />
               </div>
 
+              {/* ── Recipient picker ──────────────────────── */}
+              <div className="updates-modal__field">
+                <label>{t('upRecipientsLabel')}</label>
+                <div className="updates-compose-recipients">
+                  {composeRecipientsLoading && (
+                    <div className="updates-email-modal__status">
+                      <span className="updates-email-modal__spinner" />
+                      {t('upLoadingShort')}
+                    </div>
+                  )}
+
+                  {!composeRecipientsLoading && composeRecipientsFetchError && (
+                    <p className="updates-modal__error">{composeRecipientsFetchError}</p>
+                  )}
+
+                  {!composeRecipientsLoading && !composeRecipientsFetchError && (
+                    <>
+                      <div className="updates-email-modal__recipients-head">
+                        <div className="updates-email-modal__count">
+                          <GroupOutlinedIcon style={{ fontSize: '1.125rem' }} />
+                          <span>
+                            {t('upSelectedCount')
+                              .replace('{selected}', composeSelectedCount)
+                              .replace('{total}', composeRecipients.length)}
+                          </span>
+                        </div>
+                        {composeRecipients.length > 0 && (
+                          <button
+                            type="button"
+                            className="updates-email-modal__select-all"
+                            onClick={toggleComposeSelectAll}
+                          >
+                            {composeAllSelected ? t('upClearAll') : t('upSelectAll')}
+                          </button>
+                        )}
+                      </div>
+
+                      {composeRecipients.length > 0 && (
+                        <ul className="updates-email-modal__recipients">
+                          {composeRecipients.map((p) => {
+                            const checked = composeAllSelected || (composeSelectedUids instanceof Set && composeSelectedUids.has(p.uid));
+                            return (
+                              <li key={p.uid}>
+                                <label
+                                  className={`updates-email-modal__recipient${checked ? ' is-checked' : ''}`}
+                                >
+                                  <input
+                                    type="checkbox"
+                                    checked={checked}
+                                    onChange={() => toggleComposeRecipient(p.uid)}
+                                  />
+                                  <span className="updates-email-modal__recipient-info">
+                                    <span className="updates-email-modal__recipient-name">{p.name}</span>
+                                    <span className="updates-email-modal__recipient-email">{p.email}</span>
+                                  </span>
+                                </label>
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      )}
+
+                      {composeRecipients.length === 0 && (
+                        <p className="updates-email-modal__note">
+                          {t('upNoAccountsNote')}
+                        </p>
+                      )}
+                    </>
+                  )}
+                </div>
+              </div>
+
               {error && <p className="updates-modal__error">{error}</p>}
 
               <div className="updates-modal__footer">
@@ -396,9 +525,9 @@ export default function UpdatesPage() {
                 <button
                   type="submit"
                   className="updates-modal__submit"
-                  disabled={submitting}
+                  disabled={submitting || composeSelectedCount === 0}
                 >
-                  {submitting ? t('upPublishing') : t('upPublishUpdate')}
+                  {submitting ? t('upPublishing') : `${t('upPublishUpdate')}${composeSelectedCount > 0 ? ` (${composeSelectedCount})` : ''}`}
                 </button>
               </div>
             </form>
