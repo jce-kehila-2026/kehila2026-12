@@ -308,51 +308,51 @@ export default function UserManagementPage() {
         width: '100%',
         maxWidth: 'none',
         minHeight: '100%',
-        height: '100%',
-        maxHeight: '100%',
-        overflow: 'hidden',
+        height: 'auto',
+        maxHeight: 'none',
+        overflow: 'visible',
         boxSizing: 'border-box',
-        background:
-          'radial-gradient(circle at 12% 18%, rgba(223, 50, 123, 0.09), transparent 30%), radial-gradient(circle at 92% 4%, rgba(109, 60, 207, 0.12), transparent 34%), linear-gradient(135deg, #FAF7FF 0%, #FFF9FC 48%, #F7FBFF 100%)',
+        mt: { xs: -1.5, md: -2.5 },
       }}
     >
-      <Stack spacing={2.8} sx={{ width: '100%', maxWidth: 'none', height: '100%', minHeight: 0 }}>
-        <Stack direction={{ xs: 'column', lg: 'row' }} spacing={2} alignItems={{ lg: 'center' }} justifyContent="space-between">
-          <Box>
-            <Typography variant="h3" sx={{ fontSize: { xs: '1.875rem', md: '2.4375rem' }, fontWeight: 950, color: '#100B2F', lineHeight: 1.05 }}>
-              {t('umTitle')}
-            </Typography>
-          </Box>
-          <Button
-            variant="outlined"
-            startIcon={<PreviewIcon />}
-            onClick={() => navigate('/home')}
-            sx={{
-              alignSelf: { xs: 'flex-start', lg: 'center' },
-              height: '3rem',
-              px: 3.2,
-              borderRadius: 999,
-              borderColor: 'rgba(223, 50, 123, 0.46)',
-              color: '#C52A72',
-              bgcolor: 'rgba(255,255,255,0.62)',
-              fontWeight: 900,
-              boxShadow: '0 12px 28px rgba(223, 50, 123, 0.06)',
-              '& .MuiButton-startIcon': {
-                marginInlineEnd: '14px',
-                marginInlineStart: 0,
-                display: 'inherit',
-              },
-              '&:hover': {
-                borderColor: 'rgba(223, 50, 123, 0.7)',
-                bgcolor: 'rgba(255, 246, 251, 0.92)',
-              },
-            }}
-          >
-            {t('umPreviewParticipant')}
-          </Button>
-        </Stack>
+      <Stack spacing={1.25} sx={{ width: '100%', maxWidth: 'none', minHeight: 0 }}>
+        <Stack spacing={1}>
+          <Stack direction={{ xs: 'column', lg: 'row' }} spacing={2} alignItems={{ lg: 'center' }} justifyContent="space-between">
+            <Box>
+              <Typography variant="h3" sx={{ fontSize: { xs: '1.875rem', md: '2.4375rem' }, fontWeight: 950, color: '#100B2F', lineHeight: 1.05 }}>
+                {t('umTitle')}
+              </Typography>
+            </Box>
+            <Button
+              variant="outlined"
+              startIcon={<PreviewIcon />}
+              onClick={() => navigate('/home')}
+              sx={{
+                alignSelf: { xs: 'flex-start', lg: 'center' },
+                height: '3rem',
+                px: 3.2,
+                borderRadius: 999,
+                borderColor: 'rgba(223, 50, 123, 0.46)',
+                color: '#C52A72',
+                bgcolor: 'rgba(255,255,255,0.62)',
+                fontWeight: 900,
+                boxShadow: '0 12px 28px rgba(223, 50, 123, 0.06)',
+                '& .MuiButton-startIcon': {
+                  marginInlineEnd: '14px',
+                  marginInlineStart: 0,
+                  display: 'inherit',
+                },
+                '&:hover': {
+                  borderColor: 'rgba(223, 50, 123, 0.7)',
+                  bgcolor: 'rgba(255, 246, 251, 0.92)',
+                },
+              }}
+            >
+              {t('umPreviewParticipant')}
+            </Button>
+          </Stack>
 
-        <Stack direction="row" spacing={1.2} sx={{ flexShrink: 0 }} role="tablist" aria-label={t('umSectionsAria')}>
+          <Stack direction="row" spacing={1.2} sx={{ flexShrink: 0 }} role="tablist" aria-label={t('umSectionsAria')}>
           {[
             { key: 'users', label: t('tabUsers') },
             { key: 'applications', label: t('tabApplications') },
@@ -376,7 +376,7 @@ export default function UserManagementPage() {
                     ? 'linear-gradient(135deg, #7C3AED 0%, #DF327B 100%)'
                     : 'rgba(255,255,255,0.7)',
                   border: '1px solid rgba(124, 58, 237, 0.16)',
-                  boxShadow: selected ? '0 14px 30px rgba(124, 58, 237, 0.22)' : 'none',
+                  boxShadow: selected && tab.key === 'applications' ? '0 14px 30px rgba(124, 58, 237, 0.22)' : 'none',
                   '&:hover': {
                     background: selected
                       ? 'linear-gradient(135deg, #6F32D8 0%, #D12B72 100%)'
@@ -405,6 +405,7 @@ export default function UserManagementPage() {
               </Button>
             );
           })}
+          </Stack>
         </Stack>
 
         <Grid
@@ -413,7 +414,7 @@ export default function UserManagementPage() {
           alignItems="flex-start"
           sx={{ width: '100%', maxWidth: 'none', minHeight: 0, flex: 1, m: 0 }}
         >
-          <Grid item xs={12} sx={{ width: '100%', maxWidth: 'none', flexBasis: '100%', p: 0 }}>
+          <Grid item xs={12} sx={{ width: '100%', maxWidth: 'none', flexBasis: '100%', p: 0, alignSelf: 'flex-start' }}>
             {activeTab === 'applications' ? (
               <JoinRequestsTab requests={joinRequests} loading={joinLoading} onChanged={loadJoinRequests} />
             ) : (
@@ -426,16 +427,11 @@ export default function UserManagementPage() {
                 borderRadius: '28px',
                 boxShadow: '0 28px 74px rgba(91, 57, 145, 0.11)',
                 backdropFilter: 'blur(22px)',
-                overflow: 'hidden',
-                height: '100%',
-                maxHeight: '100%',
-                display: 'flex',
-                flexDirection: 'column',
-                minHeight: 0,
+                alignSelf: 'flex-start',
               }}
             >
-          <Stack direction={{ xs: 'column', xl: 'row' }} spacing={2} alignItems={{ xl: 'center' }} justifyContent="space-between" sx={{ p: { xs: 2.2, md: 3 }, flexShrink: 0 }}>
-            <Stack direction="row" spacing={1.1} alignItems="center">
+          <Stack direction={{ xs: 'column', md: 'row' }} spacing={0.5} alignItems={{ md: 'center' }} justifyContent="space-between" sx={{ px: { xs: 1, md: 1.35 }, pt: { xs: 0.75, md: 1 }, pb: 0.25, flexShrink: 0 }}>
+            <Stack direction="row" spacing={1.1} alignItems="center" sx={{ flexShrink: 0 }}>
               <Typography variant="h5" fontWeight={950} sx={{ color: '#100B2F' }}>{t('umUsersHeading')}</Typography>
               <Chip
                 label={t('umTotalChip').replace('{n}', users.length)}
@@ -450,7 +446,7 @@ export default function UserManagementPage() {
               />
             </Stack>
 
-            <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.4} sx={{ flex: 1, justifyContent: 'flex-end' }}>
+            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ flex: 1, justifyContent: 'flex-end', minWidth: 0 }}>
               <TextField
                 placeholder={t('umSearchPlaceholder')}
                 value={search}
@@ -515,20 +511,15 @@ export default function UserManagementPage() {
 
           <Box
             sx={{
-              px: { xs: 2, md: 3 },
-              pb: { xs: 2.2, md: 3 },
-              flex: 1,
-              minHeight: 0,
-              overflow: 'hidden',
-              display: 'flex',
-              flexDirection: 'column',
+              px: { xs: 1, md: 1.35 },
+              pb: { xs: 0.75, md: 1 },
             }}
           >
             <Box
               sx={{
                 ...rowGrid,
                 px: 2.2,
-                py: 1.4,
+                py: 0.5,
                 display: { xs: 'none', md: 'grid' },
                 borderRadius: '18px 18px 0 0',
                 border: '1px solid rgba(130, 92, 206, 0.10)',
@@ -561,11 +552,10 @@ export default function UserManagementPage() {
 
             <Box
               sx={{
-                flex: 1,
-                minHeight: 0,
-                maxHeight: 'calc(100vh - 330px)',
+                maxHeight: { xs: 'calc(100dvh - 420px)', md: 'calc(100dvh - 360px)' },
                 overflowY: 'auto',
                 overflowX: 'hidden',
+                scrollPaddingBottom: '72px',
                 pr: '6px',
                 mr: '-6px',
                 '&::-webkit-scrollbar': { width: '0.5rem' },
@@ -573,7 +563,7 @@ export default function UserManagementPage() {
                 '&::-webkit-scrollbar-thumb': { background: 'rgba(167, 139, 250, 0.5)', borderRadius: 999 },
               }}
             >
-              <Stack spacing={1.1}>
+              <Stack spacing={1.1} sx={{ pb: '72px' }}>
                 {loading ? (
                   <Box sx={{ py: 8, textAlign: 'center' }}>
                     <CircularProgress />
@@ -679,38 +669,6 @@ export default function UserManagementPage() {
                 )}
               </Stack>
             </Box>
-            {!loading && filteredUsers.length > 0 ? (
-              <Stack
-                direction={{ xs: 'column', sm: 'row' }}
-                spacing={1.5}
-                justifyContent="space-between"
-                alignItems={{ sm: 'center' }}
-                sx={{ pt: 2, flexShrink: 0 }}
-              >
-                <Typography color="#4F4A70" fontWeight={750}>
-                  {t('umShowingResults').replace('{shown}', filteredUsers.length).replace('{total}', filteredUsers.length)}
-                </Typography>
-                <Stack direction="row" spacing={1} alignItems="center">
-                  <IconButton size="small" disabled sx={{ color: '#B8B0D0' }}>{'<'}</IconButton>
-                  <Button
-                    variant="contained"
-                    disableElevation
-                    sx={{
-                      minWidth: '2.625rem',
-                      height: '2.625rem',
-                      borderRadius: '14px',
-                      bgcolor: '#E9D9FF',
-                      color: '#6D3CCF',
-                      fontWeight: 950,
-                      '&:hover': { bgcolor: '#E3D0FF' },
-                    }}
-                  >
-                    1
-                  </Button>
-                  <IconButton size="small" disabled sx={{ color: '#B8B0D0' }}>{'>'}</IconButton>
-                </Stack>
-              </Stack>
-            ) : null}
           </Box>
             </Box>
             )}
