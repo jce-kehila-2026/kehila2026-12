@@ -28,15 +28,10 @@ import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
 
 const LIMITS = {
-  titleAccent: 60,
-  titleRest: 60,
+  title: 120,
   intro: 300,
-  ctaJoin: 40,
-  ctaHowItWorks: 40,
   stepTitle: 40,
-  stepText: 120,
   statTitle: 40,
-  statDescription: 120,
   statValueMax: 999999999,
 };
 
@@ -81,20 +76,15 @@ function statisticsToForm(statistics) {
     icon: stat.icon || STATISTIC_ICON_KEYS[0],
     value: Number.isFinite(stat.value) ? String(stat.value) : '',
     title: stat.title || '',
-    description: stat.description || '',
   }));
 }
 
 function heroContentToForm(heroContent) {
   return {
-    titleAccent: heroContent.titleAccent || '',
-    titleRest: heroContent.titleRest || '',
+    title: heroContent.title || '',
     intro: heroContent.intro || '',
-    ctaJoin: heroContent.ctaJoin || '',
-    ctaHowItWorks: heroContent.ctaHowItWorks || '',
     steps: (heroContent.steps || DEFAULT_HERO_CONTENT.steps).map((s) => ({
       title: s.title || '',
-      text: s.text || '',
     })),
   };
 }
@@ -183,11 +173,8 @@ export default function PublicHomePageHomeTab() {
   const errors = useMemo(() => {
     const next = {};
     const hc = form.heroContent;
-    if (!hc.titleAccent.trim()) next['hc.titleAccent'] = t('cmsTitleRequired');
-    if (!hc.titleRest.trim()) next['hc.titleRest'] = t('cmsTitleRequired');
+    if (!hc.title.trim()) next['hc.title'] = t('cmsTitleRequired');
     if (!hc.intro.trim()) next['hc.intro'] = t('cmsTitleRequired');
-    if (!hc.ctaJoin.trim()) next['hc.ctaJoin'] = t('cmsTitleRequired');
-    if (!hc.ctaHowItWorks.trim()) next['hc.ctaHowItWorks'] = t('cmsTitleRequired');
     (hc.steps || []).forEach((step, index) => {
       if (!step.title.trim()) next[`step.${index}.title`] = t('cmsTitleRequired');
     });
@@ -269,22 +256,17 @@ export default function PublicHomePageHomeTab() {
           icon: STATISTIC_ICON_KEYS.includes(stat.icon) ? stat.icon : fallback.icon,
           value: Number.isFinite(parsed) ? Math.floor(parsed) : fallback.value,
           title: stat.title.trim(),
-          description: stat.description.trim(),
         };
       });
 
       // Build the hero content payload
       const stepsPayload = hc.steps.slice(0, HERO_CONTENT_STEPS_COUNT).map((step) => ({
         title: step.title.trim(),
-        text: step.text.trim(),
       }));
 
       const heroContentPayload = {
-        titleAccent: hc.titleAccent.trim(),
-        titleRest: hc.titleRest.trim(),
+        title: hc.title.trim(),
         intro: hc.intro.trim(),
-        ctaJoin: hc.ctaJoin.trim(),
-        ctaHowItWorks: hc.ctaHowItWorks.trim(),
         steps: stepsPayload,
       };
 
@@ -297,16 +279,13 @@ export default function PublicHomePageHomeTab() {
           const [heroTr, stepsTr, statsTr] = await Promise.all([
             translateFields(
               {
-                titleAccent: heroContentPayload.titleAccent,
-                titleRest: heroContentPayload.titleRest,
+                title: heroContentPayload.title,
                 intro: heroContentPayload.intro,
-                ctaJoin: heroContentPayload.ctaJoin,
-                ctaHowItWorks: heroContentPayload.ctaHowItWorks,
               },
-              ['titleAccent', 'titleRest', 'intro', 'ctaJoin', 'ctaHowItWorks'],
+              ['title', 'intro'],
             ),
-            translateItems(stepsPayload, ['title', 'text']),
-            translateItems(statisticsPayload, ['title', 'description']),
+            translateItems(stepsPayload, ['title']),
+            translateItems(statisticsPayload, ['title']),
           ]);
           if (Object.keys(heroTr).length) heroTranslations = heroTr;
           translatedSteps = stepsTr;
@@ -397,34 +376,19 @@ export default function PublicHomePageHomeTab() {
           <Typography variant="h6" sx={{ mb: 2 }}>{t('cmsHeroText')}</Typography>
           <Stack spacing={2}>
             <TextField
-              label={t('cmsHeroTitleAccent')}
-              value={hc.titleAccent}
-              onChange={(e) => setHeroField('titleAccent', e.target.value)}
-              onBlur={() => handleBlur('hc.titleAccent')}
-              inputProps={{ maxLength: LIMITS.titleAccent }}
+              label={t('cmsHeroTitle')}
+              value={hc.title}
+              onChange={(e) => setHeroField('title', e.target.value)}
+              onBlur={() => handleBlur('hc.title')}
+              inputProps={{ maxLength: LIMITS.title }}
               helperText={
-                (shouldShowError('hc.titleAccent') && errors['hc.titleAccent']) ||
-                t('cmsHeroTitleAccentHelper')
+                (shouldShowError('hc.title') && errors['hc.title']) ||
+                `${hc.title.length} / ${LIMITS.title}`
               }
-              error={shouldShowError('hc.titleAccent')}
+              error={shouldShowError('hc.title')}
               required
               fullWidth
-              id="hero-title-accent"
-            />
-            <TextField
-              label={t('cmsHeroTitleRest')}
-              value={hc.titleRest}
-              onChange={(e) => setHeroField('titleRest', e.target.value)}
-              onBlur={() => handleBlur('hc.titleRest')}
-              inputProps={{ maxLength: LIMITS.titleRest }}
-              helperText={
-                (shouldShowError('hc.titleRest') && errors['hc.titleRest']) ||
-                t('cmsHeroTitleRestHelper')
-              }
-              error={shouldShowError('hc.titleRest')}
-              required
-              fullWidth
-              id="hero-title-rest"
+              id="hero-title"
             />
             <TextField
               label={t('cmsHeroIntro')}
@@ -464,95 +428,23 @@ export default function PublicHomePageHomeTab() {
                 <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1.5 }}>
                   {t('cmsStepNumber').replace('{n}', index + 1)}
                 </Typography>
-                <Box
-                  sx={{
-                    display: 'grid',
-                    gap: '1rem',
-                    alignItems: 'flex-start',
-                    gridTemplateColumns: {
-                      xs: 'minmax(0, 1fr)',
-                      md: 'minmax(0, 1fr) minmax(0, 2fr)',
-                    },
-                  }}
-                >
-                  <TextField
-                    label={t('cmsStepTitle')}
-                    value={step.title}
-                    onChange={(e) => setStepField(index, 'title', e.target.value)}
-                    onBlur={() => handleBlur(`step.${index}.title`)}
-                    inputProps={{ maxLength: LIMITS.stepTitle }}
-                    error={shouldShowError(`step.${index}.title`)}
-                    helperText={
-                      (shouldShowError(`step.${index}.title`) && errors[`step.${index}.title`]) ||
-                      `${step.title.length} / ${LIMITS.stepTitle}`
-                    }
-                    required
-                    fullWidth
-                  />
-                  <TextField
-                    label={t('cmsStepText')}
-                    value={step.text}
-                    onChange={(e) => setStepField(index, 'text', e.target.value)}
-                    onBlur={() => handleBlur(`step.${index}.text`)}
-                    inputProps={{ maxLength: LIMITS.stepText }}
-                    helperText={`${step.text.length} / ${LIMITS.stepText}`}
-                    fullWidth
-                  />
-                </Box>
+                <TextField
+                  label={t('cmsStepTitle')}
+                  value={step.title}
+                  onChange={(e) => setStepField(index, 'title', e.target.value)}
+                  onBlur={() => handleBlur(`step.${index}.title`)}
+                  inputProps={{ maxLength: LIMITS.stepTitle }}
+                  error={shouldShowError(`step.${index}.title`)}
+                  helperText={
+                    (shouldShowError(`step.${index}.title`) && errors[`step.${index}.title`]) ||
+                    `${step.title.length} / ${LIMITS.stepTitle}`
+                  }
+                  required
+                  fullWidth
+                />
               </Paper>
             ))}
           </Stack>
-        </Paper>
-
-        {/* ── CTA Buttons ────────────────────────────── */}
-        <Paper sx={{ p: 3 }}>
-          <Typography variant="h6" sx={{ mb: 0.5 }}>
-            {t('cmsCtaButtons')}
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            {t('cmsCtaButtonsHelper')}
-          </Typography>
-          <Box
-            sx={{
-              display: 'grid',
-              gap: '1rem',
-              gridTemplateColumns: {
-                xs: '1fr',
-                sm: '1fr 1fr',
-              },
-            }}
-          >
-            <TextField
-              label={t('cmsCtaJoinLabel')}
-              value={hc.ctaJoin}
-              onChange={(e) => setHeroField('ctaJoin', e.target.value)}
-              onBlur={() => handleBlur('hc.ctaJoin')}
-              inputProps={{ maxLength: LIMITS.ctaJoin }}
-              error={shouldShowError('hc.ctaJoin')}
-              helperText={
-                (shouldShowError('hc.ctaJoin') && errors['hc.ctaJoin']) ||
-                `${hc.ctaJoin.length} / ${LIMITS.ctaJoin}`
-              }
-              required
-              fullWidth
-              id="hero-cta-join"
-            />
-            <TextField
-              label={t('cmsCtaHowItWorksLabel')}
-              value={hc.ctaHowItWorks}
-              onChange={(e) => setHeroField('ctaHowItWorks', e.target.value)}
-              onBlur={() => handleBlur('hc.ctaHowItWorks')}
-              inputProps={{ maxLength: LIMITS.ctaHowItWorks }}
-              error={shouldShowError('hc.ctaHowItWorks')}
-              helperText={
-                (shouldShowError('hc.ctaHowItWorks') && errors['hc.ctaHowItWorks']) ||
-                `${hc.ctaHowItWorks.length} / ${LIMITS.ctaHowItWorks}`
-              }
-              required
-              fullWidth
-              id="hero-cta-how"
-            />
-          </Box>
         </Paper>
 
         {/* ── Impact Statistics ──────────────────────── */}
@@ -580,7 +472,7 @@ export default function PublicHomePageHomeTab() {
                     alignItems: 'flex-start',
                     gridTemplateColumns: {
                       xs: 'minmax(0, 1fr)',
-                      md: '130px minmax(0, 1.1fr) minmax(0, 1.6fr) 170px',
+                      md: '130px minmax(0, 1fr) 170px',
                     },
                   }}
                 >
@@ -611,15 +503,6 @@ export default function PublicHomePageHomeTab() {
                       `${stat.title.length} / ${LIMITS.statTitle}`
                     }
                     required
-                    fullWidth
-                  />
-                  <TextField
-                    label={t('cmsFieldDescription')}
-                    value={stat.description}
-                    onChange={(e) => setStatField(index, 'description', e.target.value)}
-                    onBlur={() => handleStatBlur(index, 'description')}
-                    inputProps={{ maxLength: LIMITS.statDescription }}
-                    helperText={`${stat.description.length} / ${LIMITS.statDescription}`}
                     fullWidth
                   />
                   <TextField

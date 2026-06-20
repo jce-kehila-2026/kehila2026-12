@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import PublicNavbar from '../components/PublicNavbar';
 import HeroSection from '../components/HeroSection';
 import LearnTogetherSection from '../components/LearnTogetherSection';
@@ -15,9 +16,22 @@ import { getPublicHomeDoc, getDefaultPublicHomeDoc } from '../services/publicPag
 import { PublicLocaleProvider, usePublicLocale } from '../context/PublicLocaleContext';
 import '../styles/PublicHomePage.css';
 
+function PreviewBanner() {
+  return (
+    <div className="public-preview-banner" role="banner">
+      <span className="public-preview-banner__label">⚙ Preview mode</span>
+      <a className="public-preview-banner__back" href="/admin/cms">
+        ← Back to Admin
+      </a>
+    </div>
+  );
+}
+
 function PublicHomePageContent() {
   const pageRef = useRef(null);
   const { direction, lang, locale, t } = usePublicLocale();
+  const [searchParams] = useSearchParams();
+  const isPreview = searchParams.get('preview') === '1';
   const [content, setContent] = useState(() => getFallbackPublicHomepageContent());
   const [publicHomeDoc, setPublicHomeDoc] = useState(() => getDefaultPublicHomeDoc());
   const [loading, setLoading] = useState(true);
@@ -87,7 +101,8 @@ function PublicHomePageContent() {
   }, []);
 
   return (
-    <div className="public-homepage public-homepage--main" ref={pageRef} dir={direction} lang={lang}>
+    <div className={`public-homepage public-homepage--main${isPreview ? ' public-homepage--preview' : ''}`} ref={pageRef} dir={direction} lang={lang}>
+      {isPreview && <PreviewBanner />}
       <a className="public-skip-link" href="#public-main">
         {t('skipToContent')}
       </a>

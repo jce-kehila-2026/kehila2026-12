@@ -73,7 +73,7 @@ export default function CMSPage() {
           variant="outlined"
           startIcon={<PreviewIcon />}
           component="a"
-          href="/public"
+          href="/public?preview=1"
           target="_blank"
           rel="noopener noreferrer"
           sx={{ flexShrink: 0 }}
