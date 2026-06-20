@@ -30,8 +30,6 @@ import CircularProgress from '@mui/material/CircularProgress';
 const LIMITS = {
   title: 120,
   intro: 300,
-  ctaJoin: 40,
-  ctaHowItWorks: 40,
   stepTitle: 40,
   statTitle: 40,
   statDescription: 120,
@@ -87,8 +85,6 @@ function heroContentToForm(heroContent) {
   return {
     title: heroContent.title || '',
     intro: heroContent.intro || '',
-    ctaJoin: heroContent.ctaJoin || '',
-    ctaHowItWorks: heroContent.ctaHowItWorks || '',
     steps: (heroContent.steps || DEFAULT_HERO_CONTENT.steps).map((s) => ({
       title: s.title || '',
     })),
@@ -181,8 +177,6 @@ export default function PublicHomePageHomeTab() {
     const hc = form.heroContent;
     if (!hc.title.trim()) next['hc.title'] = t('cmsTitleRequired');
     if (!hc.intro.trim()) next['hc.intro'] = t('cmsTitleRequired');
-    if (!hc.ctaJoin.trim()) next['hc.ctaJoin'] = t('cmsTitleRequired');
-    if (!hc.ctaHowItWorks.trim()) next['hc.ctaHowItWorks'] = t('cmsTitleRequired');
     (hc.steps || []).forEach((step, index) => {
       if (!step.title.trim()) next[`step.${index}.title`] = t('cmsTitleRequired');
     });
@@ -276,8 +270,6 @@ export default function PublicHomePageHomeTab() {
       const heroContentPayload = {
         title: hc.title.trim(),
         intro: hc.intro.trim(),
-        ctaJoin: hc.ctaJoin.trim(),
-        ctaHowItWorks: hc.ctaHowItWorks.trim(),
         steps: stepsPayload,
       };
 
@@ -292,10 +284,8 @@ export default function PublicHomePageHomeTab() {
               {
                 title: heroContentPayload.title,
                 intro: heroContentPayload.intro,
-                ctaJoin: heroContentPayload.ctaJoin,
-                ctaHowItWorks: heroContentPayload.ctaHowItWorks,
               },
-              ['title', 'intro', 'ctaJoin', 'ctaHowItWorks'],
+              ['title', 'intro'],
             ),
             translateItems(stepsPayload, ['title']),
             translateItems(statisticsPayload, ['title', 'description']),
@@ -458,57 +448,6 @@ export default function PublicHomePageHomeTab() {
               </Paper>
             ))}
           </Stack>
-        </Paper>
-
-        {/* ── CTA Buttons ────────────────────────────── */}
-        <Paper sx={{ p: 3 }}>
-          <Typography variant="h6" sx={{ mb: 0.5 }}>
-            {t('cmsCtaButtons')}
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            {t('cmsCtaButtonsHelper')}
-          </Typography>
-          <Box
-            sx={{
-              display: 'grid',
-              gap: '1rem',
-              gridTemplateColumns: {
-                xs: '1fr',
-                sm: '1fr 1fr',
-              },
-            }}
-          >
-            <TextField
-              label={t('cmsCtaJoinLabel')}
-              value={hc.ctaJoin}
-              onChange={(e) => setHeroField('ctaJoin', e.target.value)}
-              onBlur={() => handleBlur('hc.ctaJoin')}
-              inputProps={{ maxLength: LIMITS.ctaJoin }}
-              error={shouldShowError('hc.ctaJoin')}
-              helperText={
-                (shouldShowError('hc.ctaJoin') && errors['hc.ctaJoin']) ||
-                `${hc.ctaJoin.length} / ${LIMITS.ctaJoin}`
-              }
-              required
-              fullWidth
-              id="hero-cta-join"
-            />
-            <TextField
-              label={t('cmsCtaHowItWorksLabel')}
-              value={hc.ctaHowItWorks}
-              onChange={(e) => setHeroField('ctaHowItWorks', e.target.value)}
-              onBlur={() => handleBlur('hc.ctaHowItWorks')}
-              inputProps={{ maxLength: LIMITS.ctaHowItWorks }}
-              error={shouldShowError('hc.ctaHowItWorks')}
-              helperText={
-                (shouldShowError('hc.ctaHowItWorks') && errors['hc.ctaHowItWorks']) ||
-                `${hc.ctaHowItWorks.length} / ${LIMITS.ctaHowItWorks}`
-              }
-              required
-              fullWidth
-              id="hero-cta-how"
-            />
-          </Box>
         </Paper>
 
         {/* ── Impact Statistics ──────────────────────── */}
