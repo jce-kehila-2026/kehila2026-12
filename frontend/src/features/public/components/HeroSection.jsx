@@ -3,16 +3,19 @@ import { HandHeart, Heart, MessageCircleMore, UsersRound } from 'lucide-react';
 import heroSupportJourney from '../../../assets/images/hero-support-journey.png';
 import { usePublicLocale } from '../context/PublicLocaleContext';
 import { localizeStatistics } from '../i18n/publicHomeContentLocalization';
+import { localizeField } from '../../../i18n/localizeField';
 import EmptyState from './EmptyState';
 import ErrorState from './ErrorState';
 import LoadingState from './LoadingState';
 import { StatisticsGrid, adaptStatisticForRender } from './StatisticsSection';
 
-const JOURNEY_STEPS = [
-  { icon: MessageCircleMore, titleKey: 'heroStepContactTitle', textKey: 'heroStepContactText' },
-  { icon: Heart, titleKey: 'heroStepMatchTitle', textKey: 'heroStepMatchText' },
-  { icon: HandHeart, titleKey: 'heroStepGuideTitle', textKey: 'heroStepGuideText' },
-  { icon: UsersRound, titleKey: 'heroStepTogetherTitle', textKey: 'heroStepTogetherText' },
+const JOURNEY_STEP_ICONS = [MessageCircleMore, Heart, HandHeart, UsersRound];
+
+const JOURNEY_STEP_FALLBACK_KEYS = [
+  { titleKey: 'heroStepContactTitle' },
+  { titleKey: 'heroStepMatchTitle' },
+  { titleKey: 'heroStepGuideTitle' },
+  { titleKey: 'heroStepTogetherTitle' },
 ];
 
 const HERO_STATISTIC_VALUES = {
@@ -30,14 +33,59 @@ function revealHeroElements(root) {
   });
 }
 
+/**
+ * Resolve a CMS hero content field with localization.
+ * Priority: Azure translation for current locale → Hebrew source → static t() fallback
+ */
+function resolveField(value, translationsObj, fieldName, locale, t, fallbackKey) {
+  // For non-Hebrew: prefer Azure-translated value
+  if (locale !== 'he') {
+    const fromAzure = localizeField(translationsObj?.[fieldName], locale);
+    if (fromAzure) return fromAzure;
+  }
+  // Hebrew or no Azure: use the CMS Hebrew value, then static fallback
+  return value || t(fallbackKey);
+}
+
 export default function HeroSection({
   hero = {},
+  heroContent,
   statistics = [],
   isLoading = false,
   hasError = false,
   onJoinClick,
 }) {
   const { locale, t } = usePublicLocale();
+  const hc = heroContent || {};
+  const hcTranslations = hc.translations || {};
+
+  // Resolve hero text fields with CMS → Azure → static fallback
+  const titleAccent = resolveField(hc.titleAccent, hcTranslations, 'titleAccent', locale, t, 'heroJourneyTitleAccent');
+  const titleRest = resolveField(hc.titleRest, hcTranslations, 'titleRest', locale, t, 'heroJourneyTitleRest');
+  const intro = resolveField(hc.intro, hcTranslations, 'intro', locale, t, 'heroJourneyIntro');
+  const ctaJoin = resolveField(hc.ctaJoin, hcTranslations, 'ctaJoin', locale, t, 'heroStartHere');
+  const ctaHowItWorks = resolveField(hc.ctaHowItWorks, hcTranslations, 'ctaHowItWorks', locale, t, 'heroHowItWorks');
+
+  // Resolve journey steps with per-step Azure translations
+  const steps = useMemo(() => {
+    const cmsSteps = Array.isArray(hc.steps) && hc.steps.length > 0 ? hc.steps : null;
+    return JOURNEY_STEP_ICONS.map((Icon, index) => {
+      const cmsStep = cmsSteps?.[index];
+      const stepTranslations = cmsStep?.translations || {};
+      const fallback = JOURNEY_STEP_FALLBACK_KEYS[index];
+
+      let title;
+      if (locale !== 'he') {
+        const fromAzure = localizeField(stepTranslations.title, locale);
+        title = fromAzure || cmsStep?.title || t(fallback.titleKey);
+      } else {
+        title = cmsStep?.title || t(fallback.titleKey);
+      }
+
+      return { Icon, title };
+    });
+  }, [hc.steps, locale, t]);
+
   const adaptedStatistics = useMemo(
     () => (
       Array.isArray(statistics)
@@ -95,33 +143,33 @@ export default function HeroSection({
         <div className="public-hero__content-region">
           <div className="public-hero__content">
             <h1 id="public-hero-title" className="reveal">
-              <span className="public-hero__title-accent">{t('heroJourneyTitleAccent')}</span>{' '}
-              <span>{t('heroJourneyTitleRest')}</span>
+              <span className="public-hero__title-accent">{titleAccent}</span>{' '}
+              <span>{titleRest}</span>
             </h1>
-            <p className="public-hero__lead reveal reveal-delay-1">{t('heroJourneyIntro')}</p>
+            <p className="public-hero__lead reveal reveal-delay-1">{intro}</p>
 
             <ol className="public-hero__journey reveal reveal-delay-2" aria-label={t('heroJourneyAriaLabel')}>
-              {JOURNEY_STEPS.map(({ icon: Icon, titleKey }, index) => (
-                <li className="public-hero__journey-step" key={titleKey}>
+              {steps.map(({ Icon, title }, index) => (
+                <li className="public-hero__journey-step" key={index}>
                   <div className="public-hero__journey-icon">
                     <Icon aria-hidden="true" strokeWidth={1.7} />
                     <span className="public-hero__journey-number">{index + 1}</span>
                   </div>
-                  <h2>{t(titleKey)}</h2>
+                  <h2>{title}</h2>
                 </li>
               ))}
             </ol>
 
             <div className="public-hero__actions reveal reveal-delay-3">
               <a className="public-hero__btn public-hero__btn--secondary" href="#join" onClick={handleJoinClick}>
-                {t('heroStartHere')}
+                {ctaJoin}
               </a>
               <a
                 className="public-hero__btn public-hero__btn--secondary"
                 href="#support"
                 dir={locale === 'en' ? 'ltr' : undefined}
               >
-                {t('heroHowItWorks')}
+                {ctaHowItWorks}
               </a>
             </div>
           </div>
