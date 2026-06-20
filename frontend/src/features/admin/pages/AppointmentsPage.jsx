@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { collection, getDocs, limit, orderBy, query } from 'firebase/firestore';
 import {
   CalendarDays,
+  Download,
   Edit3,
   Eye,
   Search,
@@ -78,6 +79,63 @@ function formatRegisteredAt(value, intlLocale, notRecorded) {
     date: date.toLocaleDateString(intlLocale, { month: 'short', day: 'numeric', year: 'numeric' }),
     time: date.toLocaleTimeString(intlLocale, { hour: '2-digit', minute: '2-digit' }),
   };
+}
+
+function escapeCsvValue(value) {
+  const str = String(value ?? '');
+  if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+    return `"${str.replace(/"/g, '""')}"`;
+  }
+  return str;
+}
+
+function downloadCsv(rows, t, intlLocale) {
+  const headers = [
+    t('apColParticipant'),
+    t('apDetailEmail'),
+    t('apColEventType'),
+    t('apColEventName'),
+    t('apColProvider'),
+    t('apColEventDateTime'),
+    t('apColRegisteredAt'),
+    t('apColStatus'),
+  ];
+
+  const csvRows = [headers.map(escapeCsvValue).join(',')];
+
+  for (const item of rows) {
+    const eventDate = formatDate(item.eventDate, intlLocale, '');
+    const eventTime = formatTime(item.eventTime, intlLocale, '');
+    const eventDateTime = [eventDate, eventTime].filter(Boolean).join(' ');
+    const reg = formatRegisteredAt(item.registeredAt, intlLocale, '');
+    const registeredAt = [reg.date, reg.time].filter(Boolean).join(' ');
+
+    csvRows.push(
+      [
+        item.participantName,
+        item.participantEmail,
+        item.eventType,
+        item.eventName,
+        item.providerName,
+        eventDateTime,
+        registeredAt,
+        item.status,
+      ]
+        .map(escapeCsvValue)
+        .join(',')
+    );
+  }
+
+  const bom = '\uFEFF';
+  const blob = new Blob([bom + csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `bookings_${new Date().toISOString().slice(0, 10)}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
 }
 
 function BookingDetailsDialog({ booking, onClose, t, intlLocale }) {
@@ -191,6 +249,16 @@ export default function AppointmentsPage() {
           <h1>{t('apTitle')}</h1>
           <p>{t('apSubtitle')}</p>
         </div>
+        <button
+          type="button"
+          className="appointments-export-csv-btn"
+          onClick={() => downloadCsv(filtered, t, intlLocale)}
+          disabled={loading || filtered.length === 0}
+          title={t('apExportCsv')}
+        >
+          <Download size={17} />
+          {t('apExportCsv')}
+        </button>
       </header>
 
       <div className="appointments-admin-layout">

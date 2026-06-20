@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db, auth } from '../../../firebase';
+import { useAdminLocale } from '../context/AdminLocaleContext';
 import { logAuditEvent } from '../services/auditService';
 import { isTranslationConfigured, translateFields, translateItems } from '../services/translationService';
 import {
@@ -43,14 +44,17 @@ const STAT_ICON_COMPONENTS = {
   sparkles: Sparkles,
 };
 
-const STAT_ICON_LABELS = {
-  'hands-heart': 'Hands & Heart',
-  megaphone: 'Megaphone',
-  'users-round': 'Users',
-  'book-open': 'Book',
-  heart: 'Heart',
-  sparkles: 'Sparkles',
+// Icon keys stay English (stored values); only the display labels are translated.
+const STAT_ICON_LABEL_KEYS = {
+  'hands-heart': 'cmsIconHandsHeart',
+  megaphone: 'cmsIconMegaphone',
+  'users-round': 'cmsIconUsers',
+  'book-open': 'cmsIconBook',
+  heart: 'cmsIconHeart',
+  sparkles: 'cmsIconSparkles',
 };
+
+const INTL_LOCALE_BY_LANG = { he: 'he-IL', en: 'en-US' };
 
 function StatIconGlyph({ iconKey, size = 20 }) {
   const Icon = STAT_ICON_COMPONENTS[iconKey];
@@ -117,17 +121,19 @@ function isValidUrlOrAnchor(value) {
   }
 }
 
-function formatTimestamp(value) {
+function formatTimestamp(value, intlLocale) {
   if (!value) return '';
   const date = typeof value.toDate === 'function' ? value.toDate() : new Date(value);
   if (Number.isNaN(date.getTime())) return '';
-  return new Intl.DateTimeFormat('en-US', {
+  return new Intl.DateTimeFormat(intlLocale, {
     dateStyle: 'medium',
     timeStyle: 'short',
   }).format(date);
 }
 
 export default function PublicHomePageHomeTab() {
+  const { t, lang, direction } = useAdminLocale();
+  const intlLocale = INTL_LOCALE_BY_LANG[lang] || 'en-US';
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState(emptyForm);
@@ -170,7 +176,7 @@ export default function PublicHomePageHomeTab() {
         setForm(next);
         setPristine(next);
         setDocMeta({ updatedAt: null, updatedBy: '', exists: false });
-        setToast({ open: true, severity: 'error', message: 'Failed to load home page content.' });
+        setToast({ open: true, severity: 'error', message: t('cmsHomeLoadFailed') });
       } finally {
         if (active) setLoading(false);
       }
@@ -188,24 +194,24 @@ export default function PublicHomePageHomeTab() {
 
   const errors = useMemo(() => {
     const next = {};
-    if (!form.title.trim()) next.title = 'Title is required.';
+    if (!form.title.trim()) next.title = t('cmsTitleRequired');
     if (form.backgroundImageUrl && !isValidUrlOrAnchor(form.backgroundImageUrl)) {
-      next.backgroundImageUrl = 'Enter a valid URL.';
+      next.backgroundImageUrl = t('cmsEnterValidUrl');
     }
     (form.statistics || []).forEach((stat, index) => {
-      if (!stat.title.trim()) next[`stat.${index}.title`] = 'Title is required.';
+      if (!stat.title.trim()) next[`stat.${index}.title`] = t('cmsTitleRequired');
       if (stat.value === '' || stat.value === null || stat.value === undefined) {
-        next[`stat.${index}.value`] = 'Value is required.';
+        next[`stat.${index}.value`] = t('cmsValueRequired');
       } else {
         const parsed = Number(stat.value);
         if (!Number.isFinite(parsed) || parsed < 0 || !Number.isInteger(parsed)) {
-          next[`stat.${index}.value`] = 'Enter a non-negative whole number.';
+          next[`stat.${index}.value`] = t('cmsValueWholeNumber');
         } else if (parsed > LIMITS.statValueMax) {
-          next[`stat.${index}.value`] = 'Value is too large.';
+          next[`stat.${index}.value`] = t('cmsValueTooLarge');
         }
       }
       if (!STATISTIC_ICON_KEYS.includes(stat.icon)) {
-        next[`stat.${index}.icon`] = 'Pick a valid icon.';
+        next[`stat.${index}.icon`] = t('cmsPickIcon');
       }
     });
     return next;
@@ -326,10 +332,10 @@ export default function PublicHomePageHomeTab() {
         updatedBy,
         exists: true,
       });
-      setToast({ open: true, severity: 'success', message: 'Home page updated.' });
+      setToast({ open: true, severity: 'success', message: t('cmsHomeUpdated') });
     } catch (err) {
       console.error('Failed to save home page content:', err);
-      setToast({ open: true, severity: 'error', message: 'Save failed. Please try again.' });
+      setToast({ open: true, severity: 'error', message: t('cmsSaveFailed') });
     } finally {
       setSaving(false);
     }
@@ -349,23 +355,23 @@ export default function PublicHomePageHomeTab() {
     );
   }
 
-  const lastUpdatedLabel = formatTimestamp(docMeta.updatedAt);
+  const lastUpdatedLabel = formatTimestamp(docMeta.updatedAt, intlLocale);
 
   return (
-    <Box sx={{ pb: 12 }}>
+    <Box sx={{ pb: 12 }} dir={direction}>
       {lastUpdatedLabel || docMeta.updatedBy ? (
         <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 2 }}>
-          Last updated: {lastUpdatedLabel || '—'}
-          {docMeta.updatedBy ? ` by ${docMeta.updatedBy}` : ''}
+          {t('cmsLastUpdated').replace('{date}', lastUpdatedLabel || '—')}
+          {docMeta.updatedBy ? t('cmsLastUpdatedBy').replace('{user}', docMeta.updatedBy) : ''}
         </Typography>
       ) : null}
 
       <Stack spacing={3}>
         <Paper sx={{ p: 3 }}>
-          <Typography variant="h6" sx={{ mb: 2 }}>Hero Text</Typography>
+          <Typography variant="h6" sx={{ mb: 2 }}>{t('cmsHeroText')}</Typography>
           <Stack spacing={2}>
             <TextField
-              label="Title"
+              label={t('cmsFieldTitle')}
               value={form.title}
               onChange={(e) => setField('title', e.target.value)}
               onBlur={() => handleBlur('title')}
@@ -377,7 +383,7 @@ export default function PublicHomePageHomeTab() {
               id="hero-title"
             />
             <TextField
-              label="Subtitle"
+              label={t('cmsFieldSubtitle')}
               value={form.subtitle}
               onChange={(e) => setField('subtitle', e.target.value)}
               onBlur={() => handleBlur('subtitle')}
@@ -387,7 +393,7 @@ export default function PublicHomePageHomeTab() {
               id="hero-subtitle"
             />
             <TextField
-              label="Description"
+              label={t('cmsFieldDescription')}
               value={form.description}
               onChange={(e) => setField('description', e.target.value)}
               onBlur={() => handleBlur('description')}
@@ -402,16 +408,16 @@ export default function PublicHomePageHomeTab() {
         </Paper>
 
         <Paper sx={{ p: 3 }}>
-          <Typography variant="h6" sx={{ mb: 2 }}>Background Image</Typography>
+          <Typography variant="h6" sx={{ mb: 2 }}>{t('cmsBackgroundImage')}</Typography>
           <Stack spacing={2}>
             <TextField
-              label="Background Image URL"
+              label={t('cmsBackgroundImageUrl')}
               value={form.backgroundImageUrl}
               onChange={(e) => setField('backgroundImageUrl', e.target.value)}
               onBlur={() => handleBlur('backgroundImageUrl')}
               helperText={
                 (shouldShowError('backgroundImageUrl') && errors.backgroundImageUrl) ||
-                'Paste a public URL (Firebase Storage, Unsplash, etc.).'
+                t('cmsBackgroundImageHelper')
               }
               error={shouldShowError('backgroundImageUrl')}
               fullWidth
@@ -420,19 +426,19 @@ export default function PublicHomePageHomeTab() {
             />
             <Box>
               <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
-                Preview
+                {t('cmsPreview')}
               </Typography>
-              <BackgroundPreview url={form.backgroundImageUrl} />
+              <BackgroundPreview url={form.backgroundImageUrl} t={t} />
             </Box>
           </Stack>
         </Paper>
 
         <Paper sx={{ p: 3 }}>
           <Typography variant="h6" sx={{ mb: 0.5 }}>
-            Impact Statistics
+            {t('cmsImpactStatistics')}
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-            Four cards shown on the public home page. Numbers display as +N,NNN (e.g. 2500 → +2,500).
+            {t('cmsImpactStatisticsHelper')}
           </Typography>
           <Stack spacing={2}>
             {form.statistics.map((stat, index) => (
@@ -442,7 +448,7 @@ export default function PublicHomePageHomeTab() {
                 sx={{ p: 2, bgcolor: 'grey.50' }}
               >
                 <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1.5 }}>
-                  Statistic #{index + 1}
+                  {t('cmsStatisticNumber').replace('{n}', index + 1)}
                 </Typography>
                 <Box
                   sx={{
@@ -456,7 +462,7 @@ export default function PublicHomePageHomeTab() {
                   }}
                 >
                   <TextField
-                    label="Value"
+                    label={t('cmsFieldValue')}
                     type="number"
                     value={stat.value}
                     onChange={(e) => setStatField(index, 'value', e.target.value)}
@@ -465,13 +471,13 @@ export default function PublicHomePageHomeTab() {
                     error={shouldShowError(`stat.${index}.value`)}
                     helperText={
                       (shouldShowError(`stat.${index}.value`) && errors[`stat.${index}.value`]) ||
-                      'e.g. 2500'
+                      t('cmsStatValueHelper')
                     }
                     required
                     fullWidth
                   />
                   <TextField
-                    label="Title"
+                    label={t('cmsFieldTitle')}
                     value={stat.title}
                     onChange={(e) => setStatField(index, 'title', e.target.value)}
                     onBlur={() => handleStatBlur(index, 'title')}
@@ -485,7 +491,7 @@ export default function PublicHomePageHomeTab() {
                     fullWidth
                   />
                   <TextField
-                    label="Description"
+                    label={t('cmsFieldDescription')}
                     value={stat.description}
                     onChange={(e) => setStatField(index, 'description', e.target.value)}
                     onBlur={() => handleStatBlur(index, 'description')}
@@ -495,7 +501,7 @@ export default function PublicHomePageHomeTab() {
                   />
                   <TextField
                     select
-                    label="Icon"
+                    label={t('cmsFieldIcon')}
                     value={stat.icon}
                     onChange={(e) => setStatField(index, 'icon', e.target.value)}
                     error={shouldShowError(`stat.${index}.icon`)}
@@ -505,7 +511,7 @@ export default function PublicHomePageHomeTab() {
                       renderValue: (selected) => (
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                           <StatIconGlyph iconKey={selected} />
-                          <span>{STAT_ICON_LABELS[selected] || selected}</span>
+                          <span>{STAT_ICON_LABEL_KEYS[selected] ? t(STAT_ICON_LABEL_KEYS[selected]) : selected}</span>
                         </Box>
                       ),
                     }}
@@ -514,7 +520,7 @@ export default function PublicHomePageHomeTab() {
                       <MenuItem key={key} value={key}>
                         <Box sx={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
                           <StatIconGlyph iconKey={key} />
-                          <span>{STAT_ICON_LABELS[key] || key}</span>
+                          <span>{STAT_ICON_LABEL_KEYS[key] ? t(STAT_ICON_LABEL_KEYS[key]) : key}</span>
                         </Box>
                       </MenuItem>
                     ))}
@@ -544,7 +550,7 @@ export default function PublicHomePageHomeTab() {
         }}
       >
         <Button onClick={handleDiscard} disabled={!dirty || saving}>
-          Discard changes
+          {t('cmsDiscardChanges')}
         </Button>
         <Button
           variant="contained"
@@ -552,7 +558,7 @@ export default function PublicHomePageHomeTab() {
           disabled={!canSave}
           id="btn-save-public-home"
         >
-          {saving ? 'Saving…' : 'Save'}
+          {saving ? t('cmsSaving') : t('cmsSave')}
         </Button>
       </Paper>
 
@@ -574,7 +580,7 @@ export default function PublicHomePageHomeTab() {
   );
 }
 
-function BackgroundPreview({ url }) {
+function BackgroundPreview({ url, t }) {
   const [errored, setErrored] = useState(false);
   useEffect(() => {
     setErrored(false);
@@ -596,7 +602,7 @@ function BackgroundPreview({ url }) {
           fontSize: '0.75rem',
         }}
       >
-        No image set
+        {t('cmsNoImageSet')}
       </Box>
     );
   }
@@ -617,7 +623,7 @@ function BackgroundPreview({ url }) {
           fontSize: '0.75rem',
         }}
       >
-        Image failed to load
+        {t('cmsImageFailedToLoad')}
       </Box>
     );
   }
@@ -626,7 +632,7 @@ function BackgroundPreview({ url }) {
     <Box
       component="img"
       src={url}
-      alt="Hero background preview"
+      alt={t('cmsHeroBackgroundAlt')}
       onError={() => setErrored(true)}
       sx={{
         width: '15rem',

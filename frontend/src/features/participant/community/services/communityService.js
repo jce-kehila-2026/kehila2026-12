@@ -196,9 +196,23 @@ export async function getCommunityPosts(lastDoc = null, pageSize = 20) {
     : query(colRef, orderBy('createdAt', 'desc'), limit(pageSize));
 
   const snapshot = await getDocs(q);
-  const posts = snapshot.docs
+  const postsWithoutComments = snapshot.docs
     .map(mapFirestoreCommunityPost)
     .filter(isCommunityContentVisible);
+  const posts = await Promise.all(postsWithoutComments.map(async (post) => {
+    if (!post.commentsCount) return post;
+
+    try {
+      const comments = await getPostComments(post.id, 2);
+      return {
+        ...post,
+        previewComments: comments,
+        comments,
+      };
+    } catch {
+      return post;
+    }
+  }));
   const newLastDoc = snapshot.docs[snapshot.docs.length - 1] ?? null;
 
   return { posts, lastDoc: newLastDoc };
@@ -408,6 +422,9 @@ export async function createCommunityComment(postId, {
   postExcerpt = '',
 } = {}) {
   const displayName = authorDisplayName || author || 'Current User';
+  const resolvedAuthorId = (authorId && authorId !== 'current-user')
+    ? authorId
+    : (auth.currentUser?.uid ?? null);
   const translations = await buildContentTranslations(content);
   const batch = writeBatch(db);
 
@@ -415,7 +432,7 @@ export async function createCommunityComment(postId, {
   const commentRef = doc(commentsRef);
 
   batch.set(commentRef, {
-    authorId: authorId ?? null,
+    authorId: resolvedAuthorId,
     authorDisplayName: displayName,
     content: content ?? '',
     ...(translations ? { translations } : {}),
@@ -436,7 +453,7 @@ export async function createCommunityComment(postId, {
   // Best-effort: notify the post owner of the new comment (skips self-comments).
   createActivityNotification({
     recipientId: postAuthorId,
-    actorId: authorId,
+    actorId: resolvedAuthorId,
     actorName: displayName,
     type: 'comment',
     postId,
@@ -448,8 +465,8 @@ export async function createCommunityComment(postId, {
   return {
     id: commentRef.id,
     postId,
-    authorId: authorId ?? null,
-    userId: authorId ?? null,
+    authorId: resolvedAuthorId,
+    userId: resolvedAuthorId,
     author: displayName,
     authorDisplayName: displayName,
     content: content ?? '',
@@ -486,7 +503,7 @@ export async function deleteCommunityComment(postId, commentId) {
 export async function getPostComments(postId, limitCount = 50) {
   const q = query(
     collection(db, POSTS_COL, postId, 'comments'),
-    orderBy('createdAt', 'asc'),
+    orderBy('createdAt', 'desc'),
     limit(limitCount),
   );
   const snapshot = await getDocs(q);
@@ -627,10 +644,17 @@ export async function getFollowedAuthors(uid) {
   return Array.isArray(data.communityFollowedAuthors) ? data.communityFollowedAuthors : [];
 }
 
-export async function followCommunityAuthor(uid, authorUid) {
+export async function followCommunityAuthor(uid, authorUid, { actorName } = {}) {
   if (!uid || !authorUid) return;
   await updateDoc(doc(db, USERS_COL, uid), {
     communityFollowedAuthors: arrayUnion(authorUid),
+  });
+
+  createActivityNotification({
+    recipientId: authorUid,
+    actorId: uid,
+    actorName,
+    type: 'follow',
   });
 }
 

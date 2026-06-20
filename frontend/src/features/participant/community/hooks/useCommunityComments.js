@@ -107,11 +107,15 @@ export default function useCommunityComments({
     updatePostById(postId, (post) => {
       const currentComments = Array.isArray(post.comments) ? post.comments : [];
       const nextComments = [newComment, ...currentComments];
+      const nextCommentsCount = Math.max(
+        (post.commentsCount ?? 0) + 1,
+        nextComments.filter(isCommunityContentVisible).length,
+      );
 
       return {
         ...post,
         comments: nextComments,
-        commentsCount: nextComments.filter(isCommunityContentVisible).length,
+        commentsCount: nextCommentsCount,
       };
     });
 
@@ -156,7 +160,7 @@ export default function useCommunityComments({
           return {
             ...post,
             comments: allComments,
-            commentsCount: allComments.length,
+            commentsCount: Math.max(post.commentsCount ?? 0, allComments.length),
           };
         });
       }).catch(() => {});
@@ -208,11 +212,16 @@ export default function useCommunityComments({
     updatePostById(postId, (post) => {
       const currentComments = Array.isArray(post.comments) ? post.comments : [];
       const nextComments = currentComments.filter((comment) => comment.id !== commentId);
+      const nextCommentsCount = Math.max(
+        (post.commentsCount ?? 0) - 1,
+        nextComments.filter(isCommunityContentVisible).length,
+        0,
+      );
 
       return {
         ...post,
         comments: nextComments,
-        commentsCount: nextComments.filter(isCommunityContentVisible).length,
+        commentsCount: nextCommentsCount,
       };
     });
     handleCancelDeleteComment();
