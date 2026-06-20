@@ -129,7 +129,6 @@ export default function CommunityPage({
     relativeTimeNow,
     refreshCommunityFeed,
     handleCreatePost,
-    handleToggleSupport,
     handleToggleLike,
     handleEditPostRequest,
     handleEditPostSubmit,
@@ -506,7 +505,6 @@ export default function CommunityPage({
                       onReportPost={() => handleReportPostRequest(post.id)}
                       onDeleteComment={(commentId) => handleDeleteCommentRequest(post.id, commentId)}
                       onSubmitComment={() => handleSubmitComment(post.id)}
-                      onToggleSupport={handleToggleSupport}
                       onToggleCommentsExpanded={() => handleToggleCommentsExpanded(post.id)}
                       onToggleLike={handleToggleLike}
                       post={post}

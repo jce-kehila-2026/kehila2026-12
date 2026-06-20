@@ -31,7 +31,6 @@ function CommunityPostCard({
   onOpenCommentComposer,
   onReportPost,
   onSubmitComment,
-  onToggleSupport,
   onToggleCommentsExpanded,
   onToggleLike,
   post,
@@ -41,15 +40,16 @@ function CommunityPostCard({
 }) {
   const { t, locale } = useParticipantLocale();
   const likesCount = post.likesCount ?? post.likes ?? 0;
-  const supportCount = post.supportCount ?? post.support ?? 0;
   const comments = (Array.isArray(post.comments) ? post.comments : post.previewComments ?? [])
     .filter(isCommunityContentVisible);
-  const commentsCount = comments.length;
+  const commentsCount = Math.max(post.commentsCount ?? 0, comments.length);
+  const hasCurrentUserComment = comments.some((comment) => (
+    localUserId && (comment.authorId === localUserId || comment.userId === localUserId)
+  ));
   // Prefer the stored Azure translation of the author's text; fall back to the
   // original (handles legacy posts saved before translate-on-save existed).
   const postBody = localizeField(post.translations?.content ?? (post.content ?? post.body), locale);
   const authorName = post.isAnonymous ? t('anonymousUser') : post.author;
-  const topicLabel = post.topic === 'Community share' ? t('communityShareTopic') : post.topic;
   const postTitle = typeof post.title === 'string' && post.title.trim() !== GENERIC_POST_TITLE
     ? post.title.trim()
     : '';
@@ -113,7 +113,6 @@ function CommunityPostCard({
           </div>
           <small>{postTime}</small>
         </div>
-        <span className="community-page-post__topic">{topicLabel}</span>
         <PostOverflowMenu
           isOwnPost={isOwnPost}
           isReportedByCurrentUser={isReportedByCurrentUser}
@@ -150,14 +149,13 @@ function CommunityPostCard({
       {renderAttachment()}
       <PostActions
         commentsCount={commentsCount}
+        hasCurrentUserComment={hasCurrentUserComment}
         isCommentComposerOpen={isCommentComposerOpen}
         isReportedByCurrentUser={isReportedByCurrentUser}
         likesCount={likesCount}
         onOpenCommentComposer={onOpenCommentComposer}
         onToggleLike={onToggleLike}
-        onToggleSupport={onToggleSupport}
         post={post}
-        supportCount={supportCount}
       />
       {reportFeedback && (
         <p

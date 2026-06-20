@@ -187,6 +187,7 @@ export default function ParticipantHome({ initialView = 'home' }) {
           lastSeenAt={lastSeenAt}
           onMarkAllRead={handleMarkAllRead}
           onClose={() => setNotifOpen(false)}
+          ignoreOutsideClickRef={notifBellRef}
         />
       ) : null}
     </div>
