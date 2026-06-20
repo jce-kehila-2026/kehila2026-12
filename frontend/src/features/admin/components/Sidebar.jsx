@@ -82,7 +82,7 @@ const NAV_ITEMS = [
     active: (pathname) => pathname.startsWith('/admin/updates'),
   },
   {
-    label: 'Audit Log',
+    label: 'Admin Changes',
     path: '/admin/audit-log',
     icon: <ReceiptLongIcon />,
     id: 'nav-audit-log',
@@ -135,7 +135,7 @@ export default function Sidebar({ drawerWidth = 260, collapsed = false, onToggle
           height: { xs: '100vh', md: 'calc(100vh - 32px)' },
           direction: 'ltr',
           boxSizing: 'border-box',
-          overflow: 'visible',
+          overflow: 'hidden',
           border: '1px solid rgba(255,255,255,0.52)',
           borderRadius: { xs: 0, md: '30px' },
           background:
@@ -188,6 +188,7 @@ export default function Sidebar({ drawerWidth = 260, collapsed = false, onToggle
           position: 'relative',
           zIndex: 1,
           minHeight: '3.625rem',
+          flexShrink: 0,
           display: 'flex',
           alignItems: 'center',
           justifyContent: collapsed ? 'center' : 'flex-start',
@@ -252,12 +253,27 @@ export default function Sidebar({ drawerWidth = 260, collapsed = false, onToggle
 
       <List
         disablePadding
+        className="admin-sidebar-nav"
         sx={{
           position: 'relative',
           zIndex: 1,
           flex: 1,
-          overflow: 'hidden',
-          pb: 1,
+          minHeight: 0,
+          overflowY: 'auto',
+          overflowX: 'hidden',
+          pb: '4.75rem',
+          scrollbarWidth: 'thin',
+          scrollbarColor: 'rgba(167, 139, 250, 0.42) transparent',
+          '&::-webkit-scrollbar': {
+            width: '0.375rem',
+          },
+          '&::-webkit-scrollbar-track': {
+            background: 'transparent',
+          },
+          '&::-webkit-scrollbar-thumb': {
+            background: 'rgba(167, 139, 250, 0.38)',
+            borderRadius: 999,
+          },
         }}
       >
         {NAV_ITEMS.map((item) => {
@@ -368,8 +384,8 @@ export default function Sidebar({ drawerWidth = 260, collapsed = false, onToggle
             minHeight: '3rem',
             position: 'absolute',
             zIndex: 1,
-            left: { xs: 16, md: collapsed ? 18 : 18 },
-            right: { xs: 16, md: collapsed ? 18 : 18 },
+            left: { xs: 16, md: 18 },
+            right: { xs: 16, md: 18 },
             bottom: 24,
             mx: 0,
             px: { xs: 1, md: collapsed ? 0 : '18px' },

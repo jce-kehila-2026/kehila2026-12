@@ -25,7 +25,7 @@
   left: 12px !important;
   right: auto !important;
   transform: none !important;
-  overflow: visible !important;
+  overflow: hidden !important;
   z-index: 1200 !important;
   transition: width 0.35s ease, padding 0.35s ease, all 0.3s ease !important;
 }
