@@ -50,26 +50,29 @@ import {
   sendApprovalEmail,
   sendRejectionEmail,
 } from '../services/approvalEmailService';
+import { useAdminLocale } from '../context/AdminLocaleContext';
+
+const INTL_LOCALE_BY_LANG = { he: 'he-IL', en: 'en-US' };
 
 const STATUS_META = {
-  [JOIN_REQUEST_STATUS.NEW]: { label: 'New', color: '#B45309', bg: 'rgba(245, 158, 11, 0.16)' },
-  [JOIN_REQUEST_STATUS.APPROVED]: { label: 'Approved', color: '#15803D', bg: 'rgba(34, 197, 94, 0.16)' },
-  [JOIN_REQUEST_STATUS.REJECTED]: { label: 'Rejected', color: '#B91C1C', bg: 'rgba(239, 68, 68, 0.14)' },
+  [JOIN_REQUEST_STATUS.NEW]: { labelKey: 'jrStatusNew', color: '#B45309', bg: 'rgba(245, 158, 11, 0.16)' },
+  [JOIN_REQUEST_STATUS.APPROVED]: { labelKey: 'jrStatusApproved', color: '#15803D', bg: 'rgba(34, 197, 94, 0.16)' },
+  [JOIN_REQUEST_STATUS.REJECTED]: { labelKey: 'jrStatusRejected', color: '#B91C1C', bg: 'rgba(239, 68, 68, 0.14)' },
 };
 
-function formatDate(value) {
+function formatDate(value, intlLocale) {
   if (!value) return '-';
-  if (typeof value.toDate === 'function') return value.toDate().toLocaleDateString();
+  if (typeof value.toDate === 'function') return value.toDate().toLocaleDateString(intlLocale);
   if (typeof value === 'object' && typeof value.seconds === 'number') {
-    return new Date(value.seconds * 1000).toLocaleDateString();
+    return new Date(value.seconds * 1000).toLocaleDateString(intlLocale);
   }
   const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? String(value) : parsed.toLocaleDateString();
+  return Number.isNaN(parsed.getTime()) ? String(value) : parsed.toLocaleDateString(intlLocale);
 }
 
-function formatBool(value) {
-  if (value === true) return 'Yes';
-  if (value === false) return 'No';
+function formatBool(value, t) {
+  if (value === true) return t('jrYes');
+  if (value === false) return t('jrNo');
   if (value === undefined || value === null || value === '') return '-';
   return String(value);
 }
@@ -85,11 +88,11 @@ function initialsOf(name) {
   );
 }
 
-function StatusChip({ status }) {
+function StatusChip({ status, t }) {
   const meta = STATUS_META[status] || STATUS_META[JOIN_REQUEST_STATUS.NEW];
   return (
     <Chip
-      label={meta.label}
+      label={t(meta.labelKey)}
       size="small"
       sx={{
         color: meta.color,
@@ -143,6 +146,12 @@ function DetailRow({ icon, label, value }) {
 }
 
 export default function JoinRequestsTab({ requests = [], loading = false, onChanged }) {
+  const { t, lang, direction } = useAdminLocale();
+  const intlLocale = INTL_LOCALE_BY_LANG[lang] || 'en-US';
+  const statusLabel = (s) => {
+    const meta = STATUS_META[s];
+    return meta ? t(meta.labelKey) : t('jrDecision');
+  };
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [selected, setSelected] = useState(null);
@@ -240,7 +249,7 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
       }
     } catch (err) {
       console.error('Approve failed:', err);
-      setActionError(err?.message || 'Could not approve this application. Please try again.');
+      setActionError(err?.message || t('jrErrApprove'));
     } finally {
       setActionLoading(false);
     }
@@ -266,7 +275,7 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
       resetAction();
     } catch (err) {
       console.error('Reject failed:', err);
-      setActionError(err?.message || 'Could not reject this application. Please try again.');
+      setActionError(err?.message || t('jrErrReject'));
     } finally {
       setActionLoading(false);
     }
@@ -295,6 +304,7 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
 
   return (
     <Box
+      dir={direction}
       sx={{
         width: '100%',
         bgcolor: 'rgba(255, 255, 255, 0.82)',
@@ -319,10 +329,10 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
       >
         <Stack direction="row" spacing={1.1} alignItems="center">
           <Typography variant="h5" fontWeight={950} sx={{ color: '#100B2F' }}>
-            Membership Applications
+            {t('jrTitle')}
           </Typography>
           <Chip
-            label={`${requests.length} total`}
+            label={t('jrTotal').replace('{n}', requests.length)}
             sx={{
               height: '1.875rem',
               bgcolor: '#F2ECFF',
@@ -336,7 +346,7 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
 
         <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.4} sx={{ flex: 1, justifyContent: 'flex-end' }}>
           <TextField
-            placeholder="Search applicants..."
+            placeholder={t('jrSearchPlaceholder')}
             value={search}
             onChange={(event) => setSearch(event.target.value)}
             sx={{
@@ -370,10 +380,10 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
                 '& fieldset': { borderColor: 'rgba(130, 92, 206, 0.16)' },
               }}
             >
-              <MenuItem value="all">All Statuses</MenuItem>
-              <MenuItem value={JOIN_REQUEST_STATUS.NEW}>New</MenuItem>
-              <MenuItem value={JOIN_REQUEST_STATUS.APPROVED}>Approved</MenuItem>
-              <MenuItem value={JOIN_REQUEST_STATUS.REJECTED}>Rejected</MenuItem>
+              <MenuItem value="all">{t('jrAllStatuses')}</MenuItem>
+              <MenuItem value={JOIN_REQUEST_STATUS.NEW}>{t('jrStatusNew')}</MenuItem>
+              <MenuItem value={JOIN_REQUEST_STATUS.APPROVED}>{t('jrStatusApproved')}</MenuItem>
+              <MenuItem value={JOIN_REQUEST_STATUS.REJECTED}>{t('jrStatusRejected')}</MenuItem>
             </Select>
           </FormControl>
         </Stack>
@@ -403,19 +413,19 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
             flexShrink: 0,
           }}
         >
-          {['Applicant', 'Phone', 'Submitted', 'Status', 'Actions'].map((label, index) => (
+          {['jrColApplicant', 'jrColPhone', 'jrColSubmitted', 'jrColStatus', 'jrColActions'].map((key, index) => (
             <Typography
-              key={label}
+              key={key}
               variant="caption"
               sx={{
                 fontWeight: 950,
                 color: '#625B84',
                 textTransform: 'uppercase',
                 letterSpacing: 0.3,
-                textAlign: index === 4 ? 'right' : 'left',
+                textAlign: index === 4 ? 'end' : 'start',
               }}
             >
-              {label}
+              {t(key)}
             </Typography>
           ))}
         </Box>
@@ -484,10 +494,10 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
                       </Avatar>
                       <Box sx={{ minWidth: 0 }}>
                         <Typography dir="auto" fontWeight={950} noWrap sx={{ color: '#17122E' }}>
-                          {req.fullName || 'Unnamed applicant'}
+                          {req.fullName || t('jrUnnamed')}
                         </Typography>
                         <Typography color="#5E587E" noWrap sx={{ fontSize: '0.84375rem' }}>
-                          {req.email || 'No email provided'}
+                          {req.email || t('jrNoEmail')}
                         </Typography>
                       </Box>
                     </Stack>
@@ -497,11 +507,11 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
                     </Typography>
 
                     <Typography fontWeight={800} color="#4F4A70">
-                      {formatDate(req.createdAt)}
+                      {formatDate(req.createdAt, intlLocale)}
                     </Typography>
 
                     <Box>
-                      <StatusChip status={req.status} />
+                      <StatusChip status={req.status} t={t} />
                     </Box>
 
                     <Stack
@@ -513,7 +523,7 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
                       {isNew ? (
                         <>
                           <IconButton
-                            aria-label={`Approve ${req.fullName || 'application'}`}
+                            aria-label={t('jrApproveAria').replace('{name}', req.fullName || t('jrApplicationWord'))}
                             onClick={() => startApprove(req)}
                             sx={{
                               width: '2.5rem',
@@ -527,7 +537,7 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
                             <CheckCircleIcon fontSize="small" />
                           </IconButton>
                           <IconButton
-                            aria-label={`Reject ${req.fullName || 'application'}`}
+                            aria-label={t('jrRejectAria').replace('{name}', req.fullName || t('jrApplicationWord'))}
                             onClick={() => startReject(req)}
                             sx={{
                               width: '2.5rem',
@@ -543,7 +553,7 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
                         </>
                       ) : null}
                       <IconButton
-                        aria-label={`View ${req.fullName || 'application'}`}
+                        aria-label={t('jrViewAria').replace('{name}', req.fullName || t('jrApplicationWord'))}
                         onClick={() => openDetails(req)}
                         sx={{
                           width: '2.5rem',
@@ -562,11 +572,11 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
               })
             ) : (
               <Box sx={{ py: 8, textAlign: 'center' }}>
-                <Typography fontWeight={900}>No applications found</Typography>
+                <Typography fontWeight={900}>{t('jrNoApplications')}</Typography>
                 <Typography color="text.secondary" sx={{ mt: 1 }}>
                   {requests.length === 0
-                    ? 'Submissions from the public join form will appear here.'
-                    : 'Try changing your search or filter.'}
+                    ? t('jrEmptyHint')
+                    : t('jrEmptyFilterHint')}
                 </Typography>
               </Box>
             )}
@@ -581,7 +591,7 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
         maxWidth={false}
         TransitionComponent={Fade}
         PaperProps={{
-          dir: 'ltr',
+          dir: direction,
           sx: {
             width: { xs: 'calc(100vw - 24px)', sm: '37rem' },
             maxWidth: 600,
@@ -609,19 +619,19 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
                 </Avatar>
                 <Box sx={{ minWidth: 0, flex: 1 }}>
                   <Typography dir="auto" variant="h6" fontWeight={950} sx={{ color: '#17122E', lineHeight: 1.15 }}>
-                    {selected.fullName || 'Unnamed applicant'}
+                    {selected.fullName || t('jrUnnamed')}
                   </Typography>
                   <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 0.6 }}>
-                    <StatusChip status={selected.status} />
+                    <StatusChip status={selected.status} t={t} />
                     <Typography color="text.secondary" sx={{ fontSize: '0.8125rem' }}>
-                      Submitted {formatDate(selected.createdAt)}
+                      {t('jrSubmittedAt').replace('{date}', formatDate(selected.createdAt, intlLocale))}
                     </Typography>
                   </Stack>
                 </Box>
                 <IconButton
                   size="small"
                   onClick={() => setDetailsOpen(false)}
-                  aria-label="Close application details"
+                  aria-label={t('jrCloseDetails')}
                   sx={{ bgcolor: 'rgba(109, 60, 207, 0.06)', color: '#4E466B', '&:hover': { bgcolor: 'rgba(109, 60, 207, 0.12)' } }}
                 >
                   <CloseIcon fontSize="small" />
@@ -631,21 +641,26 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
 
             <Box sx={{ flex: 1, overflow: 'auto', p: { xs: 2, md: 2.6 }, borderTop: '1px solid rgba(130, 92, 206, 0.08)' }}>
               <Stack spacing={1.35}>
-                <DetailRow icon={<EmailOutlinedIcon fontSize="small" />} label="Email" value={selected.email} />
-                <DetailRow icon={<PhoneOutlinedIcon fontSize="small" />} label="Phone" value={selected.phone} />
-                <DetailRow icon={<PlaceOutlinedIcon fontSize="small" />} label="Address" value={selected.address} />
-                <DetailRow icon={<CakeOutlinedIcon fontSize="small" />} label="Date of Birth" value={formatDate(selected.birthDate)} />
-                <DetailRow icon={<EmailOutlinedIcon fontSize="small" />} label="Consent to receive info" value={formatBool(selected.consentToReceiveInfo)} />
-                <DetailRow icon={<EmailOutlinedIcon fontSize="small" />} label="Ready to join" value={formatBool(selected.readyToJoin)} />
+                <DetailRow icon={<EmailOutlinedIcon fontSize="small" />} label={t('jrEmail')} value={selected.email} />
+                <DetailRow icon={<PhoneOutlinedIcon fontSize="small" />} label={t('jrPhone')} value={selected.phone} />
+                <DetailRow icon={<PlaceOutlinedIcon fontSize="small" />} label={t('jrAddress')} value={selected.address} />
+                <DetailRow icon={<CakeOutlinedIcon fontSize="small" />} label={t('jrDateOfBirth')} value={formatDate(selected.birthDate, intlLocale)} />
+                <DetailRow icon={<EmailOutlinedIcon fontSize="small" />} label={t('jrConsent')} value={formatBool(selected.consentToReceiveInfo, t)} />
+                <DetailRow icon={<EmailOutlinedIcon fontSize="small" />} label={t('jrReadyToJoin')} value={formatBool(selected.readyToJoin, t)} />
                 {selected.whatsappNote ? (
-                  <DetailRow icon={<PhoneOutlinedIcon fontSize="small" />} label="WhatsApp note" value={selected.whatsappNote} />
+                  <DetailRow icon={<PhoneOutlinedIcon fontSize="small" />} label={t('jrWhatsappNote')} value={selected.whatsappNote} />
                 ) : null}
-                <DetailRow icon={<FavoriteIcon />} label="Story" value={selected.cancerStory} />
+                <DetailRow icon={<FavoriteIcon />} label={t('jrStory')} value={selected.cancerStory} />
                 {(selected.status === JOIN_REQUEST_STATUS.APPROVED || selected.status === JOIN_REQUEST_STATUS.REJECTED) ? (
                   <DetailRow
                     icon={selected.status === JOIN_REQUEST_STATUS.APPROVED ? <CheckCircleIcon fontSize="small" /> : <DoNotDisturbAltIcon fontSize="small" />}
-                    label={`${STATUS_META[selected.status]?.label || 'Decision'} • ${formatDate(selected.decidedAt)}`}
-                    value={[selected.decidedBy && `by ${selected.decidedBy}`, selected.rejectionReason && `Reason: ${selected.rejectionReason}`].filter(Boolean).join('\n') || '-'}
+                    label={t('jrDecisionLabel')
+                      .replace('{label}', statusLabel(selected.status))
+                      .replace('{date}', formatDate(selected.decidedAt, intlLocale))}
+                    value={[
+                      selected.decidedBy && t('jrDecidedBy').replace('{name}', selected.decidedBy),
+                      selected.rejectionReason && t('jrReason').replace('{reason}', selected.rejectionReason),
+                    ].filter(Boolean).join('\n') || '-'}
                   />
                 ) : null}
               </Stack>
@@ -669,7 +684,7 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
                       '&:hover': { bgcolor: 'rgba(239, 68, 68, 0.12)' },
                     }}
                   >
-                    Reject
+                    {t('jrRejectBtn')}
                   </Button>
                   <Button
                     onClick={() => startApprove(selected)}
@@ -686,7 +701,7 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
                       '&:hover': { background: 'linear-gradient(135deg, #15A046 0%, #137034 100%)' },
                     }}
                   >
-                    Approve & create account
+                    {t('jrApproveCreate')}
                   </Button>
                 </Stack>
               </Box>
@@ -699,65 +714,65 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
       <Dialog
         open={actionMode === 'approve' && Boolean(actionTarget)}
         onClose={closeAction}
-        PaperProps={{ dir: 'ltr', sx: { borderRadius: '24px', width: { xs: 'calc(100vw - 32px)', sm: '30rem' }, maxWidth: 480 } }}
+        PaperProps={{ dir: direction, sx: { borderRadius: '24px', width: { xs: 'calc(100vw - 32px)', sm: '30rem' }, maxWidth: 480 } }}
       >
         {approveResult ? (
           <>
             <DialogTitle sx={{ fontWeight: 950, color: '#15803D', display: 'flex', alignItems: 'center', gap: 1 }}>
-              <CheckCircleIcon /> Account created
+              <CheckCircleIcon /> {t('jrAccountCreated')}
             </DialogTitle>
             <DialogContent>
               <Typography sx={{ mb: 1.5, color: '#4F4A70' }}>
-                A login account was created for <strong dir="auto">{actionTarget?.fullName || approveResult.email}</strong>. Share these credentials so they can sign in:
+                {t('jrShareCredentialsPre')}<strong dir="auto">{actionTarget?.fullName || approveResult.email}</strong>{t('jrShareCredentialsPost')}
               </Typography>
               <Box sx={{ borderRadius: '16px', border: '1px solid rgba(130, 92, 206, 0.18)', bgcolor: 'rgba(244, 238, 255, 0.6)', p: 2 }}>
-                <Typography variant="caption" fontWeight={800} color="text.secondary">Email</Typography>
+                <Typography variant="caption" fontWeight={800} color="text.secondary">{t('jrEmailLabel')}</Typography>
                 <Typography dir="ltr" fontWeight={850} sx={{ mb: 1.2, wordBreak: 'break-all' }}>{approveResult.email}</Typography>
-                <Typography variant="caption" fontWeight={800} color="text.secondary">Temporary password</Typography>
+                <Typography variant="caption" fontWeight={800} color="text.secondary">{t('jrTempPassword')}</Typography>
                 <Stack direction="row" spacing={1} alignItems="center">
                   <Typography dir="ltr" fontFamily="monospace" fontWeight={850} sx={{ fontSize: '1.05rem' }}>{approveResult.tempPassword}</Typography>
-                  <IconButton size="small" onClick={copyPassword} aria-label="Copy temporary password" sx={{ color: '#6D3CCF' }}>
+                  <IconButton size="small" onClick={copyPassword} aria-label={t('jrCopyPassword')} sx={{ color: '#6D3CCF' }}>
                     <ContentCopyIcon fontSize="small" />
                   </IconButton>
-                  {copied ? <Typography variant="caption" color="#15803D" fontWeight={800}>Copied!</Typography> : null}
+                  {copied ? <Typography variant="caption" color="#15803D" fontWeight={800}>{t('jrCopied')}</Typography> : null}
                 </Stack>
               </Box>
               {emailStatus === 'sending' ? (
                 <Alert severity="info" icon={<CircularProgress size={18} />} sx={{ mt: 2, borderRadius: '14px' }}>
-                  Sending the approval email…
+                  {t('jrSendingEmail')}
                 </Alert>
               ) : emailStatus === 'sent' ? (
                 <Alert severity="success" sx={{ mt: 2, borderRadius: '14px' }}>
-                  Approval email sent to {approveResult.email}. They’ll be asked to set a new password on first login.
+                  {t('jrEmailSent').replace('{email}', approveResult.email)}
                 </Alert>
               ) : emailStatus === 'failed' ? (
                 <Alert severity="warning" sx={{ mt: 2, borderRadius: '14px' }}>
-                  Couldn’t send the email automatically — please share the email and password above manually. They’ll set a new password on first login.
+                  {t('jrEmailFailed')}
                 </Alert>
               ) : (
                 <Alert severity="info" sx={{ mt: 2, borderRadius: '14px' }}>
-                  Automatic email isn’t set up yet — share the email and password above manually. The member will be asked to set a new password on first login.
+                  {t('jrEmailNotConfigured')}
                 </Alert>
               )}
             </DialogContent>
             <DialogActions sx={{ px: 3, pb: 2.4 }}>
               <Button onClick={resetAction} variant="contained" sx={{ borderRadius: 999, textTransform: 'none', fontWeight: 900, px: 3, background: 'linear-gradient(135deg, #7C3AED 0%, #DF327B 100%)' }}>
-                Done
+                {t('jrDone')}
               </Button>
             </DialogActions>
           </>
         ) : (
           <>
-            <DialogTitle sx={{ fontWeight: 950, color: '#100B2F' }}>Approve application?</DialogTitle>
+            <DialogTitle sx={{ fontWeight: 950, color: '#100B2F' }}>{t('jrApproveTitle')}</DialogTitle>
             <DialogContent>
               <Typography sx={{ color: '#4F4A70' }}>
-                This creates a login account for <strong dir="auto">{actionTarget?.fullName || actionTarget?.email}</strong> with a temporary password. You’ll see the password next, to share with them.
+                {t('jrApproveConfirmPre')}<strong dir="auto">{actionTarget?.fullName || actionTarget?.email}</strong>{t('jrApproveConfirmPost')}
               </Typography>
               {actionError ? <Alert severity="error" sx={{ mt: 2, borderRadius: '14px' }}>{actionError}</Alert> : null}
             </DialogContent>
             <DialogActions sx={{ px: 3, pb: 2.4 }}>
               <Button onClick={closeAction} disabled={actionLoading} sx={{ borderRadius: 999, textTransform: 'none', fontWeight: 800, color: '#6F6890' }}>
-                Cancel
+                {t('jrCancel')}
               </Button>
               <Button
                 onClick={confirmApprove}
@@ -766,7 +781,7 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
                 startIcon={actionLoading ? <CircularProgress size={16} color="inherit" /> : <CheckCircleIcon />}
                 sx={{ borderRadius: 999, textTransform: 'none', fontWeight: 950, px: 2.8, background: 'linear-gradient(135deg, #16A34A 0%, #15803D 100%)', '&:hover': { background: 'linear-gradient(135deg, #15A046 0%, #137034 100%)' } }}
               >
-                {actionLoading ? 'Creating…' : 'Approve & create account'}
+                {actionLoading ? t('jrCreating') : t('jrApproveCreate')}
               </Button>
             </DialogActions>
           </>
@@ -777,15 +792,15 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
       <Dialog
         open={actionMode === 'reject' && Boolean(actionTarget)}
         onClose={closeAction}
-        PaperProps={{ dir: 'ltr', sx: { borderRadius: '24px', width: { xs: 'calc(100vw - 32px)', sm: '30rem' }, maxWidth: 480 } }}
+        PaperProps={{ dir: direction, sx: { borderRadius: '24px', width: { xs: 'calc(100vw - 32px)', sm: '30rem' }, maxWidth: 480 } }}
       >
-        <DialogTitle sx={{ fontWeight: 950, color: '#100B2F' }}>Reject application?</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 950, color: '#100B2F' }}>{t('jrRejectTitle')}</DialogTitle>
         <DialogContent>
           <Typography sx={{ color: '#4F4A70', mb: 2 }}>
-            Reject <strong dir="auto">{actionTarget?.fullName || actionTarget?.email}</strong>? No account will be created. You can add an optional reason for your records.
+            {t('jrRejectConfirmPre')}<strong dir="auto">{actionTarget?.fullName || actionTarget?.email}</strong>{t('jrRejectConfirmPost')}
           </Typography>
           <TextField
-            label="Reason (optional)"
+            label={t('jrReasonLabel')}
             value={rejectReason}
             onChange={(event) => setRejectReason(event.target.value)}
             fullWidth
@@ -804,15 +819,15 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
             }
             label={
               isRejectionEmailConfigured()
-                ? 'Email the applicant a polite decline'
-                : 'Email the applicant (add a decline template to enable)'
+                ? t('jrEmailDecline')
+                : t('jrEmailDeclineDisabled')
             }
           />
           {actionError ? <Alert severity="error" sx={{ mt: 2, borderRadius: '14px' }}>{actionError}</Alert> : null}
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2.4 }}>
           <Button onClick={closeAction} disabled={actionLoading} sx={{ borderRadius: 999, textTransform: 'none', fontWeight: 800, color: '#6F6890' }}>
-            Cancel
+            {t('jrCancel')}
           </Button>
           <Button
             onClick={confirmReject}
@@ -822,7 +837,7 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
             startIcon={actionLoading ? <CircularProgress size={16} color="inherit" /> : <DoNotDisturbAltIcon />}
             sx={{ borderRadius: 999, textTransform: 'none', fontWeight: 950, px: 2.8 }}
           >
-            {actionLoading ? 'Rejecting…' : 'Reject'}
+            {actionLoading ? t('jrRejecting') : t('jrRejectBtn')}
           </Button>
         </DialogActions>
       </Dialog>
