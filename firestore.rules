@@ -156,9 +156,18 @@ service cloud.firestore {
       // user's community posts). The owner reads/clears their own feed; any
       // signed-in user may create one addressed to this user, but only
       // attributed to themselves and only for the supported activity types.
-      // Self-notifications and edits are disallowed.
+      // Actors may remove their own reversible engagement notifications
+      // (currently likes/comments) when that engagement is removed. Self-
+      // notifications and edits are disallowed.
       match /activity_notifications/{notificationId} {
-        allow read, delete: if isSelf(uid) || isAdmin();
+        allow read: if isSelf(uid) || isAdmin();
+        allow delete: if isSelf(uid)
+          || isAdmin()
+          || (
+            request.auth != null
+            && resource.data.actorId == request.auth.uid
+            && resource.data.type in ['comment', 'like']
+          );
         allow create: if request.auth != null
           && request.resource.data.recipientId == uid
           && request.resource.data.actorId == request.auth.uid
