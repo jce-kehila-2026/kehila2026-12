@@ -24,7 +24,6 @@ import MenuRoundedIcon from '@mui/icons-material/MenuRounded';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { useAdmin } from '../context/AdminContext';
 import { useAdminLocale } from '../context/AdminLocaleContext';
-import AdminLanguageSwitcher from './AdminLanguageSwitcher';
 
 const NAV_ITEMS = [
   {
@@ -362,17 +361,6 @@ export default function Sidebar({ drawerWidth = 260, collapsed = false, onToggle
         })}
 
       </List>
-
-      <Box
-        sx={{
-          display: 'flex',
-          justifyContent: { xs: 'center', md: collapsed ? 'center' : 'flex-end' },
-          mb: '14px',
-          flexShrink: 0,
-        }}
-      >
-        <AdminLanguageSwitcher dropUp align="start" />
-      </Box>
 
       <Tooltip title={collapsed ? t('logout') : ''} placement="right" arrow disableHoverListener={!collapsed}>
         <ListItemButton

@@ -3,6 +3,7 @@ import { Outlet } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Sidebar from './Sidebar';
 import ImpersonationBanner from './ImpersonationBanner';
+import AdminLanguageSwitcher from './AdminLanguageSwitcher';
 import { AdminLocaleProvider, useAdminLocale } from '../context/AdminLocaleContext';
 import './AdminLayout.css';
 
@@ -54,6 +55,20 @@ function AdminLayoutInner() {
             transition: 'all 300ms ease-in-out',
           }}
         >
+          <Box
+            className="admin-topbar"
+            sx={{
+              display: 'flex',
+              justifyContent: 'flex-end',
+              alignItems: 'center',
+              px: { xs: 2, sm: 3, md: '32px' },
+              pt: { xs: 1.5, md: 2.5 },
+              pb: 0,
+              flexShrink: 0,
+            }}
+          >
+            <AdminLanguageSwitcher />
+          </Box>
           <Box
             component="main"
             className="admin-main"
