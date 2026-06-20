@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutlineOutlined';
@@ -24,7 +25,6 @@ import StarRoundedIcon from '@mui/icons-material/StarRounded';
 import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivismOutlined';
 import { useLocation, useNavigate } from 'react-router-dom';
 import appointmentsHero from '../../assets/appointments-hero.png';
-import eventsHeroBanner from '../../assets/lasteventBanner.png';
 import { useAdmin } from '../admin/context/AdminContext';
 import { getPublishedEvents } from '../admin/services/eventService';
 import { localizeField } from '../../i18n/localizeField';
@@ -78,6 +78,22 @@ const participantNavItems = [
   { key: 'messages', labelKey: 'evMessages', icon: ChatBubbleOutlineIcon, path: '/home', badge: 3 },
   { key: 'settings', labelKey: 'navSettings', icon: SettingsIcon, path: '/home' },
 ];
+
+function useLockBodyScroll() {
+  useEffect(() => {
+    if (typeof document === 'undefined') return undefined;
+
+    const previousOverflow = document.body.style.overflow;
+    const previousRootOverflow = document.documentElement.style.overflow;
+    document.body.style.overflow = 'hidden';
+    document.documentElement.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      document.documentElement.style.overflow = previousRootOverflow;
+    };
+  }, []);
+}
 
 function toDate(value) {
   if (!value) return null;
@@ -638,15 +654,6 @@ function getAppointmentServiceLabel(title = '', t = null) {
   return cleanTitle;
 }
 
-function getAppointmentServiceIcon(title = '') {
-  const normalized = title.toLowerCase();
-  if (normalized.includes('yoga') || normalized.includes('qi')) return VolunteerActivismIcon;
-  if (normalized.includes('reflex')) return FavoriteBorderOutlinedIcon;
-  if (normalized.includes('acupuncture') || normalized.includes('herbal')) return AutoAwesomeIcon;
-  if (normalized.includes('massage')) return EventAvailableIcon;
-  return FavoriteBorderIcon;
-}
-
 function getProviderInitials(name = 'SN') {
   const parts = String(name).trim().split(/\s+/).filter(Boolean);
   if (!parts.length) return 'SN';
@@ -864,6 +871,8 @@ function AppointmentBookingDrawer({
   onCancelSession,
   onClose,
 }) {
+  useLockBodyScroll();
+
   const { t, lang } = useParticipantLocale();
   const intlLocale = INTL_LOCALE_BY_LANG[lang] || 'en';
   const providers = useMemo(() => getAppointmentProviders(event, t), [event, t]);
@@ -913,7 +922,6 @@ function AppointmentBookingDrawer({
   if (!event) return null;
 
   const serviceLabel = getAppointmentServiceLabel(event.title, t);
-  const ServiceIcon = getAppointmentServiceIcon(event.title);
   const selectedTime = timeOptions.find((timeOption) => timeOption.option?.id === selectedOptionId) || null;
   const selectedOption = selectedTime?.option || null;
   const isRegistered = selectedOption ? registeredSessionIds.has(selectedOption.id) : false;
@@ -931,11 +939,18 @@ function AppointmentBookingDrawer({
     await onRegisterSession(event, selectedOption);
   }
 
-  return (
+  const modalContent = (
+    <div className="booking-flow-modal appointment-drawer-modal" role="presentation">
+      <button
+        className="booking-flow-modal__backdrop appointment-drawer__backdrop"
+        type="button"
+        onClick={onClose}
+        aria-label="Close appointment booking"
+      />
       <aside
         className="appointment-drawer"
         role="dialog"
-        aria-modal="false"
+        aria-modal="true"
         aria-labelledby="appointment-drawer-title"
         dir="ltr"
       >
@@ -944,105 +959,102 @@ function AppointmentBookingDrawer({
         </button>
 
         <header className="appointment-drawer__header">
-          <span className="appointment-drawer__mark">
-            <ServiceIcon fontSize="small" />
-          </span>
-          <div>
-            <h2 id="appointment-drawer-title">{serviceLabel}</h2>
-            <p>{t('evBookASession')}</p>
-          </div>
+          <h2 id="appointment-drawer-title">{serviceLabel}</h2>
+          <p>{t('evBookASession')}</p>
         </header>
 
-        <section className="appointment-booking-step">
-          <h3><span>1</span> {t('evStep1Instructor')}</h3>
-          <div className="appointment-instructor-grid">
-            {providers.map((provider) => {
-              const isSelected = provider.id === selectedProvider?.id;
-
-              return (
-                <button
-                  className={`appointment-instructor-card${isSelected ? ' is-selected' : ''}`}
-                  type="button"
-                  onClick={() => setSelectedProviderId(provider.id)}
-                  aria-pressed={isSelected}
-                  key={provider.id}
-                >
-                  {provider.avatar ? (
-                    <img src={provider.avatar} alt="" />
-                  ) : (
-                    <span className="appointment-instructor-card__avatar">
-                      {getProviderInitials(provider.name)}
-                    </span>
-                  )}
-                  <strong>{provider.name}</strong>
-                  <small>{provider.specialty}</small>
-                  <em>
-                    <StarRoundedIcon fontSize="small" />
-                    {getProviderRating(provider.name)}
-                  </em>
-                </button>
-              );
-            })}
-          </div>
-        </section>
-
-        <section className="appointment-booking-step">
-          <h3><span>2</span> {t('evStep2Date')}</h3>
-          <div className="appointment-date-selector">
-            <button
-              type="button"
-              onClick={() => setDateIndex((current) => Math.max(0, current - 1))}
-              disabled={dateIndex <= 0}
-              aria-label={t('evPrevDate')}
-            >
-              <ArrowBackIcon fontSize="small" />
-            </button>
-            <strong>
-              <CalendarMonthIcon fontSize="small" />
-              {selectedDate?.label || t('evDatesComingSoon')}
-            </strong>
-            <button
-              type="button"
-              onClick={() => setDateIndex((current) => Math.min(dateOptions.length - 1, current + 1))}
-              disabled={dateIndex >= dateOptions.length - 1}
-              aria-label={t('evNextDate')}
-            >
-              <ArrowForwardIcon fontSize="small" />
-            </button>
-          </div>
-        </section>
-
-        <section className="appointment-booking-step">
-          <h3><span>3</span> {t('evStep3Times')}</h3>
-          {timeOptions.length ? (
-            <div className="appointment-time-grid">
-              {timeOptions.map((timeOption) => {
-                const option = timeOption.option;
-                const isSelected = option?.id === selectedOptionId;
-                const disabled = !option || timeOption.unavailable || timeOption.isFull || option.isRegistering;
+        <div className="appointment-drawer__body">
+          <section className="appointment-booking-step">
+            <h3><span>1</span> {t('evStep1Instructor')}</h3>
+            <div className="appointment-instructor-grid">
+              {providers.map((provider) => {
+                const isSelected = provider.id === selectedProvider?.id;
 
                 return (
                   <button
-                    className={`${isSelected ? 'is-selected' : ''}${disabled ? ' is-disabled' : ''}`}
+                    className={`appointment-instructor-card${isSelected ? ' is-selected' : ''}`}
                     type="button"
-                    onClick={() => option && setSelectedOptionId(option.id)}
-                    disabled={disabled}
-                    key={timeOption.id}
+                    onClick={() => setSelectedProviderId(provider.id)}
+                    aria-pressed={isSelected}
+                    key={provider.id}
                   >
-                    {timeOption.label}
-                    {disabled && <LockOutlinedIcon fontSize="small" />}
+                    {provider.avatar ? (
+                      <img src={provider.avatar} alt="" />
+                    ) : (
+                      <span className="appointment-instructor-card__avatar">
+                        {getProviderInitials(provider.name)}
+                      </span>
+                    )}
+                    <strong>{provider.name}</strong>
+                    <small>{provider.specialty}</small>
+                    <em>
+                      <StarRoundedIcon fontSize="small" />
+                      {getProviderRating(provider.name)}
+                    </em>
                   </button>
                 );
               })}
             </div>
-          ) : (
-            <p className="appointment-drawer__empty">{t('evNoTimesInstructor')}</p>
-          )}
-          <p className="appointment-drawer__timezone">
-            <AccessTimeIcon fontSize="small" />
-            {t('evLocalTime')}
-          </p>
-        </section>
+          </section>
+
+          <section className="appointment-booking-step">
+            <h3><span>2</span> {t('evStep2Date')}</h3>
+            <div className="appointment-date-selector">
+              <button
+                type="button"
+                onClick={() => setDateIndex((current) => Math.max(0, current - 1))}
+                disabled={dateIndex <= 0}
+                aria-label={t('evPrevDate')}
+              >
+                <ArrowBackIcon fontSize="small" />
+              </button>
+              <strong>
+                <CalendarMonthIcon fontSize="small" />
+                {selectedDate?.label || t('evDatesComingSoon')}
+              </strong>
+              <button
+                type="button"
+                onClick={() => setDateIndex((current) => Math.min(dateOptions.length - 1, current + 1))}
+                disabled={dateIndex >= dateOptions.length - 1}
+                aria-label={t('evNextDate')}
+              >
+                <ArrowForwardIcon fontSize="small" />
+              </button>
+            </div>
+          </section>
+
+          <section className="appointment-booking-step">
+            <h3><span>3</span> {t('evStep3Times')}</h3>
+            {timeOptions.length ? (
+              <div className="appointment-time-grid">
+                {timeOptions.map((timeOption) => {
+                  const option = timeOption.option;
+                  const isSelected = option?.id === selectedOptionId;
+                  const disabled = !option || timeOption.unavailable || timeOption.isFull || option.isRegistering;
+
+                  return (
+                    <button
+                      className={`${isSelected ? 'is-selected' : ''}${disabled ? ' is-disabled' : ''}`}
+                      type="button"
+                      onClick={() => option && setSelectedOptionId(option.id)}
+                      disabled={disabled}
+                      key={timeOption.id}
+                    >
+                      {timeOption.label}
+                      {disabled && <LockOutlinedIcon fontSize="small" />}
+                    </button>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="appointment-drawer__empty">{t('evNoTimesInstructor')}</p>
+            )}
+            <p className="appointment-drawer__timezone">
+              <AccessTimeIcon fontSize="small" />
+              {t('evLocalTime')}
+            </p>
+          </section>
+        </div>
 
         <div className="appointment-drawer__actions">
           <button
@@ -1063,7 +1075,10 @@ function AppointmentBookingDrawer({
           </button>
         </div>
       </aside>
+    </div>
   );
+
+  return typeof document === 'undefined' ? modalContent : createPortal(modalContent, document.body);
 }
 
 function getWorkshopPrimarySession(event) {
@@ -1147,6 +1162,7 @@ function WorkshopDetailsPanel({
   onCancelSession,
   onClose,
 }) {
+  useLockBodyScroll();
   const { t } = useParticipantLocale();
   const session = getWorkshopActiveSession(event, registeredSessionIds);
   const isRegistered = Boolean(session && registeredSessionIds.has(session.id));
@@ -1166,11 +1182,18 @@ function WorkshopDetailsPanel({
     await onRegisterSession(event, session);
   }
 
-  return (
+  const modalContent = (
+    <div className="booking-flow-modal" role="presentation">
+      <button
+        className="booking-flow-modal__backdrop"
+        type="button"
+        onClick={onClose}
+        aria-label="Close workshop details"
+      />
     <aside
       className="workshop-details-panel"
       role="dialog"
-      aria-modal="false"
+      aria-modal="true"
       aria-labelledby="workshop-details-title"
       dir="ltr"
     >
@@ -1178,58 +1201,54 @@ function WorkshopDetailsPanel({
         <CloseIcon fontSize="small" />
       </button>
 
-      <div className="workshop-details-panel__image">
-        <img src={event.imageUrl || appointmentsHero} alt="" />
-      </div>
-
       <header className="workshop-details-panel__header">
-        <span>
-          <VolunteerActivismIcon fontSize="small" />
-        </span>
-        <div>
-          <h2 id="workshop-details-title">{event.title}</h2>
-          <p>{isRegistered ? t('evYouAreRegistered') : t('evWorkshopDetails')}</p>
-        </div>
+        <h2 id="workshop-details-title">{event.title}</h2>
+        <p>{isRegistered ? t('evYouAreRegistered') : t('evWorkshopDetails')}</p>
       </header>
 
-      <p className="workshop-details-panel__description">{event.description}</p>
+      <div className="workshop-details-panel__body">
+        <section className="workshop-details-panel__section">
+          <h3>{t('evWorkshopDetails')}</h3>
+          <p className="workshop-details-panel__description">{event.description}</p>
+        </section>
 
-      <div className="workshop-details-panel__details">
-        <span>
-          <EventAvailableIcon fontSize="small" />
-          <strong>{t('evDate')}</strong>
-          {session?.date || event.date || t('evDateTBD')}
-        </span>
-        <span>
-          <AccessTimeIcon fontSize="small" />
-          <strong>{t('evTime')}</strong>
-          {session?.time || event.time || t('evTimeTBD')}
-        </span>
-        <span>
-          <HomeRoundedIcon fontSize="small" />
-          <strong>{t('evLocation')}</strong>
-          {session?.location || event.location || 'She-Na Center'}
-        </span>
-        <span>
-          <PersonIcon fontSize="small" />
-          <strong>{t('evInstructorLabel')}</strong>
-          {session?.providerName || event.instructor || t('evSheNaTeam')}
-        </span>
-        <span>
-          <GroupsRoundedIcon fontSize="small" />
-          <strong>{t('evSpots')}</strong>
-          {getWorkshopAvailabilityLabel(session, t)}
-        </span>
-        <span>
-          <CalendarMonthIcon fontSize="small" />
-          <strong>{t('evStatus')}</strong>
-          {isRegistered ? t('evRegistered') : registrationClosed ? t('evClosed') : isFull ? t('evFull') : t('evOpen')}
-        </span>
+        <div className="workshop-details-panel__details">
+          <span>
+            <EventAvailableIcon fontSize="small" />
+            <strong>{t('evDate')}</strong>
+            {session?.date || event.date || t('evDateTBD')}
+          </span>
+          <span>
+            <AccessTimeIcon fontSize="small" />
+            <strong>{t('evTime')}</strong>
+            {session?.time || event.time || t('evTimeTBD')}
+          </span>
+          <span>
+            <HomeRoundedIcon fontSize="small" />
+            <strong>{t('evLocation')}</strong>
+            {session?.location || event.location || 'She-Na Center'}
+          </span>
+          <span>
+            <PersonIcon fontSize="small" />
+            <strong>{t('evInstructorLabel')}</strong>
+            {session?.providerName || event.instructor || t('evSheNaTeam')}
+          </span>
+          <span>
+            <GroupsRoundedIcon fontSize="small" />
+            <strong>{t('evSpots')}</strong>
+            {getWorkshopAvailabilityLabel(session, t)}
+          </span>
+          <span>
+            <CalendarMonthIcon fontSize="small" />
+            <strong>{t('evStatus')}</strong>
+            {isRegistered ? t('evRegistered') : registrationClosed ? t('evClosed') : isFull ? t('evFull') : t('evOpen')}
+          </span>
+        </div>
+
+        {isRegistered && !canCancelBooking && (
+          <p className="workshop-details-panel__notice">{t('evCancellationClosed')}</p>
+        )}
       </div>
-
-      {isRegistered && !canCancelBooking && (
-        <p className="workshop-details-panel__notice">{t('evCancellationClosed')}</p>
-      )}
 
       <div className="workshop-details-panel__actions">
         <button
@@ -1254,7 +1273,10 @@ function WorkshopDetailsPanel({
         </button>
       </div>
     </aside>
+    </div>
   );
+
+  return typeof document === 'undefined' ? modalContent : createPortal(modalContent, document.body);
 }
 
 function WorkshopListPanel({
@@ -1908,10 +1930,10 @@ export default function EventsPage({ embedInDashboard = false, locale = 'he' }) 
   const categoryCards = useMemo(() => {
     return [
       {
-        type: VIEW_WORKSHOPS,
-        title: t('evCatWorkshops'),
-        color: 'lavender',
-        icon: VolunteerActivismIcon,
+        type: VIEW_REGISTERED,
+        title: t('evCatRegisteredEvents'),
+        color: 'peach',
+        icon: PersonIcon,
       },
       {
         type: VIEW_APPOINTMENTS,
@@ -1920,10 +1942,10 @@ export default function EventsPage({ embedInDashboard = false, locale = 'he' }) 
         icon: CalendarMonthIcon,
       },
       {
-        type: VIEW_REGISTERED,
-        title: t('evCatRegisteredEvents'),
-        color: 'peach',
-        icon: PersonIcon,
+        type: VIEW_WORKSHOPS,
+        title: t('evCatWorkshops'),
+        color: 'lavender',
+        icon: VolunteerActivismIcon,
       },
     ];
   }, [t]);
@@ -2100,21 +2122,6 @@ export default function EventsPage({ embedInDashboard = false, locale = 'he' }) 
 
   const eventsContent = (
     <>
-      <section className="events-hero-banner" aria-label={t('evHeroAria')}>
-        <img className="events-hero-banner__image" src={eventsHeroBanner} alt="" />
-      </section>
-
-      {(loadingEvents || eventsError || registrationWarning) && (
-        <div className={`events-status${eventsError || registrationWarning ? ' events-status--error' : ''}`}>
-          <span>{loadingEvents ? t('evLoadingEvents') : (eventsError || registrationWarning)}</span>
-          {eventsError && !loadingEvents && (
-            <button type="button" onClick={() => setEventsReloadKey((current) => current + 1)}>
-              {t('evRetry')}
-            </button>
-          )}
-        </div>
-      )}
-
       <section className="events-categories" aria-label={t('evCategoriesAria')}>
         <div className="events-category-grid">
           {categoryCards.map((card) => (
@@ -2127,6 +2134,17 @@ export default function EventsPage({ embedInDashboard = false, locale = 'he' }) 
           ))}
         </div>
       </section>
+
+      {(loadingEvents || eventsError || registrationWarning) && (
+        <div className={`events-status${eventsError || registrationWarning ? ' events-status--error' : ''}`}>
+          <span>{loadingEvents ? t('evLoadingEvents') : (eventsError || registrationWarning)}</span>
+          {eventsError && !loadingEvents && (
+            <button type="button" onClick={() => setEventsReloadKey((current) => current + 1)}>
+              {t('evRetry')}
+            </button>
+          )}
+        </div>
+      )}
 
       {!loadingEvents && !eventsError && (
         <section className="events-list-panel">
