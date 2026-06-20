@@ -29,8 +29,7 @@ export const DEFAULT_HOME_HERO = {
 export const HERO_CONTENT_STEPS_COUNT = 4;
 
 export const DEFAULT_HERO_CONTENT = {
-  titleAccent: 'אנחנו כאן,',
-  titleRest: 'מהרגע הראשון',
+  title: 'אנחנו כאן, מהרגע הראשון',
   intro: 'עמותת SHE-NA מלווה נשים המתמודדות עם סרטן ומעניקה להן תמיכה רגשית, מידע אמין וקהילה שמבינה.',
   ctaJoin: 'להצטרף',
   ctaHowItWorks: 'איך זה עובד?',
@@ -675,9 +674,14 @@ export function mergeHeroContent(heroContent) {
     .slice(0, HERO_CONTENT_STEPS_COUNT)
     .map((step, index) => mergeHeroStep(step, index));
 
+  // Support legacy titleAccent + titleRest fields from older Firestore documents.
+  const legacyTitle = [safeString(safe.titleAccent), safeString(safe.titleRest)]
+    .filter(Boolean)
+    .join(' ');
+  const title = safeString(safe.title) || legacyTitle || DEFAULT_HERO_CONTENT.title;
+
   return {
-    titleAccent: safeString(safe.titleAccent) || DEFAULT_HERO_CONTENT.titleAccent,
-    titleRest: safeString(safe.titleRest) || DEFAULT_HERO_CONTENT.titleRest,
+    title,
     intro: safeString(safe.intro) || DEFAULT_HERO_CONTENT.intro,
     ctaJoin: safeString(safe.ctaJoin) || DEFAULT_HERO_CONTENT.ctaJoin,
     ctaHowItWorks: safeString(safe.ctaHowItWorks) || DEFAULT_HERO_CONTENT.ctaHowItWorks,

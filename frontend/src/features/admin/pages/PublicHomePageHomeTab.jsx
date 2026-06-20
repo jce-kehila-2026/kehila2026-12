@@ -28,8 +28,7 @@ import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
 
 const LIMITS = {
-  titleAccent: 60,
-  titleRest: 60,
+  title: 120,
   intro: 300,
   ctaJoin: 40,
   ctaHowItWorks: 40,
@@ -87,8 +86,7 @@ function statisticsToForm(statistics) {
 
 function heroContentToForm(heroContent) {
   return {
-    titleAccent: heroContent.titleAccent || '',
-    titleRest: heroContent.titleRest || '',
+    title: heroContent.title || '',
     intro: heroContent.intro || '',
     ctaJoin: heroContent.ctaJoin || '',
     ctaHowItWorks: heroContent.ctaHowItWorks || '',
@@ -183,8 +181,7 @@ export default function PublicHomePageHomeTab() {
   const errors = useMemo(() => {
     const next = {};
     const hc = form.heroContent;
-    if (!hc.titleAccent.trim()) next['hc.titleAccent'] = t('cmsTitleRequired');
-    if (!hc.titleRest.trim()) next['hc.titleRest'] = t('cmsTitleRequired');
+    if (!hc.title.trim()) next['hc.title'] = t('cmsTitleRequired');
     if (!hc.intro.trim()) next['hc.intro'] = t('cmsTitleRequired');
     if (!hc.ctaJoin.trim()) next['hc.ctaJoin'] = t('cmsTitleRequired');
     if (!hc.ctaHowItWorks.trim()) next['hc.ctaHowItWorks'] = t('cmsTitleRequired');
@@ -280,8 +277,7 @@ export default function PublicHomePageHomeTab() {
       }));
 
       const heroContentPayload = {
-        titleAccent: hc.titleAccent.trim(),
-        titleRest: hc.titleRest.trim(),
+        title: hc.title.trim(),
         intro: hc.intro.trim(),
         ctaJoin: hc.ctaJoin.trim(),
         ctaHowItWorks: hc.ctaHowItWorks.trim(),
@@ -297,13 +293,12 @@ export default function PublicHomePageHomeTab() {
           const [heroTr, stepsTr, statsTr] = await Promise.all([
             translateFields(
               {
-                titleAccent: heroContentPayload.titleAccent,
-                titleRest: heroContentPayload.titleRest,
+                title: heroContentPayload.title,
                 intro: heroContentPayload.intro,
                 ctaJoin: heroContentPayload.ctaJoin,
                 ctaHowItWorks: heroContentPayload.ctaHowItWorks,
               },
-              ['titleAccent', 'titleRest', 'intro', 'ctaJoin', 'ctaHowItWorks'],
+              ['title', 'intro', 'ctaJoin', 'ctaHowItWorks'],
             ),
             translateItems(stepsPayload, ['title', 'text']),
             translateItems(statisticsPayload, ['title', 'description']),
@@ -397,34 +392,19 @@ export default function PublicHomePageHomeTab() {
           <Typography variant="h6" sx={{ mb: 2 }}>{t('cmsHeroText')}</Typography>
           <Stack spacing={2}>
             <TextField
-              label={t('cmsHeroTitleAccent')}
-              value={hc.titleAccent}
-              onChange={(e) => setHeroField('titleAccent', e.target.value)}
-              onBlur={() => handleBlur('hc.titleAccent')}
-              inputProps={{ maxLength: LIMITS.titleAccent }}
+              label={t('cmsHeroTitle')}
+              value={hc.title}
+              onChange={(e) => setHeroField('title', e.target.value)}
+              onBlur={() => handleBlur('hc.title')}
+              inputProps={{ maxLength: LIMITS.title }}
               helperText={
-                (shouldShowError('hc.titleAccent') && errors['hc.titleAccent']) ||
-                t('cmsHeroTitleAccentHelper')
+                (shouldShowError('hc.title') && errors['hc.title']) ||
+                `${hc.title.length} / ${LIMITS.title}`
               }
-              error={shouldShowError('hc.titleAccent')}
+              error={shouldShowError('hc.title')}
               required
               fullWidth
-              id="hero-title-accent"
-            />
-            <TextField
-              label={t('cmsHeroTitleRest')}
-              value={hc.titleRest}
-              onChange={(e) => setHeroField('titleRest', e.target.value)}
-              onBlur={() => handleBlur('hc.titleRest')}
-              inputProps={{ maxLength: LIMITS.titleRest }}
-              helperText={
-                (shouldShowError('hc.titleRest') && errors['hc.titleRest']) ||
-                t('cmsHeroTitleRestHelper')
-              }
-              error={shouldShowError('hc.titleRest')}
-              required
-              fullWidth
-              id="hero-title-rest"
+              id="hero-title"
             />
             <TextField
               label={t('cmsHeroIntro')}

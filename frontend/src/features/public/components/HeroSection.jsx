@@ -60,8 +60,7 @@ export default function HeroSection({
   const hcTranslations = hc.translations || {};
 
   // Resolve hero text fields with CMS → Azure → static fallback
-  const titleAccent = resolveField(hc.titleAccent, hcTranslations, 'titleAccent', locale, t, 'heroJourneyTitleAccent');
-  const titleRest = resolveField(hc.titleRest, hcTranslations, 'titleRest', locale, t, 'heroJourneyTitleRest');
+  const title = resolveField(hc.title, hcTranslations, 'title', locale, t, 'heroJourneyTitle');
   const intro = resolveField(hc.intro, hcTranslations, 'intro', locale, t, 'heroJourneyIntro');
   const ctaJoin = resolveField(hc.ctaJoin, hcTranslations, 'ctaJoin', locale, t, 'heroStartHere');
   const ctaHowItWorks = resolveField(hc.ctaHowItWorks, hcTranslations, 'ctaHowItWorks', locale, t, 'heroHowItWorks');
@@ -143,8 +142,7 @@ export default function HeroSection({
         <div className="public-hero__content-region">
           <div className="public-hero__content">
             <h1 id="public-hero-title" className="reveal">
-              <span className="public-hero__title-accent">{titleAccent}</span>{' '}
-              <span>{titleRest}</span>
+              {title}
             </h1>
             <p className="public-hero__lead reveal reveal-delay-1">{intro}</p>
 
