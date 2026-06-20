@@ -15,7 +15,7 @@ function isAdminLocale(value) {
   return value === 'en' || value === 'he';
 }
 
-function getStoredAdminLocale() {
+export function getStoredAdminLocale() {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
     return isAdminLocale(stored) ? stored : 'en';

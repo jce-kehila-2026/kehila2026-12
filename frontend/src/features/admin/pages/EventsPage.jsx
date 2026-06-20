@@ -1375,7 +1375,7 @@ export default function EventsPage() {
                                   <input
                                     value={provider.name}
                                     onChange={(event) => updateProvider(providerIndex, 'name', event.target.value)}
-                                    placeholder="Margarita"
+                                    placeholder={t('evProviderNamePlaceholder')}
                                   />
                                 </label>
                                 <label>
@@ -1459,7 +1459,7 @@ export default function EventsPage() {
                     <div className="admin-events-wizard-fields">
                       <label>
                         <span className="admin-events-field-label">{t('evLocationLabel')} <b>*</b></span>
-                        <input value={form.location} onChange={(event) => updateForm('location', event.target.value)} placeholder="She-Na Center" required />
+                        <input value={form.location} onChange={(event) => updateForm('location', event.target.value)} placeholder={t('evLocationPlaceholder')} required />
                       </label>
                       <label>
                         {t('evCapacity')}

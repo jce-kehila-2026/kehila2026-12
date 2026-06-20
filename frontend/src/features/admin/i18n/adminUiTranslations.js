@@ -37,6 +37,12 @@ export const adminUiTranslations = {
     impersonationViewingAs: 'Impersonation Active — Viewing as',
     exitImpersonation: 'Exit Impersonation',
 
+    // ── Shell: access gate (ProtectedRoute) ───────────────────────────────
+    gateVerifyingAccess: 'Verifying access…',
+    gateAccessDenied: 'Access Denied',
+    gateAccessDeniedBody: "You don't have permission to view this page. Contact an Admin to request access.",
+    gateGoBack: '← Go Back',
+
     // ── Shared: actions / types / statuses ────────────────────────────────
     actionCreate: 'CREATE',
     actionUpdate: 'UPDATE',
@@ -304,10 +310,12 @@ export const adminUiTranslations = {
     evProviderN: 'Provider {n}',
     evRemove: 'Remove',
     evProviderName: 'Provider Name',
+    evProviderNamePlaceholder: 'Margarita',
     evSpecialty: 'Specialty',
     evSpecialtyPlaceholder: 'Reflexology Therapist',
     evDefaultRoom: 'Default Room',
     evRoomPlaceholder: 'Treatment Room #1',
+    evLocationPlaceholder: 'She-Na Center',
     evAvatarUrl: 'Avatar URL',
     evTimeSlots: 'Time slots',
     evAddSlot: 'Add Slot',
@@ -964,6 +972,12 @@ export const adminUiTranslations = {
     impersonationViewingAs: 'מצב התחזות פעיל — צופה בתור',
     exitImpersonation: 'יציאה מהתחזות',
 
+    // ── Shell: access gate (ProtectedRoute) ───────────────────────────────
+    gateVerifyingAccess: 'מאמת הרשאות…',
+    gateAccessDenied: 'הגישה נדחתה',
+    gateAccessDeniedBody: 'אין לך הרשאה לצפות בדף זה. פני למנהלת כדי לבקש גישה.',
+    gateGoBack: 'חזרה',
+
     // ── Shared: actions / types / statuses ────────────────────────────────
     actionCreate: 'יצירה',
     actionUpdate: 'עדכון',
@@ -1231,10 +1245,12 @@ export const adminUiTranslations = {
     evProviderN: 'ספק {n}',
     evRemove: 'הסרה',
     evProviderName: 'שם הספק',
+    evProviderNamePlaceholder: 'מרגריטה',
     evSpecialty: 'התמחות',
     evSpecialtyPlaceholder: 'מטפלת רפלקסולוגיה',
     evDefaultRoom: 'חדר ברירת מחדל',
     evRoomPlaceholder: 'חדר טיפול מס\' 1',
+    evLocationPlaceholder: 'מרכז She-Na',
     evAvatarUrl: 'כתובת תמונת פרופיל',
     evTimeSlots: 'משבצות זמן',
     evAddSlot: 'הוספת משבצת',
