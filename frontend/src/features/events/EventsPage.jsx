@@ -1049,10 +1049,6 @@ function AppointmentBookingDrawer({
             ) : (
               <p className="appointment-drawer__empty">{t('evNoTimesInstructor')}</p>
             )}
-            <p className="appointment-drawer__timezone">
-              <AccessTimeIcon fontSize="small" />
-              {t('evLocalTime')}
-            </p>
           </section>
         </div>
 
@@ -1069,9 +1065,6 @@ function AppointmentBookingDrawer({
                 ? t('evCancelBooking')
                 : t('evConfirmBooking')}
             <ArrowForwardIcon fontSize="small" />
-          </button>
-          <button className="appointment-drawer__cancel" type="button" onClick={onClose}>
-            {t('evCancel')}
           </button>
         </div>
       </aside>
