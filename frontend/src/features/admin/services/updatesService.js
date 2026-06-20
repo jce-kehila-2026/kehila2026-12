@@ -92,11 +92,13 @@ export function countUnread(lastSeenAt, updates) {
 
 const ACTIVITY_VERB = {
   comment: 'commented on your post',
+  follow: 'started following you',
   like: 'liked your post',
   support: 'supported your post',
 };
 const ACTIVITY_TITLE = {
   comment: 'New comment',
+  follow: 'New follower',
   like: 'New like',
   support: 'New support',
   birthday_wish: 'Birthday wish',

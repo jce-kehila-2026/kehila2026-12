@@ -13,6 +13,12 @@
   --community-muted-strong: rgba(75, 19, 107, 0.58);
   --community-primary-text: #201033;
   --community-section-gap: 16px;
+  --community-home-btn-text: #5b1e8c;
+  --community-home-btn-bg: rgba(255, 255, 255, 0.97);
+  --community-home-btn-border: rgba(91, 30, 140, 0.2);
+  --community-home-btn-hover-bg: linear-gradient(135deg, #e73386, #dc2577);
+  --community-home-btn-shadow: 0 9px 24px rgba(91, 30, 140, 0.12);
+  --community-home-btn-shadow-hover: 0 14px 26px rgba(223, 50, 123, 0.24);
   display: grid;
   grid-template-rows: minmax(0, 1fr) auto;
   gap: 1.375rem;
@@ -57,23 +63,44 @@
 .community-guidelines-modal__close,
 .community-local-modal__close {
   position: absolute;
-  top: 14px;
-  right: 14px;
-  width: 2.125rem;
-  height: 2.125rem;
-  min-height: 2.125rem;
-  display: grid;
+  inset-block-start: 16px;
+  inset-inline-end: 16px;
+  z-index: 2;
+  width: 2.375rem;
+  height: 2.375rem;
+  min-height: 2.375rem;
+  display: inline-grid;
   place-items: center;
-  border: 1px solid rgba(123, 63, 161, 0.12);
+  padding: 0;
+  border: 1px solid rgba(91, 30, 140, 0.22);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.78);
-  color: #7b3fa1;
+  background: #ffffff;
+  color: var(--community-home-btn-text, #5b1e8c);
   cursor: pointer;
+  direction: ltr;
   font: inherit;
   font-size: 1.2rem;
   font-weight: 800;
   line-height: 1;
-  box-shadow: none;
+  box-shadow: 0 8px 18px rgba(91, 30, 140, 0.12);
+  transition:
+    color 220ms ease,
+    background 220ms ease,
+    border-color 220ms ease,
+    box-shadow 220ms ease,
+    transform 220ms ease;
+}
+
+.community-guidelines-modal__close:hover,
+.community-guidelines-modal__close:focus-visible,
+.community-local-modal__close:hover,
+.community-local-modal__close:focus-visible {
+  color: #ffffff;
+  background: linear-gradient(135deg, #df327b, #cf1f70);
+  border-color: transparent;
+  box-shadow: 0 14px 26px rgba(207, 31, 112, 0.3);
+  outline: none;
+  transform: translateY(-2px) scale(1.04);
 }
 
 .community-guidelines-modal__icon {
@@ -171,13 +198,23 @@
 }
 
 .community-guidelines-modal__panel > .community-guidelines-modal__close {
-  min-height: 2.125rem;
-  border: 1px solid rgba(123, 63, 161, 0.12);
+  min-height: 2.375rem;
+  border: 1px solid rgba(91, 30, 140, 0.22);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.78);
-  color: #7b3fa1;
+  background: #ffffff;
+  color: var(--community-home-btn-text, #5b1e8c);
   padding: 0;
-  box-shadow: none;
+  box-shadow: 0 8px 18px rgba(91, 30, 140, 0.12);
+}
+
+.community-guidelines-modal__panel > .community-guidelines-modal__close:hover,
+.community-guidelines-modal__panel > .community-guidelines-modal__close:focus-visible {
+  color: #ffffff;
+  background: linear-gradient(135deg, #df327b, #cf1f70);
+  border-color: transparent;
+  box-shadow: 0 14px 26px rgba(207, 31, 112, 0.3);
+  outline: none;
+  transform: translateY(-2px) scale(1.04);
 }
 
 .community-guidelines-modal__panel > button:disabled {
@@ -382,6 +419,8 @@
 .create-post-card {
   display: grid;
   gap: 0.75rem;
+  box-shadow: none;
+  backdrop-filter: none;
   padding: var(--community-card-padding);
 }
 
@@ -599,20 +638,29 @@
 }
 
 .create-post-card__emoji-header button {
-  width: 1.875rem;
-  height: 1.875rem;
-  display: grid;
+  width: 2.375rem;
+  height: 2.375rem;
+  min-height: 2.375rem;
+  display: inline-grid;
   place-items: center;
-  border: 1px solid var(--community-card-border);
+  border: 1px solid rgba(91, 30, 140, 0.22);
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.76);
-  color: #7b3fa1;
+  background: #ffffff;
+  color: var(--community-home-btn-text, #5b1e8c);
   cursor: pointer;
+  direction: ltr;
   font: inherit;
   font-size: 1.1rem;
   font-weight: 800;
   line-height: 1;
   padding: 0;
+  box-shadow: 0 8px 18px rgba(91, 30, 140, 0.12);
+  transition:
+    color 220ms ease,
+    background 220ms ease,
+    border-color 220ms ease,
+    box-shadow 220ms ease,
+    transform 220ms ease;
 }
 
 .create-post-card__emoji-groups {
@@ -654,14 +702,22 @@
   transition: transform 160ms ease, background 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
 }
 
-.create-post-card__emoji-header button:hover,
-.create-post-card__emoji-header button:focus-visible,
 .create-post-card__emoji-grid button:hover,
 .create-post-card__emoji-grid button:focus-visible {
   border-color: rgba(236, 22, 140, 0.28);
   background: #fff2f9;
   box-shadow: var(--community-focus-ring);
   outline: none;
+}
+
+.create-post-card__emoji-header button:hover,
+.create-post-card__emoji-header button:focus-visible {
+  color: #ffffff;
+  background: linear-gradient(135deg, #df327b, #cf1f70);
+  border-color: transparent;
+  box-shadow: 0 14px 26px rgba(207, 31, 112, 0.3);
+  outline: none;
+  transform: translateY(-2px) scale(1.04);
 }
 
 .create-post-card__emoji-grid button:hover,
@@ -1402,20 +1458,15 @@
   gap: 1.125rem;
   position: relative;
   overflow: hidden;
-  background:
-    radial-gradient(circle at 12% 14%, rgba(244, 114, 182, 0.12), transparent 7rem),
-    radial-gradient(circle at 92% 10%, rgba(192, 132, 252, 0.12), transparent 8rem),
-    linear-gradient(145deg, #fff, #fffcff);
-  box-shadow: 0 22px 48px rgba(192, 132, 252, 0.12);
+  background: #fff;
+  box-shadow: none;
+  backdrop-filter: none;
   padding: 1.375rem 1.125rem 1.25rem;
   min-width: 0;
 }
 
 .community-streak-card.is-at-risk {
-  background:
-    radial-gradient(circle at 12% 14%, rgba(251, 191, 36, 0.12), transparent 7rem),
-    radial-gradient(circle at 92% 10%, rgba(244, 114, 182, 0.14), transparent 8rem),
-    linear-gradient(145deg, #fff, #fffcfd);
+  background: #fff;
 }
 
 .community-streak-card__topline {
@@ -1974,8 +2025,9 @@
   display: grid;
   gap: 0.875rem;
   overflow: hidden;
-  background: rgba(255, 255, 255, 0.94);
-  box-shadow: var(--community-card-shadow);
+  background: #fff;
+  box-shadow: none;
+  backdrop-filter: none;
   padding: var(--community-card-padding);
   /* Virtualize the feed cheaply: the browser skips layout/paint for off-screen
      cards. `auto` in contain-intrinsic-size remembers each card's last rendered
@@ -2127,21 +2179,32 @@
   height: 2rem;
   display: grid;
   place-items: center;
-  border: 1px solid transparent;
+  border: 1px solid var(--community-home-btn-border, rgba(91, 30, 140, 0.2));
   border-radius: 999px;
-  color: rgba(75, 19, 107, 0.44);
-  background: rgba(255, 248, 252, 0.72);
+  color: var(--community-home-btn-text, #5b1e8c);
+  background: var(--community-home-btn-bg, rgba(255, 255, 255, 0.97));
   cursor: pointer;
-  transition: background 180ms ease, border-color 180ms ease, color 180ms ease, box-shadow 180ms ease;
+  box-shadow: none;
+  transition:
+    color 180ms ease,
+    background 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
 }
 
 .community-page-post__more:hover,
 .community-page-post__more:focus-visible {
-  border-color: rgba(236, 22, 140, 0.18);
-  background: #fff2f9;
-  color: #ec168c;
-  box-shadow: var(--community-focus-ring);
+  border-color: transparent;
+  background: var(--community-home-btn-hover-bg, linear-gradient(135deg, #e73386, #dc2577));
+  color: #fff;
+  box-shadow: none;
   outline: none;
+  transform: translateY(-2px);
+}
+
+.community-page-post__more:active {
+  transform: translateY(0);
 }
 
 .community-page-post__menu-popover {
@@ -2379,26 +2442,39 @@
 
 .community-report-modal__close {
   flex: 0 0 auto;
-  width: 1.75rem;
-  height: 1.75rem;
-  display: grid;
+  width: 2.375rem;
+  height: 2.375rem;
+  min-height: 2.375rem;
+  display: inline-grid;
   place-items: center;
-  border: 1px solid transparent;
+  border: 1px solid rgba(91, 30, 140, 0.22);
   border-radius: 999px;
-  background: transparent;
-  color: rgba(75, 19, 107, 0.5);
+  background: #ffffff;
+  color: var(--community-home-btn-text, #5b1e8c);
   cursor: pointer;
+  direction: ltr;
   font: inherit;
-  font-size: 1.05rem;
+  font-size: 1.12rem;
+  font-weight: 800;
   line-height: 1;
+  padding: 0;
+  box-shadow: 0 8px 18px rgba(91, 30, 140, 0.12);
+  transition:
+    color 220ms ease,
+    background 220ms ease,
+    border-color 220ms ease,
+    box-shadow 220ms ease,
+    transform 220ms ease;
 }
 
 .community-report-modal__close:hover,
 .community-report-modal__close:focus-visible {
-  border-color: rgba(236, 22, 140, 0.18);
-  color: #ec168c;
-  box-shadow: var(--community-focus-ring);
+  color: #ffffff;
+  background: linear-gradient(135deg, #df327b, #cf1f70);
+  border-color: transparent;
+  box-shadow: 0 14px 26px rgba(207, 31, 112, 0.3);
   outline: none;
+  transform: translateY(-2px) scale(1.04);
 }
 
 .community-report-modal__reasons {
@@ -2723,6 +2799,181 @@
   box-shadow: 0 14px 26px rgba(223, 50, 123, 0.24);
 }
 
+.create-post-card__submit,
+.community-profile-setup__form button,
+.community-profile-setup__action,
+.community-report-modal__submit,
+.community-comment-form button,
+.birthday-card__send,
+.community-guidelines-modal__panel > button:not(.community-guidelines-modal__close),
+.community-local-modal__panel > button:not(.community-local-modal__close) {
+  border-color: var(--community-home-btn-border, rgba(91, 30, 140, 0.2));
+  background: var(--community-home-btn-bg, rgba(255, 255, 255, 0.97));
+  color: var(--community-home-btn-text, #5b1e8c);
+  box-shadow: var(--community-home-btn-shadow, 0 9px 24px rgba(91, 30, 140, 0.12));
+  transition:
+    color 180ms ease,
+    background 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.create-post-card__submit:hover,
+.create-post-card__submit:focus-visible,
+.community-profile-setup__form button:hover,
+.community-profile-setup__form button:focus-visible,
+.community-profile-setup__action:hover,
+.community-profile-setup__action:focus-visible,
+.community-report-modal__submit:hover,
+.community-report-modal__submit:focus-visible,
+.community-comment-form button:hover,
+.community-comment-form button:focus-visible,
+.birthday-card__send:hover,
+.birthday-card__send:focus-visible,
+.community-guidelines-modal__panel > button:not(.community-guidelines-modal__close):hover,
+.community-guidelines-modal__panel > button:not(.community-guidelines-modal__close):focus-visible,
+.community-local-modal__panel > button:not(.community-local-modal__close):hover,
+.community-local-modal__panel > button:not(.community-local-modal__close):focus-visible {
+  border-color: transparent;
+  background: var(--community-home-btn-hover-bg, linear-gradient(135deg, #e73386, #dc2577));
+  color: #fff;
+  box-shadow: var(--community-home-btn-shadow-hover, 0 14px 26px rgba(223, 50, 123, 0.24));
+  outline: none;
+  transform: translateY(-2px);
+}
+
+.create-post-card__action,
+.create-post-card__voice-panel button,
+.create-post-card__attachment-preview button,
+.community-feed-tabs button,
+.community-feed-refresh,
+.community-profile-setup__actions button,
+.guidelines-card button,
+.birthday-card__messages button,
+.birthday-card__nav button,
+.community-page-post__follow,
+.community-page-post__actions button,
+.community-report-modal__cancel {
+  border-color: var(--community-home-btn-border, rgba(91, 30, 140, 0.2));
+  background: var(--community-home-btn-bg, rgba(255, 255, 255, 0.97));
+  color: var(--community-home-btn-text, #5b1e8c);
+  box-shadow: none;
+  transition:
+    color 180ms ease,
+    background 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.create-post-card__action svg,
+.create-post-card__voice-panel button svg,
+.create-post-card__attachment-preview button svg,
+.community-feed-tabs button svg,
+.community-feed-refresh svg,
+.community-profile-setup__actions button svg,
+.guidelines-card button svg,
+.birthday-card__messages button svg,
+.birthday-card__message-icon,
+.birthday-card__nav button svg,
+.community-page-post__follow svg,
+.community-page-post__actions button svg,
+.community-page-post__actions button span,
+.community-report-modal__cancel svg {
+  color: currentColor;
+}
+
+.create-post-card__action:hover,
+.create-post-card__action:focus-visible,
+.create-post-card__action.is-active,
+.create-post-card__voice-panel button:hover,
+.create-post-card__voice-panel button:focus-visible,
+.create-post-card__attachment-preview button:hover,
+.create-post-card__attachment-preview button:focus-visible,
+.community-feed-tabs button:hover,
+.community-feed-tabs button:focus-visible,
+.community-feed-tabs button.is-active,
+.community-feed-refresh:hover,
+.community-feed-refresh:focus-visible,
+.community-feed-refresh.is-refreshing,
+.community-profile-setup__actions button:hover,
+.community-profile-setup__actions button:focus-visible,
+.guidelines-card button:hover,
+.guidelines-card button:focus-visible,
+.birthday-card__messages button:hover,
+.birthday-card__messages button:focus-visible,
+.birthday-card__messages button.is-selected,
+.birthday-card__nav button:hover,
+.birthday-card__nav button:focus-visible,
+.community-page-post__follow:hover,
+.community-page-post__follow:focus-visible,
+.community-page-post__follow.is-following,
+.community-page-post__actions button:hover,
+.community-page-post__actions button:focus-visible,
+.community-page-post__actions button.is-liked,
+.community-page-post__actions button.is-supported,
+.community-page-post__actions button.is-commenting,
+.community-report-modal__cancel:hover,
+.community-report-modal__cancel:focus-visible {
+  border-color: transparent;
+  background: var(--community-home-btn-hover-bg, linear-gradient(135deg, #e73386, #dc2577));
+  color: #fff;
+  box-shadow: none;
+  outline: none;
+  transform: translateY(-2px);
+}
+
+.create-post-card__submit:active,
+.community-profile-setup__form button:active,
+.community-profile-setup__action:active,
+.community-profile-setup__actions button:active,
+.community-report-modal__actions button:active,
+.community-comment-form button:active,
+.birthday-card__send:active,
+.community-feed-tabs button:active,
+.community-feed-refresh:active,
+.guidelines-card button:active,
+.birthday-card__messages button:active,
+.birthday-card__nav button:active,
+.community-page-post__follow:active,
+.community-page-post__actions button:active {
+  transform: translateY(0);
+}
+
+.create-post-card__submit:disabled,
+.community-profile-setup__form button:disabled,
+.community-profile-setup__action:disabled,
+.community-report-modal__submit:disabled,
+.community-comment-form button:disabled,
+.birthday-card__send:disabled,
+.community-feed-refresh:disabled {
+  cursor: not-allowed;
+  filter: none;
+  opacity: 0.52;
+  transform: none;
+  box-shadow: none;
+}
+
+.community-page-post__actions button.is-liked,
+.community-page-post__actions button.is-commenting {
+  border-color: var(--community-home-btn-border, rgba(91, 30, 140, 0.2));
+  background: var(--community-home-btn-bg, rgba(255, 255, 255, 0.97));
+  color: var(--community-home-btn-text, #5b1e8c);
+  box-shadow: none;
+  transform: none;
+}
+
+.community-page-post__actions button.is-liked svg,
+.community-page-post__actions button.is-commenting svg {
+  color: #ec168c;
+}
+
+.community-page-post__actions button.is-liked span,
+.community-page-post__actions button.is-commenting span {
+  color: rgba(75, 19, 107, 0.52);
+}
+
 .community-comment-form__feedback {
   width: fit-content;
   max-width: 100%;
@@ -2755,28 +3006,16 @@
   }
 }
 
-.community-page-post--pink {
-  background:
-    radial-gradient(circle at 96% 8%, rgba(236, 22, 140, 0.12), transparent 9rem),
-    rgba(255, 255, 255, 0.9);
-}
-
-.community-page-post--violet {
-  background:
-    radial-gradient(circle at 96% 8%, rgba(123, 63, 161, 0.12), transparent 9rem),
-    rgba(255, 255, 255, 0.9);
-}
-
+.community-page-post--pink,
+.community-page-post--violet,
 .community-page-post--rose {
-  background:
-    radial-gradient(circle at 96% 8%, rgba(244, 91, 165, 0.12), transparent 9rem),
-    rgba(255, 255, 255, 0.9);
+  background: #fff;
 }
 
 .community-page-post--focused {
   outline: 2px solid rgba(236, 22, 140, 0.55);
   outline-offset: 3px;
-  box-shadow: 0 0 0 6px rgba(236, 22, 140, 0.12);
+  box-shadow: none;
   transition: outline-color 0.25s ease, box-shadow 0.25s ease;
 }
 
@@ -2978,8 +3217,17 @@
 
 .participant-home--dark .community-page-post__anonymous-badge,
 .participant-home--dark .community-page-post__more {
-  background: rgba(236, 72, 153, 0.12);
-  color: #fbcfe8;
+  border-color: var(--community-home-btn-border, rgba(91, 30, 140, 0.2));
+  background: var(--community-home-btn-bg, rgba(255, 255, 255, 0.97));
+  color: var(--community-home-btn-text, #5b1e8c);
+}
+
+.participant-home--dark .community-page-post__more:hover,
+.participant-home--dark .community-page-post__more:focus-visible {
+  border-color: transparent;
+  background: var(--community-home-btn-hover-bg, linear-gradient(135deg, #e73386, #dc2577));
+  color: #fff;
+  box-shadow: none;
 }
 
 .participant-home--dark .community-page-post__menu-popover {
@@ -3037,8 +3285,18 @@
 }
 
 .participant-home--dark .community-report-modal__close {
-  background: transparent;
-  color: #cbd5e1;
+  border-color: rgba(91, 30, 140, 0.22);
+  background: #ffffff;
+  color: var(--community-home-btn-text, #5b1e8c);
+  box-shadow: 0 8px 18px rgba(91, 30, 140, 0.12);
+}
+
+.participant-home--dark .community-report-modal__close:hover,
+.participant-home--dark .community-report-modal__close:focus-visible {
+  color: #ffffff;
+  background: linear-gradient(135deg, #df327b, #cf1f70);
+  border-color: transparent;
+  box-shadow: 0 14px 26px rgba(207, 31, 112, 0.3);
 }
 
 .participant-home--dark .community-report-modal__reason:hover,
@@ -3336,7 +3594,6 @@
 }
 
 .participant-home--dark .community-page-post__follow,
-.participant-home--dark .create-post-card__emoji-header button,
 .participant-home--dark .create-post-card__emoji-grid button,
 .participant-home--dark .create-post-card__voice-panel button,
 .participant-home--dark .create-post-card__attachment-preview button,
@@ -3347,10 +3604,139 @@
   color: #fbcfe8;
 }
 
+.participant-home--dark .create-post-card__emoji-header button,
+.participant-home--dark .community-guidelines-modal__close,
+.participant-home--dark .community-guidelines-modal__panel > .community-guidelines-modal__close,
+.participant-home--dark .community-local-modal__close {
+  border-color: rgba(91, 30, 140, 0.22);
+  background: #ffffff;
+  color: var(--community-home-btn-text, #5b1e8c);
+  box-shadow: 0 8px 18px rgba(91, 30, 140, 0.12);
+}
+
+.participant-home--dark .create-post-card__emoji-header button:hover,
+.participant-home--dark .create-post-card__emoji-header button:focus-visible,
+.participant-home--dark .community-guidelines-modal__close:hover,
+.participant-home--dark .community-guidelines-modal__close:focus-visible,
+.participant-home--dark .community-guidelines-modal__panel > .community-guidelines-modal__close:hover,
+.participant-home--dark .community-guidelines-modal__panel > .community-guidelines-modal__close:focus-visible,
+.participant-home--dark .community-local-modal__close:hover,
+.participant-home--dark .community-local-modal__close:focus-visible {
+  color: #ffffff;
+  background: linear-gradient(135deg, #df327b, #cf1f70);
+  border-color: transparent;
+  box-shadow: 0 14px 26px rgba(207, 31, 112, 0.3);
+}
+
 
 .participant-home--dark .community-circle-item {
   border-color: rgba(236, 72, 153, 0.22);
   background: #1e293b;
+}
+
+.participant-home--dark .create-post-card__submit,
+.participant-home--dark .community-profile-setup__form button,
+.participant-home--dark .community-profile-setup__action,
+.participant-home--dark .community-report-modal__submit,
+.participant-home--dark .community-comment-form button,
+.participant-home--dark .birthday-card__send {
+  border-color: var(--community-home-btn-border, rgba(91, 30, 140, 0.2));
+  background: var(--community-home-btn-bg, rgba(255, 255, 255, 0.97));
+  color: var(--community-home-btn-text, #5b1e8c);
+  box-shadow: var(--community-home-btn-shadow, 0 9px 24px rgba(91, 30, 140, 0.12));
+}
+
+.participant-home--dark .create-post-card__submit:hover,
+.participant-home--dark .create-post-card__submit:focus-visible,
+.participant-home--dark .community-profile-setup__form button:hover,
+.participant-home--dark .community-profile-setup__form button:focus-visible,
+.participant-home--dark .community-profile-setup__action:hover,
+.participant-home--dark .community-profile-setup__action:focus-visible,
+.participant-home--dark .community-report-modal__submit:hover,
+.participant-home--dark .community-report-modal__submit:focus-visible,
+.participant-home--dark .community-comment-form button:hover,
+.participant-home--dark .community-comment-form button:focus-visible,
+.participant-home--dark .birthday-card__send:hover,
+.participant-home--dark .birthday-card__send:focus-visible {
+  border-color: transparent;
+  background: var(--community-home-btn-hover-bg, linear-gradient(135deg, #e73386, #dc2577));
+  color: #fff;
+  box-shadow: var(--community-home-btn-shadow-hover, 0 14px 26px rgba(223, 50, 123, 0.24));
+}
+
+.participant-home--dark .create-post-card__action,
+.participant-home--dark .create-post-card__voice-panel button,
+.participant-home--dark .create-post-card__attachment-preview button,
+.participant-home--dark .community-feed-tabs button,
+.participant-home--dark .community-feed-refresh,
+.participant-home--dark .community-profile-setup__actions button,
+.participant-home--dark .guidelines-card button,
+.participant-home--dark .birthday-card__messages button,
+.participant-home--dark .birthday-card__nav button,
+.participant-home--dark .community-page-post__follow,
+.participant-home--dark .community-page-post__actions button,
+.participant-home--dark .community-report-modal__cancel {
+  border-color: var(--community-home-btn-border, rgba(91, 30, 140, 0.2));
+  background: var(--community-home-btn-bg, rgba(255, 255, 255, 0.97));
+  color: var(--community-home-btn-text, #5b1e8c);
+  box-shadow: var(--community-home-btn-shadow, 0 9px 24px rgba(91, 30, 140, 0.12));
+}
+
+.participant-home--dark .create-post-card__action:hover,
+.participant-home--dark .create-post-card__action:focus-visible,
+.participant-home--dark .create-post-card__action.is-active,
+.participant-home--dark .create-post-card__voice-panel button:hover,
+.participant-home--dark .create-post-card__voice-panel button:focus-visible,
+.participant-home--dark .create-post-card__attachment-preview button:hover,
+.participant-home--dark .create-post-card__attachment-preview button:focus-visible,
+.participant-home--dark .community-feed-tabs button:hover,
+.participant-home--dark .community-feed-tabs button:focus-visible,
+.participant-home--dark .community-feed-tabs button.is-active,
+.participant-home--dark .community-feed-refresh:hover,
+.participant-home--dark .community-feed-refresh:focus-visible,
+.participant-home--dark .community-feed-refresh.is-refreshing,
+.participant-home--dark .community-profile-setup__actions button:hover,
+.participant-home--dark .community-profile-setup__actions button:focus-visible,
+.participant-home--dark .guidelines-card button:hover,
+.participant-home--dark .guidelines-card button:focus-visible,
+.participant-home--dark .birthday-card__messages button:hover,
+.participant-home--dark .birthday-card__messages button:focus-visible,
+.participant-home--dark .birthday-card__messages button.is-selected,
+.participant-home--dark .birthday-card__nav button:hover,
+.participant-home--dark .birthday-card__nav button:focus-visible,
+.participant-home--dark .community-page-post__follow:hover,
+.participant-home--dark .community-page-post__follow:focus-visible,
+.participant-home--dark .community-page-post__follow.is-following,
+.participant-home--dark .community-page-post__actions button:hover,
+.participant-home--dark .community-page-post__actions button:focus-visible,
+.participant-home--dark .community-page-post__actions button.is-liked,
+.participant-home--dark .community-page-post__actions button.is-supported,
+.participant-home--dark .community-page-post__actions button.is-commenting,
+.participant-home--dark .community-report-modal__cancel:hover,
+.participant-home--dark .community-report-modal__cancel:focus-visible {
+  border-color: transparent;
+  background: var(--community-home-btn-hover-bg, linear-gradient(135deg, #e73386, #dc2577));
+  color: #fff;
+  box-shadow: var(--community-home-btn-shadow-hover, 0 14px 26px rgba(223, 50, 123, 0.24));
+}
+
+.participant-home--dark .community-page-post__actions button.is-liked,
+.participant-home--dark .community-page-post__actions button.is-commenting {
+  border-color: var(--community-home-btn-border, rgba(91, 30, 140, 0.2));
+  background: var(--community-home-btn-bg, rgba(255, 255, 255, 0.97));
+  color: var(--community-home-btn-text, #5b1e8c);
+  box-shadow: none;
+  transform: none;
+}
+
+.participant-home--dark .community-page-post__actions button.is-liked svg,
+.participant-home--dark .community-page-post__actions button.is-commenting svg {
+  color: #ec168c;
+}
+
+.participant-home--dark .community-page-post__actions button.is-liked span,
+.participant-home--dark .community-page-post__actions button.is-commenting span {
+  color: rgba(75, 19, 107, 0.52);
 }
 
 @media (max-width: 1320px) {
@@ -3630,4 +4016,54 @@
     align-items: flex-start;
     grid-template-columns: 1fr;
   }
+}
+
+/* Follow is a secondary chip, not a primary action. */
+.community-page-post__follow {
+  min-height: 1.625rem;
+  padding: 0.125rem 0.625rem;
+  color: #7b3fa1;
+  background: rgba(255, 255, 255, 0.82);
+  border-color: rgba(123, 63, 161, 0.18);
+  box-shadow: none;
+  transform: none;
+}
+
+.community-page-post__follow:hover,
+.community-page-post__follow:focus-visible {
+  color: #ec168c;
+  background: #fff2f9;
+  border-color: rgba(236, 22, 140, 0.26);
+  box-shadow: none;
+  transform: translateY(-1px);
+}
+
+.community-page-post__follow.is-following {
+  color: #7b3fa1;
+  background: #f8efff;
+  border-color: rgba(123, 63, 161, 0.24);
+  box-shadow: none;
+  transform: none;
+}
+
+.participant-home--dark .community-page-post__follow {
+  color: #fbcfe8;
+  background: rgba(15, 23, 42, 0.68);
+  border-color: rgba(236, 72, 153, 0.22);
+  box-shadow: none;
+}
+
+.participant-home--dark .community-page-post__follow:hover,
+.participant-home--dark .community-page-post__follow:focus-visible {
+  color: #f9a8d4;
+  background: rgba(131, 24, 67, 0.28);
+  border-color: rgba(244, 114, 182, 0.34);
+  box-shadow: none;
+}
+
+.participant-home--dark .community-page-post__follow.is-following {
+  color: #fbcfe8;
+  background: rgba(88, 28, 135, 0.24);
+  border-color: rgba(216, 180, 254, 0.28);
+  box-shadow: none;
 }

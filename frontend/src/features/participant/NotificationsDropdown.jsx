@@ -7,6 +7,7 @@ import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import ChatBubbleOutlineOutlinedIcon from '@mui/icons-material/ChatBubbleOutlineOutlined';
 import CakeOutlinedIcon from '@mui/icons-material/CakeOutlined';
 import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined';
+import PersonAddAltOutlinedIcon from '@mui/icons-material/PersonAddAltOutlined';
 import HourglassEmptyOutlinedIcon from '@mui/icons-material/HourglassEmptyOutlined';
 import VolunteerActivismOutlinedIcon from '@mui/icons-material/VolunteerActivismOutlined';
 import DoneAllIcon from '@mui/icons-material/DoneAll';
@@ -32,6 +33,7 @@ const TYPE_META = {
   reminder: { label: 'Reminder', Icon: NotificationsActiveOutlinedIcon, color: '#d97706' },
   // Auto-generated community activity
   comment: { label: 'Comment', Icon: ChatBubbleOutlineOutlinedIcon, color: '#ec168c' },
+  follow: { label: 'Follow', Icon: PersonAddAltOutlinedIcon, color: '#7b3fa1' },
   like: { label: 'Like', Icon: FavoriteBorderOutlinedIcon, color: '#e11d48' },
   support: { label: 'Support', Icon: VolunteerActivismOutlinedIcon, color: '#7b3fa1' },
   birthday_wish: { label: 'Birthday Wish', Icon: CakeOutlinedIcon, color: '#ec168c' },
@@ -58,7 +60,13 @@ function isUnread(update, lastSeenAt) {
   return (update.createdAt?.toMillis?.() ?? 0) > seenMs;
 }
 
-export default function NotificationsDropdown({ updates, lastSeenAt, onMarkAllRead, onClose }) {
+export default function NotificationsDropdown({
+  updates,
+  lastSeenAt,
+  onMarkAllRead,
+  onClose,
+  ignoreOutsideClickRef,
+}) {
   const panelRef = useRef(null);
   const { t, lang: currentLanguage } = useParticipantLocale();
 
@@ -74,14 +82,21 @@ export default function NotificationsDropdown({ updates, lastSeenAt, onMarkAllRe
   // Close on click outside
   useEffect(() => {
     function onPointerDown(e) {
-      if (panelRef.current && !panelRef.current.contains(e.target)) {
+      if (
+        ignoreOutsideClickRef?.current?.contains(e.target)
+        || panelRef.current?.contains(e.target)
+      ) {
+        return;
+      }
+
+      if (panelRef.current) {
         // Let the bell-button click land first, then close
         setTimeout(onClose, 0);
       }
     }
     document.addEventListener('pointerdown', onPointerDown, true);
     return () => document.removeEventListener('pointerdown', onPointerDown, true);
-  }, [onClose]);
+  }, [ignoreOutsideClickRef, onClose]);
 
   const activeUpdates = updates.filter((u) => u.active !== false);
 
