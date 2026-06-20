@@ -104,7 +104,7 @@ export default function RoleManagementPage() {
       <Box sx={{ mb: 3 }}>
         <Typography variant="h4">Role Management</Typography>
         <Typography variant="subtitle1" sx={{ mt: 0.5 }}>
-          Change user permissions. All changes are logged to the audit trail.
+          Change user permissions. All changes are logged in Admin Changes.
         </Typography>
       </Box>
 

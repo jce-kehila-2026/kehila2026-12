@@ -335,7 +335,7 @@ export default function AuditLogPage() {
       setLogs(snap.docs.map((docSnap) => normalizeLog({ id: docSnap.id, ...docSnap.data() })));
     } catch (err) {
       console.error('Failed to fetch audit logs:', err);
-      setError('Could not load admin activity history.');
+      setError('Could not load admin changes.');
     } finally {
       setLoading(false);
     }
@@ -374,7 +374,7 @@ export default function AuditLogPage() {
     >
       <Box sx={{ mb: 2.75 }}>
         <Typography variant="h4" sx={{ fontWeight: 900, letterSpacing: 0, color: '#171239' }}>
-          Admin Activity History
+          Admin Changes
         </Typography>
         <Typography variant="subtitle1" sx={{ mt: 0.5, color: 'rgba(36, 16, 79, 0.66)', fontWeight: 600 }} dir="ltr">
           Track changes made by admins across the platform.
@@ -476,7 +476,7 @@ export default function AuditLogPage() {
 
         <Box sx={{ maxHeight: 'calc(100vh - 300px)', minHeight: 360, overflowY: 'auto' }}>
           {loading ? (
-            <Box sx={{ p: 4, textAlign: 'center', color: '#6d35b8', fontWeight: 800 }}>Loading activity history...</Box>
+            <Box sx={{ p: 4, textAlign: 'center', color: '#6d35b8', fontWeight: 800 }}>Loading admin changes...</Box>
           ) : error ? (
             <Box sx={{ p: 4, textAlign: 'center' }}>
               <Typography sx={{ mb: 1, color: '#b42355', fontWeight: 900 }}>{error}</Typography>
@@ -561,7 +561,7 @@ export default function AuditLogPage() {
             })
           ) : (
             <Box sx={{ p: 4, textAlign: 'center', color: 'rgba(36, 16, 79, 0.68)', fontWeight: 800 }}>
-              No admin activity matches these filters.
+              No admin changes match these filters.
             </Box>
           )}
         </Box>

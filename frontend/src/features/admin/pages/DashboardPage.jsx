@@ -3,7 +3,6 @@ import { collection, getCountFromServer, getDocs, limit, orderBy, query } from '
 import {
   CalendarDays,
   CalendarCheck,
-  ChevronDown,
   Clock3,
   Sparkles,
   UsersRound,
@@ -297,7 +296,6 @@ export default function DashboardPage() {
         <button className="admin-dashboard-date-pill" type="button">
           <CalendarDays size={18} />
           May 26, 2026
-          <ChevronDown size={16} />
         </button>
       </header>
 
@@ -388,8 +386,8 @@ export default function DashboardPage() {
 
       <article className="admin-dashboard-card admin-dashboard-activity">
         <div className="admin-dashboard-card__header">
-          <h2>Recent Activity</h2>
-          <a href="/admin/audit-log">View all activity</a>
+          <h2>Recent Admin Changes</h2>
+          <a href="/admin/audit-log">View all admin changes</a>
         </div>
         <div className="admin-dashboard-activity__table">
           <div className="admin-dashboard-activity__head">
