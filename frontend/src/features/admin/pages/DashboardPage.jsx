@@ -3,7 +3,6 @@ import { collection, getCountFromServer, getDocs, limit, orderBy, query } from '
 import {
   CalendarDays,
   CalendarCheck,
-  ChevronDown,
   Clock3,
   Sparkles,
   UsersRound,
@@ -323,7 +322,6 @@ export default function DashboardPage() {
         <button className="admin-dashboard-date-pill" type="button">
           <CalendarDays size={18} />
           {new Intl.DateTimeFormat(intlLocale, { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date())}
-          <ChevronDown size={16} />
         </button>
       </header>
 

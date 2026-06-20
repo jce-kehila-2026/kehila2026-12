@@ -24,7 +24,6 @@ import Select from '@mui/material/Select';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
-import AddIcon from '@mui/icons-material/Add';
 import CakeOutlinedIcon from '@mui/icons-material/CakeOutlined';
 import CloseIcon from '@mui/icons-material/Close';
 import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
@@ -37,6 +36,7 @@ import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined';
 import PreviewIcon from '@mui/icons-material/Preview';
 import SearchIcon from '@mui/icons-material/Search';
 import ShareOutlinedIcon from '@mui/icons-material/ShareOutlined';
+import ShieldOutlinedIcon from '@mui/icons-material/ShieldOutlined';
 import SortIcon from '@mui/icons-material/Sort';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 
@@ -143,6 +143,7 @@ function getFieldIcon(fieldKey) {
     phone: <PhoneOutlinedIcon sx={iconSx} />,
     address: <PlaceOutlinedIcon sx={iconSx} />,
     dob: <CakeOutlinedIcon sx={iconSx} />,
+    role: <ShieldOutlinedIcon sx={iconSx} />,
     emergencyContact: <PhoneOutlinedIcon sx={iconSx} />,
     howHeard: <ShareOutlinedIcon sx={iconSx} />,
     bio: <FavoriteBorderIcon sx={iconSx} />,
@@ -151,23 +152,24 @@ function getFieldIcon(fieldKey) {
 }
 
 function InfoCard({ label, value, icon, iconKey }) {
+  const displayValue = value || '-';
+
   return (
     <Box
       sx={{
-        px: 2,
-        py: 1.35,
+        px: 1.5,
+        py: 1.125,
         width: '100%',
-        height: '5.375rem',
-        flex: '0 0 86px',
+        height: '100%',
+        minHeight: '4.875rem',
         boxSizing: 'border-box',
-        overflow: 'hidden',
-        borderRadius: '28px',
+        borderRadius: '16px',
         border: '1px solid rgba(130, 92, 206, 0.12)',
         bgcolor: 'rgba(255, 255, 255, 0.72)',
         boxShadow: '0 8px 20px rgba(91, 57, 145, 0.045)',
         display: 'flex',
         alignItems: 'center',
-        gap: '0.725rem',
+        gap: '0.75rem',
         flexDirection: 'row-reverse',
         justifyContent: 'flex-start',
         textAlign: 'right',
@@ -175,29 +177,46 @@ function InfoCard({ label, value, icon, iconKey }) {
     >
       <Box
         sx={{
-          width: '2.75rem',
-          height: '2.75rem',
+          width: '2.375rem',
+          height: '2.375rem',
           borderRadius: '50%',
           display: 'grid',
           placeItems: 'center',
           flexShrink: 0,
           color: '#7C3AED',
           bgcolor: 'rgba(124, 58, 237, 0.08)',
+          '& .MuiSvgIcon-root': {
+            fontSize: '1.0625rem',
+          },
         }}
       >
         {icon || getFieldIcon(iconKey)}
       </Box>
-      <Box sx={{ minWidth: 0, flex: 1 }}>
-        <Typography variant="caption" color="text.secondary" fontWeight={800} sx={{ display: 'block', lineHeight: 1.1, fontSize: '0.8125rem' }}>
+      <Box sx={{ minWidth: 0, flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+        <Typography
+          variant="caption"
+          color="text.secondary"
+          fontWeight={800}
+          sx={{ display: 'block', lineHeight: 1.15, fontSize: '0.6875rem', letterSpacing: '0.02em', textTransform: 'uppercase' }}
+        >
           {label}
         </Typography>
         <Typography
           fontWeight={850}
-          noWrap
-          title={value || '-'}
-          sx={{ color: '#17122E', fontSize: '1rem', mt: 0.35, lineHeight: 1.3 }}
+          title={displayValue}
+          sx={{
+            color: '#17122E',
+            fontSize: '0.875rem',
+            mt: 0.35,
+            lineHeight: 1.3,
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+            wordBreak: 'break-word',
+          }}
         >
-          {value || '-'}
+          {displayValue}
         </Typography>
       </Box>
     </Box>
@@ -317,13 +336,20 @@ export default function UserManagementPage() {
     });
   }, [roleFilter, search, sortBy, users]);
 
-  const compactDetails = selectedUser
+  const userDetailRows = selectedUser
     ? [
-        { fieldKey: 'fullName', labelKey: 'fieldFullName', value: getFullName(selectedUser, t('umUnnamedUser')) },
-        { fieldKey: 'email', labelKey: 'fieldEmail', value: selectedUser.email },
-        { fieldKey: 'phone', labelKey: 'fieldPhone', value: selectedUser.phoneNumber },
-        { fieldKey: 'address', labelKey: 'fieldAddress', value: getAddress(selectedUser) },
-        { fieldKey: 'dob', labelKey: 'fieldDOB', value: formatDateValue(selectedUser.birthDate || selectedUser.dateOfBirth) },
+        [
+          { fieldKey: 'fullName', labelKey: 'fieldFullName', value: getFullName(selectedUser, t('umUnnamedUser')) },
+          { fieldKey: 'email', labelKey: 'fieldEmail', value: selectedUser.email },
+        ],
+        [
+          { fieldKey: 'phone', labelKey: 'fieldPhone', value: selectedUser.phoneNumber },
+          { fieldKey: 'address', labelKey: 'fieldAddress', value: getAddress(selectedUser) },
+        ],
+        [
+          { fieldKey: 'dob', labelKey: 'fieldDOB', value: formatDateValue(selectedUser.birthDate || selectedUser.dateOfBirth) },
+          { fieldKey: 'role', labelKey: 'fieldRole', value: roleLabel(selectedUser.role || 'participant') },
+        ],
       ]
     : [];
 
@@ -395,48 +421,33 @@ export default function UserManagementPage() {
               {t('umSubtitle')}
             </Typography>
           </Box>
-          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} alignItems={{ sm: 'center' }}>
-            <Button
-              variant="outlined"
-              startIcon={<PreviewIcon />}
-              onClick={() => navigate('/home')}
-              sx={{
-                height: '3rem',
-                px: 3.2,
-                borderRadius: 999,
-                borderColor: 'rgba(223, 50, 123, 0.46)',
-                color: '#C52A72',
-                bgcolor: 'rgba(255,255,255,0.62)',
-                fontWeight: 900,
-                boxShadow: '0 12px 28px rgba(223, 50, 123, 0.06)',
-                '&:hover': {
-                  borderColor: 'rgba(223, 50, 123, 0.7)',
-                  bgcolor: 'rgba(255, 246, 251, 0.92)',
-                },
-              }}
-            >
-              {t('umPreviewParticipant')}
-            </Button>
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              sx={{
-                height: '3.5rem',
-                px: 3.5,
-                borderRadius: '18px',
-                background: 'linear-gradient(135deg, #DF327B 0%, #B933C4 100%)',
-                boxShadow: '0 18px 38px rgba(188, 48, 160, 0.26)',
-                fontWeight: 950,
-                textTransform: 'none',
-                '&:hover': {
-                  background: 'linear-gradient(135deg, #D12B72 0%, #A92DB9 100%)',
-                  boxShadow: '0 20px 42px rgba(188, 48, 160, 0.31)',
-                },
-              }}
-            >
-              {t('umAddUser')}
-            </Button>
-          </Stack>
+          <Button
+            variant="outlined"
+            startIcon={<PreviewIcon />}
+            onClick={() => navigate('/home')}
+            sx={{
+              alignSelf: { xs: 'flex-start', lg: 'center' },
+              height: '3rem',
+              px: 3.2,
+              borderRadius: 999,
+              borderColor: 'rgba(223, 50, 123, 0.46)',
+              color: '#C52A72',
+              bgcolor: 'rgba(255,255,255,0.62)',
+              fontWeight: 900,
+              boxShadow: '0 12px 28px rgba(223, 50, 123, 0.06)',
+              '& .MuiButton-startIcon': {
+                marginInlineEnd: '14px',
+                marginInlineStart: 0,
+                display: 'inherit',
+              },
+              '&:hover': {
+                borderColor: 'rgba(223, 50, 123, 0.7)',
+                bgcolor: 'rgba(255, 246, 251, 0.92)',
+              },
+            }}
+          >
+            {t('umPreviewParticipant')}
+          </Button>
         </Stack>
 
         <Stack direction="row" spacing={1.2} sx={{ flexShrink: 0 }} role="tablist" aria-label={t('umSectionsAria')}>
@@ -821,16 +832,16 @@ export default function UserManagementPage() {
         PaperProps={{
           dir: direction,
           sx: {
-            width: { xs: 'calc(100vw - 24px)', sm: '35rem' },
-            maxWidth: 560,
+            width: { xs: 'calc(100vw - 24px)', sm: 'min(49.5rem, calc(100vw - 32px))' },
+            maxWidth: 792,
             m: 0,
             position: 'fixed',
             top: '50%',
             insetInlineStart: '50%',
             transform: 'translate(-50%, -50%)',
-            height: { xs: 'auto', sm: '53.125rem' },
-            maxHeight: { xs: 'calc(100vh - 24px)', md: '53.125rem' },
-            borderRadius: { xs: '24px', md: '34px' },
+            height: 'auto',
+            maxHeight: 'calc(100vh - 24px)',
+            borderRadius: { xs: '20px', md: '24px' },
             overflow: 'hidden',
             bgcolor: 'rgba(255, 255, 255, 0.94)',
             backdropFilter: 'blur(18px)',
@@ -845,43 +856,77 @@ export default function UserManagementPage() {
         }}
       >
         {selectedUser ? (
-          <Box sx={{ display: 'flex', flexDirection: 'column', height: { xs: 'auto', sm: '53.125rem' }, maxHeight: { xs: 'calc(100vh - 24px)', md: '53.125rem' }, background: 'radial-gradient(circle at 50% 0%, rgba(223, 50, 123, 0.08), transparent 32%), linear-gradient(180deg, #FFFFFF 0%, #FFFBFE 100%)' }}>
-            <Box sx={{ p: { xs: 2, md: 2.6 }, pb: 1.8, position: 'relative', height: '14.25rem', flex: '0 0 228px', boxSizing: 'border-box', overflow: 'hidden' }}>
-              <Stack spacing={1.45} alignItems="stretch" textAlign="right">
-                <Stack direction="row-reverse" spacing={1.5} alignItems="center" sx={{ width: '100%', pr: 0 }}>
-                  <Avatar src={selectedUser.avatarUrl || ''} sx={{ width: '5.125rem', height: '5.125rem', bgcolor: '#EEE7FF', color: '#6D3CCF', fontSize: '1.875rem', fontWeight: 950, boxShadow: '0 14px 30px rgba(109, 60, 207, 0.16)', flexShrink: 0 }}>
+          <Box sx={{ display: 'flex', flexDirection: 'column', background: 'radial-gradient(circle at 50% 0%, rgba(223, 50, 123, 0.08), transparent 32%), linear-gradient(180deg, #FFFFFF 0%, #FFFBFE 100%)' }}>
+            <Box
+              sx={{
+                px: { xs: 2, sm: 2.25 },
+                pt: { xs: 1.5, sm: 1.875 },
+                pb: { xs: 1.375, sm: 1.5 },
+                position: 'relative',
+                flexShrink: 0,
+                borderBottom: '1px solid rgba(130, 92, 206, 0.08)',
+              }}
+            >
+              <IconButton
+                size="small"
+                onClick={closeDetails}
+                aria-label="Close user details"
+                sx={{
+                  position: 'absolute',
+                  top: '12px /* @noflip */',
+                  right: '12px /* @noflip */',
+                  left: 'auto /* @noflip */',
+                  width: '1.75rem',
+                  height: '1.75rem',
+                  bgcolor: 'rgba(109, 60, 207, 0.06)',
+                  color: '#4E466B',
+                  zIndex: 1,
+                  '&:hover': { bgcolor: 'rgba(109, 60, 207, 0.12)' },
+                }}
+              >
+                <CloseIcon sx={{ fontSize: '1rem' }} />
+              </IconButton>
+
+              <Stack spacing={1.125} alignItems="stretch" textAlign="right" sx={{ pr: 3.5 }}>
+                <Stack direction="row-reverse" spacing={1.125} alignItems="center" sx={{ width: '100%' }}>
+                  <Avatar
+                    src={selectedUser.avatarUrl || ''}
+                    sx={{
+                      width: '3.25rem',
+                      height: '3.25rem',
+                      bgcolor: '#EEE7FF',
+                      color: '#6D3CCF',
+                      fontSize: '1.0625rem',
+                      fontWeight: 950,
+                      boxShadow: '0 10px 22px rgba(109, 60, 207, 0.14)',
+                      flexShrink: 0,
+                    }}
+                  >
                     {initials(selectedUser)}
                   </Avatar>
                   <Box sx={{ minWidth: 0, flex: 1 }}>
-                    <Stack direction="row-reverse" spacing={0.75} alignItems="center" justifyContent="flex-start" flexWrap="nowrap" sx={{ minWidth: 0 }}>
-                      <Typography variant="h5" fontWeight={950} noWrap sx={{ fontSize: '1.3125rem', textAlign: 'right', minWidth: 0, flex: 1 }}>{getFullName(selectedUser, t('umUnnamedUser'))}</Typography>
-                      <Box sx={{ flexShrink: 0 }}>
-                        <RoleChip role={selectedUser.role || 'participant'} t={t} />
-                      </Box>
-                      <IconButton
-                        size="small"
-                        onClick={closeDetails}
-                        aria-label={t('umCloseDetails')}
-                        sx={{
-                          width: '1.875rem',
-                          height: '1.875rem',
-                          bgcolor: 'rgba(109, 60, 207, 0.06)',
-                          color: '#4E466B',
-                          '&:hover': { bgcolor: 'rgba(109, 60, 207, 0.12)' },
-                        }}
-                      >
-                        <CloseIcon fontSize="small" />
-                      </IconButton>
-                      {detailsLoading ? <CircularProgress size={16} /> : null}
+                    <Stack
+                      direction="row-reverse"
+                      spacing={0.75}
+                      alignItems="center"
+                      justifyContent="flex-start"
+                      flexWrap="wrap"
+                      useFlexGap
+                      sx={{ minWidth: 0 }}
+                    >
+                      <Typography variant="h5" fontWeight={950} noWrap sx={{ fontSize: '1.125rem', textAlign: 'right', minWidth: 0 }}>
+                        {getFullName(selectedUser, t('umUnnamedUser'))}
+                      </Typography>
+                      <RoleChip role={selectedUser.role || 'participant'} t={t} />
+                      {detailsLoading ? <CircularProgress size={14} /> : null}
                     </Stack>
-                    <Typography color="text.secondary" noWrap sx={{ mt: 0.45, fontSize: '0.84375rem', textAlign: 'right' }}>{selectedUser.email || t('umNoEmail')}</Typography>
-                    <Stack direction="row-reverse" spacing={1.1} justifyContent="flex-start" alignItems="center" flexWrap="wrap" sx={{ mt: 0.75 }}>
-                      <Typography color="text.secondary" sx={{ fontSize: '0.8125rem' }}>{t('umJoinedLabel').replace('{date}', formatDateValue(getJoinedDate(selectedUser)))}</Typography>
-                    </Stack>
+                    <Typography color="text.secondary" sx={{ mt: 0.35, fontSize: '0.8125rem', textAlign: 'right', lineHeight: 1.35 }}>
+                      {t('umJoinedLabel').replace('{date}', formatDateValue(getJoinedDate(selectedUser)))}
+                    </Typography>
                   </Box>
                 </Stack>
 
-                <Stack direction="row-reverse" spacing={0.75} justifyContent="flex-start" flexWrap="wrap">
+                <Stack direction="row-reverse" spacing={0.625} justifyContent="flex-start" flexWrap="wrap" useFlexGap>
                   <Button
                     size="small"
                     startIcon={<Pencil />}
@@ -937,11 +982,23 @@ export default function UserManagementPage() {
               </Stack>
             </Box>
 
-            <Box sx={{ flex: 1, overflow: 'auto', p: { xs: 2, md: 2.6 }, borderTop: '1px solid rgba(130, 92, 206, 0.08)' }}>
-              <Stack spacing={1.35}>
-                {compactDetails.map(({ fieldKey, labelKey, value }) => (
-                  <Box key={fieldKey} sx={{ width: '100%' }}>
-                    <InfoCard label={t(labelKey)} value={value} iconKey={fieldKey} />
+            <Box sx={{ flexShrink: 0, px: { xs: 2, sm: 2.25 }, py: { xs: 1.5, sm: 1.875 } }}>
+              <Stack spacing={0.875}>
+                {userDetailRows.map((row, rowIndex) => (
+                  <Box
+                    key={rowIndex}
+                    sx={{
+                      display: 'grid',
+                      gridTemplateColumns: { xs: 'minmax(0, 1fr)', sm: 'repeat(2, minmax(0, 1fr))' },
+                      gap: 0.875,
+                      alignItems: 'stretch',
+                    }}
+                  >
+                    {row.map(({ fieldKey, labelKey, value }) => (
+                      <Box key={fieldKey} sx={{ minWidth: 0, display: 'flex' }}>
+                        <InfoCard label={t(labelKey)} value={value} iconKey={fieldKey} />
+                      </Box>
+                    ))}
                   </Box>
                 ))}
               </Stack>

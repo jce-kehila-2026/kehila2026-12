@@ -124,6 +124,57 @@ const STREAK_NOTIFICATION_TYPES = new Set([
   'streak_lost',
 ]);
 
+const makeExcerpt = (text, max = 80) => {
+  const clean = (text ?? '').replace(/\s+/g, ' ').trim();
+  if (clean.length <= max) return clean;
+  return `${clean.slice(0, max - 1).trimEnd()}…`;
+};
+
+async function isStaleLikeNotification(data) {
+  if (!data.postId || !data.actorId) return false;
+  const postSnap = await getDoc(doc(db, 'community_posts', data.postId));
+  if (!postSnap.exists()) return true;
+
+  const likedBy = postSnap.data().likedBy;
+  return !Array.isArray(likedBy) || !likedBy.includes(data.actorId);
+}
+
+async function isStaleCommentNotification(docId, data) {
+  if (!data.postId || !data.actorId) return false;
+
+  const postSnap = await getDoc(doc(db, 'community_posts', data.postId));
+  if (!postSnap.exists()) return true;
+
+  const deterministicPrefix = `comment-${data.postId}-`;
+  if (docId.startsWith(deterministicPrefix)) {
+    const commentId = docId.slice(deterministicPrefix.length);
+    if (commentId) {
+      const commentSnap = await getDoc(doc(db, 'community_posts', data.postId, 'comments', commentId));
+      return !commentSnap.exists();
+    }
+  }
+
+  const commentsSnap = await getDocs(collection(db, 'community_posts', data.postId, 'comments'));
+  return !commentsSnap.docs.some((commentDoc) => {
+    const comment = commentDoc.data();
+    if (comment.authorId !== data.actorId) return false;
+    if (!data.commentExcerpt) return true;
+    return makeExcerpt(comment.content) === data.commentExcerpt;
+  });
+}
+
+async function isStaleActivityNotification(docSnap) {
+  const data = docSnap.data();
+  try {
+    if (data.type === 'like') return isStaleLikeNotification(data);
+    if (data.type === 'comment') return isStaleCommentNotification(docSnap.id, data);
+  } catch {
+    return false;
+  }
+
+  return false;
+}
+
 /**
  * Map a stored activity_notifications doc into the same display shape the
  * NotificationsDropdown uses for admin announcements, so both render in one
@@ -138,6 +189,7 @@ function activityDocToItem(docSnap) {
       type: data.type,
       title: data.title ?? ACTIVITY_TITLE.birthday_wish,
       body: data.body ?? data.message ?? '',
+      postId: data.postId ?? null,
       createdAt: data.createdAt,
       active: true,
     };
@@ -150,6 +202,7 @@ function activityDocToItem(docSnap) {
       type: data.type,
       title: data.title ?? 'Community streak',
       body: data.body ?? data.message ?? '',
+      postId: data.postId ?? null,
       createdAt: data.createdAt,
       active: true,
     };
@@ -168,6 +221,7 @@ function activityDocToItem(docSnap) {
     type: data.type,
     title: ACTIVITY_TITLE[data.type] ?? 'New activity',
     body,
+    postId: data.postId ?? null,
     createdAt: data.createdAt,
     active: true,
   };
@@ -185,7 +239,16 @@ export async function fetchActivityNotifications(uid, max = 20) {
     orderBy('createdAt', 'desc'),
     limit(max),
   ));
-  return snap.docs.map(activityDocToItem);
+  const resolvedDocs = await Promise.all(snap.docs.map(async (docSnap) => {
+    const stale = await isStaleActivityNotification(docSnap);
+    if (stale) {
+      deleteDoc(docSnap.ref).catch(() => {});
+      return null;
+    }
+    return docSnap;
+  }));
+
+  return resolvedDocs.filter(Boolean).map(activityDocToItem);
 }
 
 /**
@@ -204,6 +267,14 @@ export async function getLastSeenAt(uid) {
 export async function markAllAsRead(uid) {
   return updateDoc(doc(db, 'users', uid), {
     lastSeenUpdatesAt: serverTimestamp(),
+  });
+}
+
+export async function markUpdatesSeenThrough(uid, seenAt) {
+  if (!uid || !seenAt) return null;
+
+  return updateDoc(doc(db, 'users', uid), {
+    lastSeenUpdatesAt: seenAt,
   });
 }
 

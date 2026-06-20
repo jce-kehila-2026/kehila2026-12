@@ -101,6 +101,98 @@ function TypeChip({ type, t }) {
   );
 }
 
+const TABLE_COLUMNS = [
+  { key: 'user', label: 'User', align: 'left' },
+  { key: 'contact', label: 'Contact', align: 'left' },
+  { key: 'type', label: 'Type', align: 'center' },
+  { key: 'submitted', label: 'Submitted', align: 'center' },
+  { key: 'status', label: 'Status', align: 'center' },
+  { key: 'actions', label: 'Actions', align: 'center' },
+];
+
+const FORMS_TABLE_GRID = {
+  xs: 'minmax(0, 1fr)',
+  md: 'minmax(0, 1.4fr) minmax(0, 1.8fr) minmax(0, 0.9fr) minmax(0, 1fr) minmax(0, 0.9fr) minmax(0, 1fr)',
+};
+
+const FORMS_TABLE_PAD_X = { xs: 1.7, md: 2.2 };
+
+const formsTableRowGridSx = {
+  display: 'grid',
+  gridTemplateColumns: FORMS_TABLE_GRID,
+  alignItems: 'center',
+  columnGap: { xs: 0, md: '1rem' },
+  rowGap: { xs: '0.75rem', md: 0 },
+  px: FORMS_TABLE_PAD_X,
+  width: '100%',
+  boxSizing: 'border-box',
+};
+
+const FORMS_USER_AVATAR_WIDTH = '3.375rem';
+const FORMS_USER_ROW_GAP = 1.5;
+
+const formsTableCellLeftSx = {
+  minWidth: 0,
+  overflow: 'hidden',
+};
+
+const formsTableContactCellSx = {
+  minWidth: 0,
+  overflow: 'hidden',
+  width: '100%',
+};
+
+const formsTableCellCenterSx = {
+  minWidth: 0,
+  overflow: 'hidden',
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+};
+
+const formsTableHeaderLabelSx = {
+  fontWeight: 950,
+  color: '#625B84',
+  textTransform: 'uppercase',
+  letterSpacing: 0.3,
+  display: 'block',
+  width: '100%',
+};
+
+const formsTableLeftHeaderLabelSx = {
+  fontWeight: 950,
+  color: '#625B84',
+  textTransform: 'uppercase',
+  letterSpacing: 0.3,
+  display: 'block',
+  width: 'max-content',
+  maxWidth: '100%',
+  textAlign: 'left /* @noflip */',
+};
+
+function FormsTableUserHeader() {
+  return (
+    <Box sx={formsTableCellLeftSx}>
+      <Stack direction="row" spacing={FORMS_USER_ROW_GAP} alignItems="center" sx={{ minWidth: 0, width: '100%' }}>
+        <Box sx={{ width: FORMS_USER_AVATAR_WIDTH, flexShrink: 0 }} aria-hidden="true" />
+        <Typography variant="caption" dir="ltr" sx={formsTableLeftHeaderLabelSx}>
+          User
+        </Typography>
+      </Stack>
+    </Box>
+  );
+}
+
+function FormsTableContactHeader() {
+  return (
+    <Box sx={formsTableContactCellSx}>
+      <Typography variant="caption" dir="ltr" sx={formsTableLeftHeaderLabelSx}>
+        Contact
+      </Typography>
+    </Box>
+  );
+}
+
 function DetailRow({ icon, label, value }) {
   return (
     <Box sx={{ px: 2, py: 1.35, borderRadius: '20px', border: '1px solid rgba(130, 92, 206, 0.12)', bgcolor: 'rgba(255, 255, 255, 0.72)', display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
@@ -204,16 +296,6 @@ export default function FormsPage() {
     }
   }
 
-  const rowGrid = {
-    display: 'grid',
-    gridTemplateColumns: {
-      xs: 'minmax(0, 1fr)',
-      md: 'minmax(220px, 1.5fr) 130px 130px 120px 130px',
-    },
-    alignItems: 'center',
-    gap: '1rem',
-  };
-
   return (
     <Box sx={{ minHeight: '100%', color: '#24104f' }} dir={direction}>
       <Box sx={{ mb: 2.75 }}>
@@ -316,49 +398,55 @@ export default function FormsPage() {
           </Alert>
         ) : null}
 
-        <Box sx={{ px: { xs: 2, md: 3 }, pb: { xs: 2.2, md: 3 }, display: 'flex', flexDirection: 'column' }}>
-          <Box
-            sx={{
-              ...rowGrid,
-              px: 2.2,
-              py: 1.4,
-              display: { xs: 'none', md: 'grid' },
-              borderRadius: '18px 18px 0 0',
-              border: '1px solid rgba(130, 92, 206, 0.10)',
-              borderBottom: 'none',
-              bgcolor: 'rgba(255,255,255,0.42)',
-              flexShrink: 0,
-            }}
-          >
-            {[
-              { key: 'fmColContact' },
-              { key: 'fmColType' },
-              { key: 'fmColSubmitted' },
-              { key: 'fmColStatus' },
-              { key: 'fmColActions' },
-            ].map((col, index) => (
-              <Typography
-                key={col.key}
-                variant="caption"
-                sx={{ fontWeight: 950, color: '#625B84', textTransform: 'uppercase', letterSpacing: 0.3, textAlign: index === 4 ? 'end' : 'start' }}
-              >
-                {t(col.key)}
-              </Typography>
-            ))}
-          </Box>
-
+        <Box sx={{ px: { xs: 2, md: 3 }, pb: { xs: 2.2, md: 3 }, display: 'flex', flexDirection: 'column' }} dir="ltr">
           <Box
             sx={{
               maxHeight: 'calc(100vh - 360px)',
               overflowY: 'auto',
-              overflowX: 'hidden',
-              pr: '6px',
-              mr: '-6px',
-              '&::-webkit-scrollbar': { width: '0.5rem' },
+              overflowX: { xs: 'auto', md: 'hidden' },
+              '&::-webkit-scrollbar': { width: '0.5rem', height: '0.5rem' },
               '&::-webkit-scrollbar-track': { background: 'rgba(244, 238, 255, 0.45)', borderRadius: 999 },
               '&::-webkit-scrollbar-thumb': { background: 'rgba(167, 139, 250, 0.5)', borderRadius: 999 },
             }}
           >
+            <Box
+              sx={{
+                ...formsTableRowGridSx,
+                py: 1.4,
+                display: { xs: 'none', md: 'grid' },
+                position: 'sticky',
+                top: 0,
+                zIndex: 2,
+                borderRadius: '18px 18px 0 0',
+                border: '1px solid rgba(130, 92, 206, 0.10)',
+                borderBottom: '1px solid rgba(130, 92, 206, 0.10)',
+                bgcolor: 'rgba(255,255,255,0.92)',
+                backdropFilter: 'blur(8px)',
+              }}
+            >
+              {TABLE_COLUMNS.map((column) => {
+                if (column.key === 'user') {
+                  return <FormsTableUserHeader key={column.key} />;
+                }
+                if (column.key === 'contact') {
+                  return <FormsTableContactHeader key={column.key} />;
+                }
+                return (
+                  <Box key={column.key} sx={formsTableCellCenterSx}>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        ...formsTableHeaderLabelSx,
+                        textAlign: column.align,
+                      }}
+                    >
+                      {column.label}
+                    </Typography>
+                  </Box>
+                );
+              })}
+            </Box>
+
             <Stack spacing={1.1}>
               {loading ? (
                 <Box sx={{ py: 8, textAlign: 'center' }}>
@@ -378,49 +466,58 @@ export default function FormsPage() {
                         if (event.key === 'Enter' || event.key === ' ') openDetails(sub);
                       }}
                       sx={{
-                        ...rowGrid,
-                        px: { xs: 1.7, md: 2.2 },
+                        ...formsTableRowGridSx,
                         py: 1.8,
                         borderRadius: '22px',
                         border: '1px solid rgba(130, 92, 206, 0.10)',
                         bgcolor: 'rgba(255,255,255,0.72)',
                         cursor: 'pointer',
-                        transition: 'transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease, border-color 180ms ease',
+                        transition: 'box-shadow 180ms ease, background-color 180ms ease, border-color 180ms ease',
                         '&:hover': {
                           bgcolor: 'rgba(255, 250, 254, 0.94)',
                           borderColor: 'rgba(124, 58, 237, 0.18)',
                           boxShadow: '0 16px 34px rgba(91, 57, 145, 0.10)',
-                          transform: 'translateY(-2px) scale(1.002)',
                         },
                       }}
                     >
-                      <Stack direction="row" spacing={1.5} alignItems="center" sx={{ minWidth: 0 }}>
-                        <Avatar sx={{ width: '3.375rem', height: '3.375rem', bgcolor: '#EEE7FF', color: '#6D3CCF', fontWeight: 950, fontSize: '1.1875rem', boxShadow: '0 10px 24px rgba(109, 60, 207, 0.12)' }}>
-                          {initialsOf(sub.fullName)}
-                        </Avatar>
-                        <Box sx={{ minWidth: 0 }}>
-                          <Typography dir="auto" fontWeight={950} noWrap sx={{ color: '#17122E' }}>
+                      <Box sx={formsTableCellLeftSx}>
+                        <Stack direction="row" spacing={FORMS_USER_ROW_GAP} alignItems="center" sx={{ minWidth: 0, width: '100%' }}>
+                          <Avatar sx={{ width: FORMS_USER_AVATAR_WIDTH, height: FORMS_USER_AVATAR_WIDTH, bgcolor: '#EEE7FF', color: '#6D3CCF', fontWeight: 950, fontSize: '1.1875rem', boxShadow: '0 10px 24px rgba(109, 60, 207, 0.12)', flexShrink: 0 }}>
+                            {initialsOf(sub.fullName)}
+                          </Avatar>
+                          <Typography dir="auto" fontWeight={950} noWrap sx={{ color: '#17122E', minWidth: 0 }}>
                             {sub.fullName || t('fmUnnamed')}
                           </Typography>
-                          <Typography color="#5E587E" noWrap sx={{ fontSize: '0.84375rem' }}>
-                            {sub.email || t('fmNoEmail')}
-                          </Typography>
-                        </Box>
-                      </Stack>
+                        </Stack>
+                      </Box>
 
-                      <Box>
+                      <Box sx={formsTableContactCellSx}>
+                        <Typography color="#5E587E" noWrap sx={{ fontSize: '0.84375rem', display: 'block' }} dir="ltr">
+                          {sub.email || t('fmNoEmail')}
+                        </Typography>
+                        {sub.phone ? (
+                          <Typography color="#5E587E" noWrap sx={{ fontSize: '0.8125rem', mt: 0.25, display: 'block' }} dir="ltr">
+                            {sub.phone}
+                          </Typography>
+                        ) : null}
+                      </Box>
+
+                      <Box sx={formsTableCellCenterSx}>
                         <TypeChip type={sub.type} t={t} />
                       </Box>
 
-                      <Typography fontWeight={800} color="#4F4A70">
-                        {formatDate(sub.createdAt, intlLocale)}
-                      </Typography>
+                      <Box sx={formsTableCellCenterSx}>
+                        <Typography fontWeight={800} color="#4F4A70" noWrap component="span">
+                          {formatDate(sub.createdAt, intlLocale)}
+                        </Typography>
+                      </Box>
 
-                      <Box>
+                      <Box sx={formsTableCellCenterSx}>
                         <StatusChip status={sub.status} t={t} />
                       </Box>
 
-                      <Stack direction="row" spacing={0.75} justifyContent={{ xs: 'flex-start', md: 'flex-end' }} onClick={(event) => event.stopPropagation()}>
+                      <Box sx={formsTableCellCenterSx}>
+                        <Stack direction="row" spacing={0.75} onClick={(event) => event.stopPropagation()}>
                         <IconButton
                           aria-label={(isHandled ? t('fmReopenAria') : t('fmMarkHandledAria')).replace('{name}', sub.fullName || t('fmSubmissionWord'))}
                           onClick={() => toggleHandled(sub)}
@@ -465,7 +562,8 @@ export default function FormsPage() {
                         >
                           <VisibilityOutlinedIcon fontSize="small" />
                         </IconButton>
-                      </Stack>
+                        </Stack>
+                      </Box>
                     </Box>
                   );
                 })

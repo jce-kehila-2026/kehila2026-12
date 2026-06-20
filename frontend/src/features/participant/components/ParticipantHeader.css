@@ -124,18 +124,21 @@
 .pd-header-icon-btn__badge,
 .pd-home__header-actions .participant-notif-wrap > button span {
   position: absolute;
-  top: -4px;
-  right: -4px;
-  min-width: 1.125rem;
-  height: 1.125rem;
+  top: 0.1875rem;
+  right: 0.1875rem;
+  min-width: 0.9375rem;
+  height: 0.9375rem;
   display: grid;
   place-items: center;
-  padding: 0 0.3125rem;
+  padding: 0 0.25rem;
+  border: 2px solid rgba(255, 255, 255, 0.96);
   border-radius: 999px;
   background: var(--pd-pink);
   color: #fff;
-  font-size: 0.62rem;
+  font-size: 0.56rem;
   font-weight: 800;
+  line-height: 1;
+  box-shadow: 0 2px 7px rgba(236, 22, 140, 0.28);
 }
 
 .pd-home__header-actions .participant-notif-wrap {
