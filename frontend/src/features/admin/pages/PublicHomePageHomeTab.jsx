@@ -32,7 +32,6 @@ const LIMITS = {
   intro: 300,
   stepTitle: 40,
   statTitle: 40,
-  statDescription: 120,
   statValueMax: 999999999,
 };
 
@@ -77,7 +76,6 @@ function statisticsToForm(statistics) {
     icon: stat.icon || STATISTIC_ICON_KEYS[0],
     value: Number.isFinite(stat.value) ? String(stat.value) : '',
     title: stat.title || '',
-    description: stat.description || '',
   }));
 }
 
@@ -258,7 +256,6 @@ export default function PublicHomePageHomeTab() {
           icon: STATISTIC_ICON_KEYS.includes(stat.icon) ? stat.icon : fallback.icon,
           value: Number.isFinite(parsed) ? Math.floor(parsed) : fallback.value,
           title: stat.title.trim(),
-          description: stat.description.trim(),
         };
       });
 
@@ -288,7 +285,7 @@ export default function PublicHomePageHomeTab() {
               ['title', 'intro'],
             ),
             translateItems(stepsPayload, ['title']),
-            translateItems(statisticsPayload, ['title', 'description']),
+            translateItems(statisticsPayload, ['title']),
           ]);
           if (Object.keys(heroTr).length) heroTranslations = heroTr;
           translatedSteps = stepsTr;
@@ -475,7 +472,7 @@ export default function PublicHomePageHomeTab() {
                     alignItems: 'flex-start',
                     gridTemplateColumns: {
                       xs: 'minmax(0, 1fr)',
-                      md: '130px minmax(0, 1.1fr) minmax(0, 1.6fr) 170px',
+                      md: '130px minmax(0, 1fr) 170px',
                     },
                   }}
                 >
@@ -506,15 +503,6 @@ export default function PublicHomePageHomeTab() {
                       `${stat.title.length} / ${LIMITS.statTitle}`
                     }
                     required
-                    fullWidth
-                  />
-                  <TextField
-                    label={t('cmsFieldDescription')}
-                    value={stat.description}
-                    onChange={(e) => setStatField(index, 'description', e.target.value)}
-                    onBlur={() => handleStatBlur(index, 'description')}
-                    inputProps={{ maxLength: LIMITS.statDescription }}
-                    helperText={`${stat.description.length} / ${LIMITS.statDescription}`}
                     fullWidth
                   />
                   <TextField
