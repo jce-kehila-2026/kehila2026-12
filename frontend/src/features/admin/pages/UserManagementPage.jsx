@@ -417,9 +417,6 @@ export default function UserManagementPage() {
             <Typography variant="h3" sx={{ fontSize: { xs: '1.875rem', md: '2.4375rem' }, fontWeight: 950, color: '#100B2F', lineHeight: 1.05 }}>
               {t('umTitle')}
             </Typography>
-            <Typography variant="subtitle1" sx={{ mt: 0.9, color: '#4F4A70', fontWeight: 600 }}>
-              {t('umSubtitle')}
-            </Typography>
           </Box>
           <Button
             variant="outlined"

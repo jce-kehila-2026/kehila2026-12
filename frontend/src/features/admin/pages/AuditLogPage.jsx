@@ -32,6 +32,13 @@ const ACTIVITY_FILTERS = [
   { value: 'community', labelKey: 'filterCommunity' },
 ];
 
+const dateFilterFieldSx = {
+  minWidth: { md: 210 },
+  '& input[type="date"]': {
+    color: '#171239',
+  },
+};
+
 const ACTION_LABELS = {
   UPDATE_EVENT: 'Updated event',
   CREATE_EVENT: 'Created event',
@@ -416,16 +423,27 @@ export default function AuditLogPage() {
   return (
     <Box
       sx={{
-        minHeight: '100%',
+        height: 'calc(100vh - 6.5rem)',
+        minHeight: 0,
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
         color: '#24104f',
       }}
     >
-      <Box sx={{ mb: 2.75 }}>
-        <Typography variant="h4" sx={{ fontWeight: 900, letterSpacing: 0, color: '#171239' }}>
+      <Box
+        sx={{
+          position: 'fixed',
+          top: '1.75rem',
+          left: 'calc(var(--admin-sidebar-width) + 4rem)',
+          zIndex: 1100,
+          minHeight: '2.375rem',
+          display: 'flex',
+          alignItems: 'center',
+        }}
+      >
+        <Typography variant="h4" sx={{ fontWeight: 900, letterSpacing: 0, lineHeight: 1.1, color: '#171239' }}>
           {t('auditTitle')}
-        </Typography>
-        <Typography variant="subtitle1" sx={{ mt: 0.5, color: 'rgba(36, 16, 79, 0.66)', fontWeight: 600 }}>
-          {t('auditSubtitle')}
         </Typography>
       </Box>
 
@@ -433,6 +451,7 @@ export default function AuditLogPage() {
         sx={{
           p: 2,
           mb: 2,
+          flex: '0 0 auto',
           border: '1px solid rgba(167, 139, 250, 0.18)',
           borderRadius: '22px',
           background: 'rgba(255, 255, 255, 0.78)',
@@ -466,7 +485,8 @@ export default function AuditLogPage() {
             value={dateFrom}
             onChange={(event) => setDateFrom(event.target.value)}
             InputLabelProps={{ shrink: true }}
-            sx={{ minWidth: { md: 155 } }}
+            slotProps={{ inputLabel: { shrink: true } }}
+            sx={dateFilterFieldSx}
           />
           <TextField
             type="date"
@@ -474,7 +494,8 @@ export default function AuditLogPage() {
             value={dateTo}
             onChange={(event) => setDateTo(event.target.value)}
             InputLabelProps={{ shrink: true }}
-            sx={{ minWidth: { md: 155 } }}
+            slotProps={{ inputLabel: { shrink: true } }}
+            sx={dateFilterFieldSx}
           />
           <Button
             type="button"
@@ -499,6 +520,10 @@ export default function AuditLogPage() {
           background: 'rgba(255, 255, 255, 0.82)',
           boxShadow: '0 18px 45px rgba(109, 53, 184, 0.08)',
           backdropFilter: 'blur(18px)',
+          flex: '1 1 auto',
+          minHeight: 0,
+          display: 'flex',
+          flexDirection: 'column',
         }}
       >
         <Box
@@ -512,6 +537,7 @@ export default function AuditLogPage() {
             color: 'rgba(36, 16, 79, 0.66)',
             fontSize: '0.78rem',
             fontWeight: 900,
+            flex: '0 0 auto',
           }}
         >
           <span>{t('colDateTime')}</span>
@@ -522,7 +548,7 @@ export default function AuditLogPage() {
           <span>{t('colDetails')}</span>
         </Box>
 
-        <Box sx={{ maxHeight: 'calc(100vh - 300px)', minHeight: 360, overflowY: 'auto' }}>
+        <Box sx={{ flex: '1 1 auto', minHeight: 0, overflowY: 'auto' }}>
           {loading ? (
             <Box sx={{ p: 4, textAlign: 'center', color: '#6d35b8', fontWeight: 800 }}>{t('auditLoading')}</Box>
           ) : error ? (
