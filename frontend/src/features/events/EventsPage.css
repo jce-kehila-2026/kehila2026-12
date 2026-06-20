@@ -1581,8 +1581,7 @@
 .workshop-details-panel__actions {
   display: flex;
   align-items: center;
-  justify-content: flex-start;
-  gap: 0.625rem;
+  justify-content: center;
   padding: 1rem 1.5rem 1.25rem;
   background: rgba(255, 255, 255, 0.96);
   border-top: 1px solid rgba(223, 50, 123, 0.1);
@@ -1623,14 +1622,6 @@
   cursor: not-allowed;
   opacity: 0.58;
   box-shadow: none;
-}
-
-.workshop-details-panel__secondary {
-  border: 1px solid rgba(91, 30, 140, 0.22);
-  background: #ffffff;
-  color: #5b1e8c;
-  min-width: 6.5rem;
-  box-shadow: 0 8px 18px rgba(91, 30, 140, 0.1);
 }
 
 .events-main--embedded .events-list-panel,
@@ -4320,16 +4311,19 @@
     padding: 1rem;
   }
 
-  .appointment-drawer__actions,
-  .workshop-details-panel__actions {
+  .appointment-drawer__actions {
     flex-direction: column-reverse;
     align-items: stretch;
     padding: 0.875rem 1rem 1rem;
   }
 
-  .appointment-drawer__actions button,
-  .workshop-details-panel__actions button {
+  .appointment-drawer__actions button {
     width: 100%;
+  }
+
+  .workshop-details-panel__actions {
+    justify-content: center;
+    padding: 0.875rem 1rem 1rem;
   }
 
   .workshop-details-panel__details span {

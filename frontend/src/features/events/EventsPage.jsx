@@ -1268,9 +1268,6 @@ function WorkshopDetailsPanel({
                   : t('evRegister')}
           <ArrowForwardIcon fontSize="small" />
         </button>
-        <button className="workshop-details-panel__secondary" type="button" onClick={onClose}>
-          {t('evClose')}
-        </button>
       </div>
     </aside>
     </div>
