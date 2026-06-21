@@ -493,20 +493,19 @@ export default function CalendarPage({ variant = 'standalone' }) {
 
               <div className="calendar-board__title">
                 <span className="calendar-kicker">{t('calViewKicker').replace('{view}', t(viewLabelKeys[calendarView]))}</span>
-                <div className="calendar-board__title-row">
-                  <h2>{calendarTitle}</h2>
-                  {/* Add Note moved from the left sidebar note card; openNoteModal keeps the existing note creation flow. */}
-                  <button
-                    type="button"
-                    className="calendar-board__add-note"
-                    aria-haspopup="dialog"
-                    onClick={openNoteModal}
-                  >
-                    <span aria-hidden="true">+</span>
-                    {t('calAddNote')}
-                  </button>
-                </div>
+                <h2>{calendarTitle}</h2>
               </div>
+
+              {/* Add Note moved from the left sidebar note card; openNoteModal keeps the existing note creation flow. */}
+              <button
+                type="button"
+                className="calendar-board__add-note"
+                aria-haspopup="dialog"
+                onClick={openNoteModal}
+              >
+                <span aria-hidden="true">+</span>
+                {t('calAddNote')}
+              </button>
 
               <div className="calendar-board__actions">
                 <button type="button" aria-label={t('calPrev')} onClick={() => changeVisibleDate(-1)}>
