@@ -1332,12 +1332,14 @@
 }
 
 .participant-panel .calendar-page--embedded {
+  height: 100%;
   min-height: 0;
   padding: 0;
   background: transparent;
 }
 
 .participant-panel .calendar-page--embedded .calendar-shell {
+  height: 100%;
   width: 100%;
 }
 
@@ -1361,6 +1363,7 @@
 .participant-main--calendar .participant-content--calendar {
   height: 100%;
   min-height: 0;
+  align-items: stretch;
   overflow: hidden;
   overflow-x: hidden;
   padding-right: 8px;
@@ -1373,18 +1376,22 @@
 }
 
 .participant-main--calendar .participant-content--calendar .participant-panel {
+  height: 100%;
   min-height: 100%;
+  padding-bottom: 0;
 }
 
 .participant-panel .calendar-page--embedded .calendar-layout {
   grid-template-columns: minmax(260px, 320px) minmax(0, 1fr);
   gap: 18px;
-  align-items: start;
+  align-items: stretch;
+  height: 100%;
 }
 
 .participant-panel .calendar-page--embedded .calendar-board {
   border: 1px solid rgba(236, 22, 140, 0.12);
   border-radius: 18px;
+  height: 100%;
   box-shadow: none;
 }
 
@@ -1403,10 +1410,6 @@
 
 .participant-panel .calendar-page--embedded .selected-day-card {
   padding: 12px;
-}
-
-.participant-panel .calendar-page--embedded .note-card {
-  padding: 14px;
 }
 
 .participant-panel .calendar-page--embedded .weekly-calendar__grid {

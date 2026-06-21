@@ -127,19 +127,32 @@ function getHour(time) {
 
 function CalendarItem({ item }) {
   const { t } = useParticipantLocale();
-  const details = item.content || item.description;
+  const isNote = item.type === 'note';
+  const isAppointment = item.type === 'appointment';
+  const badges = isNote
+    ? [t('itemNote')]
+    : isAppointment
+      ? [t('itemAppointment'), t('itemRegistration')]
+      : [item.registered ? t('itemRegistration') : t(itemTypeKeys[item.type] ?? 'itemEvent')];
+  const detailText = isNote ? item.content : isAppointment ? item.description : '';
 
   return (
     <article className={`calendar-item calendar-item--${item.type}`}>
+      {/* Card layout: compact badges, clamped content, then anchored time to prevent overlap in the daily sidebar. */}
       <div className="calendar-item__meta">
-        <span>{t(itemTypeKeys[item.type] ?? 'itemNote')}</span>
-        {item.registered && <span>{t('itemRegistration')}</span>}
+        {badges.map((badge) => (
+          <span key={badge}>{badge}</span>
+        ))}
       </div>
-      <h3>{item.title}</h3>
-      <p>
-        {item.startTime} - {item.endTime}
-      </p>
-      {details && <small>{details}</small>}
+      <div className="calendar-item__body">
+        <h3>{item.title}</h3>
+        {detailText && <p>{detailText}</p>}
+      </div>
+      {!isNote && (
+        <time className="calendar-item__time">
+          {item.startTime} - {item.endTime}
+        </time>
+      )}
     </article>
   );
 }
@@ -285,6 +298,11 @@ export default function CalendarPage({ variant = 'standalone' }) {
   function handleFormChange(event) {
     const { name, value } = event.target;
     setNoteForm((current) => ({ ...current, [name]: value }));
+  }
+
+  function openNoteModal() {
+    setCalendarError('');
+    setNoteModalOpen(true);
   }
 
   async function handleSubmit(event) {
@@ -456,26 +474,6 @@ export default function CalendarPage({ variant = 'standalone' }) {
                 <p className="empty-state">{t('calNoItemsDate')}</p>
               )}
             </section>
-
-            <section className="calendar-card note-card">
-              <button
-                type="button"
-                className="note-card__toggle"
-                aria-haspopup="dialog"
-                onClick={() => {
-                  setCalendarError('');
-                  setNoteModalOpen(true);
-                }}
-              >
-                <span className="note-card__toggle-copy">
-                  <strong>{t('calAddNote')}</strong>
-                  <small>{t('calPrivateReminder')}</small>
-                </span>
-                <span className="note-card__toggle-icon" aria-hidden="true">
-                  <span>+</span>
-                </span>
-              </button>
-            </section>
           </aside>
 
           <section className="calendar-card calendar-board" aria-label={t('calBoardAria')}>
@@ -493,9 +491,21 @@ export default function CalendarPage({ variant = 'standalone' }) {
                 ))}
               </div>
 
-              <div>
+              <div className="calendar-board__title">
                 <span className="calendar-kicker">{t('calViewKicker').replace('{view}', t(viewLabelKeys[calendarView]))}</span>
-                <h2>{calendarTitle}</h2>
+                <div className="calendar-board__title-row">
+                  <h2>{calendarTitle}</h2>
+                  {/* Add Note moved from the left sidebar note card; openNoteModal keeps the existing note creation flow. */}
+                  <button
+                    type="button"
+                    className="calendar-board__add-note"
+                    aria-haspopup="dialog"
+                    onClick={openNoteModal}
+                  >
+                    <span aria-hidden="true">+</span>
+                    {t('calAddNote')}
+                  </button>
+                </div>
               </div>
 
               <div className="calendar-board__actions">
