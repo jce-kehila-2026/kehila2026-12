@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef } from 'react';
-import { HandHeart, Heart, MessageCircleMore, UsersRound } from 'lucide-react';
+import { BookOpen, HandHeart, Heart, MessageCircleMore, Sparkles, UsersRound } from 'lucide-react';
 import heroSupportJourney from '../../../assets/images/hero-support-journey.png';
 import { usePublicLocale } from '../context/PublicLocaleContext';
 import { localizeStatistics } from '../i18n/publicHomeContentLocalization';
@@ -10,6 +10,17 @@ import LoadingState from './LoadingState';
 import { StatisticsGrid, adaptStatisticForRender } from './StatisticsSection';
 
 const JOURNEY_STEP_ICONS = [MessageCircleMore, Heart, HandHeart, UsersRound];
+
+// Admin-selectable icon per step; falls back to the positional icon for legacy
+// content saved before the icon picker existed.
+const JOURNEY_STEP_ICON_COMPONENTS = {
+  'message-circle': MessageCircleMore,
+  heart: Heart,
+  'hands-heart': HandHeart,
+  'users-round': UsersRound,
+  sparkles: Sparkles,
+  'book-open': BookOpen,
+};
 
 const JOURNEY_STEP_FALLBACK_KEYS = [
   { titleKey: 'heroStepContactTitle' },
@@ -68,7 +79,7 @@ export default function HeroSection({
   // Resolve journey steps with per-step Azure translations
   const steps = useMemo(() => {
     const cmsSteps = Array.isArray(hc.steps) && hc.steps.length > 0 ? hc.steps : null;
-    return JOURNEY_STEP_ICONS.map((Icon, index) => {
+    return JOURNEY_STEP_ICONS.map((PositionalIcon, index) => {
       const cmsStep = cmsSteps?.[index];
       const stepTranslations = cmsStep?.translations || {};
       const fallback = JOURNEY_STEP_FALLBACK_KEYS[index];
@@ -80,6 +91,8 @@ export default function HeroSection({
       } else {
         title = cmsStep?.title || t(fallback.titleKey);
       }
+
+      const Icon = JOURNEY_STEP_ICON_COMPONENTS[cmsStep?.iconKey] || PositionalIcon;
 
       return { Icon, title };
     });

@@ -30,6 +30,7 @@ import {
 import { useAdminLocale } from '../context/AdminLocaleContext';
 import ReminderTimePicker from '../../../shared/components/ReminderTimePicker';
 import ReminderDatePicker from '../../../shared/components/ReminderDatePicker';
+import CitySelect from '../../../shared/components/CitySelect';
 import '../../../shared/components/ReminderTimePicker.css';
 import '../../../shared/styles/public-cta-button.css';
 import './EventsPage.css';
@@ -1678,7 +1679,13 @@ export default function EventsPage() {
                     <div className="admin-events-wizard-fields">
                       <label>
                         <span className="admin-events-field-label">{t('evLocationLabel')} <b>*</b></span>
-                        <input value={form.location} onChange={(event) => updateForm('location', event.target.value)} placeholder={t('evLocationPlaceholder')} required />
+                        <CitySelect
+                          value={form.location}
+                          onChange={(city) => updateForm('location', city)}
+                          placeholder={t('evLocationPlaceholder')}
+                          required
+                          size="small"
+                        />
                       </label>
                       <label>
                         {t('evCapacity')}

@@ -28,16 +28,27 @@ export const DEFAULT_HOME_HERO = {
 
 export const HERO_CONTENT_STEPS_COUNT = 4;
 
+// Allowed icon keys for journey steps (stored values stay English; the admin UI
+// translates only their display labels). Order is the picker order.
+export const JOURNEY_STEP_ICON_KEYS = [
+  'message-circle',
+  'heart',
+  'hands-heart',
+  'users-round',
+  'sparkles',
+  'book-open',
+];
+
 export const DEFAULT_HERO_CONTENT = {
   title: 'אנחנו כאן, מהרגע הראשון',
   intro: 'עמותת SHE-NA מלווה נשים המתמודדות עם סרטן ומעניקה להן תמיכה רגשית, מידע אמין וקהילה שמבינה.',
   ctaJoin: 'להצטרף',
   ctaHowItWorks: 'איך זה עובד?',
   steps: [
-    { title: 'יוצרות קשר', text: 'פונות אלינו ופותחות את הצעד הראשון.' },
-    { title: 'מתאימות תמיכה', text: 'אנחנו מתאימות עבורך את התמיכה המדויקת לך.' },
-    { title: 'מלוות אותך', text: 'מלוות אותך לאורך הדרך בתמיכה אישית ומקצועית.' },
-    { title: 'נשארות יחד', text: 'קהילה תומכת שנשארת לצידך, תמיד.' },
+    { title: 'יוצרות קשר', text: 'פונות אלינו ופותחות את הצעד הראשון.', iconKey: 'message-circle' },
+    { title: 'מתאימות תמיכה', text: 'אנחנו מתאימות עבורך את התמיכה המדויקת לך.', iconKey: 'heart' },
+    { title: 'מלוות אותך', text: 'מלוות אותך לאורך הדרך בתמיכה אישית ומקצועית.', iconKey: 'hands-heart' },
+    { title: 'נשארות יחד', text: 'קהילה תומכת שנשארת לצידך, תמיד.', iconKey: 'users-round' },
   ],
 };
 
@@ -660,6 +671,7 @@ function mergeHeroStep(step, index) {
   return {
     title: safeString(safe.title) || fallback.title,
     text: safeString(safe.text) || fallback.text,
+    iconKey: JOURNEY_STEP_ICON_KEYS.includes(safe.iconKey) ? safe.iconKey : fallback.iconKey,
     ...(safe.translations ? { translations: safe.translations } : {}),
   };
 }

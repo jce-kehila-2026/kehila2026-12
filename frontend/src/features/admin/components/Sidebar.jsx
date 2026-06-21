@@ -15,7 +15,6 @@ import HomeWorkOutlinedIcon from '@mui/icons-material/HomeWorkOutlined';
 import CampaignOutlinedIcon from '@mui/icons-material/CampaignOutlined';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
-import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { useAdmin } from '../context/AdminContext';
 import { useAdminLocale } from '../context/AdminLocaleContext';
@@ -84,13 +83,6 @@ const NAV_ITEMS = [
     icon: <ReceiptLongIcon fontSize="small" />,
     id: 'nav-audit-log',
     active: (pathname) => pathname.startsWith('/admin/audit-log'),
-  },
-  {
-    labelKey: 'navSettings',
-    path: '/admin/users?tab=roles',
-    icon: <SettingsOutlinedIcon fontSize="small" />,
-    id: 'nav-settings',
-    active: (pathname, search) => pathname.startsWith('/admin/users') && search.includes('tab=roles'),
   },
 ];
 
