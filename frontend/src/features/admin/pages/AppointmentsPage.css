@@ -45,6 +45,37 @@
   font-weight: 600;
 }
 
+.appointments-export-csv-btn {
+  min-height: 2.5rem;
+  padding: 0 1.125rem;
+  border: 1px solid rgba(167, 139, 250, 0.22);
+  border-radius: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #6d35b8;
+  background: linear-gradient(145deg, rgba(255, 255, 255, 0.88), rgba(255, 255, 255, 0.58));
+  box-shadow: 0 10px 24px rgba(109, 53, 184, 0.08);
+  backdrop-filter: blur(18px) saturate(1.12);
+  font: inherit;
+  font-size: 0.875rem;
+  font-weight: 800;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+
+.appointments-export-csv-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.94);
+  border-color: rgba(109, 53, 184, 0.32);
+  box-shadow: 0 14px 32px rgba(109, 53, 184, 0.14);
+}
+
+.appointments-export-csv-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
 .appointments-primary-btn {
   min-height: 2.75rem;
   padding: 0 1.125rem;

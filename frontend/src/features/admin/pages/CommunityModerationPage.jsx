@@ -15,6 +15,7 @@ import {
   X,
 } from 'lucide-react';
 import { useAdmin } from '../context/AdminContext';
+import { useAdminLocale } from '../context/AdminLocaleContext';
 import {
   dismissReports,
   getAllPosts,
@@ -37,18 +38,28 @@ const TONE_COLORS = {
 
 const STATUS_FILTERS = ['all', 'active', 'reported', 'hidden', 'deleted'];
 
-function tsToLabel(ts) {
+const STATUS_LABEL_KEYS = {
+  all: 'cmStatusAll',
+  active: 'cmStatusActive',
+  reported: 'cmStatusReported',
+  hidden: 'cmStatusHidden',
+  deleted: 'cmStatusDeleted',
+};
+
+const INTL_LOCALE_BY_LANG = { he: 'he-IL', en: 'en-US' };
+
+function tsToLabel(ts, intlLocale) {
   if (!ts) return '—';
   const date = typeof ts.toDate === 'function' ? ts.toDate() : new Date(ts);
   if (Number.isNaN(date.getTime())) return '—';
-  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  return date.toLocaleDateString(intlLocale, { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
-function tsToFull(ts) {
+function tsToFull(ts, intlLocale) {
   if (!ts) return '—';
   const date = typeof ts.toDate === 'function' ? ts.toDate() : new Date(ts);
   if (Number.isNaN(date.getTime())) return '—';
-  return date.toLocaleString('en-US', {
+  return date.toLocaleString(intlLocale, {
     month: 'short', day: 'numeric', year: 'numeric',
     hour: '2-digit', minute: '2-digit',
   });
@@ -74,34 +85,34 @@ function MetricCard({ id, accent, icon, label, value, subtext }) {
   );
 }
 
-function StatusBadge({ status, hiddenByAdmin }) {
+function StatusBadge({ status, hiddenByAdmin, t }) {
   const resolved = hiddenByAdmin ? 'hidden' : (status ?? 'active');
   return (
     <span className={`admin-community-badge admin-community-badge--${resolved}`}>
-      {resolved}
+      {t(STATUS_LABEL_KEYS[resolved] || resolved)}
     </span>
   );
 }
 
-function DeleteConfirmRow({ onConfirm, onCancel }) {
+function DeleteConfirmRow({ onConfirm, onCancel, t }) {
   return (
     <div className="admin-community-delete-confirm" role="alert">
       <TriangleAlert size={16} />
-      <span>Permanently delete this post?</span>
+      <span>{t('cmDeleteConfirmQuestion')}</span>
       <button
         id="btn-confirm-delete-post"
         className="admin-community-btn admin-community-btn--danger"
         type="button"
         onClick={onConfirm}
       >
-        Yes, delete
+        {t('cmYesDelete')}
       </button>
       <button
         className="admin-community-btn admin-community-btn--ghost"
         type="button"
         onClick={onCancel}
       >
-        Cancel
+        {t('cmCancel')}
       </button>
     </div>
   );
@@ -110,6 +121,8 @@ function DeleteConfirmRow({ onConfirm, onCancel }) {
 // ── Reported Posts Tab ────────────────────────────────────────────────────────
 
 function ReportedPostsTab({ onStatsChange }) {
+  const { t, lang } = useAdminLocale();
+  const intlLocale = INTL_LOCALE_BY_LANG[lang] || 'en-US';
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState({});
@@ -159,15 +172,15 @@ function ReportedPostsTab({ onStatsChange }) {
   });
 
   if (loading) {
-    return <p className="admin-community-loading">Loading reported posts…</p>;
+    return <p className="admin-community-loading">{t('cmLoadingReported')}</p>;
   }
 
   if (posts.length === 0) {
     return (
       <div className="admin-community-empty" id="reported-posts-empty">
         <CheckCircle2 size={40} />
-        <h3>No reported posts — the community is healthy! 🎉</h3>
-        <p>All posts are currently within community guidelines.</p>
+        <h3>{t('cmEmptyReportedTitle')}</h3>
+        <p>{t('cmEmptyReportedText')}</p>
       </div>
     );
   }
@@ -177,6 +190,7 @@ function ReportedPostsTab({ onStatsChange }) {
       {posts.map((post) => {
         const toneColor = TONE_COLORS[post.tone] ?? TONE_COLORS.pink;
         const reports = Array.isArray(post.reports) ? post.reports : [];
+        const reportsCount = post.reportsCount ?? reports.length;
         const isExpanded = Boolean(expandedReports[post.id]);
         const isBusy = Boolean(processing[post.id]);
 
@@ -199,12 +213,12 @@ function ReportedPostsTab({ onStatsChange }) {
                 </div>
                 <div>
                   <strong>
-                    {post.isAnonymous ? 'Anonymous User' : (post.authorDisplayName ?? 'Unknown')}
+                    {post.isAnonymous ? t('cmAnonymousUser') : (post.authorDisplayName ?? t('cmUnknown'))}
                   </strong>
                   <span className="admin-community-post-card__meta">
-                    {tsToFull(post.createdAt)}
+                    {tsToFull(post.createdAt, intlLocale)}
                     {post.isAnonymous && (
-                      <span className="admin-community-badge admin-community-badge--anon">Anonymous</span>
+                      <span className="admin-community-badge admin-community-badge--anon">{t('cmAnonymous')}</span>
                     )}
                   </span>
                 </div>
@@ -212,7 +226,7 @@ function ReportedPostsTab({ onStatsChange }) {
               <div className="admin-community-post-card__badges">
                 <span className="admin-community-badge admin-community-badge--reported">
                   <AlertTriangle size={11} />
-                  {post.reportsCount ?? reports.length} report{(post.reportsCount ?? reports.length) !== 1 ? 's' : ''}
+                  {(reportsCount === 1 ? t('cmReportsCountOne') : t('cmReportsCount')).replace('{n}', reportsCount)}
                 </span>
                 {post.tone && (
                   <span
@@ -236,18 +250,24 @@ function ReportedPostsTab({ onStatsChange }) {
                   onClick={() => setExpandedReports((prev) => ({ ...prev, [post.id]: !prev[post.id] }))}
                 >
                   <Shield size={14} />
-                  {isExpanded ? 'Hide' : 'Show'} {reports.length} report detail{reports.length !== 1 ? 's' : ''}
+                  {(() => {
+                    const n = reports.length;
+                    const key = isExpanded
+                      ? (n === 1 ? 'cmReportDetailsHideOne' : 'cmReportDetailsHide')
+                      : (n === 1 ? 'cmReportDetailsShowOne' : 'cmReportDetailsShow');
+                    return t(key).replace('{n}', n);
+                  })()}
                 </button>
                 {isExpanded && (
                   <ul className="admin-community-reports-list">
                     {reports.map((report, i) => (
                       <li key={report.id ?? i} className="admin-community-report-item">
-                        <span className="admin-community-report-item__reason">{report.reason || 'No reason given'}</span>
+                        <span className="admin-community-report-item__reason">{report.reason || t('cmNoReasonGiven')}</span>
                         <span className="admin-community-report-item__who">
-                          by {report.reporterUserId?.slice(0, 8) ?? 'unknown'}
+                          {t('cmReportBy').replace('{id}', report.reporterUserId?.slice(0, 8) ?? t('cmUnknownReporter'))}
                         </span>
                         <span className="admin-community-report-item__when">
-                          {tsToLabel(report.createdAt ?? report.reportedAt)}
+                          {tsToLabel(report.createdAt ?? report.reportedAt, intlLocale)}
                         </span>
                       </li>
                     ))}
@@ -260,6 +280,7 @@ function ReportedPostsTab({ onStatsChange }) {
               <DeleteConfirmRow
                 onConfirm={() => handleDeleteConfirm(post.id)}
                 onCancel={() => setConfirmDeleteId(null)}
+                t={t}
               />
             ) : (
               <footer className="admin-community-post-card__actions">
@@ -271,7 +292,7 @@ function ReportedPostsTab({ onStatsChange }) {
                   onClick={() => handleHide(post.id)}
                 >
                   <EyeOff size={14} />
-                  Hide Post
+                  {t('cmHidePost')}
                 </button>
                 <button
                   id={`btn-dismiss-${post.id}`}
@@ -281,7 +302,7 @@ function ReportedPostsTab({ onStatsChange }) {
                   onClick={() => handleDismiss(post.id)}
                 >
                   <CheckCircle2 size={14} />
-                  Dismiss Reports
+                  {t('cmDismissReports')}
                 </button>
                 <button
                   id={`btn-delete-${post.id}`}
@@ -291,7 +312,7 @@ function ReportedPostsTab({ onStatsChange }) {
                   onClick={() => setConfirmDeleteId(post.id)}
                 >
                   <Trash2 size={14} />
-                  Delete Post
+                  {t('cmDeletePost')}
                 </button>
               </footer>
             )}
@@ -305,6 +326,8 @@ function ReportedPostsTab({ onStatsChange }) {
 // ── All Posts Tab ─────────────────────────────────────────────────────────────
 
 function AllPostsTab({ onStatsChange }) {
+  const { t, lang } = useAdminLocale();
+  const intlLocale = INTL_LOCALE_BY_LANG[lang] || 'en-US';
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('all');
@@ -361,7 +384,7 @@ function AllPostsTab({ onStatsChange }) {
 
   return (
     <div id="all-posts-tab">
-      <div className="admin-community-filter-chips" role="group" aria-label="Filter by status">
+      <div className="admin-community-filter-chips" role="group" aria-label={t('cmFilterAria')}>
         {STATUS_FILTERS.map((f) => (
           <button
             key={f}
@@ -370,7 +393,7 @@ function AllPostsTab({ onStatsChange }) {
             type="button"
             onClick={() => setStatusFilter(f)}
           >
-            {f.charAt(0).toUpperCase() + f.slice(1)}
+            {t(STATUS_LABEL_KEYS[f] || f)}
             {f !== 'all' && (
               <span className="admin-community-chip__count">
                 {posts.filter((p) => {
@@ -384,20 +407,20 @@ function AllPostsTab({ onStatsChange }) {
       </div>
 
       {loading ? (
-        <p className="admin-community-loading">Loading posts…</p>
+        <p className="admin-community-loading">{t('cmLoadingPosts')}</p>
       ) : (
-        <div className="admin-community-table" role="table" aria-label="Community posts">
+        <div className="admin-community-table" role="table" aria-label={t('cmTableAria')}>
           <div className="admin-community-table__head" role="row">
-            <span role="columnheader">Author</span>
-            <span role="columnheader">Content</span>
-            <span role="columnheader">Status</span>
-            <span role="columnheader">Date</span>
-            <span role="columnheader">Reports</span>
-            <span role="columnheader">Actions</span>
+            <span role="columnheader">{t('cmColAuthor')}</span>
+            <span role="columnheader">{t('cmColContent')}</span>
+            <span role="columnheader">{t('cmColStatus')}</span>
+            <span role="columnheader">{t('cmColDate')}</span>
+            <span role="columnheader">{t('cmColReports')}</span>
+            <span role="columnheader">{t('cmColActions')}</span>
           </div>
 
           {filtered.length === 0 ? (
-            <p className="admin-community-loading">No posts match this filter.</p>
+            <p className="admin-community-loading">{t('cmNoPostsMatch')}</p>
           ) : (
             filtered.map((post) => {
               const isBusy = Boolean(processing[post.id]);
@@ -411,16 +434,16 @@ function AllPostsTab({ onStatsChange }) {
                     <div className="admin-community-table__avatar">
                       {post.isAnonymous ? 'AN' : getInitials(post.authorDisplayName)}
                     </div>
-                    <span>{post.isAnonymous ? 'Anonymous' : (post.authorDisplayName ?? '—')}</span>
+                    <span>{post.isAnonymous ? t('cmAnonymous') : (post.authorDisplayName ?? '—')}</span>
                   </div>
                   <div className="admin-community-table__content" role="cell">
                     <p>{String(post.content ?? '').slice(0, 90)}{(post.content?.length ?? 0) > 90 ? '…' : ''}</p>
                   </div>
                   <div role="cell">
-                    <StatusBadge status={post.status} hiddenByAdmin={post.hiddenByAdmin} />
+                    <StatusBadge status={post.status} hiddenByAdmin={post.hiddenByAdmin} t={t} />
                   </div>
                   <div className="admin-community-table__date" role="cell">
-                    {tsToLabel(post.createdAt)}
+                    {tsToLabel(post.createdAt, intlLocale)}
                   </div>
                   <div role="cell">
                     {(post.reportsCount ?? 0) > 0 ? (
@@ -438,14 +461,14 @@ function AllPostsTab({ onStatsChange }) {
                           type="button"
                           onClick={() => handleDeleteConfirm(post.id)}
                         >
-                          Confirm
+                          {t('cmConfirm')}
                         </button>
                         <button
                           className="admin-community-btn admin-community-btn--ghost admin-community-btn--sm"
                           type="button"
                           onClick={() => setConfirmDeleteId(null)}
                         >
-                          Cancel
+                          {t('cmCancel')}
                         </button>
                       </div>
                     ) : (
@@ -458,7 +481,7 @@ function AllPostsTab({ onStatsChange }) {
                             type="button"
                             onClick={() => handleHide(post.id)}
                           >
-                            <EyeOff size={13} /> Hide
+                            <EyeOff size={13} /> {t('cmHide')}
                           </button>
                         )}
                         {canRestore && (
@@ -469,7 +492,7 @@ function AllPostsTab({ onStatsChange }) {
                             type="button"
                             onClick={() => handleRestore(post.id)}
                           >
-                            <Undo2 size={13} /> Restore
+                            <Undo2 size={13} /> {t('cmRestore')}
                           </button>
                         )}
                         {post.status !== 'deleted' && (
@@ -500,12 +523,14 @@ function AllPostsTab({ onStatsChange }) {
 
 function GuidelinesTab() {
   const { currentUser } = useAdmin();
+  const { t } = useAdminLocale();
   const [shortGuidelines, setShortGuidelines] = useState([]);
   const [fullGuidelines, setFullGuidelines] = useState([]);
   const [currentVersion, setCurrentVersion] = useState('v1');
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saveMessage, setSaveMessage] = useState('');
+  const [saveError, setSaveError] = useState(false);
 
   useEffect(() => {
     getGuidelinesDoc().then((data) => {
@@ -535,6 +560,7 @@ function GuidelinesTab() {
   const handleSave = async () => {
     setSaving(true);
     setSaveMessage('');
+    setSaveError(false);
     try {
       const newVersion = await saveGuidelinesDoc({
         shortGuidelines,
@@ -542,9 +568,11 @@ function GuidelinesTab() {
         currentVersion,
       });
       setCurrentVersion(newVersion);
-      setSaveMessage(`Saved as ${newVersion}. All participants will be asked to re-accept.`);
+      setSaveError(false);
+      setSaveMessage(t('cmSavedAs').replace('{version}', newVersion));
     } catch {
-      setSaveMessage('Failed to save guidelines. Please try again.');
+      setSaveError(true);
+      setSaveMessage(t('cmSaveFailed'));
     } finally {
       setSaving(false);
     }
@@ -575,7 +603,7 @@ function GuidelinesTab() {
   const short = makeListHandlers(shortGuidelines, setShortGuidelines);
   const full = makeListHandlers(fullGuidelines, setFullGuidelines);
 
-  if (loading) return <p className="admin-community-loading">Loading guidelines…</p>;
+  if (loading) return <p className="admin-community-loading">{t('cmLoadingGuidelines')}</p>;
 
   const renderList = (items, handlers, idPrefix) => (
     <ul className="admin-community-guidelines-list">
@@ -587,7 +615,7 @@ function GuidelinesTab() {
             className="admin-community-guideline-input"
             type="text"
             value={item}
-            aria-label={`Guideline ${i + 1}`}
+            aria-label={t('cmGuidelineAria').replace('{n}', i + 1)}
             onChange={(e) => handlers.handleChange(i, e.target.value)}
           />
           <button
@@ -595,7 +623,7 @@ function GuidelinesTab() {
             className="admin-community-btn admin-community-btn--icon"
             type="button"
             disabled={i === 0}
-            aria-label="Move up"
+            aria-label={t('cmMoveUp')}
             onClick={() => handlers.handleMoveUp(i)}
           >
             ↑
@@ -605,7 +633,7 @@ function GuidelinesTab() {
             className="admin-community-btn admin-community-btn--icon"
             type="button"
             disabled={i === items.length - 1}
-            aria-label="Move down"
+            aria-label={t('cmMoveDown')}
             onClick={() => handlers.handleMoveDown(i)}
           >
             ↓
@@ -614,7 +642,7 @@ function GuidelinesTab() {
             id={`${idPrefix}-remove-${i}`}
             className="admin-community-btn admin-community-btn--icon admin-community-btn--danger"
             type="button"
-            aria-label="Remove guideline"
+            aria-label={t('cmRemoveGuideline')}
             onClick={() => handlers.handleRemove(i)}
           >
             <X size={14} />
@@ -628,7 +656,7 @@ function GuidelinesTab() {
           type="button"
           onClick={handlers.handleAdd}
         >
-          <Plus size={14} /> Add guideline
+          <Plus size={14} /> {t('cmAddGuideline')}
         </button>
       </li>
     </ul>
@@ -639,22 +667,22 @@ function GuidelinesTab() {
       <div className="admin-community-guidelines-header">
         <div className="admin-community-guidelines-version">
           <FileText size={16} />
-          Current version: <strong id="guidelines-current-version">{currentVersion}</strong>
+          {t('cmCurrentVersion')} <strong id="guidelines-current-version">{currentVersion}</strong>
         </div>
         <p className="admin-community-guidelines-warning">
           <AlertTriangle size={14} />
-          Saving will bump the version and require all participants to re-accept the guidelines.
+          {t('cmGuidelinesWarning')}
         </p>
       </div>
 
       <div className="admin-community-guidelines-sections">
         <section className="admin-community-card admin-community-guidelines-section" aria-labelledby="short-guidelines-heading">
-          <h3 id="short-guidelines-heading">Short Guidelines <span>(shown in sidebar card)</span></h3>
+          <h3 id="short-guidelines-heading">{t('cmShortGuidelines')} <span>{t('cmShortGuidelinesHint')}</span></h3>
           {renderList(shortGuidelines, short, 'short-gl')}
         </section>
 
         <section className="admin-community-card admin-community-guidelines-section" aria-labelledby="full-guidelines-heading">
-          <h3 id="full-guidelines-heading">Full Guidelines <span>(shown in acceptance modal)</span></h3>
+          <h3 id="full-guidelines-heading">{t('cmFullGuidelines')} <span>{t('cmFullGuidelinesHint')}</span></h3>
           {renderList(fullGuidelines, full, 'full-gl')}
         </section>
       </div>
@@ -663,10 +691,10 @@ function GuidelinesTab() {
         {saveMessage && (
           <p
             id="guidelines-save-message"
-            className={`admin-community-save-message${saveMessage.includes('Failed') ? ' admin-community-save-message--error' : ''}`}
+            className={`admin-community-save-message${saveError ? ' admin-community-save-message--error' : ''}`}
             aria-live="polite"
           >
-            {saveMessage.includes('Failed') ? <AlertTriangle size={14} /> : <CheckCircle2 size={14} />}
+            {saveError ? <AlertTriangle size={14} /> : <CheckCircle2 size={14} />}
             {saveMessage}
           </p>
         )}
@@ -677,7 +705,7 @@ function GuidelinesTab() {
           type="button"
           onClick={handleSave}
         >
-          {saving ? 'Saving…' : 'Save Guidelines & Bump Version'}
+          {saving ? t('cmSaving') : t('cmSaveGuidelines')}
         </button>
       </div>
     </div>
@@ -687,12 +715,13 @@ function GuidelinesTab() {
 // ── Main Page ─────────────────────────────────────────────────────────────────
 
 const TABS = [
-  { id: 'reported', label: 'Reported Posts', icon: <AlertTriangle size={15} /> },
-  { id: 'all', label: 'All Posts', icon: <MessageSquare size={15} /> },
-  { id: 'guidelines', label: 'Guidelines', icon: <Shield size={15} /> },
+  { id: 'reported', labelKey: 'cmTabReported', icon: <AlertTriangle size={15} /> },
+  { id: 'all', labelKey: 'cmTabAll', icon: <MessageSquare size={15} /> },
+  { id: 'guidelines', labelKey: 'cmTabGuidelines', icon: <Shield size={15} /> },
 ];
 
 export default function CommunityModerationPage() {
+  const { t, direction } = useAdminLocale();
   const [activeTab, setActiveTab] = useState('reported');
   const [stats, setStats] = useState({ total: 0, reported: 0, hidden: 0, active: 0 });
   const [statsLoading, setStatsLoading] = useState(true);
@@ -710,61 +739,61 @@ export default function CommunityModerationPage() {
   useEffect(() => { loadStats(); }, [loadStats]);
 
   return (
-    <section className="admin-community-page">
+    <section className="admin-community-page" dir={direction}>
       <header className="admin-community-hero">
         <div>
-          <h1>Community Moderation</h1>
-          <p>Review reported posts, manage content visibility, and edit community guidelines</p>
+          <h1>{t('cmTitle')}</h1>
+          <p>{t('cmSubtitle')}</p>
         </div>
         <button
           id="btn-refresh-community-stats"
           className="admin-community-refresh-btn"
           type="button"
           disabled={statsLoading}
-          aria-label="Refresh moderation stats"
+          aria-label={t('cmRefreshAria')}
           onClick={loadStats}
         >
           <RefreshCw size={15} className={statsLoading ? 'is-spinning' : ''} />
-          Refresh
+          {t('cmRefresh')}
         </button>
       </header>
 
-      <section className="admin-community-metrics" aria-label="Community moderation metrics">
+      <section className="admin-community-metrics" aria-label={t('cmMetricsAria')}>
         <MetricCard
           id="metric-total-posts"
           accent="purple"
           icon={<MessageSquare size={24} />}
-          label="Total Posts"
+          label={t('cmMetricTotal')}
           value={stats.total}
-          subtext="All community posts"
+          subtext={t('cmMetricTotalSub')}
         />
         <MetricCard
           id="metric-reported-posts"
           accent="peach"
           icon={<AlertTriangle size={24} />}
-          label="Reported"
+          label={t('cmMetricReported')}
           value={stats.reported}
-          subtext="Awaiting review"
+          subtext={t('cmMetricReportedSub')}
         />
         <MetricCard
           id="metric-hidden-posts"
           accent="pink"
           icon={<EyeOff size={24} />}
-          label="Hidden"
+          label={t('cmMetricHidden')}
           value={stats.hidden}
-          subtext="Hidden by admin"
+          subtext={t('cmMetricHiddenSub')}
         />
         <MetricCard
           id="metric-active-posts"
           accent="mint"
           icon={<CheckCircle2 size={24} />}
-          label="Active"
+          label={t('cmMetricActive')}
           value={stats.active}
-          subtext="Visible to community"
+          subtext={t('cmMetricActiveSub')}
         />
       </section>
 
-      <nav className="admin-community-tabs" aria-label="Community moderation tabs">
+      <nav className="admin-community-tabs" aria-label={t('cmTabsAria')}>
         {TABS.map((tab) => (
           <button
             key={tab.id}
@@ -777,7 +806,7 @@ export default function CommunityModerationPage() {
             onClick={() => setActiveTab(tab.id)}
           >
             {tab.icon}
-            {tab.label}
+            {t(tab.labelKey)}
           </button>
         ))}
       </nav>

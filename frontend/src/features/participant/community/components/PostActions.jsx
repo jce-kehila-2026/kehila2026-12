@@ -1,18 +1,18 @@
 import ChatBubbleOutlineOutlinedIcon from '@mui/icons-material/ChatBubbleOutlineOutlined';
+import ChatBubbleOutlinedIcon from '@mui/icons-material/ChatBubbleOutlined';
 import FavoriteBorderOutlinedIcon from '@mui/icons-material/FavoriteBorderOutlined';
-import VolunteerActivismOutlinedIcon from '@mui/icons-material/VolunteerActivismOutlined';
+import FavoriteOutlinedIcon from '@mui/icons-material/FavoriteOutlined';
 import { useParticipantLocale } from '../../context/ParticipantLocaleContext';
 
 export default function PostActions({
   commentsCount = 0,
+  hasCurrentUserComment = false,
   isCommentComposerOpen = false,
   isReportedByCurrentUser = false,
   likesCount = 0,
   onOpenCommentComposer,
   onToggleLike,
-  onToggleSupport,
   post,
-  supportCount = 0,
 }) {
   const { t } = useParticipantLocale();
   const likeAria = t('likePostAria')
@@ -22,10 +22,6 @@ export default function PostActions({
   const commentAria = t('commentsOnPostAria')
     .replace('{n}', String(commentsCount))
     .replace('{author}', post.author);
-  const supportAria = t('supportPostAria')
-    .replace('{action}', post.isSupported ? t('removeSupportAction') : t('supportAction'))
-    .replace('{author}', post.author)
-    .replace('{n}', String(supportCount));
 
   return (
     <footer className="community-page-post__actions">
@@ -38,7 +34,11 @@ export default function PostActions({
           onClick={() => onToggleLike(post.id)}
           type="button"
         >
-          <FavoriteBorderOutlinedIcon fontSize="small" />
+          {post.isLiked ? (
+            <FavoriteOutlinedIcon fontSize="small" />
+          ) : (
+            <FavoriteBorderOutlinedIcon fontSize="small" />
+          )}
           {t('like')}
           <span>{likesCount}</span>
         </button>
@@ -46,25 +46,17 @@ export default function PostActions({
           type="button"
           aria-expanded={isCommentComposerOpen}
           aria-label={commentAria}
-          className={isCommentComposerOpen ? 'is-commenting' : undefined}
+          className={hasCurrentUserComment ? 'is-commenting' : undefined}
           disabled={isReportedByCurrentUser}
           onClick={onOpenCommentComposer}
         >
-          <ChatBubbleOutlineOutlinedIcon fontSize="small" />
+          {hasCurrentUserComment ? (
+            <ChatBubbleOutlinedIcon fontSize="small" />
+          ) : (
+            <ChatBubbleOutlineOutlinedIcon fontSize="small" />
+          )}
           {t('comment')}
           <span>{commentsCount}</span>
-        </button>
-        <button
-          aria-pressed={post.isSupported}
-          className={post.isSupported ? 'is-supported' : undefined}
-          type="button"
-          disabled={isReportedByCurrentUser}
-          aria-label={supportAria}
-          onClick={() => onToggleSupport(post.id)}
-        >
-          <VolunteerActivismOutlinedIcon fontSize="small" />
-          {t('support')}
-          <span>{supportCount}</span>
         </button>
       </div>
     </footer>

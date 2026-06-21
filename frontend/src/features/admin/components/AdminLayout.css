@@ -25,43 +25,278 @@
   left: 12px !important;
   right: auto !important;
   transform: none !important;
-  overflow: visible !important;
+  overflow: hidden !important;
   z-index: 1200 !important;
-  transition: width 0.35s ease, padding 0.35s ease, all 0.3s ease !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 28px !important;
+  background: #fffafb !important;
+  border: 1px solid rgba(219, 79, 159, 0.1) !important;
+  box-shadow: 4px 0 24px rgba(109, 40, 217, 0.04) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  transition: width 0.35s ease, padding 0.35s ease, gap 0.35s ease, all 0.3s ease !important;
 }
 
-.admin-sidebar .admin-sidebar-toggle {
-  position: absolute !important;
-  top: 34px !important;
-  right: -18px !important;
-  left: auto !important;
-  z-index: 1302 !important;
-  display: inline-flex !important;
-  width: 2.5rem !important;
-  height: 2.5rem !important;
-  min-width: 2.5rem !important;
-  border-radius: 999px !important;
+.admin-sidebar .admin-sidebar-paper.is-collapsed {
   align-items: center !important;
-  justify-content: center !important;
-  color: #6d35b8 !important;
-  background: rgba(255, 255, 255, 0.86) !important;
-  border: 1px solid rgba(167, 139, 250, 0.34) !important;
-  box-shadow: 0 16px 34px rgba(109, 53, 184, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.86) !important;
-  backdrop-filter: blur(16px) saturate(1.12) !important;
-  -webkit-backdrop-filter: blur(16px) saturate(1.12) !important;
-  transition: width 0.35s ease, all 0.3s ease !important;
+  gap: 20px !important;
 }
 
-.admin-sidebar .admin-sidebar-toggle:hover {
-  color: #24104f !important;
-  background: rgba(255, 255, 255, 0.96) !important;
-  border-color: rgba(109, 53, 184, 0.28) !important;
-  box-shadow: 0 18px 38px rgba(109, 53, 184, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.92) !important;
-  transform: scale(1.04) !important;
+.admin-sidebar-profile {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  padding: 4px 2px 10px;
+  border-bottom: 1px solid rgba(219, 79, 159, 0.1);
+  margin-bottom: 4px;
+  flex-shrink: 0;
 }
 
-.admin-sidebar.is-collapsed .admin-sidebar-toggle {
-  right: -17px !important;
+.admin-sidebar-profile.is-collapsed {
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding-bottom: 12px;
+}
+
+.admin-sidebar-profile__main {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  flex: 1;
+}
+
+.admin-sidebar-profile.is-collapsed .admin-sidebar-profile__main {
+  justify-content: center;
+  flex: 0 0 auto;
+}
+
+.admin-sidebar-profile__copy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  overflow: hidden;
+  opacity: 1;
+  max-width: 180px;
+  transition:
+    opacity 220ms ease 80ms,
+    max-width 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.admin-sidebar-profile.is-collapsed .admin-sidebar-profile__copy {
+  opacity: 0;
+  max-width: 0;
+  pointer-events: none;
+  transition:
+    opacity 160ms ease,
+    max-width 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.admin-sidebar-profile__name {
+  color: #4b136b;
+  font-size: 0.98rem;
+  font-weight: 800;
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-sidebar-profile__badge {
+  color: rgba(75, 19, 107, 0.58);
+  font-size: 0.78rem;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.admin-sidebar-profile__avatar {
+  width: 52px !important;
+  height: 52px !important;
+  flex: 0 0 auto;
+  color: #5b1e8c !important;
+  background: #fce8f2 !important;
+  border: 2px solid rgba(236, 22, 140, 0.16) !important;
+  box-shadow: 0 8px 18px rgba(91, 30, 140, 0.12) !important;
+  font-size: 0.95rem !important;
+  font-weight: 800 !important;
+}
+
+.admin-sidebar-nav {
+  position: relative;
+  z-index: 1;
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 4px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(219, 79, 159, 0.22) transparent;
+}
+
+.admin-sidebar-nav::-webkit-scrollbar {
+  width: 6px;
+}
+
+.admin-sidebar-nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.admin-sidebar-nav::-webkit-scrollbar-thumb {
+  background: rgba(219, 79, 159, 0.22);
+  border-radius: 999px;
+}
+
+.admin-sidebar-nav .MuiListItemButton-root {
+  position: relative;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  width: 100%;
+  min-height: 46px;
+  margin-bottom: 8px;
+  padding: 0 14px !important;
+  border: 1px solid transparent;
+  border-radius: 18px !important;
+  color: #8c77a8;
+  transition:
+    background 200ms ease,
+    color 200ms ease,
+    box-shadow 200ms ease,
+    border-color 200ms ease;
+}
+
+.admin-sidebar-nav .MuiListItemButton-root:hover {
+  background: #fff5f9 !important;
+  color: #ec168c !important;
+  box-shadow: 0 4px 14px rgba(236, 22, 140, 0.06);
+}
+
+.admin-sidebar-nav .MuiListItemButton-root:hover .MuiListItemIcon-root,
+.admin-sidebar-nav .MuiListItemButton-root:hover .MuiListItemText-primary {
+  color: #ec168c !important;
+}
+
+.admin-sidebar-nav .MuiListItemButton-root.Mui-selected {
+  background: #fff4f8 !important;
+  border: 1px solid #f9d7e7 !important;
+  border-radius: 20px !important;
+  color: #ec168c !important;
+  box-shadow: none !important;
+}
+
+.admin-sidebar-nav .MuiListItemButton-root.Mui-selected::before {
+  display: none !important;
+}
+
+.admin-sidebar-nav .MuiListItemButton-root.Mui-selected .MuiListItemIcon-root,
+.admin-sidebar-nav .MuiListItemButton-root.Mui-selected .MuiListItemText-primary {
+  color: #ec168c !important;
+}
+
+.admin-sidebar-nav .MuiListItemIcon-root {
+  min-width: 0 !important;
+  color: inherit !important;
+  justify-content: center;
+}
+
+.admin-sidebar-nav .MuiListItemIcon-root svg {
+  width: 20px;
+  height: 20px;
+}
+
+.admin-sidebar-nav .MuiListItemText-primary {
+  font-size: 0.9rem !important;
+  font-weight: 600 !important;
+  line-height: 1.25 !important;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-sidebar-nav .MuiListItemButton-root.Mui-selected .MuiListItemText-primary {
+  font-weight: 700 !important;
+}
+
+.admin-sidebar.is-collapsed .admin-sidebar-nav .MuiListItemButton-root {
+  justify-content: center;
+  width: 52px;
+  min-width: 52px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0 !important;
+}
+
+.admin-sidebar.is-collapsed .admin-sidebar-nav .MuiListItemText-root {
+  display: none !important;
+}
+
+.admin-sidebar-logout {
+  position: relative !important;
+  z-index: 1;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 12px;
+  width: 100%;
+  min-height: 46px;
+  margin-top: auto;
+  padding: 0 14px !important;
+  border: 1px solid transparent !important;
+  border-radius: 18px !important;
+  color: #8c77a8 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  transition:
+    background 200ms ease,
+    color 200ms ease,
+    box-shadow 200ms ease,
+    border-color 200ms ease;
+}
+
+.admin-sidebar-logout:hover {
+  background: #fff5f9 !important;
+  color: #ec168c !important;
+  box-shadow: 0 4px 14px rgba(236, 22, 140, 0.06);
+}
+
+.admin-sidebar-logout:hover .MuiListItemIcon-root,
+.admin-sidebar-logout:hover .MuiListItemText-primary {
+  color: #ec168c !important;
+}
+
+.admin-sidebar-logout .MuiListItemIcon-root {
+  min-width: 0 !important;
+  color: inherit !important;
+}
+
+.admin-sidebar-logout .MuiListItemIcon-root svg {
+  width: 20px;
+  height: 20px;
+}
+
+.admin-sidebar-logout .MuiListItemText-primary {
+  font-size: 0.9rem !important;
+  font-weight: 600 !important;
+}
+
+.admin-sidebar.is-collapsed .admin-sidebar-logout {
+  justify-content: center;
+  width: 52px;
+  min-width: 52px;
+  margin-left: auto;
+  margin-right: auto;
+  padding: 0 !important;
+}
+
+.admin-sidebar.is-collapsed .admin-sidebar-logout .MuiListItemText-root {
+  display: none !important;
 }
 
 .admin-content-frame {
@@ -101,10 +336,22 @@
   .admin-sidebar .admin-sidebar-paper {
     left: 0 !important;
     right: auto !important;
+    gap: 20px !important;
   }
 
-  .admin-sidebar .admin-sidebar-toggle {
+  .admin-sidebar-nav .MuiListItemText-root,
+  .admin-sidebar-logout .MuiListItemText-root {
     display: none !important;
+  }
+
+  .admin-sidebar-nav .MuiListItemButton-root,
+  .admin-sidebar-logout {
+    justify-content: center;
+    width: 52px;
+    min-width: 52px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0 !important;
   }
 
   .admin-main {

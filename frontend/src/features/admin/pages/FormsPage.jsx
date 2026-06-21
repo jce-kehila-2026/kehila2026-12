@@ -43,25 +43,28 @@ import {
   listFormSubmissions,
   setSubmissionHandled,
 } from '../services/formSubmissionAdminService';
+import { useAdminLocale } from '../context/AdminLocaleContext';
+
+const INTL_LOCALE_BY_LANG = { he: 'he-IL', en: 'en-US' };
 
 const STATUS_META = {
-  [FORM_SUBMISSION_STATUS.NEW]: { label: 'New', color: '#B45309', bg: 'rgba(245, 158, 11, 0.16)' },
-  [FORM_SUBMISSION_STATUS.HANDLED]: { label: 'Handled', color: '#15803D', bg: 'rgba(34, 197, 94, 0.16)' },
+  [FORM_SUBMISSION_STATUS.NEW]: { labelKey: 'fmStatusNew', color: '#B45309', bg: 'rgba(245, 158, 11, 0.16)' },
+  [FORM_SUBMISSION_STATUS.HANDLED]: { labelKey: 'fmStatusHandled', color: '#15803D', bg: 'rgba(34, 197, 94, 0.16)' },
 };
 
 const TYPE_META = {
-  [FORM_SUBMISSION_TYPE.VOLUNTEER]: { label: 'Volunteer', color: '#6D3CCF', bg: 'rgba(124, 58, 237, 0.12)', icon: <VolunteerActivismOutlinedIcon fontSize="small" /> },
-  [FORM_SUBMISSION_TYPE.DONATION]: { label: 'Donation', color: '#C52A72', bg: 'rgba(223, 50, 123, 0.12)', icon: <FavoriteBorderIcon fontSize="small" /> },
+  [FORM_SUBMISSION_TYPE.VOLUNTEER]: { labelKey: 'fmTypeVolunteer', color: '#6D3CCF', bg: 'rgba(124, 58, 237, 0.12)', icon: <VolunteerActivismOutlinedIcon fontSize="small" /> },
+  [FORM_SUBMISSION_TYPE.DONATION]: { labelKey: 'fmTypeDonation', color: '#C52A72', bg: 'rgba(223, 50, 123, 0.12)', icon: <FavoriteBorderIcon fontSize="small" /> },
 };
 
-function formatDate(value) {
+function formatDate(value, intlLocale) {
   if (!value) return '-';
-  if (typeof value.toDate === 'function') return value.toDate().toLocaleDateString();
+  if (typeof value.toDate === 'function') return value.toDate().toLocaleDateString(intlLocale);
   if (typeof value === 'object' && typeof value.seconds === 'number') {
-    return new Date(value.seconds * 1000).toLocaleDateString();
+    return new Date(value.seconds * 1000).toLocaleDateString(intlLocale);
   }
   const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? String(value) : parsed.toLocaleDateString();
+  return Number.isNaN(parsed.getTime()) ? String(value) : parsed.toLocaleDateString(intlLocale);
 }
 
 function initialsOf(name) {
@@ -75,26 +78,118 @@ function initialsOf(name) {
   );
 }
 
-function StatusChip({ status }) {
+function StatusChip({ status, t }) {
   const meta = STATUS_META[status] || STATUS_META[FORM_SUBMISSION_STATUS.NEW];
   return (
     <Chip
-      label={meta.label}
+      label={t(meta.labelKey)}
       size="small"
       sx={{ color: meta.color, bgcolor: meta.bg, borderRadius: 999, fontWeight: 900, border: '1px solid rgba(255,255,255,0.7)' }}
     />
   );
 }
 
-function TypeChip({ type }) {
+function TypeChip({ type, t }) {
   const meta = TYPE_META[type] || TYPE_META[FORM_SUBMISSION_TYPE.VOLUNTEER];
   return (
     <Chip
       icon={meta.icon}
-      label={meta.label}
+      label={t(meta.labelKey)}
       size="small"
       sx={{ color: meta.color, bgcolor: meta.bg, borderRadius: 999, fontWeight: 850, border: '1px solid rgba(255,255,255,0.7)', '& .MuiChip-icon': { color: meta.color } }}
     />
+  );
+}
+
+const TABLE_COLUMNS = [
+  { key: 'user', label: 'User', align: 'left' },
+  { key: 'contact', label: 'Contact', align: 'left' },
+  { key: 'type', label: 'Type', align: 'center' },
+  { key: 'submitted', label: 'Submitted', align: 'center' },
+  { key: 'status', label: 'Status', align: 'center' },
+  { key: 'actions', label: 'Actions', align: 'center' },
+];
+
+const FORMS_TABLE_GRID = {
+  xs: 'minmax(0, 1fr)',
+  md: 'minmax(0, 1.4fr) minmax(0, 1.8fr) minmax(0, 0.9fr) minmax(0, 1fr) minmax(0, 0.9fr) minmax(0, 1fr)',
+};
+
+const FORMS_TABLE_PAD_X = { xs: 1.7, md: 2.2 };
+
+const formsTableRowGridSx = {
+  display: 'grid',
+  gridTemplateColumns: FORMS_TABLE_GRID,
+  alignItems: 'center',
+  columnGap: { xs: 0, md: '1rem' },
+  rowGap: { xs: '0.75rem', md: 0 },
+  px: FORMS_TABLE_PAD_X,
+  width: '100%',
+  boxSizing: 'border-box',
+};
+
+const FORMS_USER_AVATAR_WIDTH = '3.375rem';
+const FORMS_USER_ROW_GAP = 1.5;
+
+const formsTableCellLeftSx = {
+  minWidth: 0,
+  overflow: 'hidden',
+};
+
+const formsTableContactCellSx = {
+  minWidth: 0,
+  overflow: 'hidden',
+  width: '100%',
+};
+
+const formsTableCellCenterSx = {
+  minWidth: 0,
+  overflow: 'hidden',
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+};
+
+const formsTableHeaderLabelSx = {
+  fontWeight: 950,
+  color: '#625B84',
+  textTransform: 'uppercase',
+  letterSpacing: 0.3,
+  display: 'block',
+  width: '100%',
+};
+
+const formsTableLeftHeaderLabelSx = {
+  fontWeight: 950,
+  color: '#625B84',
+  textTransform: 'uppercase',
+  letterSpacing: 0.3,
+  display: 'block',
+  width: 'max-content',
+  maxWidth: '100%',
+  textAlign: 'left /* @noflip */',
+};
+
+function FormsTableUserHeader() {
+  return (
+    <Box sx={formsTableCellLeftSx}>
+      <Stack direction="row" spacing={FORMS_USER_ROW_GAP} alignItems="center" sx={{ minWidth: 0, width: '100%' }}>
+        <Box sx={{ width: FORMS_USER_AVATAR_WIDTH, flexShrink: 0 }} aria-hidden="true" />
+        <Typography variant="caption" dir="ltr" sx={formsTableLeftHeaderLabelSx}>
+          User
+        </Typography>
+      </Stack>
+    </Box>
+  );
+}
+
+function FormsTableContactHeader() {
+  return (
+    <Box sx={formsTableContactCellSx}>
+      <Typography variant="caption" dir="ltr" sx={formsTableLeftHeaderLabelSx}>
+        Contact
+      </Typography>
+    </Box>
   );
 }
 
@@ -117,6 +212,8 @@ function DetailRow({ icon, label, value }) {
 }
 
 export default function FormsPage() {
+  const { t, lang, direction } = useAdminLocale();
+  const intlLocale = INTL_LOCALE_BY_LANG[lang] || 'en-US';
   const [submissions, setSubmissions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -176,7 +273,7 @@ export default function FormsPage() {
       await load();
     } catch (err) {
       console.error('Update failed:', err);
-      setActionError(err?.message || 'Could not update this submission. Please try again.');
+      setActionError(err?.message || t('fmErrUpdate'));
     } finally {
       setBusyId(null);
     }
@@ -193,30 +290,20 @@ export default function FormsPage() {
       await load();
     } catch (err) {
       console.error('Delete failed:', err);
-      setActionError(err?.message || 'Could not delete this submission. Please try again.');
+      setActionError(err?.message || t('fmErrDelete'));
     } finally {
       setBusyId(null);
     }
   }
 
-  const rowGrid = {
-    display: 'grid',
-    gridTemplateColumns: {
-      xs: 'minmax(0, 1fr)',
-      md: 'minmax(220px, 1.5fr) 130px 130px 120px 130px',
-    },
-    alignItems: 'center',
-    gap: '1rem',
-  };
-
   return (
-    <Box sx={{ minHeight: '100%', color: '#24104f' }}>
+    <Box sx={{ minHeight: '100%', color: '#24104f' }} dir={direction}>
       <Box sx={{ mb: 2.75 }}>
         <Typography variant="h4" sx={{ fontWeight: 900, letterSpacing: 0, color: '#171239' }}>
-          Forms
+          {t('fmTitle')}
         </Typography>
-        <Typography variant="subtitle1" sx={{ mt: 0.5, color: 'rgba(36, 16, 79, 0.66)', fontWeight: 600 }} dir="ltr">
-          Volunteer and donation enquiries submitted from the public website.
+        <Typography variant="subtitle1" sx={{ mt: 0.5, color: 'rgba(36, 16, 79, 0.66)', fontWeight: 600 }}>
+          {t('fmSubtitle')}
         </Typography>
       </Box>
 
@@ -242,15 +329,15 @@ export default function FormsPage() {
         >
           <Stack direction="row" spacing={1.1} alignItems="center">
             <Typography variant="h5" fontWeight={950} sx={{ color: '#100B2F' }}>
-              Submissions
+              {t('fmSubmissions')}
             </Typography>
             <Chip
-              label={`${submissions.length} total`}
+              label={t('fmTotal').replace('{n}', submissions.length)}
               sx={{ height: '1.875rem', bgcolor: '#F2ECFF', color: '#6D3CCF', fontWeight: 950, borderRadius: 999, border: '1px solid rgba(124, 58, 237, 0.08)' }}
             />
             {newCount > 0 ? (
               <Chip
-                label={`${newCount} new`}
+                label={t('fmNewCount').replace('{n}', newCount)}
                 sx={{ height: '1.875rem', bgcolor: 'rgba(223, 50, 123, 0.14)', color: '#C52A72', fontWeight: 950, borderRadius: 999, border: '1px solid rgba(223, 50, 123, 0.12)' }}
               />
             ) : null}
@@ -258,7 +345,7 @@ export default function FormsPage() {
 
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.4} sx={{ flex: 1, justifyContent: 'flex-end' }}>
             <TextField
-              placeholder="Search submissions..."
+              placeholder={t('fmSearchPlaceholder')}
               value={search}
               onChange={(event) => setSearch(event.target.value)}
               sx={{
@@ -286,9 +373,9 @@ export default function FormsPage() {
                 onChange={(event) => setTypeFilter(event.target.value)}
                 sx={{ height: '3.125rem', borderRadius: '16px', bgcolor: 'rgba(255,255,255,0.72)', fontWeight: 750, '& fieldset': { borderColor: 'rgba(130, 92, 206, 0.16)' } }}
               >
-                <MenuItem value="all">All Types</MenuItem>
-                <MenuItem value={FORM_SUBMISSION_TYPE.VOLUNTEER}>Volunteer</MenuItem>
-                <MenuItem value={FORM_SUBMISSION_TYPE.DONATION}>Donation</MenuItem>
+                <MenuItem value="all">{t('fmAllTypes')}</MenuItem>
+                <MenuItem value={FORM_SUBMISSION_TYPE.VOLUNTEER}>{t('fmTypeVolunteer')}</MenuItem>
+                <MenuItem value={FORM_SUBMISSION_TYPE.DONATION}>{t('fmTypeDonation')}</MenuItem>
               </Select>
             </FormControl>
             <FormControl size="small" sx={{ minWidth: '9rem' }}>
@@ -297,9 +384,9 @@ export default function FormsPage() {
                 onChange={(event) => setStatusFilter(event.target.value)}
                 sx={{ height: '3.125rem', borderRadius: '16px', bgcolor: 'rgba(255,255,255,0.72)', fontWeight: 750, '& fieldset': { borderColor: 'rgba(130, 92, 206, 0.16)' } }}
               >
-                <MenuItem value="all">All Statuses</MenuItem>
-                <MenuItem value={FORM_SUBMISSION_STATUS.NEW}>New</MenuItem>
-                <MenuItem value={FORM_SUBMISSION_STATUS.HANDLED}>Handled</MenuItem>
+                <MenuItem value="all">{t('fmAllStatuses')}</MenuItem>
+                <MenuItem value={FORM_SUBMISSION_STATUS.NEW}>{t('fmStatusNew')}</MenuItem>
+                <MenuItem value={FORM_SUBMISSION_STATUS.HANDLED}>{t('fmStatusHandled')}</MenuItem>
               </Select>
             </FormControl>
           </Stack>
@@ -311,43 +398,55 @@ export default function FormsPage() {
           </Alert>
         ) : null}
 
-        <Box sx={{ px: { xs: 2, md: 3 }, pb: { xs: 2.2, md: 3 }, display: 'flex', flexDirection: 'column' }}>
-          <Box
-            sx={{
-              ...rowGrid,
-              px: 2.2,
-              py: 1.4,
-              display: { xs: 'none', md: 'grid' },
-              borderRadius: '18px 18px 0 0',
-              border: '1px solid rgba(130, 92, 206, 0.10)',
-              borderBottom: 'none',
-              bgcolor: 'rgba(255,255,255,0.42)',
-              flexShrink: 0,
-            }}
-          >
-            {['Contact', 'Type', 'Submitted', 'Status', 'Actions'].map((label, index) => (
-              <Typography
-                key={label}
-                variant="caption"
-                sx={{ fontWeight: 950, color: '#625B84', textTransform: 'uppercase', letterSpacing: 0.3, textAlign: index === 4 ? 'right' : 'left' }}
-              >
-                {label}
-              </Typography>
-            ))}
-          </Box>
-
+        <Box sx={{ px: { xs: 2, md: 3 }, pb: { xs: 2.2, md: 3 }, display: 'flex', flexDirection: 'column' }} dir="ltr">
           <Box
             sx={{
               maxHeight: 'calc(100vh - 360px)',
               overflowY: 'auto',
-              overflowX: 'hidden',
-              pr: '6px',
-              mr: '-6px',
-              '&::-webkit-scrollbar': { width: '0.5rem' },
+              overflowX: { xs: 'auto', md: 'hidden' },
+              '&::-webkit-scrollbar': { width: '0.5rem', height: '0.5rem' },
               '&::-webkit-scrollbar-track': { background: 'rgba(244, 238, 255, 0.45)', borderRadius: 999 },
               '&::-webkit-scrollbar-thumb': { background: 'rgba(167, 139, 250, 0.5)', borderRadius: 999 },
             }}
           >
+            <Box
+              sx={{
+                ...formsTableRowGridSx,
+                py: 1.4,
+                display: { xs: 'none', md: 'grid' },
+                position: 'sticky',
+                top: 0,
+                zIndex: 2,
+                borderRadius: '18px 18px 0 0',
+                border: '1px solid rgba(130, 92, 206, 0.10)',
+                borderBottom: '1px solid rgba(130, 92, 206, 0.10)',
+                bgcolor: 'rgba(255,255,255,0.92)',
+                backdropFilter: 'blur(8px)',
+              }}
+            >
+              {TABLE_COLUMNS.map((column) => {
+                if (column.key === 'user') {
+                  return <FormsTableUserHeader key={column.key} />;
+                }
+                if (column.key === 'contact') {
+                  return <FormsTableContactHeader key={column.key} />;
+                }
+                return (
+                  <Box key={column.key} sx={formsTableCellCenterSx}>
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        ...formsTableHeaderLabelSx,
+                        textAlign: column.align,
+                      }}
+                    >
+                      {column.label}
+                    </Typography>
+                  </Box>
+                );
+              })}
+            </Box>
+
             <Stack spacing={1.1}>
               {loading ? (
                 <Box sx={{ py: 8, textAlign: 'center' }}>
@@ -367,51 +466,60 @@ export default function FormsPage() {
                         if (event.key === 'Enter' || event.key === ' ') openDetails(sub);
                       }}
                       sx={{
-                        ...rowGrid,
-                        px: { xs: 1.7, md: 2.2 },
+                        ...formsTableRowGridSx,
                         py: 1.8,
                         borderRadius: '22px',
                         border: '1px solid rgba(130, 92, 206, 0.10)',
                         bgcolor: 'rgba(255,255,255,0.72)',
                         cursor: 'pointer',
-                        transition: 'transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease, border-color 180ms ease',
+                        transition: 'box-shadow 180ms ease, background-color 180ms ease, border-color 180ms ease',
                         '&:hover': {
                           bgcolor: 'rgba(255, 250, 254, 0.94)',
                           borderColor: 'rgba(124, 58, 237, 0.18)',
                           boxShadow: '0 16px 34px rgba(91, 57, 145, 0.10)',
-                          transform: 'translateY(-2px) scale(1.002)',
                         },
                       }}
                     >
-                      <Stack direction="row" spacing={1.5} alignItems="center" sx={{ minWidth: 0 }}>
-                        <Avatar sx={{ width: '3.375rem', height: '3.375rem', bgcolor: '#EEE7FF', color: '#6D3CCF', fontWeight: 950, fontSize: '1.1875rem', boxShadow: '0 10px 24px rgba(109, 60, 207, 0.12)' }}>
-                          {initialsOf(sub.fullName)}
-                        </Avatar>
-                        <Box sx={{ minWidth: 0 }}>
-                          <Typography dir="auto" fontWeight={950} noWrap sx={{ color: '#17122E' }}>
-                            {sub.fullName || 'Unnamed'}
+                      <Box sx={formsTableCellLeftSx}>
+                        <Stack direction="row" spacing={FORMS_USER_ROW_GAP} alignItems="center" sx={{ minWidth: 0, width: '100%' }}>
+                          <Avatar sx={{ width: FORMS_USER_AVATAR_WIDTH, height: FORMS_USER_AVATAR_WIDTH, bgcolor: '#EEE7FF', color: '#6D3CCF', fontWeight: 950, fontSize: '1.1875rem', boxShadow: '0 10px 24px rgba(109, 60, 207, 0.12)', flexShrink: 0 }}>
+                            {initialsOf(sub.fullName)}
+                          </Avatar>
+                          <Typography dir="auto" fontWeight={950} noWrap sx={{ color: '#17122E', minWidth: 0 }}>
+                            {sub.fullName || t('fmUnnamed')}
                           </Typography>
-                          <Typography color="#5E587E" noWrap sx={{ fontSize: '0.84375rem' }}>
-                            {sub.email || 'No email provided'}
-                          </Typography>
-                        </Box>
-                      </Stack>
-
-                      <Box>
-                        <TypeChip type={sub.type} />
+                        </Stack>
                       </Box>
 
-                      <Typography fontWeight={800} color="#4F4A70">
-                        {formatDate(sub.createdAt)}
-                      </Typography>
-
-                      <Box>
-                        <StatusChip status={sub.status} />
+                      <Box sx={formsTableContactCellSx}>
+                        <Typography color="#5E587E" noWrap sx={{ fontSize: '0.84375rem', display: 'block' }} dir="ltr">
+                          {sub.email || t('fmNoEmail')}
+                        </Typography>
+                        {sub.phone ? (
+                          <Typography color="#5E587E" noWrap sx={{ fontSize: '0.8125rem', mt: 0.25, display: 'block' }} dir="ltr">
+                            {sub.phone}
+                          </Typography>
+                        ) : null}
                       </Box>
 
-                      <Stack direction="row" spacing={0.75} justifyContent={{ xs: 'flex-start', md: 'flex-end' }} onClick={(event) => event.stopPropagation()}>
+                      <Box sx={formsTableCellCenterSx}>
+                        <TypeChip type={sub.type} t={t} />
+                      </Box>
+
+                      <Box sx={formsTableCellCenterSx}>
+                        <Typography fontWeight={800} color="#4F4A70" noWrap component="span">
+                          {formatDate(sub.createdAt, intlLocale)}
+                        </Typography>
+                      </Box>
+
+                      <Box sx={formsTableCellCenterSx}>
+                        <StatusChip status={sub.status} t={t} />
+                      </Box>
+
+                      <Box sx={formsTableCellCenterSx}>
+                        <Stack direction="row" spacing={0.75} onClick={(event) => event.stopPropagation()}>
                         <IconButton
-                          aria-label={isHandled ? `Reopen ${sub.fullName || 'submission'}` : `Mark ${sub.fullName || 'submission'} handled`}
+                          aria-label={(isHandled ? t('fmReopenAria') : t('fmMarkHandledAria')).replace('{name}', sub.fullName || t('fmSubmissionWord'))}
                           onClick={() => toggleHandled(sub)}
                           disabled={isBusy}
                           sx={{
@@ -426,7 +534,7 @@ export default function FormsPage() {
                           {isBusy ? <CircularProgress size={16} color="inherit" /> : isHandled ? <ReplayIcon fontSize="small" /> : <CheckCircleIcon fontSize="small" />}
                         </IconButton>
                         <IconButton
-                          aria-label={`Delete ${sub.fullName || 'submission'}`}
+                          aria-label={t('fmDeleteAria').replace('{name}', sub.fullName || t('fmSubmissionWord'))}
                           onClick={() => setDeleteTarget(sub)}
                           disabled={isBusy}
                           sx={{
@@ -441,7 +549,7 @@ export default function FormsPage() {
                           <DeleteOutlineIcon fontSize="small" />
                         </IconButton>
                         <IconButton
-                          aria-label={`View ${sub.fullName || 'submission'}`}
+                          aria-label={t('fmViewAria').replace('{name}', sub.fullName || t('fmSubmissionWord'))}
                           onClick={() => openDetails(sub)}
                           sx={{
                             width: '2.5rem',
@@ -454,17 +562,18 @@ export default function FormsPage() {
                         >
                           <VisibilityOutlinedIcon fontSize="small" />
                         </IconButton>
-                      </Stack>
+                        </Stack>
+                      </Box>
                     </Box>
                   );
                 })
               ) : (
                 <Box sx={{ py: 8, textAlign: 'center' }}>
-                  <Typography fontWeight={900}>No submissions found</Typography>
+                  <Typography fontWeight={900}>{t('fmNoSubmissions')}</Typography>
                   <Typography color="text.secondary" sx={{ mt: 1 }}>
                     {submissions.length === 0
-                      ? 'Volunteer and donation enquiries from the public website will appear here.'
-                      : 'Try changing your search or filters.'}
+                      ? t('fmEmptyHint')
+                      : t('fmEmptyFilterHint')}
                   </Typography>
                 </Box>
               )}
@@ -480,7 +589,7 @@ export default function FormsPage() {
         maxWidth={false}
         TransitionComponent={Fade}
         PaperProps={{
-          dir: 'ltr',
+          dir: direction,
           sx: {
             width: { xs: 'calc(100vw - 24px)', sm: '37rem' },
             maxWidth: 600,
@@ -502,43 +611,73 @@ export default function FormsPage() {
         {selected ? (
           <Box sx={{ display: 'flex', flexDirection: 'column', maxHeight: 'calc(100vh - 32px)' }}>
             <Box sx={{ p: { xs: 2, md: 2.6 }, pb: 1.6, flexShrink: 0, background: 'radial-gradient(circle at 50% 0%, rgba(223, 50, 123, 0.08), transparent 32%), linear-gradient(180deg, #FFFFFF 0%, #FFFBFE 100%)' }}>
-              <Stack direction="row" spacing={1.5} alignItems="center">
-                <Avatar sx={{ width: '4rem', height: '4rem', bgcolor: '#EEE7FF', color: '#6D3CCF', fontSize: '1.5rem', fontWeight: 950 }}>
-                  {initialsOf(selected.fullName)}
-                </Avatar>
-                <Box sx={{ minWidth: 0, flex: 1 }}>
-                  <Typography dir="auto" variant="h6" fontWeight={950} sx={{ color: '#17122E', lineHeight: 1.15 }}>
-                    {selected.fullName || 'Unnamed'}
-                  </Typography>
-                  <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 0.6 }} flexWrap="wrap" useFlexGap>
-                    <TypeChip type={selected.type} />
-                    <StatusChip status={selected.status} />
-                    <Typography color="text.secondary" sx={{ fontSize: '0.8125rem' }}>
-                      Submitted {formatDate(selected.createdAt)}
+              <Box
+                dir="ltr"
+                sx={{
+                  display: 'flex',
+                  flexDirection: 'row',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: 1.5,
+                }}
+              >
+                <Box
+                  dir="ltr"
+                  sx={{
+                    display: 'flex',
+                    flexDirection: 'row',
+                    alignItems: 'center',
+                    gap: 1.5,
+                    minWidth: 0,
+                    flex: '0 1 auto',
+                  }}
+                >
+                  <Avatar sx={{ width: '4rem', height: '4rem', bgcolor: '#EEE7FF', color: '#6D3CCF', fontSize: '1.5rem', fontWeight: 950, flexShrink: 0 }}>
+                    {initialsOf(selected.fullName)}
+                  </Avatar>
+                  <Box
+                    dir="ltr"
+                    sx={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'flex-start',
+                      gap: 0.5,
+                      minWidth: 0,
+                    }}
+                  >
+                    <Typography dir="auto" variant="h6" fontWeight={950} noWrap sx={{ color: '#17122E', lineHeight: 1.15, minWidth: 0, textAlign: 'left' }}>
+                      {selected.fullName || t('fmUnnamed')}
                     </Typography>
-                  </Stack>
+                    <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
+                      <TypeChip type={selected.type} t={t} />
+                      <StatusChip status={selected.status} t={t} />
+                      <Typography color="text.secondary" sx={{ fontSize: '0.8125rem', whiteSpace: 'nowrap' }}>
+                        {t('fmSubmittedAt').replace('{date}', formatDate(selected.createdAt, intlLocale))}
+                      </Typography>
+                    </Stack>
+                  </Box>
                 </Box>
                 <IconButton
                   size="small"
                   onClick={() => setDetailsOpen(false)}
-                  aria-label="Close submission details"
-                  sx={{ bgcolor: 'rgba(109, 60, 207, 0.06)', color: '#4E466B', '&:hover': { bgcolor: 'rgba(109, 60, 207, 0.12)' } }}
+                  aria-label={t('fmCloseDetails')}
+                  sx={{ bgcolor: 'rgba(109, 60, 207, 0.06)', color: '#4E466B', flexShrink: 0, '&:hover': { bgcolor: 'rgba(109, 60, 207, 0.12)' } }}
                 >
                   <CloseIcon fontSize="small" />
                 </IconButton>
-              </Stack>
+              </Box>
             </Box>
 
             <Box sx={{ flex: 1, overflow: 'auto', p: { xs: 2, md: 2.6 }, borderTop: '1px solid rgba(130, 92, 206, 0.08)' }}>
               <Stack spacing={1.35}>
-                <DetailRow icon={<EmailOutlinedIcon fontSize="small" />} label="Email" value={selected.email} />
-                <DetailRow icon={<PhoneOutlinedIcon fontSize="small" />} label="Phone" value={selected.phone} />
-                <DetailRow icon={<ChatBubbleOutlineIcon fontSize="small" />} label="Message" value={selected.message} />
+                <DetailRow icon={<EmailOutlinedIcon fontSize="small" />} label={t('fmEmail')} value={selected.email} />
+                <DetailRow icon={<PhoneOutlinedIcon fontSize="small" />} label={t('fmPhone')} value={selected.phone} />
+                <DetailRow icon={<ChatBubbleOutlineIcon fontSize="small" />} label={t('fmMessage')} value={selected.message} />
                 {selected.status === FORM_SUBMISSION_STATUS.HANDLED ? (
                   <DetailRow
                     icon={<CheckCircleIcon fontSize="small" />}
-                    label={`Handled • ${formatDate(selected.handledAt)}`}
-                    value={selected.handledBy ? `by ${selected.handledBy}` : '-'}
+                    label={t('fmHandledLabel').replace('{date}', formatDate(selected.handledAt, intlLocale))}
+                    value={selected.handledBy ? t('fmHandledBy').replace('{name}', selected.handledBy) : '-'}
                   />
                 ) : null}
               </Stack>
@@ -551,7 +690,7 @@ export default function FormsPage() {
                   startIcon={<DeleteOutlineIcon />}
                   sx={{ px: 2.4, height: '2.75rem', borderRadius: 999, fontWeight: 900, textTransform: 'none', color: '#B91C1C', border: '1px solid rgba(239, 68, 68, 0.3)', bgcolor: 'rgba(239, 68, 68, 0.06)', '&:hover': { bgcolor: 'rgba(239, 68, 68, 0.12)' } }}
                 >
-                  Delete
+                  {t('fmDeleteBtn')}
                 </Button>
                 <Button
                   onClick={() => toggleHandled(selected).then(() => setSelected((cur) => (cur ? { ...cur, status: (cur.status || 'new') === FORM_SUBMISSION_STATUS.HANDLED ? FORM_SUBMISSION_STATUS.NEW : FORM_SUBMISSION_STATUS.HANDLED } : cur)))}
@@ -569,7 +708,7 @@ export default function FormsPage() {
                     boxShadow: '0 14px 30px rgba(22, 163, 74, 0.26)',
                   }}
                 >
-                  {(selected.status || 'new') === FORM_SUBMISSION_STATUS.HANDLED ? 'Reopen' : 'Mark as handled'}
+                  {(selected.status || 'new') === FORM_SUBMISSION_STATUS.HANDLED ? t('fmReopenBtn') : t('fmMarkAsHandled')}
                 </Button>
               </Stack>
             </Box>
@@ -581,17 +720,17 @@ export default function FormsPage() {
       <Dialog
         open={Boolean(deleteTarget)}
         onClose={() => (busyId ? null : setDeleteTarget(null))}
-        PaperProps={{ dir: 'ltr', sx: { borderRadius: '24px', width: { xs: 'calc(100vw - 32px)', sm: '30rem' }, maxWidth: 480 } }}
+        PaperProps={{ dir: direction, sx: { borderRadius: '24px', width: { xs: 'calc(100vw - 32px)', sm: '30rem' }, maxWidth: 480 } }}
       >
-        <DialogTitle sx={{ fontWeight: 950, color: '#100B2F' }}>Delete submission?</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 950, color: '#100B2F' }}>{t('fmDeleteTitle')}</DialogTitle>
         <DialogContent>
           <Typography sx={{ color: '#4F4A70' }}>
-            Permanently delete the submission from <strong dir="auto">{deleteTarget?.fullName || deleteTarget?.email || 'this contact'}</strong>? This cannot be undone.
+            {t('fmDeleteConfirmPre')}<strong dir="auto">{deleteTarget?.fullName || deleteTarget?.email || t('fmThisContact')}</strong>{t('fmDeleteConfirmPost')}
           </Typography>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2.4 }}>
           <Button onClick={() => setDeleteTarget(null)} disabled={Boolean(busyId)} sx={{ borderRadius: 999, textTransform: 'none', fontWeight: 800, color: '#6F6890' }}>
-            Cancel
+            {t('fmCancel')}
           </Button>
           <Button
             onClick={confirmDelete}
@@ -601,7 +740,7 @@ export default function FormsPage() {
             startIcon={busyId ? <CircularProgress size={16} color="inherit" /> : <DeleteOutlineIcon />}
             sx={{ borderRadius: 999, textTransform: 'none', fontWeight: 950, px: 2.8 }}
           >
-            {busyId ? 'Deleting…' : 'Delete'}
+            {busyId ? t('fmDeleting') : t('fmDeleteBtn')}
           </Button>
         </DialogActions>
       </Dialog>

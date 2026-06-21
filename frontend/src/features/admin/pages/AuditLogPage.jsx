@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useState, useCallback } from 'react';
-import { collection, getDocs, query, orderBy, limit } from 'firebase/firestore';
+import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
+import { collection, getDocs, query, orderBy } from 'firebase/firestore';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import TextField from '@mui/material/TextField';
@@ -8,7 +8,7 @@ import Chip from '@mui/material/Chip';
 import Stack from '@mui/material/Stack';
 import MenuItem from '@mui/material/MenuItem';
 import IconButton from '@mui/material/IconButton';
-import Divider from '@mui/material/Divider';
+import Pagination from '@mui/material/Pagination';
 import EventIcon from '@mui/icons-material/Event';
 import HomeWorkOutlinedIcon from '@mui/icons-material/HomeWorkOutlined';
 import PersonIcon from '@mui/icons-material/Person';
@@ -18,16 +18,56 @@ import CloseIcon from '@mui/icons-material/Close';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import SearchIcon from '@mui/icons-material/Search';
 import { db } from '../../../firebase';
+import { useAdminLocale } from '../context/AdminLocaleContext';
+
+const INTL_LOCALE_BY_LANG = { he: 'he-IL', en: 'en' };
+const PAGE_SIZE = 10;
 
 const ACTIVITY_FILTERS = [
-  { value: 'all', label: 'All activities' },
-  { value: 'event', label: 'Events' },
-  { value: 'booking', label: 'Bookings' },
-  { value: 'public', label: 'Public home page' },
-  { value: 'user', label: 'Users and roles' },
-  { value: 'settings', label: 'Settings' },
-  { value: 'community', label: 'Community' },
+  { value: 'all', labelKey: 'filterAll' },
+  { value: 'event', labelKey: 'filterEvents' },
+  { value: 'booking', labelKey: 'filterBookings' },
+  { value: 'public', labelKey: 'filterPublicHome' },
+  { value: 'user', labelKey: 'filterUsersRoles' },
+  { value: 'settings', labelKey: 'filterSettings' },
+  { value: 'community', labelKey: 'filterCommunity' },
 ];
+
+const filterFieldSx = {
+  '& .MuiOutlinedInput-root': {
+    borderRadius: '18px',
+  },
+};
+
+const dateFilterFieldSx = {
+  ...filterFieldSx,
+  minWidth: { md: 210 },
+  '& input[type="date"]': {
+    color: '#171239',
+  },
+};
+
+const homepageButtonInteractionSx = {
+  color: '#5b1e8c',
+  borderColor: 'rgba(91, 30, 140, 0.2)',
+  background: 'rgba(255, 255, 255, 0.97)',
+  boxShadow: '0 9px 24px rgba(91, 30, 140, 0.12)',
+  transition: 'color 180ms ease, background 180ms ease, border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease',
+  '&:hover, &:focus-visible': {
+    color: '#fff',
+    background: 'linear-gradient(135deg, #e73386, #dc2577)',
+    borderColor: 'transparent',
+    boxShadow: '0 14px 26px rgba(223, 50, 123, 0.24)',
+    transform: 'translateY(-2px)',
+  },
+  '&:active': {
+    transform: 'translateY(0)',
+  },
+  '&:focus-visible': {
+    outline: '3px solid rgba(236, 72, 153, 0.28)',
+    outlineOffset: 3,
+  },
+};
 
 const ACTION_LABELS = {
   UPDATE_EVENT: 'Updated event',
@@ -69,45 +109,87 @@ const ACTION_LABELS = {
   IMPERSONATE_START: 'Started participant preview',
 };
 
+// Hebrew labels for the (bounded) set of known action types. Picked by locale in
+// getActionLabel; unknown actions fall back to the humanized English form.
+const ACTION_LABELS_HE = {
+  UPDATE_EVENT: 'עודכן אירוע',
+  CREATE_EVENT: 'נוצר אירוע',
+  DELETE_EVENT: 'נמחק אירוע',
+  ADD_REGISTRATION: 'נוספה הרשמה',
+  REMOVE_REGISTRATION: 'הוסרה הרשמה',
+  UPDATE_BOOKING: 'עודכנה הזמנה',
+  CHECK_IN_PARTICIPANT: 'בוצע צ\'ק-אין למשתתפת',
+  UPDATE_PUBLIC_HOME: 'עודכן דף הבית הציבורי',
+  UPDATE_PUBLIC_HOME_CONTACT: 'עודכן אזור יצירת הקשר',
+  UPDATE_PUBLIC_HOME_HERO: 'עודכן אזור הכותרת',
+  UPDATE_PUBLIC_HOME_PARTNER: 'עודכן שותף',
+  CREATE_PUBLIC_HOME_PARTNER: 'נוצר שותף',
+  DELETE_PUBLIC_HOME_PARTNER: 'נמחק שותף',
+  UPDATE_PUBLIC_HOME_PRESS_COVERAGE: 'עודכן סיקור תקשורתי',
+  CREATE_PUBLIC_HOME_PRESS_COVERAGE: 'נוצר סיקור תקשורתי',
+  DELETE_PUBLIC_HOME_PRESS_COVERAGE: 'נמחק סיקור תקשורתי',
+  UPDATE_PUBLIC_HOME_LEARN_TOGETHER_HEADER: 'עודכנה כותרת "ללמוד יחד"',
+  UPDATE_PUBLIC_HOME_LEARN_TOGETHER_CARD: 'עודכן כרטיס "ללמוד יחד"',
+  CREATE_PUBLIC_HOME_LEARN_TOGETHER_CARD: 'נוצר כרטיס "ללמוד יחד"',
+  DELETE_PUBLIC_HOME_LEARN_TOGETHER_CARD: 'נמחק כרטיס "ללמוד יחד"',
+  REORDER_PUBLIC_HOME_LEARN_TOGETHER_CARDS: 'סודרו מחדש כרטיסי "ללמוד יחד"',
+  UPDATE_PUBLIC_HOME_INSPIRATION_STORY: 'עודכן סיפור השראה',
+  CREATE_PUBLIC_HOME_INSPIRATION_STORY: 'נוצר סיפור השראה',
+  DELETE_PUBLIC_HOME_INSPIRATION_STORY: 'נמחק סיפור השראה',
+  UPDATE_PUBLIC_HOME_TEAM_MEMBER: 'עודכנה חברת צוות',
+  CREATE_PUBLIC_HOME_TEAM_MEMBER: 'נוצרה חברת צוות',
+  DELETE_PUBLIC_HOME_TEAM_MEMBER: 'נמחקה חברת צוות',
+  REORDER_PUBLIC_HOME_TEAM_MEMBERS: 'סודרו מחדש חברות הצוות',
+  ROLE_CHANGE: 'שונה תפקיד משתמשת',
+  JOIN_REQUEST_APPROVED: 'אושרה בקשת הצטרפות',
+  JOIN_REQUEST_REJECTED: 'נדחתה בקשת הצטרפות',
+  HIDE_COMMUNITY_POST: 'הוסתר פוסט בקהילה',
+  RESTORE_COMMUNITY_POST: 'שוחזר פוסט בקהילה',
+  DELETE_COMMUNITY_POST: 'נמחק פוסט בקהילה',
+  DISMISS_REPORTS: 'נדחו דיווחים',
+  UPDATE_COMMUNITY_GUIDELINES: 'עודכנו כללי הקהילה',
+  IMPERSONATE_START: 'התחילה תצוגת משתתפת',
+};
+
 const AREA_CONFIG = {
   event: {
-    label: 'Events',
+    labelKey: 'areaEvent',
     icon: EventIcon,
     color: '#6d35b8',
     background: 'rgba(109, 53, 184, 0.12)',
   },
   booking: {
-    label: 'Bookings',
+    labelKey: 'areaBooking',
     icon: ReceiptLongIcon,
     color: '#d94682',
     background: 'rgba(224, 82, 151, 0.13)',
   },
   public: {
-    label: 'Public home page',
+    labelKey: 'areaPublic',
     icon: HomeWorkOutlinedIcon,
     color: '#7c3aed',
     background: 'rgba(167, 139, 250, 0.16)',
   },
   user: {
-    label: 'Users',
+    labelKey: 'areaUser',
     icon: PersonIcon,
     color: '#21835a',
     background: 'rgba(134, 209, 124, 0.22)',
   },
   community: {
-    label: 'Community',
+    labelKey: 'areaCommunity',
     icon: PersonIcon,
     color: '#0f766e',
     background: 'rgba(45, 212, 191, 0.16)',
   },
   settings: {
-    label: 'Settings',
+    labelKey: 'areaSettings',
     icon: SettingsOutlinedIcon,
     color: '#f97316',
     background: 'rgba(253, 186, 116, 0.2)',
   },
   general: {
-    label: 'General',
+    labelKey: 'areaGeneral',
     icon: SettingsOutlinedIcon,
     color: '#64748b',
     background: 'rgba(100, 116, 139, 0.12)',
@@ -144,16 +226,26 @@ function toDate(value) {
   return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
 
-function formatDateTime(value) {
+function formatDateTime(value, intlLocale = 'en') {
   const date = toDate(value);
   if (!date) return 'Date unavailable';
-  return new Intl.DateTimeFormat('en', {
+  return new Intl.DateTimeFormat(intlLocale, {
     month: 'short',
     day: '2-digit',
     year: 'numeric',
     hour: '2-digit',
     minute: '2-digit',
   }).format(date);
+}
+
+function formatTableDateTime(value) {
+  const date = toDate(value);
+  if (!date) return 'Date unavailable';
+  const pad = (number) => String(number).padStart(2, '0');
+  return [
+    `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()}`,
+    `${pad(date.getHours())}:${pad(date.getMinutes())}`,
+  ].join(', ');
 }
 
 function humanizeKey(value = '') {
@@ -181,9 +273,10 @@ function getActionType(log) {
   return String(log.actionType || log.type || log.action || '').trim();
 }
 
-function getActionLabel(actionType) {
-  if (!actionType) return 'Recorded activity';
-  if (ACTION_LABELS[actionType]) return ACTION_LABELS[actionType];
+function getActionLabel(actionType, locale = 'en') {
+  if (!actionType) return locale === 'he' ? 'פעילות נרשמה' : 'Recorded activity';
+  const map = locale === 'he' ? ACTION_LABELS_HE : ACTION_LABELS;
+  if (map[actionType] || ACTION_LABELS[actionType]) return map[actionType] || ACTION_LABELS[actionType];
 
   const words = actionType
     .toLowerCase()
@@ -211,7 +304,26 @@ function getAreaKey(log) {
 }
 
 function getAdminLabel(log) {
-  return log.adminEmail || log.actorEmail || log.actorName || log.adminId || 'Unknown admin';
+  const name = log.actorName || log.adminName || log.displayName;
+  if (name && !String(name).includes('@')) return name;
+  const email = log.adminEmail || log.actorEmail || '';
+  return email ? email.split('@')[0] : log.adminId || 'Unknown admin';
+}
+
+function getAdminSearchText(log) {
+  return [
+    log.adminLabel,
+    log.actorName,
+    log.adminName,
+    log.displayName,
+    log.adminEmail,
+    log.actorEmail,
+    log.adminId,
+  ].filter(Boolean).join(' ').toLowerCase();
+}
+
+function getAdminEmail(log) {
+  return log.adminEmail || log.actorEmail || '';
 }
 
 function getReadableSection(details) {
@@ -309,6 +421,8 @@ function normalizeLog(log) {
     actionType: getActionType(log),
     actionLabel: getActionLabel(getActionType(log)),
     adminLabel: getAdminLabel(log),
+    adminEmailLabel: getAdminEmail(log),
+    adminSearchText: getAdminSearchText(log),
     areaKey,
     areaLabel: area.label,
     summaryText: getSummaryFromDetails(log),
@@ -317,6 +431,8 @@ function normalizeLog(log) {
 }
 
 export default function AuditLogPage() {
+  const { t, lang } = useAdminLocale();
+  const intlLocale = INTL_LOCALE_BY_LANG[lang] || 'en';
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -324,22 +440,25 @@ export default function AuditLogPage() {
   const [activityFilter, setActivityFilter] = useState('all');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
+  const [page, setPage] = useState(1);
   const [selectedLog, setSelectedLog] = useState(null);
+  const detailsScrollRef = useRef(null);
+  const advancedDetailsRef = useRef(null);
 
   const fetchLogs = useCallback(async () => {
     setLoading(true);
     setError('');
     try {
-      const q = query(collection(db, 'audit_logs'), orderBy('timestamp', 'desc'), limit(200));
+      const q = query(collection(db, 'audit_logs'), orderBy('timestamp', 'desc'));
       const snap = await getDocs(q);
       setLogs(snap.docs.map((docSnap) => normalizeLog({ id: docSnap.id, ...docSnap.data() })));
     } catch (err) {
       console.error('Failed to fetch audit logs:', err);
-      setError('Could not load admin activity history.');
+      setError(t('auditError'));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     fetchLogs();
@@ -352,7 +471,7 @@ export default function AuditLogPage() {
 
     return logs.filter((log) => {
       const matchesAdmin = adminSearch
-        ? log.adminLabel.toLowerCase().includes(adminSearch) || String(log.adminId || '').toLowerCase().includes(adminSearch)
+        ? log.adminSearchText.includes(adminSearch)
         : true;
       const matchesActivity = activityFilter === 'all' ? true : log.areaKey === activityFilter;
       const matchesFrom = from && log.timestampDate ? log.timestampDate >= from : true;
@@ -361,6 +480,21 @@ export default function AuditLogPage() {
     });
   }, [activityFilter, adminFilter, dateFrom, dateTo, logs]);
 
+  useEffect(() => {
+    setPage(1);
+  }, [activityFilter, adminFilter, dateFrom, dateTo]);
+
+  const pageCount = Math.max(1, Math.ceil(filteredLogs.length / PAGE_SIZE));
+
+  useEffect(() => {
+    if (page > pageCount) setPage(pageCount);
+  }, [page, pageCount]);
+
+  const paginatedLogs = useMemo(() => {
+    const start = (page - 1) * PAGE_SIZE;
+    return filteredLogs.slice(start, start + PAGE_SIZE);
+  }, [filteredLogs, page]);
+
   const selectedArea = selectedLog ? AREA_CONFIG[selectedLog.areaKey] || AREA_CONFIG.general : AREA_CONFIG.general;
   const SelectedIcon = selectedArea.icon;
   const changeRows = selectedLog ? getChangeRows(selectedLog.details || {}) : [];
@@ -368,16 +502,27 @@ export default function AuditLogPage() {
   return (
     <Box
       sx={{
-        minHeight: '100%',
+        height: 'calc(100vh - 6.5rem)',
+        minHeight: 0,
+        display: 'flex',
+        flexDirection: 'column',
+        overflow: 'hidden',
         color: '#24104f',
       }}
     >
-      <Box sx={{ mb: 2.75 }}>
-        <Typography variant="h4" sx={{ fontWeight: 900, letterSpacing: 0, color: '#171239' }}>
-          Admin Activity History
-        </Typography>
-        <Typography variant="subtitle1" sx={{ mt: 0.5, color: 'rgba(36, 16, 79, 0.66)', fontWeight: 600 }} dir="ltr">
-          Track changes made by admins across the platform.
+      <Box
+        sx={{
+          position: 'fixed',
+          top: '1.75rem',
+          left: 'calc(var(--admin-sidebar-width) + 4rem)',
+          zIndex: 1100,
+          minHeight: '2.375rem',
+          display: 'flex',
+          alignItems: 'center',
+        }}
+      >
+        <Typography variant="h4" sx={{ fontWeight: 900, letterSpacing: 0, lineHeight: 1.1, color: '#171239' }}>
+          {t('auditTitle')}
         </Typography>
       </Box>
 
@@ -385,6 +530,7 @@ export default function AuditLogPage() {
         sx={{
           p: 2,
           mb: 2,
+          flex: '0 0 auto',
           border: '1px solid rgba(167, 139, 250, 0.18)',
           borderRadius: '22px',
           background: 'rgba(255, 255, 255, 0.78)',
@@ -394,39 +540,41 @@ export default function AuditLogPage() {
       >
         <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.5} alignItems={{ xs: 'stretch', md: 'center' }}>
           <TextField
-            placeholder="Search admin email or name"
+            placeholder={t('auditSearchPlaceholder')}
             value={adminFilter}
             onChange={(event) => setAdminFilter(event.target.value)}
             id="audit-admin-filter"
             InputProps={{ startAdornment: <SearchIcon sx={{ mr: 1, color: '#7a6ca5' }} /> }}
-            sx={{ minWidth: { md: 260 }, flex: 1 }}
+            sx={{ ...filterFieldSx, minWidth: { md: 260 }, flex: 1 }}
           />
           <TextField
             select
-            label="Activity type"
+            label={t('auditActivityType')}
             value={activityFilter}
             onChange={(event) => setActivityFilter(event.target.value)}
-            sx={{ minWidth: { md: 210 } }}
+            sx={{ ...filterFieldSx, minWidth: { md: 210 } }}
           >
             {ACTIVITY_FILTERS.map((option) => (
-              <MenuItem value={option.value} key={option.value}>{option.label}</MenuItem>
+              <MenuItem value={option.value} key={option.value}>{t(option.labelKey)}</MenuItem>
             ))}
           </TextField>
           <TextField
             type="date"
-            label="Date from"
+            label={t('auditDateFrom')}
             value={dateFrom}
             onChange={(event) => setDateFrom(event.target.value)}
             InputLabelProps={{ shrink: true }}
-            sx={{ minWidth: { md: 155 } }}
+            slotProps={{ inputLabel: { shrink: true } }}
+            sx={dateFilterFieldSx}
           />
           <TextField
             type="date"
-            label="Date to"
+            label={t('auditDateTo')}
             value={dateTo}
             onChange={(event) => setDateTo(event.target.value)}
             InputLabelProps={{ shrink: true }}
-            sx={{ minWidth: { md: 155 } }}
+            slotProps={{ inputLabel: { shrink: true } }}
+            sx={dateFilterFieldSx}
           />
           <Button
             type="button"
@@ -436,9 +584,37 @@ export default function AuditLogPage() {
               setDateFrom('');
               setDateTo('');
             }}
-            sx={{ minHeight: 54, color: '#6d35b8', fontWeight: 900 }}
+            sx={{
+              minHeight: 40,
+              px: 1.75,
+              color: '#171239',
+              fontFamily: 'inherit',
+              fontSize: '1rem',
+              fontWeight: 400,
+              lineHeight: 1.4375,
+              textTransform: 'none',
+              border: '1px solid rgba(0, 0, 0, 0.23)',
+              borderRadius: '18px',
+              background: 'rgba(255, 255, 255, 0.97)',
+              boxShadow: 'none',
+              transition: 'color 180ms ease, background 180ms ease, border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease',
+              '&:hover, &:focus-visible': {
+                color: '#fff',
+                background: 'linear-gradient(135deg, #e73386, #dc2577)',
+                borderColor: 'transparent',
+                boxShadow: '0 14px 26px rgba(223, 50, 123, 0.24)',
+                transform: 'translateY(-2px)',
+              },
+              '&:active': {
+                transform: 'translateY(0)',
+              },
+              '&:focus-visible': {
+                outline: '3px solid rgba(236, 72, 153, 0.28)',
+                outlineOffset: 3,
+              },
+            }}
           >
-            Clear
+            {t('auditClear')}
           </Button>
         </Stack>
       </Box>
@@ -451,12 +627,16 @@ export default function AuditLogPage() {
           background: 'rgba(255, 255, 255, 0.82)',
           boxShadow: '0 18px 45px rgba(109, 53, 184, 0.08)',
           backdropFilter: 'blur(18px)',
+          flex: '1 1 auto',
+          minHeight: 0,
+          display: 'flex',
+          flexDirection: 'column',
         }}
       >
         <Box
           sx={{
             display: 'grid',
-            gridTemplateColumns: '1.15fr 1.25fr 1.25fr 1fr 2.1fr 120px',
+            gridTemplateColumns: '1.15fr 1.25fr 1.35fr 1fr 120px',
             gap: 2,
             px: 2.25,
             py: 1.5,
@@ -464,26 +644,26 @@ export default function AuditLogPage() {
             color: 'rgba(36, 16, 79, 0.66)',
             fontSize: '0.78rem',
             fontWeight: 900,
+            flex: '0 0 auto',
           }}
         >
-          <span>Date & Time</span>
-          <span>Admin</span>
-          <span>Activity</span>
-          <span>Area</span>
-          <span>Summary</span>
-          <span>Details</span>
+          <span>{t('colDateTime')}</span>
+          <span>{t('colAdmin')}</span>
+          <span>{t('colActivity')}</span>
+          <span>{t('colArea')}</span>
+          <span>{t('colDetails')}</span>
         </Box>
 
-        <Box sx={{ maxHeight: 'calc(100vh - 300px)', minHeight: 360, overflowY: 'auto' }}>
+        <Box sx={{ flex: '1 1 auto', minHeight: 0, overflowY: 'auto' }}>
           {loading ? (
-            <Box sx={{ p: 4, textAlign: 'center', color: '#6d35b8', fontWeight: 800 }}>Loading activity history...</Box>
+            <Box sx={{ p: 4, textAlign: 'center', color: '#6d35b8', fontWeight: 800 }}>{t('auditLoading')}</Box>
           ) : error ? (
             <Box sx={{ p: 4, textAlign: 'center' }}>
               <Typography sx={{ mb: 1, color: '#b42355', fontWeight: 900 }}>{error}</Typography>
-              <Button onClick={fetchLogs} variant="outlined">Retry</Button>
+              <Button onClick={fetchLogs} variant="outlined">{t('retry')}</Button>
             </Box>
           ) : filteredLogs.length ? (
-            filteredLogs.map((log) => {
+            paginatedLogs.map((log) => {
               const area = AREA_CONFIG[log.areaKey] || AREA_CONFIG.general;
               const AreaIcon = area.icon;
 
@@ -492,7 +672,7 @@ export default function AuditLogPage() {
                   key={log.id}
                   sx={{
                     display: 'grid',
-                    gridTemplateColumns: '1.15fr 1.25fr 1.25fr 1fr 2.1fr 120px',
+                    gridTemplateColumns: '1.15fr 1.25fr 1.35fr 1fr 120px',
                     gap: 2,
                     alignItems: 'center',
                     px: 2.25,
@@ -502,13 +682,13 @@ export default function AuditLogPage() {
                   }}
                 >
                   <Typography sx={{ color: '#303a58', fontSize: '0.82rem', fontWeight: 800 }}>
-                    {formatDateTime(log.timestamp)}
+                    {formatTableDateTime(log.timestamp)}
                   </Typography>
                   <Typography sx={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', color: '#303a58', fontSize: '0.82rem', fontWeight: 700 }}>
                     {log.adminLabel}
                   </Typography>
                   <Chip
-                    label={log.actionLabel}
+                    label={getActionLabel(log.actionType, lang)}
                     size="small"
                     sx={{
                       justifySelf: 'start',
@@ -534,12 +714,9 @@ export default function AuditLogPage() {
                       <AreaIcon fontSize="small" />
                     </Box>
                     <Typography sx={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: '#303a58', fontSize: '0.8rem', fontWeight: 800 }}>
-                      {area.label}
+                      {t(area.labelKey)}
                     </Typography>
                   </Stack>
-                  <Typography sx={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', color: 'rgba(36, 16, 79, 0.72)', fontSize: '0.82rem', fontWeight: 650 }}>
-                    {log.summaryText}
-                  </Typography>
                   <Button
                     type="button"
                     size="small"
@@ -548,35 +725,95 @@ export default function AuditLogPage() {
                     sx={{
                       justifySelf: 'start',
                       borderRadius: 999,
-                      color: '#e05297',
-                      borderColor: 'rgba(224, 82, 151, 0.28)',
                       fontWeight: 900,
+                      ...homepageButtonInteractionSx,
                     }}
                     variant="outlined"
                   >
-                    View
+                    {t('view')}
                   </Button>
                 </Box>
               );
             })
           ) : (
             <Box sx={{ p: 4, textAlign: 'center', color: 'rgba(36, 16, 79, 0.68)', fontWeight: 800 }}>
-              No admin activity matches these filters.
+              {t('auditNoMatch')}
             </Box>
           )}
         </Box>
+        {!loading && !error && filteredLogs.length > PAGE_SIZE ? (
+          <Box
+            sx={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              flex: '0 0 auto',
+              px: 2,
+              py: 1.5,
+              borderTop: '1px solid rgba(167, 139, 250, 0.16)',
+              background: 'rgba(255, 255, 255, 0.72)',
+              '& .MuiPaginationItem-root': {
+                color: '#5b1e8c',
+                border: '2px solid transparent',
+                background: 'rgba(255, 255, 255, 0.97)',
+                boxShadow: '0 9px 24px rgba(91, 30, 140, 0.12)',
+                fontWeight: 900,
+                transition: 'color 180ms ease, background 180ms ease, border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease',
+              },
+              '& .MuiPaginationItem-root:hover, & .MuiPaginationItem-root:focus-visible': {
+                color: '#fff',
+                background: 'linear-gradient(135deg, #e73386, #dc2577)',
+                borderColor: 'transparent',
+                boxShadow: '0 14px 26px rgba(223, 50, 123, 0.24)',
+                transform: 'translateY(-2px)',
+              },
+              '& .MuiPaginationItem-root:active': {
+                transform: 'translateY(0)',
+              },
+              '& .MuiPaginationItem-root:focus-visible': {
+                outline: '3px solid rgba(236, 72, 153, 0.28)',
+                outlineOffset: 3,
+              },
+              '& .MuiPaginationItem-root.Mui-selected': {
+                color: '#fff',
+                background: 'linear-gradient(135deg, #e73386, #dc2577)',
+                borderColor: 'transparent',
+                boxShadow: '0 14px 26px rgba(223, 50, 123, 0.24)',
+                '&:hover': {
+                  background: 'linear-gradient(135deg, #e73386, #dc2577)',
+                },
+              },
+              '& .MuiPaginationItem-root.Mui-disabled': {
+                color: 'rgba(91, 30, 140, 0.38)',
+                background: 'rgba(255, 255, 255, 0.72)',
+                boxShadow: 'none',
+                transform: 'none',
+              },
+            }}
+          >
+            <Pagination
+              count={pageCount}
+              page={page}
+              onChange={(event, value) => setPage(value)}
+              siblingCount={1}
+              boundaryCount={1}
+              shape="rounded"
+            />
+          </Box>
+        ) : null}
       </Box>
 
       {selectedLog ? (
         <Box
           role="dialog"
           aria-modal="true"
-          aria-label="Activity details"
+          aria-label={t('auditDetailsAria')}
           sx={{
             position: 'fixed',
             inset: 0,
             zIndex: 1400,
-            background: 'rgba(36, 16, 79, 0.22)',
+            background: 'rgba(32, 38, 55, 0.38)',
+            backdropFilter: 'blur(10px)',
           }}
           onMouseDown={(event) => {
             if (event.target === event.currentTarget) setSelectedLog(null);
@@ -588,119 +825,248 @@ export default function AuditLogPage() {
               top: 18,
               right: 18,
               bottom: 18,
-              width: 'min(520px, calc(100vw - 36px))',
-              overflowY: 'auto',
-              border: '1px solid rgba(167, 139, 250, 0.2)',
-              borderRadius: '26px',
-              background: 'linear-gradient(180deg, rgba(255,255,255,0.98), rgba(255,248,252,0.96))',
-              boxShadow: '0 28px 70px rgba(36, 16, 79, 0.22)',
-              p: 2.5,
+              display: 'grid',
+              gridTemplateRows: 'auto minmax(0, 1fr)',
+              width: 'min(640px, calc(100vw - 36px))',
+              overflow: 'hidden',
+              border: '1px solid rgba(223, 50, 123, 0.14)',
+              borderRadius: '24px',
+              color: '#24104f',
+              background: 'rgba(255, 255, 255, 0.98)',
+              boxShadow: '0 24px 56px rgba(31, 12, 42, 0.22)',
             }}
           >
-            <Stack direction="row" alignItems="flex-start" justifyContent="space-between" spacing={2}>
-              <Stack direction="row" spacing={1.25} alignItems="center">
-                <Box
-                  sx={{
-                    display: 'grid',
-                    width: 48,
-                    height: 48,
-                    placeItems: 'center',
-                    borderRadius: '16px',
-                    color: selectedArea.color,
-                    background: selectedArea.background,
-                  }}
-                >
-                  <SelectedIcon />
-                </Box>
-                <Box>
-                  <Typography variant="h6" sx={{ color: '#171239', fontWeight: 900 }}>
-                    {selectedLog.actionLabel}
-                  </Typography>
-                  <Typography sx={{ color: 'rgba(36, 16, 79, 0.62)', fontWeight: 700 }}>
-                    {selectedLog.areaLabel}
-                  </Typography>
-                </Box>
-              </Stack>
-              <IconButton onClick={() => setSelectedLog(null)} aria-label="Close activity details">
-                <CloseIcon />
-              </IconButton>
-            </Stack>
+            <IconButton
+              onClick={() => setSelectedLog(null)}
+              aria-label={t('closeActivityDetails')}
+              sx={{
+                position: 'absolute',
+                top: 16,
+                right: 16,
+                zIndex: 2,
+                width: 38,
+                height: 38,
+                color: '#5b1e8c',
+                background: '#fff',
+                border: '1px solid rgba(91, 30, 140, 0.22)',
+                boxShadow: '0 8px 18px rgba(91, 30, 140, 0.12)',
+                '&:hover, &:focus-visible': {
+                  color: '#fff',
+                  background: 'linear-gradient(135deg, #df327b, #cf1f70)',
+                  borderColor: 'transparent',
+                  boxShadow: '0 14px 26px rgba(207, 31, 112, 0.3)',
+                  transform: 'translateY(-2px) scale(1.04)',
+                },
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
 
-            <Box sx={{ mt: 2.5, p: 2, borderRadius: '18px', background: 'rgba(252, 231, 243, 0.5)' }}>
-              <Typography sx={{ color: '#171239', fontWeight: 900 }}>Summary</Typography>
-              <Typography sx={{ mt: 0.5, color: 'rgba(36, 16, 79, 0.75)', fontWeight: 650 }}>
-                {selectedLog.summaryText}
-              </Typography>
-            </Box>
-
-            <Stack spacing={1.25} sx={{ mt: 2.25 }}>
-              <DetailLine label="Admin" value={selectedLog.adminLabel} />
-              <DetailLine label="Timestamp" value={formatDateTime(selectedLog.timestamp)} />
-              <DetailLine label="Area" value={selectedLog.areaLabel} />
-              <DetailLine label="Target" value={selectedLog.targetId || 'Not specified'} />
-            </Stack>
-
-            <Divider sx={{ my: 2.25 }} />
-
-            <Typography sx={{ mb: 1.25, color: '#171239', fontWeight: 900 }}>
-              What changed
-            </Typography>
-            {changeRows.length ? (
-              <Stack spacing={1}>
-                {changeRows.map((row) => (
-                  <Box
-                    key={`${row.field}-${row.before}-${row.after}`}
-                    sx={{
-                      display: 'grid',
-                      gridTemplateColumns: '110px 1fr',
-                      gap: 1.25,
-                      p: 1.25,
-                      border: '1px solid rgba(167, 139, 250, 0.16)',
-                      borderRadius: '14px',
-                      background: 'rgba(255, 255, 255, 0.72)',
-                    }}
-                  >
-                    <Typography sx={{ color: '#6d35b8', fontSize: '0.78rem', fontWeight: 900 }}>
-                      {row.field}
-                    </Typography>
-                    <Box>
-                      <Typography sx={{ color: 'rgba(36, 16, 79, 0.58)', fontSize: '0.76rem', fontWeight: 800 }}>
-                        Before: {row.before}
-                      </Typography>
-                      <Typography sx={{ mt: 0.25, color: '#24104f', fontSize: '0.82rem', fontWeight: 850 }}>
-                        After: {row.after}
-                      </Typography>
-                    </Box>
-                  </Box>
-                ))}
-              </Stack>
-            ) : (
-              <Typography sx={{ color: 'rgba(36, 16, 79, 0.66)', fontWeight: 700 }}>
-                No field-level details were saved for this activity.
-              </Typography>
-            )}
-
-            <Box component="details" sx={{ mt: 2.25 }}>
-              <Typography component="summary" sx={{ cursor: 'pointer', color: '#6d35b8', fontWeight: 900 }}>
-                Advanced developer details
-              </Typography>
-              <Box
-                component="pre"
+            <Box
+              sx={{
+                display: 'grid',
+                justifyItems: 'center',
+                gap: 0.75,
+                px: { xs: 6, sm: 8 },
+                py: 2.5,
+                textAlign: 'center',
+                background: 'linear-gradient(180deg, rgba(255, 247, 251, 0.92), rgba(255, 255, 255, 0.98))',
+                borderBottom: '1px solid rgba(223, 50, 123, 0.1)',
+              }}
+            >
+              <Chip
+                icon={<SelectedIcon fontSize="small" />}
+                label={t(selectedArea.labelKey)}
                 sx={{
-                  mt: 1,
-                  maxHeight: 220,
-                  overflow: 'auto',
-                  p: 1.5,
-                  borderRadius: '14px',
-                  background: '#1f1637',
-                  color: '#f8f3ff',
-                  fontSize: '0.72rem',
-                  whiteSpace: 'pre-wrap',
+                  color: selectedArea.color,
+                  background: selectedArea.background,
+                  borderRadius: 999,
+                  fontWeight: 900,
+                  '& .MuiChip-icon': { color: selectedArea.color },
+                }}
+              />
+              <Typography
+                variant="h5"
+                sx={{
+                  m: 0,
+                  color: '#4b136b',
+                  fontSize: { xs: '1.55rem', sm: '2rem' },
+                  fontWeight: 900,
+                  lineHeight: 1.14,
                 }}
               >
-                {JSON.stringify(selectedLog.details || {}, null, 2)}
+                {getActionLabel(selectedLog.actionType, lang)}
+              </Typography>
+            </Box>
+
+            <Box ref={detailsScrollRef} sx={{ minHeight: 0, overflowY: 'auto', p: { xs: 2, sm: 2.5 } }}>
+              <Box
+                sx={{
+                  display: 'grid',
+                  gap: 1.5,
+                }}
+              >
+                <Box
+                  component="section"
+                  sx={{
+                    display: 'grid',
+                    gap: 0.75,
+                    p: 1.75,
+                    border: '1px solid rgba(223, 50, 123, 0.1)',
+                    borderRadius: '16px',
+                    background: 'linear-gradient(135deg, rgba(255, 247, 251, 0.72), rgba(255, 255, 255, 0.98))',
+                  }}
+                >
+                  <Typography sx={{ m: 0, color: '#4b136b', fontSize: '1.02rem', fontWeight: 900, lineHeight: 1.3 }}>
+                    {t('auditSummaryHeading')}
+                  </Typography>
+                  <Typography sx={{ color: 'rgba(36, 16, 79, 0.76)', fontSize: '0.96rem', fontWeight: 500, lineHeight: 1.5, overflowWrap: 'anywhere' }}>
+                    {selectedLog.summaryText}
+                  </Typography>
+                </Box>
+
+                <Box
+                  component="section"
+                  sx={{
+                    display: 'grid',
+                    gap: 1,
+                    p: 1.75,
+                    border: '1px solid rgba(223, 50, 123, 0.1)',
+                    borderRadius: '16px',
+                    background: 'linear-gradient(135deg, rgba(255, 247, 251, 0.72), rgba(255, 255, 255, 0.98))',
+                  }}
+                >
+                  <Typography sx={{ m: 0, color: '#4b136b', fontSize: '1.02rem', fontWeight: 900, lineHeight: 1.3 }}>
+                    {t('auditDetailsAria')}
+                  </Typography>
+                  <Box
+                    sx={{
+                      display: 'grid',
+                      gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' },
+                      gap: 1.25,
+                    }}
+                  >
+                    <DetailLine label={t('detailAdmin')} value={selectedLog.adminLabel} />
+                    <DetailLine label={t('detailAdminEmail')} value={selectedLog.adminEmailLabel || t('detailNotSpecified')} />
+                    <DetailLine label={t('detailTimestamp')} value={formatDateTime(selectedLog.timestamp, intlLocale)} />
+                    <DetailLine label={t('detailArea')} value={t(selectedArea.labelKey)} />
+                    <DetailLine label={t('detailTarget')} value={selectedLog.targetId || t('detailNotSpecified')} />
+                  </Box>
+                </Box>
+
+                <Box
+                  component="section"
+                  sx={{
+                    display: 'grid',
+                    gap: 1,
+                    p: 1.75,
+                    border: '1px solid rgba(223, 50, 123, 0.1)',
+                    borderRadius: '16px',
+                    background: 'linear-gradient(135deg, rgba(255, 247, 251, 0.72), rgba(255, 255, 255, 0.98))',
+                  }}
+                >
+                  <Typography sx={{ m: 0, color: '#4b136b', fontSize: '1.02rem', fontWeight: 900, lineHeight: 1.3 }}>
+                    {t('whatChanged')}
+                  </Typography>
+                  {changeRows.length ? (
+                    <Box
+                      sx={{
+                        overflow: 'hidden',
+                        border: '1px solid rgba(223, 50, 123, 0.1)',
+                        borderRadius: '14px',
+                        background: 'rgba(255, 255, 255, 0.78)',
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          display: 'grid',
+                          gridTemplateColumns: '1fr 1.15fr 1.15fr',
+                          gap: 1.25,
+                          px: 1.4,
+                          py: 0.95,
+                          borderBottom: '1px solid rgba(223, 50, 123, 0.1)',
+                          color: 'rgba(36, 16, 79, 0.58)',
+                          fontSize: '0.76rem',
+                          fontWeight: 900,
+                        }}
+                      >
+                        <span>{t('fieldLabel')}</span>
+                        <span>{t('beforeLabel')}</span>
+                        <span>{t('afterLabel')}</span>
+                      </Box>
+                      {changeRows.map((row) => (
+                        <Box
+                          key={`${row.field}-${row.before}-${row.after}`}
+                          sx={{
+                            display: 'grid',
+                            gridTemplateColumns: '1fr 1.15fr 1.15fr',
+                            gap: 1.25,
+                            alignItems: 'start',
+                            px: 1.4,
+                            py: 1,
+                            borderBottom: '1px solid rgba(223, 50, 123, 0.08)',
+                            '&:last-of-type': { borderBottom: 0 },
+                          }}
+                        >
+                          <Typography sx={{ color: '#6d35b8', fontSize: '0.82rem', fontWeight: 900, overflowWrap: 'anywhere' }}>
+                            {row.field}
+                          </Typography>
+                          <Typography sx={{ color: 'rgba(36, 16, 79, 0.62)', fontSize: '0.8rem', fontWeight: 700, overflowWrap: 'anywhere' }}>
+                            {row.before}
+                          </Typography>
+                          <Typography sx={{ color: '#24104f', fontSize: '0.82rem', fontWeight: 800, overflowWrap: 'anywhere' }}>
+                            {row.after}
+                          </Typography>
+                        </Box>
+                      ))}
+                    </Box>
+                  ) : (
+                    <Typography sx={{ color: 'rgba(36, 16, 79, 0.66)', fontWeight: 700 }}>
+                      {t('noFieldDetails')}
+                    </Typography>
+                  )}
+                </Box>
+
+                <Box
+                  component="details"
+                  ref={advancedDetailsRef}
+                  onToggle={(event) => {
+                    if (!event.currentTarget.open) return;
+                    window.requestAnimationFrame(() => {
+                      const scrollBox = detailsScrollRef.current;
+                      const advancedBox = advancedDetailsRef.current;
+                      if (!scrollBox || !advancedBox) return;
+                      scrollBox.scrollTo({
+                        top: advancedBox.offsetTop + advancedBox.offsetHeight - scrollBox.clientHeight + 24,
+                        behavior: 'smooth',
+                      });
+                    });
+                  }}
+                  sx={{ mt: 0.25 }}
+                >
+                  <Typography component="summary" sx={{ cursor: 'pointer', color: '#6d35b8', fontSize: '0.9rem', fontWeight: 850 }}>
+                    {t('advancedDetails')}
+                  </Typography>
+                  <Box
+                    component="pre"
+                    sx={{
+                      mt: 1,
+                      maxHeight: 220,
+                      overflow: 'auto',
+                      p: 1.5,
+                      borderRadius: '14px',
+                      background: '#1f1637',
+                      color: '#f8f3ff',
+                      fontSize: '0.72rem',
+                      whiteSpace: 'pre-wrap',
+                    }}
+                  >
+                    {JSON.stringify(selectedLog.details || {}, null, 2)}
+                  </Box>
+                </Box>
               </Box>
             </Box>
+
           </Box>
         </Box>
       ) : null}
@@ -710,11 +1076,11 @@ export default function AuditLogPage() {
 
 function DetailLine({ label, value }) {
   return (
-    <Box sx={{ display: 'grid', gridTemplateColumns: '110px 1fr', gap: 1.5 }}>
-      <Typography sx={{ color: 'rgba(36, 16, 79, 0.56)', fontSize: '0.8rem', fontWeight: 900 }}>
+    <Box sx={{ minWidth: 0 }}>
+      <Typography sx={{ color: 'rgba(36, 16, 79, 0.56)', fontSize: '0.72rem', fontWeight: 900 }}>
         {label}
       </Typography>
-      <Typography sx={{ minWidth: 0, overflowWrap: 'anywhere', color: '#24104f', fontSize: '0.84rem', fontWeight: 750 }}>
+      <Typography sx={{ mt: 0.2, minWidth: 0, overflowWrap: 'anywhere', color: '#24104f', fontSize: '0.82rem', fontWeight: 750 }}>
         {value}
       </Typography>
     </Box>

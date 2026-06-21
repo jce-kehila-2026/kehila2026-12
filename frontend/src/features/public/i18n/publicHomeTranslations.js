@@ -67,6 +67,7 @@ export const publicHomeTranslations = {
     heroTitle: 'את לא לבד במסע שלך',
     heroSubtitle: 'קהילה תומכת לנשים ולמתמודדות עם סרטן',
     heroDescription: 'מרחב חם, בטוח ומקצועי לתמיכה, ליווי, למידה ותקווה לאורך הדרך.',
+    heroJourneyTitle: 'אנחנו כאן, מהרגע הראשון',
     heroJourneyTitleAccent: 'אנחנו כאן,',
     heroJourneyTitleRest: 'מהרגע הראשון',
     heroJourneyIntro: 'עמותת SHE-NA מלווה נשים המתמודדות עם סרטן ומעניקה להן תמיכה רגשית, מידע אמין וקהילה שמבינה.',
@@ -115,6 +116,7 @@ export const publicHomeTranslations = {
     heroTitle: 'لستِ وحدك في رحلتك',
     heroSubtitle: 'مجتمع داعم للنساء والمُواجِهات للسرطان',
     heroDescription: 'مساحة دافئة وآمنة ومهنية للدعم والمرافقة والتعلّم والأمل طوال الطريق.',
+    heroJourneyTitle: 'نحن هنا، منذ اللحظة الأولى',
     heroJourneyTitleAccent: 'نحن هنا،',
     heroJourneyTitleRest: 'منذ اللحظة الأولى',
     heroJourneyIntro: 'ترافق جمعية SHE-NA النساء اللواتي يواجهن السرطان وتمنحهن دعمًا عاطفيًا، معلومات موثوقة ومجتمعًا يفهمهن.',
@@ -164,6 +166,7 @@ export const publicHomeTranslations = {
     heroSubtitle: 'A supportive community for women facing cancer',
     heroDescription:
       'A warm, safe, and professional space for support, guidance, learning, and hope along the way.',
+    heroJourneyTitle: 'We are here, from the very first moment',
     heroJourneyTitleAccent: 'We are here,',
     heroJourneyTitleRest: 'from the very first moment',
     heroJourneyIntro:

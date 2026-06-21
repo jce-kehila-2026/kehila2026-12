@@ -19,6 +19,7 @@ import {
   fetchUpdates,
   getLastSeenAt,
   markAllAsRead,
+  markUpdatesSeenThrough,
 } from '../admin/services/updatesService';
 import {
   getParticipantLocaleDirection,
@@ -121,7 +122,7 @@ export default function ParticipantHome({ initialView = 'home' }) {
     const uid = effectiveUID || currentUser.uid;
     try {
       const [data, activityItems, seen] = await Promise.all([
-        fetchUpdates(true),
+        fetchUpdates(true, uid),
         fetchActivityNotifications(uid),
         getLastSeenAt(uid),
       ]);
@@ -169,6 +170,27 @@ export default function ParticipantHome({ initialView = 'home' }) {
     }
   }, [currentUser, effectiveUID]);
 
+  const handleNotificationClick = useCallback((notification) => {
+    if (notification?.postId && notification.kind === 'activity') {
+      const notificationSeenAt = notification.createdAt;
+      const currentSeenMs = lastSeenAt?.toMillis?.() ?? Number(lastSeenAt ?? 0);
+      const notificationSeenMs = notificationSeenAt?.toMillis?.() ?? Number(notificationSeenAt ?? 0);
+
+      if (notificationSeenAt && notificationSeenMs > currentSeenMs) {
+        setLastSeenAt(notificationSeenAt);
+        if (currentUser) {
+          markUpdatesSeenThrough(effectiveUID || currentUser.uid, notificationSeenAt).catch((err) => {
+            console.error('Failed to mark notification as read:', err);
+          });
+        }
+      }
+
+      setNotifOpen(false);
+      setCommunityFocusPostId(notification.postId);
+      setActiveView('community');
+    }
+  }, [currentUser, effectiveUID, lastSeenAt]);
+
   const notificationsBell = (
     <div className="participant-notif-wrap" ref={notifBellRef}>
       <button
@@ -186,7 +208,9 @@ export default function ParticipantHome({ initialView = 'home' }) {
           updates={notifications}
           lastSeenAt={lastSeenAt}
           onMarkAllRead={handleMarkAllRead}
+          onNotificationClick={handleNotificationClick}
           onClose={() => setNotifOpen(false)}
+          ignoreOutsideClickRef={notifBellRef}
         />
       ) : null}
     </div>

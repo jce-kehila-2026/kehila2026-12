@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { doc, getDoc, setDoc, updateDoc, serverTimestamp } from 'firebase/firestore';
 import { db, auth } from '../../../firebase';
+import { useAdminLocale } from '../context/AdminLocaleContext';
 import { logAuditEvent } from '../services/auditService';
 import { isTranslationConfigured, translateItems } from '../services/translationService';
 import {
@@ -61,6 +62,7 @@ function emptyDraft() {
 }
 
 export default function PublicHomePageInspirationStoriesTab() {
+  const { t, direction } = useAdminLocale();
   const [loading, setLoading] = useState(true);
   const [stories, setStories] = useState([]);
   const [toast, setToast] = useState({ open: false, severity: 'success', message: '' });
@@ -105,7 +107,7 @@ export default function PublicHomePageInspirationStoriesTab() {
       } catch (err) {
         console.error('Failed to load inspirationalStories:', err);
         if (active) {
-          setToast({ open: true, severity: 'error', message: 'Failed to load stories.' });
+          setToast({ open: true, severity: 'error', message: t('cmsLoadStoriesFailed') });
         }
       } finally {
         if (active) setLoading(false);
@@ -119,9 +121,9 @@ export default function PublicHomePageInspirationStoriesTab() {
 
   const errors = useMemo(() => {
     const next = {};
-    if (!draft.name.trim()) next.name = 'Name is required.';
-    if (!draft.story.trim()) next.story = 'Story is required.';
-    if (!isValidUrlOrEmpty(draft.imageUrl)) next.imageUrl = 'Invalid URL.';
+    if (!draft.name.trim()) next.name = t('cmsNameRequired');
+    if (!draft.story.trim()) next.story = t('cmsStoryRequired');
+    if (!isValidUrlOrEmpty(draft.imageUrl)) next.imageUrl = t('cmsInvalidUrl');
     return next;
   }, [draft]);
 
@@ -217,11 +219,11 @@ export default function PublicHomePageInspirationStoriesTab() {
       setToast({
         open: true,
         severity: 'success',
-        message: editorMode === 'create' ? 'Story added.' : 'Story updated.',
+        message: editorMode === 'create' ? t('cmsStoryAdded') : t('cmsStoryUpdated'),
       });
     } catch (err) {
       console.error('Failed to save story:', err);
-      setToast({ open: true, severity: 'error', message: 'Save failed. Please try again.' });
+      setToast({ open: true, severity: 'error', message: t('cmsSaveFailed') });
     } finally {
       setSaving(false);
     }
@@ -239,10 +241,10 @@ export default function PublicHomePageInspirationStoriesTab() {
         change: 'delete',
       });
       setConfirmDeleteId(null);
-      setToast({ open: true, severity: 'success', message: 'Story deleted.' });
+      setToast({ open: true, severity: 'success', message: t('cmsStoryDeleted') });
     } catch (err) {
       console.error('Failed to delete story:', err);
-      setToast({ open: true, severity: 'error', message: 'Delete failed. Please try again.' });
+      setToast({ open: true, severity: 'error', message: t('cmsDeleteFailed') });
     } finally {
       setDeleting(false);
     }
@@ -261,23 +263,23 @@ export default function PublicHomePageInspirationStoriesTab() {
   }
 
   return (
-    <Box sx={{ pb: 12 }}>
+    <Box sx={{ pb: 12 }} dir={direction}>
       <Paper sx={{ p: 3 }}>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
           <Box>
-            <Typography variant="h6">Inspirational Stories</Typography>
+            <Typography variant="h6">{t('cmsStoriesTitle')}</Typography>
             <Typography variant="body2" color="text.secondary">
-              Story cards shown in the "סיפורי השראה" section on the public home page. New stories appear first.
+              {t('cmsStoriesSubtitle')}
             </Typography>
           </Box>
           <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate}>
-            Add new story
+            {t('cmsAddNewStory')}
           </Button>
         </Box>
 
         {stories.length === 0 ? (
           <Box sx={{ py: 6, textAlign: 'center' }}>
-            <Typography color="text.secondary">No stories yet.</Typography>
+            <Typography color="text.secondary">{t('cmsNoStoriesYet')}</Typography>
           </Box>
         ) : (
           <Stack spacing={1.5} sx={{ mt: 2 }}>
@@ -313,12 +315,12 @@ export default function PublicHomePageInspirationStoriesTab() {
                     {s.story}
                   </Typography>
                 </Box>
-                <IconButton onClick={() => openEdit(s)} aria-label="Edit story">
+                <IconButton onClick={() => openEdit(s)} aria-label={t('cmsEditStoryAria')}>
                   <EditIcon />
                 </IconButton>
                 <IconButton
                   onClick={() => setConfirmDeleteId(s.id)}
-                  aria-label="Delete story"
+                  aria-label={t('cmsDeleteStoryAria')}
                   color="error"
                 >
                   <DeleteOutlineIcon />
@@ -330,11 +332,11 @@ export default function PublicHomePageInspirationStoriesTab() {
       </Paper>
 
       <Dialog open={editorOpen} onClose={closeEditor} fullWidth maxWidth="sm">
-        <DialogTitle>{editorMode === 'create' ? 'Add story' : 'Edit story'}</DialogTitle>
+        <DialogTitle>{editorMode === 'create' ? t('cmsAddStory') : t('cmsEditStory')}</DialogTitle>
         <DialogContent dividers>
           <Stack spacing={2.5} sx={{ mt: 1 }}>
             <TextField
-              label="Name (שם המספרת)"
+              label={t('cmsFieldName')}
               value={draft.name}
               onChange={(e) => setField('name', e.target.value)}
               inputProps={{ maxLength: LIMITS.name }}
@@ -344,7 +346,7 @@ export default function PublicHomePageInspirationStoriesTab() {
               fullWidth
             />
             <TextField
-              label="Occupation / Status (optional, e.g. מתנדבת ותומכת)"
+              label={t('cmsFieldOccupation')}
               value={draft.occupation}
               onChange={(e) => setField('occupation', e.target.value)}
               inputProps={{ maxLength: LIMITS.occupation }}
@@ -352,19 +354,19 @@ export default function PublicHomePageInspirationStoriesTab() {
               fullWidth
             />
             <TextField
-              label="Image URL"
+              label={t('cmsImageUrl')}
               value={draft.imageUrl}
               onChange={(e) => setField('imageUrl', e.target.value)}
               inputProps={{ maxLength: LIMITS.imageUrl }}
               error={showError('imageUrl')}
               helperText={
                 (showError('imageUrl') && errors.imageUrl) ||
-                'Plain text URL (https://…). Leave empty to show initials.'
+                t('cmsStoryImageHelper')
               }
               fullWidth
             />
             <TextField
-              label="Story (גוף הסיפור)"
+              label={t('cmsFieldStory')}
               value={draft.story}
               onChange={(e) => setField('story', e.target.value)}
               inputProps={{ maxLength: LIMITS.story }}
@@ -379,27 +381,27 @@ export default function PublicHomePageInspirationStoriesTab() {
         </DialogContent>
         <DialogActions>
           <Button onClick={closeEditor} disabled={saving}>
-            Cancel
+            {t('cmsCancel')}
           </Button>
           <Button variant="contained" onClick={handleSave} disabled={saving}>
-            {saving ? 'Saving…' : 'Save'}
+            {saving ? t('cmsSaving') : t('cmsSave')}
           </Button>
         </DialogActions>
       </Dialog>
 
       <Dialog open={Boolean(confirmDeleteId)} onClose={() => !deleting && setConfirmDeleteId(null)}>
-        <DialogTitle>Delete this story?</DialogTitle>
+        <DialogTitle>{t('cmsDeleteStoryConfirm')}</DialogTitle>
         <DialogContent>
           <Typography variant="body2" color="text.secondary">
-            This action cannot be undone.
+            {t('cmsCannotUndo')}
           </Typography>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setConfirmDeleteId(null)} disabled={deleting}>
-            Cancel
+            {t('cmsCancel')}
           </Button>
           <Button onClick={handleDelete} color="error" variant="contained" disabled={deleting}>
-            {deleting ? 'Deleting…' : 'Delete'}
+            {deleting ? t('cmsDeleting') : t('cmsDelete')}
           </Button>
         </DialogActions>
       </Dialog>

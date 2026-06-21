@@ -53,7 +53,7 @@ export default function useCommunityFollows({
       if (isFollowed) {
         unfollowCommunityAuthor(localUserId, authorUid).catch(() => {});
       } else {
-        followCommunityAuthor(localUserId, authorUid).catch(() => {});
+        followCommunityAuthor(localUserId, authorUid, { actorName: localUserName }).catch(() => {});
       }
     }
   };

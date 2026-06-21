@@ -19,7 +19,7 @@ const UPDATES_COL = 'updates';
 
 /**
  * Publish a new announcement.
- * @param {{ title: string, body: string, type: string }} data
+ * @param {{ title: string, body: string, type: string, targetUids?: string[] }} data
  * @param {{ uid: string, displayName: string }} adminUser
  */
 export async function createUpdate(data, adminUser) {
@@ -41,7 +41,7 @@ export async function createUpdate(data, adminUser) {
     }
   }
 
-  return addDoc(collection(db, UPDATES_COL), {
+  const doc = {
     title,
     body,
     type: data.type,
@@ -49,18 +49,33 @@ export async function createUpdate(data, adminUser) {
     createdBy: adminUser.uid,
     createdByName: adminUser.displayName || adminUser.email || 'Admin',
     active: true,
-  });
+  };
+
+  // When targetUids is provided, the update is only visible to those users.
+  // An empty array or omission means "send to everyone" (no field stored).
+  if (Array.isArray(data.targetUids) && data.targetUids.length > 0) {
+    doc.targetUids = data.targetUids;
+  }
+
+  return addDoc(collection(db, UPDATES_COL), doc);
 }
 
 /**
  * Fetch all updates, most recent first.
  * Active filtering is done client-side to avoid a composite index requirement.
  * @param {boolean} onlyActive – if true, filters out archived (active === false) docs
+ * @param {string} [forUid] – when supplied, filters out updates whose targetUids
+ *   array exists but does not include this user (targeted updates for other people).
+ *   Updates without a targetUids field are visible to everyone.
  */
-export async function fetchUpdates(onlyActive = true) {
+export async function fetchUpdates(onlyActive = true, forUid) {
   const snap = await getDocs(query(collection(db, UPDATES_COL), orderBy('createdAt', 'desc')));
-  const all = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-  return onlyActive ? all.filter((u) => u.active !== false) : all;
+  let all = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  if (onlyActive) all = all.filter((u) => u.active !== false);
+  if (forUid) {
+    all = all.filter((u) => !u.targetUids || u.targetUids.includes(forUid));
+  }
+  return all;
 }
 
 /**
@@ -92,11 +107,13 @@ export function countUnread(lastSeenAt, updates) {
 
 const ACTIVITY_VERB = {
   comment: 'commented on your post',
+  follow: 'started following you',
   like: 'liked your post',
   support: 'supported your post',
 };
 const ACTIVITY_TITLE = {
   comment: 'New comment',
+  follow: 'New follower',
   like: 'New like',
   support: 'New support',
   birthday_wish: 'Birthday wish',
@@ -106,6 +123,57 @@ const STREAK_NOTIFICATION_TYPES = new Set([
   'streak_grace',
   'streak_lost',
 ]);
+
+const makeExcerpt = (text, max = 80) => {
+  const clean = (text ?? '').replace(/\s+/g, ' ').trim();
+  if (clean.length <= max) return clean;
+  return `${clean.slice(0, max - 1).trimEnd()}…`;
+};
+
+async function isStaleLikeNotification(data) {
+  if (!data.postId || !data.actorId) return false;
+  const postSnap = await getDoc(doc(db, 'community_posts', data.postId));
+  if (!postSnap.exists()) return true;
+
+  const likedBy = postSnap.data().likedBy;
+  return !Array.isArray(likedBy) || !likedBy.includes(data.actorId);
+}
+
+async function isStaleCommentNotification(docId, data) {
+  if (!data.postId || !data.actorId) return false;
+
+  const postSnap = await getDoc(doc(db, 'community_posts', data.postId));
+  if (!postSnap.exists()) return true;
+
+  const deterministicPrefix = `comment-${data.postId}-`;
+  if (docId.startsWith(deterministicPrefix)) {
+    const commentId = docId.slice(deterministicPrefix.length);
+    if (commentId) {
+      const commentSnap = await getDoc(doc(db, 'community_posts', data.postId, 'comments', commentId));
+      return !commentSnap.exists();
+    }
+  }
+
+  const commentsSnap = await getDocs(collection(db, 'community_posts', data.postId, 'comments'));
+  return !commentsSnap.docs.some((commentDoc) => {
+    const comment = commentDoc.data();
+    if (comment.authorId !== data.actorId) return false;
+    if (!data.commentExcerpt) return true;
+    return makeExcerpt(comment.content) === data.commentExcerpt;
+  });
+}
+
+async function isStaleActivityNotification(docSnap) {
+  const data = docSnap.data();
+  try {
+    if (data.type === 'like') return isStaleLikeNotification(data);
+    if (data.type === 'comment') return isStaleCommentNotification(docSnap.id, data);
+  } catch {
+    return false;
+  }
+
+  return false;
+}
 
 /**
  * Map a stored activity_notifications doc into the same display shape the
@@ -121,6 +189,7 @@ function activityDocToItem(docSnap) {
       type: data.type,
       title: data.title ?? ACTIVITY_TITLE.birthday_wish,
       body: data.body ?? data.message ?? '',
+      postId: data.postId ?? null,
       createdAt: data.createdAt,
       active: true,
     };
@@ -133,6 +202,7 @@ function activityDocToItem(docSnap) {
       type: data.type,
       title: data.title ?? 'Community streak',
       body: data.body ?? data.message ?? '',
+      postId: data.postId ?? null,
       createdAt: data.createdAt,
       active: true,
     };
@@ -151,6 +221,7 @@ function activityDocToItem(docSnap) {
     type: data.type,
     title: ACTIVITY_TITLE[data.type] ?? 'New activity',
     body,
+    postId: data.postId ?? null,
     createdAt: data.createdAt,
     active: true,
   };
@@ -168,7 +239,16 @@ export async function fetchActivityNotifications(uid, max = 20) {
     orderBy('createdAt', 'desc'),
     limit(max),
   ));
-  return snap.docs.map(activityDocToItem);
+  const resolvedDocs = await Promise.all(snap.docs.map(async (docSnap) => {
+    const stale = await isStaleActivityNotification(docSnap);
+    if (stale) {
+      deleteDoc(docSnap.ref).catch(() => {});
+      return null;
+    }
+    return docSnap;
+  }));
+
+  return resolvedDocs.filter(Boolean).map(activityDocToItem);
 }
 
 /**
@@ -187,6 +267,14 @@ export async function getLastSeenAt(uid) {
 export async function markAllAsRead(uid) {
   return updateDoc(doc(db, 'users', uid), {
     lastSeenUpdatesAt: serverTimestamp(),
+  });
+}
+
+export async function markUpdatesSeenThrough(uid, seenAt) {
+  if (!uid || !seenAt) return null;
+
+  return updateDoc(doc(db, 'users', uid), {
+    lastSeenUpdatesAt: seenAt,
   });
 }
 
@@ -233,7 +321,7 @@ export async function fetchParticipants() {
         [data.firstName, data.lastName].filter(Boolean).join(' ').trim() ||
         data.name ||
         email;
-      participants.push({ name, email });
+      participants.push({ uid: d.id, name, email });
     }
   }
   participants.sort((a, b) => a.name.localeCompare(b.name));

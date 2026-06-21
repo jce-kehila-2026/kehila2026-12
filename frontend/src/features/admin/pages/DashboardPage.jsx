@@ -1,27 +1,19 @@
-import { useEffect, useMemo, useState } from 'react';
-import { collection, getCountFromServer, getDocs, limit, orderBy, query } from 'firebase/firestore';
+import { useEffect, useState } from 'react';
+import { collection, doc, getCountFromServer, getDoc, getDocs, limit, orderBy, query } from 'firebase/firestore';
 import {
   CalendarDays,
   CalendarCheck,
-  ChevronDown,
   Clock3,
-  Sparkles,
   UsersRound,
 } from 'lucide-react';
 import { db } from '../../../firebase';
 import { useAdmin } from '../context/AdminContext';
+import { useAdminLocale } from '../context/AdminLocaleContext';
 import { getAdminSummary } from '../services/statsService';
+
 import { getAllEvents } from '../services/eventService';
 import { getAllAppointments } from '../services/appointmentService';
 import './DashboardPage.css';
-
-const EVENT_COLORS = {
-  workshops: '#8B5CF6',
-  appointments: '#E05297',
-  upcoming: '#FDBA74',
-  completed: '#86D17C',
-  cancelled: '#A3A3A3',
-};
 
 const FALLBACK_ACTIVITY = [
   {
@@ -115,22 +107,35 @@ function humanizeTarget(log) {
     .slice(0, 34);
 }
 
+function cleanNameCandidate(value) {
+  const text = String(value || '').trim();
+  if (!text || text.includes('@')) return '';
+  return text;
+}
+
+function humanizeEmailLocal(email) {
+  const local = String(email || '').split('@')[0].trim();
+  if (!local) return '';
+
+  return local
+    .replace(/[._-]+/g, ' ')
+    .replace(/\d+$/g, '')
+    .trim()
+    .replace(/\b\w/g, (letter) => letter.toUpperCase());
+}
+
+function getProfileDisplayName(profile) {
+  return (
+    cleanNameCandidate(profile?.fullName) ||
+    cleanNameCandidate(profile?.displayName) ||
+    cleanNameCandidate(profile?.name) ||
+    cleanNameCandidate(profile?.userName) ||
+    cleanNameCandidate(profile?.username)
+  );
+}
+
 function getEventType(event) {
   return String(event.eventType || event.type || event.category || '').toLowerCase();
-}
-
-function isCompleted(event) {
-  const status = String(event.status || '').toLowerCase();
-  if (status.includes('complete')) return true;
-  const date = toDate(event.date || event.startDate || event.eventDate);
-  return date ? date < new Date() : false;
-}
-
-function isUpcoming(event) {
-  const status = String(event.status || '').toLowerCase();
-  if (status.includes('upcoming') || status.includes('published')) return true;
-  const date = toDate(event.date || event.startDate || event.eventDate);
-  return date ? date >= new Date() : false;
 }
 
 function MetricCard({ accent, icon, label, value, subtext }) {
@@ -148,16 +153,35 @@ function MetricCard({ accent, icon, label, value, subtext }) {
 
 export default function DashboardPage() {
   const { currentUser } = useAdmin();
+  const { t } = useAdminLocale();
   const [stats, setStats] = useState({ events: 0, users: 0, bookings: 0 });
-  const [events, setEvents] = useState([]);
   const [bookings, setBookings] = useState([]);
   const [activity, setActivity] = useState([]);
+  const [adminProfileName, setAdminProfileName] = useState('');
 
   useEffect(() => {
     let ignore = false;
 
     async function loadDashboard() {
       try {
+        let profileName = '';
+        if (currentUser?.uid) {
+          const profileRefs = [
+            doc(db, 'users', currentUser.uid),
+            doc(db, 'admins', currentUser.uid),
+          ];
+          if (currentUser.email) {
+            profileRefs.push(doc(db, 'admins', currentUser.email));
+            profileRefs.push(doc(db, 'admins', currentUser.email.toLowerCase()));
+          }
+
+          const profileResults = await Promise.allSettled(profileRefs.map((profileRef) => getDoc(profileRef)));
+          profileName = profileResults.reduce((resolvedName, result) => {
+            if (resolvedName || result.status !== 'fulfilled' || !result.value.exists()) return resolvedName;
+            return getProfileDisplayName(result.value.data());
+          }, '');
+        }
+
         const [summary, allEvents, legacyAppointments] = await Promise.all([
           getAdminSummary(),
           getAllEvents(),
@@ -213,7 +237,7 @@ export default function DashboardPage() {
           .slice(0, 4);
 
         if (!ignore) {
-          setEvents(allEvents);
+          setAdminProfileName(profileName);
           setBookings(bookingRows);
           setActivity(
             logsSnap.docs.length
@@ -242,6 +266,7 @@ export default function DashboardPage() {
       } catch (error) {
         console.error('Failed to load dashboard:', error);
         if (!ignore) {
+          setAdminProfileName('');
           setBookings([]);
           setActivity(FALLBACK_ACTIVITY);
         }
@@ -252,111 +277,72 @@ export default function DashboardPage() {
     return () => {
       ignore = true;
     };
-  }, []);
+  }, [currentUser?.email, currentUser?.uid]);
 
-  const eventOverview = useMemo(() => {
-    const total = Math.max(events.length || stats.events || 0, 1);
-    const workshops = events.filter((event) => getEventType(event).includes('workshop')).length;
-    const appointments = events.filter((event) => getEventType(event).includes('appointment')).length;
-    const cancelled = events.filter((event) => String(event.status || '').toLowerCase().includes('cancel')).length;
-    const completed = events.filter(isCompleted).length;
-    const upcoming = events.filter(isUpcoming).length;
+  const adminName =
+    adminProfileName ||
+    cleanNameCandidate(currentUser?.displayName) ||
+    humanizeEmailLocal(currentUser?.email) ||
+    'Admin';
 
-    const rows = [
-      { key: 'workshops', label: 'Workshops', value: workshops },
-      { key: 'appointments', label: 'Appointments', value: appointments },
-      { key: 'upcoming', label: 'Upcoming', value: upcoming },
-      { key: 'completed', label: 'Completed', value: completed },
-      { key: 'cancelled', label: 'Cancelled', value: cancelled },
-    ];
-
-    return { total, rows };
-  }, [events, stats.events]);
-
-  const donutStops = useMemo(() => {
-    let cursor = 0;
-    return eventOverview.rows
-      .map((row) => {
-        const size = Math.max((row.value / eventOverview.total) * 100, 2);
-        const start = cursor;
-        cursor += size;
-        return `${EVENT_COLORS[row.key]} ${start}% ${Math.min(cursor, 100)}%`;
-      })
-      .join(', ');
-  }, [eventOverview]);
-
-  const adminName = currentUser?.email?.split('@')[0] || currentUser?.displayName || 'talajabaren12';
+  const typeLabel = (type) => (type === 'Appointment' ? t('typeAppointment') : t('typeWorkshop'));
+  const statusLabel = (status) => {
+    const key = {
+      confirmed: 'statusConfirmed',
+      pending: 'statusPending',
+      cancelled: 'statusCancelled',
+      canceled: 'statusCancelled',
+      completed: 'statusCompleted',
+    }[String(status).toLowerCase()];
+    return key ? t(key) : status;
+  };
+  const actionLabel = (action) => {
+    const key = {
+      CREATE: 'actionCreate',
+      UPDATE: 'actionUpdate',
+      DELETE: 'actionDelete',
+      REORDER: 'actionReorder',
+    }[action];
+    return key ? t(key) : action;
+  };
 
   return (
     <section className="admin-dashboard-page">
       <header className="admin-dashboard-hero">
         <div>
-          <h1><span aria-hidden="true">👋</span> Welcome back, {adminName}</h1>
-          <p>Here's an overview of the She-Na platform</p>
+          <h1>{t('dashWelcome').replace('{name}', adminName)}</h1>
         </div>
-        <button className="admin-dashboard-date-pill" type="button">
-          <CalendarDays size={18} />
-          May 26, 2026
-          <ChevronDown size={16} />
-        </button>
       </header>
 
-      <section className="admin-dashboard-metrics" aria-label="Dashboard metrics">
+      <section className="admin-dashboard-metrics" aria-label={t('dashMetricsAria')}>
         <MetricCard
           accent="purple"
           icon={<CalendarDays size={25} />}
-          label="Total Events"
+          label={t('dashTotalEvents')}
           value={stats.events}
-          subtext="Active platform events"
+          subtext={t('dashActivePlatformEvents')}
         />
         <MetricCard
           accent="pink"
           icon={<UsersRound size={25} />}
-          label="Registered Users"
+          label={t('dashRegisteredUsers')}
           value={stats.users}
-          subtext="Community members"
+          subtext={t('dashCommunityMembers')}
         />
         <MetricCard
           accent="peach"
           icon={<CalendarCheck size={25} />}
-          label="Total Bookings"
+          label={t('dashTotalBookings')}
           value={stats.bookings}
-          subtext="Workshop & appointment bookings"
+          subtext={t('dashBookingsSubtext')}
         />
       </section>
 
       <section className="admin-dashboard-main-grid">
-        <article className="admin-dashboard-card admin-dashboard-overview">
-          <div className="admin-dashboard-card__header">
-            <h2>Events Overview</h2>
-            <a href="/admin/events">View all events</a>
-          </div>
-          <div className="admin-dashboard-overview__body">
-            <div
-              className="admin-dashboard-donut"
-              style={{ '--donut-stops': donutStops }}
-              aria-label={`${eventOverview.total} total events`}
-            >
-              <strong>{eventOverview.total}</strong>
-              <span>Total</span>
-            </div>
-            <div className="admin-dashboard-breakdown">
-              {eventOverview.rows.map((row) => (
-                <div className="admin-dashboard-breakdown__row" key={row.key}>
-                  <span style={{ '--dot-color': EVENT_COLORS[row.key] }}>{row.label}</span>
-                  <strong>
-                    {row.value} ({Math.round((row.value / eventOverview.total) * 100)}%)
-                  </strong>
-                </div>
-              ))}
-            </div>
-          </div>
-        </article>
-
         <article className="admin-dashboard-card admin-dashboard-bookings">
           <div className="admin-dashboard-card__header">
-            <h2>Recent Bookings</h2>
-            <a href="/admin/appointments">View all bookings</a>
+            <h2>{t('dashRecentBookings')}</h2>
+            <a href="/admin/appointments">{t('dashViewAllBookings')}</a>
           </div>
           <div className="admin-dashboard-booking-list">
             {bookings.map((booking) => (
@@ -369,7 +355,7 @@ export default function DashboardPage() {
                   <span>{booking.participant}</span>
                 </div>
                 <span className={`admin-dashboard-type admin-dashboard-type--${booking.type.toLowerCase()}`}>
-                  {booking.type}
+                  {typeLabel(booking.type)}
                 </span>
                 <div className="admin-dashboard-booking__date">
                   <CalendarDays size={17} />
@@ -378,7 +364,7 @@ export default function DashboardPage() {
                   <small>{booking.time}</small>
                 </div>
                 <span className={`admin-dashboard-status admin-dashboard-status--${String(booking.status).toLowerCase()}`}>
-                  {booking.status}
+                  {statusLabel(booking.status)}
                 </span>
               </div>
             ))}
@@ -388,16 +374,16 @@ export default function DashboardPage() {
 
       <article className="admin-dashboard-card admin-dashboard-activity">
         <div className="admin-dashboard-card__header">
-          <h2>Recent Activity</h2>
-          <a href="/admin/audit-log">View all activity</a>
+          <h2>{t('dashRecentActivity')}</h2>
+          <a href="/admin/audit-log">{t('dashViewAllActivity')}</a>
         </div>
         <div className="admin-dashboard-activity__table">
           <div className="admin-dashboard-activity__head">
-            <span>Time</span>
-            <span>Admin</span>
-            <span>Action</span>
-            <span>Target</span>
-            <span>Details</span>
+            <span>{t('colTime')}</span>
+            <span>{t('colAdmin')}</span>
+            <span>{t('colAction')}</span>
+            <span>{t('colTarget')}</span>
+            <span>{t('colDetails')}</span>
           </div>
           {activity.map((item) => (
             <div className="admin-dashboard-activity__row" key={item.id}>
@@ -408,7 +394,7 @@ export default function DashboardPage() {
               </span>
               <span>
                 <b className={`admin-dashboard-action admin-dashboard-action--${item.action.toLowerCase()}`}>
-                  {item.action}
+                  {actionLabel(item.action)}
                 </b>
               </span>
               <span>{item.target}</span>
@@ -416,7 +402,6 @@ export default function DashboardPage() {
             </div>
           ))}
         </div>
-        <Sparkles className="admin-dashboard-activity__sparkle" size={24} aria-hidden="true" />
       </article>
     </section>
   );

@@ -153,12 +153,6 @@ function validatePersonalDetailsForm(formData, t) {
   if (!email) errors.email = t("validationEmailRequired");
   else if (!isValidEmail(email)) errors.email = t("validationEmail");
 
-  const city = (formData.city || "").trim();
-  if (!city) errors.city = t("validationCityRequired");
-
-  const streetAddress = (formData.streetAddress || "").trim();
-  if (!streetAddress) errors.streetAddress = t("validationStreetAddressRequired");
-
   if (!isValidBirthDateFormValue(formData.birthDate)) {
     errors.birthDate = t("validationBirthDateRequired");
   }
@@ -176,9 +170,20 @@ function validatePersonalDetailsForm(formData, t) {
   return errors;
 }
 
+function resolveFormNames(data) {
+  const p = data || {};
+  if ("firstName" in p || "lastName" in p) {
+    return {
+      firstName: p.firstName ?? "",
+      lastName: p.lastName ?? "",
+    };
+  }
+  return splitFullName(p.fullName);
+}
+
 function profileToFormSnapshot(profile) {
   const p = profile || {};
-  const { firstName, lastName } = splitFullName(p.fullName);
+  const { firstName, lastName } = resolveFormNames(p);
   return {
     firstName,
     lastName,

@@ -27,9 +27,28 @@ import {
   removeRegistration,
   updateRegistrationStatus,
 } from '../services/registrationService';
+import { useAdminLocale } from '../context/AdminLocaleContext';
 import './EventsPage.css';
 
+const INTL_LOCALE_BY_LANG = { he: 'he-IL', en: 'en' };
+
 const STATUS_OPTIONS = ['published', 'draft', 'hidden', 'archived', 'cancelled'];
+
+const EV_STATUS_LABEL_KEYS = {
+  published: 'evStatusPublished',
+  draft: 'evStatusDraft',
+  hidden: 'evStatusHidden',
+  archived: 'evStatusArchived',
+  cancelled: 'evStatusCancelled',
+};
+
+const PARTICIPANT_STATUS_LABEL_KEYS = {
+  confirmed: 'pStatusConfirmed',
+  pending: 'pStatusPending',
+  cancelled: 'pStatusCancelled',
+  completed: 'pStatusCompleted',
+  waitlist: 'pStatusWaitlist',
+};
 
 const WEEKDAY_OPTIONS = [
   { label: 'Sunday', value: 0 },
@@ -42,22 +61,10 @@ const WEEKDAY_OPTIONS = [
 ];
 
 const EVENT_FORM_STEPS = [
-  {
-    title: 'Basic Information',
-    description: 'Event title, type and summary',
-  },
-  {
-    title: 'Scheduling',
-    description: 'Date, time and recurring options',
-  },
-  {
-    title: 'Event Setup',
-    description: 'Location, capacity, image and settings',
-  },
-  {
-    title: 'Review & Publish',
-    description: 'Review and publish your event',
-  },
+  { titleKey: 'evStepBasicTitle', descKey: 'evStepBasicDesc' },
+  { titleKey: 'evStepSchedulingTitle', descKey: 'evStepSchedulingDesc' },
+  { titleKey: 'evStepSetupTitle', descKey: 'evStepSetupDesc' },
+  { titleKey: 'evStepReviewTitle', descKey: 'evStepReviewDesc' },
 ];
 
 function createEmptySlot() {
@@ -149,21 +156,21 @@ function composeDateTime(date, time) {
   return new Date(`${date}T${time}`);
 }
 
-function formatDate(value) {
+function formatDate(value, intlLocale = 'en', tbd = 'Date TBD') {
   const date = toDate(value);
-  if (!date) return 'Date TBD';
-  return new Intl.DateTimeFormat('en', { month: 'short', day: '2-digit', year: 'numeric' }).format(date);
+  if (!date) return tbd;
+  return new Intl.DateTimeFormat(intlLocale, { month: 'short', day: '2-digit', year: 'numeric' }).format(date);
 }
 
-function formatTimeRange(startValue, endValue) {
+function formatTimeRange(startValue, endValue, intlLocale = 'en', tbd = 'Time TBD') {
   const startTime = typeof startValue === 'string' ? normalizeTimeString(startValue) : '';
   const endTime = typeof endValue === 'string' ? normalizeTimeString(endValue) : '';
   if (startTime) return endTime ? `${startTime} - ${endTime}` : startTime;
 
   const start = toDate(startValue);
   const end = toDate(endValue);
-  if (!start) return 'Time TBD';
-  const formatter = new Intl.DateTimeFormat('en', { hour: '2-digit', minute: '2-digit', hour12: false });
+  if (!start) return tbd;
+  const formatter = new Intl.DateTimeFormat(intlLocale, { hour: '2-digit', minute: '2-digit', hour12: false });
   return end ? `${formatter.format(start)} - ${formatter.format(end)}` : formatter.format(start);
 }
 
@@ -347,16 +354,17 @@ function getLastProviderSlot(providers) {
   return [...providers.flatMap((provider) => provider.slots || [])].reverse().find((slot) => slot.endTime || slot.startTime) || null;
 }
 
-function formatScheduleDate(event) {
+function formatScheduleDate(event, t, intlLocale) {
   if (event?.isRecurringTemplate || event?.recurrence === 'weekly') {
-    const dayName = event.weeklyDay || getWeekdayName(event.weeklyDayIndex);
-    return dayName ? `Every ${dayName}` : 'Weekly schedule';
+    const idx = getWeekdayIndex(event.weeklyDayIndex ?? event.weeklyDay);
+    const dayName = idx !== '' ? t(`wd${idx}`) : '';
+    return dayName ? t('evEveryDay').replace('{day}', dayName) : t('evWeeklySchedule');
   }
-  return formatDate(event.startTime || event.date);
+  return formatDate(event.startTime || event.date, intlLocale, t('evDateTBD'));
 }
 
-function formatScheduleTime(event) {
-  return formatTimeRange(event.startTime || event.date, event.endTime);
+function formatScheduleTime(event, intlLocale, tbd) {
+  return formatTimeRange(event.startTime || event.date, event.endTime, intlLocale, tbd);
 }
 
 function getParticipantName(registration) {
@@ -385,10 +393,10 @@ function getInitials(nameOrEmail) {
   return parts.slice(0, 2).map((part) => part[0]).join('').toUpperCase() || 'UP';
 }
 
-function formatRegistrationDate(value) {
+function formatRegistrationDate(value, intlLocale = 'en', tbd = 'Registration date TBD') {
   const date = toDate(value);
-  if (!date) return 'Registration date TBD';
-  return new Intl.DateTimeFormat('en', {
+  if (!date) return tbd;
+  return new Intl.DateTimeFormat(intlLocale, {
     month: 'short',
     day: '2-digit',
     year: 'numeric',
@@ -407,20 +415,20 @@ function getBookingDateKey(registration) {
   return registration.dateKey || toLocalDateKey(registration.selectedDate || registration.startAt || registration.date);
 }
 
-function formatScheduleTimeOnly(value) {
+function formatScheduleTimeOnly(value, intlLocale = 'en', tbd = 'Time TBD') {
   const normalized = typeof value === 'string' ? normalizeTimeString(value) : '';
   if (normalized) {
     const [hour, minute] = normalized.split(':');
     const date = new Date();
     date.setHours(Number(hour), Number(minute), 0, 0);
-    return new Intl.DateTimeFormat('en', { hour: '2-digit', minute: '2-digit' }).format(date);
+    return new Intl.DateTimeFormat(intlLocale, { hour: '2-digit', minute: '2-digit' }).format(date);
   }
   const date = toDate(value);
-  return date ? new Intl.DateTimeFormat('en', { hour: '2-digit', minute: '2-digit' }).format(date) : 'Time TBD';
+  return date ? new Intl.DateTimeFormat(intlLocale, { hour: '2-digit', minute: '2-digit' }).format(date) : tbd;
 }
 
-function getAppointmentTime(registration) {
-  return formatScheduleTimeOnly(registration.selectedTime || registration.startAt || registration.startTime || registration.time);
+function getAppointmentTime(registration, intlLocale, tbd) {
+  return formatScheduleTimeOnly(registration.selectedTime || registration.startAt || registration.startTime || registration.time, intlLocale, tbd);
 }
 
 function getAppointmentSortTime(registration) {
@@ -443,10 +451,10 @@ function getAppointmentStatus(registration) {
   return status === 'waitlist' ? 'pending' : status;
 }
 
-function formatDateLabel(dateKey) {
+function formatDateLabel(dateKey, intlLocale = 'en', fallback = 'Selected date') {
   const date = toDate(dateKey);
-  if (!date) return dateKey || 'Selected date';
-  return new Intl.DateTimeFormat('en', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }).format(date);
+  if (!date) return dateKey || fallback;
+  return new Intl.DateTimeFormat(intlLocale, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' }).format(date);
 }
 
 function getNearestUpcomingDateKey(dateKeys) {
@@ -460,6 +468,12 @@ function csvEscape(value) {
 }
 
 export default function EventsPage() {
+  const { t, lang, direction } = useAdminLocale();
+  const intlLocale = INTL_LOCALE_BY_LANG[lang] || 'en';
+  const evStatusLabel = (s) => (EV_STATUS_LABEL_KEYS[s] ? t(EV_STATUS_LABEL_KEYS[s]) : s);
+  const pStatusLabel = (s) => (PARTICIPANT_STATUS_LABEL_KEYS[s] ? t(PARTICIPANT_STATUS_LABEL_KEYS[s]) : s);
+  const typeLabel = (type) => (type === 'appointment' ? t('apTypeAppointment') : t('apTypeWorkshop'));
+  const weekdayLabel = (idx) => (idx === '' || idx === null || idx === undefined ? '' : t(`wd${idx}`));
   const [searchParams, setSearchParams] = useSearchParams();
   const [events, setEvents] = useState([]);
   const [counts, setCounts] = useState({});
@@ -499,11 +513,11 @@ export default function EventsPage() {
       }
     } catch (err) {
       console.error('Failed to fetch events:', err);
-      setToast('Could not load events.');
+      setToast(t('evToastCouldNotLoad'));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   useEffect(() => {
     fetchEvents();
@@ -810,8 +824,8 @@ export default function EventsPage() {
     } catch (err) {
       console.error('Failed to fetch registrations:', err);
       setRegistrations([]);
-      setRegistrationsError('Could not load participants.');
-      setToast('Could not load participants.');
+      setRegistrationsError(t('evToastCouldNotLoadParticipants'));
+      setToast(t('evToastCouldNotLoadParticipants'));
     } finally {
       setRegistrationsLoading(false);
     }
@@ -836,22 +850,22 @@ export default function EventsPage() {
     const endDate = isRecurring ? null : composeDateTime(form.date, form.endTime);
 
     if (!form.title.trim()) {
-      setToast('Please add an event title.');
+      setToast(t('evToastAddTitle'));
       return;
     }
 
     if (isRecurring && form.weeklyDayIndex === '') {
-      setToast('Please choose the weekly day.');
+      setToast(t('evToastChooseDay'));
       return;
     }
 
     if (isRecurring && !firstSlot) {
-      setToast('Please add at least one provider time slot.');
+      setToast(t('evToastAddSlot'));
       return;
     }
 
     if (!isRecurring && !startDate) {
-      setToast('Please add a valid date and start time.');
+      setToast(t('evToastAddDateTime'));
       return;
     }
 
@@ -878,30 +892,30 @@ export default function EventsPage() {
     try {
       if (editingEvent) {
         await updateEvent(editingEvent.id, payload);
-        setToast('Event updated.');
+        setToast(t('evToastUpdated'));
       } else {
         await createEvent(payload);
-        setToast('Event created.');
+        setToast(t('evToastCreated'));
       }
       closeDrawer();
       fetchEvents();
     } catch (err) {
       console.error('Save event failed:', err);
-      setToast('Could not save event.');
+      setToast(t('evToastCouldNotSave'));
     } finally {
       setSaving(false);
     }
   }
 
   async function handleDelete(id, title) {
-    if (!window.confirm(`Are you sure you want to delete "${title || 'this event'}"?`)) return;
+    if (!window.confirm(t('evConfirmDelete').replace('{title}', title || t('evThisEvent')))) return;
     try {
       await deleteEvent(id, title);
-      setToast('Event deleted.');
+      setToast(t('evToastDeleted'));
       fetchEvents();
     } catch (err) {
       console.error('Delete event failed:', err);
-      setToast('Could not delete event.');
+      setToast(t('evToastCouldNotDelete'));
     }
   }
 
@@ -916,10 +930,10 @@ export default function EventsPage() {
             : item
         ))
       );
-      setToast('Booking status updated.');
+      setToast(t('evToastStatusUpdated'));
     } catch (err) {
       console.error('Status update failed:', err);
-      setToast('Could not update booking status.');
+      setToast(t('evToastCouldNotUpdateStatus'));
     }
   }
 
@@ -930,7 +944,7 @@ export default function EventsPage() {
   async function handleRemoveParticipant(registration) {
     if (!selectedEvent) return;
     const name = getParticipantName(registration);
-    if (!window.confirm(`Remove "${name}" from this event?`)) return;
+    if (!window.confirm(t('evConfirmRemoveParticipant').replace('{name}', name))) return;
     try {
       await removeRegistration(registration.id, name, selectedEvent.id);
       setRegistrations((current) => current.filter((item) => item.id !== registration.id));
@@ -938,10 +952,10 @@ export default function EventsPage() {
         ...current,
         [selectedEvent.id]: Math.max(0, (current[selectedEvent.id] ?? registrations.length) - 1),
       }));
-      setToast('Participant removed.');
+      setToast(t('evToastParticipantRemoved'));
     } catch (err) {
       console.error('Remove participant failed:', err);
-      setToast('Could not remove participant.');
+      setToast(t('evToastCouldNotRemove'));
     }
   }
 
@@ -955,33 +969,33 @@ export default function EventsPage() {
   function handleSendReminderAll() {
     const emails = visibleParticipantRows.map(getParticipantEmail).filter(Boolean).join(',');
     if (emails) {
-      window.location.href = `mailto:${emails}?subject=${encodeURIComponent('She-Na event reminder')}`;
+      window.location.href = `mailto:${emails}?subject=${encodeURIComponent(t('evReminderSubject'))}`;
     } else {
-      setToast('No participant emails available.');
+      setToast(t('evToastNoEmails'));
     }
   }
 
   function handleExportCsv() {
     const header = selectedEventIsAppointment
-      ? ['Time', 'Name', 'Email', 'Phone', 'Provider', 'Status', 'Notes']
-      : ['Name', 'Email', 'Phone', 'Status', 'Registered At'];
+      ? [t('csvTime'), t('csvName'), t('csvEmail'), t('csvPhone'), t('csvProvider'), t('csvStatus'), t('csvNotes')]
+      : [t('csvName'), t('csvEmail'), t('csvPhone'), t('csvStatus'), t('csvRegisteredAt')];
     const rows = visibleParticipantRows.map((registration) => (
       selectedEventIsAppointment
         ? [
-          getAppointmentTime(registration),
+          getAppointmentTime(registration, intlLocale, t('evTimeTBD')),
           getParticipantName(registration),
           getParticipantEmail(registration),
           getParticipantPhone(registration),
           getRegistrationProviderName(registration),
-          getAppointmentStatus(registration),
+          pStatusLabel(getAppointmentStatus(registration)),
           registration.notes || registration.adminNotes || registration.specialRequests || '',
         ]
         : [
           getParticipantName(registration),
           getParticipantEmail(registration),
           getParticipantPhone(registration),
-          getParticipantStatus(registration),
-          formatRegistrationDate(registration.registeredAt),
+          pStatusLabel(getParticipantStatus(registration)),
+          formatRegistrationDate(registration.registeredAt, intlLocale, t('pdRegistrationDateTBD')),
         ]
     ));
     const csv = [header, ...rows].map((row) => row.map(csvEscape).join(',')).join('\n');
@@ -995,48 +1009,48 @@ export default function EventsPage() {
   }
 
   return (
-    <section className="admin-events-page" dir="ltr">
+    <section className="admin-events-page" dir={direction}>
       <div className={`admin-events-shell${drawerOpen || participantsDrawerOpen ? ' has-drawer' : ''}${participantsDrawerOpen ? ' has-participants-drawer' : ''}`}>
         <main className="admin-events-main">
           <header className="admin-events-header">
             <div>
-              <h1>Events Management</h1>
-              <p>Create, update, and manage platform events.</p>
+              <h1>{t('evTitle')}</h1>
+              <p>{t('evSubtitle')}</p>
             </div>
           </header>
 
-          <section className="admin-events-stats" aria-label="Event summary">
+          <section className="admin-events-stats" aria-label={t('evSummaryAria')}>
             <article className="admin-events-stat admin-events-stat--pink">
               <header>
                 <span className="admin-events-stat__icon"><Groups /></span>
                 <span className="admin-events-stat__menu">...</span>
               </header>
-              <p>Workshops</p>
+              <p>{t('evWorkshops')}</p>
               <strong>{workshopsCount}</strong>
               <span className="admin-events-stat__bar"><i style={{ width: `${typedEvents.length ? (workshopsCount / typedEvents.length) * 100 : 0}%` }} /></span>
-              <small>{workshopsCount} {workshopsCount === 1 ? 'event' : 'events'}</small>
+              <small>{workshopsCount} {workshopsCount === 1 ? t('evEventOne') : t('evEventMany')}</small>
             </article>
             <article className="admin-events-stat admin-events-stat--purple">
               <header>
                 <span className="admin-events-stat__icon"><EventAvailable /></span>
                 <span className="admin-events-stat__menu">...</span>
               </header>
-              <p>Appointments</p>
+              <p>{t('evAppointments')}</p>
               <strong>{appointmentsCount}</strong>
               <span className="admin-events-stat__bar"><i style={{ width: `${typedEvents.length ? (appointmentsCount / typedEvents.length) * 100 : 0}%` }} /></span>
-              <small>{appointmentsCount} {appointmentsCount === 1 ? 'event' : 'events'}</small>
+              <small>{appointmentsCount} {appointmentsCount === 1 ? t('evEventOne') : t('evEventMany')}</small>
             </article>
           </section>
 
           <div className="admin-events-tabs-row">
-            <div className="admin-events-tabs" aria-label="Event type tabs">
+            <div className="admin-events-tabs" aria-label={t('evTypeTabsAria')}>
               <button
                 className={activeTab === 'workshop' ? 'is-active' : ''}
                 type="button"
                 onClick={() => changeTab('workshop')}
               >
                 <span><Groups fontSize="small" /></span>
-                Workshops
+                {t('evWorkshops')}
               </button>
               <button
                 className={activeTab === 'appointment' ? 'is-active' : ''}
@@ -1044,46 +1058,46 @@ export default function EventsPage() {
                 onClick={() => changeTab('appointment')}
               >
                 <span><CalendarMonth fontSize="small" /></span>
-                Appointments
+                {t('evAppointments')}
               </button>
             </div>
             <button className="admin-events-primary-btn" type="button" onClick={openCreate} id="btn-create-event">
-              <span className="admin-events-primary-btn__label">Add New Event</span>
+              <span className="admin-events-primary-btn__label">{t('evAddNewEvent')}</span>
               <span className="admin-events-primary-btn__plus">+</span>
             </button>
           </div>
 
-          <section className="admin-events-filterbar" aria-label="Search and filter events">
+          <section className="admin-events-filterbar" aria-label={t('evSearchFilterAria')}>
             <label className="admin-events-search">
               <Search />
               <input
                 type="search"
-                placeholder="Search by title..."
+                placeholder={t('evSearchByTitle')}
                 value={searchTerm}
                 onChange={(event) => setSearchTerm(event.target.value)}
               />
             </label>
             <label>
-              <span>Status</span>
+              <span>{t('evStatusLabel')}</span>
               <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
-                <option value="all">All Statuses</option>
+                <option value="all">{t('evAllStatuses')}</option>
                 {STATUS_OPTIONS.map((status) => (
-                  <option key={status} value={status}>{status[0].toUpperCase() + status.slice(1)}</option>
+                  <option key={status} value={status}>{evStatusLabel(status)}</option>
                 ))}
               </select>
             </label>
             <label>
-              <span>Sort by</span>
+              <span>{t('evSortBy')}</span>
               <select value={sortBy} onChange={(event) => setSortBy(event.target.value)}>
-                <option value="newest">Start Date (Newest)</option>
-                <option value="oldest">Start Date (Oldest)</option>
-                <option value="title">Title</option>
+                <option value="newest">{t('evSortNewest')}</option>
+                <option value="oldest">{t('evSortOldest')}</option>
+                <option value="title">{t('evSortTitle')}</option>
               </select>
             </label>
-            <button className="admin-events-icon-btn admin-events-filter-btn" type="button" aria-label="Open advanced filters">
+            <button className="admin-events-icon-btn admin-events-filter-btn" type="button" aria-label={t('evAdvancedFilters')}>
               <FilterList />
             </button>
-            <button className="admin-events-icon-btn" type="button" onClick={fetchEvents} aria-label="Refresh events">
+            <button className="admin-events-icon-btn" type="button" onClick={fetchEvents} aria-label={t('evRefresh')}>
               <Refresh />
             </button>
           </section>
@@ -1093,12 +1107,12 @@ export default function EventsPage() {
               <table className="admin-events-table">
                 <thead>
                   <tr>
-                    <th>Event</th>
-                    <th>Date &amp; Time</th>
-                    <th>Location</th>
-                    <th>Capacity</th>
-                    <th>Status</th>
-                    <th>Actions</th>
+                    <th>{t('evColEvent')}</th>
+                    <th>{t('evColDateTime')}</th>
+                    <th>{t('evColLocation')}</th>
+                    <th>{t('evColCapacity')}</th>
+                    <th>{t('evColStatus')}</th>
+                    <th>{t('evColActions')}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1125,15 +1139,15 @@ export default function EventsPage() {
                                 <span className="admin-events-thumb-fallback"><Category /></span>
                               )}
                               <div>
-                                <strong>{event.title || 'Untitled Event'}</strong>
-                                <span>{event.category || (event.eventType === 'appointment' ? 'Appointment' : 'Workshop')}</span>
+                                <strong>{event.title || t('evUntitledEvent')}</strong>
+                                <span>{event.category || typeLabel(event.eventType)}</span>
                               </div>
                             </div>
                           </td>
                           <td>
                             <div className="admin-events-meta">
-                              <span><CalendarMonth /> {formatScheduleDate(event)}</span>
-                              <span><Schedule /> {formatScheduleTime(event)}</span>
+                              <span><CalendarMonth /> {formatScheduleDate(event, t, intlLocale)}</span>
+                              <span><Schedule /> {formatScheduleTime(event, intlLocale, t('evTimeTBD'))}</span>
                             </div>
                           </td>
                           <td>
@@ -1150,18 +1164,18 @@ export default function EventsPage() {
                           </td>
                           <td>
                             <span className={`admin-events-status admin-events-status--${event.status}`}>
-                              {event.status}
+                              {evStatusLabel(event.status)}
                             </span>
                           </td>
                           <td>
                             <div className="admin-events-actions">
-                              <button type="button" onClick={() => openEdit(event)} aria-label="Edit event">
+                              <button type="button" onClick={() => openEdit(event)} aria-label={t('evEditEvent')}>
                                 <EditOutlined />
                               </button>
-                              <button type="button" onClick={() => openParticipants(event)} aria-label="View participants">
+                              <button type="button" onClick={() => openParticipants(event)} aria-label={t('evViewParticipants')}>
                                 <Groups />
                               </button>
-                              <button type="button" onClick={() => handleDelete(event.id, event.title)} aria-label="Delete event">
+                              <button type="button" onClick={() => handleDelete(event.id, event.title)} aria-label={t('evDeleteEvent')}>
                                 <DeleteIcon />
                               </button>
                             </div>
@@ -1174,8 +1188,8 @@ export default function EventsPage() {
                       <td colSpan="6">
                         <div className="admin-events-empty">
                           <Tune />
-                          <strong>No {activeTab === 'workshop' ? 'workshops' : 'appointments'} found</strong>
-                          <p>Adjust your filters or add a new event.</p>
+                          <strong>{activeTab === 'workshop' ? t('evNoWorkshopsFound') : t('evNoAppointmentsFound')}</strong>
+                          <p>{t('evEmptyHint')}</p>
                         </div>
                       </td>
                     </tr>
@@ -1184,33 +1198,33 @@ export default function EventsPage() {
               </table>
             </div>
             <footer className="admin-events-table-footer">
-              <span>Showing {filteredEvents.length ? `1 to ${filteredEvents.length}` : '0'} of {filteredEvents.length} {activeTab}s</span>
-              <span>Rows per page: 10</span>
+              <span>{(activeTab === 'workshop' ? t('evShowingWorkshops') : t('evShowingAppointments')).replace('{shown}', filteredEvents.length).replace('{total}', filteredEvents.length)}</span>
+              <span>{t('evRowsPerPage')}</span>
             </footer>
           </section>
         </main>
 
-        <aside className={`admin-events-drawer${drawerOpen ? ' is-open' : ''}`} aria-label="Event wizard modal">
+        <aside className={`admin-events-drawer${drawerOpen ? ' is-open' : ''}`} aria-label={t('evWizardAria')} dir={direction}>
           <form onSubmit={handleSave}>
             <header className="admin-events-modal-header">
               <div>
-                <h2>{editingEvent ? 'Edit Event' : 'Add New Event'}</h2>
-                <p>{editingEvent ? 'Update this workshop or appointment' : 'Create a new workshop or appointment'}</p>
+                <h2>{editingEvent ? t('evEditEventTitle') : t('evAddNewEvent')}</h2>
+                <p>{editingEvent ? t('evEditEventSub') : t('evAddEventSub')}</p>
               </div>
-              <button type="button" onClick={closeDrawer} aria-label="Close event modal">
+              <button type="button" onClick={closeDrawer} aria-label={t('evCloseModal')}>
                 <Close />
               </button>
             </header>
 
             <div className="admin-events-modal-body">
-              <aside className="admin-events-modal-sidebar" aria-label="Event form steps">
+              <aside className="admin-events-modal-sidebar" aria-label={t('evFormStepsAria')}>
                 <ol className="admin-events-stepper">
                   {EVENT_FORM_STEPS.map((step, index) => (
-                    <li className={index === activeFormStep ? 'is-active' : ''} key={step.title}>
+                    <li className={index === activeFormStep ? 'is-active' : ''} key={step.titleKey}>
                       <button type="button" onClick={() => setActiveFormStep(index)}>
                         <span>{index + 1}</span>
-                        <strong>{step.title}</strong>
-                        <small>{step.description}</small>
+                        <strong>{t(step.titleKey)}</strong>
+                        <small>{t(step.descKey)}</small>
                       </button>
                     </li>
                   ))}
@@ -1218,8 +1232,8 @@ export default function EventsPage() {
 
                 <div className="admin-events-modal-tip-card">
                   <CalendarMonth />
-                  <strong>All set?</strong>
-                  <p>You can save as draft and publish later.</p>
+                  <strong>{t('evTipAllSet')}</strong>
+                  <p>{t('evTipSaveDraft')}</p>
                 </div>
               </aside>
 
@@ -1228,11 +1242,11 @@ export default function EventsPage() {
                   <header className="admin-events-wizard-heading">
                     <span>{activeFormStep + 1}</span>
                     <div>
-                      <h3>{currentFormStep.title}</h3>
+                      <h3>{t(currentFormStep.titleKey)}</h3>
                       <p>
                         {activeFormStep === 0
-                          ? "Let's start with the basics about your event."
-                          : currentFormStep.description}
+                          ? t('evStep0Intro')
+                          : t(currentFormStep.descKey)}
                       </p>
                     </div>
                   </header>
@@ -1240,21 +1254,21 @@ export default function EventsPage() {
                   {activeFormStep === 0 && (
                     <div className="admin-events-wizard-fields admin-events-wizard-fields--basic">
                       <label>
-                        <span className="admin-events-field-label">Event Title <b>*</b></span>
+                        <span className="admin-events-field-label">{t('evEventTitleLabel')} <b>*</b></span>
                         <input
                           value={form.title}
                           onChange={(event) => updateForm('title', event.target.value)}
-                          placeholder="Enter event title"
+                          placeholder={t('evEnterTitle')}
                           required
                         />
                       </label>
 
                       <div className="admin-events-type-field">
-                        <span className="admin-events-field-label">Event Type <b>*</b></span>
-                        <div className="admin-events-type-cards" role="group" aria-label="Event Type">
+                        <span className="admin-events-field-label">{t('evEventTypeLabel')} <b>*</b></span>
+                        <div className="admin-events-type-cards" role="group" aria-label={t('evEventTypeLabel')}>
                           {[
-                            { value: 'workshop', label: 'Workshop', icon: Groups },
-                            { value: 'appointment', label: 'Appointment', icon: CalendarMonth },
+                            { value: 'workshop', label: t('apTypeWorkshop'), icon: Groups },
+                            { value: 'appointment', label: t('apTypeAppointment'), icon: CalendarMonth },
                           ].map((typeOption) => {
                             const Icon = typeOption.icon;
                             return (
@@ -1273,20 +1287,20 @@ export default function EventsPage() {
                       </div>
 
                       <label className="admin-events-span-2">
-                        <span className="admin-events-field-label">Short Description <b>*</b></span>
+                        <span className="admin-events-field-label">{t('evShortDescLabel')} <b>*</b></span>
                         <textarea
                           rows="4"
                           maxLength="120"
                           value={form.description}
                           onChange={(event) => updateForm('description', event.target.value)}
-                          placeholder="A short summary about your event..."
+                          placeholder={t('evShortDescPlaceholder')}
                         />
                         <small>{descriptionCount}/120</small>
                       </label>
 
                       <div className="admin-events-wizard-tip admin-events-span-2">
                         <Tune fontSize="small" />
-                        <span>Tip: A clear title and description help more people discover your event.</span>
+                        <span>{t('evTipBasic')}</span>
                       </div>
                     </div>
                   )}
@@ -1294,15 +1308,15 @@ export default function EventsPage() {
                   {activeFormStep === 1 && (
                     <div className="admin-events-wizard-fields">
                       <label>
-                        Schedule Type
+                        {t('evScheduleType')}
                         <select value={form.recurrence} onChange={(event) => updateForm('recurrence', event.target.value)}>
-                          <option value="weekly">Weekly recurring</option>
-                          <option value="one-time">One-time event</option>
+                          <option value="weekly">{t('evWeeklyRecurring')}</option>
+                          <option value="one-time">{t('evOneTime')}</option>
                         </select>
                       </label>
                       <label>
                         <span className="admin-events-field-label">
-                          Weekly Day {form.recurrence === 'weekly' ? <b>*</b> : null}
+                          {t('evWeeklyDay')} {form.recurrence === 'weekly' ? <b>*</b> : null}
                         </span>
                         <select
                           value={form.weeklyDayIndex}
@@ -1310,15 +1324,15 @@ export default function EventsPage() {
                           required={form.recurrence === 'weekly'}
                           disabled={form.recurrence !== 'weekly'}
                         >
-                          <option value="">Choose day</option>
+                          <option value="">{t('evChooseDay')}</option>
                           {WEEKDAY_OPTIONS.map((day) => (
-                            <option key={day.value} value={day.value}>{day.label}</option>
+                            <option key={day.value} value={day.value}>{t(`wd${day.value}`)}</option>
                           ))}
                         </select>
                       </label>
                       <label>
                         <span className="admin-events-field-label">
-                          Date {form.recurrence !== 'weekly' ? <b>*</b> : null}
+                          {t('evDate')} {form.recurrence !== 'weekly' ? <b>*</b> : null}
                         </span>
                         <input
                           type="date"
@@ -1330,7 +1344,7 @@ export default function EventsPage() {
                       </label>
                       <label>
                         <span className="admin-events-field-label">
-                          Start Time {form.recurrence !== 'weekly' ? <b>*</b> : null}
+                          {t('evStartTime')} {form.recurrence !== 'weekly' ? <b>*</b> : null}
                         </span>
                         <input
                           type="time"
@@ -1343,45 +1357,45 @@ export default function EventsPage() {
                       <section className="admin-events-provider-section admin-events-span-2">
                         <header>
                           <div>
-                            <h3>Providers & Time Slots</h3>
-                            <p>These slots control the participant booking calendar.</p>
+                            <h3>{t('evProvidersTitle')}</h3>
+                            <p>{t('evProvidersDesc')}</p>
                           </div>
-                          <button type="button" onClick={addProvider}>Add Provider</button>
+                          <button type="button" onClick={addProvider}>{t('evAddProvider')}</button>
                         </header>
                         <div className="admin-events-provider-list">
                           {form.providers.map((provider, providerIndex) => (
                             <article className="admin-events-provider-card" key={`${providerIndex}-${provider.id || 'provider'}`}>
                               <div className="admin-events-provider-card__header">
-                                <strong>Provider {providerIndex + 1}</strong>
-                                <button type="button" onClick={() => removeProvider(providerIndex)}>Remove</button>
+                                <strong>{t('evProviderN').replace('{n}', providerIndex + 1)}</strong>
+                                <button type="button" onClick={() => removeProvider(providerIndex)}>{t('evRemove')}</button>
                               </div>
                               <div className="admin-events-provider-fields">
                                 <label>
-                                  <span className="admin-events-field-label">Provider Name <b>*</b></span>
+                                  <span className="admin-events-field-label">{t('evProviderName')} <b>*</b></span>
                                   <input
                                     value={provider.name}
                                     onChange={(event) => updateProvider(providerIndex, 'name', event.target.value)}
-                                    placeholder="Margarita"
+                                    placeholder={t('evProviderNamePlaceholder')}
                                   />
                                 </label>
                                 <label>
-                                  Specialty
+                                  {t('evSpecialty')}
                                   <input
                                     value={provider.specialty}
                                     onChange={(event) => updateProvider(providerIndex, 'specialty', event.target.value)}
-                                    placeholder="Reflexology Therapist"
+                                    placeholder={t('evSpecialtyPlaceholder')}
                                   />
                                 </label>
                                 <label>
-                                  Default Room
+                                  {t('evDefaultRoom')}
                                   <input
                                     value={provider.room}
                                     onChange={(event) => updateProvider(providerIndex, 'room', event.target.value)}
-                                    placeholder="Treatment Room #1"
+                                    placeholder={t('evRoomPlaceholder')}
                                   />
                                 </label>
                                 <label>
-                                  Avatar URL
+                                  {t('evAvatarUrl')}
                                   <input
                                     type="url"
                                     value={provider.avatarUrl}
@@ -1392,13 +1406,13 @@ export default function EventsPage() {
                               </div>
                               <div className="admin-events-slot-list">
                                 <div className="admin-events-slot-list__title">
-                                  <span>Time slots</span>
-                                  <button type="button" onClick={() => addProviderSlot(providerIndex)}>Add Slot</button>
+                                  <span>{t('evTimeSlots')}</span>
+                                  <button type="button" onClick={() => addProviderSlot(providerIndex)}>{t('evAddSlot')}</button>
                                 </div>
                                 {provider.slots.map((slot, slotIndex) => (
                                   <div className="admin-events-slot-row" key={`${slotIndex}-${slot.id || 'slot'}`}>
                                     <label>
-                                      <span className="admin-events-field-label">Start <b>*</b></span>
+                                      <span className="admin-events-field-label">{t('evStart')} <b>*</b></span>
                                       <input
                                         type="time"
                                         value={slot.startTime}
@@ -1406,7 +1420,7 @@ export default function EventsPage() {
                                       />
                                     </label>
                                     <label>
-                                      End
+                                      {t('evEnd')}
                                       <input
                                         type="time"
                                         value={slot.endTime}
@@ -1414,15 +1428,15 @@ export default function EventsPage() {
                                       />
                                     </label>
                                     <label>
-                                      Room
+                                      {t('evRoom')}
                                       <input
                                         value={slot.room}
                                         onChange={(event) => updateProviderSlot(providerIndex, slotIndex, 'room', event.target.value)}
-                                        placeholder={provider.room || 'Room'}
+                                        placeholder={provider.room || t('evRoom')}
                                       />
                                     </label>
                                     <label>
-                                      Capacity
+                                      {t('evCapacity')}
                                       <input
                                         type="number"
                                         min="1"
@@ -1430,7 +1444,7 @@ export default function EventsPage() {
                                         onChange={(event) => updateProviderSlot(providerIndex, slotIndex, 'capacity', event.target.value)}
                                       />
                                     </label>
-                                    <button type="button" onClick={() => removeProviderSlot(providerIndex, slotIndex)}>Remove</button>
+                                    <button type="button" onClick={() => removeProviderSlot(providerIndex, slotIndex)}>{t('evRemove')}</button>
                                   </div>
                                 ))}
                               </div>
@@ -1444,11 +1458,11 @@ export default function EventsPage() {
                   {activeFormStep === 2 && (
                     <div className="admin-events-wizard-fields">
                       <label>
-                        <span className="admin-events-field-label">Location <b>*</b></span>
-                        <input value={form.location} onChange={(event) => updateForm('location', event.target.value)} placeholder="She-Na Center" required />
+                        <span className="admin-events-field-label">{t('evLocationLabel')} <b>*</b></span>
+                        <input value={form.location} onChange={(event) => updateForm('location', event.target.value)} placeholder={t('evLocationPlaceholder')} required />
                       </label>
                       <label>
-                        Capacity
+                        {t('evCapacity')}
                         <input
                           type="number"
                           min="1"
@@ -1458,18 +1472,18 @@ export default function EventsPage() {
                         />
                       </label>
                       <label className="admin-events-span-2">
-                        Disabled Dates
+                        {t('evDisabledDates')}
                         <input
                           placeholder="2026-06-03, 2026-06-10"
                           value={form.disabledDates}
                           onChange={(event) => updateForm('disabledDates', event.target.value)}
                         />
-                        <small>Comma-separated dates that should not appear in the participant booking calendar.</small>
+                        <small>{t('evDisabledDatesHint')}</small>
                       </label>
                       <section className="admin-events-image-section admin-events-span-2">
                         <div>
                           <label>
-                            Event Image URL
+                            {t('evEventImageUrl')}
                             <input
                               type="url"
                               placeholder="https://example.com/event-photo.jpg"
@@ -1477,31 +1491,31 @@ export default function EventsPage() {
                               onChange={(event) => updateForm('imageUrl', event.target.value)}
                             />
                           </label>
-                          <p>This image appears on the event card and public event pages.</p>
+                          <p>{t('evImageHint')}</p>
                         </div>
                         <div className="admin-events-image-preview">
                           {form.imageUrl ? (
-                            <img src={form.imageUrl} alt="Event preview" />
+                            <img src={form.imageUrl} alt={t('evImagePreviewAlt')} />
                           ) : (
-                            <span><Category /> Image preview</span>
+                            <span><Category /> {t('evImagePreview')}</span>
                           )}
                         </div>
                       </section>
                       <label>
-                        Registration
+                        {t('evRegistration')}
                         <select
                           value={form.registrationOpen ? 'open' : 'closed'}
                           onChange={(event) => updateForm('registrationOpen', event.target.value === 'open')}
                         >
-                          <option value="open">Open</option>
-                          <option value="closed">Closed</option>
+                          <option value="open">{t('evOpen')}</option>
+                          <option value="closed">{t('evClosed')}</option>
                         </select>
                       </label>
                       <label>
-                        Status
+                        {t('evStatusLabel')}
                         <select value={form.status} onChange={(event) => updateForm('status', event.target.value)}>
                           {STATUS_OPTIONS.map((status) => (
-                            <option key={status} value={status}>{status[0].toUpperCase() + status.slice(1)}</option>
+                            <option key={status} value={status}>{evStatusLabel(status)}</option>
                           ))}
                         </select>
                       </label>
@@ -1510,42 +1524,42 @@ export default function EventsPage() {
 
                   {activeFormStep === 3 && (
                     <div className="admin-events-review-grid">
-                      <article><span>Title</span><strong>{form.title || 'Untitled event'}</strong></article>
-                      <article><span>Type</span><strong>{form.type}</strong></article>
-                      <article><span>Schedule</span><strong>{form.recurrence === 'weekly' ? `Every ${getWeekdayName(form.weeklyDayIndex) || 'TBD'}` : form.date || 'Date TBD'}</strong></article>
-                      <article><span>Registration</span><strong>{form.registrationOpen ? 'Open' : 'Closed'}</strong></article>
-                      <article><span>Status</span><strong>{form.status}</strong></article>
+                      <article><span>{t('evReviewTitle')}</span><strong>{form.title || t('evUntitledEventLower')}</strong></article>
+                      <article><span>{t('evReviewType')}</span><strong>{typeLabel(form.type)}</strong></article>
+                      <article><span>{t('evReviewSchedule')}</span><strong>{form.recurrence === 'weekly' ? t('evEveryDay').replace('{day}', weekdayLabel(form.weeklyDayIndex) || t('evTBD')) : form.date || t('evDateTBD')}</strong></article>
+                      <article><span>{t('evReviewRegistration')}</span><strong>{form.registrationOpen ? t('evOpen') : t('evClosed')}</strong></article>
+                      <article><span>{t('evReviewStatus')}</span><strong>{evStatusLabel(form.status)}</strong></article>
                       <article className="admin-events-span-2">
-                        <span>Providers</span>
-                        <strong>{form.providers.map((provider) => provider.name).filter(Boolean).join(', ') || 'No providers added'}</strong>
+                        <span>{t('evReviewProviders')}</span>
+                        <strong>{form.providers.map((provider) => provider.name).filter(Boolean).join(', ') || t('evNoProviders')}</strong>
                       </article>
                     </div>
                   )}
                 </section>
 
                 <footer className="admin-events-wizard-footer">
-                  <div className="admin-events-progress-dots" aria-label="Form progress">
+                  <div className="admin-events-progress-dots" aria-label={t('evFormProgressAria')}>
                     {EVENT_FORM_STEPS.map((step, index) => (
                       <button
                         className={index === activeFormStep ? 'is-active' : ''}
                         type="button"
                         onClick={() => setActiveFormStep(index)}
-                        aria-label={step.title}
-                        key={step.title}
+                        aria-label={t(step.titleKey)}
+                        key={step.titleKey}
                       />
                     ))}
                   </div>
                   <div className="admin-events-wizard-actions">
                     <button className="admin-events-cancel-btn" type="button" onClick={activeFormStep === 0 ? closeDrawer : goToPreviousFormStep}>
-                      {activeFormStep === 0 ? 'Cancel' : 'Back'}
+                      {activeFormStep === 0 ? t('evCancel') : t('evBack')}
                     </button>
                     {isLastFormStep ? (
                       <button className="admin-events-save-btn" type="submit" disabled={saving}>
-                        {saving ? 'Saving...' : editingEvent ? 'Save Changes' : 'Publish Event'}
+                        {saving ? t('evSaving') : editingEvent ? t('evSaveChanges') : t('evPublishEvent')}
                       </button>
                     ) : (
                       <button className="admin-events-save-btn" type="button" onClick={goToNextFormStep}>
-                        Next Step
+                        {t('evNextStep')}
                         <ArrowForward fontSize="small" />
                       </button>
                     )}
@@ -1556,13 +1570,13 @@ export default function EventsPage() {
           </form>
         </aside>
 
-        <aside className={`admin-events-participants-drawer${participantsDrawerOpen ? ' is-open' : ''}`} aria-label="Participants drawer">
+        <aside className={`admin-events-participants-drawer${participantsDrawerOpen ? ' is-open' : ''}`} aria-label={t('pdAria')} dir={direction}>
           <header className="admin-events-participants-header">
             <div>
-              <h2>Participants</h2>
-              <p>Event Registrations</p>
+              <h2>{t('pdTitle')}</h2>
+              <p>{t('pdSubtitle')}</p>
             </div>
-            <button type="button" onClick={closeParticipantsDrawer} aria-label="Close participants drawer">
+            <button type="button" onClick={closeParticipantsDrawer} aria-label={t('pdClose')}>
               <Close />
             </button>
           </header>
@@ -1577,14 +1591,14 @@ export default function EventsPage() {
                 )}
                 <div>
                   <div className="admin-events-participant-summary__title-row">
-                    <h3>{selectedEvent.title || 'Untitled Event'}</h3>
+                    <h3>{selectedEvent.title || t('evUntitledEvent')}</h3>
                     <span className={`admin-events-status admin-events-status--${normalizeStatus(selectedEvent.status)}`}>
-                      {normalizeStatus(selectedEvent.status)}
+                      {evStatusLabel(normalizeStatus(selectedEvent.status))}
                     </span>
                   </div>
                   <div className="admin-events-participant-summary__meta">
-                    <span><CalendarMonth /> {formatScheduleDate(selectedEvent)}</span>
-                    <span><Schedule /> {formatScheduleTime(selectedEvent)}</span>
+                    <span><CalendarMonth /> {formatScheduleDate(selectedEvent, t, intlLocale)}</span>
+                    <span><Schedule /> {formatScheduleTime(selectedEvent, intlLocale, t('evTimeTBD'))}</span>
                   </div>
                   <div className="admin-events-participant-summary__capacity">
                     <strong>{selectedEventRegistered} / {selectedEventCapacity || '-'}</strong>
@@ -1595,7 +1609,7 @@ export default function EventsPage() {
 
               {selectedEventIsAppointment ? (
                 <>
-                  <section className="admin-events-provider-tabs" aria-label="Appointment providers">
+                  <section className="admin-events-provider-tabs" aria-label={t('pdProvidersAria')}>
                     {registrationsLoading ? (
                       Array.from({ length: 3 }).map((_, index) => (
                         <span className="admin-events-provider-skeleton" key={index} />
@@ -1615,23 +1629,23 @@ export default function EventsPage() {
                           )}
                           <div>
                             <strong>{provider.name}</strong>
-                            <small>{provider.specialty || 'Appointment provider'}</small>
+                            <small>{provider.specialty || t('pdAppointmentProvider')}</small>
                           </div>
-                          <em>{provider.count} booking{provider.count === 1 ? '' : 's'}</em>
+                          <em>{(provider.count === 1 ? t('pdBookingOne') : t('pdBookingMany')).replace('{n}', provider.count)}</em>
                         </button>
                       ))
                     ) : (
                       <div className="admin-events-empty admin-events-empty--compact">
                         <Groups />
-                        <strong>Select a provider</strong>
-                        <p>No providers are connected to this appointment yet.</p>
+                        <strong>{t('pdSelectProvider')}</strong>
+                        <p>{t('pdNoProvidersConnected')}</p>
                       </div>
                     )}
                   </section>
 
                   <section className="admin-events-schedule-toolbar">
                     <label>
-                      <span>Booked dates</span>
+                      <span>{t('pdBookedDates')}</span>
                       <select
                         value={selectedParticipantDate}
                         disabled={!appointmentBookedDates.length}
@@ -1640,53 +1654,53 @@ export default function EventsPage() {
                         {appointmentBookedDates.length ? (
                           appointmentBookedDates.map((item) => (
                             <option value={item.dateKey} key={item.dateKey}>
-                              {formatDateLabel(item.dateKey)} ({item.count})
+                              {formatDateLabel(item.dateKey, intlLocale, t('pdSelectedDate'))} ({item.count})
                             </option>
                           ))
                         ) : (
-                          <option value="">No booked dates</option>
+                          <option value="">{t('pdNoBookedDatesOption')}</option>
                         )}
                       </select>
                     </label>
                     <p>
                       {appointmentBookedDates.length
-                        ? 'Only dates with bookings are selectable'
-                        : 'No booked dates for this provider.'}
+                        ? t('pdOnlyDatesSelectable')
+                        : t('pdNoBookedDatesProvider')}
                     </p>
                   </section>
 
-                  <section className="admin-events-schedule-card" aria-label="Appointment schedule">
+                  <section className="admin-events-schedule-card" aria-label={t('pdScheduleAria')}>
                     <header>
-                      <strong>{selectedParticipantDate ? formatDateLabel(selectedParticipantDate) : 'No booked dates'}</strong>
-                      <span>{appointmentScheduleRows.length} booking{appointmentScheduleRows.length === 1 ? '' : 's'}</span>
+                      <strong>{selectedParticipantDate ? formatDateLabel(selectedParticipantDate, intlLocale, t('pdSelectedDate')) : t('pdNoBookedDatesOption')}</strong>
+                      <span>{(appointmentScheduleRows.length === 1 ? t('pdBookingOne') : t('pdBookingMany')).replace('{n}', appointmentScheduleRows.length)}</span>
                     </header>
                     <div className="admin-events-schedule-table">
                       <div className="admin-events-schedule-head">
-                        <span>Time</span>
-                        <span>Participant</span>
-                        <span>Contact</span>
-                        <span>Status</span>
+                        <span>{t('pdColTime')}</span>
+                        <span>{t('pdColParticipant')}</span>
+                        <span>{t('pdColContact')}</span>
+                        <span>{t('pdColStatus')}</span>
                       </div>
                       {registrationsLoading ? (
                         Array.from({ length: 5 }).map((_, index) => <span className="admin-events-participant-skeleton" key={index} />)
                       ) : registrationsError ? (
                         <div className="admin-events-empty">
                           <Tune />
-                          <strong>Could not load bookings</strong>
+                          <strong>{t('pdCouldNotLoadBookings')}</strong>
                           <p>{registrationsError}</p>
-                          <button type="button" onClick={handleParticipantsRetry}>Retry</button>
+                          <button type="button" onClick={handleParticipantsRetry}>{t('pdRetry')}</button>
                         </div>
                       ) : !selectedProviderId ? (
                         <div className="admin-events-empty">
                           <Groups />
-                          <strong>Select a provider</strong>
-                          <p>Choose a provider above to view the appointment schedule.</p>
+                          <strong>{t('pdSelectProvider')}</strong>
+                          <p>{t('pdChooseProviderAbove')}</p>
                         </div>
                       ) : !appointmentBookedDates.length ? (
                         <div className="admin-events-empty">
                           <CalendarMonth />
-                          <strong>No booked dates for this provider.</strong>
-                          <p>Bookings will appear here after participants reserve a slot.</p>
+                          <strong>{t('pdNoBookedDatesProvider')}</strong>
+                          <p>{t('pdBookingsAppearAfter')}</p>
                         </div>
                       ) : appointmentScheduleRows.length ? (
                         appointmentScheduleRows.map((registration) => {
@@ -1698,43 +1712,43 @@ export default function EventsPage() {
 
                           return (
                             <article className="admin-events-schedule-row" key={registration.id}>
-                              <time>{getAppointmentTime(registration)}</time>
+                              <time>{getAppointmentTime(registration, intlLocale, t('evTimeTBD'))}</time>
                               <div className="admin-events-participant-person">
                                 <strong>{name}</strong>
                               </div>
                               <div className="admin-events-schedule-contact">
                                 {phone ? <span>{phone}</span> : null}
-                                {email ? <a href={`mailto:${email}`}>{email}</a> : <span>No email available</span>}
+                                {email ? <a href={`mailto:${email}`}>{email}</a> : <span>{t('pdNoEmailAvailable')}</span>}
                                 {registration.notes || registration.adminNotes || registration.specialRequests ? (
                                   <small>{registration.notes || registration.adminNotes || registration.specialRequests}</small>
                                 ) : null}
                               </div>
                               <div className="admin-events-schedule-status-cell">
                                 <label className={`admin-events-status-select admin-events-participant-chip--${status}`}>
-                                  <span>{status}</span>
+                                  <span>{pStatusLabel(status)}</span>
                                   <select value={status} onChange={(event) => handleStatusUpdate(registration, event.target.value)}>
-                                    <option value="confirmed">Confirmed</option>
-                                    <option value="pending">Pending</option>
-                                    <option value="cancelled">Cancelled</option>
-                                    <option value="completed">Completed</option>
+                                    <option value="confirmed">{t('pStatusConfirmed')}</option>
+                                    <option value="pending">{t('pStatusPending')}</option>
+                                    <option value="cancelled">{t('pStatusCancelled')}</option>
+                                    <option value="completed">{t('pStatusCompleted')}</option>
                                   </select>
                                 </label>
                                 <div className="admin-events-participant-actions">
                                   <button
                                     type="button"
-                                    title="View Details"
+                                    title={t('pdViewDetailsTitle')}
                                     onClick={() => setSelectedBookingDetails(registration)}
-                                    aria-label="View details"
+                                    aria-label={t('pdViewDetailsAria')}
                                   >
                                     <VisibilityOutlined />
                                   </button>
                                   <button
                                     className="is-email"
                                     type="button"
-                                    title="Email Participant"
+                                    title={t('pdEmailParticipantTitle')}
                                     disabled={!canEmail}
                                     onClick={() => handleEmailParticipant(registration)}
-                                    aria-label="Email participant"
+                                    aria-label={t('pdEmailParticipantAria')}
                                   >
                                     <MailOutlineOutlinedIcon />
                                   </button>
@@ -1746,8 +1760,8 @@ export default function EventsPage() {
                       ) : (
                         <div className="admin-events-empty">
                           <CalendarMonth />
-                          <strong>No bookings for this date</strong>
-                          <p>Try another provider or date.</p>
+                          <strong>{t('pdNoBookingsForDate')}</strong>
+                          <p>{t('pdTryAnother')}</p>
                         </div>
                       )}
                     </div>
@@ -1755,10 +1769,10 @@ export default function EventsPage() {
                 </>
               ) : (
                 <>
-                  <section className="admin-events-participant-stats" aria-label="Participant stats">
-                    <article><Groups /><strong>{participantStats.registered}</strong><span>Registered</span></article>
-                    <article><EventAvailable /><strong>{participantStats.remaining}</strong><span>Remaining</span></article>
-                    <article><Schedule /><strong>{participantStats.waitlist}</strong><span>Waitlist</span></article>
+                  <section className="admin-events-participant-stats" aria-label={t('pdSubtitle')}>
+                    <article><Groups /><strong>{participantStats.registered}</strong><span>{t('pdRegistered')}</span></article>
+                    <article><EventAvailable /><strong>{participantStats.remaining}</strong><span>{t('pdRemaining')}</span></article>
+                    <article><Schedule /><strong>{participantStats.waitlist}</strong><span>{t('pdWaitlist')}</span></article>
                   </section>
 
                   <section className="admin-events-participant-controls">
@@ -1766,24 +1780,24 @@ export default function EventsPage() {
                       <Search />
                       <input
                         type="search"
-                        placeholder="Search participant..."
+                        placeholder={t('pdSearchParticipant')}
                         value={participantSearch}
                         onChange={(event) => setParticipantSearch(event.target.value)}
                       />
                     </label>
                     <select value={participantFilter} onChange={(event) => setParticipantFilter(event.target.value)}>
-                      <option value="all">Filter</option>
-                      <option value="confirmed">Confirmed</option>
-                      <option value="cancelled">Cancelled</option>
-                      <option value="waitlist">Waitlist</option>
+                      <option value="all">{t('pdFilter')}</option>
+                      <option value="confirmed">{t('pStatusConfirmed')}</option>
+                      <option value="cancelled">{t('pStatusCancelled')}</option>
+                      <option value="waitlist">{t('pStatusWaitlist')}</option>
                     </select>
                     <select value={participantSort} onChange={(event) => setParticipantSort(event.target.value)}>
-                      <option value="newest">Newest</option>
-                      <option value="oldest">Oldest</option>
+                      <option value="newest">{t('sortNewest')}</option>
+                      <option value="oldest">{t('sortOldest')}</option>
                     </select>
                   </section>
 
-                  <p className="admin-events-participant-count">{filteredRegistrations.length} Participants</p>
+                  <p className="admin-events-participant-count">{t('pdParticipantsCount').replace('{n}', filteredRegistrations.length)}</p>
 
                   <section className="admin-events-participant-list">
                     {registrationsLoading ? (
@@ -1791,9 +1805,9 @@ export default function EventsPage() {
                     ) : registrationsError ? (
                       <div className="admin-events-empty">
                         <Tune />
-                        <strong>Could not load participants</strong>
+                        <strong>{t('pdCouldNotLoadParticipants')}</strong>
                         <p>{registrationsError}</p>
-                        <button type="button" onClick={handleParticipantsRetry}>Retry</button>
+                        <button type="button" onClick={handleParticipantsRetry}>{t('pdRetry')}</button>
                       </div>
                     ) : filteredRegistrations.length ? (
                       filteredRegistrations.map((registration) => {
@@ -1807,20 +1821,20 @@ export default function EventsPage() {
                             <span className="admin-events-participant-avatar">{getInitials(name || email)}</span>
                             <div className="admin-events-participant-person">
                               <strong>{name}</strong>
-                              <span>{email || 'No email available'}</span>
+                              <span>{email || t('pdNoEmailAvailable')}</span>
                             </div>
-                            <time>{formatRegistrationDate(registration.registeredAt)}</time>
+                            <time>{formatRegistrationDate(registration.registeredAt, intlLocale, t('pdRegistrationDateTBD'))}</time>
                             <span className={`admin-events-participant-chip admin-events-participant-chip--${status}`}>
-                              {status}
+                              {pStatusLabel(status)}
                             </span>
                             <div className="admin-events-participant-actions">
                               <button
                                 className="is-email"
                                 type="button"
-                                title="Email Participant"
+                                title={t('pdEmailParticipantTitle')}
                                 disabled={!canEmail}
                                 onClick={() => handleEmailParticipant(registration)}
-                                aria-label="Email participant"
+                                aria-label={t('pdEmailParticipantAria')}
                               >
                                 <MailOutlineOutlinedIcon />
                               </button>
@@ -1828,7 +1842,7 @@ export default function EventsPage() {
                                 className="is-remove"
                                 type="button"
                                 onClick={() => handleRemoveParticipant(registration)}
-                                aria-label="Remove participant"
+                                aria-label={t('pdRemoveParticipant')}
                               >
                                 <PersonRemoveOutlined />
                               </button>
@@ -1839,8 +1853,8 @@ export default function EventsPage() {
                     ) : (
                       <div className="admin-events-empty">
                         <Groups />
-                        <strong>No participants found</strong>
-                        <p>Registrations will appear here when participants join this event.</p>
+                        <strong>{t('pdNoParticipantsFound')}</strong>
+                        <p>{t('pdRegistrationsAppear')}</p>
                       </div>
                     )}
                   </section>
@@ -1852,31 +1866,31 @@ export default function EventsPage() {
           <footer className="admin-events-participants-footer">
             <button type="button" onClick={handleExportCsv} disabled={!visibleParticipantRows.length}>
               <FileDownloadOutlined />
-              Export CSV
+              {t('pdExportCsv')}
             </button>
             <button type="button" onClick={handleSendReminderAll} disabled={!visibleParticipantRows.length}>
               <SendOutlined />
-              Send Reminder
+              {t('pdSendReminder')}
             </button>
-            <button type="button" onClick={closeParticipantsDrawer}>Close</button>
+            <button type="button" onClick={closeParticipantsDrawer}>{t('pdCloseBtn')}</button>
           </footer>
 
           {selectedBookingDetails ? (
-            <section className="admin-events-booking-details" aria-label="Booking details">
+            <section className="admin-events-booking-details" aria-label={t('pdBookingDetails')}>
               <header>
-                <strong>Booking Details</strong>
-                <button type="button" onClick={() => setSelectedBookingDetails(null)} aria-label="Close booking details">
+                <strong>{t('pdBookingDetails')}</strong>
+                <button type="button" onClick={() => setSelectedBookingDetails(null)} aria-label={t('pdCloseBookingDetails')}>
                   <Close fontSize="small" />
                 </button>
               </header>
               <dl>
-                <div><dt>Participant</dt><dd>{getParticipantName(selectedBookingDetails)}</dd></div>
-                <div><dt>Email</dt><dd>{getParticipantEmail(selectedBookingDetails) || 'No email available'}</dd></div>
-                <div><dt>Provider</dt><dd>{getRegistrationProviderName(selectedBookingDetails)}</dd></div>
-                <div><dt>Date</dt><dd>{formatDateLabel(getBookingDateKey(selectedBookingDetails))}</dd></div>
-                <div><dt>Time</dt><dd>{getAppointmentTime(selectedBookingDetails)}</dd></div>
-                <div><dt>Status</dt><dd>{getAppointmentStatus(selectedBookingDetails)}</dd></div>
-                <div><dt>Notes</dt><dd>{selectedBookingDetails.notes || selectedBookingDetails.adminNotes || selectedBookingDetails.specialRequests || '-'}</dd></div>
+                <div><dt>{t('pdColParticipant')}</dt><dd>{getParticipantName(selectedBookingDetails)}</dd></div>
+                <div><dt>{t('apDetailEmail')}</dt><dd>{getParticipantEmail(selectedBookingDetails) || t('pdNoEmailAvailable')}</dd></div>
+                <div><dt>{t('apDetailProvider')}</dt><dd>{getRegistrationProviderName(selectedBookingDetails)}</dd></div>
+                <div><dt>{t('pdDetailDate')}</dt><dd>{formatDateLabel(getBookingDateKey(selectedBookingDetails), intlLocale, t('pdSelectedDate'))}</dd></div>
+                <div><dt>{t('pdDetailTime')}</dt><dd>{getAppointmentTime(selectedBookingDetails, intlLocale, t('evTimeTBD'))}</dd></div>
+                <div><dt>{t('pdColStatus')}</dt><dd>{pStatusLabel(getAppointmentStatus(selectedBookingDetails))}</dd></div>
+                <div><dt>{t('pdDetailNotes')}</dt><dd>{selectedBookingDetails.notes || selectedBookingDetails.adminNotes || selectedBookingDetails.specialRequests || '-'}</dd></div>
               </dl>
             </section>
           ) : null}
@@ -1888,7 +1902,7 @@ export default function EventsPage() {
           className="admin-events-backdrop admin-events-backdrop--modal"
           type="button"
           onClick={closeDrawer}
-          aria-label="Close event modal"
+          aria-label={t('evCloseModal')}
         />
       ) : null}
       {participantsDrawerOpen ? (
@@ -1896,7 +1910,7 @@ export default function EventsPage() {
           className="admin-events-backdrop admin-events-backdrop--participants"
           type="button"
           onClick={closeParticipantsDrawer}
-          aria-label="Close participants drawer"
+          aria-label={t('pdClose')}
         />
       ) : null}
       {toast ? <div className="admin-events-toast" role="status">{toast}</div> : null}
