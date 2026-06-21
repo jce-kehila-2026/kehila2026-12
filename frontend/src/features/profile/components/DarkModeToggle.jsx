@@ -3,9 +3,10 @@ import WbSunnyOutlinedIcon from "@mui/icons-material/WbSunnyOutlined";
 import { Box, ButtonBase, Typography } from "@mui/material";
 
 const SHENA_PINK = "#ec4899";
-const SHENA_MAGENTA = "#d946ef";
+const SHENA_PINK_BRIGHT = "#e73386";
+const SHENA_PINK_DEEP = "#dc2577";
 const SHENA_PURPLE = "#5b1e8c";
-const SHENA_GRADIENT = `linear-gradient(145deg, ${SHENA_PINK} 0%, ${SHENA_MAGENTA} 48%, ${SHENA_PURPLE} 100%)`;
+const SHENA_PINK_GRADIENT = `linear-gradient(135deg, ${SHENA_PINK_BRIGHT} 0%, ${SHENA_PINK_DEEP} 100%)`;
 
 export default function DarkModeToggle({
   darkMode = false,
@@ -95,7 +96,7 @@ export default function DarkModeToggle({
             px: 1.1,
             minWidth: '2.25rem',
             background: darkMode
-              ? SHENA_GRADIENT
+              ? SHENA_PINK_GRADIENT
               : "linear-gradient(180deg, rgba(252, 231, 243, 0.75) 0%, #fff9fd 100%)",
             transition: "background 0.28s ease, background-color 0.28s ease",
           }}
@@ -126,7 +127,7 @@ export default function DarkModeToggle({
             minWidth: '2.25rem',
             background: darkMode
               ? "linear-gradient(180deg, #241536 0%, #120a1c 100%)"
-              : SHENA_GRADIENT,
+              : SHENA_PINK_GRADIENT,
             transition: "background 0.28s ease, background-color 0.28s ease",
           }}
         >
