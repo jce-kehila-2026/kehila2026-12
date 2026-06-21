@@ -1920,10 +1920,10 @@ export default function EventsPage({ embedInDashboard = false, locale = 'he' }) 
   const categoryCards = useMemo(() => {
     return [
       {
-        type: VIEW_REGISTERED,
-        title: t('evCatRegisteredEvents'),
-        color: 'peach',
-        icon: PersonIcon,
+        type: VIEW_WORKSHOPS,
+        title: t('evCatWorkshops'),
+        color: 'lavender',
+        icon: VolunteerActivismIcon,
       },
       {
         type: VIEW_APPOINTMENTS,
@@ -1932,10 +1932,10 @@ export default function EventsPage({ embedInDashboard = false, locale = 'he' }) 
         icon: CalendarMonthIcon,
       },
       {
-        type: VIEW_WORKSHOPS,
-        title: t('evCatWorkshops'),
-        color: 'lavender',
-        icon: VolunteerActivismIcon,
+        type: VIEW_REGISTERED,
+        title: t('evCatRegisteredEvents'),
+        color: 'peach',
+        icon: PersonIcon,
       },
     ];
   }, [t]);

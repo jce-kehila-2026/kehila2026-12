@@ -495,13 +495,13 @@
 }
 
 .participant-home--dark .events-category-grid {
-  background: #1f2937;
+  background: #f7eff5;
 }
 
 .participant-home--dark .events-category-button {
   background: transparent !important;
   border: 0 !important;
-  color: #f9a8d4 !important;
+  color: rgba(75, 19, 107, 0.62) !important;
   box-shadow: none !important;
   filter: none !important;
 }
@@ -522,8 +522,8 @@
 }
 
 .participant-home--dark .events-category-button:hover {
-  background: transparent !important;
-  color: #f9a8d4 !important;
+  background: #f1e3ee !important;
+  color: rgba(75, 19, 107, 0.78) !important;
   transform: none;
   box-shadow: none !important;
 }
