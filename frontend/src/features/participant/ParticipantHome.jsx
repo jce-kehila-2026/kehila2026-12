@@ -36,7 +36,6 @@ import { createParticipantT } from './i18n/participantUiTranslations';
 import { ParticipantLocaleProvider } from './context/ParticipantLocaleContext';
 import { useAdmin } from '../admin/context/AdminContext';
 import ParticipantDashboardHome from './home/ParticipantDashboardHome';
-import useDailyMotivation from './home/useDailyMotivation';
 import ParticipantSidebarProfile from './components/ParticipantSidebarProfile';
 import ParticipantHeader from './components/ParticipantHeader';
 import NotificationsDropdown from './NotificationsDropdown';
@@ -85,7 +84,6 @@ export default function ParticipantHome({ initialView = 'home' }) {
   const [participantProfile, setParticipantProfile] = useState(null);
   const [loadingParticipantProfile, setLoadingParticipantProfile] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(getStoredSidebarCollapsed);
-  const { quote: dailyQuote } = useDailyMotivation();
   const t = useMemo(() => createParticipantT(locale), [locale]);
   useCommunityStreak({ localUserId: effectiveUID || currentUser?.uid || '' });
 
@@ -428,7 +426,6 @@ export default function ParticipantHome({ initialView = 'home' }) {
             locale={locale}
             onLocaleChange={handleLocaleChange}
             notificationsBell={notificationsBell}
-            dailyQuote={activeView === 'home' ? dailyQuote : null}
             className={activeView === 'community' ? 'participant-header-sticky' : ''}
           />
 

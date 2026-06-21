@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useCallback } from 'react';
+import { useEffect, useMemo, useState, useCallback, useId } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import ArrowForward from '@mui/icons-material/ArrowForward';
 import CalendarMonth from '@mui/icons-material/CalendarMonth';
@@ -28,7 +28,11 @@ import {
   updateRegistrationStatus,
 } from '../services/registrationService';
 import { useAdminLocale } from '../context/AdminLocaleContext';
+import ReminderTimePicker from '../../../shared/components/ReminderTimePicker';
+import ReminderDatePicker from '../../../shared/components/ReminderDatePicker';
 import CitySelect from '../../../shared/components/CitySelect';
+import '../../../shared/components/ReminderTimePicker.css';
+import '../../../shared/styles/public-cta-button.css';
 import './EventsPage.css';
 
 const INTL_LOCALE_BY_LANG = { he: 'he-IL', en: 'en' };
@@ -215,23 +219,28 @@ function eventToForm(event) {
     event.weeklyDayIndex ?? event.dayIndex ?? event.recurringDayIndex ?? event.dayOfWeekIndex ?? event.weeklyDay
   );
   const isRecurring = event.isRecurringTemplate || event.recurrence === 'weekly' || recurringDayIndex !== '';
+  const type = inferType(event);
+  const providers = normalizeProvidersForForm(event);
+  const workshopSlotTime = providers[0]?.slots?.[0]?.startTime;
 
   return {
     title: event.title || '',
-    type: inferType(event),
+    type,
     description: event.description || '',
     imageUrl: event.imageUrl || event.thumbnailUrl || event.coverImageUrl || '',
     recurrence: isRecurring ? 'weekly' : 'one-time',
     weeklyDayIndex: recurringDayIndex,
     registrationOpen: event.registrationOpen !== false,
     disabledDates: Array.isArray(event.disabledDates) ? event.disabledDates.join(', ') : '',
-    date: dateInputValue(event.startTime || event.date),
-    startTime: timeInputValue(event.startTime || event.date),
+    date: dateInputValue(event.date) || dateInputValue(event.startTime || event.date),
+    startTime: type === 'workshop'
+      ? timeInputValue(workshopSlotTime || event.startTime)
+      : timeInputValue(event.startTime || event.date),
     endTime: timeInputValue(event.endTime),
     location: event.location || '',
     maxParticipants: event.maxParticipants || event.capacity || '',
     status: normalizeStatus(event.status),
-    providers: normalizeProvidersForForm(event),
+    providers,
   };
 }
 
@@ -345,6 +354,34 @@ function buildProvidersPayload(providers) {
       };
     })
     .filter(Boolean);
+}
+
+function getWorkshopStartTime(form) {
+  const slotTime = form.providers?.[0]?.slots?.[0]?.startTime;
+  const rawTime = form.startTime || slotTime || '';
+  if (typeof rawTime !== 'string') return timeInputValue(rawTime);
+  return rawTime;
+}
+
+function syncWorkshopFormForSave(form) {
+  if (form.type !== 'workshop') return form;
+
+  const provider = form.providers?.[0] || createEmptyProvider();
+  const slot = provider.slots?.[0] || createEmptySlot();
+  const startTime = normalizeTimeString(getWorkshopStartTime(form) || slot.startTime);
+
+  return {
+    ...form,
+    startTime,
+    providers: [{
+      ...provider,
+      slots: [{
+        ...slot,
+        startTime,
+        capacity: slot.capacity || String(form.maxParticipants || '1'),
+      }],
+    }],
+  };
 }
 
 function getFirstProviderSlot(providers) {
@@ -680,6 +717,36 @@ export default function EventsPage() {
 
   const visibleParticipantRows = selectedEventIsAppointment ? appointmentScheduleRows : filteredRegistrations;
 
+  const workshopProvider = form.providers?.[0] || createEmptyProvider();
+  const workshopStartTime = getWorkshopStartTime(form);
+  const isWeeklyWorkshopSchedule = form.type === 'workshop' && form.recurrence === 'weekly';
+  const workshopStartTimePickerId = useId();
+  const workshopDatePickerId = useId();
+
+  const datePickerLabels = useMemo(
+    () => ({
+      selectDate: t('evSelectDate'),
+      prevMonth: t('evPrevMonth'),
+      nextMonth: t('evNextMonth'),
+    }),
+    [t],
+  );
+
+  const timePickerLabels = useMemo(
+    () => ({
+      selectTime: t('evSelectTime'),
+      hour: t('evTimeHour'),
+      minute: t('evTimeMinute'),
+      period: t('evTimePeriod'),
+      increaseHour: t('evIncreaseHour'),
+      decreaseHour: t('evDecreaseHour'),
+      increaseMinute: t('evIncreaseMinute'),
+      decreaseMinute: t('evDecreaseMinute'),
+      done: t('evTimePickerDone'),
+    }),
+    [t],
+  );
+
   useEffect(() => {
     if (!selectedEventIsAppointment) return;
     if (selectedProviderId && appointmentProviders.some((provider) => provider.id === selectedProviderId)) return;
@@ -776,6 +843,39 @@ export default function EventsPage() {
     }));
   }
 
+  function updateWorkshopScheduling(field, value) {
+    if (field === 'recurrence') {
+      setForm((current) => ({
+        ...current,
+        recurrence: value,
+        weeklyDayIndex: value === 'weekly' ? current.weeklyDayIndex : '',
+      }));
+      return;
+    }
+
+    if (field === 'startTime') {
+      const nextTime = String(value ?? '');
+      setForm((current) => {
+        const providers = (current.providers?.length ? current.providers : [createEmptyProvider()]).map(
+          (provider, providerIndex) => {
+            if (providerIndex !== 0) return provider;
+            const slots = provider.slots?.length ? [...provider.slots] : [createEmptySlot()];
+            slots[0] = { ...(slots[0] || createEmptySlot()), startTime: nextTime };
+            return { ...provider, slots };
+          }
+        );
+        return {
+          ...current,
+          startTime: nextTime,
+          providers,
+        };
+      });
+      return;
+    }
+
+    updateForm(field, value);
+  }
+
   function changeTab(nextTab) {
     setActiveTab(nextTab);
     setSearchParams(nextTab === 'appointment' ? { type: 'appointments' } : { type: 'workshops' });
@@ -801,7 +901,7 @@ export default function EventsPage() {
   function closeDrawer() {
     setDrawerOpen(false);
     setEditingEvent(null);
-    setForm(createInitialForm());
+    setForm(createInitialForm(activeTab));
     setActiveFormStep(0);
   }
 
@@ -843,50 +943,74 @@ export default function EventsPage() {
 
   async function handleSave(event) {
     event.preventDefault();
-    const isRecurring = form.recurrence === 'weekly';
-    const providersPayload = buildProvidersPayload(form.providers);
+    const preparedForm = syncWorkshopFormForSave(form);
+    const isRecurring = preparedForm.recurrence === 'weekly';
+    const providersPayload = buildProvidersPayload(preparedForm.providers);
     const firstSlot = getFirstProviderSlot(providersPayload);
     const lastSlot = getLastProviderSlot(providersPayload);
-    const startDate = isRecurring ? null : composeDateTime(form.date, form.startTime);
-    const endDate = isRecurring ? null : composeDateTime(form.date, form.endTime);
+    const startDate = isRecurring ? null : composeDateTime(preparedForm.date, preparedForm.startTime);
+    const endDate = isRecurring ? null : composeDateTime(preparedForm.date, preparedForm.endTime);
 
-    if (!form.title.trim()) {
+    if (!preparedForm.title.trim()) {
       setToast(t('evToastAddTitle'));
       return;
     }
 
-    if (isRecurring && form.weeklyDayIndex === '') {
+    if (preparedForm.type === 'workshop') {
+      if (!preparedForm.providers?.[0]?.name?.trim()) {
+        setToast(t('evToastSelectProvider'));
+        return;
+      }
+      if (!preparedForm.date?.trim()) {
+        setToast(t('evToastAddDate'));
+        return;
+      }
+      if (!normalizeTimeString(getWorkshopStartTime(preparedForm) || firstSlot?.startTime)) {
+        setToast(t('evToastAddStartTime'));
+        return;
+      }
+      if (isRecurring) {
+        if (preparedForm.weeklyDayIndex === '' || preparedForm.weeklyDayIndex === null || preparedForm.weeklyDayIndex === undefined) {
+          setToast(t('evToastChooseDay'));
+          return;
+        }
+        if (!firstSlot) {
+          setToast(t('evToastAddSlot'));
+          return;
+        }
+      } else if (!startDate) {
+        setToast(t('evToastAddDateTime'));
+        return;
+      }
+    } else if (isRecurring && preparedForm.weeklyDayIndex === '') {
       setToast(t('evToastChooseDay'));
       return;
-    }
-
-    if (isRecurring && !firstSlot) {
+    } else if (isRecurring && !firstSlot) {
       setToast(t('evToastAddSlot'));
       return;
-    }
-
-    if (!isRecurring && !startDate) {
+    } else if (!isRecurring && !startDate) {
       setToast(t('evToastAddDateTime'));
       return;
     }
 
     const payload = {
-      title: form.title.trim(),
-      type: form.type,
-      recurrence: form.recurrence,
+      title: preparedForm.title.trim(),
+      type: preparedForm.type,
+      recurrence: preparedForm.recurrence,
       isRecurringTemplate: isRecurring,
-      weeklyDay: isRecurring ? getWeekdayName(form.weeklyDayIndex) : '',
-      weeklyDayIndex: isRecurring ? Number(form.weeklyDayIndex) : null,
+      weeklyDay: isRecurring ? getWeekdayName(preparedForm.weeklyDayIndex) : '',
+      weeklyDayIndex: isRecurring ? Number(preparedForm.weeklyDayIndex) : null,
+      date: preparedForm.date || null,
       startTime: isRecurring ? firstSlot.startTime : startDate,
       endTime: isRecurring ? (lastSlot.endTime || lastSlot.startTime) : endDate,
-      location: form.location.trim(),
-      description: form.description.trim(),
-      imageUrl: form.imageUrl.trim(),
-      maxParticipants: Number(form.maxParticipants) || 0,
-      registrationOpen: form.registrationOpen,
-      disabledDates: parseDisabledDates(form.disabledDates),
+      location: preparedForm.location.trim(),
+      description: preparedForm.description.trim(),
+      imageUrl: preparedForm.imageUrl.trim(),
+      maxParticipants: Number(preparedForm.maxParticipants) || 0,
+      registrationOpen: preparedForm.registrationOpen,
+      disabledDates: parseDisabledDates(preparedForm.disabledDates),
       providers: providersPayload,
-      status: form.status,
+      status: preparedForm.status,
     };
 
     setSaving(true);
@@ -1010,15 +1134,13 @@ export default function EventsPage() {
   }
 
   return (
-    <section className="admin-events-page" dir={direction}>
+    <section className="admin-events-page public-cta-scope" dir={direction}>
+      <div className="admin-events-page-title-slot">
+        <h1 className="admin-events-page-title">{t('evTitle')}</h1>
+      </div>
+
       <div className={`admin-events-shell${drawerOpen || participantsDrawerOpen ? ' has-drawer' : ''}${participantsDrawerOpen ? ' has-participants-drawer' : ''}`}>
         <main className="admin-events-main">
-          <header className="admin-events-header">
-            <div>
-              <h1>{t('evTitle')}</h1>
-              <p>{t('evSubtitle')}</p>
-            </div>
-          </header>
 
           <section className="admin-events-stats" aria-label={t('evSummaryAria')}>
             <article className="admin-events-stat admin-events-stat--pink">
@@ -1046,7 +1168,7 @@ export default function EventsPage() {
           <div className="admin-events-tabs-row">
             <div className="admin-events-tabs" aria-label={t('evTypeTabsAria')}>
               <button
-                className={activeTab === 'workshop' ? 'is-active' : ''}
+                className={activeTab === 'workshop' ? 'is-active public-cta-highlight' : 'public-cta-interaction'}
                 type="button"
                 onClick={() => changeTab('workshop')}
               >
@@ -1054,7 +1176,7 @@ export default function EventsPage() {
                 {t('evWorkshops')}
               </button>
               <button
-                className={activeTab === 'appointment' ? 'is-active' : ''}
+                className={activeTab === 'appointment' ? 'is-active public-cta-highlight' : 'public-cta-interaction'}
                 type="button"
                 onClick={() => changeTab('appointment')}
               >
@@ -1062,8 +1184,10 @@ export default function EventsPage() {
                 {t('evAppointments')}
               </button>
             </div>
-            <button className="admin-events-primary-btn" type="button" onClick={openCreate} id="btn-create-event">
-              <span className="admin-events-primary-btn__label">{t('evAddNewEvent')}</span>
+            <button className="admin-events-primary-btn public-cta-highlight" type="button" onClick={openCreate} id="btn-create-event">
+              <span className="admin-events-primary-btn__label">
+                {activeTab === 'workshop' ? t('evAddWorkshop') : t('evAddAppointment')}
+              </span>
               <span className="admin-events-primary-btn__plus">+</span>
             </button>
           </div>
@@ -1095,10 +1219,10 @@ export default function EventsPage() {
                 <option value="title">{t('evSortTitle')}</option>
               </select>
             </label>
-            <button className="admin-events-icon-btn admin-events-filter-btn" type="button" aria-label={t('evAdvancedFilters')}>
+            <button className="admin-events-icon-btn admin-events-filter-btn public-cta-interaction" type="button" aria-label={t('evAdvancedFilters')}>
               <FilterList />
             </button>
-            <button className="admin-events-icon-btn" type="button" onClick={fetchEvents} aria-label={t('evRefresh')}>
+            <button className="admin-events-icon-btn public-cta-interaction" type="button" onClick={fetchEvents} aria-label={t('evRefresh')}>
               <Refresh />
             </button>
           </section>
@@ -1170,13 +1294,13 @@ export default function EventsPage() {
                           </td>
                           <td>
                             <div className="admin-events-actions">
-                              <button type="button" onClick={() => openEdit(event)} aria-label={t('evEditEvent')}>
+                              <button className="public-cta-interaction" type="button" onClick={() => openEdit(event)} aria-label={t('evEditEvent')}>
                                 <EditOutlined />
                               </button>
-                              <button type="button" onClick={() => openParticipants(event)} aria-label={t('evViewParticipants')}>
+                              <button className="public-cta-interaction" type="button" onClick={() => openParticipants(event)} aria-label={t('evViewParticipants')}>
                                 <Groups />
                               </button>
-                              <button type="button" onClick={() => handleDelete(event.id, event.title)} aria-label={t('evDeleteEvent')}>
+                              <button className="public-cta-interaction" type="button" onClick={() => handleDelete(event.id, event.title)} aria-label={t('evDeleteEvent')}>
                                 <DeleteIcon />
                               </button>
                             </div>
@@ -1264,30 +1388,7 @@ export default function EventsPage() {
                         />
                       </label>
 
-                      <div className="admin-events-type-field">
-                        <span className="admin-events-field-label">{t('evEventTypeLabel')} <b>*</b></span>
-                        <div className="admin-events-type-cards" role="group" aria-label={t('evEventTypeLabel')}>
-                          {[
-                            { value: 'workshop', label: t('apTypeWorkshop'), icon: Groups },
-                            { value: 'appointment', label: t('apTypeAppointment'), icon: CalendarMonth },
-                          ].map((typeOption) => {
-                            const Icon = typeOption.icon;
-                            return (
-                              <button
-                                className={form.type === typeOption.value ? 'is-selected' : ''}
-                                type="button"
-                                onClick={() => updateForm('type', typeOption.value)}
-                                key={typeOption.value}
-                              >
-                                <Icon fontSize="small" />
-                                {typeOption.label}
-                              </button>
-                            );
-                          })}
-                        </div>
-                      </div>
-
-                      <label className="admin-events-span-2">
+                      <label>
                         <span className="admin-events-field-label">{t('evShortDescLabel')} <b>*</b></span>
                         <textarea
                           rows="4"
@@ -1299,14 +1400,132 @@ export default function EventsPage() {
                         <small>{descriptionCount}/120</small>
                       </label>
 
-                      <div className="admin-events-wizard-tip admin-events-span-2">
+                      <div className="admin-events-wizard-tip">
                         <Tune fontSize="small" />
                         <span>{t('evTipBasic')}</span>
                       </div>
                     </div>
                   )}
 
-                  {activeFormStep === 1 && (
+                  {activeFormStep === 1 && form.type === 'workshop' && (
+                    <div className="admin-events-wizard-fields admin-events-wizard-fields--workshop-schedule">
+                      <div className="admin-events-workshop-schedule-grid admin-events-workshop-schedule-grid--type-row">
+                        <label className={isWeeklyWorkshopSchedule ? undefined : 'admin-events-workshop-schedule-field--solo'}>
+                          <span className="admin-events-field-label">{t('evScheduleType')} <b>*</b></span>
+                          <select
+                            value={form.recurrence}
+                            onChange={(event) => updateWorkshopScheduling('recurrence', event.target.value)}
+                            required
+                          >
+                            <option value="weekly">{t('evWeeklyRecurring')}</option>
+                            <option value="one-time">{t('evOneTime')}</option>
+                          </select>
+                        </label>
+
+                        {isWeeklyWorkshopSchedule ? (
+                          <label>
+                            <span className="admin-events-field-label">{t('evWeeklyDay')} <b>*</b></span>
+                            <select
+                              value={form.weeklyDayIndex}
+                              onChange={(event) => updateWorkshopScheduling('weeklyDayIndex', event.target.value)}
+                              required
+                            >
+                              <option value="">{t('evChooseDay')}</option>
+                              {WEEKDAY_OPTIONS.map((day) => (
+                                <option key={day.value} value={day.value}>{t(`wd${day.value}`)}</option>
+                              ))}
+                            </select>
+                          </label>
+                        ) : null}
+                      </div>
+
+                      <div className="admin-events-workshop-schedule-grid admin-events-workshop-schedule-grid--datetime-row">
+                        <label>
+                          <span className="admin-events-field-label">{t('evDate')} <b>*</b></span>
+                          <ReminderDatePicker
+                            id={workshopDatePickerId}
+                            className="admin-events-date-picker"
+                            value={form.date}
+                            ariaLabel={t('evDate')}
+                            labels={datePickerLabels}
+                            onChange={(nextDate) => updateWorkshopScheduling('date', nextDate)}
+                            portal
+                            compact
+                          />
+                        </label>
+
+                        <label>
+                          <span className="admin-events-field-label">{t('evStartTime')} <b>*</b></span>
+                          <ReminderTimePicker
+                            id={workshopStartTimePickerId}
+                            className="admin-events-time-picker"
+                            value={workshopStartTime}
+                            ariaLabel={t('evStartTime')}
+                            labels={timePickerLabels}
+                            onChange={(nextTime) => updateWorkshopScheduling('startTime', nextTime)}
+                            portal
+                            compact
+                            showDoneButton
+                          />
+                        </label>
+                      </div>
+
+                      <section className="admin-events-provider-section admin-events-workshop-schedule-provider">
+                        <header>
+                          <div>
+                            <h3>{t('evWorkshopProviderTitle')}</h3>
+                            <p>{t('evProvidersDesc')}</p>
+                          </div>
+                        </header>
+                        <div className="admin-events-provider-list">
+                          <article className="admin-events-provider-card">
+                            <div className="admin-events-provider-fields">
+                              <label>
+                                <span className="admin-events-field-label">{t('evProviderName')} <b>*</b></span>
+                                <input
+                                  value={workshopProvider.name}
+                                  onChange={(event) => updateProvider(0, 'name', event.target.value)}
+                                  placeholder={t('evProviderNamePlaceholder')}
+                                />
+                              </label>
+                              <label>
+                                {t('evSpecialty')}
+                                <input
+                                  value={workshopProvider.specialty}
+                                  onChange={(event) => updateProvider(0, 'specialty', event.target.value)}
+                                  placeholder={t('evSpecialtyPlaceholder')}
+                                />
+                              </label>
+                              <label>
+                                {t('evDefaultRoom')}
+                                <input
+                                  value={workshopProvider.room}
+                                  onChange={(event) => updateProvider(0, 'room', event.target.value)}
+                                  placeholder={t('evRoomPlaceholder')}
+                                />
+                              </label>
+                              <label>
+                                {t('evAvatarUrl')}
+                                <input
+                                  type="url"
+                                  value={workshopProvider.avatarUrl}
+                                  onChange={(event) => updateProvider(0, 'avatarUrl', event.target.value)}
+                                  placeholder="https://example.com/avatar.jpg"
+                                />
+                              </label>
+                            </div>
+                            {workshopProvider.avatarUrl ? (
+                              <div className="admin-events-provider-avatar-preview">
+                                <img src={workshopProvider.avatarUrl} alt="" />
+                              </div>
+                            ) : null}
+                          </article>
+                        </div>
+                      </section>
+                    </div>
+                  )}
+
+                  {activeFormStep === 1 && form.type !== 'workshop' && (
                     <div className="admin-events-wizard-fields">
                       <label>
                         {t('evScheduleType')}
@@ -1533,7 +1752,7 @@ export default function EventsPage() {
                     <div className="admin-events-review-grid">
                       <article><span>{t('evReviewTitle')}</span><strong>{form.title || t('evUntitledEventLower')}</strong></article>
                       <article><span>{t('evReviewType')}</span><strong>{typeLabel(form.type)}</strong></article>
-                      <article><span>{t('evReviewSchedule')}</span><strong>{form.recurrence === 'weekly' ? t('evEveryDay').replace('{day}', weekdayLabel(form.weeklyDayIndex) || t('evTBD')) : form.date || t('evDateTBD')}</strong></article>
+                      <article><span>{t('evReviewSchedule')}</span><strong>{form.recurrence === 'weekly' ? [t('evEveryDay').replace('{day}', weekdayLabel(form.weeklyDayIndex) || t('evTBD')), form.date].filter(Boolean).join(' · ') : (form.date || t('evDateTBD'))}</strong></article>
                       <article><span>{t('evReviewRegistration')}</span><strong>{form.registrationOpen ? t('evOpen') : t('evClosed')}</strong></article>
                       <article><span>{t('evReviewStatus')}</span><strong>{evStatusLabel(form.status)}</strong></article>
                       <article className="admin-events-span-2">
