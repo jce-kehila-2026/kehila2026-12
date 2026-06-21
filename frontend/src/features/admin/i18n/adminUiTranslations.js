@@ -864,6 +864,7 @@ export const adminUiTranslations = {
     cmsIconBook: 'Book',
     cmsIconHeart: 'Heart',
     cmsIconSparkles: 'Sparkles',
+    cmsIconMessage: 'Message',
     // Home tab
     cmsHomeLoadFailed: 'Failed to load home page content.',
     cmsHomeUpdated: 'Home page updated.',
@@ -1819,6 +1820,7 @@ export const adminUiTranslations = {
     cmsIconBook: 'ספר',
     cmsIconHeart: 'לב',
     cmsIconSparkles: 'ניצוצות',
+    cmsIconMessage: 'הודעה',
     cmsHomeLoadFailed: 'טעינת תוכן דף הבית נכשלה.',
     cmsHomeUpdated: 'דף הבית עודכן.',
     cmsValueRequired: 'יש להזין ערך.',
