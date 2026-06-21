@@ -28,6 +28,7 @@ import {
   updateRegistrationStatus,
 } from '../services/registrationService';
 import { useAdminLocale } from '../context/AdminLocaleContext';
+import CitySelect from '../../../shared/components/CitySelect';
 import './EventsPage.css';
 
 const INTL_LOCALE_BY_LANG = { he: 'he-IL', en: 'en' };
@@ -1459,7 +1460,13 @@ export default function EventsPage() {
                     <div className="admin-events-wizard-fields">
                       <label>
                         <span className="admin-events-field-label">{t('evLocationLabel')} <b>*</b></span>
-                        <input value={form.location} onChange={(event) => updateForm('location', event.target.value)} placeholder={t('evLocationPlaceholder')} required />
+                        <CitySelect
+                          value={form.location}
+                          onChange={(city) => updateForm('location', city)}
+                          placeholder={t('evLocationPlaceholder')}
+                          required
+                          size="small"
+                        />
                       </label>
                       <label>
                         {t('evCapacity')}
