@@ -33,12 +33,9 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircleOutlineOutlined';
 import CloseIcon from '@mui/icons-material/Close';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import DoNotDisturbAltIcon from '@mui/icons-material/DoNotDisturbAlt';
-import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
-import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined';
-import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined';
-import CakeOutlinedIcon from '@mui/icons-material/CakeOutlined';
 import SearchIcon from '@mui/icons-material/Search';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
+import AdminDetailInfoCard from '../components/AdminDetailInfoCard';
 import {
   JOIN_REQUEST_STATUS,
   approveJoinRequest,
@@ -88,7 +85,7 @@ function initialsOf(name) {
   );
 }
 
-function StatusChip({ status, t }) {
+function StatusChip({ status, t, compact = false }) {
   const meta = STATUS_META[status] || STATUS_META[JOIN_REQUEST_STATUS.NEW];
   return (
     <Chip
@@ -100,48 +97,23 @@ function StatusChip({ status, t }) {
         borderRadius: 999,
         fontWeight: 900,
         border: '1px solid rgba(255,255,255,0.7)',
+        ...(compact
+          ? {
+              height: '1.375rem',
+              width: 'fit-content',
+              maxWidth: 'fit-content',
+              flexShrink: 0,
+              '& .MuiChip-label': {
+                px: 0.875,
+                py: 0,
+                fontSize: '0.6875rem',
+                fontWeight: 900,
+                lineHeight: 1.2,
+              },
+            }
+          : {}),
       }}
     />
-  );
-}
-
-function DetailRow({ icon, label, value }) {
-  return (
-    <Box
-      sx={{
-        px: 2,
-        py: 1.35,
-        borderRadius: '20px',
-        border: '1px solid rgba(130, 92, 206, 0.12)',
-        bgcolor: 'rgba(255, 255, 255, 0.72)',
-        display: 'flex',
-        alignItems: 'flex-start',
-        gap: '0.75rem',
-      }}
-    >
-      <Box
-        sx={{
-          width: '2.5rem',
-          height: '2.5rem',
-          borderRadius: '50%',
-          display: 'grid',
-          placeItems: 'center',
-          flexShrink: 0,
-          color: '#7C3AED',
-          bgcolor: 'rgba(124, 58, 237, 0.08)',
-        }}
-      >
-        {icon}
-      </Box>
-      <Box sx={{ minWidth: 0, flex: 1 }}>
-        <Typography variant="caption" color="text.secondary" fontWeight={800} sx={{ display: 'block', lineHeight: 1.1 }}>
-          {label}
-        </Typography>
-        <Typography dir="auto" fontWeight={750} sx={{ color: '#17122E', mt: 0.35, lineHeight: 1.45, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-          {value || '-'}
-        </Typography>
-      </Box>
-    </Box>
   );
 }
 
@@ -180,6 +152,53 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
       return matchesStatus && matchesSearch;
     });
   }, [requests, search, statusFilter]);
+
+  const applicationDetailRows = useMemo(() => {
+    if (!selected) return [];
+    const rows = [
+      [
+        { fieldKey: 'email', labelKey: 'jrEmail', value: selected.email },
+        { fieldKey: 'phone', labelKey: 'jrPhone', value: selected.phone },
+      ],
+      [
+        { fieldKey: 'address', labelKey: 'jrAddress', value: selected.address },
+        { fieldKey: 'dob', labelKey: 'jrDateOfBirth', value: formatDate(selected.birthDate, intlLocale) },
+      ],
+      [
+        { fieldKey: 'consent', labelKey: 'jrConsent', value: formatBool(selected.consentToReceiveInfo, t) },
+        { fieldKey: 'readyToJoin', labelKey: 'jrReadyToJoin', value: formatBool(selected.readyToJoin, t) },
+      ],
+      [
+        { fieldKey: 'whatsappNote', labelKey: 'jrWhatsappNote', value: selected.whatsappNote },
+        { fieldKey: 'bio', labelKey: 'jrStory', value: selected.cancerStory },
+      ],
+    ];
+
+    if (
+      selected.status === JOIN_REQUEST_STATUS.APPROVED
+      || selected.status === JOIN_REQUEST_STATUS.REJECTED
+    ) {
+      const decisionValue = [
+        selected.decidedBy && t('jrDecidedBy').replace('{name}', selected.decidedBy),
+        selected.rejectionReason && t('jrReason').replace('{reason}', selected.rejectionReason),
+      ].filter(Boolean).join('\n') || '-';
+
+      rows.push([
+        {
+          fieldKey: 'decision',
+          label: t('jrDecisionLabel')
+            .replace('{label}', (() => {
+              const meta = STATUS_META[selected.status];
+              return meta ? t(meta.labelKey) : t('jrDecision');
+            })())
+            .replace('{date}', formatDate(selected.decidedAt, intlLocale)),
+          value: decisionValue,
+        },
+      ]);
+    }
+
+    return rows;
+  }, [selected, t, intlLocale]);
 
   function openDetails(req) {
     setSelected(req);
@@ -589,85 +608,133 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
         open={detailsOpen && Boolean(selected)}
         onClose={() => setDetailsOpen(false)}
         maxWidth={false}
+        fullScreen={false}
         TransitionComponent={Fade}
+        sx={{
+          '& .MuiDialog-container': {
+            alignItems: 'center',
+            justifyContent: 'center',
+          },
+        }}
         PaperProps={{
           dir: direction,
           sx: {
-            width: { xs: 'calc(100vw - 24px)', sm: '37rem' },
-            maxWidth: 600,
+            width: { xs: 'calc(100vw - 24px)', sm: 'min(49.5rem, calc(100vw - 32px))' },
+            maxWidth: 792,
             m: 0,
             position: 'fixed',
             top: '50%',
             insetInlineStart: '50%',
             transform: 'translate(-50%, -50%)',
-            maxHeight: 'calc(100vh - 32px)',
-            borderRadius: { xs: '24px', md: '34px' },
+            height: 'auto',
+            maxHeight: 'calc(100vh - 24px)',
+            borderRadius: { xs: '20px', md: '24px' },
             overflow: 'hidden',
-            bgcolor: 'rgba(255, 255, 255, 0.96)',
+            bgcolor: 'rgba(255, 255, 255, 0.94)',
             backdropFilter: 'blur(18px)',
             boxShadow: '0 30px 86px rgba(32, 20, 67, 0.28)',
           },
         }}
-        BackdropProps={{ sx: { bgcolor: 'rgba(18, 12, 35, 0.54)', backdropFilter: 'blur(12px)' } }}
+        BackdropProps={{
+          sx: {
+            bgcolor: 'rgba(18, 12, 35, 0.54)',
+            backdropFilter: 'blur(12px)',
+          },
+        }}
       >
         {selected ? (
-          <Box sx={{ display: 'flex', flexDirection: 'column', maxHeight: 'calc(100vh - 32px)' }}>
-            <Box sx={{ p: { xs: 2, md: 2.6 }, pb: 1.6, flexShrink: 0, background: 'radial-gradient(circle at 50% 0%, rgba(223, 50, 123, 0.08), transparent 32%), linear-gradient(180deg, #FFFFFF 0%, #FFFBFE 100%)' }}>
-              <Stack direction="row" spacing={1.5} alignItems="center">
-                <Avatar sx={{ width: '4rem', height: '4rem', bgcolor: '#EEE7FF', color: '#6D3CCF', fontSize: '1.5rem', fontWeight: 950 }}>
-                  {initialsOf(selected.fullName)}
-                </Avatar>
-                <Box sx={{ minWidth: 0, flex: 1 }}>
-                  <Typography dir="auto" variant="h6" fontWeight={950} sx={{ color: '#17122E', lineHeight: 1.15 }}>
-                    {selected.fullName || t('jrUnnamed')}
-                  </Typography>
-                  <Stack direction="row" spacing={1} alignItems="center" sx={{ mt: 0.6 }}>
-                    <StatusChip status={selected.status} t={t} />
-                    <Typography color="text.secondary" sx={{ fontSize: '0.8125rem' }}>
-                      {t('jrSubmittedAt').replace('{date}', formatDate(selected.createdAt, intlLocale))}
-                    </Typography>
-                  </Stack>
-                </Box>
-                <IconButton
-                  size="small"
-                  onClick={() => setDetailsOpen(false)}
-                  aria-label={t('jrCloseDetails')}
-                  sx={{ bgcolor: 'rgba(109, 60, 207, 0.06)', color: '#4E466B', '&:hover': { bgcolor: 'rgba(109, 60, 207, 0.12)' } }}
-                >
-                  <CloseIcon fontSize="small" />
-                </IconButton>
+          <Box sx={{ display: 'flex', flexDirection: 'column', maxHeight: 'calc(100vh - 24px)', background: 'radial-gradient(circle at 50% 0%, rgba(223, 50, 123, 0.08), transparent 32%), linear-gradient(180deg, #FFFFFF 0%, #FFFBFE 100%)' }}>
+            <Box
+              sx={{
+                px: { xs: 2, sm: 2.25 },
+                pt: { xs: 1.5, sm: 1.875 },
+                pb: { xs: 1.375, sm: 1.5 },
+                position: 'relative',
+                flexShrink: 0,
+                borderBottom: '1px solid rgba(130, 92, 206, 0.08)',
+              }}
+            >
+              <IconButton
+                size="small"
+                onClick={() => setDetailsOpen(false)}
+                aria-label={t('jrCloseDetails')}
+                sx={{
+                  position: 'absolute',
+                  top: '12px /* @noflip */',
+                  right: '12px /* @noflip */',
+                  left: 'auto /* @noflip */',
+                  width: '1.75rem',
+                  height: '1.75rem',
+                  bgcolor: 'rgba(109, 60, 207, 0.06)',
+                  color: '#4E466B',
+                  zIndex: 1,
+                  '&:hover': { bgcolor: 'rgba(109, 60, 207, 0.12)' },
+                }}
+              >
+                <CloseIcon sx={{ fontSize: '1rem' }} />
+              </IconButton>
+
+              <Stack spacing={1.125} alignItems="stretch" sx={{ pr: 3.5 }} dir="ltr">
+                <Stack direction="row" spacing={1.125} alignItems="flex-start" sx={{ width: '100%' }}>
+                  <Avatar
+                    sx={{
+                      width: '3.25rem',
+                      height: '3.25rem',
+                      bgcolor: '#EEE7FF',
+                      color: '#6D3CCF',
+                      fontSize: '1.0625rem',
+                      fontWeight: 950,
+                      boxShadow: '0 10px 22px rgba(109, 60, 207, 0.14)',
+                      flexShrink: 0,
+                    }}
+                  >
+                    {initialsOf(selected.fullName)}
+                  </Avatar>
+                  <Box sx={{ minWidth: 0, flex: 1, textAlign: 'left' }}>
+                    <Stack spacing={0.5} alignItems="flex-start">
+                      <Typography dir="auto" variant="h5" fontWeight={950} noWrap sx={{ fontSize: '1.125rem', textAlign: 'left', minWidth: 0, width: '100%' }}>
+                        {selected.fullName || t('jrUnnamed')}
+                      </Typography>
+                      <Stack direction="row" spacing={0.75} alignItems="center" flexWrap="wrap" useFlexGap>
+                        <Typography color="text.secondary" sx={{ fontSize: '0.8125rem', textAlign: 'left', lineHeight: 1.35 }}>
+                          {t('jrSubmittedAt').replace('{date}', formatDate(selected.createdAt, intlLocale))}
+                        </Typography>
+                        <StatusChip status={selected.status} t={t} compact />
+                      </Stack>
+                    </Stack>
+                  </Box>
+                </Stack>
               </Stack>
             </Box>
 
-            <Box sx={{ flex: 1, overflow: 'auto', p: { xs: 2, md: 2.6 }, borderTop: '1px solid rgba(130, 92, 206, 0.08)' }}>
-              <Stack spacing={1.35}>
-                <DetailRow icon={<EmailOutlinedIcon fontSize="small" />} label={t('jrEmail')} value={selected.email} />
-                <DetailRow icon={<PhoneOutlinedIcon fontSize="small" />} label={t('jrPhone')} value={selected.phone} />
-                <DetailRow icon={<PlaceOutlinedIcon fontSize="small" />} label={t('jrAddress')} value={selected.address} />
-                <DetailRow icon={<CakeOutlinedIcon fontSize="small" />} label={t('jrDateOfBirth')} value={formatDate(selected.birthDate, intlLocale)} />
-                <DetailRow icon={<EmailOutlinedIcon fontSize="small" />} label={t('jrConsent')} value={formatBool(selected.consentToReceiveInfo, t)} />
-                <DetailRow icon={<EmailOutlinedIcon fontSize="small" />} label={t('jrReadyToJoin')} value={formatBool(selected.readyToJoin, t)} />
-                {selected.whatsappNote ? (
-                  <DetailRow icon={<PhoneOutlinedIcon fontSize="small" />} label={t('jrWhatsappNote')} value={selected.whatsappNote} />
-                ) : null}
-                <DetailRow icon={<FavoriteIcon />} label={t('jrStory')} value={selected.cancerStory} />
-                {(selected.status === JOIN_REQUEST_STATUS.APPROVED || selected.status === JOIN_REQUEST_STATUS.REJECTED) ? (
-                  <DetailRow
-                    icon={selected.status === JOIN_REQUEST_STATUS.APPROVED ? <CheckCircleIcon fontSize="small" /> : <DoNotDisturbAltIcon fontSize="small" />}
-                    label={t('jrDecisionLabel')
-                      .replace('{label}', statusLabel(selected.status))
-                      .replace('{date}', formatDate(selected.decidedAt, intlLocale))}
-                    value={[
-                      selected.decidedBy && t('jrDecidedBy').replace('{name}', selected.decidedBy),
-                      selected.rejectionReason && t('jrReason').replace('{reason}', selected.rejectionReason),
-                    ].filter(Boolean).join('\n') || '-'}
-                  />
-                ) : null}
+            <Box sx={{ flex: 1, overflow: 'auto', flexShrink: 0, px: { xs: 2, sm: 2.25 }, py: { xs: 1.5, sm: 1.875 } }} dir="ltr">
+              <Stack spacing={0.875}>
+                {applicationDetailRows.map((row, rowIndex) => (
+                  <Box
+                    key={rowIndex}
+                    sx={{
+                      display: 'grid',
+                      gridTemplateColumns: { xs: 'minmax(0, 1fr)', sm: 'repeat(2, minmax(0, 1fr))' },
+                      gap: 0.875,
+                      alignItems: 'stretch',
+                    }}
+                  >
+                    {row.map(({ fieldKey, labelKey, label, value }) => (
+                      <Box key={fieldKey} sx={{ minWidth: 0, display: 'flex' }}>
+                        <AdminDetailInfoCard
+                          label={labelKey ? t(labelKey) : label}
+                          value={value}
+                          iconKey={fieldKey}
+                        />
+                      </Box>
+                    ))}
+                  </Box>
+                ))}
               </Stack>
             </Box>
 
             {(selected.status || 'new') === JOIN_REQUEST_STATUS.NEW ? (
-              <Box sx={{ p: { xs: 2, md: 2.6 }, pt: 1.8, flexShrink: 0, borderTop: '1px solid rgba(130, 92, 206, 0.08)' }}>
+              <Box sx={{ px: { xs: 2, sm: 2.25 }, py: { xs: 1.5, sm: 1.875 }, flexShrink: 0, borderTop: '1px solid rgba(130, 92, 206, 0.08)' }}>
                 <Stack direction="row" spacing={1.2} justifyContent="flex-end">
                   <Button
                     onClick={() => startReject(selected)}
@@ -843,8 +910,4 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
       </Dialog>
     </Box>
   );
-}
-
-function FavoriteIcon() {
-  return <span style={{ fontSize: '1.1rem', lineHeight: 1 }}>♥</span>;
 }

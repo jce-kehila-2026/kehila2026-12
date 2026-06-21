@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useParticipantLocale } from '../context/ParticipantLocaleContext';
+import SidebarCollapseButton from '../../../shared/components/SidebarCollapseButton';
 
 function getInitials(name) {
   const parts = String(name || '')
@@ -62,17 +62,12 @@ export default function ParticipantSidebarProfile({
         </div>
       </div>
 
-      <button
-        type="button"
-        className="participant-sidebar-collapse-btn"
+      <SidebarCollapseButton
+        collapsed={collapsed}
         onClick={onToggleCollapse}
-        aria-label={collapsed ? t('expandSidebar') : t('collapseSidebar')}
-        aria-expanded={!collapsed}
-      >
-        <span className="participant-sidebar-collapse-btn__icon" aria-hidden="true">
-          {collapsed ? <ChevronRight size={15} strokeWidth={2.25} /> : <ChevronLeft size={15} strokeWidth={2.25} />}
-        </span>
-      </button>
+        expandLabel={t('expandSidebar')}
+        collapseLabel={t('collapseSidebar')}
+      />
     </div>
   );
 }

@@ -1,0 +1,43 @@
+.participant-sidebar-collapse-btn {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  border: 1px solid rgba(219, 79, 159, 0.22);
+  border-radius: 50%;
+  background: #fffafb;
+  color: #8a2da8;
+  cursor: pointer;
+  padding: 0;
+  box-shadow: 0 2px 8px rgba(219, 79, 159, 0.08);
+  transition:
+    transform 220ms ease,
+    box-shadow 220ms ease,
+    border-color 220ms ease,
+    background 220ms ease,
+    color 220ms ease;
+}
+
+.participant-sidebar-collapse-btn:hover {
+  border-color: rgba(219, 79, 159, 0.38);
+  color: #5b1e8c;
+  background: #fdf2f8;
+  box-shadow: 0 4px 12px rgba(219, 79, 159, 0.12);
+  transform: translateY(-1px);
+}
+
+.participant-sidebar-collapse-btn:focus-visible {
+  outline: 2px solid rgba(236, 72, 153, 0.45);
+  outline-offset: 2px;
+}
+
+.participant-sidebar-collapse-btn__icon {
+  display: grid;
+  place-items: center;
+  transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+[dir='rtl'] .participant-sidebar-collapse-btn__icon svg {
+  transform: scaleX(-1);
+}
