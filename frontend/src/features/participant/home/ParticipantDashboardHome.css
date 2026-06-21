@@ -1761,11 +1761,19 @@
 
 }
 
-.pd-card--event.pd-card--empty .pd-feature__cta {
+.pd-card--event.pd-card--empty .pd-feature__cta:not(.pd-btn--view-cta) {
   display: inline-flex;
   align-items: center;
   justify-content: center;
   padding-top: 0;
+  line-height: 1;
+}
+
+.pd-card--event.pd-card--empty .pd-feature__cta.pd-btn--view-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 20px;
   line-height: 1;
 }
 
@@ -2030,6 +2038,124 @@
   background: #fce8f2;
 
   box-shadow: 0 3px 10px rgba(219, 79, 159, 0.1);
+
+}
+
+
+
+/* View Appointment / View Event / View Post — compact PublicCtaButton style */
+.pd-btn.pd-btn--view-cta,
+.pd-community__cta.pd-btn--view-cta,
+.pd-feature__cta.pd-btn--view-cta {
+
+  height: 41px;
+
+  min-height: 41px;
+
+  min-width: 140px;
+
+  max-width: none;
+
+  padding: 8px 20px;
+
+  gap: 5px;
+
+  font-size: 0.9rem;
+
+  font-weight: 800;
+
+  line-height: 1;
+
+  color: #ec4899;
+
+  background: rgba(255, 255, 255, 0.97);
+
+  border: 2px solid rgba(236, 72, 153, 0.28);
+
+  box-shadow: 0 6px 18px rgba(236, 72, 153, 0.1);
+
+  transition:
+
+    color 180ms ease,
+
+    background 180ms ease,
+
+    border-color 180ms ease,
+
+    box-shadow 180ms ease,
+
+    transform 180ms ease;
+
+}
+
+
+
+.pd-btn--view-cta:hover,
+.pd-btn--view-cta:focus-visible {
+
+  color: #fff;
+
+  background: linear-gradient(135deg, #e73386, #dc2577);
+
+  border-color: transparent;
+
+  box-shadow: 0 14px 26px rgba(223, 50, 123, 0.24);
+
+  transform: translateY(-2px);
+
+  filter: none;
+
+}
+
+
+
+.pd-btn--view-cta:active {
+
+  transform: translateY(0);
+
+}
+
+
+
+.pd-btn--view-cta:focus-visible {
+
+  outline: 3px solid rgba(236, 72, 153, 0.28);
+
+  outline-offset: 3px;
+
+}
+
+
+
+.pd-btn--view-cta .pd-btn__arrow {
+
+  width: 14px;
+
+  height: 14px;
+
+  margin: 0;
+
+  opacity: 0.95;
+
+  transition: transform 200ms ease;
+
+}
+
+
+
+.pd-btn--view-cta:hover .pd-btn__arrow,
+.pd-btn--view-cta:focus-visible .pd-btn__arrow {
+
+  transform: translateX(3px);
+
+}
+
+
+
+.participant-home[dir='rtl'] .pd-btn--view-cta:hover .pd-btn__arrow,
+.participant-home[dir='rtl'] .pd-btn--view-cta:focus-visible .pd-btn__arrow {
+
+  transform: translateX(-3px);
 
 }
 
