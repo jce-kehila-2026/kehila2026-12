@@ -534,7 +534,7 @@ export default function AuditLogPage() {
           border: '1px solid rgba(167, 139, 250, 0.18)',
           borderRadius: '22px',
           background: 'rgba(255, 255, 255, 0.78)',
-          boxShadow: '0 18px 45px rgba(109, 53, 184, 0.08)',
+          boxShadow: 'none',
           backdropFilter: 'blur(18px)',
         }}
       >
@@ -625,7 +625,7 @@ export default function AuditLogPage() {
           border: '1px solid rgba(167, 139, 250, 0.18)',
           borderRadius: '24px',
           background: 'rgba(255, 255, 255, 0.82)',
-          boxShadow: '0 18px 45px rgba(109, 53, 184, 0.08)',
+          boxShadow: 'none',
           backdropFilter: 'blur(18px)',
           flex: '1 1 auto',
           minHeight: 0,

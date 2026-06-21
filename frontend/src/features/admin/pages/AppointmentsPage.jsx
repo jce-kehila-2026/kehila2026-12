@@ -1,12 +1,9 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { collection, getDocs, limit, orderBy, query } from 'firebase/firestore';
+import Pagination from '@mui/material/Pagination';
 import {
-  CalendarDays,
   Download,
-  Edit3,
   Eye,
-  Search,
-  Trash2,
   UserRound,
   X,
 } from 'lucide-react';
@@ -16,7 +13,7 @@ import { mergeBookingRows, paginateRows, toDateKey } from './bookingsPageUtils';
 import { useAdminLocale } from '../context/AdminLocaleContext';
 import './AppointmentsPage.css';
 
-const PAGE_SIZE = 7;
+const PAGE_SIZE = 10;
 
 const INTL_LOCALE_BY_LANG = { he: 'he-IL', en: 'en-US' };
 
@@ -54,6 +51,16 @@ function formatDate(dateValue, intlLocale, tbd) {
   return date.toLocaleDateString(intlLocale, { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
+function formatNumericDate(dateValue, intlLocale, tbd) {
+  const date = toDate(dateValue);
+  if (!date) return tbd;
+  return [
+    String(date.getDate()).padStart(2, '0'),
+    String(date.getMonth() + 1).padStart(2, '0'),
+    date.getFullYear(),
+  ].join('/');
+}
+
 function formatTime(timeValue, intlLocale, tbd) {
   if (!timeValue) return tbd;
   if (timeValue?.toDate) {
@@ -70,6 +77,46 @@ function formatTime(timeValue, intlLocale, tbd) {
   const date = new Date();
   date.setHours(Number(match[1]), Number(match[2]));
   return date.toLocaleTimeString(intlLocale, { hour: '2-digit', minute: '2-digit' });
+}
+
+function formatTime24(timeValue, tbd) {
+  if (!timeValue) return tbd;
+  if (timeValue?.toDate) {
+    const date = timeValue.toDate();
+    return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+  }
+
+  const value = String(timeValue).trim();
+  const rangeParts = value.split(/\s*[-–]\s*/);
+  if (rangeParts.length === 2 && rangeParts.every((part) => /\d{1,2}:\d{2}/.test(part))) {
+    return rangeParts.map((part) => formatTime24(part, tbd)).join(' - ');
+  }
+
+  const meridiemMatch = value.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+  if (meridiemMatch) {
+    let hours = Number(meridiemMatch[1]);
+    const minutes = meridiemMatch[2];
+    const meridiem = meridiemMatch[3].toUpperCase();
+    if (meridiem === 'PM' && hours !== 12) hours += 12;
+    if (meridiem === 'AM' && hours === 12) hours = 0;
+    return `${String(hours).padStart(2, '0')}:${minutes}`;
+  }
+
+  const timeMatch = value.match(/(\d{1,2}):(\d{2})/);
+  if (timeMatch) return `${timeMatch[1].padStart(2, '0')}:${timeMatch[2]}`;
+
+  const date = toDate(timeValue);
+  if (!date) return tbd;
+  return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+}
+
+function formatNumericDateTime(dateValue, tbd) {
+  const date = toDate(dateValue);
+  if (!date) return { date: tbd, time: '' };
+  return {
+    date: formatNumericDate(date, 'en-US', tbd),
+    time: `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`,
+  };
 }
 
 function formatRegisteredAt(value, intlLocale, notRecorded) {
@@ -89,7 +136,34 @@ function escapeCsvValue(value) {
   return str;
 }
 
-function downloadCsv(rows, t, intlLocale) {
+function getCsvTitle(filters, t, intlLocale) {
+  const typeTitle = filters.type === 'All Types' ? t('apAllTypes') : t(TYPE_LABEL_KEYS[filters.type]);
+  const activeFilters = [];
+
+  if (filters.search.trim()) activeFilters.push(`Search: ${filters.search.trim()}`);
+  if (filters.status !== 'All Statuses') {
+    activeFilters.push(`${t('apColStatus')}: ${t(STATUS_LABEL_KEYS[filters.status.toLowerCase()] || 'apAllStatuses')}`);
+  }
+  if (filters.dateFrom) {
+    activeFilters.push(`${t('apEventDateFilter')}: ${formatNumericDate(filters.dateFrom, intlLocale, filters.dateFrom)}`);
+  }
+  if (filters.provider !== 'All Providers') activeFilters.push(`${t('apColProvider')}: ${filters.provider}`);
+
+  return `${typeTitle} Bookings${activeFilters.length ? ` (${activeFilters.join(', ')})` : ''}`;
+}
+
+function joinDateTime(date, time) {
+  return [date, time].filter(Boolean).join(' at ');
+}
+
+function sanitizeFileName(value) {
+  return String(value)
+    .replace(/[\\/:*?"<>|]/g, '-')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function downloadCsv(rows, t, intlLocale, filters) {
   const headers = [
     t('apColParticipant'),
     t('apDetailEmail'),
@@ -101,14 +175,15 @@ function downloadCsv(rows, t, intlLocale) {
     t('apColStatus'),
   ];
 
+  const csvTitle = getCsvTitle(filters, t, intlLocale);
   const csvRows = [headers.map(escapeCsvValue).join(',')];
 
   for (const item of rows) {
-    const eventDate = formatDate(item.eventDate, intlLocale, '');
-    const eventTime = formatTime(item.eventTime, intlLocale, '');
-    const eventDateTime = [eventDate, eventTime].filter(Boolean).join(' ');
-    const reg = formatRegisteredAt(item.registeredAt, intlLocale, '');
-    const registeredAt = [reg.date, reg.time].filter(Boolean).join(' ');
+    const eventDate = formatNumericDate(item.eventDate, intlLocale, '');
+    const eventTime = formatTime24(item.eventTime, '');
+    const eventDateTime = joinDateTime(eventDate, eventTime);
+    const reg = formatNumericDateTime(item.registeredAt, '');
+    const registeredAt = joinDateTime(reg.date, reg.time);
 
     csvRows.push(
       [
@@ -119,7 +194,7 @@ function downloadCsv(rows, t, intlLocale) {
         item.providerName,
         eventDateTime,
         registeredAt,
-        item.status,
+        STATUS_LABEL_KEYS[item.status] ? t(STATUS_LABEL_KEYS[item.status]) : item.status,
       ]
         .map(escapeCsvValue)
         .join(',')
@@ -131,7 +206,7 @@ function downloadCsv(rows, t, intlLocale) {
   const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
-  link.download = `bookings_${new Date().toISOString().slice(0, 10)}.csv`;
+  link.download = `${sanitizeFileName(csvTitle)}.csv`;
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
@@ -140,12 +215,22 @@ function downloadCsv(rows, t, intlLocale) {
 
 function BookingDetailsDialog({ booking, onClose, t, intlLocale }) {
   if (!booking) return null;
-  const registeredAt = formatRegisteredAt(booking.registeredAt, intlLocale, t('apNotRecorded'));
+  const registeredAt = formatNumericDateTime(booking.registeredAt, t('apNotRecorded'));
   const typeLabel = TYPE_LABEL_KEYS[booking.eventType] ? t(TYPE_LABEL_KEYS[booking.eventType]) : booking.eventType;
   const statusLabel = STATUS_LABEL_KEYS[booking.status] ? t(STATUS_LABEL_KEYS[booking.status]) : booking.status;
+  const sourceLabel = booking.source === 'booking' ? t('apSourceCentral') : t('apSourceLegacy');
+  const eventDateLabel = t('apEventDateAt')
+    .replace('{date}', formatNumericDate(booking.eventDate, intlLocale, t('apDateTBD')))
+    .replace('{time}', formatTime24(booking.eventTime, t('apTimeTBD')));
 
   return (
-    <div className="appointments-details-backdrop" role="presentation" onMouseDown={onClose}>
+    <div
+      className="appointments-details-backdrop"
+      role="presentation"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
       <section
         className="appointments-details-dialog"
         role="dialog"
@@ -153,23 +238,49 @@ function BookingDetailsDialog({ booking, onClose, t, intlLocale }) {
         aria-labelledby="booking-details-title"
         onMouseDown={(event) => event.stopPropagation()}
       >
-        <header>
-          <div>
-            <span>{typeLabel}</span>
-            <h2 id="booking-details-title">{booking.eventName}</h2>
-          </div>
-          <button type="button" aria-label={t('apCloseDetails')} onClick={onClose}><X size={18} /></button>
+        <button className="appointments-details-close" type="button" aria-label={t('apCloseDetails')} onClick={onClose}>
+          <X size={20} />
+        </button>
+
+        <header className="appointments-details-header">
+          <span className={`appointments-details-chip appointments-details-chip--${booking.eventType.toLowerCase()}`}>
+            {typeLabel}
+          </span>
+          <h2 id="booking-details-title">{booking.eventName}</h2>
         </header>
-        <dl>
-          <div><dt>{t('apDetailParticipant')}</dt><dd>{booking.participantName}</dd></div>
-          <div><dt>{t('apDetailEmail')}</dt><dd>{booking.participantEmail}</dd></div>
-          <div><dt>{t('apDetailProvider')}</dt><dd>{booking.providerName}</dd></div>
-          <div><dt>{t('apDetailEventDate')}</dt><dd>{t('apEventDateAt').replace('{date}', formatDate(booking.eventDate, intlLocale, t('apDateTBD'))).replace('{time}', formatTime(booking.eventTime, intlLocale, t('apTimeTBD')))}</dd></div>
-          <div><dt>{t('apDetailRegistered')}</dt><dd>{registeredAt.date} {registeredAt.time}</dd></div>
-          <div><dt>{t('apDetailStatus')}</dt><dd>{statusLabel}</dd></div>
-          <div><dt>{t('apDetailSource')}</dt><dd>{booking.source === 'booking' ? t('apSourceCentral') : t('apSourceLegacy')}</dd></div>
-        </dl>
+
+        <div className="appointments-details-body">
+          <section className="appointments-details-section">
+            <h3>{t('auditSummaryHeading')}</h3>
+            <p>{booking.participantName} - {booking.eventName}</p>
+          </section>
+
+          <section className="appointments-details-section">
+            <h3>{t('auditDetailsAria')}</h3>
+            <div className="appointments-details-grid">
+              <DetailLine label={t('apDetailParticipant')} value={booking.participantName} />
+              <DetailLine label={t('apDetailEmail')} value={booking.participantEmail} />
+              <DetailLine label={t('apDetailProvider')} value={booking.providerName} />
+              <DetailLine label={t('apDetailEventDate')} value={eventDateLabel} />
+              <DetailLine
+                label={t('apDetailRegistered')}
+                value={[registeredAt.date, registeredAt.time].filter(Boolean).join(' at ')}
+              />
+              <DetailLine label={t('apDetailStatus')} value={statusLabel} />
+              <DetailLine label={t('apDetailSource')} value={sourceLabel} />
+            </div>
+          </section>
+        </div>
       </section>
+    </div>
+  );
+}
+
+function DetailLine({ label, value }) {
+  return (
+    <div className="appointments-detail-line">
+      <span>{label}</span>
+      <strong>{value}</strong>
     </div>
   );
 }
@@ -184,8 +295,7 @@ export default function AppointmentsPage() {
   const [type, setType] = useState('All Types');
   const [status, setStatus] = useState('All Statuses');
   const [provider, setProvider] = useState('All Providers');
-  const [selectedDate, setSelectedDate] = useState('');
-  const [calendarOpen, setCalendarOpen] = useState(false);
+  const [dateFrom, setDateFrom] = useState('');
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);
@@ -228,31 +338,52 @@ export default function AppointmentsPage() {
       const matchesType = type === 'All Types' || item.eventType === type;
       const matchesStatus = status === 'All Statuses' || item.status === status.toLowerCase();
       const matchesProvider = provider === 'All Providers' || item.providerName === provider;
-      const matchesDate = !selectedDate || toDateKey(item.eventDate) === selectedDate;
+      const eventDateKey = toDateKey(item.eventDate);
+      const matchesDate = !dateFrom || eventDateKey === dateFrom;
       return matchesSearch && matchesType && matchesStatus && matchesProvider && matchesDate;
     });
-  }, [bookings, provider, search, selectedDate, status, type]);
+  }, [bookings, dateFrom, provider, search, status, type]);
 
   useEffect(() => {
     setPage(1);
-  }, [provider, search, selectedDate, status, type]);
+  }, [dateFrom, provider, search, status, type]);
 
   const pagination = useMemo(() => paginateRows(filtered, page, PAGE_SIZE), [filtered, page]);
   const providers = ['All Providers', ...Array.from(new Set(bookings.map((item) => item.providerName).filter(Boolean)))];
-  const resultStart = filtered.length ? pagination.startIndex + 1 : 0;
-  const resultEnd = Math.min(pagination.startIndex + pagination.rows.length, filtered.length);
+  const clearFilters = () => {
+    setSearch('');
+    setType('All Types');
+    setStatus('All Statuses');
+    setDateFrom('');
+    setProvider('All Providers');
+  };
 
   return (
-    <section className={`appointments-admin-page${selectedDate ? ' has-date-filter' : ''}`} dir={direction}>
+    <section className="appointments-admin-page" dir={direction}>
+      <h1 className="appointments-admin-top-title">{t('apTitle')}</h1>
       <header className="appointments-admin-header">
-        <div>
-          <h1>{t('apTitle')}</h1>
-          <p>{t('apSubtitle')}</p>
+        <div className="appointments-type-tabs" role="tablist" aria-label={t('apColEventType')}>
+          {[
+            { value: 'All Types', label: t('apAllTypes') },
+            { value: 'Workshop', label: t('apTypeWorkshop') },
+            { value: 'Appointment', label: t('apTypeAppointment') },
+          ].map((tab) => (
+            <button
+              type="button"
+              role="tab"
+              aria-selected={type === tab.value}
+              className={type === tab.value ? 'is-active' : ''}
+              onClick={() => setType(tab.value)}
+              key={tab.value}
+            >
+              {tab.label}
+            </button>
+          ))}
         </div>
         <button
           type="button"
           className="appointments-export-csv-btn"
-          onClick={() => downloadCsv(filtered, t, intlLocale)}
+          onClick={() => downloadCsv(filtered, t, intlLocale, { type, search, status, dateFrom, provider })}
           disabled={loading || filtered.length === 0}
           title={t('apExportCsv')}
         >
@@ -265,61 +396,34 @@ export default function AppointmentsPage() {
         <main className="appointments-admin-main">
           <section className="appointments-filter-card" aria-label={t('apFiltersAria')}>
             <label className="appointments-search-field">
-              <Search size={18} />
               <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder={t('apSearchPlaceholder')} />
             </label>
-            <select value={type} onChange={(event) => setType(event.target.value)}>
-              <option value="All Types">{t('apAllTypes')}</option>
-              <option value="Workshop">{t('apTypeWorkshop')}</option>
-              <option value="Appointment">{t('apTypeAppointment')}</option>
-            </select>
-            <select value={status} onChange={(event) => setStatus(event.target.value)}>
-              <option value="All Statuses">{t('apAllStatuses')}</option>
-              <option value="Approved">{t('bkStatusApproved')}</option>
-              <option value="Pending">{t('bkStatusPending')}</option>
-              <option value="Completed">{t('bkStatusCompleted')}</option>
-              <option value="Cancelled">{t('bkStatusCancelled')}</option>
-            </select>
-            <div className="appointments-calendar-popover-wrap appointments-calendar-filter">
-              <button
-                className="appointments-calendar-icon-btn"
-                type="button"
-                aria-label={t('apOpenCalendar')}
-                aria-expanded={calendarOpen}
-                onClick={() => setCalendarOpen((current) => !current)}
-              >
-                <CalendarDays size={18} />
-              </button>
-              {calendarOpen && (
-                <div className="appointments-calendar-popover appointments-date-picker-popover">
-                  <label>
-                    {t('apFilterByDate')}
-                    <input
-                      type="date"
-                      value={selectedDate}
-                      autoFocus
-                      onChange={(event) => {
-                        setSelectedDate(event.target.value);
-                        setCalendarOpen(false);
-                      }}
-                    />
-                  </label>
-                </div>
-              )}
-            </div>
-            <select value={provider} onChange={(event) => setProvider(event.target.value)}>
-              {providers.map((name) => (
-                <option key={name} value={name}>{name === 'All Providers' ? t('apAllProviders') : name}</option>
-              ))}
-            </select>
+            <label className="appointments-filter-field">
+              <span>{t('apColStatus')}</span>
+              <select value={status} onChange={(event) => setStatus(event.target.value)}>
+                <option value="All Statuses">{t('apAllStatuses')}</option>
+                <option value="Approved">{t('bkStatusApproved')}</option>
+                <option value="Pending">{t('bkStatusPending')}</option>
+                <option value="Completed">{t('bkStatusCompleted')}</option>
+                <option value="Cancelled">{t('bkStatusCancelled')}</option>
+              </select>
+            </label>
+            <label className="appointments-filter-field">
+              <span>{t('apEventDateFilter')}</span>
+              <input type="date" value={dateFrom} onChange={(event) => setDateFrom(event.target.value)} />
+            </label>
+            <label className="appointments-filter-field">
+              <span>{t('apColProvider')}</span>
+              <select value={provider} onChange={(event) => setProvider(event.target.value)}>
+                {providers.map((name) => (
+                  <option key={name} value={name}>{name === 'All Providers' ? t('apAllProviders') : name}</option>
+                ))}
+              </select>
+            </label>
+            <button type="button" className="appointments-filter-clear-btn" onClick={clearFilters}>
+              {t('auditClear')}
+            </button>
           </section>
-
-          {selectedDate && (
-            <div className="appointments-active-filter-pill">
-              <span>{formatDate(selectedDate, intlLocale, t('apDateTBD'))}</span>
-              <button type="button" aria-label={t('apClearDate')} onClick={() => setSelectedDate('')}>x</button>
-            </div>
-          )}
 
           <section className="appointments-table-card" aria-busy={loading}>
             <div className="appointments-table appointments-table--head">
@@ -328,9 +432,8 @@ export default function AppointmentsPage() {
               <span>{t('apColEventName')}</span>
               <span>{t('apColProvider')}</span>
               <span>{t('apColEventDateTime')}</span>
-              <span>{t('apColRegisteredAt')}</span>
               <span>{t('apColStatus')}</span>
-              <span>{t('apColActions')}</span>
+              <span>{t('apColDetails')}</span>
             </div>
             <div className="appointments-table-body appointments-table-wrapper">
               {loading ? (
@@ -345,48 +448,35 @@ export default function AppointmentsPage() {
                   {bookings.length ? t('apNoMatch') : t('apNoBookings')}
                 </div>
               ) : pagination.rows.map((item) => {
-                const registeredAt = formatRegisteredAt(item.registeredAt, intlLocale, t('apNotRecorded'));
                 return (
                   <div className="appointments-table appointments-table--row" key={item.id}>
                     <div className="appointments-participant-cell">
                       <span className="appointments-avatar">{getInitials(item.participantName)}</span>
-                      <div><strong>{item.participantName}</strong><small>{item.participantEmail}</small></div>
+                      <div><strong>{item.participantName}</strong></div>
                     </div>
                     <span className={`appointments-event-type appointments-event-type--${item.eventType.toLowerCase()}`}>
                       {typeLabel(item.eventType)}
                     </span>
                     <span className="appointments-event-name">{item.eventName}</span>
                     <span className="appointments-provider"><UserRound size={18} /> {item.providerName}</span>
-                    <span className="appointments-date-time"><strong>{formatDate(item.eventDate, intlLocale, t('apDateTBD'))}</strong><small>{formatTime(item.eventTime, intlLocale, t('apTimeTBD'))}</small></span>
-                    <span className="appointments-date-time"><strong>{registeredAt.date}</strong><small>{registeredAt.time}</small></span>
+                    <span className="appointments-date-time"><strong>{formatNumericDate(item.eventDate, intlLocale, t('apDateTBD'))}</strong><small>{formatTime24(item.eventTime, t('apTimeTBD'))}</small></span>
                     <span className={`appointments-status appointments-status--${item.status}`}>{statusLabel(item.status)}</span>
                     <span className="appointments-actions">
                       <button type="button" aria-label={t('apViewBooking')} title={t('apViewBooking')} onClick={() => setSelectedBooking(item)}><Eye size={15} /></button>
-                      <button type="button" aria-label={t('apEditUnavailableAria')} title={t('apEditUnavailableTitle')} disabled><Edit3 size={15} /></button>
-                      <button type="button" aria-label={t('apRescheduleUnavailableAria')} title={t('apRescheduleUnavailableTitle')} disabled><CalendarDays size={15} /></button>
-                      <button type="button" aria-label={t('apDeleteUnavailableAria')} title={t('apDeleteUnavailableTitle')} disabled><Trash2 size={15} /></button>
                     </span>
                   </div>
                 );
               })}
             </div>
             <footer className="appointments-table-footer">
-              <span>{t('apShowingResults').replace('{start}', resultStart).replace('{end}', resultEnd).replace('{total}', filtered.length)}</span>
-              <div>
-                <button type="button" aria-label={t('apPrevPage')} disabled={pagination.page <= 1} onClick={() => setPage((current) => Math.max(1, current - 1))}>&lt;</button>
-                {Array.from({ length: pagination.pageCount }, (_, index) => index + 1).map((pageNumber) => (
-                  <button
-                    type="button"
-                    className={pageNumber === pagination.page ? 'is-active' : ''}
-                    aria-label={t('apPageAria').replace('{n}', pageNumber)}
-                    onClick={() => setPage(pageNumber)}
-                    key={pageNumber}
-                  >
-                    {pageNumber}
-                  </button>
-                ))}
-                <button type="button" aria-label={t('apNextPage')} disabled={pagination.page >= pagination.pageCount} onClick={() => setPage((current) => Math.min(pagination.pageCount, current + 1))}>&gt;</button>
-              </div>
+              <Pagination
+                count={pagination.pageCount}
+                page={pagination.page}
+                onChange={(event, value) => setPage(value)}
+                siblingCount={1}
+                boundaryCount={1}
+                shape="rounded"
+              />
             </footer>
           </section>
         </main>
