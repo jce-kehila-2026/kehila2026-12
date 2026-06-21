@@ -730,30 +730,13 @@
 
 .calendar-board__toolbar {
   display: grid;
-  grid-template-columns: auto minmax(12rem, 1fr) auto auto;
+  grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
   gap: 0.75rem;
   min-height: 4.25rem;
   padding: 10px 16px;
   background: #fffafd;
   border-bottom: 1px solid #f1dceb;
-}
-
-.calendar-board__toolbar h2 {
-  margin: 0;
-  color: #241332;
-  font-size: 1.35rem;
-  line-height: 1.2;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.calendar-board__title {
-  display: grid;
-  gap: 0.125rem;
-  min-width: 0;
-  justify-self: stretch;
 }
 
 .calendar-board__add-note {
@@ -773,6 +756,7 @@
   line-height: 1;
   padding: 0.55rem 1rem;
   white-space: nowrap;
+  justify-self: center;
   box-shadow: 0 2px 8px rgba(219, 79, 159, 0.12);
   transition:
     transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
@@ -1490,10 +1474,6 @@
 .participant-home--dark .calendar-board__toolbar {
   background: #111827;
   border-bottom-color: rgba(236, 72, 153, 0.25);
-}
-
-.participant-home--dark .calendar-board__toolbar h2 {
-  color: #f8fafc;
 }
 
 .participant-home--dark .calendar-view-toggle {

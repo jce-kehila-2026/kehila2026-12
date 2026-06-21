@@ -263,16 +263,6 @@ export default function CalendarPage({ variant = 'standalone' }) {
     month: 'long',
     day: 'numeric',
   }).format(activeDate);
-  const weekStartLabel = new Intl.DateTimeFormat(intlLocale, {
-    month: 'long',
-    day: 'numeric',
-    year: 'numeric',
-  }).format(activeWeekStart);
-  const calendarTitle = calendarView === 'week'
-    ? t('calWeekOf').replace('{label}', weekStartLabel)
-    : calendarView === 'day'
-      ? selectedDateLabel
-      : formatMonthTitle(activeDate, intlLocale);
   const noteModalError = noteModalOpen ? calendarError : '';
 
   function handleSelectDate(dateKey, nextView = calendarView) {
@@ -489,11 +479,6 @@ export default function CalendarPage({ variant = 'standalone' }) {
                     {t(viewLabelKeys[view])}
                   </button>
                 ))}
-              </div>
-
-              <div className="calendar-board__title">
-                <span className="calendar-kicker">{t('calViewKicker').replace('{view}', t(viewLabelKeys[calendarView]))}</span>
-                <h2>{calendarTitle}</h2>
               </div>
 
               {/* Add Note moved from the left sidebar note card; openNoteModal keeps the existing note creation flow. */}
