@@ -12,10 +12,11 @@ import {
   STATISTIC_ICON_KEYS,
   STATISTICS_MAX,
   HERO_CONTENT_STEPS_COUNT,
+  JOURNEY_STEP_ICON_KEYS,
   mergeHeroContent,
   mergeStatistics,
 } from '../../public/services/publicPagesService';
-import { BookOpen, HandHeart, Heart, Megaphone, Sparkles, UsersRound } from 'lucide-react';
+import { BookOpen, HandHeart, Heart, Megaphone, MessageCircleMore, Sparkles, UsersRound } from 'lucide-react';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
@@ -56,8 +57,25 @@ const STAT_ICON_LABEL_KEYS = {
 
 const INTL_LOCALE_BY_LANG = { he: 'he-IL', en: 'en-US' };
 
-function StatIconGlyph({ iconKey, size = 20 }) {
-  const Icon = STAT_ICON_COMPONENTS[iconKey];
+const JOURNEY_ICON_COMPONENTS = {
+  'message-circle': MessageCircleMore,
+  heart: Heart,
+  'hands-heart': HandHeart,
+  'users-round': UsersRound,
+  sparkles: Sparkles,
+  'book-open': BookOpen,
+};
+
+const JOURNEY_ICON_LABEL_KEYS = {
+  'message-circle': 'cmsIconMessage',
+  heart: 'cmsIconHeart',
+  'hands-heart': 'cmsIconHandsHeart',
+  'users-round': 'cmsIconUsers',
+  sparkles: 'cmsIconSparkles',
+  'book-open': 'cmsIconBook',
+};
+
+function IconGlyph({ Icon, size = 20 }) {
   if (!Icon) return null;
   return (
     <Icon
@@ -68,6 +86,14 @@ function StatIconGlyph({ iconKey, size = 20 }) {
       style={{ flexShrink: 0, color: '#7f22d9' }}
     />
   );
+}
+
+function StatIconGlyph({ iconKey, size = 20 }) {
+  return <IconGlyph Icon={STAT_ICON_COMPONENTS[iconKey]} size={size} />;
+}
+
+function JourneyIconGlyph({ iconKey, size = 20 }) {
+  return <IconGlyph Icon={JOURNEY_ICON_COMPONENTS[iconKey]} size={size} />;
 }
 
 function statisticsToForm(statistics) {
@@ -85,6 +111,7 @@ function heroContentToForm(heroContent) {
     intro: heroContent.intro || '',
     steps: (heroContent.steps || DEFAULT_HERO_CONTENT.steps).map((s) => ({
       title: s.title || '',
+      iconKey: JOURNEY_STEP_ICON_KEYS.includes(s.iconKey) ? s.iconKey : JOURNEY_STEP_ICON_KEYS[0],
     })),
   };
 }
@@ -260,8 +287,11 @@ export default function PublicHomePageHomeTab() {
       });
 
       // Build the hero content payload
-      const stepsPayload = hc.steps.slice(0, HERO_CONTENT_STEPS_COUNT).map((step) => ({
+      const stepsPayload = hc.steps.slice(0, HERO_CONTENT_STEPS_COUNT).map((step, index) => ({
         title: step.title.trim(),
+        iconKey: JOURNEY_STEP_ICON_KEYS.includes(step.iconKey)
+          ? step.iconKey
+          : DEFAULT_HERO_CONTENT.steps[index]?.iconKey || JOURNEY_STEP_ICON_KEYS[0],
       }));
 
       const heroContentPayload = {
@@ -428,20 +458,56 @@ export default function PublicHomePageHomeTab() {
                 <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1.5 }}>
                   {t('cmsStepNumber').replace('{n}', index + 1)}
                 </Typography>
-                <TextField
-                  label={t('cmsStepTitle')}
-                  value={step.title}
-                  onChange={(e) => setStepField(index, 'title', e.target.value)}
-                  onBlur={() => handleBlur(`step.${index}.title`)}
-                  inputProps={{ maxLength: LIMITS.stepTitle }}
-                  error={shouldShowError(`step.${index}.title`)}
-                  helperText={
-                    (shouldShowError(`step.${index}.title`) && errors[`step.${index}.title`]) ||
-                    `${step.title.length} / ${LIMITS.stepTitle}`
-                  }
-                  required
-                  fullWidth
-                />
+                <Box
+                  sx={{
+                    display: 'grid',
+                    gap: '1rem',
+                    alignItems: 'flex-start',
+                    gridTemplateColumns: {
+                      xs: 'minmax(0, 1fr)',
+                      md: 'minmax(0, 1fr) 170px',
+                    },
+                  }}
+                >
+                  <TextField
+                    label={t('cmsStepTitle')}
+                    value={step.title}
+                    onChange={(e) => setStepField(index, 'title', e.target.value)}
+                    onBlur={() => handleBlur(`step.${index}.title`)}
+                    inputProps={{ maxLength: LIMITS.stepTitle }}
+                    error={shouldShowError(`step.${index}.title`)}
+                    helperText={
+                      (shouldShowError(`step.${index}.title`) && errors[`step.${index}.title`]) ||
+                      `${step.title.length} / ${LIMITS.stepTitle}`
+                    }
+                    required
+                    fullWidth
+                  />
+                  <TextField
+                    select
+                    label={t('cmsFieldIcon')}
+                    value={step.iconKey}
+                    onChange={(e) => setStepField(index, 'iconKey', e.target.value)}
+                    fullWidth
+                    SelectProps={{
+                      renderValue: (selected) => (
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <JourneyIconGlyph iconKey={selected} />
+                          <span>{JOURNEY_ICON_LABEL_KEYS[selected] ? t(JOURNEY_ICON_LABEL_KEYS[selected]) : selected}</span>
+                        </Box>
+                      ),
+                    }}
+                  >
+                    {JOURNEY_STEP_ICON_KEYS.map((key) => (
+                      <MenuItem key={key} value={key}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: '0.625rem' }}>
+                          <JourneyIconGlyph iconKey={key} />
+                          <span>{JOURNEY_ICON_LABEL_KEYS[key] ? t(JOURNEY_ICON_LABEL_KEYS[key]) : key}</span>
+                        </Box>
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                </Box>
               </Paper>
             ))}
           </Stack>
