@@ -43,6 +43,21 @@
   pointer-events: none;
 }
 
+.login-page__lang-switch {
+  position: fixed;
+  top: 1.25rem;
+  left: 1.5rem;
+  z-index: 30;
+}
+
+/* Switcher sits at the top-left, so open its menu rightward into the page. */
+.login-page__lang-switch .public-lang-switcher__menu {
+  inset-inline-start: auto;
+  inset-inline-end: auto;
+  left: 0;
+  right: auto;
+}
+
 .login-page__back-cta {
   position: fixed;
   bottom: 24px;
@@ -70,7 +85,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  direction: rtl;
+  /* direction follows the chosen language via the dir attribute */
   padding: clamp(0.25rem, 1vh, 0.75rem) 0;
   text-align: center;
 }

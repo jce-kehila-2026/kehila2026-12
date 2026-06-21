@@ -5,6 +5,7 @@ import 'react-phone-input-2/lib/material.css';
 import sheNaLogo from '../../../assets/she-na-logo.png';
 import { createJoinRequest } from '../services/joinRequestService';
 import { usePublicLocale } from '../context/PublicLocaleContext';
+import CitySelect from '../../../shared/components/CitySelect';
 
 const INITIAL_FORM = {
   readyToJoin: false,
@@ -586,16 +587,16 @@ export default function JoinCommunityModal({ isOpen, onClose }) {
                     ) : null}
                   </div>
 
-                  <div className="join-modal__field">
+                  <div className="join-modal__field join-modal__field--city">
                     <label htmlFor="join-address">{t('joinAddress')}</label>
                     <small>{t('joinAddressHint')}</small>
-                    <input
+                    <CitySelect
                       id="join-address"
                       name="address"
-                      type="text"
-                      autoComplete="street-address"
                       value={formValues.address}
-                      onChange={(event) => updateField('address', event.target.value)}
+                      onChange={(city) => updateField('address', city)}
+                      placeholder={t('joinAddressHint')}
+                      size="small"
                     />
                   </div>
 
