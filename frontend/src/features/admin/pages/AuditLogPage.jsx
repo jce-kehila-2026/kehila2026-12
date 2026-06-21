@@ -514,7 +514,7 @@ export default function AuditLogPage() {
         sx={{
           position: 'fixed',
           top: '1.75rem',
-          left: 'calc(var(--admin-sidebar-width) + 4rem)',
+          insetInlineStart: 'calc(var(--admin-sidebar-width) + 4rem)',
           zIndex: 1100,
           minHeight: '2.375rem',
           display: 'flex',
