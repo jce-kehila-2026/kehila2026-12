@@ -87,6 +87,48 @@ export const adminUiTranslations = {
     colTarget: 'Target',
     colDetails: 'Details',
 
+    // ── Dashboard: today/this-week snapshot ─────────────────────────────────
+    dashSnapshotAria: 'Today and this week snapshot',
+    dashBookingsToday: 'Bookings Today',
+    dashBookingsTodaySub: 'Sessions scheduled today',
+    dashPendingJoinRequests: 'Pending Join Requests',
+    dashPendingJoinRequestsSub: 'Awaiting admin review',
+    dashReportedPosts: 'Reported Posts',
+    dashReportedPostsSub: 'Awaiting moderation',
+    dashUpcomingAppts48h: 'Upcoming Appointments',
+    dashUpcomingAppts48hSub: 'Next 48 hours',
+
+    // ── Dashboard: bookings & appointments funnel ───────────────────────────
+    dashFunnelTitle: 'Bookings & Appointments Funnel',
+    dashFunnelWorkshops: 'Workshops',
+    dashFunnelAppointments: 'Appointments',
+    dashFunnelCancellationRate: 'Cancellation rate',
+    dashFunnelEmpty: 'No bookings or appointments yet.',
+
+    // ── Dashboard: community moderation queue ───────────────────────────────
+    dashModerationTitle: 'Community Moderation Queue',
+    dashModerationViewAll: 'Open moderation',
+    dashModerationReportsCount: '{n} reports',
+    dashModerationReportsCountOne: '{n} report',
+    dashModerationAnonymous: 'Anonymous',
+
+    // ── Dashboard: membership growth & join requests ────────────────────────
+    dashGrowthTitle: 'Membership Growth & Join Requests',
+    dashGrowthChartLabel: 'Registrations per week',
+    dashGrowthEmpty: 'No new registrations in this period.',
+    dashOverdueRequestsTitle: 'Pending applications (3+ days)',
+    dashOverdueRequestsEmpty: 'No overdue join requests.',
+    dashDaysPending: '{n}d pending',
+    dashViewAllRequests: 'Review applications',
+    dashViewBookingDetails: 'View details',
+    dashReportsLoading: 'Loading report summary…',
+
+    // ── Dashboard report summary cards (data from services/reportsService.js) ──
+    rptTherapistChartLabel: 'Treatments by therapist',
+    rptTherapistEmpty: 'No therapist treatment data yet.',
+    rptActivityChartLabel: 'Registered women by activity',
+    rptActivityEmpty: 'No registration data yet.',
+
     // ── Audit log: chrome ─────────────────────────────────────────────────
     auditTitle: 'Admin Changes',
     auditSubtitle: 'Track changes made by admins across the platform.',
@@ -139,10 +181,7 @@ export const adminUiTranslations = {
 
     // ── Shared: roles ─────────────────────────────────────────────────────
     roleParticipant: 'Participant',
-    roleVolunteer: 'Volunteer',
-    roleTherapist: 'Therapist',
     roleAdmin: 'Admin',
-    roleEditor: 'Editor',
 
     // ── User management ───────────────────────────────────────────────────
     umTitle: 'User Management',
@@ -157,6 +196,9 @@ export const adminUiTranslations = {
     umTotalChip: '{n} total',
     umSearchPlaceholder: 'Search users...',
     umAllRoles: 'All Roles',
+    umAllStatuses: 'All Statuses',
+    umStatusActive: 'Active',
+    umStatusInactive: 'Inactive',
     sortNewest: 'Newest',
     sortOldest: 'Oldest',
     sortName: 'Name',
@@ -168,6 +210,7 @@ export const adminUiTranslations = {
     umViewAria: 'View {name}',
     umEditAria: 'Edit {name}',
     umDeleteAria: 'Delete {name}',
+    umDeactivateAria: 'Deactivate {name}',
     umNoUsers: 'No users found',
     umNoUsersHint: 'Try changing your search or filters.',
     umNoEmail: 'No email provided',
@@ -176,8 +219,14 @@ export const adminUiTranslations = {
     umJoinedLabel: 'Joined {date}',
     umUnnamedUser: 'Unnamed user',
     btnEdit: 'Edit',
+    btnCancel: 'Cancel',
     umChangeRole: 'Change Role',
     umSuspend: 'Suspend',
+    umDeactivate: 'Deactivate',
+    umDeactivateTitle: 'Deactivate user?',
+    umDeactivateConfirm: 'Are you sure you want to deactivate this user?',
+    umDeactivateConfirmButton: 'Deactivate user',
+    umDeactivating: 'Deactivating...',
     secContactInfo: 'Contact Information',
     secPersonalInfo: 'Personal Information',
     fieldFullName: 'Full Name',
@@ -1076,6 +1125,48 @@ export const adminUiTranslations = {
     colTarget: 'יעד',
     colDetails: 'פרטים',
 
+    // ── Dashboard: today/this-week snapshot ─────────────────────────────────
+    dashSnapshotAria: 'סיכום היום והשבוע',
+    dashBookingsToday: 'הזמנות היום',
+    dashBookingsTodaySub: 'מפגשים מתוכננים להיום',
+    dashPendingJoinRequests: 'בקשות הצטרפות ממתינות',
+    dashPendingJoinRequestsSub: 'מחכות לבדיקת מנהלת',
+    dashReportedPosts: 'פוסטים שדווחו',
+    dashReportedPostsSub: 'מחכים למודרציה',
+    dashUpcomingAppts48h: 'פגישות קרובות',
+    dashUpcomingAppts48hSub: '48 השעות הקרובות',
+
+    // ── Dashboard: bookings & appointments funnel ───────────────────────────
+    dashFunnelTitle: 'משפך הזמנות ופגישות',
+    dashFunnelWorkshops: 'סדנאות',
+    dashFunnelAppointments: 'פגישות',
+    dashFunnelCancellationRate: 'אחוז ביטולים',
+    dashFunnelEmpty: 'אין עדיין הזמנות או פגישות.',
+
+    // ── Dashboard: community moderation queue ───────────────────────────────
+    dashModerationTitle: 'תור מודרציה קהילתית',
+    dashModerationViewAll: 'פתיחת מודרציה',
+    dashModerationReportsCount: '{n} דיווחים',
+    dashModerationReportsCountOne: 'דיווח {n}',
+    dashModerationAnonymous: 'אנונימי',
+
+    // ── Dashboard: membership growth & join requests ────────────────────────
+    dashGrowthTitle: 'צמיחת חברות ובקשות הצטרפות',
+    dashGrowthChartLabel: 'הרשמות לפי שבוע',
+    dashGrowthEmpty: 'אין הרשמות חדשות בתקופה זו.',
+    dashOverdueRequestsTitle: 'בקשות ממתינות (3+ ימים)',
+    dashOverdueRequestsEmpty: 'אין בקשות הצטרפות שעברו את הזמן.',
+    dashDaysPending: 'ממתינה {n} ימים',
+    dashViewAllRequests: 'בדיקת בקשות',
+    dashViewBookingDetails: 'צפייה בפרטים',
+    dashReportsLoading: 'טוען סיכום דוחות…',
+
+    // ── Dashboard report summary cards (data from services/reportsService.js) ──
+    rptTherapistChartLabel: 'טיפולים לפי מטפלת',
+    rptTherapistEmpty: 'אין עדיין נתוני טיפולים.',
+    rptActivityChartLabel: 'נשים רשומות לפי פעילות',
+    rptActivityEmpty: 'אין עדיין נתוני הרשמה.',
+
     // ── Audit log: chrome ─────────────────────────────────────────────────
     auditTitle: 'שינויי מנהלים',
     auditSubtitle: 'מעקב אחר שינויים שבוצעו על ידי מנהלים בכל הפלטפורמה.',
@@ -1128,10 +1219,7 @@ export const adminUiTranslations = {
 
     // ── Shared: roles ─────────────────────────────────────────────────────
     roleParticipant: 'משתתפת',
-    roleVolunteer: 'מתנדבת',
-    roleTherapist: 'מטפלת',
     roleAdmin: 'מנהלת',
-    roleEditor: 'עורכת',
 
     // ── User management ───────────────────────────────────────────────────
     umTitle: 'ניהול משתמשים',
@@ -1146,6 +1234,9 @@ export const adminUiTranslations = {
     umTotalChip: '{n} סה"כ',
     umSearchPlaceholder: 'חיפוש משתמשות...',
     umAllRoles: 'כל התפקידים',
+    umAllStatuses: 'כל הסטטוסים',
+    umStatusActive: 'פעילה',
+    umStatusInactive: 'לא פעילה',
     sortNewest: 'מהחדש לישן',
     sortOldest: 'מהישן לחדש',
     sortName: 'שם',
@@ -1157,6 +1248,7 @@ export const adminUiTranslations = {
     umViewAria: 'צפייה ב{name}',
     umEditAria: 'עריכת {name}',
     umDeleteAria: 'מחיקת {name}',
+    umDeactivateAria: 'השבתת {name}',
     umNoUsers: 'לא נמצאו משתמשות',
     umNoUsersHint: 'נסי לשנות את החיפוש או המסננים.',
     umNoEmail: 'לא צוין אימייל',
@@ -1165,8 +1257,14 @@ export const adminUiTranslations = {
     umJoinedLabel: 'הצטרפה ב-{date}',
     umUnnamedUser: 'משתמשת ללא שם',
     btnEdit: 'עריכה',
+    btnCancel: 'ביטול',
     umChangeRole: 'שינוי תפקיד',
     umSuspend: 'השעיה',
+    umDeactivate: 'השבתה',
+    umDeactivateTitle: 'להשבית את המשתמשת?',
+    umDeactivateConfirm: 'האם את בטוחה שברצונך להשבית משתמשת זו?',
+    umDeactivateConfirmButton: 'השבתת משתמשת',
+    umDeactivating: 'משבית...',
     secContactInfo: 'פרטי יצירת קשר',
     secPersonalInfo: 'פרטים אישיים',
     fieldFullName: 'שם מלא',

@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { collection, doc, documentId, getDoc, getDocs, limit, orderBy, query, updateDoc } from 'firebase/firestore';
+import { collection, doc, documentId, getDoc, getDocs, limit, orderBy, query, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { Ban, Pencil, ShieldCheck } from 'lucide-react';
 import { db } from '../../../firebase';
+import { useAdmin } from '../context/AdminContext';
 import { logAuditEvent } from '../services/auditService';
 import { listJoinRequests } from '../services/joinRequestAdminService';
 import { useAdminLocale } from '../context/AdminLocaleContext';
@@ -27,28 +27,20 @@ import Typography from '@mui/material/Typography';
 import CloseIcon from '@mui/icons-material/Close';
 import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
-import PreviewIcon from '@mui/icons-material/Preview';
 import SearchIcon from '@mui/icons-material/Search';
 import SortIcon from '@mui/icons-material/Sort';
-import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import Avatar from '@mui/material/Avatar';
 
-const ROLES = ['participant', 'volunteer', 'therapist', 'admin'];
+const ROLES = ['participant', 'admin'];
 
 const ROLE_LABEL_KEYS = {
   participant: 'roleParticipant',
-  volunteer: 'roleVolunteer',
-  therapist: 'roleTherapist',
   admin: 'roleAdmin',
-  editor: 'roleEditor',
 };
 
 const ROLE_STYLES = {
   admin: { color: '#15803D', backgroundColor: 'rgba(34, 197, 94, 0.14)' },
   participant: { color: '#6D3CCF', backgroundColor: 'rgba(109, 60, 207, 0.12)' },
-  volunteer: { color: '#3B82F6', backgroundColor: 'rgba(59, 130, 246, 0.12)' },
-  therapist: { color: '#7C3AED', backgroundColor: 'rgba(124, 58, 237, 0.13)' },
-  editor: { color: '#7C3AED', backgroundColor: 'rgba(124, 58, 237, 0.13)' },
 };
 
 const actionButtonBaseSx = {
@@ -109,8 +101,12 @@ function getEmergencyContact(user) {
   return [user?.emergencyContactName, user?.emergencyPhone].filter(Boolean).join(' ');
 }
 
+function normalizeUserRole(role) {
+  return role === 'admin' ? 'admin' : 'participant';
+}
+
 function RoleChip({ role, t }) {
-  const key = role || 'participant';
+  const key = normalizeUserRole(role);
   const style = ROLE_STYLES[key] || ROLE_STYLES.participant;
 
   return (
@@ -128,17 +124,24 @@ function RoleChip({ role, t }) {
   );
 }
 
+function isInactiveUser(user) {
+  return user?.isActive === false || String(user?.status || '').toLowerCase() === 'inactive';
+}
+
 export default function UserManagementPage() {
-  const navigate = useNavigate();
+  const { currentUser } = useAdmin();
   const { t, direction } = useAdminLocale();
-  const roleLabel = (role) => t(ROLE_LABEL_KEYS[role] || 'roleParticipant');
+  const roleLabel = (role) => t(ROLE_LABEL_KEYS[normalizeUserRole(role)] || 'roleParticipant');
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(null);
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
   const [sortBy, setSortBy] = useState('newest');
   const [selectedUser, setSelectedUser] = useState(null);
+  const [deactivateTarget, setDeactivateTarget] = useState(null);
+  const [deactivating, setDeactivating] = useState(false);
   const [detailsLoading, setDetailsLoading] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('users');
@@ -178,7 +181,7 @@ export default function UserManagementPage() {
   }, [loadJoinRequests]);
 
   async function handleRoleChange(user, newRole) {
-    const oldRole = user.role || 'participant';
+    const oldRole = normalizeUserRole(user.role);
     if (oldRole === newRole) return;
 
     setSaving(user.id);
@@ -195,6 +198,32 @@ export default function UserManagementPage() {
       console.error('Role change failed:', err);
     } finally {
       setSaving(null);
+    }
+  }
+
+  async function confirmDeactivateUser() {
+    if (!deactivateTarget?.id || deactivating) return;
+
+    setDeactivating(true);
+    try {
+      await updateDoc(doc(db, 'users', deactivateTarget.id), {
+        isActive: false,
+        status: 'inactive',
+        deactivatedAt: serverTimestamp(),
+        deactivatedBy: currentUser?.uid || null,
+      });
+      const patch = {
+        isActive: false,
+        status: 'inactive',
+        deactivatedBy: currentUser?.uid || null,
+      };
+      setUsers((prev) => prev.map((user) => (user.id === deactivateTarget.id ? { ...user, ...patch } : user)));
+      setSelectedUser((prev) => (prev?.id === deactivateTarget.id ? { ...prev, ...patch } : prev));
+      setDeactivateTarget(null);
+    } catch (err) {
+      console.error('User deactivation failed:', err);
+    } finally {
+      setDeactivating(false);
     }
   }
 
@@ -222,24 +251,29 @@ export default function UserManagementPage() {
   const filteredUsers = useMemo(() => {
     const q = search.trim().toLowerCase();
     const next = users.filter((user) => {
-      const role = user.role || 'participant';
+      const role = normalizeUserRole(user.role);
       const matchesSearch =
         !q ||
         [getFullName(user), user.email, user.phoneNumber, getAddress(user)]
           .some((value) => String(value || '').toLowerCase().includes(q));
       const matchesRole = roleFilter === 'all' || role === roleFilter;
-      return matchesSearch && matchesRole;
+      const inactive = isInactiveUser(user);
+      const matchesStatus =
+        statusFilter === 'all' ||
+        (statusFilter === 'active' && !inactive) ||
+        (statusFilter === 'inactive' && inactive);
+      return matchesSearch && matchesRole && matchesStatus;
     });
 
     return [...next].sort((left, right) => {
       if (sortBy === 'name') return getFullName(left).localeCompare(getFullName(right));
-      if (sortBy === 'role') return (left.role || 'participant').localeCompare(right.role || 'participant');
+      if (sortBy === 'role') return normalizeUserRole(left.role).localeCompare(normalizeUserRole(right.role));
 
       const leftDate = getJoinedDate(left)?.toDate?.() || new Date(getJoinedDate(left) || 0);
       const rightDate = getJoinedDate(right)?.toDate?.() || new Date(getJoinedDate(right) || 0);
       return sortBy === 'oldest' ? leftDate - rightDate : rightDate - leftDate;
     });
-  }, [roleFilter, search, sortBy, users]);
+  }, [roleFilter, search, sortBy, statusFilter, users]);
 
   const userDetailRows = selectedUser
     ? [
@@ -253,7 +287,7 @@ export default function UserManagementPage() {
         ],
         [
           { fieldKey: 'dob', labelKey: 'fieldDOB', value: formatDateValue(selectedUser.birthDate || selectedUser.dateOfBirth) },
-          { fieldKey: 'role', labelKey: 'fieldRole', value: roleLabel(selectedUser.role || 'participant') },
+          { fieldKey: 'role', labelKey: 'fieldRole', value: roleLabel(selectedUser.role) },
         ],
       ]
     : [];
@@ -262,10 +296,10 @@ export default function UserManagementPage() {
     display: 'grid',
     gridTemplateColumns: {
       xs: 'minmax(0, 1fr)',
-      md: 'minmax(300px, 1.45fr) 170px 150px 180px',
+      md: 'minmax(260px, 1.35fr) minmax(150px, 0.72fr) minmax(120px, 0.58fr) minmax(112px, 0.52fr) minmax(92px, 0.42fr)',
     },
     alignItems: 'center',
-    gap: '1rem',
+    columnGap: '0.75rem',
   };
 
   const actionIconSx = (tone = 'purple') => {
@@ -284,17 +318,18 @@ export default function UserManagementPage() {
     const palette = tones[tone] || tones.purple;
 
     return {
-      width: '2.625rem',
-      height: '2.625rem',
+      width: '2rem',
+      height: '2rem',
       color: palette.color,
-      bgcolor: palette.bgcolor,
-      border: '1px solid rgba(255, 255, 255, 0.72)',
-      boxShadow: '0 10px 22px rgba(91, 57, 145, 0.06)',
+      bgcolor: 'rgba(255, 255, 255, 0.97)',
+      border: 0,
+      boxShadow: '0 9px 24px rgba(91, 30, 140, 0.12)',
       transition: 'transform 160ms ease, background-color 160ms ease, box-shadow 160ms ease',
       '&:hover': {
-        bgcolor: palette.hover,
-        transform: 'translateY(-1px)',
-        boxShadow: '0 14px 28px rgba(91, 57, 145, 0.11)',
+        color: '#fff',
+        bgcolor: tone === 'pink' ? '#DF327B' : '#6D3CCF',
+        transform: 'translateY(-2px)',
+        boxShadow: '0 14px 26px rgba(223, 50, 123, 0.20)',
       },
     };
   };
@@ -312,47 +347,37 @@ export default function UserManagementPage() {
         maxHeight: 'none',
         overflow: 'visible',
         boxSizing: 'border-box',
-        mt: { xs: -1.5, md: -2.5 },
+        mt: { xs: -2, md: -4 },
       }}
     >
       <Stack spacing={1.25} sx={{ width: '100%', maxWidth: 'none', minHeight: 0 }}>
-        <Stack spacing={1}>
+        <Stack spacing={0.8}>
           <Stack direction={{ xs: 'column', lg: 'row' }} spacing={2} alignItems={{ lg: 'center' }} justifyContent="space-between">
             <Box>
               <Typography variant="h3" sx={{ fontSize: { xs: '1.875rem', md: '2.4375rem' }, fontWeight: 950, color: '#100B2F', lineHeight: 1.05 }}>
                 {t('umTitle')}
               </Typography>
             </Box>
-            <Button
-              variant="outlined"
-              startIcon={<PreviewIcon />}
-              onClick={() => navigate('/home')}
-              sx={{
-                alignSelf: { xs: 'flex-start', lg: 'center' },
-                height: '3rem',
-                px: 3.2,
-                borderRadius: 999,
-                borderColor: 'rgba(223, 50, 123, 0.46)',
-                color: '#C52A72',
-                bgcolor: 'rgba(255,255,255,0.62)',
-                fontWeight: 900,
-                boxShadow: '0 12px 28px rgba(223, 50, 123, 0.06)',
-                '& .MuiButton-startIcon': {
-                  marginInlineEnd: '14px',
-                  marginInlineStart: 0,
-                  display: 'inherit',
-                },
-                '&:hover': {
-                  borderColor: 'rgba(223, 50, 123, 0.7)',
-                  bgcolor: 'rgba(255, 246, 251, 0.92)',
-                },
-              }}
-            >
-              {t('umPreviewParticipant')}
-            </Button>
           </Stack>
 
-          <Stack direction="row" spacing={1.2} sx={{ flexShrink: 0 }} role="tablist" aria-label={t('umSectionsAria')}>
+          <Box
+            role="tablist"
+            aria-label={t('umSectionsAria')}
+            sx={{
+              width: 'fit-content',
+              minHeight: '2.75rem',
+              p: 0,
+              border: 0,
+              borderRadius: 0,
+              display: 'inline-flex',
+              flexWrap: 'wrap',
+              alignItems: 'center',
+              gap: '0.375rem',
+              background: 'transparent',
+              backdropFilter: 'none',
+              flexShrink: 0,
+            }}
+          >
           {[
             { key: 'users', label: t('tabUsers') },
             { key: 'applications', label: t('tabApplications') },
@@ -365,22 +390,39 @@ export default function UserManagementPage() {
                 aria-selected={selected}
                 onClick={() => setActiveTab(tab.key)}
                 sx={{
-                  height: '2.75rem',
-                  px: 2.6,
-                  borderRadius: 999,
+                  width: 'auto',
+                  minWidth: '6.75rem',
+                  minHeight: '2.75rem',
+                  px: '1rem',
+                  py: '0.625rem',
+                  borderRadius: '1rem',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.45rem',
                   textTransform: 'none',
-                  fontWeight: 900,
-                  fontSize: '0.95rem',
-                  color: selected ? '#fff' : '#6D3CCF',
+                  fontWeight: 700,
+                  fontSize: '0.8rem',
+                  lineHeight: 1,
+                  color: selected ? '#fff' : '#ec4899',
                   background: selected
-                    ? 'linear-gradient(135deg, #7C3AED 0%, #DF327B 100%)'
-                    : 'rgba(255,255,255,0.7)',
-                  border: '1px solid rgba(124, 58, 237, 0.16)',
-                  boxShadow: selected && tab.key === 'applications' ? '0 14px 30px rgba(124, 58, 237, 0.22)' : 'none',
-                  '&:hover': {
-                    background: selected
-                      ? 'linear-gradient(135deg, #6F32D8 0%, #D12B72 100%)'
-                      : 'rgba(244, 238, 255, 0.9)',
+                    ? 'linear-gradient(135deg, #e73386, #dc2577)'
+                    : 'rgba(255, 255, 255, 0.97)',
+                  border: selected ? '1px solid #db4f9f' : '1px solid rgba(236, 72, 153, 0.38)',
+                  boxShadow: 'none',
+                  cursor: 'pointer',
+                  fontFamily: 'inherit',
+                  transition: 'color 180ms ease, background 180ms ease, border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease',
+                  '&:hover, &:focus-visible': {
+                    color: selected ? '#fff' : '#5b1e8c',
+                    background: selected ? 'linear-gradient(135deg, #e73386, #dc2577)' : '#fff5fa',
+                    borderColor: selected ? '#db4f9f' : 'rgba(91, 30, 140, 0.28)',
+                    boxShadow: 'none',
+                    outline: 'none',
+                    transform: 'translateY(-1px)',
+                  },
+                  '&:active': {
+                    transform: selected ? 'none' : 'translateY(0)',
                   },
                 }}
               >
@@ -405,7 +447,7 @@ export default function UserManagementPage() {
               </Button>
             );
           })}
-          </Stack>
+          </Box>
         </Stack>
 
         <Grid
@@ -423,11 +465,12 @@ export default function UserManagementPage() {
                 width: '100%',
                 maxWidth: 'none',
                 bgcolor: 'rgba(255, 255, 255, 0.82)',
-                border: '1px solid rgba(130, 92, 206, 0.14)',
-                borderRadius: '28px',
-                boxShadow: '0 28px 74px rgba(91, 57, 145, 0.11)',
-                backdropFilter: 'blur(22px)',
+                border: '1px solid rgba(167, 139, 250, 0.18)',
+                borderRadius: '24px',
+                boxShadow: 'none',
+                backdropFilter: 'blur(18px)',
                 alignSelf: 'flex-start',
+                overflow: 'hidden',
               }}
             >
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={0.5} alignItems={{ md: 'center' }} justifyContent="space-between" sx={{ px: { xs: 1, md: 1.35 }, pt: { xs: 0.75, md: 1 }, pb: 0.25, flexShrink: 0 }}>
@@ -487,6 +530,23 @@ export default function UserManagementPage() {
                   {ROLES.map((role) => <MenuItem key={role} value={role}>{roleLabel(role)}</MenuItem>)}
                 </Select>
               </FormControl>
+              <FormControl size="small" sx={{ minWidth: '9.375rem' }}>
+                <Select
+                  value={statusFilter}
+                  onChange={(event) => setStatusFilter(event.target.value)}
+                  sx={{
+                    height: '3.125rem',
+                    borderRadius: '16px',
+                    bgcolor: 'rgba(255,255,255,0.72)',
+                    fontWeight: 750,
+                    '& fieldset': { borderColor: 'rgba(130, 92, 206, 0.16)' },
+                  }}
+                >
+                  <MenuItem value="all">{t('umAllStatuses')}</MenuItem>
+                  <MenuItem value="active">{t('umStatusActive')}</MenuItem>
+                  <MenuItem value="inactive">{t('umStatusInactive')}</MenuItem>
+                </Select>
+              </FormControl>
               <FormControl size="small" sx={{ minWidth: '10rem' }}>
                 <Select
                   value={sortBy}
@@ -511,20 +571,19 @@ export default function UserManagementPage() {
 
           <Box
             sx={{
-              px: { xs: 1, md: 1.35 },
-              pb: { xs: 0.75, md: 1 },
+              px: 0,
+              pb: 0,
             }}
           >
             <Box
               sx={{
                 ...rowGrid,
-                px: 2.2,
-                py: 0.5,
+                px: '1.125rem',
                 display: { xs: 'none', md: 'grid' },
-                borderRadius: '18px 18px 0 0',
-                border: '1px solid rgba(130, 92, 206, 0.10)',
-                borderBottom: 'none',
-                bgcolor: 'rgba(255,255,255,0.42)',
+                minHeight: '3.25rem',
+                borderTop: '1px solid rgba(167, 139, 250, 0.13)',
+                borderBottom: '1px solid rgba(167, 139, 250, 0.13)',
+                bgcolor: 'transparent',
                 flexShrink: 0,
               }}
             >
@@ -532,6 +591,7 @@ export default function UserManagementPage() {
                 { key: 'user', label: t('colUser') },
                 { key: 'role', label: t('colRole') },
                 { key: 'joined', label: t('colJoined') },
+                { key: 'status', label: t('apColStatus') },
                 { key: 'actions', label: t('colActions') },
               ].map((col) => (
                 <Typography
@@ -539,10 +599,11 @@ export default function UserManagementPage() {
                   variant="caption"
                   sx={{
                     fontWeight: 950,
-                    color: '#625B84',
+                    color: 'rgba(36, 16, 79, 0.64)',
                     textTransform: 'uppercase',
-                    letterSpacing: 0.3,
-                    textAlign: col.key === 'actions' ? 'right' : 'left',
+                    letterSpacing: 0,
+                    fontSize: '0.8125rem',
+                    textAlign: col.key === 'user' ? 'left' : 'center',
                   }}
                 >
                   {col.label}
@@ -555,20 +616,20 @@ export default function UserManagementPage() {
                 maxHeight: { xs: 'calc(100dvh - 420px)', md: 'calc(100dvh - 360px)' },
                 overflowY: 'auto',
                 overflowX: 'hidden',
-                scrollPaddingBottom: '72px',
-                pr: '6px',
-                mr: '-6px',
+                scrollPaddingBottom: 0,
                 '&::-webkit-scrollbar': { width: '0.5rem' },
                 '&::-webkit-scrollbar-track': { background: 'rgba(244, 238, 255, 0.45)', borderRadius: 999 },
                 '&::-webkit-scrollbar-thumb': { background: 'rgba(167, 139, 250, 0.5)', borderRadius: 999 },
               }}
             >
-              <Stack spacing={1.1} sx={{ pb: '72px' }}>
+              <Stack spacing={0} sx={{ pb: 0 }}>
                 {loading ? (
                   <Box sx={{ py: 8, textAlign: 'center' }}>
                     <CircularProgress />
                   </Box>
-                ) : filteredUsers.length > 0 ? filteredUsers.map((user) => (
+                ) : filteredUsers.length > 0 ? filteredUsers.map((user) => {
+                  const inactive = isInactiveUser(user);
+                  return (
                   <Box
                     key={user.id}
                     role="button"
@@ -579,62 +640,60 @@ export default function UserManagementPage() {
                     }}
                     sx={{
                       ...rowGrid,
-                      px: { xs: 1.7, md: 2.2 },
-                      py: 1.8,
-                      borderRadius: '22px',
-                      border: '1px solid rgba(130, 92, 206, 0.10)',
-                      bgcolor: 'rgba(255,255,255,0.72)',
+                      minHeight: { xs: 'auto', md: '4.35rem' },
+                      px: { xs: 1.7, md: '1.125rem' },
+                      py: { xs: 1.35, md: 0 },
+                      borderRadius: { xs: '18px', md: 0 },
+                      border: 0,
+                      borderBottom: '1px solid rgba(167, 139, 250, 0.13)',
+                      bgcolor: inactive ? 'rgba(255, 247, 250, 0.62)' : 'transparent',
                       cursor: 'pointer',
                       transition: 'transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease, border-color 180ms ease',
                       ...(selectedUser?.id === user.id
                         ? {
-                            bgcolor: 'rgba(244, 238, 255, 0.95)',
-                            borderColor: 'rgba(124, 58, 237, 0.35)',
-                            boxShadow: '0 16px 34px rgba(91, 57, 145, 0.12)',
+                            bgcolor: inactive ? 'rgba(255, 239, 245, 0.8)' : 'rgba(244, 238, 255, 0.74)',
                           }
                         : {}),
                       '&:hover': {
-                        bgcolor: 'rgba(255, 250, 254, 0.94)',
-                        borderColor: 'rgba(124, 58, 237, 0.18)',
-                        boxShadow: '0 16px 34px rgba(91, 57, 145, 0.10)',
-                        transform: 'translateY(-2px) scale(1.002)',
+                        bgcolor: inactive ? 'rgba(255, 242, 247, 0.86)' : 'rgba(255, 250, 254, 0.82)',
                       },
                     }}
                   >
-                    <Stack direction="row" spacing={1.5} alignItems="center" sx={{ minWidth: 0 }}>
+                    <Stack direction="row" spacing={1.25} alignItems="center" sx={{ minWidth: 0 }}>
                       <Avatar
                         src={user.avatarUrl || ''}
                         sx={{
-                          width: '3.375rem',
-                          height: '3.375rem',
+                          width: '2.25rem',
+                          height: '2.25rem',
                           bgcolor: '#EEE7FF',
                           color: '#6D3CCF',
                           fontWeight: 950,
-                          fontSize: '1.1875rem',
-                          boxShadow: '0 10px 24px rgba(109, 60, 207, 0.12)',
+                          fontSize: '0.8125rem',
+                          boxShadow: 'none',
                         }}
                       >
                         {initials(user)}
                       </Avatar>
                       <Box sx={{ minWidth: 0 }}>
-                        <Typography fontWeight={950} noWrap sx={{ color: '#17122E' }}>{getFullName(user, t('umUnnamedUser'))}</Typography>
-                        <Typography color="#5E587E" noWrap sx={{ fontSize: '0.84375rem' }}>{user.email || t('umNoEmail')}</Typography>
+                        <Typography fontWeight={900} noWrap sx={{ color: '#17122E', fontSize: '0.875rem', lineHeight: 1.2 }}>{getFullName(user, t('umUnnamedUser'))}</Typography>
+                        <Typography color="rgba(36, 16, 79, 0.55)" noWrap sx={{ fontSize: '0.75rem', mt: 0.25 }}>{user.email || t('umNoEmail')}</Typography>
                       </Box>
                     </Stack>
 
-                    <Box onClick={(event) => event.stopPropagation()}>
+                    <Box onClick={(event) => event.stopPropagation()} sx={{ display: 'flex', justifyContent: 'center', minWidth: 0 }}>
                       <Select
-                        value={user.role || 'participant'}
+                        value={normalizeUserRole(user.role)}
                         onChange={(event) => handleRoleChange(user, event.target.value)}
                         disabled={saving === user.id}
                         size="small"
                         sx={{
-                          minWidth: '9.375rem',
-                          height: '2.625rem',
-                          borderRadius: 999,
-                          fontWeight: 900,
-                          ...(ROLE_STYLES[user.role || 'participant'] || ROLE_STYLES.participant),
-                          '& .MuiSelect-select': { py: 1.05 },
+                          width: '8.75rem',
+                          height: '2.25rem',
+                          borderRadius: '10px',
+                          fontWeight: 850,
+                          fontSize: '0.75rem',
+                          ...(ROLE_STYLES[normalizeUserRole(user.role)] || ROLE_STYLES.participant),
+                          '& .MuiSelect-select': { py: 0.75, textAlign: 'center' },
                           '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.65)' },
                         }}
                       >
@@ -642,26 +701,47 @@ export default function UserManagementPage() {
                       </Select>
                     </Box>
 
-                    <Typography fontWeight={800} color="#4F4A70" sx={{ textAlign: 'start' }}>{formatDateValue(getJoinedDate(user))}</Typography>
+                    <Typography fontWeight={800} color="rgba(36, 16, 79, 0.72)" sx={{ textAlign: 'center', fontSize: '0.8125rem' }}>{formatDateValue(getJoinedDate(user))}</Typography>
+
+                    <Box sx={{ display: 'flex', justifyContent: 'center', minWidth: 0 }}>
+                      <Chip
+                        label={inactive ? t('umStatusInactive') : t('umStatusActive')}
+                        size="small"
+                        sx={{
+                          height: '1.875rem',
+                          minWidth: '5.75rem',
+                          justifyContent: 'center',
+                          borderRadius: '10px',
+                          color: inactive ? '#C2415B' : '#329143',
+                          bgcolor: inactive ? 'rgba(244, 63, 94, 0.10)' : 'rgba(134, 209, 124, 0.22)',
+                          border: inactive ? '1px solid rgba(244, 63, 94, 0.16)' : '1px solid rgba(134, 209, 124, 0.18)',
+                          fontWeight: 850,
+                          fontSize: '0.75rem',
+                        }}
+                      />
+                    </Box>
 
                     <Stack
                       direction="row"
-                      spacing={1.1}
-                      justifyContent={{ xs: 'flex-start', md: 'flex-end' }}
+                      spacing={0.75}
+                      justifyContent={{ xs: 'flex-start', md: 'center' }}
                       onClick={(event) => event.stopPropagation()}
                     >
-                      <IconButton aria-label={t('umViewAria').replace('{name}', getFullName(user, t('umUnnamedUser')))} onClick={() => selectUser(user)} sx={actionIconSx('purple')}>
-                        <VisibilityOutlinedIcon fontSize="small" />
-                      </IconButton>
                       <IconButton aria-label={t('umEditAria').replace('{name}', getFullName(user, t('umUnnamedUser')))} onClick={() => selectUser(user)} sx={actionIconSx('purple')}>
                         <EditOutlinedIcon fontSize="small" />
                       </IconButton>
-                      <IconButton aria-label={t('umDeleteAria').replace('{name}', getFullName(user, t('umUnnamedUser')))} sx={actionIconSx('pink')}>
+                      <IconButton
+                        aria-label={t('umDeactivateAria').replace('{name}', getFullName(user, t('umUnnamedUser')))}
+                        disabled={inactive || deactivating}
+                        onClick={() => setDeactivateTarget(user)}
+                        sx={actionIconSx('pink')}
+                      >
                         <DeleteOutlinedIcon fontSize="small" />
                       </IconButton>
                     </Stack>
                   </Box>
-                )) : (
+                  );
+                }) : (
                   <Box sx={{ py: 8, textAlign: 'center' }}>
                     <Typography fontWeight={900}>{t('umNoUsers')}</Typography>
                     <Typography color="text.secondary" sx={{ mt: 1 }}>{t('umNoUsersHint')}</Typography>
@@ -767,7 +847,21 @@ export default function UserManagementPage() {
                   <Box sx={{ minWidth: 0, flex: 1, textAlign: 'left' }}>
                     <Stack spacing={0.5} alignItems="flex-start">
                       <Stack direction="row" spacing={0.75} alignItems="center" flexWrap="wrap" useFlexGap>
-                        <RoleChip role={selectedUser.role || 'participant'} t={t} />
+                        <RoleChip role={selectedUser.role} t={t} />
+                        {isInactiveUser(selectedUser) ? (
+                          <Chip
+                            label={t('umStatusInactive')}
+                            size="small"
+                            sx={{
+                              height: '1.625rem',
+                              borderRadius: 999,
+                              color: '#C2415B',
+                              bgcolor: 'rgba(244, 63, 94, 0.10)',
+                              border: '1px solid rgba(244, 63, 94, 0.16)',
+                              fontWeight: 900,
+                            }}
+                          />
+                        ) : null}
                         {detailsLoading ? <CircularProgress size={14} /> : null}
                       </Stack>
                       <Typography variant="h5" fontWeight={950} noWrap sx={{ fontSize: '1.125rem', textAlign: 'left', minWidth: 0, width: '100%' }}>
@@ -815,6 +909,8 @@ export default function UserManagementPage() {
                       <Button
                         size="small"
                         startIcon={<Ban />}
+                        disabled={isInactiveUser(selectedUser)}
+                        onClick={() => setDeactivateTarget(selectedUser)}
                         sx={{
                           ...actionButtonBaseSx,
                           color: '#C2415B',
@@ -827,7 +923,7 @@ export default function UserManagementPage() {
                           },
                         }}
                       >
-                        {t('umSuspend')}
+                        {t('umDeactivate')}
                       </Button>
                     </Stack>
                   </Box>
@@ -858,6 +954,75 @@ export default function UserManagementPage() {
             </Box>
           </Box>
         ) : null}
+      </Dialog>
+      <Dialog
+        open={Boolean(deactivateTarget)}
+        onClose={() => {
+          if (!deactivating) setDeactivateTarget(null);
+        }}
+        PaperProps={{
+          dir: direction,
+          sx: {
+            width: { xs: 'calc(100vw - 32px)', sm: '26rem' },
+            borderRadius: '24px',
+            p: 0,
+            overflow: 'hidden',
+            bgcolor: 'rgba(255, 255, 255, 0.96)',
+            boxShadow: '0 26px 74px rgba(32, 20, 67, 0.24)',
+          },
+        }}
+        BackdropProps={{
+          sx: {
+            bgcolor: 'rgba(18, 12, 35, 0.42)',
+            backdropFilter: 'blur(8px)',
+          },
+        }}
+      >
+        <Box sx={{ p: { xs: 2.25, sm: 2.75 } }}>
+          <Typography variant="h6" fontWeight={950} sx={{ color: '#17122E' }}>
+            {t('umDeactivateTitle')}
+          </Typography>
+          <Typography sx={{ mt: 1, color: '#5E587E', lineHeight: 1.55 }}>
+            {t('umDeactivateConfirm')}
+          </Typography>
+          {deactivateTarget ? (
+            <Typography sx={{ mt: 1.25, color: '#17122E', fontWeight: 900 }}>
+              {getFullName(deactivateTarget, t('umUnnamedUser'))}
+            </Typography>
+          ) : null}
+          <Stack direction="row" spacing={1.25} justifyContent="flex-end" sx={{ mt: 3 }}>
+            <Button
+              variant="outlined"
+              onClick={() => setDeactivateTarget(null)}
+              disabled={deactivating}
+              sx={{
+                borderRadius: 999,
+                px: 2.4,
+                borderColor: 'rgba(130, 92, 206, 0.18)',
+                color: '#5B21B6',
+                fontWeight: 900,
+              }}
+            >
+              {t('btnCancel')}
+            </Button>
+            <Button
+              variant="contained"
+              onClick={confirmDeactivateUser}
+              disabled={deactivating}
+              sx={{
+                borderRadius: 999,
+                px: 2.6,
+                bgcolor: '#C52A72',
+                color: '#fff',
+                fontWeight: 900,
+                boxShadow: '0 12px 26px rgba(197, 42, 114, 0.18)',
+                '&:hover': { bgcolor: '#B52568' },
+              }}
+            >
+              {deactivating ? t('umDeactivating') : t('umDeactivateConfirmButton')}
+            </Button>
+          </Stack>
+        </Box>
       </Dialog>
     </Box>
   );

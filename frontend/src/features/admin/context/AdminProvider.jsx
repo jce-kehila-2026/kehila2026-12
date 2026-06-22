@@ -13,10 +13,12 @@ export default function AdminProvider({ children }) {
   const [impersonatedUserUID, setImpersonatedUserUID] = useState(null);
   const [impersonatedDisplayName, setImpersonatedDisplayName] = useState('');
   const [mustChangePassword, setMustChangePassword] = useState(false);
+  const [accountInactive, setAccountInactive] = useState(false);
 
   // Listen to Firebase Auth state
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (user) => {
+      setLoading(true);
       setCurrentUser(user);
       if (user) {
         const role = await resolveUserRole(user);
@@ -25,15 +27,20 @@ export default function AdminProvider({ children }) {
         // `mustChangePassword` flag, which gates them to the set-password screen.
         try {
           const snap = await getDoc(doc(db, 'users', user.uid));
-          setMustChangePassword(snap.exists() && snap.data().mustChangePassword === true);
+          const profile = snap.exists() ? snap.data() : {};
+          const inactive = profile.isActive === false || String(profile.status || '').toLowerCase() === 'inactive';
+          setAccountInactive(inactive);
+          setMustChangePassword(!inactive && profile.mustChangePassword === true);
         } catch (err) {
           console.error('Failed to read profile flags:', err);
+          setAccountInactive(false);
           setMustChangePassword(false);
         }
       } else {
         setUserRole(null);
         setImpersonatedUserUID(null);
         setMustChangePassword(false);
+        setAccountInactive(false);
       }
       setLoading(false);
     });
@@ -88,6 +95,7 @@ export default function AdminProvider({ children }) {
       stopImpersonation,
       logout,
       mustChangePassword,
+      accountInactive,
       clearMustChangePassword,
     }),
     [
@@ -102,6 +110,7 @@ export default function AdminProvider({ children }) {
       stopImpersonation,
       logout,
       mustChangePassword,
+      accountInactive,
       clearMustChangePassword,
     ]
   );
