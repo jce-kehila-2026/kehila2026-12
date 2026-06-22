@@ -347,11 +347,11 @@ export default function UserManagementPage() {
         maxHeight: 'none',
         overflow: 'visible',
         boxSizing: 'border-box',
-        mt: { xs: -1.5, md: -2.5 },
+        mt: { xs: -2, md: -4 },
       }}
     >
       <Stack spacing={1.25} sx={{ width: '100%', maxWidth: 'none', minHeight: 0 }}>
-        <Stack spacing={1}>
+        <Stack spacing={0.8}>
           <Stack direction={{ xs: 'column', lg: 'row' }} spacing={2} alignItems={{ lg: 'center' }} justifyContent="space-between">
             <Box>
               <Typography variant="h3" sx={{ fontSize: { xs: '1.875rem', md: '2.4375rem' }, fontWeight: 950, color: '#100B2F', lineHeight: 1.05 }}>
@@ -360,7 +360,24 @@ export default function UserManagementPage() {
             </Box>
           </Stack>
 
-          <Stack direction="row" spacing={1.2} sx={{ flexShrink: 0 }} role="tablist" aria-label={t('umSectionsAria')}>
+          <Box
+            role="tablist"
+            aria-label={t('umSectionsAria')}
+            sx={{
+              width: 'fit-content',
+              minHeight: '2.75rem',
+              p: 0,
+              border: 0,
+              borderRadius: 0,
+              display: 'inline-flex',
+              flexWrap: 'wrap',
+              alignItems: 'center',
+              gap: '0.375rem',
+              background: 'transparent',
+              backdropFilter: 'none',
+              flexShrink: 0,
+            }}
+          >
           {[
             { key: 'users', label: t('tabUsers') },
             { key: 'applications', label: t('tabApplications') },
@@ -373,22 +390,39 @@ export default function UserManagementPage() {
                 aria-selected={selected}
                 onClick={() => setActiveTab(tab.key)}
                 sx={{
-                  height: '2.75rem',
-                  px: 2.6,
-                  borderRadius: 999,
+                  width: 'auto',
+                  minWidth: '6.75rem',
+                  minHeight: '2.75rem',
+                  px: '1rem',
+                  py: '0.625rem',
+                  borderRadius: '1rem',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.45rem',
                   textTransform: 'none',
-                  fontWeight: 900,
-                  fontSize: '0.95rem',
-                  color: selected ? '#fff' : '#6D3CCF',
+                  fontWeight: 700,
+                  fontSize: '0.8rem',
+                  lineHeight: 1,
+                  color: selected ? '#fff' : '#ec4899',
                   background: selected
-                    ? 'linear-gradient(135deg, #7C3AED 0%, #DF327B 100%)'
-                    : 'rgba(255,255,255,0.7)',
-                  border: '1px solid rgba(124, 58, 237, 0.16)',
-                  boxShadow: selected && tab.key === 'applications' ? '0 14px 30px rgba(124, 58, 237, 0.22)' : 'none',
-                  '&:hover': {
-                    background: selected
-                      ? 'linear-gradient(135deg, #6F32D8 0%, #D12B72 100%)'
-                      : 'rgba(244, 238, 255, 0.9)',
+                    ? 'linear-gradient(135deg, #e73386, #dc2577)'
+                    : 'rgba(255, 255, 255, 0.97)',
+                  border: selected ? '1px solid #db4f9f' : '1px solid rgba(236, 72, 153, 0.38)',
+                  boxShadow: 'none',
+                  cursor: 'pointer',
+                  fontFamily: 'inherit',
+                  transition: 'color 180ms ease, background 180ms ease, border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease',
+                  '&:hover, &:focus-visible': {
+                    color: selected ? '#fff' : '#5b1e8c',
+                    background: selected ? 'linear-gradient(135deg, #e73386, #dc2577)' : '#fff5fa',
+                    borderColor: selected ? '#db4f9f' : 'rgba(91, 30, 140, 0.28)',
+                    boxShadow: 'none',
+                    outline: 'none',
+                    transform: 'translateY(-1px)',
+                  },
+                  '&:active': {
+                    transform: selected ? 'none' : 'translateY(0)',
                   },
                 }}
               >
@@ -413,7 +447,7 @@ export default function UserManagementPage() {
               </Button>
             );
           })}
-          </Stack>
+          </Box>
         </Stack>
 
         <Grid
