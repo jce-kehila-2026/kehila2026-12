@@ -5,36 +5,9 @@ import CakeOutlinedIcon from '@mui/icons-material/CakeOutlined';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import { sendBirthdayWish } from '../services/communityService';
+import { getBirthdayMonthDay } from '../utils/communityProfileUtils';
 import { useParticipantLocale } from '../../context/ParticipantLocaleContext';
 import { getParticipantCommunityContent } from '../../i18n/participantUiTranslations';
-
-const getBirthdayMonthDay = (birthday) => {
-  if (typeof birthday !== 'string') return null;
-
-  const dateParts = birthday.match(/^(\d{4})-(\d{2})-(\d{2})$/);
-  if (dateParts) {
-    const year = Number(dateParts[1]);
-    const month = Number(dateParts[2]);
-    const day = Number(dateParts[3]);
-    const parsedDate = new Date(year, month - 1, day);
-
-    if (
-      parsedDate.getFullYear() === year
-      && parsedDate.getMonth() === month - 1
-      && parsedDate.getDate() === day
-    ) {
-      return { month, day };
-    }
-  }
-
-  const parsedDate = new Date(birthday);
-  if (Number.isNaN(parsedDate.getTime())) return null;
-
-  return {
-    month: parsedDate.getMonth() + 1,
-    day: parsedDate.getDate(),
-  };
-};
 
 const getTodaysBirthdayUsers = (users = [], today = new Date()) => users.filter((user) => {
   const birthdayMonthDay = getBirthdayMonthDay(user?.birthday);
@@ -87,6 +60,10 @@ export default function BirthdayCard({
   ));
   const birthdayUser = visibleBirthdayUsers[activeBirthdayIndex];
   const hasBirthdayNavigation = visibleBirthdayUsers.length > 1;
+  // The current user's own entry is included so they see their day celebrated,
+  // but you don't send a wish to yourself — render a celebratory variant with
+  // the wish controls hidden.
+  const isOwnBirthday = Boolean(birthdayUser) && Boolean(localUserId) && birthdayUser.id === localUserId;
 
   useEffect(() => {
     setSentBirthdayUserIds(readSentBirthdayWishIds(sentStorageKey));
@@ -193,38 +170,42 @@ export default function BirthdayCard({
         </span>
         <div className="birthday-card__heading">
           <h2 id="birthday-card-title">{birthdayUser.name}</h2>
-          <p>{t('birthdayItsHerDay')}</p>
+          <p>{isOwnBirthday ? t('birthdayYourDay') : t('birthdayItsHerDay')}</p>
         </div>
       </div>
 
-      <div className="birthday-card__messages" aria-label={t('readyWishesAria')}>
-        {birthdayMessages.map((message) => (
+      {!isOwnBirthday && (
+        <>
+          <div className="birthday-card__messages" aria-label={t('readyWishesAria')}>
+            {birthdayMessages.map((message) => (
+              <button
+                className={selectedMessage === message ? 'is-selected' : ''}
+                type="button"
+                onClick={() => handleReadyMessageClick(message)}
+                key={message}
+              >
+                <span className="birthday-card__message-icon" aria-hidden="true">
+                  {selectedMessage === message ? <FavoriteIcon /> : <FavoriteBorderIcon />}
+                </span>
+                <span>{message}</span>
+              </button>
+            ))}
+          </div>
+          {birthdayWishError && (
+            <p className="birthday-card__error" id="birthday-card-error" role="alert">
+              {birthdayWishError}
+            </p>
+          )}
           <button
-            className={selectedMessage === message ? 'is-selected' : ''}
+            className="birthday-card__send"
             type="button"
-            onClick={() => handleReadyMessageClick(message)}
-            key={message}
+            onClick={handleSendBirthdayWish}
+            disabled={isSendingBirthdayWish}
           >
-            <span className="birthday-card__message-icon" aria-hidden="true">
-              {selectedMessage === message ? <FavoriteIcon /> : <FavoriteBorderIcon />}
-            </span>
-            <span>{message}</span>
+            {isSendingBirthdayWish ? t('birthdaySending') : t('birthdaySendWish')}
           </button>
-        ))}
-      </div>
-      {birthdayWishError && (
-        <p className="birthday-card__error" id="birthday-card-error" role="alert">
-          {birthdayWishError}
-        </p>
+        </>
       )}
-      <button
-        className="birthday-card__send"
-        type="button"
-        onClick={handleSendBirthdayWish}
-        disabled={isSendingBirthdayWish}
-      >
-        {isSendingBirthdayWish ? t('birthdaySending') : t('birthdaySendWish')}
-      </button>
     </section>
   );
 }
