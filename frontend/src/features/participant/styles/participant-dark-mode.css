@@ -494,10 +494,15 @@
   color: var(--pd-text-subtle-dark);
 }
 
+.participant-home--dark .events-category-grid {
+  background: #f7eff5;
+}
+
 .participant-home--dark .events-category-button {
-  background: var(--pd-card-dark-soft) !important;
-  border-color: rgba(236, 72, 153, 0.28) !important;
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.28) !important;
+  background: transparent !important;
+  border: 0 !important;
+  color: rgba(75, 19, 107, 0.62) !important;
+  box-shadow: none !important;
   filter: none !important;
 }
 
@@ -507,50 +512,35 @@
 }
 
 .participant-home--dark .events-category-button span {
-  color: var(--pd-text-muted-dark) !important;
+  color: currentColor !important;
   text-shadow: none !important;
 }
 
 .participant-home--dark .events-category-button svg {
-  color: var(--pd-text-muted-dark);
+  color: currentColor;
   opacity: 0.92;
 }
 
 .participant-home--dark .events-category-button:hover {
-  background: #1f2937 !important;
-  border-color: rgba(236, 72, 153, 0.42) !important;
-  transform: translateY(-1px) scale(1.01);
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.32) !important;
+  background: #f1e3ee !important;
+  color: rgba(75, 19, 107, 0.78) !important;
+  transform: none;
+  box-shadow: none !important;
 }
 
 .participant-home--dark .events-category-button:hover span {
-  color: var(--pd-text-dark) !important;
+  color: currentColor !important;
 }
 
 .participant-home--dark .events-category-button.is-active {
-  transform: translateY(-1px) scale(1.02);
-  box-shadow:
-    0 10px 24px rgba(0, 0, 0, 0.32),
-    inset 0 0 0 1px rgba(236, 72, 153, 0.18) !important;
+  background: #db4f9f !important;
+  color: #ffffff !important;
+  transform: none;
+  box-shadow: 0 2px 8px rgba(219, 79, 159, 0.24) !important;
 }
 
 .participant-home--dark .events-category-button.is-active span {
-  color: var(--pd-text-dark) !important;
-}
-
-.participant-home--dark .events-category-button--lavender.is-active {
-  background: rgba(126, 34, 206, 0.22) !important;
-  border-color: rgba(167, 139, 250, 0.52) !important;
-}
-
-.participant-home--dark .events-category-button--blush.is-active {
-  background: rgba(236, 72, 153, 0.2) !important;
-  border-color: rgba(236, 72, 153, 0.52) !important;
-}
-
-.participant-home--dark .events-category-button--peach.is-active {
-  background: rgba(234, 88, 12, 0.16) !important;
-  border-color: rgba(251, 146, 60, 0.48) !important;
+  color: currentColor !important;
 }
 
 /* ── Community ──────────────────────────────────────────────────────────── */
