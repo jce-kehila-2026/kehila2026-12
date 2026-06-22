@@ -874,19 +874,15 @@ function AppointmentBookingDrawer({
   const { t, lang } = useParticipantLocale();
   const intlLocale = INTL_LOCALE_BY_LANG[lang] || 'en';
   const providers = useMemo(() => getAppointmentProviders(event, t), [event, t]);
-  const registeredAppointmentOption = useMemo(
-    () => event.sessionOptions.find((option) => registeredSessionIds.has(option.id)) || null,
-    [event.sessionOptions, registeredSessionIds],
-  );
   const [selectedProviderId, setSelectedProviderId] = useState('');
   const [dateIndex, setDateIndex] = useState(0);
   const [selectedOptionId, setSelectedOptionId] = useState('');
 
   useEffect(() => {
-    setSelectedProviderId(registeredAppointmentOption?.providerId || providers[0]?.id || '');
+    setSelectedProviderId(providers[0]?.id || '');
     setDateIndex(0);
-    setSelectedOptionId(registeredAppointmentOption?.id || '');
-  }, [event?.id, providers, registeredAppointmentOption?.id, registeredAppointmentOption?.providerId]);
+    setSelectedOptionId('');
+  }, [event?.id, providers]);
 
   const selectedProvider = providers.find((provider) => provider.id === selectedProviderId) || providers[0] || null;
   const dateOptions = useMemo(
@@ -900,11 +896,9 @@ function AppointmentBookingDrawer({
   );
 
   useEffect(() => {
-    if (registeredAppointmentOption?.providerId === selectedProviderId) return;
-
     setDateIndex(0);
     setSelectedOptionId('');
-  }, [registeredAppointmentOption?.providerId, selectedProviderId]);
+  }, [selectedProviderId]);
 
   useEffect(() => {
     if (!dateOptions.length) {
@@ -912,20 +906,21 @@ function AppointmentBookingDrawer({
       return;
     }
 
-    const registeredDateIndex = registeredAppointmentOption?.dateKey
-      ? dateOptions.findIndex((dateOption) => dateOption.dateKey === registeredAppointmentOption.dateKey)
-      : -1;
-
-    setDateIndex((current) => (registeredDateIndex >= 0 ? registeredDateIndex : Math.min(current, dateOptions.length - 1)));
-  }, [dateOptions, registeredAppointmentOption?.dateKey]);
+    setDateIndex((current) => Math.min(current, dateOptions.length - 1));
+  }, [dateOptions.length]);
 
   useEffect(() => {
     const currentOption = timeOptions.find((timeOption) => timeOption.option?.id === selectedOptionId);
     if (currentOption && !currentOption.unavailable && !currentOption.isFull) return;
 
+    const firstBookableOption = timeOptions.find((timeOption) => (
+      timeOption.option
+      && !registeredSessionIds.has(timeOption.option.id)
+      && !timeOption.unavailable
+      && !timeOption.isFull
+    ));
     const firstRegisteredOption = timeOptions.find((timeOption) => timeOption.option && registeredSessionIds.has(timeOption.option.id));
-    const firstOpenOption = timeOptions.find((timeOption) => timeOption.option && !timeOption.unavailable && !timeOption.isFull);
-    setSelectedOptionId(firstRegisteredOption?.option?.id || firstOpenOption?.option?.id || '');
+    setSelectedOptionId(firstBookableOption?.option?.id || firstRegisteredOption?.option?.id || '');
   }, [registeredSessionIds, selectedOptionId, timeOptions]);
 
   if (!event) return null;
@@ -1006,7 +1001,7 @@ function AppointmentBookingDrawer({
               <div className="workshop-details-panel__detail-item">
                 <CalendarMonthIcon fontSize="small" />
                 <div className="workshop-details-panel__detail-copy">
-                  <strong>{tr(t, 'evCancellation', 'Cancellation')}</strong>
+                  <strong>{t('evStatus')}</strong>
                   <span>{canCancelBooking ? t('evRegistered') : t('evCancellationClosed')}</span>
                 </div>
               </div>
