@@ -15,17 +15,18 @@ const ROLES = ['participant', 'admin'];
 
 const ROLE_LABEL_KEYS = {
   participant: 'roleParticipant',
-  volunteer: 'roleVolunteer',
-  therapist: 'roleTherapist',
   admin: 'roleAdmin',
-  editor: 'roleEditor',
 };
+
+function normalizeUserRole(role) {
+  return role === 'admin' ? 'admin' : 'participant';
+}
 
 const HE_DATAGRID_LOCALE_TEXT = heIL.components.MuiDataGrid.defaultProps.localeText;
 
 export default function RoleManagementPage() {
   const { t, lang } = useAdminLocale();
-  const roleLabel = (role) => t(ROLE_LABEL_KEYS[role] || 'roleParticipant');
+  const roleLabel = (role) => t(ROLE_LABEL_KEYS[normalizeUserRole(role)] || 'roleParticipant');
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(null);
@@ -45,7 +46,7 @@ export default function RoleManagementPage() {
   }, []);
 
   async function handleRoleChange(user, newRole) {
-    if (user.role === newRole) return;
+    if (normalizeUserRole(user.role) === newRole) return;
     setSaving(user.id);
     try {
       const oldRole = user.role;
@@ -83,9 +84,9 @@ export default function RoleManagementPage() {
       width: 150,
       renderCell: (params) => (
         <Chip
-          label={roleLabel(params.value || 'participant')}
+          label={roleLabel(params.value)}
           size="small"
-          color={roleColor(params.value)}
+          color={roleColor(normalizeUserRole(params.value))}
           variant="outlined"
         />
       ),
@@ -98,7 +99,7 @@ export default function RoleManagementPage() {
       filterable: false,
       renderCell: (params) => (
         <Select
-          value={params.row.role || 'participant'}
+          value={normalizeUserRole(params.row.role)}
           onChange={(e) => handleRoleChange(params.row, e.target.value)}
           disabled={saving === params.row.id}
           size="small"
