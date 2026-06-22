@@ -7,35 +7,22 @@
 // review screens feel like one product.
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Alert from '@mui/material/Alert';
-import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
-import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
-import Fade from '@mui/material/Fade';
-import FormControl from '@mui/material/FormControl';
 import IconButton from '@mui/material/IconButton';
-import InputAdornment from '@mui/material/InputAdornment';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
+import Pagination from '@mui/material/Pagination';
 import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import CheckCircleIcon from '@mui/icons-material/CheckCircleOutlineOutlined';
 import CloseIcon from '@mui/icons-material/Close';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlineOutlined';
-import EmailOutlinedIcon from '@mui/icons-material/EmailOutlined';
-import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined';
-import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutlineOutlined';
 import ReplayIcon from '@mui/icons-material/Replay';
-import SearchIcon from '@mui/icons-material/Search';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
-import VolunteerActivismOutlinedIcon from '@mui/icons-material/VolunteerActivismOutlined';
-import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
 import {
   FORM_SUBMISSION_STATUS,
   FORM_SUBMISSION_TYPE,
@@ -44,8 +31,10 @@ import {
   setSubmissionHandled,
 } from '../services/formSubmissionAdminService';
 import { useAdminLocale } from '../context/AdminLocaleContext';
+import './FormsPage.css';
 
 const INTL_LOCALE_BY_LANG = { he: 'he-IL', en: 'en-US' };
+const PAGE_SIZE = 10;
 
 const STATUS_META = {
   [FORM_SUBMISSION_STATUS.NEW]: { labelKey: 'fmStatusNew', color: '#B45309', bg: 'rgba(245, 158, 11, 0.16)' },
@@ -53,8 +42,8 @@ const STATUS_META = {
 };
 
 const TYPE_META = {
-  [FORM_SUBMISSION_TYPE.VOLUNTEER]: { labelKey: 'fmTypeVolunteer', color: '#6D3CCF', bg: 'rgba(124, 58, 237, 0.12)', icon: <VolunteerActivismOutlinedIcon fontSize="small" /> },
-  [FORM_SUBMISSION_TYPE.DONATION]: { labelKey: 'fmTypeDonation', color: '#C52A72', bg: 'rgba(223, 50, 123, 0.12)', icon: <FavoriteBorderIcon fontSize="small" /> },
+  [FORM_SUBMISSION_TYPE.VOLUNTEER]: { labelKey: 'fmTypeVolunteer' },
+  [FORM_SUBMISSION_TYPE.DONATION]: { labelKey: 'fmTypeDonation' },
 };
 
 function formatDate(value, intlLocale) {
@@ -65,6 +54,19 @@ function formatDate(value, intlLocale) {
   }
   const parsed = new Date(value);
   return Number.isNaN(parsed.getTime()) ? String(value) : parsed.toLocaleDateString(intlLocale);
+}
+
+function formatTableDate(value) {
+  let date = null;
+  if (value?.toDate) date = value.toDate();
+  else if (value && typeof value === 'object' && typeof value.seconds === 'number') date = new Date(value.seconds * 1000);
+  else if (value) date = new Date(value);
+  if (!date || Number.isNaN(date.getTime())) return '-';
+  return [
+    String(date.getDate()).padStart(2, '0'),
+    String(date.getMonth() + 1).padStart(2, '0'),
+    date.getFullYear(),
+  ].join('/');
 }
 
 function initialsOf(name) {
@@ -78,29 +80,6 @@ function initialsOf(name) {
   );
 }
 
-function StatusChip({ status, t }) {
-  const meta = STATUS_META[status] || STATUS_META[FORM_SUBMISSION_STATUS.NEW];
-  return (
-    <Chip
-      label={t(meta.labelKey)}
-      size="small"
-      sx={{ color: meta.color, bgcolor: meta.bg, borderRadius: 999, fontWeight: 900, border: '1px solid rgba(255,255,255,0.7)' }}
-    />
-  );
-}
-
-function TypeChip({ type, t }) {
-  const meta = TYPE_META[type] || TYPE_META[FORM_SUBMISSION_TYPE.VOLUNTEER];
-  return (
-    <Chip
-      icon={meta.icon}
-      label={t(meta.labelKey)}
-      size="small"
-      sx={{ color: meta.color, bgcolor: meta.bg, borderRadius: 999, fontWeight: 850, border: '1px solid rgba(255,255,255,0.7)', '& .MuiChip-icon': { color: meta.color } }}
-    />
-  );
-}
-
 const TABLE_COLUMNS = [
   { key: 'user', label: 'User', align: 'left' },
   { key: 'contact', label: 'Contact', align: 'left' },
@@ -110,105 +89,25 @@ const TABLE_COLUMNS = [
   { key: 'actions', label: 'Actions', align: 'center' },
 ];
 
-const FORMS_TABLE_GRID = {
-  xs: 'minmax(0, 1fr)',
-  md: 'minmax(0, 1.4fr) minmax(0, 1.8fr) minmax(0, 0.9fr) minmax(0, 1fr) minmax(0, 0.9fr) minmax(0, 1fr)',
-};
-
-const FORMS_TABLE_PAD_X = { xs: 1.7, md: 2.2 };
-
-const formsTableRowGridSx = {
-  display: 'grid',
-  gridTemplateColumns: FORMS_TABLE_GRID,
-  alignItems: 'center',
-  columnGap: { xs: 0, md: '1rem' },
-  rowGap: { xs: '0.75rem', md: 0 },
-  px: FORMS_TABLE_PAD_X,
-  width: '100%',
-  boxSizing: 'border-box',
-};
-
-const FORMS_USER_AVATAR_WIDTH = '3.375rem';
-const FORMS_USER_ROW_GAP = 1.5;
-
-const formsTableCellLeftSx = {
-  minWidth: 0,
-  overflow: 'hidden',
-};
-
-const formsTableContactCellSx = {
-  minWidth: 0,
-  overflow: 'hidden',
-  width: '100%',
-};
-
-const formsTableCellCenterSx = {
-  minWidth: 0,
-  overflow: 'hidden',
-  display: 'flex',
-  justifyContent: 'center',
-  alignItems: 'center',
-};
-
-const formsTableHeaderLabelSx = {
-  fontWeight: 950,
-  color: '#625B84',
-  textTransform: 'uppercase',
-  letterSpacing: 0.3,
-  display: 'block',
-  width: '100%',
-};
-
-const formsTableLeftHeaderLabelSx = {
-  fontWeight: 950,
-  color: '#625B84',
-  textTransform: 'uppercase',
-  letterSpacing: 0.3,
-  display: 'block',
-  width: 'max-content',
-  maxWidth: '100%',
-  textAlign: 'left /* @noflip */',
-};
-
-function FormsTableUserHeader() {
+function FormDetailLine({ label, value }) {
   return (
-    <Box sx={formsTableCellLeftSx}>
-      <Stack direction="row" spacing={FORMS_USER_ROW_GAP} alignItems="center" sx={{ minWidth: 0, width: '100%' }}>
-        <Box sx={{ width: FORMS_USER_AVATAR_WIDTH, flexShrink: 0 }} aria-hidden="true" />
-        <Typography variant="caption" dir="ltr" sx={formsTableLeftHeaderLabelSx}>
-          User
-        </Typography>
-      </Stack>
-    </Box>
-  );
-}
-
-function FormsTableContactHeader() {
-  return (
-    <Box sx={formsTableContactCellSx}>
-      <Typography variant="caption" dir="ltr" sx={formsTableLeftHeaderLabelSx}>
-        Contact
+    <Box sx={{ minWidth: 0 }}>
+      <Typography sx={{ color: 'rgba(36, 16, 79, 0.56)', fontSize: '0.72rem', fontWeight: 900 }}>
+        {label}
+      </Typography>
+      <Typography dir="auto" sx={{ mt: 0.2, minWidth: 0, overflowWrap: 'anywhere', color: '#24104f', fontSize: '0.82rem', fontWeight: 750 }}>
+        {value || '-'}
       </Typography>
     </Box>
   );
 }
 
-function DetailRow({ icon, label, value }) {
-  return (
-    <Box sx={{ px: 2, py: 1.35, borderRadius: '20px', border: '1px solid rgba(130, 92, 206, 0.12)', bgcolor: 'rgba(255, 255, 255, 0.72)', display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
-      <Box sx={{ width: '2.5rem', height: '2.5rem', borderRadius: '50%', display: 'grid', placeItems: 'center', flexShrink: 0, color: '#7C3AED', bgcolor: 'rgba(124, 58, 237, 0.08)' }}>
-        {icon}
-      </Box>
-      <Box sx={{ minWidth: 0, flex: 1 }}>
-        <Typography variant="caption" color="text.secondary" fontWeight={800} sx={{ display: 'block', lineHeight: 1.1 }}>
-          {label}
-        </Typography>
-        <Typography dir="auto" fontWeight={750} sx={{ color: '#17122E', mt: 0.35, lineHeight: 1.45, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
-          {value || '-'}
-        </Typography>
-      </Box>
-    </Box>
-  );
+function getRequestTitle(type) {
+  return type === FORM_SUBMISSION_TYPE.DONATION ? 'Donation request' : 'Volunteer join request';
+}
+
+function getRequesterLabel(type) {
+  return type === FORM_SUBMISSION_TYPE.DONATION ? 'Donor name' : 'Volunteer name';
 }
 
 export default function FormsPage() {
@@ -219,6 +118,7 @@ export default function FormsPage() {
   const [search, setSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [page, setPage] = useState(1);
   const [selected, setSelected] = useState(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
 
@@ -242,11 +142,6 @@ export default function FormsPage() {
     load();
   }, [load]);
 
-  const newCount = useMemo(
-    () => submissions.filter((s) => (s.status || 'new') === FORM_SUBMISSION_STATUS.NEW).length,
-    [submissions],
-  );
-
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
     return submissions.filter((sub) => {
@@ -258,6 +153,27 @@ export default function FormsPage() {
       return matchesType && matchesStatus && matchesSearch;
     });
   }, [submissions, search, typeFilter, statusFilter]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [search, typeFilter, statusFilter]);
+
+  const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+
+  useEffect(() => {
+    if (page > pageCount) setPage(pageCount);
+  }, [page, pageCount]);
+
+  const paginated = useMemo(() => {
+    const start = (page - 1) * PAGE_SIZE;
+    return filtered.slice(start, start + PAGE_SIZE);
+  }, [filtered, page]);
+
+  const clearFilters = () => {
+    setSearch('');
+    setTypeFilter('all');
+    setStatusFilter('all');
+  };
 
   function openDetails(sub) {
     setSelected(sub);
@@ -297,424 +213,368 @@ export default function FormsPage() {
   }
 
   return (
-    <Box sx={{ minHeight: '100%', color: '#24104f' }} dir={direction}>
-      <Box sx={{ mb: 2.75 }}>
-        <Typography variant="h4" sx={{ fontWeight: 900, letterSpacing: 0, color: '#171239' }}>
-          {t('fmTitle')}
-        </Typography>
-        <Typography variant="subtitle1" sx={{ mt: 0.5, color: 'rgba(36, 16, 79, 0.66)', fontWeight: 600 }}>
-          {t('fmSubtitle')}
-        </Typography>
-      </Box>
+    <Box component="section" className="forms-admin-page" dir={direction}>
+      <h1 className="forms-admin-top-title">{t('fmTitle')}</h1>
 
-      <Box
-        sx={{
-          width: '100%',
-          bgcolor: 'rgba(255, 255, 255, 0.82)',
-          border: '1px solid rgba(130, 92, 206, 0.14)',
-          borderRadius: '28px',
-          boxShadow: '0 28px 74px rgba(91, 57, 145, 0.11)',
-          backdropFilter: 'blur(22px)',
-          overflow: 'hidden',
-          display: 'flex',
-          flexDirection: 'column',
-        }}
-      >
-        <Stack
-          direction={{ xs: 'column', xl: 'row' }}
-          spacing={2}
-          alignItems={{ xl: 'center' }}
-          justifyContent="space-between"
-          sx={{ p: { xs: 2.2, md: 3 }, flexShrink: 0 }}
-        >
-          <Stack direction="row" spacing={1.1} alignItems="center">
-            <Typography variant="h5" fontWeight={950} sx={{ color: '#100B2F' }}>
-              {t('fmSubmissions')}
-            </Typography>
-            <Chip
-              label={t('fmTotal').replace('{n}', submissions.length)}
-              sx={{ height: '1.875rem', bgcolor: '#F2ECFF', color: '#6D3CCF', fontWeight: 950, borderRadius: 999, border: '1px solid rgba(124, 58, 237, 0.08)' }}
-            />
-            {newCount > 0 ? (
-              <Chip
-                label={t('fmNewCount').replace('{n}', newCount)}
-                sx={{ height: '1.875rem', bgcolor: 'rgba(223, 50, 123, 0.14)', color: '#C52A72', fontWeight: 950, borderRadius: 999, border: '1px solid rgba(223, 50, 123, 0.12)' }}
-              />
-            ) : null}
-          </Stack>
+      {actionError ? (
+        <Alert severity="error" sx={{ mb: 1, borderRadius: '14px', flex: '0 0 auto' }} onClose={() => setActionError('')}>
+          {actionError}
+        </Alert>
+      ) : null}
 
-          <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.4} sx={{ flex: 1, justifyContent: 'flex-end' }}>
-            <TextField
-              placeholder={t('fmSearchPlaceholder')}
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              sx={{
-                minWidth: { md: '18rem' },
-                '& .MuiOutlinedInput-root': {
-                  height: '3.125rem',
-                  borderRadius: '16px',
-                  bgcolor: 'rgba(255,255,255,0.72)',
-                  '& fieldset': { borderColor: 'rgba(130, 92, 206, 0.16)' },
-                  '&:hover fieldset': { borderColor: 'rgba(124, 58, 237, 0.28)' },
-                  '&.Mui-focused fieldset': { borderColor: '#B57BE8' },
-                },
-              }}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon fontSize="small" sx={{ color: '#6F6890' }} />
-                  </InputAdornment>
-                ),
-              }}
-            />
-            <FormControl size="small" sx={{ minWidth: '9rem' }}>
-              <Select
-                value={typeFilter}
-                onChange={(event) => setTypeFilter(event.target.value)}
-                sx={{ height: '3.125rem', borderRadius: '16px', bgcolor: 'rgba(255,255,255,0.72)', fontWeight: 750, '& fieldset': { borderColor: 'rgba(130, 92, 206, 0.16)' } }}
-              >
-                <MenuItem value="all">{t('fmAllTypes')}</MenuItem>
-                <MenuItem value={FORM_SUBMISSION_TYPE.VOLUNTEER}>{t('fmTypeVolunteer')}</MenuItem>
-                <MenuItem value={FORM_SUBMISSION_TYPE.DONATION}>{t('fmTypeDonation')}</MenuItem>
-              </Select>
-            </FormControl>
-            <FormControl size="small" sx={{ minWidth: '9rem' }}>
-              <Select
-                value={statusFilter}
-                onChange={(event) => setStatusFilter(event.target.value)}
-                sx={{ height: '3.125rem', borderRadius: '16px', bgcolor: 'rgba(255,255,255,0.72)', fontWeight: 750, '& fieldset': { borderColor: 'rgba(130, 92, 206, 0.16)' } }}
-              >
-                <MenuItem value="all">{t('fmAllStatuses')}</MenuItem>
-                <MenuItem value={FORM_SUBMISSION_STATUS.NEW}>{t('fmStatusNew')}</MenuItem>
-                <MenuItem value={FORM_SUBMISSION_STATUS.HANDLED}>{t('fmStatusHandled')}</MenuItem>
-              </Select>
-            </FormControl>
-          </Stack>
-        </Stack>
+      <div className="forms-admin-layout">
+        <main className="forms-admin-main">
+          <section className="forms-filter-card" aria-label={t('apFiltersAria')}>
+            <label className="forms-search-field">
+              <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder={t('fmSearchPlaceholder')} />
+            </label>
+            <label className="forms-filter-field">
+              <span>{t('apColEventType')}</span>
+              <select value={typeFilter} onChange={(event) => setTypeFilter(event.target.value)}>
+                <option value="all">{t('fmAllTypes')}</option>
+                <option value={FORM_SUBMISSION_TYPE.VOLUNTEER}>{t('fmTypeVolunteer')}</option>
+                <option value={FORM_SUBMISSION_TYPE.DONATION}>{t('fmTypeDonation')}</option>
+              </select>
+            </label>
+            <label className="forms-filter-field">
+              <span>{t('apColStatus')}</span>
+              <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
+                <option value="all">{t('fmAllStatuses')}</option>
+                <option value={FORM_SUBMISSION_STATUS.NEW}>{t('fmStatusNew')}</option>
+                <option value={FORM_SUBMISSION_STATUS.HANDLED}>{t('fmStatusHandled')}</option>
+              </select>
+            </label>
+            <button type="button" className="forms-filter-clear-btn" onClick={clearFilters}>
+              {t('auditClear')}
+            </button>
+          </section>
 
-        {actionError ? (
-          <Alert severity="error" sx={{ mx: { xs: 2, md: 3 }, mb: 1, borderRadius: '14px' }} onClose={() => setActionError('')}>
-            {actionError}
-          </Alert>
-        ) : null}
+          <section className="forms-table-card" aria-busy={loading}>
+            <div className="forms-table forms-table--head" dir="ltr">
+              {TABLE_COLUMNS.map((column) => (
+                <span key={column.key}>{column.label}</span>
+              ))}
+            </div>
 
-        <Box sx={{ px: { xs: 2, md: 3 }, pb: { xs: 2.2, md: 3 }, display: 'flex', flexDirection: 'column' }} dir="ltr">
-          <Box
-            sx={{
-              maxHeight: 'calc(100vh - 360px)',
-              overflowY: 'auto',
-              overflowX: { xs: 'auto', md: 'hidden' },
-              '&::-webkit-scrollbar': { width: '0.5rem', height: '0.5rem' },
-              '&::-webkit-scrollbar-track': { background: 'rgba(244, 238, 255, 0.45)', borderRadius: 999 },
-              '&::-webkit-scrollbar-thumb': { background: 'rgba(167, 139, 250, 0.5)', borderRadius: 999 },
-            }}
-          >
-            <Box
-              sx={{
-                ...formsTableRowGridSx,
-                py: 1.4,
-                display: { xs: 'none', md: 'grid' },
-                position: 'sticky',
-                top: 0,
-                zIndex: 2,
-                borderRadius: '18px 18px 0 0',
-                border: '1px solid rgba(130, 92, 206, 0.10)',
-                borderBottom: '1px solid rgba(130, 92, 206, 0.10)',
-                bgcolor: 'rgba(255,255,255,0.92)',
-                backdropFilter: 'blur(8px)',
-              }}
-            >
-              {TABLE_COLUMNS.map((column) => {
-                if (column.key === 'user') {
-                  return <FormsTableUserHeader key={column.key} />;
-                }
-                if (column.key === 'contact') {
-                  return <FormsTableContactHeader key={column.key} />;
-                }
-                return (
-                  <Box key={column.key} sx={formsTableCellCenterSx}>
-                    <Typography
-                      variant="caption"
-                      sx={{
-                        ...formsTableHeaderLabelSx,
-                        textAlign: column.align,
-                      }}
-                    >
-                      {column.label}
-                    </Typography>
-                  </Box>
-                );
-              })}
-            </Box>
-
-            <Stack spacing={1.1}>
+            <div className="forms-table-body forms-table-wrapper" dir="ltr">
               {loading ? (
-                <Box sx={{ py: 8, textAlign: 'center' }}>
-                  <CircularProgress />
-                </Box>
-              ) : filtered.length > 0 ? (
-                filtered.map((sub) => {
+                <div className="forms-table-state">
+                  <CircularProgress size={26} />
+                </div>
+              ) : paginated.length > 0 ? (
+                paginated.map((sub) => {
                   const isHandled = (sub.status || 'new') === FORM_SUBMISSION_STATUS.HANDLED;
                   const isBusy = busyId === sub.id;
                   return (
-                    <Box
-                      key={sub.id}
-                      role="button"
-                      tabIndex={0}
-                      onClick={() => openDetails(sub)}
-                      onKeyDown={(event) => {
-                        if (event.key === 'Enter' || event.key === ' ') openDetails(sub);
-                      }}
-                      sx={{
-                        ...formsTableRowGridSx,
-                        py: 1.8,
-                        borderRadius: '22px',
-                        border: '1px solid rgba(130, 92, 206, 0.10)',
-                        bgcolor: 'rgba(255,255,255,0.72)',
-                        cursor: 'pointer',
-                        transition: 'box-shadow 180ms ease, background-color 180ms ease, border-color 180ms ease',
-                        '&:hover': {
-                          bgcolor: 'rgba(255, 250, 254, 0.94)',
-                          borderColor: 'rgba(124, 58, 237, 0.18)',
-                          boxShadow: '0 16px 34px rgba(91, 57, 145, 0.10)',
-                        },
-                      }}
-                    >
-                      <Box sx={formsTableCellLeftSx}>
-                        <Stack direction="row" spacing={FORMS_USER_ROW_GAP} alignItems="center" sx={{ minWidth: 0, width: '100%' }}>
-                          <Avatar sx={{ width: FORMS_USER_AVATAR_WIDTH, height: FORMS_USER_AVATAR_WIDTH, bgcolor: '#EEE7FF', color: '#6D3CCF', fontWeight: 950, fontSize: '1.1875rem', boxShadow: '0 10px 24px rgba(109, 60, 207, 0.12)', flexShrink: 0 }}>
-                            {initialsOf(sub.fullName)}
-                          </Avatar>
-                          <Typography dir="auto" fontWeight={950} noWrap sx={{ color: '#17122E', minWidth: 0 }}>
-                            {sub.fullName || t('fmUnnamed')}
-                          </Typography>
-                        </Stack>
-                      </Box>
-
-                      <Box sx={formsTableContactCellSx}>
-                        <Typography color="#5E587E" noWrap sx={{ fontSize: '0.84375rem', display: 'block' }} dir="ltr">
-                          {sub.email || t('fmNoEmail')}
-                        </Typography>
-                        {sub.phone ? (
-                          <Typography color="#5E587E" noWrap sx={{ fontSize: '0.8125rem', mt: 0.25, display: 'block' }} dir="ltr">
-                            {sub.phone}
-                          </Typography>
-                        ) : null}
-                      </Box>
-
-                      <Box sx={formsTableCellCenterSx}>
-                        <TypeChip type={sub.type} t={t} />
-                      </Box>
-
-                      <Box sx={formsTableCellCenterSx}>
-                        <Typography fontWeight={800} color="#4F4A70" noWrap component="span">
-                          {formatDate(sub.createdAt, intlLocale)}
-                        </Typography>
-                      </Box>
-
-                      <Box sx={formsTableCellCenterSx}>
-                        <StatusChip status={sub.status} t={t} />
-                      </Box>
-
-                      <Box sx={formsTableCellCenterSx}>
-                        <Stack direction="row" spacing={0.75} onClick={(event) => event.stopPropagation()}>
-                        <IconButton
+                    <div className="forms-table forms-table--row" key={sub.id}>
+                      <div className="forms-user-cell">
+                        <span className="forms-avatar">{initialsOf(sub.fullName)}</span>
+                        <strong dir="auto">{sub.fullName || t('fmUnnamed')}</strong>
+                      </div>
+                      <div className="forms-contact-cell">
+                        <span dir="ltr">{sub.email || t('fmNoEmail')}</span>
+                        {sub.phone ? <small dir="ltr">{sub.phone}</small> : null}
+                      </div>
+                      <span className={`forms-type-badge forms-type-badge--${sub.type || FORM_SUBMISSION_TYPE.VOLUNTEER}`}>
+                        {t(TYPE_META[sub.type]?.labelKey || TYPE_META[FORM_SUBMISSION_TYPE.VOLUNTEER].labelKey)}
+                      </span>
+                      <span className="forms-date-cell">{formatTableDate(sub.createdAt)}</span>
+                      <span className={`forms-status forms-status--${sub.status || FORM_SUBMISSION_STATUS.NEW}`}>
+                        {t(STATUS_META[sub.status]?.labelKey || STATUS_META[FORM_SUBMISSION_STATUS.NEW].labelKey)}
+                      </span>
+                      <span className="forms-actions" onClick={(event) => event.stopPropagation()}>
+                        <button
+                          type="button"
                           aria-label={(isHandled ? t('fmReopenAria') : t('fmMarkHandledAria')).replace('{name}', sub.fullName || t('fmSubmissionWord'))}
+                          title={(isHandled ? t('fmReopenBtn') : t('fmMarkAsHandled'))}
                           onClick={() => toggleHandled(sub)}
                           disabled={isBusy}
-                          sx={{
-                            width: '2.5rem',
-                            height: '2.5rem',
-                            color: isHandled ? '#B45309' : '#15803D',
-                            bgcolor: isHandled ? 'rgba(245, 158, 11, 0.12)' : 'rgba(34, 197, 94, 0.12)',
-                            border: '1px solid rgba(255,255,255,0.72)',
-                            '&:hover': { bgcolor: isHandled ? 'rgba(245, 158, 11, 0.2)' : 'rgba(34, 197, 94, 0.2)' },
-                          }}
                         >
-                          {isBusy ? <CircularProgress size={16} color="inherit" /> : isHandled ? <ReplayIcon fontSize="small" /> : <CheckCircleIcon fontSize="small" />}
-                        </IconButton>
-                        <IconButton
+                          {isBusy ? <CircularProgress size={14} color="inherit" /> : isHandled ? <ReplayIcon fontSize="small" /> : <CheckCircleIcon fontSize="small" />}
+                        </button>
+                        <button
+                          type="button"
+                          className="forms-action-danger"
                           aria-label={t('fmDeleteAria').replace('{name}', sub.fullName || t('fmSubmissionWord'))}
+                          title={t('fmDeleteBtn')}
                           onClick={() => setDeleteTarget(sub)}
                           disabled={isBusy}
-                          sx={{
-                            width: '2.5rem',
-                            height: '2.5rem',
-                            color: '#B91C1C',
-                            bgcolor: 'rgba(239, 68, 68, 0.10)',
-                            border: '1px solid rgba(255,255,255,0.72)',
-                            '&:hover': { bgcolor: 'rgba(239, 68, 68, 0.18)' },
-                          }}
                         >
                           <DeleteOutlineIcon fontSize="small" />
-                        </IconButton>
-                        <IconButton
+                        </button>
+                        <button
+                          type="button"
                           aria-label={t('fmViewAria').replace('{name}', sub.fullName || t('fmSubmissionWord'))}
+                          title={t('fmViewAria').replace('{name}', sub.fullName || t('fmSubmissionWord'))}
                           onClick={() => openDetails(sub)}
-                          sx={{
-                            width: '2.5rem',
-                            height: '2.5rem',
-                            color: '#6D3CCF',
-                            bgcolor: 'rgba(109, 60, 207, 0.09)',
-                            border: '1px solid rgba(255, 255, 255, 0.72)',
-                            '&:hover': { bgcolor: 'rgba(109, 60, 207, 0.15)' },
-                          }}
                         >
                           <VisibilityOutlinedIcon fontSize="small" />
-                        </IconButton>
-                        </Stack>
-                      </Box>
-                    </Box>
+                        </button>
+                      </span>
+                    </div>
                   );
                 })
               ) : (
-                <Box sx={{ py: 8, textAlign: 'center' }}>
-                  <Typography fontWeight={900}>{t('fmNoSubmissions')}</Typography>
-                  <Typography color="text.secondary" sx={{ mt: 1 }}>
-                    {submissions.length === 0
-                      ? t('fmEmptyHint')
-                      : t('fmEmptyFilterHint')}
-                  </Typography>
-                </Box>
+                <div className="forms-table-state">
+                  <strong>{t('fmNoSubmissions')}</strong>
+                  <span>{submissions.length === 0 ? t('fmEmptyHint') : t('fmEmptyFilterHint')}</span>
+                </div>
               )}
-            </Stack>
-          </Box>
-        </Box>
-      </Box>
+            </div>
 
-      {/* Details drawer */}
-      <Dialog
-        open={detailsOpen && Boolean(selected)}
-        onClose={() => setDetailsOpen(false)}
-        maxWidth={false}
-        TransitionComponent={Fade}
-        PaperProps={{
-          dir: direction,
-          sx: {
-            width: { xs: 'calc(100vw - 24px)', sm: '37rem' },
-            maxWidth: 600,
-            m: 0,
+            <footer className="forms-table-footer">
+              <Pagination
+                count={pageCount}
+                page={page}
+                onChange={(event, value) => setPage(value)}
+                siblingCount={1}
+                boundaryCount={1}
+                shape="rounded"
+              />
+            </footer>
+          </section>
+        </main>
+      </div>
+
+      {detailsOpen && selected ? (
+        <Box
+          role="dialog"
+          aria-modal="true"
+          aria-label={t('fmViewAria').replace('{name}', selected.fullName || t('fmSubmissionWord'))}
+          sx={{
             position: 'fixed',
-            top: '50%',
-            insetInlineStart: '50%',
-            transform: 'translate(-50%, -50%)',
-            maxHeight: 'calc(100vh - 32px)',
-            borderRadius: { xs: '24px', md: '34px' },
-            overflow: 'hidden',
-            bgcolor: 'rgba(255, 255, 255, 0.96)',
-            backdropFilter: 'blur(18px)',
-            boxShadow: '0 30px 86px rgba(32, 20, 67, 0.28)',
-          },
-        }}
-        BackdropProps={{ sx: { bgcolor: 'rgba(18, 12, 35, 0.54)', backdropFilter: 'blur(12px)' } }}
-      >
-        {selected ? (
-          <Box sx={{ display: 'flex', flexDirection: 'column', maxHeight: 'calc(100vh - 32px)' }}>
-            <Box sx={{ p: { xs: 2, md: 2.6 }, pb: 1.6, flexShrink: 0, background: 'radial-gradient(circle at 50% 0%, rgba(223, 50, 123, 0.08), transparent 32%), linear-gradient(180deg, #FFFFFF 0%, #FFFBFE 100%)' }}>
-              <Box
-                dir="ltr"
+            inset: 0,
+            zIndex: 1400,
+            background: 'rgba(32, 38, 55, 0.38)',
+            backdropFilter: 'blur(10px)',
+          }}
+          onMouseDown={(event) => {
+            if (event.target === event.currentTarget) setDetailsOpen(false);
+          }}
+        >
+          <Box
+            sx={{
+              position: 'absolute',
+              top: '50%',
+              right: 24,
+              transform: 'translateY(-50%)',
+              display: 'grid',
+              gridTemplateRows: 'auto minmax(0, 1fr) auto',
+              width: 'min(560px, calc(100vw - 36px))',
+              maxHeight: 'calc(100vh - 48px)',
+              overflow: 'hidden',
+              border: '1px solid rgba(223, 50, 123, 0.14)',
+              borderRadius: '24px',
+              color: '#24104f',
+              background: 'rgba(255, 255, 255, 0.98)',
+              boxShadow: '0 24px 56px rgba(31, 12, 42, 0.22)',
+            }}
+          >
+            <IconButton
+              onClick={() => setDetailsOpen(false)}
+              aria-label={t('fmCloseDetails')}
+              sx={{
+                position: 'absolute',
+                top: 16,
+                right: 16,
+                zIndex: 2,
+                width: 38,
+                height: 38,
+                color: '#5b1e8c',
+                background: '#fff',
+                border: '1px solid rgba(91, 30, 140, 0.22)',
+                boxShadow: '0 8px 18px rgba(91, 30, 140, 0.12)',
+                '&:hover, &:focus-visible': {
+                  color: '#fff',
+                  background: 'linear-gradient(135deg, #df327b, #cf1f70)',
+                  borderColor: 'transparent',
+                  boxShadow: '0 14px 26px rgba(207, 31, 112, 0.3)',
+                  transform: 'translateY(-2px) scale(1.04)',
+                },
+              }}
+            >
+              <CloseIcon />
+            </IconButton>
+
+            <Box
+              sx={{
+                display: 'grid',
+                justifyItems: 'center',
+                gap: 1,
+                px: { xs: 5.5, sm: 7 },
+                py: 2.2,
+                textAlign: 'center',
+                background: 'linear-gradient(180deg, rgba(255, 247, 251, 0.92), rgba(255, 255, 255, 0.98))',
+                borderBottom: '1px solid rgba(223, 50, 123, 0.1)',
+              }}
+            >
+              <Typography
+                variant="h5"
                 sx={{
-                  display: 'flex',
-                  flexDirection: 'row',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  gap: 1.5,
+                  m: 0,
+                  color: '#4b136b',
+                  fontSize: { xs: '1.5rem', sm: '1.8rem' },
+                  fontWeight: 900,
+                  lineHeight: 1.14,
+                  overflowWrap: 'anywhere',
                 }}
               >
-                <Box
-                  dir="ltr"
-                  sx={{
-                    display: 'flex',
-                    flexDirection: 'row',
-                    alignItems: 'center',
-                    gap: 1.5,
-                    minWidth: 0,
-                    flex: '0 1 auto',
-                  }}
-                >
-                  <Avatar sx={{ width: '4rem', height: '4rem', bgcolor: '#EEE7FF', color: '#6D3CCF', fontSize: '1.5rem', fontWeight: 950, flexShrink: 0 }}>
-                    {initialsOf(selected.fullName)}
-                  </Avatar>
-                  <Box
-                    dir="ltr"
-                    sx={{
-                      display: 'flex',
-                      flexDirection: 'column',
-                      alignItems: 'flex-start',
-                      gap: 0.5,
-                      minWidth: 0,
-                    }}
-                  >
-                    <Typography dir="auto" variant="h6" fontWeight={950} noWrap sx={{ color: '#17122E', lineHeight: 1.15, minWidth: 0, textAlign: 'left' }}>
-                      {selected.fullName || t('fmUnnamed')}
-                    </Typography>
-                    <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
-                      <TypeChip type={selected.type} t={t} />
-                      <StatusChip status={selected.status} t={t} />
-                      <Typography color="text.secondary" sx={{ fontSize: '0.8125rem', whiteSpace: 'nowrap' }}>
-                        {t('fmSubmittedAt').replace('{date}', formatDate(selected.createdAt, intlLocale))}
-                      </Typography>
-                    </Stack>
-                  </Box>
-                </Box>
-                <IconButton
-                  size="small"
-                  onClick={() => setDetailsOpen(false)}
-                  aria-label={t('fmCloseDetails')}
-                  sx={{ bgcolor: 'rgba(109, 60, 207, 0.06)', color: '#4E466B', flexShrink: 0, '&:hover': { bgcolor: 'rgba(109, 60, 207, 0.12)' } }}
-                >
-                  <CloseIcon fontSize="small" />
-                </IconButton>
+                {getRequestTitle(selected.type)}
+              </Typography>
+              <Box
+                sx={{
+                  display: 'inline-grid',
+                  justifyItems: 'center',
+                  gap: 0.2,
+                  minWidth: { xs: 'min(100%, 16rem)', sm: '18rem' },
+                  maxWidth: '100%',
+                  borderRadius: '16px',
+                  px: 2.2,
+                  py: 0.85,
+                  background: 'rgba(255, 255, 255, 0.72)',
+                  border: '1px solid rgba(223, 50, 123, 0.16)',
+                }}
+              >
+                <Typography sx={{ color: 'rgba(75, 19, 107, 0.52)', fontSize: '0.72rem', fontWeight: 850, textTransform: 'uppercase', letterSpacing: 0.4 }}>
+                  {getRequesterLabel(selected.type)}
+                </Typography>
+                <Typography dir="auto" sx={{ maxWidth: '100%', color: '#171239', fontSize: '1.05rem', fontWeight: 950, lineHeight: 1.2, overflowWrap: 'anywhere' }}>
+                  {selected.fullName || t('fmUnnamed')}
+                </Typography>
               </Box>
             </Box>
 
-            <Box sx={{ flex: 1, overflow: 'auto', p: { xs: 2, md: 2.6 }, borderTop: '1px solid rgba(130, 92, 206, 0.08)' }}>
-              <Stack spacing={1.35}>
-                <DetailRow icon={<EmailOutlinedIcon fontSize="small" />} label={t('fmEmail')} value={selected.email} />
-                <DetailRow icon={<PhoneOutlinedIcon fontSize="small" />} label={t('fmPhone')} value={selected.phone} />
-                <DetailRow icon={<ChatBubbleOutlineIcon fontSize="small" />} label={t('fmMessage')} value={selected.message} />
-                {selected.status === FORM_SUBMISSION_STATUS.HANDLED ? (
-                  <DetailRow
-                    icon={<CheckCircleIcon fontSize="small" />}
-                    label={t('fmHandledLabel').replace('{date}', formatDate(selected.handledAt, intlLocale))}
-                    value={selected.handledBy ? t('fmHandledBy').replace('{name}', selected.handledBy) : '-'}
-                  />
-                ) : null}
-              </Stack>
+            <Box sx={{ minHeight: 0, overflowY: 'auto', p: { xs: 1.5, sm: 2 } }}>
+              <Box sx={{ display: 'grid', gap: 1.1 }}>
+                <Box
+                  component="section"
+                  sx={{
+                    display: 'grid',
+                    gap: 1.2,
+                    p: 1.5,
+                    border: '1px solid rgba(223, 50, 123, 0.1)',
+                    borderRadius: '16px',
+                    background: 'linear-gradient(135deg, rgba(255, 247, 251, 0.72), rgba(255, 255, 255, 0.98))',
+                  }}
+                >
+                  <Typography sx={{ m: 0, color: '#4b136b', fontSize: '1.02rem', fontWeight: 900, lineHeight: 1.3 }}>
+                    {t('auditDetailsAria')}
+                  </Typography>
+                  <Box sx={{ display: 'grid', gridTemplateColumns: '1fr', gap: 1.15 }}>
+                    <FormDetailLine label={t('fmEmail')} value={selected.email || t('fmNoEmail')} />
+                    <FormDetailLine label={t('fmPhone')} value={selected.phone} />
+                    <FormDetailLine label="Type" value={t(TYPE_META[selected.type]?.labelKey || TYPE_META[FORM_SUBMISSION_TYPE.VOLUNTEER].labelKey)} />
+                    <FormDetailLine label="Status" value={t(STATUS_META[selected.status]?.labelKey || STATUS_META[FORM_SUBMISSION_STATUS.NEW].labelKey)} />
+                    <FormDetailLine label="Submitted" value={formatTableDate(selected.createdAt)} />
+                    {selected.status === FORM_SUBMISSION_STATUS.HANDLED ? (
+                      <FormDetailLine
+                        label={t('fmHandledLabel').replace('{date}', formatDate(selected.handledAt, intlLocale))}
+                        value={selected.handledBy ? t('fmHandledBy').replace('{name}', selected.handledBy) : '-'}
+                      />
+                    ) : null}
+                  </Box>
+                </Box>
+
+                <Box
+                  component="section"
+                  sx={{
+                    display: 'grid',
+                    gap: 0.65,
+                    p: 1.5,
+                    border: '1px solid rgba(223, 50, 123, 0.1)',
+                    borderRadius: '16px',
+                    background: 'linear-gradient(135deg, rgba(255, 247, 251, 0.72), rgba(255, 255, 255, 0.98))',
+                  }}
+                >
+                  <Typography sx={{ m: 0, color: '#4b136b', fontSize: '1.02rem', fontWeight: 900, lineHeight: 1.3 }}>
+                    {t('fmMessage')}
+                  </Typography>
+                  <Typography dir="auto" sx={{ color: 'rgba(36, 16, 79, 0.76)', fontSize: '0.95rem', fontWeight: 650, lineHeight: 1.45, overflowWrap: 'anywhere' }}>
+                    {selected.message || '-'}
+                  </Typography>
+                </Box>
+              </Box>
             </Box>
 
-            <Box sx={{ p: { xs: 2, md: 2.6 }, pt: 1.8, flexShrink: 0, borderTop: '1px solid rgba(130, 92, 206, 0.08)' }}>
-              <Stack direction="row" spacing={1.2} justifyContent="flex-end">
-                <Button
-                  onClick={() => setDeleteTarget(selected)}
-                  startIcon={<DeleteOutlineIcon />}
-                  sx={{ px: 2.4, height: '2.75rem', borderRadius: 999, fontWeight: 900, textTransform: 'none', color: '#B91C1C', border: '1px solid rgba(239, 68, 68, 0.3)', bgcolor: 'rgba(239, 68, 68, 0.06)', '&:hover': { bgcolor: 'rgba(239, 68, 68, 0.12)' } }}
-                >
-                  {t('fmDeleteBtn')}
-                </Button>
+            <Box
+              sx={{
+                px: { xs: 1.5, sm: 2 },
+                py: 1.25,
+                borderTop: '1px solid rgba(223, 50, 123, 0.1)',
+                background: 'rgba(255, 255, 255, 0.9)',
+              }}
+            >
+              <Stack direction="row" spacing={1} justifyContent="flex-end" flexWrap="wrap" useFlexGap>
                 <Button
                   onClick={() => toggleHandled(selected).then(() => setSelected((cur) => (cur ? { ...cur, status: (cur.status || 'new') === FORM_SUBMISSION_STATUS.HANDLED ? FORM_SUBMISSION_STATUS.NEW : FORM_SUBMISSION_STATUS.HANDLED } : cur)))}
                   startIcon={(selected.status || 'new') === FORM_SUBMISSION_STATUS.HANDLED ? <ReplayIcon /> : <CheckCircleIcon />}
                   sx={{
-                    px: 2.8,
-                    height: '2.75rem',
+                    minHeight: 40,
+                    minWidth: 0,
+                    px: 1.7,
+                    border: '2px solid rgba(91, 30, 140, 0.2)',
                     borderRadius: 999,
-                    fontWeight: 950,
+                    color: '#5b1e8c',
+                    background: 'rgba(255, 255, 255, 0.97)',
+                    boxShadow: '0 9px 24px rgba(91, 30, 140, 0.12)',
+                    fontSize: '0.9rem',
+                    fontWeight: 900,
+                    lineHeight: 1,
                     textTransform: 'none',
-                    color: '#fff',
-                    background: (selected.status || 'new') === FORM_SUBMISSION_STATUS.HANDLED
-                      ? 'linear-gradient(135deg, #F59E0B 0%, #B45309 100%)'
-                      : 'linear-gradient(135deg, #16A34A 0%, #15803D 100%)',
-                    boxShadow: '0 14px 30px rgba(22, 163, 74, 0.26)',
+                    transition: 'color 180ms ease, background 180ms ease, border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease',
+                    '&:hover, &:focus-visible': {
+                      color: '#fff',
+                      background: 'linear-gradient(135deg, #e73386, #dc2577)',
+                      borderColor: 'transparent',
+                      boxShadow: '0 14px 26px rgba(223, 50, 123, 0.24)',
+                      transform: 'translateY(-2px)',
+                    },
+                    '&:active': {
+                      transform: 'translateY(0)',
+                    },
                   }}
                 >
                   {(selected.status || 'new') === FORM_SUBMISSION_STATUS.HANDLED ? t('fmReopenBtn') : t('fmMarkAsHandled')}
                 </Button>
+                <Button
+                  onClick={() => {
+                    setDeleteTarget(selected);
+                    setDetailsOpen(false);
+                  }}
+                  startIcon={<DeleteOutlineIcon />}
+                  sx={{
+                    minHeight: 40,
+                    minWidth: 0,
+                    px: 1.7,
+                    border: '2px solid rgba(91, 30, 140, 0.2)',
+                    borderRadius: 999,
+                    color: '#5b1e8c',
+                    background: 'rgba(255, 255, 255, 0.97)',
+                    boxShadow: '0 9px 24px rgba(91, 30, 140, 0.12)',
+                    fontSize: '0.9rem',
+                    fontWeight: 900,
+                    lineHeight: 1,
+                    textTransform: 'none',
+                    transition: 'color 180ms ease, background 180ms ease, border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease',
+                    '&:hover, &:focus-visible': {
+                      color: '#fff',
+                      background: 'linear-gradient(135deg, #e73386, #dc2577)',
+                      borderColor: 'transparent',
+                      boxShadow: '0 14px 26px rgba(223, 50, 123, 0.24)',
+                      transform: 'translateY(-2px)',
+                    },
+                    '&:active': {
+                      transform: 'translateY(0)',
+                    },
+                  }}
+                >
+                  {t('fmDeleteBtn')}
+                </Button>
               </Stack>
             </Box>
           </Box>
-        ) : null}
-      </Dialog>
+        </Box>
+      ) : null}
 
       {/* Delete confirmation */}
       <Dialog
