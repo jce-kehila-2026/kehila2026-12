@@ -536,12 +536,12 @@ export default function CommunityPage({
             localUserId={localUserId}
             localUserName={communityDisplayName || 'Current User'}
           />
+          <div className="community-guidelines-shortcut">
+            <button type="button" onClick={handleReadFullGuidelines}>
+              {t('communityGuidelines')}
+            </button>
+          </div>
         </aside>
-      </div>
-      <div className="community-guidelines-shortcut">
-        <button type="button" onClick={handleReadFullGuidelines}>
-          {t('communityGuidelines')}
-        </button>
       </div>
       {showFullGuidelinesModal && (
         <CommunityGuidelinesModal
