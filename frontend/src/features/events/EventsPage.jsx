@@ -2210,10 +2210,10 @@ export default function EventsPage({ embedInDashboard = false, locale = 'he' }) 
       )}
 
       {!loadingEvents && !eventsError && filteredEvents.length === 0 && (
-        <section className="events-empty">
-          <AutoAwesomeIcon />
-          <h2>{t('evNoEventsTitle')}</h2>
-          <p>{t('evNoEventsBody')}</p>
+        <section className={`events-empty${activeView === VIEW_REGISTERED ? ' events-empty--registered' : ''}`}>
+          {activeView === VIEW_REGISTERED ? <EventAvailableIcon /> : <AutoAwesomeIcon />}
+          <h2>{t(activeView === VIEW_REGISTERED ? 'evNoRegisteredEventsTitle' : 'evNoEventsTitle')}</h2>
+          <p>{t(activeView === VIEW_REGISTERED ? 'evNoRegisteredEventsBody' : 'evNoEventsBody')}</p>
         </section>
       )}
 

@@ -548,6 +548,8 @@ export const participantUiTranslations = {
     evWorkshopSessionsAria: 'Workshop sessions',
     evNoEventsTitle: 'No events here yet',
     evNoEventsBody: 'When matching published events are available, they will appear in this section.',
+    evNoRegisteredEventsTitle: "You haven't registered for any events yet",
+    evNoRegisteredEventsBody: 'Browse available workshops and activities to reserve your spot. Your registered events will appear here once you join one.',
     evCatWorkshops: 'Workshops',
     evCatAppointments: 'Appointments',
     evCatRegisteredEvents: 'Registered Events',
