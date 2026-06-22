@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { collection, doc, documentId, getDoc, getDocs, limit, orderBy, query, updateDoc } from 'firebase/firestore';
+import { collection, doc, documentId, getDoc, getDocs, limit, orderBy, query, serverTimestamp, updateDoc } from 'firebase/firestore';
 import { Ban, Pencil, ShieldCheck } from 'lucide-react';
 import { db } from '../../../firebase';
+import { useAdmin } from '../context/AdminContext';
 import { logAuditEvent } from '../services/auditService';
 import { listJoinRequests } from '../services/joinRequestAdminService';
 import { useAdminLocale } from '../context/AdminLocaleContext';
@@ -28,7 +29,6 @@ import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import SearchIcon from '@mui/icons-material/Search';
 import SortIcon from '@mui/icons-material/Sort';
-import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import Avatar from '@mui/material/Avatar';
 
 const ROLES = ['participant', 'volunteer', 'therapist', 'admin'];
@@ -126,7 +126,12 @@ function RoleChip({ role, t }) {
   );
 }
 
+function isInactiveUser(user) {
+  return user?.isActive === false || String(user?.status || '').toLowerCase() === 'inactive';
+}
+
 export default function UserManagementPage() {
+  const { currentUser } = useAdmin();
   const { t, direction } = useAdminLocale();
   const roleLabel = (role) => t(ROLE_LABEL_KEYS[role] || 'roleParticipant');
   const [users, setUsers] = useState([]);
@@ -134,8 +139,11 @@ export default function UserManagementPage() {
   const [saving, setSaving] = useState(null);
   const [search, setSearch] = useState('');
   const [roleFilter, setRoleFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState('all');
   const [sortBy, setSortBy] = useState('newest');
   const [selectedUser, setSelectedUser] = useState(null);
+  const [deactivateTarget, setDeactivateTarget] = useState(null);
+  const [deactivating, setDeactivating] = useState(false);
   const [detailsLoading, setDetailsLoading] = useState(false);
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [activeTab, setActiveTab] = useState('users');
@@ -195,6 +203,32 @@ export default function UserManagementPage() {
     }
   }
 
+  async function confirmDeactivateUser() {
+    if (!deactivateTarget?.id || deactivating) return;
+
+    setDeactivating(true);
+    try {
+      await updateDoc(doc(db, 'users', deactivateTarget.id), {
+        isActive: false,
+        status: 'inactive',
+        deactivatedAt: serverTimestamp(),
+        deactivatedBy: currentUser?.uid || null,
+      });
+      const patch = {
+        isActive: false,
+        status: 'inactive',
+        deactivatedBy: currentUser?.uid || null,
+      };
+      setUsers((prev) => prev.map((user) => (user.id === deactivateTarget.id ? { ...user, ...patch } : user)));
+      setSelectedUser((prev) => (prev?.id === deactivateTarget.id ? { ...prev, ...patch } : prev));
+      setDeactivateTarget(null);
+    } catch (err) {
+      console.error('User deactivation failed:', err);
+    } finally {
+      setDeactivating(false);
+    }
+  }
+
   async function selectUser(user) {
     setSelectedUser(user);
     setDetailsOpen(true);
@@ -225,7 +259,12 @@ export default function UserManagementPage() {
         [getFullName(user), user.email, user.phoneNumber, getAddress(user)]
           .some((value) => String(value || '').toLowerCase().includes(q));
       const matchesRole = roleFilter === 'all' || role === roleFilter;
-      return matchesSearch && matchesRole;
+      const inactive = isInactiveUser(user);
+      const matchesStatus =
+        statusFilter === 'all' ||
+        (statusFilter === 'active' && !inactive) ||
+        (statusFilter === 'inactive' && inactive);
+      return matchesSearch && matchesRole && matchesStatus;
     });
 
     return [...next].sort((left, right) => {
@@ -236,7 +275,7 @@ export default function UserManagementPage() {
       const rightDate = getJoinedDate(right)?.toDate?.() || new Date(getJoinedDate(right) || 0);
       return sortBy === 'oldest' ? leftDate - rightDate : rightDate - leftDate;
     });
-  }, [roleFilter, search, sortBy, users]);
+  }, [roleFilter, search, sortBy, statusFilter, users]);
 
   const userDetailRows = selectedUser
     ? [
@@ -457,6 +496,23 @@ export default function UserManagementPage() {
                   {ROLES.map((role) => <MenuItem key={role} value={role}>{roleLabel(role)}</MenuItem>)}
                 </Select>
               </FormControl>
+              <FormControl size="small" sx={{ minWidth: '9.375rem' }}>
+                <Select
+                  value={statusFilter}
+                  onChange={(event) => setStatusFilter(event.target.value)}
+                  sx={{
+                    height: '3.125rem',
+                    borderRadius: '16px',
+                    bgcolor: 'rgba(255,255,255,0.72)',
+                    fontWeight: 750,
+                    '& fieldset': { borderColor: 'rgba(130, 92, 206, 0.16)' },
+                  }}
+                >
+                  <MenuItem value="all">{t('umAllStatuses')}</MenuItem>
+                  <MenuItem value="active">{t('umStatusActive')}</MenuItem>
+                  <MenuItem value="inactive">{t('umStatusInactive')}</MenuItem>
+                </Select>
+              </FormControl>
               <FormControl size="small" sx={{ minWidth: '10rem' }}>
                 <Select
                   value={sortBy}
@@ -538,7 +594,9 @@ export default function UserManagementPage() {
                   <Box sx={{ py: 8, textAlign: 'center' }}>
                     <CircularProgress />
                   </Box>
-                ) : filteredUsers.length > 0 ? filteredUsers.map((user) => (
+                ) : filteredUsers.length > 0 ? filteredUsers.map((user) => {
+                  const inactive = isInactiveUser(user);
+                  return (
                   <Box
                     key={user.id}
                     role="button"
@@ -552,20 +610,20 @@ export default function UserManagementPage() {
                       px: { xs: 1.7, md: 2.2 },
                       py: 1.8,
                       borderRadius: '22px',
-                      border: '1px solid rgba(130, 92, 206, 0.10)',
-                      bgcolor: 'rgba(255,255,255,0.72)',
+                      border: inactive ? '1px solid rgba(194, 65, 91, 0.18)' : '1px solid rgba(130, 92, 206, 0.10)',
+                      bgcolor: inactive ? 'rgba(255, 247, 250, 0.78)' : 'rgba(255,255,255,0.72)',
                       cursor: 'pointer',
                       transition: 'transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease, border-color 180ms ease',
                       ...(selectedUser?.id === user.id
                         ? {
-                            bgcolor: 'rgba(244, 238, 255, 0.95)',
-                            borderColor: 'rgba(124, 58, 237, 0.35)',
+                            bgcolor: inactive ? 'rgba(255, 239, 245, 0.96)' : 'rgba(244, 238, 255, 0.95)',
+                            borderColor: inactive ? 'rgba(194, 65, 91, 0.34)' : 'rgba(124, 58, 237, 0.35)',
                             boxShadow: '0 16px 34px rgba(91, 57, 145, 0.12)',
                           }
                         : {}),
                       '&:hover': {
-                        bgcolor: 'rgba(255, 250, 254, 0.94)',
-                        borderColor: 'rgba(124, 58, 237, 0.18)',
+                        bgcolor: inactive ? 'rgba(255, 242, 247, 0.96)' : 'rgba(255, 250, 254, 0.94)',
+                        borderColor: inactive ? 'rgba(194, 65, 91, 0.28)' : 'rgba(124, 58, 237, 0.18)',
                         boxShadow: '0 16px 34px rgba(91, 57, 145, 0.10)',
                         transform: 'translateY(-2px) scale(1.002)',
                       },
@@ -589,6 +647,21 @@ export default function UserManagementPage() {
                       <Box sx={{ minWidth: 0 }}>
                         <Typography fontWeight={950} noWrap sx={{ color: '#17122E' }}>{getFullName(user, t('umUnnamedUser'))}</Typography>
                         <Typography color="#5E587E" noWrap sx={{ fontSize: '0.84375rem' }}>{user.email || t('umNoEmail')}</Typography>
+                        {inactive ? (
+                          <Chip
+                            label={t('umStatusInactive')}
+                            size="small"
+                            sx={{
+                              mt: 0.65,
+                              height: '1.5rem',
+                              borderRadius: 999,
+                              color: '#C2415B',
+                              bgcolor: 'rgba(244, 63, 94, 0.10)',
+                              border: '1px solid rgba(244, 63, 94, 0.16)',
+                              fontWeight: 900,
+                            }}
+                          />
+                        ) : null}
                       </Box>
                     </Stack>
 
@@ -620,18 +693,21 @@ export default function UserManagementPage() {
                       justifyContent={{ xs: 'flex-start', md: 'flex-end' }}
                       onClick={(event) => event.stopPropagation()}
                     >
-                      <IconButton aria-label={t('umViewAria').replace('{name}', getFullName(user, t('umUnnamedUser')))} onClick={() => selectUser(user)} sx={actionIconSx('purple')}>
-                        <VisibilityOutlinedIcon fontSize="small" />
-                      </IconButton>
                       <IconButton aria-label={t('umEditAria').replace('{name}', getFullName(user, t('umUnnamedUser')))} onClick={() => selectUser(user)} sx={actionIconSx('purple')}>
                         <EditOutlinedIcon fontSize="small" />
                       </IconButton>
-                      <IconButton aria-label={t('umDeleteAria').replace('{name}', getFullName(user, t('umUnnamedUser')))} sx={actionIconSx('pink')}>
+                      <IconButton
+                        aria-label={t('umDeactivateAria').replace('{name}', getFullName(user, t('umUnnamedUser')))}
+                        disabled={inactive || deactivating}
+                        onClick={() => setDeactivateTarget(user)}
+                        sx={actionIconSx('pink')}
+                      >
                         <DeleteOutlinedIcon fontSize="small" />
                       </IconButton>
                     </Stack>
                   </Box>
-                )) : (
+                  );
+                }) : (
                   <Box sx={{ py: 8, textAlign: 'center' }}>
                     <Typography fontWeight={900}>{t('umNoUsers')}</Typography>
                     <Typography color="text.secondary" sx={{ mt: 1 }}>{t('umNoUsersHint')}</Typography>
@@ -738,6 +814,20 @@ export default function UserManagementPage() {
                     <Stack spacing={0.5} alignItems="flex-start">
                       <Stack direction="row" spacing={0.75} alignItems="center" flexWrap="wrap" useFlexGap>
                         <RoleChip role={selectedUser.role || 'participant'} t={t} />
+                        {isInactiveUser(selectedUser) ? (
+                          <Chip
+                            label={t('umStatusInactive')}
+                            size="small"
+                            sx={{
+                              height: '1.625rem',
+                              borderRadius: 999,
+                              color: '#C2415B',
+                              bgcolor: 'rgba(244, 63, 94, 0.10)',
+                              border: '1px solid rgba(244, 63, 94, 0.16)',
+                              fontWeight: 900,
+                            }}
+                          />
+                        ) : null}
                         {detailsLoading ? <CircularProgress size={14} /> : null}
                       </Stack>
                       <Typography variant="h5" fontWeight={950} noWrap sx={{ fontSize: '1.125rem', textAlign: 'left', minWidth: 0, width: '100%' }}>
@@ -785,6 +875,8 @@ export default function UserManagementPage() {
                       <Button
                         size="small"
                         startIcon={<Ban />}
+                        disabled={isInactiveUser(selectedUser)}
+                        onClick={() => setDeactivateTarget(selectedUser)}
                         sx={{
                           ...actionButtonBaseSx,
                           color: '#C2415B',
@@ -797,7 +889,7 @@ export default function UserManagementPage() {
                           },
                         }}
                       >
-                        {t('umSuspend')}
+                        {t('umDeactivate')}
                       </Button>
                     </Stack>
                   </Box>
@@ -828,6 +920,75 @@ export default function UserManagementPage() {
             </Box>
           </Box>
         ) : null}
+      </Dialog>
+      <Dialog
+        open={Boolean(deactivateTarget)}
+        onClose={() => {
+          if (!deactivating) setDeactivateTarget(null);
+        }}
+        PaperProps={{
+          dir: direction,
+          sx: {
+            width: { xs: 'calc(100vw - 32px)', sm: '26rem' },
+            borderRadius: '24px',
+            p: 0,
+            overflow: 'hidden',
+            bgcolor: 'rgba(255, 255, 255, 0.96)',
+            boxShadow: '0 26px 74px rgba(32, 20, 67, 0.24)',
+          },
+        }}
+        BackdropProps={{
+          sx: {
+            bgcolor: 'rgba(18, 12, 35, 0.42)',
+            backdropFilter: 'blur(8px)',
+          },
+        }}
+      >
+        <Box sx={{ p: { xs: 2.25, sm: 2.75 } }}>
+          <Typography variant="h6" fontWeight={950} sx={{ color: '#17122E' }}>
+            {t('umDeactivateTitle')}
+          </Typography>
+          <Typography sx={{ mt: 1, color: '#5E587E', lineHeight: 1.55 }}>
+            {t('umDeactivateConfirm')}
+          </Typography>
+          {deactivateTarget ? (
+            <Typography sx={{ mt: 1.25, color: '#17122E', fontWeight: 900 }}>
+              {getFullName(deactivateTarget, t('umUnnamedUser'))}
+            </Typography>
+          ) : null}
+          <Stack direction="row" spacing={1.25} justifyContent="flex-end" sx={{ mt: 3 }}>
+            <Button
+              variant="outlined"
+              onClick={() => setDeactivateTarget(null)}
+              disabled={deactivating}
+              sx={{
+                borderRadius: 999,
+                px: 2.4,
+                borderColor: 'rgba(130, 92, 206, 0.18)',
+                color: '#5B21B6',
+                fontWeight: 900,
+              }}
+            >
+              {t('btnCancel')}
+            </Button>
+            <Button
+              variant="contained"
+              onClick={confirmDeactivateUser}
+              disabled={deactivating}
+              sx={{
+                borderRadius: 999,
+                px: 2.6,
+                bgcolor: '#C52A72',
+                color: '#fff',
+                fontWeight: 900,
+                boxShadow: '0 12px 26px rgba(197, 42, 114, 0.18)',
+                '&:hover': { bgcolor: '#B52568' },
+              }}
+            >
+              {deactivating ? t('umDeactivating') : t('umDeactivateConfirmButton')}
+            </Button>
+          </Stack>
+        </Box>
       </Dialog>
     </Box>
   );
