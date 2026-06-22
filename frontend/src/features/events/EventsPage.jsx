@@ -1196,42 +1196,57 @@ function WorkshopDetailsPanel({
       </header>
 
       <div className="workshop-details-panel__body">
-        <section className="workshop-details-panel__section">
-          <h3>{t('evWorkshopDetails')}</h3>
-          <p className="workshop-details-panel__description">{event.description}</p>
+        <section className="workshop-details-panel__section workshop-details-panel__detail-item workshop-details-panel__detail-item--description">
+          <VolunteerActivismIcon fontSize="small" />
+          <div className="workshop-details-panel__detail-copy">
+            <h3>{t('evWorkshopDetails')}</h3>
+            <p className="workshop-details-panel__description">{event.description}</p>
+          </div>
         </section>
 
         <div className="workshop-details-panel__details">
-          <span>
+          <div className="workshop-details-panel__detail-item">
             <EventAvailableIcon fontSize="small" />
-            <strong>{t('evDate')}</strong>
-            {session?.date || event.date || t('evDateTBD')}
-          </span>
-          <span>
+            <div className="workshop-details-panel__detail-copy">
+              <strong>{t('evDate')}</strong>
+              <span>{session?.date || event.date || t('evDateTBD')}</span>
+            </div>
+          </div>
+          <div className="workshop-details-panel__detail-item">
             <AccessTimeIcon fontSize="small" />
-            <strong>{t('evTime')}</strong>
-            {session?.time || event.time || t('evTimeTBD')}
-          </span>
-          <span>
+            <div className="workshop-details-panel__detail-copy">
+              <strong>{t('evTime')}</strong>
+              <span>{session?.time || event.time || t('evTimeTBD')}</span>
+            </div>
+          </div>
+          <div className="workshop-details-panel__detail-item">
             <HomeRoundedIcon fontSize="small" />
-            <strong>{t('evLocation')}</strong>
-            {session?.location || event.location || 'She-Na Center'}
-          </span>
-          <span>
+            <div className="workshop-details-panel__detail-copy">
+              <strong>{t('evLocation')}</strong>
+              <span>{session?.location || event.location || 'She-Na Center'}</span>
+            </div>
+          </div>
+          <div className="workshop-details-panel__detail-item">
             <PersonIcon fontSize="small" />
-            <strong>{t('evInstructorLabel')}</strong>
-            {session?.providerName || event.instructor || t('evSheNaTeam')}
-          </span>
-          <span>
+            <div className="workshop-details-panel__detail-copy">
+              <strong>{t('evInstructorLabel')}</strong>
+              <span>{session?.providerName || event.instructor || t('evSheNaTeam')}</span>
+            </div>
+          </div>
+          <div className="workshop-details-panel__detail-item">
             <GroupsRoundedIcon fontSize="small" />
-            <strong>{t('evSpots')}</strong>
-            {getWorkshopAvailabilityLabel(session, t)}
-          </span>
-          <span>
+            <div className="workshop-details-panel__detail-copy">
+              <strong>{t('evSpots')}</strong>
+              <span>{getWorkshopAvailabilityLabel(session, t)}</span>
+            </div>
+          </div>
+          <div className="workshop-details-panel__detail-item">
             <CalendarMonthIcon fontSize="small" />
-            <strong>{t('evStatus')}</strong>
-            {isRegistered ? t('evRegistered') : registrationClosed ? t('evClosed') : isFull ? t('evFull') : t('evOpen')}
-          </span>
+            <div className="workshop-details-panel__detail-copy">
+              <strong>{t('evStatus')}</strong>
+              <span>{isRegistered ? t('evRegistered') : registrationClosed ? t('evClosed') : isFull ? t('evFull') : t('evOpen')}</span>
+            </div>
+          </div>
         </div>
 
         {isRegistered && !canCancelBooking && (
