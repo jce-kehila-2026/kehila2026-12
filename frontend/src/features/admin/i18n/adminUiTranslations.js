@@ -200,10 +200,7 @@ export const adminUiTranslations = {
 
     // ── Shared: roles ─────────────────────────────────────────────────────
     roleParticipant: 'Participant',
-    roleVolunteer: 'Volunteer',
-    roleTherapist: 'Therapist',
     roleAdmin: 'Admin',
-    roleEditor: 'Editor',
 
     // ── User management ───────────────────────────────────────────────────
     umTitle: 'User Management',
@@ -1260,10 +1257,7 @@ export const adminUiTranslations = {
 
     // ── Shared: roles ─────────────────────────────────────────────────────
     roleParticipant: 'משתתפת',
-    roleVolunteer: 'מתנדבת',
-    roleTherapist: 'מטפלת',
     roleAdmin: 'מנהלת',
-    roleEditor: 'עורכת',
 
     // ── User management ───────────────────────────────────────────────────
     umTitle: 'ניהול משתמשים',

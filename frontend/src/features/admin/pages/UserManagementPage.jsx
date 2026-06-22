@@ -31,22 +31,16 @@ import SearchIcon from '@mui/icons-material/Search';
 import SortIcon from '@mui/icons-material/Sort';
 import Avatar from '@mui/material/Avatar';
 
-const ROLES = ['participant', 'volunteer', 'therapist', 'admin'];
+const ROLES = ['participant', 'admin'];
 
 const ROLE_LABEL_KEYS = {
   participant: 'roleParticipant',
-  volunteer: 'roleVolunteer',
-  therapist: 'roleTherapist',
   admin: 'roleAdmin',
-  editor: 'roleEditor',
 };
 
 const ROLE_STYLES = {
   admin: { color: '#15803D', backgroundColor: 'rgba(34, 197, 94, 0.14)' },
   participant: { color: '#6D3CCF', backgroundColor: 'rgba(109, 60, 207, 0.12)' },
-  volunteer: { color: '#3B82F6', backgroundColor: 'rgba(59, 130, 246, 0.12)' },
-  therapist: { color: '#7C3AED', backgroundColor: 'rgba(124, 58, 237, 0.13)' },
-  editor: { color: '#7C3AED', backgroundColor: 'rgba(124, 58, 237, 0.13)' },
 };
 
 const actionButtonBaseSx = {
@@ -107,8 +101,12 @@ function getEmergencyContact(user) {
   return [user?.emergencyContactName, user?.emergencyPhone].filter(Boolean).join(' ');
 }
 
+function normalizeUserRole(role) {
+  return role === 'admin' ? 'admin' : 'participant';
+}
+
 function RoleChip({ role, t }) {
-  const key = role || 'participant';
+  const key = normalizeUserRole(role);
   const style = ROLE_STYLES[key] || ROLE_STYLES.participant;
 
   return (
@@ -133,7 +131,7 @@ function isInactiveUser(user) {
 export default function UserManagementPage() {
   const { currentUser } = useAdmin();
   const { t, direction } = useAdminLocale();
-  const roleLabel = (role) => t(ROLE_LABEL_KEYS[role] || 'roleParticipant');
+  const roleLabel = (role) => t(ROLE_LABEL_KEYS[normalizeUserRole(role)] || 'roleParticipant');
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(null);
@@ -183,7 +181,7 @@ export default function UserManagementPage() {
   }, [loadJoinRequests]);
 
   async function handleRoleChange(user, newRole) {
-    const oldRole = user.role || 'participant';
+    const oldRole = normalizeUserRole(user.role);
     if (oldRole === newRole) return;
 
     setSaving(user.id);
@@ -253,7 +251,7 @@ export default function UserManagementPage() {
   const filteredUsers = useMemo(() => {
     const q = search.trim().toLowerCase();
     const next = users.filter((user) => {
-      const role = user.role || 'participant';
+      const role = normalizeUserRole(user.role);
       const matchesSearch =
         !q ||
         [getFullName(user), user.email, user.phoneNumber, getAddress(user)]
@@ -269,7 +267,7 @@ export default function UserManagementPage() {
 
     return [...next].sort((left, right) => {
       if (sortBy === 'name') return getFullName(left).localeCompare(getFullName(right));
-      if (sortBy === 'role') return (left.role || 'participant').localeCompare(right.role || 'participant');
+      if (sortBy === 'role') return normalizeUserRole(left.role).localeCompare(normalizeUserRole(right.role));
 
       const leftDate = getJoinedDate(left)?.toDate?.() || new Date(getJoinedDate(left) || 0);
       const rightDate = getJoinedDate(right)?.toDate?.() || new Date(getJoinedDate(right) || 0);
@@ -289,7 +287,7 @@ export default function UserManagementPage() {
         ],
         [
           { fieldKey: 'dob', labelKey: 'fieldDOB', value: formatDateValue(selectedUser.birthDate || selectedUser.dateOfBirth) },
-          { fieldKey: 'role', labelKey: 'fieldRole', value: roleLabel(selectedUser.role || 'participant') },
+          { fieldKey: 'role', labelKey: 'fieldRole', value: roleLabel(selectedUser.role) },
         ],
       ]
     : [];
@@ -667,7 +665,7 @@ export default function UserManagementPage() {
 
                     <Box onClick={(event) => event.stopPropagation()}>
                       <Select
-                        value={user.role || 'participant'}
+                        value={normalizeUserRole(user.role)}
                         onChange={(event) => handleRoleChange(user, event.target.value)}
                         disabled={saving === user.id}
                         size="small"
@@ -676,7 +674,7 @@ export default function UserManagementPage() {
                           height: '2.625rem',
                           borderRadius: 999,
                           fontWeight: 900,
-                          ...(ROLE_STYLES[user.role || 'participant'] || ROLE_STYLES.participant),
+                          ...(ROLE_STYLES[normalizeUserRole(user.role)] || ROLE_STYLES.participant),
                           '& .MuiSelect-select': { py: 1.05 },
                           '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.65)' },
                         }}
@@ -813,7 +811,7 @@ export default function UserManagementPage() {
                   <Box sx={{ minWidth: 0, flex: 1, textAlign: 'left' }}>
                     <Stack spacing={0.5} alignItems="flex-start">
                       <Stack direction="row" spacing={0.75} alignItems="center" flexWrap="wrap" useFlexGap>
-                        <RoleChip role={selectedUser.role || 'participant'} t={t} />
+                        <RoleChip role={selectedUser.role} t={t} />
                         {isInactiveUser(selectedUser) ? (
                           <Chip
                             label={t('umStatusInactive')}
