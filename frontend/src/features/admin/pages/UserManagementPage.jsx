@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { collection, doc, documentId, getDoc, getDocs, limit, orderBy, query, updateDoc } from 'firebase/firestore';
 import { Ban, Pencil, ShieldCheck } from 'lucide-react';
 import { db } from '../../../firebase';
@@ -27,7 +26,6 @@ import Typography from '@mui/material/Typography';
 import CloseIcon from '@mui/icons-material/Close';
 import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
-import PreviewIcon from '@mui/icons-material/Preview';
 import SearchIcon from '@mui/icons-material/Search';
 import SortIcon from '@mui/icons-material/Sort';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
@@ -129,7 +127,6 @@ function RoleChip({ role, t }) {
 }
 
 export default function UserManagementPage() {
-  const navigate = useNavigate();
   const { t, direction } = useAdminLocale();
   const roleLabel = (role) => t(ROLE_LABEL_KEYS[role] || 'roleParticipant');
   const [users, setUsers] = useState([]);
@@ -323,33 +320,6 @@ export default function UserManagementPage() {
                 {t('umTitle')}
               </Typography>
             </Box>
-            <Button
-              variant="outlined"
-              startIcon={<PreviewIcon />}
-              onClick={() => navigate('/home')}
-              sx={{
-                alignSelf: { xs: 'flex-start', lg: 'center' },
-                height: '3rem',
-                px: 3.2,
-                borderRadius: 999,
-                borderColor: 'rgba(223, 50, 123, 0.46)',
-                color: '#C52A72',
-                bgcolor: 'rgba(255,255,255,0.62)',
-                fontWeight: 900,
-                boxShadow: '0 12px 28px rgba(223, 50, 123, 0.06)',
-                '& .MuiButton-startIcon': {
-                  marginInlineEnd: '14px',
-                  marginInlineStart: 0,
-                  display: 'inherit',
-                },
-                '&:hover': {
-                  borderColor: 'rgba(223, 50, 123, 0.7)',
-                  bgcolor: 'rgba(255, 246, 251, 0.92)',
-                },
-              }}
-            >
-              {t('umPreviewParticipant')}
-            </Button>
           </Stack>
 
           <Stack direction="row" spacing={1.2} sx={{ flexShrink: 0 }} role="tablist" aria-label={t('umSectionsAria')}>

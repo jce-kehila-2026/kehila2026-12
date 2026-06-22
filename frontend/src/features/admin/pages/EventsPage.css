@@ -32,10 +32,13 @@
   position: fixed;
   top: 1.75rem;
   inset-inline-start: calc(var(--admin-sidebar-width) + 4rem);
+  inset-inline-end: 4rem;
   z-index: 1100;
   min-height: 2.375rem;
   display: flex;
   align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
 }
 
 .admin-events-page-title {

@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, useCallback, useId } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import ArrowForward from '@mui/icons-material/ArrowForward';
 import CalendarMonth from '@mui/icons-material/CalendarMonth';
 import Category from '@mui/icons-material/Category';
@@ -12,6 +12,7 @@ import FilterList from '@mui/icons-material/FilterList';
 import Groups from '@mui/icons-material/Groups';
 import LocationOnOutlined from '@mui/icons-material/LocationOnOutlined';
 import PersonRemoveOutlined from '@mui/icons-material/PersonRemoveOutlined';
+import PreviewIcon from '@mui/icons-material/Preview';
 import Refresh from '@mui/icons-material/Refresh';
 import SendOutlined from '@mui/icons-material/SendOutlined';
 import Schedule from '@mui/icons-material/Schedule';
@@ -19,6 +20,7 @@ import Search from '@mui/icons-material/Search';
 import Tune from '@mui/icons-material/Tune';
 import VisibilityOutlined from '@mui/icons-material/VisibilityOutlined';
 import MailOutlineOutlinedIcon from '@mui/icons-material/MailOutlineOutlined';
+import Button from '@mui/material/Button';
 import { createEvent, deleteEvent, getAllEvents, updateEvent } from '../services/eventService';
 import {
   getBookingsByEvent,
@@ -506,6 +508,7 @@ function csvEscape(value) {
 }
 
 export default function EventsPage() {
+  const navigate = useNavigate();
   const { t, lang, direction } = useAdminLocale();
   const intlLocale = INTL_LOCALE_BY_LANG[lang] || 'en';
   const evStatusLabel = (s) => (EV_STATUS_LABEL_KEYS[s] ? t(EV_STATUS_LABEL_KEYS[s]) : s);
@@ -1137,6 +1140,33 @@ export default function EventsPage() {
     <section className="admin-events-page public-cta-scope" dir={direction}>
       <div className="admin-events-page-title-slot">
         <h1 className="admin-events-page-title">{t('evTitle')}</h1>
+        <Button
+          variant="outlined"
+          startIcon={<PreviewIcon />}
+          onClick={() => navigate('/home')}
+          sx={{
+            alignSelf: { xs: 'flex-start', lg: 'center' },
+            height: '3rem',
+            px: 3.2,
+            borderRadius: 999,
+            borderColor: 'rgba(223, 50, 123, 0.46)',
+            color: '#C52A72',
+            bgcolor: 'rgba(255,255,255,0.62)',
+            fontWeight: 900,
+            boxShadow: '0 12px 28px rgba(223, 50, 123, 0.06)',
+            '& .MuiButton-startIcon': {
+              marginInlineEnd: '14px',
+              marginInlineStart: 0,
+              display: 'inherit',
+            },
+            '&:hover': {
+              borderColor: 'rgba(223, 50, 123, 0.7)',
+              bgcolor: 'rgba(255, 246, 251, 0.92)',
+            },
+          }}
+        >
+          {t('umPreviewParticipant')}
+        </Button>
       </div>
 
       <div className={`admin-events-shell${drawerOpen || participantsDrawerOpen ? ' has-drawer' : ''}${participantsDrawerOpen ? ' has-participants-drawer' : ''}`}>
