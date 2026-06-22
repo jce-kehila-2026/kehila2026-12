@@ -59,7 +59,7 @@ function AdminLayoutInner() {
             className="admin-topbar"
             sx={{
               display: 'flex',
-              justifyContent: 'flex-end',
+              justifyContent: direction === 'rtl' ? 'flex-start' : 'flex-end',
               alignItems: 'center',
               px: { xs: 2, sm: 3, md: '32px' },
               pt: { xs: 1.5, md: 2.5 },

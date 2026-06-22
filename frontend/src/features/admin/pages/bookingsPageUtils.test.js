@@ -50,6 +50,39 @@ describe('Admin Bookings helpers', () => {
     expect(row.registeredAt).toBeNull();
   });
 
+  it('sorts rows by latest user operation date before pagination', () => {
+    const central = [
+      {
+        id: 'old-booking',
+        participantName: 'Old central',
+        eventTitle: 'Old event',
+        registeredAt: '2026-06-18T09:00:00.000Z',
+      },
+      {
+        id: 'new-booking',
+        participantName: 'New central',
+        eventTitle: 'New event',
+        registeredAt: '2026-06-21T12:00:00.000Z',
+      },
+    ];
+    const legacy = [
+      {
+        id: 'legacy-latest',
+        participantName: 'Latest legacy',
+        title: 'Legacy event',
+        date: '2026-06-22T08:00:00.000Z',
+      },
+    ];
+
+    const rows = mergeBookingRows(central, legacy);
+
+    expect(rows.map((row) => row.participantName)).toEqual([
+      'Latest legacy',
+      'New central',
+      'Old central',
+    ]);
+  });
+
   it('returns the correct slice and page metadata', () => {
     const rows = Array.from({ length: 15 }, (_, index) => ({ id: index + 1 }));
 

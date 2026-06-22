@@ -16,7 +16,8 @@ const ADMIN_LANGUAGE_OPTIONS = [
  * isn't clipped at the bottom-left of the rail.
  */
 export default function AdminLanguageSwitcher({ dropUp = false, align = 'end' }) {
-  const { locale, setLocale, t } = useAdminLocale();
+  const { locale, setLocale, t, direction } = useAdminLocale();
+  const isRtl = direction === 'rtl';
   const [isOpen, setIsOpen] = useState(false);
   const rootRef = useRef(null);
   const menuId = useId();
@@ -57,6 +58,12 @@ export default function AdminLanguageSwitcher({ dropUp = false, align = 'end' })
       ? { insetBlockStart: 'auto', insetBlockEnd: 'calc(100% + 10px)', transformOrigin: 'bottom' }
       : null),
     ...(align === 'start' ? { insetInlineStart: 0, insetInlineEnd: 'auto' } : null),
+    // In Hebrew the switcher sits at the top-left of the page, so pin the menu's
+    // left edge to the trigger with physical props (logical inset props resolve
+    // unreliably here) and let it open rightward, into the page.
+    ...(isRtl
+      ? { insetInlineStart: 'auto', insetInlineEnd: 'auto', left: 0, right: 'auto' }
+      : null),
   };
 
   const label = t('selectLanguage');

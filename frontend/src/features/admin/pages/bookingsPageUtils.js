@@ -32,6 +32,14 @@ function normalizeTimeKey(value) {
   return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
 }
 
+function getOperationDate(...values) {
+  return values.map(toDate).find(Boolean) || null;
+}
+
+function getOperationTime(row) {
+  return toDate(row.operationAt || row.registeredAt || row.createdAt || row.updatedAt || row.eventDate)?.getTime() || 0;
+}
+
 export function normalizeBookingStatus(status) {
   const value = String(status || 'pending').trim().toLowerCase();
   if (value === 'confirmed') return 'approved';
@@ -61,6 +69,17 @@ export function normalizeCentralBooking(item, index = 0) {
     eventDate: item.startAt || item.eventDate || item.selectedDate || item.dateKey || item.date || null,
     eventTime: item.selectedTime || item.selectedTimeSlot || item.sessionTime || item.time || item.startAt || '',
     registeredAt: item.registeredAt || item.createdAt || null,
+    operationAt: getOperationDate(
+      item.registeredAt,
+      item.createdAt,
+      item.updatedAt,
+      item.timestamp,
+      item.startAt,
+      item.eventDate,
+      item.selectedDate,
+      item.dateKey,
+      item.date,
+    ),
     status: normalizeBookingStatus(item.status),
   };
 }
@@ -83,6 +102,14 @@ export function normalizeLegacyAppointment(item, index = 0) {
     eventDate: item.startAt || item.date || item.createdAt || null,
     eventTime: item.selectedTime || item.time || item.selectedTimeSlot || item.startTime || '',
     registeredAt: item.registeredAt || item.createdAt || null,
+    operationAt: getOperationDate(
+      item.registeredAt,
+      item.createdAt,
+      item.updatedAt,
+      item.timestamp,
+      item.startAt,
+      item.date,
+    ),
     status: normalizeBookingStatus(item.status),
   };
 }
@@ -118,9 +145,7 @@ export function mergeBookingRows(bookingItems, appointmentItems) {
   });
 
   return rows.sort((left, right) => {
-    const leftTime = toDate(left.registeredAt)?.getTime() || 0;
-    const rightTime = toDate(right.registeredAt)?.getTime() || 0;
-    return rightTime - leftTime;
+    return getOperationTime(right) - getOperationTime(left);
   });
 }
 

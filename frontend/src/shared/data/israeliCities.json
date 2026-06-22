@@ -1,0 +1,5226 @@
+[
+  {
+    "he": "אבו ג'ווייעד (שבט)",
+    "en": "Abu Juwei'Id"
+  },
+  {
+    "he": "אבו גוש",
+    "en": "Abu Ghosh"
+  },
+  {
+    "he": "אבו סנאן",
+    "en": "Abu Sinan"
+  },
+  {
+    "he": "אבו סריחאן (שבט)",
+    "en": "Abu Sureihan"
+  },
+  {
+    "he": "אבו עבדון (שבט)",
+    "en": "Abu Abdun"
+  },
+  {
+    "he": "אבו עמאר (שבט)",
+    "en": "Abu Ammar"
+  },
+  {
+    "he": "אבו עמרה (שבט)",
+    "en": "Abu Amre"
+  },
+  {
+    "he": "אבו קורינאת (שבט)",
+    "en": "Abu Qureinat"
+  },
+  {
+    "he": "אבו קרינאת (יישוב)",
+    "en": "Abu Qureinat"
+  },
+  {
+    "he": "אבו רובייעה (שבט)",
+    "en": "Abu Rubei'A"
+  },
+  {
+    "he": "אבו רוקייק (שבט)",
+    "en": "Abu Ruqayyeq"
+  },
+  {
+    "he": "אבו תלול",
+    "en": "Abu Tulul"
+  },
+  {
+    "he": "אבטין",
+    "en": "Ibtin"
+  },
+  {
+    "he": "אבטליון",
+    "en": "Avtalyon"
+  },
+  {
+    "he": "אביאל",
+    "en": "Avi'El"
+  },
+  {
+    "he": "אביבים",
+    "en": "Avivim"
+  },
+  {
+    "he": "אביגדור",
+    "en": "Avigedor"
+  },
+  {
+    "he": "אביגיל",
+    "en": "Avigayil"
+  },
+  {
+    "he": "אביחיל",
+    "en": "Avihayil"
+  },
+  {
+    "he": "אביטל",
+    "en": "Avital"
+  },
+  {
+    "he": "אביעזר",
+    "en": "Avi'Ezer"
+  },
+  {
+    "he": "אבירים",
+    "en": "Abbirim"
+  },
+  {
+    "he": "אבן יהודה",
+    "en": "Even Yehuda"
+  },
+  {
+    "he": "אבן מנחם",
+    "en": "Even Menahem"
+  },
+  {
+    "he": "אבן ספיר",
+    "en": "Even Sappir"
+  },
+  {
+    "he": "אבן שמואל",
+    "en": "Even Shemu'El"
+  },
+  {
+    "he": "אבני איתן",
+    "en": "Avne Etan"
+  },
+  {
+    "he": "אבני חפץ",
+    "en": "Avne Hefez"
+  },
+  {
+    "he": "אבשלום",
+    "en": "Avshalom"
+  },
+  {
+    "he": "אדורה",
+    "en": "Adora"
+  },
+  {
+    "he": "אדוריים",
+    "en": "Adorayim"
+  },
+  {
+    "he": "אדירים",
+    "en": "Addirim"
+  },
+  {
+    "he": "אדמית",
+    "en": "Adamit"
+  },
+  {
+    "he": "אדרת",
+    "en": "Adderet"
+  },
+  {
+    "he": "אובנת",
+    "en": "Ovnat"
+  },
+  {
+    "he": "אודים",
+    "en": "Udim"
+  },
+  {
+    "he": "אודם",
+    "en": "Odem"
+  },
+  {
+    "he": "אוהד",
+    "en": "Ohad"
+  },
+  {
+    "he": "אום אל-פחם",
+    "en": "Umm Al-Fahm"
+  },
+  {
+    "he": "אום אל-קוטוף",
+    "en": "Umm Al-Qutuf"
+  },
+  {
+    "he": "אום בטין",
+    "en": "Umm Batin"
+  },
+  {
+    "he": "אומן",
+    "en": "Omen"
+  },
+  {
+    "he": "אומץ",
+    "en": "Omez"
+  },
+  {
+    "he": "אופקים",
+    "en": "Ofaqim"
+  },
+  {
+    "he": "אור הגנוז",
+    "en": "Or Haganuz"
+  },
+  {
+    "he": "אור הנר",
+    "en": "Or Haner"
+  },
+  {
+    "he": "אור יהודה",
+    "en": "Or Yehuda"
+  },
+  {
+    "he": "אור עקיבא",
+    "en": "Or Aqiva"
+  },
+  {
+    "he": "אורה",
+    "en": "Ora"
+  },
+  {
+    "he": "אורות",
+    "en": "Orot"
+  },
+  {
+    "he": "אורטל",
+    "en": "Ortal"
+  },
+  {
+    "he": "אורים",
+    "en": "Urim"
+  },
+  {
+    "he": "אורנים",
+    "en": "Oranim"
+  },
+  {
+    "he": "אורנית",
+    "en": "Oranit"
+  },
+  {
+    "he": "אושה",
+    "en": "Usha"
+  },
+  {
+    "he": "אזור",
+    "en": "Azor"
+  },
+  {
+    "he": "אחווה",
+    "en": "Ahawa"
+  },
+  {
+    "he": "אחוזם",
+    "en": "Ahuzzam"
+  },
+  {
+    "he": "אחוזת ברק",
+    "en": "Ahuzzat Baraq"
+  },
+  {
+    "he": "אחיה",
+    "en": "Ahiya"
+  },
+  {
+    "he": "אחיהוד",
+    "en": "Ahihud"
+  },
+  {
+    "he": "אחיטוב",
+    "en": "Ahituv"
+  },
+  {
+    "he": "אחיסמך",
+    "en": "Ahisamakh"
+  },
+  {
+    "he": "אחיעזר",
+    "en": "Ahi'Ezer"
+  },
+  {
+    "he": "אטרש (שבט)",
+    "en": "Atrash"
+  },
+  {
+    "he": "איבי הנחל",
+    "en": "Ibbe Hanahal"
+  },
+  {
+    "he": "איבים",
+    "en": "Ibbim"
+  },
+  {
+    "he": "אייל",
+    "en": "Eyal"
+  },
+  {
+    "he": "איילת השחר",
+    "en": "Ayyelet Hashahar"
+  },
+  {
+    "he": "אילון",
+    "en": "Elon"
+  },
+  {
+    "he": "אילות",
+    "en": "Elot"
+  },
+  {
+    "he": "אילניה",
+    "en": "Ilaniyya"
+  },
+  {
+    "he": "אילת",
+    "en": "Elat"
+  },
+  {
+    "he": "אירוס",
+    "en": "Irus"
+  },
+  {
+    "he": "איתמר",
+    "en": "Itamar"
+  },
+  {
+    "he": "איתן",
+    "en": "Etan"
+  },
+  {
+    "he": "איתנים",
+    "en": "Etanim"
+  },
+  {
+    "he": "אכסאל",
+    "en": "Iksal"
+  },
+  {
+    "he": "אל סייד",
+    "en": "Al Sayyid"
+  },
+  {
+    "he": "אל-עזי",
+    "en": "Al-Azy"
+  },
+  {
+    "he": "אל-עריאן",
+    "en": "Al-Aryan"
+  },
+  {
+    "he": "אל-רום",
+    "en": "El-Rom"
+  },
+  {
+    "he": "אלומה",
+    "en": "Alumma"
+  },
+  {
+    "he": "אלומות",
+    "en": "Alummot"
+  },
+  {
+    "he": "אלון",
+    "en": "Allon"
+  },
+  {
+    "he": "אלון הגליל",
+    "en": "Allon Hagalil"
+  },
+  {
+    "he": "אלון מורה",
+    "en": "Elon More"
+  },
+  {
+    "he": "אלון שבות",
+    "en": "Allon Shevut"
+  },
+  {
+    "he": "אלוני אבא",
+    "en": "Allone Abba"
+  },
+  {
+    "he": "אלוני הבשן",
+    "en": "Allone Habashan"
+  },
+  {
+    "he": "אלוני יצחק",
+    "en": "Allone Yizhaq"
+  },
+  {
+    "he": "אלונים",
+    "en": "Allonim"
+  },
+  {
+    "he": "אלי-עד",
+    "en": "Eli-Ad"
+  },
+  {
+    "he": "אליאב",
+    "en": "Eliav"
+  },
+  {
+    "he": "אליכין",
+    "en": "Elyakhin"
+  },
+  {
+    "he": "אליפז",
+    "en": "Elifaz"
+  },
+  {
+    "he": "אליפלט",
+    "en": "Elifelet"
+  },
+  {
+    "he": "אליקים",
+    "en": "Elyaqim"
+  },
+  {
+    "he": "אלישיב",
+    "en": "Elyashiv"
+  },
+  {
+    "he": "אלישמע",
+    "en": "Elishama"
+  },
+  {
+    "he": "אלמגור",
+    "en": "Almagor"
+  },
+  {
+    "he": "אלמוג",
+    "en": "Almog"
+  },
+  {
+    "he": "אלעד",
+    "en": "El'Ad"
+  },
+  {
+    "he": "אלעזר",
+    "en": "El'Azar"
+  },
+  {
+    "he": "אלפי מנשה",
+    "en": "Alfe Menashe"
+  },
+  {
+    "he": "אלקוש",
+    "en": "Elqosh"
+  },
+  {
+    "he": "אלקנה",
+    "en": "Elqana"
+  },
+  {
+    "he": "אמונים",
+    "en": "Emunim"
+  },
+  {
+    "he": "אמירים",
+    "en": "Amirim"
+  },
+  {
+    "he": "אמנון",
+    "en": "Amnun"
+  },
+  {
+    "he": "אמציה",
+    "en": "Amazya"
+  },
+  {
+    "he": "אניעם",
+    "en": "Ani'Am"
+  },
+  {
+    "he": "אסד (שבט)",
+    "en": "Asad"
+  },
+  {
+    "he": "אספר",
+    "en": "Asefar"
+  },
+  {
+    "he": "אעבלין",
+    "en": "I'Billin"
+  },
+  {
+    "he": "אעצם (שבט)",
+    "en": "A'Sam"
+  },
+  {
+    "he": "אפיניש (שבט)",
+    "en": "Afeinish"
+  },
+  {
+    "he": "אפיק",
+    "en": "Afiq"
+  },
+  {
+    "he": "אפיקים",
+    "en": "Afiqim"
+  },
+  {
+    "he": "אפק",
+    "en": "Afeq"
+  },
+  {
+    "he": "אפרת",
+    "en": "Efrat"
+  },
+  {
+    "he": "ארבל",
+    "en": "Arbel"
+  },
+  {
+    "he": "ארגמן",
+    "en": "Argaman"
+  },
+  {
+    "he": "ארז",
+    "en": "Erez"
+  },
+  {
+    "he": "אריאל",
+    "en": "Ari'El"
+  },
+  {
+    "he": "ארסוף",
+    "en": "Arsuf"
+  },
+  {
+    "he": "אשבול",
+    "en": "Eshbol"
+  },
+  {
+    "he": "אשבל",
+    "en": "Nahal Eshbal"
+  },
+  {
+    "he": "אשדוד",
+    "en": "Ashdod"
+  },
+  {
+    "he": "אשדות יעקב (איחוד)",
+    "en": "Ashdot Ya'Aqov(Ihud)"
+  },
+  {
+    "he": "אשדות יעקב (מאוחד)",
+    "en": "Ashdot Ya'Aqov(Me'Uh"
+  },
+  {
+    "he": "אשחר",
+    "en": "Eshhar"
+  },
+  {
+    "he": "אשכולות",
+    "en": "Eshkolot"
+  },
+  {
+    "he": "אשל הנשיא",
+    "en": "Eshel Hanasi"
+  },
+  {
+    "he": "אשלים",
+    "en": "Ashalim"
+  },
+  {
+    "he": "אשקלון",
+    "en": "Ashqelon"
+  },
+  {
+    "he": "אשרת",
+    "en": "Asherat"
+  },
+  {
+    "he": "אשתאול",
+    "en": "Eshta'Ol"
+  },
+  {
+    "he": "אתגר",
+    "en": "Etgar"
+  },
+  {
+    "he": "באקה אל-גרביה",
+    "en": "Baqa Al-Gharbiyye"
+  },
+  {
+    "he": "באר אורה",
+    "en": "Be'Er Ora"
+  },
+  {
+    "he": "באר גנים",
+    "en": "Beer Gannim"
+  },
+  {
+    "he": "באר טוביה",
+    "en": "Be'Er Tuveya"
+  },
+  {
+    "he": "באר יעקב",
+    "en": "Be'Er Ya'Aqov"
+  },
+  {
+    "he": "באר מילכה",
+    "en": "Be'Er Milka"
+  },
+  {
+    "he": "באר שבע",
+    "en": "Be'Er Sheva"
+  },
+  {
+    "he": "בארות יצחק",
+    "en": "Be'Erot Yizhaq"
+  },
+  {
+    "he": "בארותיים",
+    "en": "Be'Erotayim"
+  },
+  {
+    "he": "בארי",
+    "en": "Be'Eri"
+  },
+  {
+    "he": "בוסתן הגליל",
+    "en": "Bustan Hagalil"
+  },
+  {
+    "he": "בועיינה-נוג'ידאת",
+    "en": "Bu'Eine-Nujeidat"
+  },
+  {
+    "he": "בוקעאתא",
+    "en": "Buq'Ata"
+  },
+  {
+    "he": "בורגתה",
+    "en": "Burgeta"
+  },
+  {
+    "he": "בחן",
+    "en": "Bahan"
+  },
+  {
+    "he": "בטחה",
+    "en": "Bitha"
+  },
+  {
+    "he": "ביצרון",
+    "en": "Bizzaron"
+  },
+  {
+    "he": "ביר אל-מכסור",
+    "en": "Bir El-Maksur"
+  },
+  {
+    "he": "ביר הדאג'",
+    "en": "Bir Hadage"
+  },
+  {
+    "he": "ביריה",
+    "en": "Biriyya"
+  },
+  {
+    "he": "בית אורן",
+    "en": "Bet Oren"
+  },
+  {
+    "he": "בית אל",
+    "en": "Bet El"
+  },
+  {
+    "he": "בית אלעזרי",
+    "en": "Bet El'Azari"
+  },
+  {
+    "he": "בית אלפא",
+    "en": "Bet Alfa"
+  },
+  {
+    "he": "בית אריה",
+    "en": "Bet Arye"
+  },
+  {
+    "he": "בית ברל",
+    "en": "Bet Berl"
+  },
+  {
+    "he": "בית ג'ן",
+    "en": "Beit Jann"
+  },
+  {
+    "he": "בית גוברין",
+    "en": "Bet Guvrin"
+  },
+  {
+    "he": "בית גמליאל",
+    "en": "Bet Gamli'El"
+  },
+  {
+    "he": "בית דגן",
+    "en": "Bet Dagan"
+  },
+  {
+    "he": "בית הגדי",
+    "en": "Bet Hagaddi"
+  },
+  {
+    "he": "בית הלוי",
+    "en": "Bet Halevi"
+  },
+  {
+    "he": "בית הלל",
+    "en": "Bet Hillel"
+  },
+  {
+    "he": "בית העמק",
+    "en": "Bet Haemeq"
+  },
+  {
+    "he": "בית הערבה",
+    "en": "Bet Haarava"
+  },
+  {
+    "he": "בית השיטה",
+    "en": "Bet Hashitta"
+  },
+  {
+    "he": "בית זיד",
+    "en": "Bet Zeid"
+  },
+  {
+    "he": "בית זית",
+    "en": "Bet Zayit"
+  },
+  {
+    "he": "בית זרע",
+    "en": "Bet Zera"
+  },
+  {
+    "he": "בית חוגלה",
+    "en": "Bet Hogla"
+  },
+  {
+    "he": "בית חורון",
+    "en": "Bet Horon"
+  },
+  {
+    "he": "בית חירות",
+    "en": "Bet Herut"
+  },
+  {
+    "he": "בית חלקיה",
+    "en": "Bet Hilqiyya"
+  },
+  {
+    "he": "בית חנן",
+    "en": "Bet Hanan"
+  },
+  {
+    "he": "בית חנניה",
+    "en": "Bet Hananya"
+  },
+  {
+    "he": "בית חשמונאי",
+    "en": "Bet Hashmonay"
+  },
+  {
+    "he": "בית יהושע",
+    "en": "Bet Yehoshua"
+  },
+  {
+    "he": "בית יוסף",
+    "en": "Bet Yosef"
+  },
+  {
+    "he": "בית ינאי",
+    "en": "Bet Yannay"
+  },
+  {
+    "he": "בית יצחק-שער חפר",
+    "en": "Bet Yizhaq-Sh. Hefer"
+  },
+  {
+    "he": "בית יתיר",
+    "en": "Bet Yattir"
+  },
+  {
+    "he": "בית לחם הגלילית",
+    "en": "Bet Lehem Hagelilit"
+  },
+  {
+    "he": "בית מאיר",
+    "en": "Bet Me'Ir"
+  },
+  {
+    "he": "בית נחמיה",
+    "en": "Bet Nehemya"
+  },
+  {
+    "he": "בית ניר",
+    "en": "Bet Nir"
+  },
+  {
+    "he": "בית נקופה",
+    "en": "Bet Neqofa"
+  },
+  {
+    "he": "בית עובד",
+    "en": "Bet Oved"
+  },
+  {
+    "he": "בית עוזיאל",
+    "en": "Bet Uzzi'El"
+  },
+  {
+    "he": "בית עזרא",
+    "en": "Bet Ezra"
+  },
+  {
+    "he": "בית עריף",
+    "en": "Bet Arif"
+  },
+  {
+    "he": "בית צבי",
+    "en": "Bet Zevi"
+  },
+  {
+    "he": "בית קמה",
+    "en": "Bet Qama"
+  },
+  {
+    "he": "בית קשת",
+    "en": "Bet Qeshet"
+  },
+  {
+    "he": "בית רבן",
+    "en": "Bet Rabban"
+  },
+  {
+    "he": "בית רימון",
+    "en": "Bet Rimmon"
+  },
+  {
+    "he": "בית שאן",
+    "en": "Bet She'An"
+  },
+  {
+    "he": "בית שמש",
+    "en": "Bet Shemesh"
+  },
+  {
+    "he": "בית שערים",
+    "en": "Bet She'Arim"
+  },
+  {
+    "he": "בית שקמה",
+    "en": "Bet Shiqma"
+  },
+  {
+    "he": "ביתן אהרן",
+    "en": "Bitan Aharon"
+  },
+  {
+    "he": "ביתר עילית",
+    "en": "Betar Illit"
+  },
+  {
+    "he": "בלפוריה",
+    "en": "Balfuriyya"
+  },
+  {
+    "he": "בן זכאי",
+    "en": "Ben Zakkay"
+  },
+  {
+    "he": "בן עמי",
+    "en": "Ben Ammi"
+  },
+  {
+    "he": "בן שמן (כפר נוער)",
+    "en": "Ben Shemen(K.no'Ar)"
+  },
+  {
+    "he": "בן שמן (מושב)",
+    "en": "Ben Shemen (Moshav)"
+  },
+  {
+    "he": "בני ברק",
+    "en": "Bene Beraq"
+  },
+  {
+    "he": "בני דקלים",
+    "en": "Bne Dkalim"
+  },
+  {
+    "he": "בני דרום",
+    "en": "Bene Darom"
+  },
+  {
+    "he": "בני דרור",
+    "en": "Bene Deror"
+  },
+  {
+    "he": "בני יהודה",
+    "en": "Bene Yehuda"
+  },
+  {
+    "he": "בני נצרים",
+    "en": "Bene Nezarim"
+  },
+  {
+    "he": "בני עטרות",
+    "en": "Bene Atarot"
+  },
+  {
+    "he": "בני עיש",
+    "en": "Bene Ayish"
+  },
+  {
+    "he": "בני ציון",
+    "en": "Bene Ziyyon"
+  },
+  {
+    "he": "בני ראם",
+    "en": "Bene Re'Em"
+  },
+  {
+    "he": "בניה",
+    "en": "Benaya"
+  },
+  {
+    "he": "בנימינה-גבעת עדה",
+    "en": "Binyamina"
+  },
+  {
+    "he": "בסמה",
+    "en": "Basma"
+  },
+  {
+    "he": "בסמת טבעון",
+    "en": "Basmat Tab'Un"
+  },
+  {
+    "he": "בענה",
+    "en": "Bi Ne"
+  },
+  {
+    "he": "בצרה",
+    "en": "Bazra"
+  },
+  {
+    "he": "בצת",
+    "en": "Bezet"
+  },
+  {
+    "he": "בקוע",
+    "en": "Beqoa"
+  },
+  {
+    "he": "בקעות",
+    "en": "Beqa'Ot"
+  },
+  {
+    "he": "בר גיורא",
+    "en": "Bar Giyyora"
+  },
+  {
+    "he": "בר יוחאי",
+    "en": "Bar Yohay"
+  },
+  {
+    "he": "בר כוכבא",
+    "en": "Bar Kokhva"
+  },
+  {
+    "he": "ברוכין",
+    "en": "Brukhin"
+  },
+  {
+    "he": "ברור חיל",
+    "en": "Beror Hayil"
+  },
+  {
+    "he": "ברוש",
+    "en": "Berosh"
+  },
+  {
+    "he": "ברוש הבקעה",
+    "en": "Brosh Habik'A"
+  },
+  {
+    "he": "ברכה",
+    "en": "Berakha"
+  },
+  {
+    "he": "ברכיה",
+    "en": "Berekhya"
+  },
+  {
+    "he": "ברעם",
+    "en": "Bar'Am"
+  },
+  {
+    "he": "ברק",
+    "en": "Baraq"
+  },
+  {
+    "he": "ברקאי",
+    "en": "Barqay"
+  },
+  {
+    "he": "ברקן",
+    "en": "Barqan"
+  },
+  {
+    "he": "ברקת",
+    "en": "Bareqet"
+  },
+  {
+    "he": "בת הדר",
+    "en": "Bat Hadar"
+  },
+  {
+    "he": "בת חן",
+    "en": "Bat Hen"
+  },
+  {
+    "he": "בת חפר",
+    "en": "Bat Hefer"
+  },
+  {
+    "he": "בת ים",
+    "en": "Bat Yam"
+  },
+  {
+    "he": "בת עין",
+    "en": "Bat Ayin"
+  },
+  {
+    "he": "בת שלמה",
+    "en": "Bat Shelomo"
+  },
+  {
+    "he": "בתרון",
+    "en": "Bitron"
+  },
+  {
+    "he": "ג'דיידה-מכר",
+    "en": "Judeide-Maker"
+  },
+  {
+    "he": "ג'ולס",
+    "en": "Julis"
+  },
+  {
+    "he": "ג'לג'וליה",
+    "en": "Jaljulye"
+  },
+  {
+    "he": "ג'נאביב (שבט)",
+    "en": "Junnabib"
+  },
+  {
+    "he": "ג'סר א-זרקא",
+    "en": "Jisr Az-Zarqa"
+  },
+  {
+    "he": "ג'ש (גוש חלב)",
+    "en": "Jish(Gush Halav)"
+  },
+  {
+    "he": "ג'ת",
+    "en": "Jaat"
+  },
+  {
+    "he": "גאולי תימן",
+    "en": "Ge'Ule Teman"
+  },
+  {
+    "he": "גאולים",
+    "en": "Ge'Ulim"
+  },
+  {
+    "he": "גאליה",
+    "en": "Ge'Alya"
+  },
+  {
+    "he": "גבולות",
+    "en": "Gevulot"
+  },
+  {
+    "he": "גבים",
+    "en": "Gevim"
+  },
+  {
+    "he": "גבע",
+    "en": "Geva"
+  },
+  {
+    "he": "גבע בנימין",
+    "en": "Geva Binyamin"
+  },
+  {
+    "he": "גבע כרמל",
+    "en": "Geva Karmel"
+  },
+  {
+    "he": "גבעולים",
+    "en": "Giv'Olim"
+  },
+  {
+    "he": "גבעון החדשה",
+    "en": "Giv'On Hahadasha"
+  },
+  {
+    "he": "גבעות",
+    "en": "Gva'Ot"
+  },
+  {
+    "he": "גבעות בר",
+    "en": "Geva'Ot Bar"
+  },
+  {
+    "he": "גבעות הרואה",
+    "en": "Giv'Ot Haro'E"
+  },
+  {
+    "he": "גבעות עדן",
+    "en": "Giv'Ot Eden"
+  },
+  {
+    "he": "גבעת אבני",
+    "en": "Giv'At Avni"
+  },
+  {
+    "he": "גבעת אלה",
+    "en": "Giv'At Ela"
+  },
+  {
+    "he": "גבעת ברנר",
+    "en": "Giv'At Brenner"
+  },
+  {
+    "he": "גבעת השלושה",
+    "en": "Giv'At Hashelosha"
+  },
+  {
+    "he": "גבעת זאב",
+    "en": "Giv'At Ze'Ev"
+  },
+  {
+    "he": "גבעת חיים (איחוד)",
+    "en": "Giv'At Hayyim (Ihud)"
+  },
+  {
+    "he": "גבעת חיים (מאוחד)",
+    "en": "Giv'At Hayyim(Me'Uha"
+  },
+  {
+    "he": "גבעת חן",
+    "en": "Giv'At Hen"
+  },
+  {
+    "he": "גבעת יואב",
+    "en": "Giv'At Yo'Av"
+  },
+  {
+    "he": "גבעת יערים",
+    "en": "Giv'At Ye'Arim"
+  },
+  {
+    "he": "גבעת ישעיהו",
+    "en": "Giv'At Yesha'Yahu"
+  },
+  {
+    "he": "גבעת כח",
+    "en": "Giv'At Koah"
+  },
+  {
+    "he": "גבעת נילי",
+    "en": "Giv'At Nili"
+  },
+  {
+    "he": "גבעת עוז",
+    "en": "Giv'At Oz"
+  },
+  {
+    "he": "גבעת שמואל",
+    "en": "Giv'At Shemu'El"
+  },
+  {
+    "he": "גבעת שמש",
+    "en": "Giv'At Shemesh"
+  },
+  {
+    "he": "גבעת שפירא",
+    "en": "Giv'At Shappira"
+  },
+  {
+    "he": "גבעתי",
+    "en": "Giv'Ati"
+  },
+  {
+    "he": "גבעתיים",
+    "en": "Giv'Atayim"
+  },
+  {
+    "he": "גברעם",
+    "en": "Gevar'Am"
+  },
+  {
+    "he": "גבת",
+    "en": "Gevat"
+  },
+  {
+    "he": "גדות",
+    "en": "Gadot"
+  },
+  {
+    "he": "גדיש",
+    "en": "Gadish"
+  },
+  {
+    "he": "גדעונה",
+    "en": "Gid'Ona"
+  },
+  {
+    "he": "גדרה",
+    "en": "Gedera"
+  },
+  {
+    "he": "גודר",
+    "en": "Goder"
+  },
+  {
+    "he": "גונן",
+    "en": "Gonen"
+  },
+  {
+    "he": "גורן",
+    "en": "Goren"
+  },
+  {
+    "he": "גורנות הגליל",
+    "en": "Gornot Hagalil"
+  },
+  {
+    "he": "גזית",
+    "en": "Gazit"
+  },
+  {
+    "he": "גזר",
+    "en": "Gezer"
+  },
+  {
+    "he": "גיאה",
+    "en": "Ge'A"
+  },
+  {
+    "he": "גיבתון",
+    "en": "Gibbeton"
+  },
+  {
+    "he": "גיזו",
+    "en": "Gizo"
+  },
+  {
+    "he": "גילון",
+    "en": "Gilon"
+  },
+  {
+    "he": "גילת",
+    "en": "Gilat"
+  },
+  {
+    "he": "גינוסר",
+    "en": "Ginnosar"
+  },
+  {
+    "he": "גיניגר",
+    "en": "Ginnegar"
+  },
+  {
+    "he": "גינתון",
+    "en": "Ginnaton"
+  },
+  {
+    "he": "גיתה",
+    "en": "Gitta"
+  },
+  {
+    "he": "גיתית",
+    "en": "Gittit"
+  },
+  {
+    "he": "גלאון",
+    "en": "Gal'On"
+  },
+  {
+    "he": "גלגל",
+    "en": "Gilgal"
+  },
+  {
+    "he": "גליל ים",
+    "en": "Gelil Yam"
+  },
+  {
+    "he": "גלעד (אבן יצחק)",
+    "en": "Even Yizhaq(Gal'Ed)"
+  },
+  {
+    "he": "גמזו",
+    "en": "Gimzo"
+  },
+  {
+    "he": "גן הדרום",
+    "en": "Gan Hadarom"
+  },
+  {
+    "he": "גן השומרון",
+    "en": "Gan Hashomeron"
+  },
+  {
+    "he": "גן חיים",
+    "en": "Gan Hayyim"
+  },
+  {
+    "he": "גן יאשיה",
+    "en": "Gan Yoshiyya"
+  },
+  {
+    "he": "גן יבנה",
+    "en": "Gan Yavne"
+  },
+  {
+    "he": "גן נר",
+    "en": "Gan Ner"
+  },
+  {
+    "he": "גן שורק",
+    "en": "Gan Soreq"
+  },
+  {
+    "he": "גן שלמה",
+    "en": "Gan Shelomo"
+  },
+  {
+    "he": "גן שמואל",
+    "en": "Gan Shemu'El"
+  },
+  {
+    "he": "גנות",
+    "en": "Gannot"
+  },
+  {
+    "he": "גנות הדר",
+    "en": "Gannot Hadar"
+  },
+  {
+    "he": "גני הדר",
+    "en": "Ganne Hadar"
+  },
+  {
+    "he": "גני טל",
+    "en": "Ganne Tal"
+  },
+  {
+    "he": "גני יוחנן",
+    "en": "Ganne Yohanan"
+  },
+  {
+    "he": "גני מודיעין",
+    "en": "Ganne Modiin"
+  },
+  {
+    "he": "גני עם",
+    "en": "Ganne Am"
+  },
+  {
+    "he": "גני תקווה",
+    "en": "Ganne Tiqwa"
+  },
+  {
+    "he": "גנים",
+    "en": "Gannim"
+  },
+  {
+    "he": "געש",
+    "en": "Ga'Ash"
+  },
+  {
+    "he": "געתון",
+    "en": "Ga'Ton"
+  },
+  {
+    "he": "גפן",
+    "en": "Gefen"
+  },
+  {
+    "he": "גרופית",
+    "en": "Gerofit"
+  },
+  {
+    "he": "גשור",
+    "en": "Geshur"
+  },
+  {
+    "he": "גשר",
+    "en": "Gesher"
+  },
+  {
+    "he": "גשר הזיו",
+    "en": "Gesher Haziw"
+  },
+  {
+    "he": "גת (קיבוץ)",
+    "en": "Gat(Qibbuz)"
+  },
+  {
+    "he": "גת רימון",
+    "en": "Gat Rimmon"
+  },
+  {
+    "he": "דאלית אל-כרמל",
+    "en": "Daliyat Al-Karmel"
+  },
+  {
+    "he": "דבורה",
+    "en": "Devora"
+  },
+  {
+    "he": "דבוריה",
+    "en": "Dabburye"
+  },
+  {
+    "he": "דביר",
+    "en": "Dvir"
+  },
+  {
+    "he": "דברת",
+    "en": "Daverat"
+  },
+  {
+    "he": "דגניה א'",
+    "en": "Deganya Alef"
+  },
+  {
+    "he": "דגניה ב'",
+    "en": "Deganya Bet"
+  },
+  {
+    "he": "דובב",
+    "en": "Dovev"
+  },
+  {
+    "he": "דולב",
+    "en": "Dolev"
+  },
+  {
+    "he": "דור",
+    "en": "Dor"
+  },
+  {
+    "he": "דורות",
+    "en": "Dorot"
+  },
+  {
+    "he": "דחי",
+    "en": "Dahi"
+  },
+  {
+    "he": "דייר אל-אסד",
+    "en": "Deir Al-Asad"
+  },
+  {
+    "he": "דייר חנא",
+    "en": "Deir Hanna"
+  },
+  {
+    "he": "דייר ראפאת",
+    "en": "Deir Rafat"
+  },
+  {
+    "he": "דימונה",
+    "en": "Dimona"
+  },
+  {
+    "he": "דישון",
+    "en": "Dishon"
+  },
+  {
+    "he": "דליה",
+    "en": "Daliyya"
+  },
+  {
+    "he": "דלתון",
+    "en": "Dalton"
+  },
+  {
+    "he": "דמיידה",
+    "en": "Demeide"
+  },
+  {
+    "he": "דן",
+    "en": "Dan"
+  },
+  {
+    "he": "דפנה",
+    "en": "Dafna"
+  },
+  {
+    "he": "דקל",
+    "en": "Deqel"
+  },
+  {
+    "he": "דריג'את",
+    "en": "Derig'At"
+  },
+  {
+    "he": "האון",
+    "en": "Haon"
+  },
+  {
+    "he": "הבונים",
+    "en": "Habonim"
+  },
+  {
+    "he": "הגושרים",
+    "en": "Hagosherim"
+  },
+  {
+    "he": "הדר עם",
+    "en": "Hadar Am"
+  },
+  {
+    "he": "הוד השרון",
+    "en": "Hod Hasharon"
+  },
+  {
+    "he": "הודיה",
+    "en": "Hodiyya"
+  },
+  {
+    "he": "הודיות",
+    "en": "Hodayot"
+  },
+  {
+    "he": "הוואשלה (שבט)",
+    "en": "Hawashla"
+  },
+  {
+    "he": "הוזייל (שבט)",
+    "en": "Huzayyel"
+  },
+  {
+    "he": "הושעיה",
+    "en": "Hosha'Aya"
+  },
+  {
+    "he": "הזורע",
+    "en": "Hazorea"
+  },
+  {
+    "he": "הזורעים",
+    "en": "Hazore'Im"
+  },
+  {
+    "he": "החותרים",
+    "en": "Hahoterim"
+  },
+  {
+    "he": "היוגב",
+    "en": "Hayogev"
+  },
+  {
+    "he": "הילה",
+    "en": "Hilla"
+  },
+  {
+    "he": "המעפיל",
+    "en": "Hama'Pil"
+  },
+  {
+    "he": "הסוללים",
+    "en": "Hasolelim"
+  },
+  {
+    "he": "העוגן",
+    "en": "Haogen"
+  },
+  {
+    "he": "הר אדר",
+    "en": "Har Adar"
+  },
+  {
+    "he": "הר גילה",
+    "en": "Har Gillo"
+  },
+  {
+    "he": "הר עמשא",
+    "en": "Har Amasa"
+  },
+  {
+    "he": "הראל",
+    "en": "Har'El"
+  },
+  {
+    "he": "הרדוף",
+    "en": "Harduf"
+  },
+  {
+    "he": "הרצליה",
+    "en": "Herzeliyya"
+  },
+  {
+    "he": "הררית",
+    "en": "Hararit"
+  },
+  {
+    "he": "ורד יריחו",
+    "en": "Wered Yeriho"
+  },
+  {
+    "he": "ורדון",
+    "en": "Wardon"
+  },
+  {
+    "he": "זבארגה (שבט)",
+    "en": "Zabarga"
+  },
+  {
+    "he": "זבדיאל",
+    "en": "Zavdi'El"
+  },
+  {
+    "he": "זוהר",
+    "en": "Zohar"
+  },
+  {
+    "he": "זיקים",
+    "en": "Ziqim"
+  },
+  {
+    "he": "זיתן",
+    "en": "Zetan"
+  },
+  {
+    "he": "זכרון יעקב",
+    "en": "Zikhron Ya'Aqov"
+  },
+  {
+    "he": "זכריה",
+    "en": "Zekharya"
+  },
+  {
+    "he": "זמר",
+    "en": "Zemer"
+  },
+  {
+    "he": "זמרת",
+    "en": "Zimrat"
+  },
+  {
+    "he": "זנוח",
+    "en": "Zanoah"
+  },
+  {
+    "he": "זרועה",
+    "en": "Zeru'A"
+  },
+  {
+    "he": "זרזיר",
+    "en": "Zarzir"
+  },
+  {
+    "he": "זרחיה",
+    "en": "Zerahya"
+  },
+  {
+    "he": "ח'ואלד",
+    "en": "Khawaled"
+  },
+  {
+    "he": "ח'ואלד (שבט)",
+    "en": "Khawaled"
+  },
+  {
+    "he": "חבצלת השרון",
+    "en": "Havazzelet Hasharon"
+  },
+  {
+    "he": "חבר",
+    "en": "Hever"
+  },
+  {
+    "he": "חברון",
+    "en": ""
+  },
+  {
+    "he": "חגור",
+    "en": "Hagor"
+  },
+  {
+    "he": "חגי",
+    "en": "Haggai"
+  },
+  {
+    "he": "חגלה",
+    "en": "Hogla"
+  },
+  {
+    "he": "חד-נס",
+    "en": "Had-Nes"
+  },
+  {
+    "he": "חדיד",
+    "en": "Hadid"
+  },
+  {
+    "he": "חדרה",
+    "en": "Hadera"
+  },
+  {
+    "he": "חוג'ייראת (ד'הרה)",
+    "en": "Hujeirat (Dahra)"
+  },
+  {
+    "he": "חולדה",
+    "en": "Hulda"
+  },
+  {
+    "he": "חולון",
+    "en": "Holon"
+  },
+  {
+    "he": "חולית",
+    "en": "Holit"
+  },
+  {
+    "he": "חולתה",
+    "en": "Hulata"
+  },
+  {
+    "he": "חומש",
+    "en": "Homesh"
+  },
+  {
+    "he": "חוסן",
+    "en": "Hosen"
+  },
+  {
+    "he": "חוסנייה",
+    "en": "Hussniyya"
+  },
+  {
+    "he": "חופית",
+    "en": "Hofit"
+  },
+  {
+    "he": "חוקוק",
+    "en": "Huqoq"
+  },
+  {
+    "he": "חורה",
+    "en": "Hura"
+  },
+  {
+    "he": "חורפיש",
+    "en": "Hurfeish"
+  },
+  {
+    "he": "חורשים",
+    "en": "Horeshim"
+  },
+  {
+    "he": "חזון",
+    "en": "Hazon"
+  },
+  {
+    "he": "חיבת ציון",
+    "en": "Hibbat Ziyyon"
+  },
+  {
+    "he": "חיננית",
+    "en": "Hinnanit"
+  },
+  {
+    "he": "חיפה",
+    "en": "Haifa"
+  },
+  {
+    "he": "חירות",
+    "en": "Herut"
+  },
+  {
+    "he": "חלוץ",
+    "en": "Haluz"
+  },
+  {
+    "he": "חלץ",
+    "en": "Helez"
+  },
+  {
+    "he": "חמאם",
+    "en": "Hamam"
+  },
+  {
+    "he": "חמד",
+    "en": "Hemed"
+  },
+  {
+    "he": "חמדיה",
+    "en": "Hamadya"
+  },
+  {
+    "he": "חמדת",
+    "en": "Nahal Hemdat"
+  },
+  {
+    "he": "חמרה",
+    "en": "Hamra"
+  },
+  {
+    "he": "חניאל",
+    "en": "Hanni'El"
+  },
+  {
+    "he": "חניתה",
+    "en": "Hanita"
+  },
+  {
+    "he": "חנתון",
+    "en": "Hannaton"
+  },
+  {
+    "he": "חספין",
+    "en": "Haspin"
+  },
+  {
+    "he": "חפץ חיים",
+    "en": "Hafez Hayyim"
+  },
+  {
+    "he": "חפצי-בה",
+    "en": "Hefzi-Bah"
+  },
+  {
+    "he": "חצב",
+    "en": "Hazav"
+  },
+  {
+    "he": "חצבה",
+    "en": "Hazeva"
+  },
+  {
+    "he": "חצור הגלילית",
+    "en": "Hazor Hagelilit"
+  },
+  {
+    "he": "חצור-אשדוד",
+    "en": "Hazor-Ashdod"
+  },
+  {
+    "he": "חצרים",
+    "en": "Hazerim"
+  },
+  {
+    "he": "חרב לאת",
+    "en": "Herev Le'Et"
+  },
+  {
+    "he": "חרוצים",
+    "en": "Haruzim"
+  },
+  {
+    "he": "חריש",
+    "en": "Harish"
+  },
+  {
+    "he": "חרמש",
+    "en": "Hermesh"
+  },
+  {
+    "he": "חרשה",
+    "en": "Haresha"
+  },
+  {
+    "he": "חרשים",
+    "en": "Harashim"
+  },
+  {
+    "he": "חשמונאים",
+    "en": "Hashmona'Im"
+  },
+  {
+    "he": "טבריה",
+    "en": "Tiberias"
+  },
+  {
+    "he": "טובא-זנגריה",
+    "en": "Tuba-Zangariyye"
+  },
+  {
+    "he": "טורעאן",
+    "en": "Tur'An"
+  },
+  {
+    "he": "טייבה",
+    "en": "Tayibe"
+  },
+  {
+    "he": "טייבה (בעמק)",
+    "en": "Tayibe(Baemeq)"
+  },
+  {
+    "he": "טירה",
+    "en": "Tire"
+  },
+  {
+    "he": "טירת יהודה",
+    "en": "Tirat Yehuda"
+  },
+  {
+    "he": "טירת כרמל",
+    "en": "Tirat Karmel"
+  },
+  {
+    "he": "טירת צבי",
+    "en": "Tirat Zevi"
+  },
+  {
+    "he": "טל מנשה",
+    "en": "Tal Menashe"
+  },
+  {
+    "he": "טל שחר",
+    "en": "Tal Shahar"
+  },
+  {
+    "he": "טל-אל",
+    "en": "Tal-El"
+  },
+  {
+    "he": "טללים",
+    "en": "Telalim"
+  },
+  {
+    "he": "טלמון",
+    "en": "Talmon"
+  },
+  {
+    "he": "טמרה",
+    "en": "Tamra"
+  },
+  {
+    "he": "טמרה (יזרעאל)",
+    "en": "Tamra (Yizre'El)"
+  },
+  {
+    "he": "טנא",
+    "en": "Tene"
+  },
+  {
+    "he": "טפחות",
+    "en": "Tefahot"
+  },
+  {
+    "he": "יאנוח-ג'ת",
+    "en": "Yanuh-Jat"
+  },
+  {
+    "he": "יבול",
+    "en": "Yevul"
+  },
+  {
+    "he": "יבנאל",
+    "en": "Yavne'El"
+  },
+  {
+    "he": "יבנה",
+    "en": "Yavne"
+  },
+  {
+    "he": "יגור",
+    "en": "Yagur"
+  },
+  {
+    "he": "יגל",
+    "en": "Yagel"
+  },
+  {
+    "he": "יד בנימין",
+    "en": "Yad Binyamin"
+  },
+  {
+    "he": "יד השמונה",
+    "en": "Yad Hashemona"
+  },
+  {
+    "he": "יד חנה",
+    "en": "Yad Hanna"
+  },
+  {
+    "he": "יד מרדכי",
+    "en": "Yad Mordekhay"
+  },
+  {
+    "he": "יד נתן",
+    "en": "Yad Natan"
+  },
+  {
+    "he": "יד רמבם",
+    "en": "Yad Rambam"
+  },
+  {
+    "he": "ידידה",
+    "en": "Yedida"
+  },
+  {
+    "he": "יהוד-מונוסון",
+    "en": "Yehud-Monoson"
+  },
+  {
+    "he": "יהל",
+    "en": "Yahel"
+  },
+  {
+    "he": "יובל",
+    "en": "Yuval"
+  },
+  {
+    "he": "יובלים",
+    "en": "Yuvalim"
+  },
+  {
+    "he": "יודפת",
+    "en": "Yodefat"
+  },
+  {
+    "he": "יונדב",
+    "en": "Yonadav"
+  },
+  {
+    "he": "יונתן",
+    "en": "Yonatan"
+  },
+  {
+    "he": "יושיביה",
+    "en": "Yoshivya"
+  },
+  {
+    "he": "יזרעאל",
+    "en": "Yizre'El"
+  },
+  {
+    "he": "יחיעם",
+    "en": "Yehi'Am"
+  },
+  {
+    "he": "יטבתה",
+    "en": "Yotvata"
+  },
+  {
+    "he": "ייטב",
+    "en": "Yitav"
+  },
+  {
+    "he": "יכיני",
+    "en": "Yakhini"
+  },
+  {
+    "he": "ינוב",
+    "en": "Yanuv"
+  },
+  {
+    "he": "ינון",
+    "en": "Yinnon"
+  },
+  {
+    "he": "יסוד המעלה",
+    "en": "Yesud Hama'Ala"
+  },
+  {
+    "he": "יסודות",
+    "en": "Yesodot"
+  },
+  {
+    "he": "יסעור",
+    "en": "Yas'Ur"
+  },
+  {
+    "he": "יעד",
+    "en": "Ya'Ad"
+  },
+  {
+    "he": "יעל",
+    "en": "Ya'El"
+  },
+  {
+    "he": "יעף",
+    "en": "Ye'Af"
+  },
+  {
+    "he": "יערה",
+    "en": "Ya'Ara"
+  },
+  {
+    "he": "יפיע",
+    "en": "Yafi"
+  },
+  {
+    "he": "יפית",
+    "en": "Yafit"
+  },
+  {
+    "he": "יפעת",
+    "en": "Yif'At"
+  },
+  {
+    "he": "יפתח",
+    "en": "Yiftah"
+  },
+  {
+    "he": "יצהר",
+    "en": "Yizhar"
+  },
+  {
+    "he": "יציץ",
+    "en": "Yaziz"
+  },
+  {
+    "he": "יקום",
+    "en": "Yaqum"
+  },
+  {
+    "he": "יקיר",
+    "en": "Yaqir"
+  },
+  {
+    "he": "יקנעם (מושבה)",
+    "en": "Yoqne'Am(Moshava)"
+  },
+  {
+    "he": "יקנעם עילית",
+    "en": "Yoqne'Am Illit"
+  },
+  {
+    "he": "יראון",
+    "en": "Yir'On"
+  },
+  {
+    "he": "ירדנה",
+    "en": "Yardena"
+  },
+  {
+    "he": "ירוחם",
+    "en": "Yeroham"
+  },
+  {
+    "he": "ירושלים",
+    "en": "Jerusalem"
+  },
+  {
+    "he": "ירחיב",
+    "en": "Yarhiv"
+  },
+  {
+    "he": "ירכא",
+    "en": "Yirka"
+  },
+  {
+    "he": "ירקונה",
+    "en": "Yarqona"
+  },
+  {
+    "he": "ישע",
+    "en": "Yesha"
+  },
+  {
+    "he": "ישעי",
+    "en": "Yish'I"
+  },
+  {
+    "he": "ישרש",
+    "en": "Yashresh"
+  },
+  {
+    "he": "יתד",
+    "en": "Yated"
+  },
+  {
+    "he": "כאבול",
+    "en": "Kabul"
+  },
+  {
+    "he": "כאוכב אבו אל-היג'א",
+    "en": "Kaokab Abu Al-Hija"
+  },
+  {
+    "he": "כברי",
+    "en": "Kabri"
+  },
+  {
+    "he": "כדורי",
+    "en": "Kadoorie"
+  },
+  {
+    "he": "כדים",
+    "en": "Kaddim"
+  },
+  {
+    "he": "כדיתה",
+    "en": "Kaddita"
+  },
+  {
+    "he": "כוכב השחר",
+    "en": "Kokhav Hashahar"
+  },
+  {
+    "he": "כוכב יאיר-צור יגאל",
+    "en": "Kochav Yair Tsur Yi"
+  },
+  {
+    "he": "כוכב יעקב",
+    "en": "Kokhav Ya'Aqov"
+  },
+  {
+    "he": "כוכב מיכאל",
+    "en": "Kokhav Mikha'El"
+  },
+  {
+    "he": "כורזים",
+    "en": "Korazim"
+  },
+  {
+    "he": "כחל",
+    "en": "Kahal"
+  },
+  {
+    "he": "כחלה",
+    "en": "Kochlea"
+  },
+  {
+    "he": "כיסופים",
+    "en": "Kissufim"
+  },
+  {
+    "he": "כישור",
+    "en": "Kishor"
+  },
+  {
+    "he": "כליל",
+    "en": "Kelil"
+  },
+  {
+    "he": "כלנית",
+    "en": "Kallanit"
+  },
+  {
+    "he": "כמאנה",
+    "en": ""
+  },
+  {
+    "he": "כמהין",
+    "en": "Kemehin"
+  },
+  {
+    "he": "כמון",
+    "en": "Kammon"
+  },
+  {
+    "he": "כנות",
+    "en": "Kannot"
+  },
+  {
+    "he": "כנף",
+    "en": "Kanaf"
+  },
+  {
+    "he": "כנפי שחר",
+    "en": "Kanfe Shahar"
+  },
+  {
+    "he": "כנרת (מושבה)",
+    "en": "Kinneret(Moshava)"
+  },
+  {
+    "he": "כנרת (קבוצה)",
+    "en": "Kinneret(Qevuza)"
+  },
+  {
+    "he": "כסיפה",
+    "en": "Kuseife"
+  },
+  {
+    "he": "כסלון",
+    "en": "Kesalon"
+  },
+  {
+    "he": "כסרא-סמיע",
+    "en": "Kisra-Sumei"
+  },
+  {
+    "he": "כעביה-טבאש-חג'אג'רה",
+    "en": "Ka'Abiyye-Tabbash-Ha"
+  },
+  {
+    "he": "כפר אביב",
+    "en": "Kefar Aviv"
+  },
+  {
+    "he": "כפר אדומים",
+    "en": "Kefar Adummim"
+  },
+  {
+    "he": "כפר אוריה",
+    "en": "Kefar Uriyya"
+  },
+  {
+    "he": "כפר אחים",
+    "en": "Kefar Ahim"
+  },
+  {
+    "he": "כפר ביאליק",
+    "en": "Kefar Bialik"
+  },
+  {
+    "he": "כפר בילו",
+    "en": "Kefar Bilu"
+  },
+  {
+    "he": "כפר בלום",
+    "en": "Kefar Blum"
+  },
+  {
+    "he": "כפר בן נון",
+    "en": "Kefar Bin Nun"
+  },
+  {
+    "he": "כפר ברא",
+    "en": "Kafar Bara"
+  },
+  {
+    "he": "כפר ברוך",
+    "en": "Kefar Barukh"
+  },
+  {
+    "he": "כפר גדעון",
+    "en": "Kefar Gid'On"
+  },
+  {
+    "he": "כפר גלים",
+    "en": "Kefar Gallim"
+  },
+  {
+    "he": "כפר גליקסון",
+    "en": "Kefar Glikson"
+  },
+  {
+    "he": "כפר גלעדי",
+    "en": "Kefar Gil'Adi"
+  },
+  {
+    "he": "כפר דניאל",
+    "en": "Kefar Daniyyel"
+  },
+  {
+    "he": "כפר האורנים",
+    "en": "Kefar Haoranim"
+  },
+  {
+    "he": "כפר החורש",
+    "en": "Kefar Hahoresh"
+  },
+  {
+    "he": "כפר המכבי",
+    "en": "Kefar Hamakkabi"
+  },
+  {
+    "he": "כפר הנגיד",
+    "en": "Kefar Hanagid"
+  },
+  {
+    "he": "כפר הנוער הדתי",
+    "en": "Kefar Hano'Ar Hadati"
+  },
+  {
+    "he": "כפר הנשיא",
+    "en": "Kefar Hanasi"
+  },
+  {
+    "he": "כפר הס",
+    "en": "Kefar Hess"
+  },
+  {
+    "he": "כפר הראה",
+    "en": "Kefar Haro'E"
+  },
+  {
+    "he": "כפר הריף",
+    "en": "Kefar Harif"
+  },
+  {
+    "he": "כפר ויתקין",
+    "en": "Kefar Vitkin"
+  },
+  {
+    "he": "כפר ורבורג",
+    "en": "Kefar Warburg"
+  },
+  {
+    "he": "כפר ורדים",
+    "en": "Kefar Weradim"
+  },
+  {
+    "he": "כפר זוהרים",
+    "en": "Kefar Zoharim"
+  },
+  {
+    "he": "כפר זיתים",
+    "en": "Kefar Zetim"
+  },
+  {
+    "he": "כפר חבד",
+    "en": "Kefar Habad"
+  },
+  {
+    "he": "כפר חושן",
+    "en": "Kefar Hoshen"
+  },
+  {
+    "he": "כפר חיטים",
+    "en": "Kefar Hittim"
+  },
+  {
+    "he": "כפר חיים",
+    "en": "Kefar Hayyim"
+  },
+  {
+    "he": "כפר חנניה",
+    "en": "Kefar Hananya"
+  },
+  {
+    "he": "כפר חסידים א'",
+    "en": "Kefar Hasidim Alef"
+  },
+  {
+    "he": "כפר חסידים ב'",
+    "en": "Kefar Hasidim Bet"
+  },
+  {
+    "he": "כפר חרוב",
+    "en": "Kefar Haruv"
+  },
+  {
+    "he": "כפר טרומן",
+    "en": "Kefar Truman"
+  },
+  {
+    "he": "כפר יאסיף",
+    "en": "Kafar Yasif"
+  },
+  {
+    "he": "כפר ידידיה",
+    "en": "Yedidya"
+  },
+  {
+    "he": "כפר יהושע",
+    "en": "Kefar Yehoshua"
+  },
+  {
+    "he": "כפר יונה",
+    "en": "Kefar Yona"
+  },
+  {
+    "he": "כפר יחזקאל",
+    "en": "Kefar Yehezqel"
+  },
+  {
+    "he": "כפר יעבץ",
+    "en": "Kefar Ya'Bez"
+  },
+  {
+    "he": "כפר כמא",
+    "en": "Kafar Kama"
+  },
+  {
+    "he": "כפר כנא",
+    "en": "Kafar Kanna"
+  },
+  {
+    "he": "כפר מונש",
+    "en": "Kefar Monash"
+  },
+  {
+    "he": "כפר מימון",
+    "en": "Kefar Maymon"
+  },
+  {
+    "he": "כפר מלל",
+    "en": "Kefar Malal"
+  },
+  {
+    "he": "כפר מנדא",
+    "en": "Kafar Manda"
+  },
+  {
+    "he": "כפר מנחם",
+    "en": "Kefar Menahem"
+  },
+  {
+    "he": "כפר מסריק",
+    "en": "Kefar Masaryk"
+  },
+  {
+    "he": "כפר מצר",
+    "en": "Kafar Misr"
+  },
+  {
+    "he": "כפר מרדכי",
+    "en": "Kefar Mordekhay"
+  },
+  {
+    "he": "כפר נטר",
+    "en": "Kefar Netter"
+  },
+  {
+    "he": "כפר סאלד",
+    "en": "Kefar Szold"
+  },
+  {
+    "he": "כפר סבא",
+    "en": "Kefar Sava"
+  },
+  {
+    "he": "כפר סילבר",
+    "en": "Kefar Silver"
+  },
+  {
+    "he": "כפר סירקין",
+    "en": "Kefar Sirkin"
+  },
+  {
+    "he": "כפר עבודה",
+    "en": "Kefar Avoda"
+  },
+  {
+    "he": "כפר עזה",
+    "en": "Kefar Azza"
+  },
+  {
+    "he": "כפר עציון",
+    "en": "Kefar Ezyon"
+  },
+  {
+    "he": "כפר פינס",
+    "en": "Kefar Pines"
+  },
+  {
+    "he": "כפר קאסם",
+    "en": "Kafar Qasem"
+  },
+  {
+    "he": "כפר קיש",
+    "en": "Kefar Kish"
+  },
+  {
+    "he": "כפר קרע",
+    "en": "Kafar Qara"
+  },
+  {
+    "he": "כפר ראש הנקרה",
+    "en": "Kefar Rosh Haniqra"
+  },
+  {
+    "he": "כפר רוזנואלד (זרעית)",
+    "en": "Kefar Rozenwald(Zar."
+  },
+  {
+    "he": "כפר רופין",
+    "en": "Kefar Ruppin"
+  },
+  {
+    "he": "כפר רות",
+    "en": "Kefar Rut"
+  },
+  {
+    "he": "כפר שמאי",
+    "en": "Kefar Shammay"
+  },
+  {
+    "he": "כפר שמואל",
+    "en": "Kefar Shemu'El"
+  },
+  {
+    "he": "כפר שמריהו",
+    "en": "Kefar Shemaryahu"
+  },
+  {
+    "he": "כפר תבור",
+    "en": "Kefar Tavor"
+  },
+  {
+    "he": "כפר תפוח",
+    "en": "Kefar Tappuah"
+  },
+  {
+    "he": "כרכום",
+    "en": "Karkom"
+  },
+  {
+    "he": "כרם ביבנה (ישיבה)",
+    "en": "Kerem Beyavne"
+  },
+  {
+    "he": "כרם בן זמרה",
+    "en": "Kerem Ben Zimra"
+  },
+  {
+    "he": "כרם בן שמן",
+    "en": "Kerem Ben Shemen"
+  },
+  {
+    "he": "כרם מהרל",
+    "en": "Kerem Maharal"
+  },
+  {
+    "he": "כרם רעים",
+    "en": "Kerem Re'Im"
+  },
+  {
+    "he": "כרם שלום",
+    "en": "Kerem Shalom"
+  },
+  {
+    "he": "כרמי יוסף",
+    "en": "Karme Yosef"
+  },
+  {
+    "he": "כרמי צור",
+    "en": "Karme Zur"
+  },
+  {
+    "he": "כרמי קטיף",
+    "en": "Karme Qatif"
+  },
+  {
+    "he": "כרמיאל",
+    "en": "Karmi'El"
+  },
+  {
+    "he": "כרמיה",
+    "en": "Karmiyya"
+  },
+  {
+    "he": "כרמים",
+    "en": "Keramim"
+  },
+  {
+    "he": "כרמל",
+    "en": "Karmel"
+  },
+  {
+    "he": "לבון",
+    "en": "Lavon"
+  },
+  {
+    "he": "לביא",
+    "en": "Lavi"
+  },
+  {
+    "he": "לבנים",
+    "en": "Livnim"
+  },
+  {
+    "he": "להב",
+    "en": "Lahav"
+  },
+  {
+    "he": "להבות הבשן",
+    "en": "Lahavot Habashan"
+  },
+  {
+    "he": "להבות חביבה",
+    "en": "Lahavot Haviva"
+  },
+  {
+    "he": "להבים",
+    "en": "Lehavim"
+  },
+  {
+    "he": "לוד",
+    "en": "Lod"
+  },
+  {
+    "he": "לוזית",
+    "en": "Luzit"
+  },
+  {
+    "he": "לוחמי הגיטאות",
+    "en": "Lohame Hageta'Ot"
+  },
+  {
+    "he": "לוטם",
+    "en": "Lotem"
+  },
+  {
+    "he": "לוטן",
+    "en": "Lotan"
+  },
+  {
+    "he": "לחי",
+    "en": "Lehi"
+  },
+  {
+    "he": "לימן",
+    "en": "Liman"
+  },
+  {
+    "he": "לכיש",
+    "en": "Lakhish"
+  },
+  {
+    "he": "לפיד",
+    "en": "Lappid"
+  },
+  {
+    "he": "לפידות",
+    "en": "Lappidot"
+  },
+  {
+    "he": "לקיה",
+    "en": "Laqye"
+  },
+  {
+    "he": "לשם",
+    "en": "Leshem"
+  },
+  {
+    "he": "מאור",
+    "en": "Ma'Or"
+  },
+  {
+    "he": "מאיר שפיה",
+    "en": "Me'Ir Shefeya"
+  },
+  {
+    "he": "מבוא ביתר",
+    "en": "Mevo Betar"
+  },
+  {
+    "he": "מבוא דותן",
+    "en": "Mevo Dotan"
+  },
+  {
+    "he": "מבוא חורון",
+    "en": "Mevo Horon"
+  },
+  {
+    "he": "מבוא חמה",
+    "en": "Mevo Hamma"
+  },
+  {
+    "he": "מבוא מודיעים",
+    "en": "Mevo Modi'Im"
+  },
+  {
+    "he": "מבואות ים",
+    "en": "Mevo'Ot Yam"
+  },
+  {
+    "he": "מבואות יריחו",
+    "en": "Mevo'Ot Yeriho"
+  },
+  {
+    "he": "מבועים",
+    "en": "Mabbu'Im"
+  },
+  {
+    "he": "מבטחים",
+    "en": "Mivtahim"
+  },
+  {
+    "he": "מבקיעים",
+    "en": "Mavqi'Im"
+  },
+  {
+    "he": "מבשרת ציון",
+    "en": "Mevasseret Ziyyon"
+  },
+  {
+    "he": "מג'ד אל-כרום",
+    "en": "Majd Al-Kurum"
+  },
+  {
+    "he": "מג'דל שמס",
+    "en": "Majdal Shams"
+  },
+  {
+    "he": "מגאר",
+    "en": "Mughar"
+  },
+  {
+    "he": "מגדים",
+    "en": "Megadim"
+  },
+  {
+    "he": "מגדל",
+    "en": "Migdal"
+  },
+  {
+    "he": "מגדל העמק",
+    "en": "Migdal Haemeq"
+  },
+  {
+    "he": "מגדל עוז",
+    "en": "Migdal Oz"
+  },
+  {
+    "he": "מגדלים",
+    "en": "Migdalim"
+  },
+  {
+    "he": "מגידו",
+    "en": "Megiddo"
+  },
+  {
+    "he": "מגל",
+    "en": "Maggal"
+  },
+  {
+    "he": "מגן",
+    "en": "Magen"
+  },
+  {
+    "he": "מגן שאול",
+    "en": "Magen Sha'Ul"
+  },
+  {
+    "he": "מגרון",
+    "en": "Migron"
+  },
+  {
+    "he": "מגשימים",
+    "en": "Magshimim"
+  },
+  {
+    "he": "מדרך עוז",
+    "en": "Midrakh Oz"
+  },
+  {
+    "he": "מדרשת בן גוריון",
+    "en": "Midreshet Ben Gurion"
+  },
+  {
+    "he": "מדרשת רופין",
+    "en": "Midreshet Ruppin"
+  },
+  {
+    "he": "מודיעין עילית",
+    "en": "Modi'In Illit"
+  },
+  {
+    "he": "מודיעין-מכבים-רעות",
+    "en": "Modi'In-Makkabbim-Re"
+  },
+  {
+    "he": "מולדת",
+    "en": "Moledet"
+  },
+  {
+    "he": "מוצא עילית",
+    "en": "Moza Illit"
+  },
+  {
+    "he": "מוקייבלה",
+    "en": "Muqeible"
+  },
+  {
+    "he": "מורן",
+    "en": "Moran"
+  },
+  {
+    "he": "מורשת",
+    "en": "Moreshet"
+  },
+  {
+    "he": "מזור",
+    "en": "Mazor"
+  },
+  {
+    "he": "מזכרת בתיה",
+    "en": "Mazkeret Batya"
+  },
+  {
+    "he": "מזרע",
+    "en": "Mizra"
+  },
+  {
+    "he": "מזרעה",
+    "en": "Mazra'A"
+  },
+  {
+    "he": "מחולה",
+    "en": "Mehola"
+  },
+  {
+    "he": "מחנה הילה",
+    "en": "Mahane Hilla"
+  },
+  {
+    "he": "מחנה טלי",
+    "en": "Mahane Tali"
+  },
+  {
+    "he": "מחנה יהודית",
+    "en": "Mahane Yehudit"
+  },
+  {
+    "he": "מחנה יוכבד",
+    "en": "Mahane Yokhved"
+  },
+  {
+    "he": "מחנה יפה",
+    "en": "Mahane Yafa"
+  },
+  {
+    "he": "מחנה יתיר",
+    "en": "Mahane Yattir"
+  },
+  {
+    "he": "מחנה מרים",
+    "en": "Mahane Miryam"
+  },
+  {
+    "he": "מחנה תל נוף",
+    "en": "Mahane Tel Nof"
+  },
+  {
+    "he": "מחניים",
+    "en": "Mahanayim"
+  },
+  {
+    "he": "מחסיה",
+    "en": "Mahseya"
+  },
+  {
+    "he": "מטולה",
+    "en": "Metula"
+  },
+  {
+    "he": "מטע",
+    "en": "Matta"
+  },
+  {
+    "he": "מי עמי",
+    "en": "Me Ammi"
+  },
+  {
+    "he": "מיטב",
+    "en": "Metav"
+  },
+  {
+    "he": "מיטל",
+    "en": "Metal"
+  },
+  {
+    "he": "מייסר",
+    "en": "Meiser"
+  },
+  {
+    "he": "מיצר",
+    "en": "Mezar"
+  },
+  {
+    "he": "מירב",
+    "en": "Merav"
+  },
+  {
+    "he": "מירון",
+    "en": "Meron"
+  },
+  {
+    "he": "מישר",
+    "en": "Meshar"
+  },
+  {
+    "he": "מיתר",
+    "en": "Metar"
+  },
+  {
+    "he": "מכורה",
+    "en": "Mekhora"
+  },
+  {
+    "he": "מכחול",
+    "en": "Makchul"
+  },
+  {
+    "he": "מכמורת",
+    "en": "Mikhmoret"
+  },
+  {
+    "he": "מכמנים",
+    "en": "Mikhmannim"
+  },
+  {
+    "he": "מלאה",
+    "en": "Mele'A"
+  },
+  {
+    "he": "מלילות",
+    "en": "Melilot"
+  },
+  {
+    "he": "מלכיה",
+    "en": "Malkiyya"
+  },
+  {
+    "he": "מנוחה",
+    "en": "Menuha"
+  },
+  {
+    "he": "מנוף",
+    "en": "Manof"
+  },
+  {
+    "he": "מנות",
+    "en": "Manot"
+  },
+  {
+    "he": "מנחמיה",
+    "en": "Menahemya"
+  },
+  {
+    "he": "מנרה",
+    "en": "Mennara"
+  },
+  {
+    "he": "מנשית זבדה",
+    "en": "Manshiyyet Zabda"
+  },
+  {
+    "he": "מסד",
+    "en": "Massad"
+  },
+  {
+    "he": "מסדה",
+    "en": "Massada"
+  },
+  {
+    "he": "מסילות",
+    "en": "Mesillot"
+  },
+  {
+    "he": "מסילת ציון",
+    "en": "Mesillat Ziyyon"
+  },
+  {
+    "he": "מסלול",
+    "en": "Maslul"
+  },
+  {
+    "he": "מסעדה",
+    "en": "Mas'Ade"
+  },
+  {
+    "he": "מסעודין אל-עזאזמה",
+    "en": "Mas'Udin Al-'Azazme"
+  },
+  {
+    "he": "מעברות",
+    "en": "Ma'Barot"
+  },
+  {
+    "he": "מעגלים",
+    "en": "Ma'Galim"
+  },
+  {
+    "he": "מעגן",
+    "en": "Ma'Agan"
+  },
+  {
+    "he": "מעגן מיכאל",
+    "en": "Ma'Agan Mikha'El"
+  },
+  {
+    "he": "מעוז",
+    "en": "Ma'Oz"
+  },
+  {
+    "he": "מעוז חיים",
+    "en": "Ma'Oz Hayyim"
+  },
+  {
+    "he": "מעון",
+    "en": "Ma'On"
+  },
+  {
+    "he": "מעונה",
+    "en": "Me'Ona"
+  },
+  {
+    "he": "מעיליא",
+    "en": "Mi'Elya"
+  },
+  {
+    "he": "מעין ברוך",
+    "en": "Ma'Yan Barukh"
+  },
+  {
+    "he": "מעין צבי",
+    "en": "Ma'Yan Zevi"
+  },
+  {
+    "he": "מעלה אדומים",
+    "en": "Ma'Ale Adummim"
+  },
+  {
+    "he": "מעלה אפרים",
+    "en": "Ma'Ale Efrayim"
+  },
+  {
+    "he": "מעלה גלבוע",
+    "en": "Ma'Ale Gilboa"
+  },
+  {
+    "he": "מעלה גמלא",
+    "en": "Ma'Ale Gamla"
+  },
+  {
+    "he": "מעלה החמישה",
+    "en": "Ma'Ale Hahamisha"
+  },
+  {
+    "he": "מעלה לבונה",
+    "en": "Ma'Ale Levona"
+  },
+  {
+    "he": "מעלה מכמש",
+    "en": "Ma'Ale Mikhmas"
+  },
+  {
+    "he": "מעלה עירון",
+    "en": "Ma'Ale Iron"
+  },
+  {
+    "he": "מעלה עמוס",
+    "en": "Ma'Ale Amos"
+  },
+  {
+    "he": "מעלות-תרשיחא",
+    "en": "Ma'Alot-Tarshiha"
+  },
+  {
+    "he": "מענית",
+    "en": "Ma'Anit"
+  },
+  {
+    "he": "מעש",
+    "en": "Ma'As"
+  },
+  {
+    "he": "מפלסים",
+    "en": "Mefallesim"
+  },
+  {
+    "he": "מצובה",
+    "en": "Mazzuva"
+  },
+  {
+    "he": "מצוקי ארץ",
+    "en": "Metsuke Erets"
+  },
+  {
+    "he": "מצליח",
+    "en": "Mazliah"
+  },
+  {
+    "he": "מצפה",
+    "en": "Mizpa"
+  },
+  {
+    "he": "מצפה אביב",
+    "en": "Mizpe Aviv"
+  },
+  {
+    "he": "מצפה אילן",
+    "en": "Mitspe Ilan"
+  },
+  {
+    "he": "מצפה זיף",
+    "en": "Mitspe Zif"
+  },
+  {
+    "he": "מצפה יריחו",
+    "en": "Mizpe Yeriho"
+  },
+  {
+    "he": "מצפה נטופה",
+    "en": "Mizpe Netofa"
+  },
+  {
+    "he": "מצפה רמון",
+    "en": "Mizpe Ramon"
+  },
+  {
+    "he": "מצפה שלם",
+    "en": "Mizpe Shalem"
+  },
+  {
+    "he": "מצר",
+    "en": "Mezer"
+  },
+  {
+    "he": "מקווה ישראל",
+    "en": "Miqwe Yisra'El"
+  },
+  {
+    "he": "מרגליות",
+    "en": "Margaliyyot"
+  },
+  {
+    "he": "מרום גולן",
+    "en": "Merom Golan"
+  },
+  {
+    "he": "מרחב עם",
+    "en": "Merhav Am"
+  },
+  {
+    "he": "מרחביה (מושב)",
+    "en": "Merhavya(Moshav)"
+  },
+  {
+    "he": "מרחביה (קיבוץ)",
+    "en": "Merhavya(Qibbuz)"
+  },
+  {
+    "he": "מרכז שפירא",
+    "en": "Merkaz Shappira"
+  },
+  {
+    "he": "משאבי שדה",
+    "en": "Mash'Abbe Sade"
+  },
+  {
+    "he": "משגב דב",
+    "en": "Misgav Dov"
+  },
+  {
+    "he": "משגב עם",
+    "en": "Misgav Am"
+  },
+  {
+    "he": "משהד",
+    "en": "Meshhed"
+  },
+  {
+    "he": "משואה",
+    "en": "Massu'A"
+  },
+  {
+    "he": "משואות יצחק",
+    "en": "Massuot Yizhaq"
+  },
+  {
+    "he": "משכיות",
+    "en": "Maskiyyot"
+  },
+  {
+    "he": "משמר איילון",
+    "en": "Mishmar Ayyalon"
+  },
+  {
+    "he": "משמר דוד",
+    "en": "Mishmar Dawid"
+  },
+  {
+    "he": "משמר הירדן",
+    "en": "Mishmar Hayarden"
+  },
+  {
+    "he": "משמר הנגב",
+    "en": "Mishmar Hanegev"
+  },
+  {
+    "he": "משמר העמק",
+    "en": "Mishmar Haemeq"
+  },
+  {
+    "he": "משמר השבעה",
+    "en": "Mishmar Hashiv'A"
+  },
+  {
+    "he": "משמר השרון",
+    "en": "Mishmar Hasharon"
+  },
+  {
+    "he": "משמר יהודה",
+    "en": "Mishmar Yehuda"
+  },
+  {
+    "he": "משמרות",
+    "en": "Mishmarot"
+  },
+  {
+    "he": "משמרת",
+    "en": "Mishmeret"
+  },
+  {
+    "he": "משען",
+    "en": "Mash'En"
+  },
+  {
+    "he": "מתן",
+    "en": "Mattan"
+  },
+  {
+    "he": "מתת",
+    "en": "Mattat"
+  },
+  {
+    "he": "מתתיהו",
+    "en": "Mattityahu"
+  },
+  {
+    "he": "נאות גולן",
+    "en": "Ne'Ot Golan"
+  },
+  {
+    "he": "נאות הכיכר",
+    "en": "Ne'Ot Hakikkar"
+  },
+  {
+    "he": "נאות מרדכי",
+    "en": "Ne'Ot Mordekhay"
+  },
+  {
+    "he": "נאות סמדר",
+    "en": "Shizzafon"
+  },
+  {
+    "he": "נאעורה",
+    "en": "Na'Ura"
+  },
+  {
+    "he": "נבטים",
+    "en": "Nevatim"
+  },
+  {
+    "he": "נגבה",
+    "en": "Negba"
+  },
+  {
+    "he": "נגוהות",
+    "en": "Negohot"
+  },
+  {
+    "he": "נהורה",
+    "en": "Nehora"
+  },
+  {
+    "he": "נהלל",
+    "en": "Nahalal"
+  },
+  {
+    "he": "נהריה",
+    "en": "Nahariyya"
+  },
+  {
+    "he": "נוב",
+    "en": "Nov"
+  },
+  {
+    "he": "נוגה",
+    "en": "Nogah"
+  },
+  {
+    "he": "נוה צוף",
+    "en": "Neve Tsuf"
+  },
+  {
+    "he": "נווה",
+    "en": "Nave"
+  },
+  {
+    "he": "נווה אבות",
+    "en": "Newe Avot"
+  },
+  {
+    "he": "נווה אור",
+    "en": "Newe Ur"
+  },
+  {
+    "he": "נווה אטיב",
+    "en": "Newe Ativ"
+  },
+  {
+    "he": "נווה אילן",
+    "en": "Newe Ilan"
+  },
+  {
+    "he": "נווה איתן",
+    "en": "Newe Etan"
+  },
+  {
+    "he": "נווה גדיד",
+    "en": "Neve Gadid"
+  },
+  {
+    "he": "נווה דניאל",
+    "en": "Newe Daniyyel"
+  },
+  {
+    "he": "נווה זוהר",
+    "en": "Newe Zohar"
+  },
+  {
+    "he": "נווה זיו",
+    "en": "Newe Ziv"
+  },
+  {
+    "he": "נווה חריף",
+    "en": "Newe Harif"
+  },
+  {
+    "he": "נווה ים",
+    "en": "Newe Yam"
+  },
+  {
+    "he": "נווה ימין",
+    "en": "Newe Yamin"
+  },
+  {
+    "he": "נווה ירק",
+    "en": "Newe Yaraq"
+  },
+  {
+    "he": "נווה מבטח",
+    "en": "Newe Mivtah"
+  },
+  {
+    "he": "נווה מיכאל",
+    "en": "Newe Mikha'El"
+  },
+  {
+    "he": "נווה שלום",
+    "en": "Newe Shalom"
+  },
+  {
+    "he": "נועם",
+    "en": "No'Am"
+  },
+  {
+    "he": "נוף איילון",
+    "en": "Nof Ayyalon"
+  },
+  {
+    "he": "נוף הגליל",
+    "en": "Nof Hagalil"
+  },
+  {
+    "he": "נופי פרת",
+    "en": "Nofe Prat"
+  },
+  {
+    "he": "נופים",
+    "en": "Nofim"
+  },
+  {
+    "he": "נופית",
+    "en": "Nofit"
+  },
+  {
+    "he": "נופך",
+    "en": "Nofekh"
+  },
+  {
+    "he": "נוקדים",
+    "en": "Noqedim"
+  },
+  {
+    "he": "נורדיה",
+    "en": "Nordiyya"
+  },
+  {
+    "he": "נורית",
+    "en": "Nurit"
+  },
+  {
+    "he": "נזר שומרון",
+    "en": "Nezer Shomron"
+  },
+  {
+    "he": "נחושה",
+    "en": "Nehusha"
+  },
+  {
+    "he": "נחל עוז",
+    "en": "Nahal Oz"
+  },
+  {
+    "he": "נחלה",
+    "en": "Nahala"
+  },
+  {
+    "he": "נחליאל",
+    "en": "Nahali'El"
+  },
+  {
+    "he": "נחלים",
+    "en": "Nehalim"
+  },
+  {
+    "he": "נחם",
+    "en": "Naham"
+  },
+  {
+    "he": "נחף",
+    "en": "Nahef"
+  },
+  {
+    "he": "נחשולים",
+    "en": "Nahsholim"
+  },
+  {
+    "he": "נחשון",
+    "en": "Nahshon"
+  },
+  {
+    "he": "נחשונים",
+    "en": "Nahshonim"
+  },
+  {
+    "he": "נטועה",
+    "en": "Netu'A"
+  },
+  {
+    "he": "נטור",
+    "en": "Natur"
+  },
+  {
+    "he": "נטע",
+    "en": "Neta"
+  },
+  {
+    "he": "נטעים",
+    "en": "Neta'Im"
+  },
+  {
+    "he": "נטף",
+    "en": "Nataf"
+  },
+  {
+    "he": "ניין",
+    "en": "Nein"
+  },
+  {
+    "he": "נילי",
+    "en": "Nili"
+  },
+  {
+    "he": "ניצן",
+    "en": "Nizzan"
+  },
+  {
+    "he": "ניצן ב'",
+    "en": "Nizzan B"
+  },
+  {
+    "he": "ניצנה (קהילת חינוך)",
+    "en": "Nizzana (Qehilat Hin"
+  },
+  {
+    "he": "ניצני סיני",
+    "en": "Nizzane Sinay"
+  },
+  {
+    "he": "ניצני עוז",
+    "en": "Nizzane Oz"
+  },
+  {
+    "he": "ניצנים",
+    "en": "Nizzanim"
+  },
+  {
+    "he": "ניר אליהו",
+    "en": "Nir Eliyyahu"
+  },
+  {
+    "he": "ניר בנים",
+    "en": "Nir Banim"
+  },
+  {
+    "he": "ניר גלים",
+    "en": "Nir Gallim"
+  },
+  {
+    "he": "ניר דוד (תל עמל)",
+    "en": "Nir Dawid (Tel Amal)"
+  },
+  {
+    "he": "ניר חן",
+    "en": "Nir Hen"
+  },
+  {
+    "he": "ניר יפה",
+    "en": "Nir Yafe"
+  },
+  {
+    "he": "ניר יצחק",
+    "en": "Nir Yizhaq"
+  },
+  {
+    "he": "ניר ישראל",
+    "en": "Nir Yisra'El"
+  },
+  {
+    "he": "ניר משה",
+    "en": "Nir Moshe"
+  },
+  {
+    "he": "ניר עוז",
+    "en": "Nir Oz"
+  },
+  {
+    "he": "ניר עם",
+    "en": "Nir Am"
+  },
+  {
+    "he": "ניר עציון",
+    "en": "Nir Ezyon"
+  },
+  {
+    "he": "ניר עקיבא",
+    "en": "Nir Aqiva"
+  },
+  {
+    "he": "ניר צבי",
+    "en": "Nir Zevi"
+  },
+  {
+    "he": "נירים",
+    "en": "Nirim"
+  },
+  {
+    "he": "נירית",
+    "en": "Nirit"
+  },
+  {
+    "he": "נמרוד",
+    "en": "Nimrod"
+  },
+  {
+    "he": "נס הרים",
+    "en": "Nes Harim"
+  },
+  {
+    "he": "נס עמים",
+    "en": "Nes Ammim"
+  },
+  {
+    "he": "נס ציונה",
+    "en": "Nes Ziyyona"
+  },
+  {
+    "he": "נעורים",
+    "en": "Ne'Urim"
+  },
+  {
+    "he": "נעלה",
+    "en": "Na'Ale"
+  },
+  {
+    "he": "נעמה",
+    "en": "Naama"
+  },
+  {
+    "he": "נען",
+    "en": "Na'An"
+  },
+  {
+    "he": "נערן",
+    "en": "Na'Aran"
+  },
+  {
+    "he": "נצאצרה (שבט)",
+    "en": "Nasasra"
+  },
+  {
+    "he": "נצר חזני",
+    "en": "Nezer Hazzani"
+  },
+  {
+    "he": "נצר סרני",
+    "en": "Nezer Sereni"
+  },
+  {
+    "he": "נצרת",
+    "en": "Nazareth"
+  },
+  {
+    "he": "נריה",
+    "en": "Neriya"
+  },
+  {
+    "he": "נשר",
+    "en": "Nesher"
+  },
+  {
+    "he": "נתיב הגדוד",
+    "en": "Netiv Hagedud"
+  },
+  {
+    "he": "נתיב הלה",
+    "en": "Netiv Halamed-He"
+  },
+  {
+    "he": "נתיב העשרה",
+    "en": "Netiv Haasara"
+  },
+  {
+    "he": "נתיב השיירה",
+    "en": "Netiv Hashayyara"
+  },
+  {
+    "he": "נתיבות",
+    "en": "Netivot"
+  },
+  {
+    "he": "נתניה",
+    "en": "Netanya"
+  },
+  {
+    "he": "סאג'ור",
+    "en": "Sajur"
+  },
+  {
+    "he": "סאסא",
+    "en": "Sasa"
+  },
+  {
+    "he": "סביון",
+    "en": "Savyon"
+  },
+  {
+    "he": "סגולה",
+    "en": "Segula"
+  },
+  {
+    "he": "סואעד (חמירה)",
+    "en": "Sawa'Id (Humayra)"
+  },
+  {
+    "he": "סואעד (כמאנה) (שבט)",
+    "en": "Sawa'Id (Kamane)"
+  },
+  {
+    "he": "סולם",
+    "en": "Sulam"
+  },
+  {
+    "he": "סוסיה",
+    "en": "Suseya"
+  },
+  {
+    "he": "סופה",
+    "en": "Sufa"
+  },
+  {
+    "he": "סח'נין",
+    "en": "Sakhnin"
+  },
+  {
+    "he": "סייד (שבט)",
+    "en": "Sayyid"
+  },
+  {
+    "he": "סלמה",
+    "en": "Sallama"
+  },
+  {
+    "he": "סלעית",
+    "en": "Sal'It"
+  },
+  {
+    "he": "סמר",
+    "en": "Samar"
+  },
+  {
+    "he": "סנסנה",
+    "en": ""
+  },
+  {
+    "he": "סעד",
+    "en": "Sa'Ad"
+  },
+  {
+    "he": "סעוה",
+    "en": "Sa'Wa"
+  },
+  {
+    "he": "סער",
+    "en": "Sa'Ar"
+  },
+  {
+    "he": "ספיר",
+    "en": "Sappir"
+  },
+  {
+    "he": "סתריה",
+    "en": "Sitriyya"
+  },
+  {
+    "he": "ע'ג'ר",
+    "en": "Ghajar"
+  },
+  {
+    "he": "עבדון",
+    "en": "Avdon"
+  },
+  {
+    "he": "עברון",
+    "en": "Evron"
+  },
+  {
+    "he": "עגור",
+    "en": "Agur"
+  },
+  {
+    "he": "עדי",
+    "en": "Adi"
+  },
+  {
+    "he": "עדי עד",
+    "en": "Ade Ad"
+  },
+  {
+    "he": "עדנים",
+    "en": "Adanim"
+  },
+  {
+    "he": "עוזה",
+    "en": "Uza"
+  },
+  {
+    "he": "עוזייר",
+    "en": "Uzeir"
+  },
+  {
+    "he": "עולש",
+    "en": "Olesh"
+  },
+  {
+    "he": "עומר",
+    "en": "Omer"
+  },
+  {
+    "he": "עופר",
+    "en": "Ofer"
+  },
+  {
+    "he": "עופרה",
+    "en": "Ofra"
+  },
+  {
+    "he": "עוצם",
+    "en": "Ozem"
+  },
+  {
+    "he": "עוקבי (בנו עוקבה)",
+    "en": "Uqbi (Banu Uqba)"
+  },
+  {
+    "he": "עזוז",
+    "en": "Ezuz"
+  },
+  {
+    "he": "עזר",
+    "en": "Ezer"
+  },
+  {
+    "he": "עזריאל",
+    "en": "Azri'El"
+  },
+  {
+    "he": "עזריה",
+    "en": "Azarya"
+  },
+  {
+    "he": "עזריקם",
+    "en": "Azriqam"
+  },
+  {
+    "he": "עטאוונה (שבט)",
+    "en": "Atawne"
+  },
+  {
+    "he": "עטרת",
+    "en": "Ateret"
+  },
+  {
+    "he": "עיבל",
+    "en": "Eval"
+  },
+  {
+    "he": "עידן",
+    "en": "Iddan"
+  },
+  {
+    "he": "עיילבון",
+    "en": "Eilabun"
+  },
+  {
+    "he": "עיינות",
+    "en": "Ayanot"
+  },
+  {
+    "he": "עילוט",
+    "en": "Ilut"
+  },
+  {
+    "he": "עין איילה",
+    "en": "En Ayyala"
+  },
+  {
+    "he": "עין אל-אסד",
+    "en": "Ein Al-Asad"
+  },
+  {
+    "he": "עין גב",
+    "en": "En Gev"
+  },
+  {
+    "he": "עין גדי",
+    "en": "En Gedi"
+  },
+  {
+    "he": "עין דור",
+    "en": "En Dor"
+  },
+  {
+    "he": "עין הבשור",
+    "en": "En Habesor"
+  },
+  {
+    "he": "עין הוד",
+    "en": "En Hod"
+  },
+  {
+    "he": "עין החורש",
+    "en": "En Hahoresh"
+  },
+  {
+    "he": "עין המפרץ",
+    "en": "En Hamifraz"
+  },
+  {
+    "he": "עין הנציב",
+    "en": "En Hanaziv"
+  },
+  {
+    "he": "עין העמק",
+    "en": "En Haemeq"
+  },
+  {
+    "he": "עין השופט",
+    "en": "En Hashofet"
+  },
+  {
+    "he": "עין השלושה",
+    "en": "En Hashelosha"
+  },
+  {
+    "he": "עין ורד",
+    "en": "En Wered"
+  },
+  {
+    "he": "עין זיוון",
+    "en": "En Ziwan"
+  },
+  {
+    "he": "עין חוד",
+    "en": "Ein Hod"
+  },
+  {
+    "he": "עין חצבה",
+    "en": "En Hazeva"
+  },
+  {
+    "he": "עין חרוד (איחוד)",
+    "en": "En Harod (Ihud)"
+  },
+  {
+    "he": "עין חרוד (מאוחד)",
+    "en": "En Harod(Me'Uhad)"
+  },
+  {
+    "he": "עין יהב",
+    "en": "En Yahav"
+  },
+  {
+    "he": "עין יעקב",
+    "en": "En Ya'Aqov"
+  },
+  {
+    "he": "עין כרם-ביס חקלאי",
+    "en": "En Karem-B.s.haqla'I"
+  },
+  {
+    "he": "עין כרמל",
+    "en": "En Karmel"
+  },
+  {
+    "he": "עין מאהל",
+    "en": "Ein Mahel"
+  },
+  {
+    "he": "עין נקובא",
+    "en": "Ein Naqquba"
+  },
+  {
+    "he": "עין עירון",
+    "en": "En Iron"
+  },
+  {
+    "he": "עין צורים",
+    "en": "En Zurim"
+  },
+  {
+    "he": "עין קנייא",
+    "en": "Ein Qiniyye"
+  },
+  {
+    "he": "עין ראפה",
+    "en": "Ein Rafa"
+  },
+  {
+    "he": "עין שמר",
+    "en": "En Shemer"
+  },
+  {
+    "he": "עין שריד",
+    "en": "En Sarid"
+  },
+  {
+    "he": "עין תמר",
+    "en": "En Tamar"
+  },
+  {
+    "he": "עינת",
+    "en": "Enat"
+  },
+  {
+    "he": "עיר אובות",
+    "en": "Ir Ovot"
+  },
+  {
+    "he": "עכו",
+    "en": "Akko"
+  },
+  {
+    "he": "עלומים",
+    "en": "Alumim"
+  },
+  {
+    "he": "עלי",
+    "en": "Eli"
+  },
+  {
+    "he": "עלי זהב",
+    "en": "Ale Zahav"
+  },
+  {
+    "he": "עלמה",
+    "en": "Alma"
+  },
+  {
+    "he": "עלמון",
+    "en": "Almon"
+  },
+  {
+    "he": "עמוקה",
+    "en": "Amuqqa"
+  },
+  {
+    "he": "עמיחי",
+    "en": "Ammihay"
+  },
+  {
+    "he": "עמינדב",
+    "en": "Amminadav"
+  },
+  {
+    "he": "עמיעד",
+    "en": "Ammi'Ad"
+  },
+  {
+    "he": "עמיעוז",
+    "en": "Ammi'Oz"
+  },
+  {
+    "he": "עמיקם",
+    "en": "Ammiqam"
+  },
+  {
+    "he": "עמיר",
+    "en": "Amir"
+  },
+  {
+    "he": "עמנואל",
+    "en": "Immanu'El"
+  },
+  {
+    "he": "עמקה",
+    "en": "Amqa"
+  },
+  {
+    "he": "ענב",
+    "en": "Enav"
+  },
+  {
+    "he": "עספיא",
+    "en": "Isifya"
+  },
+  {
+    "he": "עפולה",
+    "en": "Afula"
+  },
+  {
+    "he": "עצמון שגב",
+    "en": "Atsmon-Segev"
+  },
+  {
+    "he": "עראבה",
+    "en": "Arrabe"
+  },
+  {
+    "he": "עראמשה",
+    "en": "Aramsha"
+  },
+  {
+    "he": "ערב אל נעים",
+    "en": "Arrab Al Naim"
+  },
+  {
+    "he": "ערד",
+    "en": "Arad"
+  },
+  {
+    "he": "ערוגות",
+    "en": "Arugot"
+  },
+  {
+    "he": "ערערה",
+    "en": "Ar'Ara"
+  },
+  {
+    "he": "ערערה-בנגב",
+    "en": "Ar'Ara-Banegev"
+  },
+  {
+    "he": "עשהאל",
+    "en": "Asa'El"
+  },
+  {
+    "he": "עשרת",
+    "en": "Aseret"
+  },
+  {
+    "he": "עתלית",
+    "en": "Atlit"
+  },
+  {
+    "he": "עתניאל",
+    "en": "Otni'El"
+  },
+  {
+    "he": "פארן",
+    "en": "Paran"
+  },
+  {
+    "he": "פדואל",
+    "en": "Pedu'El"
+  },
+  {
+    "he": "פדויים",
+    "en": "Peduyim"
+  },
+  {
+    "he": "פדיה",
+    "en": "Pedaya"
+  },
+  {
+    "he": "פוריה - כפר עבודה",
+    "en": "Poriyya-Kefar Avoda"
+  },
+  {
+    "he": "פוריה - נווה עובד",
+    "en": "Poriyya-Newe Oved"
+  },
+  {
+    "he": "פוריה עילית",
+    "en": "Poriyya Illit"
+  },
+  {
+    "he": "פוריידיס",
+    "en": "Fureidis"
+  },
+  {
+    "he": "פורת",
+    "en": "Porat"
+  },
+  {
+    "he": "פטיש",
+    "en": "Pattish"
+  },
+  {
+    "he": "פלך",
+    "en": "Pelekh"
+  },
+  {
+    "he": "פלמחים",
+    "en": "Palmahim"
+  },
+  {
+    "he": "פני חבר",
+    "en": "Pene Hever"
+  },
+  {
+    "he": "פסגות",
+    "en": "Pesagot"
+  },
+  {
+    "he": "פסוטה",
+    "en": "Fassuta"
+  },
+  {
+    "he": "פעמי תשז",
+    "en": "Pa'Ame Tashaz"
+  },
+  {
+    "he": "פצאל",
+    "en": "Peza'El"
+  },
+  {
+    "he": "פקיעין (בוקייעה)",
+    "en": "Peqi'In (Buqei'A)"
+  },
+  {
+    "he": "פקיעין חדשה",
+    "en": "Peqi'In Hadasha"
+  },
+  {
+    "he": "פרדס חנה-כרכור",
+    "en": "Pardes Hanna-Karkur"
+  },
+  {
+    "he": "פרדסיה",
+    "en": "Pardesiyya"
+  },
+  {
+    "he": "פרוד",
+    "en": "Parod"
+  },
+  {
+    "he": "פרזון",
+    "en": "Perazon"
+  },
+  {
+    "he": "פרי גן",
+    "en": "Peri Gan"
+  },
+  {
+    "he": "פרשים",
+    "en": "Parashim"
+  },
+  {
+    "he": "פתח תקווה",
+    "en": "Petah Tiqwa"
+  },
+  {
+    "he": "פתחיה",
+    "en": "Petahya"
+  },
+  {
+    "he": "צאלים",
+    "en": "Ze'Elim"
+  },
+  {
+    "he": "צביה",
+    "en": "Zviyya"
+  },
+  {
+    "he": "צבעון",
+    "en": "Ziv'On"
+  },
+  {
+    "he": "צובה",
+    "en": "Zova"
+  },
+  {
+    "he": "צוחר",
+    "en": "Zohar"
+  },
+  {
+    "he": "צופיה",
+    "en": "Zofiyya"
+  },
+  {
+    "he": "צופים",
+    "en": "Zufin"
+  },
+  {
+    "he": "צופית",
+    "en": "Zofit"
+  },
+  {
+    "he": "צופר",
+    "en": "Zofar"
+  },
+  {
+    "he": "צוקי ים",
+    "en": "Shoshannat Haamaqim("
+  },
+  {
+    "he": "צוקים",
+    "en": "Mahane Bildad"
+  },
+  {
+    "he": "צור הדסה",
+    "en": "Zur Hadassa"
+  },
+  {
+    "he": "צור יצחק",
+    "en": "Zur Yizhaq"
+  },
+  {
+    "he": "צור משה",
+    "en": "Zur Moshe"
+  },
+  {
+    "he": "צור נתן",
+    "en": "Zur Natan"
+  },
+  {
+    "he": "צוריאל",
+    "en": "Zuri'El"
+  },
+  {
+    "he": "צורית",
+    "en": "Zurit"
+  },
+  {
+    "he": "ציפורי",
+    "en": "Zippori"
+  },
+  {
+    "he": "צלפון",
+    "en": "Zelafon"
+  },
+  {
+    "he": "צנדלה",
+    "en": "Sandala"
+  },
+  {
+    "he": "צפריה",
+    "en": "Zafriyya"
+  },
+  {
+    "he": "צפרירים",
+    "en": "Zafririm"
+  },
+  {
+    "he": "צפת",
+    "en": "Zefat"
+  },
+  {
+    "he": "צרופה",
+    "en": "Zerufa"
+  },
+  {
+    "he": "צרעה",
+    "en": "Zor'A"
+  },
+  {
+    "he": "קבועה (שבט)",
+    "en": "Qabbo'A"
+  },
+  {
+    "he": "קבוצת יבנה",
+    "en": "Qevuzat Yavne"
+  },
+  {
+    "he": "קדומים",
+    "en": "Qedumim"
+  },
+  {
+    "he": "קדימה-צורן",
+    "en": "Qadima-Zoran"
+  },
+  {
+    "he": "קדם ערבה",
+    "en": "Kedem Arava"
+  },
+  {
+    "he": "קדמה",
+    "en": "Qedma"
+  },
+  {
+    "he": "קדמת צבי",
+    "en": "Qidmat Zevi"
+  },
+  {
+    "he": "קדר",
+    "en": "Qedar"
+  },
+  {
+    "he": "קדרון",
+    "en": "Qidron"
+  },
+  {
+    "he": "קדרים",
+    "en": "Qaddarim"
+  },
+  {
+    "he": "קודייראת א-צאנע(שבט)",
+    "en": "Qudeirat As-Sani"
+  },
+  {
+    "he": "קוואעין (שבט)",
+    "en": "Qawa'In"
+  },
+  {
+    "he": "קוממיות",
+    "en": "Qomemiyyut"
+  },
+  {
+    "he": "קורנית",
+    "en": "Qoranit"
+  },
+  {
+    "he": "קטורה",
+    "en": "Qetura"
+  },
+  {
+    "he": "קיסריה",
+    "en": "Qesariyya"
+  },
+  {
+    "he": "קלחים",
+    "en": "Qelahim"
+  },
+  {
+    "he": "קליה",
+    "en": "Qalya"
+  },
+  {
+    "he": "קלנסווה",
+    "en": "Qalansawe"
+  },
+  {
+    "he": "קלע",
+    "en": "Qela"
+  },
+  {
+    "he": "קציר",
+    "en": "Qazir"
+  },
+  {
+    "he": "קצר א-סר",
+    "en": ""
+  },
+  {
+    "he": "קצרין",
+    "en": "Qazrin"
+  },
+  {
+    "he": "קרית אונו",
+    "en": "Qiryat Ono"
+  },
+  {
+    "he": "קרית ארבע",
+    "en": "Qiryat Arba"
+  },
+  {
+    "he": "קרית אתא",
+    "en": "Qiryat Atta"
+  },
+  {
+    "he": "קרית ביאליק",
+    "en": "Qiryat Bialik"
+  },
+  {
+    "he": "קרית גת",
+    "en": "Qiryat Gat"
+  },
+  {
+    "he": "קרית טבעון",
+    "en": "Qiryat Tiv'On"
+  },
+  {
+    "he": "קרית ים",
+    "en": "Qiryat Yam"
+  },
+  {
+    "he": "קרית יערים",
+    "en": "Qiryat Ye'Arim"
+  },
+  {
+    "he": "קרית יערים(מוסד)",
+    "en": "Qiryat Ye'Arim(Insti"
+  },
+  {
+    "he": "קרית מוצקין",
+    "en": "Qiryat Motzkin"
+  },
+  {
+    "he": "קרית מלאכי",
+    "en": "Qiryat Mal'Akhi"
+  },
+  {
+    "he": "קרית נטפים",
+    "en": "Qiryat Netafim"
+  },
+  {
+    "he": "קרית ענבים",
+    "en": "Qiryat Anavim"
+  },
+  {
+    "he": "קרית עקרון",
+    "en": "Qiryat Eqron"
+  },
+  {
+    "he": "קרית שלמה",
+    "en": "Qiryat Shelomo"
+  },
+  {
+    "he": "קרית שמונה",
+    "en": "Qiryat Shemona"
+  },
+  {
+    "he": "קרני שומרון",
+    "en": "Qarne Shomeron"
+  },
+  {
+    "he": "קשת",
+    "en": "Qeshet"
+  },
+  {
+    "he": "ראמה",
+    "en": "Rame"
+  },
+  {
+    "he": "ראס אל-עין",
+    "en": "Ras Al-Ein"
+  },
+  {
+    "he": "ראס עלי",
+    "en": "Ras Ali"
+  },
+  {
+    "he": "ראש העין",
+    "en": "Rosh Haayin"
+  },
+  {
+    "he": "ראש פינה",
+    "en": "Rosh Pinna"
+  },
+  {
+    "he": "ראש צורים",
+    "en": "Rosh Zurim"
+  },
+  {
+    "he": "ראשון לציון",
+    "en": "Rishon Leziyyon"
+  },
+  {
+    "he": "רבבה",
+    "en": "Revava"
+  },
+  {
+    "he": "רבדים",
+    "en": "Revadim"
+  },
+  {
+    "he": "רביבים",
+    "en": "Revivim"
+  },
+  {
+    "he": "רביד",
+    "en": "Ravid"
+  },
+  {
+    "he": "רגבה",
+    "en": "Regba"
+  },
+  {
+    "he": "רגבים",
+    "en": "Regavim"
+  },
+  {
+    "he": "רהט",
+    "en": "Rahat"
+  },
+  {
+    "he": "רווחה",
+    "en": "Rewaha"
+  },
+  {
+    "he": "רוויה",
+    "en": "Rewaya"
+  },
+  {
+    "he": "רוח מדבר",
+    "en": "Ruah Midbar"
+  },
+  {
+    "he": "רוחמה",
+    "en": "Ruhama"
+  },
+  {
+    "he": "רומאנה",
+    "en": "Rummane"
+  },
+  {
+    "he": "רומת הייב",
+    "en": "Rumat Heib"
+  },
+  {
+    "he": "רועי",
+    "en": "Ro'I"
+  },
+  {
+    "he": "רותם",
+    "en": "Rotem"
+  },
+  {
+    "he": "רחוב",
+    "en": "Rehov"
+  },
+  {
+    "he": "רחובות",
+    "en": "Rehovot"
+  },
+  {
+    "he": "רחלים",
+    "en": "Rehelim"
+  },
+  {
+    "he": "ריחאניה",
+    "en": "Reihaniyye"
+  },
+  {
+    "he": "ריחן",
+    "en": "Rehan"
+  },
+  {
+    "he": "ריינה",
+    "en": "Reine"
+  },
+  {
+    "he": "רימונים",
+    "en": "Rimmonim"
+  },
+  {
+    "he": "רינתיה",
+    "en": "Rinnatya"
+  },
+  {
+    "he": "רכסים",
+    "en": "Rekhasim"
+  },
+  {
+    "he": "רם-און",
+    "en": "Ram-On"
+  },
+  {
+    "he": "רמות",
+    "en": "Ramot"
+  },
+  {
+    "he": "רמות השבים",
+    "en": "Ramot Hashavim"
+  },
+  {
+    "he": "רמות מאיר",
+    "en": "Ramot Me'Ir"
+  },
+  {
+    "he": "רמות מנשה",
+    "en": "Ramot Menashe"
+  },
+  {
+    "he": "רמות נפתלי",
+    "en": "Ramot Naftali"
+  },
+  {
+    "he": "רמלה",
+    "en": "Ramla"
+  },
+  {
+    "he": "רמת גן",
+    "en": "Ramat Gan"
+  },
+  {
+    "he": "רמת דוד",
+    "en": "Ramat Dawid"
+  },
+  {
+    "he": "רמת הכובש",
+    "en": "Ramat Hakovesh"
+  },
+  {
+    "he": "רמת הנשיא טראמפ",
+    "en": "President Trump Hei"
+  },
+  {
+    "he": "רמת השופט",
+    "en": "Ramat Hashofet"
+  },
+  {
+    "he": "רמת השרון",
+    "en": "Ramat Hasharon"
+  },
+  {
+    "he": "רמת יוחנן",
+    "en": "Ramat Yohanan"
+  },
+  {
+    "he": "רמת ישי",
+    "en": "Ramat Yishay"
+  },
+  {
+    "he": "רמת מגשימים",
+    "en": "Ramat Magshimim"
+  },
+  {
+    "he": "רמת צבי",
+    "en": "Ramat Zevi"
+  },
+  {
+    "he": "רמת רזיאל",
+    "en": "Ramat Razi'El"
+  },
+  {
+    "he": "רמת רחל",
+    "en": "Ramat Rahel"
+  },
+  {
+    "he": "רנן",
+    "en": "Rannen"
+  },
+  {
+    "he": "רעים",
+    "en": "Re'Im"
+  },
+  {
+    "he": "רעננה",
+    "en": "Ra'Anana"
+  },
+  {
+    "he": "רקפת",
+    "en": "Raqefet"
+  },
+  {
+    "he": "רשפון",
+    "en": "Rishpon"
+  },
+  {
+    "he": "רשפים",
+    "en": "Reshafim"
+  },
+  {
+    "he": "רתמים",
+    "en": "Retamim"
+  },
+  {
+    "he": "שא-נור",
+    "en": "Sa-Nur"
+  },
+  {
+    "he": "שאר ישוב",
+    "en": "She'Ar Yashuv"
+  },
+  {
+    "he": "שבות רחל",
+    "en": "Shvut Rahel"
+  },
+  {
+    "he": "שבי דרום",
+    "en": "Shave Darom"
+  },
+  {
+    "he": "שבי ציון",
+    "en": "Shave Ziyyon"
+  },
+  {
+    "he": "שבי שומרון",
+    "en": "Shave Shomeron"
+  },
+  {
+    "he": "שבלי - אום אל-גנם",
+    "en": "Shibli"
+  },
+  {
+    "he": "שגב-שלום",
+    "en": "Segev-Shalom"
+  },
+  {
+    "he": "שדה אילן",
+    "en": "Sede Ilan"
+  },
+  {
+    "he": "שדה אליהו",
+    "en": "Sede Eliyyahu"
+  },
+  {
+    "he": "שדה אליעזר",
+    "en": "Sede Eli'Ezer"
+  },
+  {
+    "he": "שדה בוקר",
+    "en": "Sede Boqer"
+  },
+  {
+    "he": "שדה דוד",
+    "en": "Sede Dawid"
+  },
+  {
+    "he": "שדה ורבורג",
+    "en": "Sede Warburg"
+  },
+  {
+    "he": "שדה יואב",
+    "en": "Sede Yo'Av"
+  },
+  {
+    "he": "שדה יעקב",
+    "en": "Sede Ya'Aqov"
+  },
+  {
+    "he": "שדה יצחק",
+    "en": "Sede Yizhaq"
+  },
+  {
+    "he": "שדה משה",
+    "en": "Sede Moshe"
+  },
+  {
+    "he": "שדה נחום",
+    "en": "Sede Nahum"
+  },
+  {
+    "he": "שדה נחמיה",
+    "en": "Sede Nehemya"
+  },
+  {
+    "he": "שדה ניצן",
+    "en": "Sede Nizzan"
+  },
+  {
+    "he": "שדה עוזיהו",
+    "en": "Sede Uzziyyahu"
+  },
+  {
+    "he": "שדה צבי",
+    "en": "Sede Zevi"
+  },
+  {
+    "he": "שדות ים",
+    "en": "Sedot Yam"
+  },
+  {
+    "he": "שדות מיכה",
+    "en": "Sedot Mikha"
+  },
+  {
+    "he": "שדי אברהם",
+    "en": "Sede Avraham"
+  },
+  {
+    "he": "שדי חמד",
+    "en": "Sede Hemed"
+  },
+  {
+    "he": "שדי תרומות",
+    "en": "Sede Terumot"
+  },
+  {
+    "he": "שדמה",
+    "en": "Shedema"
+  },
+  {
+    "he": "שדמות דבורה",
+    "en": "Shadmot Devora"
+  },
+  {
+    "he": "שדמות מחולה",
+    "en": "Shadmot Mehola"
+  },
+  {
+    "he": "שדרות",
+    "en": "Sederot"
+  },
+  {
+    "he": "שואבה",
+    "en": "Sho'Eva"
+  },
+  {
+    "he": "שובה",
+    "en": "Shuva"
+  },
+  {
+    "he": "שובל",
+    "en": "Shoval"
+  },
+  {
+    "he": "שוהם",
+    "en": "Shoham"
+  },
+  {
+    "he": "שומרה",
+    "en": "Shomera"
+  },
+  {
+    "he": "שומריה",
+    "en": "Shomeriyya"
+  },
+  {
+    "he": "שוקדה",
+    "en": "Shoqeda"
+  },
+  {
+    "he": "שורש",
+    "en": "Shoresh"
+  },
+  {
+    "he": "שורשים",
+    "en": "Shorashim"
+  },
+  {
+    "he": "שושנת העמקים",
+    "en": "Shoshannat Haamaqim"
+  },
+  {
+    "he": "שזור",
+    "en": "Shezor"
+  },
+  {
+    "he": "שחר",
+    "en": "Shahar"
+  },
+  {
+    "he": "שחרות",
+    "en": "Shaharut"
+  },
+  {
+    "he": "שחרית",
+    "en": "Shaharit"
+  },
+  {
+    "he": "שיבולים",
+    "en": "Shibbolim"
+  },
+  {
+    "he": "שיזף",
+    "en": "Shezaf"
+  },
+  {
+    "he": "שיטים",
+    "en": "Nahal Shittim"
+  },
+  {
+    "he": "שייח' דנון",
+    "en": "Sheikh Dannun"
+  },
+  {
+    "he": "שילה",
+    "en": "Shilo"
+  },
+  {
+    "he": "שילת",
+    "en": "Shilat"
+  },
+  {
+    "he": "שכניה",
+    "en": "Shekhanya"
+  },
+  {
+    "he": "שלווה",
+    "en": "Shalwa"
+  },
+  {
+    "he": "שלווה במדבר",
+    "en": "Shalva Bamidbar"
+  },
+  {
+    "he": "שלוחות",
+    "en": "Sheluhot"
+  },
+  {
+    "he": "שלומי",
+    "en": "Shelomi"
+  },
+  {
+    "he": "שלומית",
+    "en": "Shlomit"
+  },
+  {
+    "he": "שמיר",
+    "en": "Shamir"
+  },
+  {
+    "he": "שמעה",
+    "en": "Shim'A"
+  },
+  {
+    "he": "שמרת",
+    "en": "Shamerat"
+  },
+  {
+    "he": "שמשית",
+    "en": "Shimshit"
+  },
+  {
+    "he": "שני",
+    "en": "Shani"
+  },
+  {
+    "he": "שניר",
+    "en": "Senir"
+  },
+  {
+    "he": "שעב",
+    "en": "Sha'Ab"
+  },
+  {
+    "he": "שעל",
+    "en": "Sha'Al"
+  },
+  {
+    "he": "שעלבים",
+    "en": "Sha'Alvim"
+  },
+  {
+    "he": "שער אפרים",
+    "en": "Sha'Ar Efrayim"
+  },
+  {
+    "he": "שער הגולן",
+    "en": "Sha'Ar Hagolan"
+  },
+  {
+    "he": "שער העמקים",
+    "en": "Sha'Ar Haamaqim"
+  },
+  {
+    "he": "שער מנשה",
+    "en": "Sha'Ar Menashe"
+  },
+  {
+    "he": "שער שומרון",
+    "en": "Sha'Ar Shomron"
+  },
+  {
+    "he": "שפיים",
+    "en": "Shefayim"
+  },
+  {
+    "he": "שפיר",
+    "en": "Shafir"
+  },
+  {
+    "he": "שפר",
+    "en": "Shefer"
+  },
+  {
+    "he": "שפרעם",
+    "en": "Shefar'Am"
+  },
+  {
+    "he": "שקד",
+    "en": "Shaqed"
+  },
+  {
+    "he": "שקף",
+    "en": "Sheqef"
+  },
+  {
+    "he": "שרונה",
+    "en": "Sharona"
+  },
+  {
+    "he": "שריגים (לי-און)",
+    "en": "Li-On"
+  },
+  {
+    "he": "שריד",
+    "en": "Sarid"
+  },
+  {
+    "he": "שרשרת",
+    "en": "Sharsheret"
+  },
+  {
+    "he": "שתולה",
+    "en": "Shetula"
+  },
+  {
+    "he": "שתולים",
+    "en": "Shetulim"
+  },
+  {
+    "he": "תאשור",
+    "en": "Te'Ashur"
+  },
+  {
+    "he": "תדהר",
+    "en": "Tidhar"
+  },
+  {
+    "he": "תובל",
+    "en": "Tuval"
+  },
+  {
+    "he": "תומר",
+    "en": "Tomer"
+  },
+  {
+    "he": "תושיה",
+    "en": "Tushiyya"
+  },
+  {
+    "he": "תימורים",
+    "en": "Timmorim"
+  },
+  {
+    "he": "תירוש",
+    "en": "Tirosh"
+  },
+  {
+    "he": "תל אביב - יפו",
+    "en": "Tel Aviv - Yafo"
+  },
+  {
+    "he": "תל יוסף",
+    "en": "Tel Yosef"
+  },
+  {
+    "he": "תל יצחק",
+    "en": "Tel Yizhaq"
+  },
+  {
+    "he": "תל מונד",
+    "en": "Tel Mond"
+  },
+  {
+    "he": "תל עדשים",
+    "en": "Tel Adashim"
+  },
+  {
+    "he": "תל ציון",
+    "en": "Tel Tsiyon"
+  },
+  {
+    "he": "תל קציר",
+    "en": "Tel Qazir"
+  },
+  {
+    "he": "תל שבע",
+    "en": "Tel Sheva"
+  },
+  {
+    "he": "תל תאומים",
+    "en": "Tel Te'Omim"
+  },
+  {
+    "he": "תלם",
+    "en": "Telem"
+  },
+  {
+    "he": "תלמי אליהו",
+    "en": "Talme Eliyyahu"
+  },
+  {
+    "he": "תלמי אלעזר",
+    "en": "Talme El'Azar"
+  },
+  {
+    "he": "תלמי בילו",
+    "en": "Talme Bilu"
+  },
+  {
+    "he": "תלמי יוסף",
+    "en": "Talme Yosef"
+  },
+  {
+    "he": "תלמי יחיאל",
+    "en": "Talme Yehi'El"
+  },
+  {
+    "he": "תלמי יפה",
+    "en": "Talme Yafe"
+  },
+  {
+    "he": "תלמים",
+    "en": "Telamim"
+  },
+  {
+    "he": "תמרה",
+    "en": "Tmara"
+  },
+  {
+    "he": "תמרת",
+    "en": "Timrat"
+  },
+  {
+    "he": "תנובות",
+    "en": "Tenuvot"
+  },
+  {
+    "he": "תעוז",
+    "en": "Ta'Oz"
+  },
+  {
+    "he": "תפרח",
+    "en": "Tifrah"
+  },
+  {
+    "he": "תקומה",
+    "en": "Tequma"
+  },
+  {
+    "he": "תקוע",
+    "en": "Teqoa"
+  },
+  {
+    "he": "תראבין א-צאנע (שבט)",
+    "en": "Tarabin As-Sani"
+  },
+  {
+    "he": "תראבין א-צאנע(ישוב)",
+    "en": "Tarabin As-Sani"
+  },
+  {
+    "he": "תרום",
+    "en": "Tarum"
+  }
+]

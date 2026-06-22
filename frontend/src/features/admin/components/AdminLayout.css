@@ -38,6 +38,19 @@
   transition: width 0.35s ease, padding 0.35s ease, gap 0.35s ease, all 0.3s ease !important;
 }
 
+/* Hebrew (RTL): mirror the whole shell — sidebar on the right, content on the left.
+   row-reverse flips the sides without touching `order`, and the fixed sidebar
+   panel is re-pinned to the right edge so it sits over its own reserved space. */
+[dir="rtl"] .admin-layout {
+  flex-direction: row-reverse !important;
+}
+
+[dir="rtl"] .admin-sidebar .admin-sidebar-paper {
+  left: auto !important;
+  right: 12px !important;
+  box-shadow: -4px 0 24px rgba(109, 40, 217, 0.04) !important;
+}
+
 .admin-sidebar .admin-sidebar-paper.is-collapsed {
   align-items: center !important;
   gap: 20px !important;
@@ -301,7 +314,6 @@
 
 .admin-content-frame {
   order: 1 !important;
-  direction: ltr !important;
   flex: 1 1 auto !important;
   width: auto !important;
   max-width: calc(100vw - var(--admin-sidebar-width) - 24px) !important;
@@ -314,7 +326,6 @@
 }
 
 .admin-main {
-  direction: ltr !important;
   width: 100% !important;
   max-width: 100% !important;
   height: 100vh !important;
@@ -337,6 +348,11 @@
     left: 0 !important;
     right: auto !important;
     gap: 20px !important;
+  }
+
+  [dir="rtl"] .admin-sidebar .admin-sidebar-paper {
+    left: auto !important;
+    right: 0 !important;
   }
 
   .admin-sidebar-nav .MuiListItemText-root,
