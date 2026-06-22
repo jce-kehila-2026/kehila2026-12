@@ -187,10 +187,11 @@ service cloud.firestore {
 
     // ── Public Profiles (community-visible display data only) ───
     // Holds ONLY non-sensitive, opt-in display fields mirrored from
-    // users/{uid}: communityDisplayName, communityBirthday, and
-    // showBirthdayInCommunity. Any signed-in user may read (the community
-    // birthday widget queries this), but only the owner may write, and only
-    // those fields — so contact PII in users/{uid} is never exposed here.
+    // users/{uid}: communityDisplayName, communityBirthday (stored here as
+    // 'MM-DD' only — the birth year is stripped so a member's age can't be
+    // derived), and showBirthdayInCommunity. Any signed-in user may read (the
+    // community birthday widget queries this), but only the owner may write,
+    // and only those fields — so contact PII in users/{uid} is never exposed.
     match /public_profiles/{uid} {
       allow read: if request.auth != null;
       allow create, update: if isSelf(uid)

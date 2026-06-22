@@ -21,6 +21,7 @@ import {
 import { auth, db } from '../../../../firebase';
 import { formatRelativeCommunityTime } from '../utils/communityDateUtils';
 import { isCommunityContentVisible } from '../utils/communityModerationUtils';
+import { getBirthdayMonthDay, toBirthdayMonthDay } from '../utils/communityProfileUtils';
 import { translateFields, isTranslationConfigured } from '../../../admin/services/translationService';
 
 // Best-effort Azure translation of participant-authored text. Returns a
@@ -671,6 +672,13 @@ export async function updateCommunityProfile(uid, profileData = {}) {
   for (const field of PUBLIC_PROFILE_FIELDS) {
     if (field in profileData) publicPatch[field] = profileData[field];
   }
+  // Strip the year before mirroring the birthday into the world-readable
+  // public_profiles doc: the community widget only needs the month/day, and
+  // exposing the birth year would leak every opted-in member's age to all
+  // signed-in users. users/{uid} keeps the full date (owner-only).
+  if ('communityBirthday' in publicPatch) {
+    publicPatch.communityBirthday = toBirthdayMonthDay(publicPatch.communityBirthday);
+  }
   if (Object.keys(publicPatch).length > 0) {
     publicPatch.updatedAt = serverTimestamp();
     await setDoc(doc(db, PUBLIC_PROFILES_COL, uid), publicPatch, { merge: true });
@@ -757,22 +765,26 @@ export async function unfollowCommunityAuthor(uid, authorUid) {
 
 export async function getTodayCommunityBirthdays() {
   const today = new Date();
-  const monthStr = String(today.getMonth() + 1).padStart(2, '0');
-  const dayStr = String(today.getDate()).padStart(2, '0');
-  const todaySuffix = `-${monthStr}-${dayStr}`;
+  const todayMonth = today.getMonth() + 1;
+  const todayDay = today.getDate();
 
+  // Read every opted-in public profile and match today's month/day on the
+  // client. We deliberately do NOT cap the query: the previous `limit(50)` ran
+  // before the date filter, so once more than 50 members opted in, today's
+  // birthday people outside the first (unordered) 50 were silently dropped.
+  // public_profiles stores the birthday as 'MM-DD', but legacy docs may hold a
+  // full 'YYYY-MM-DD' — getBirthdayMonthDay handles both.
   const q = query(
     collection(db, PUBLIC_PROFILES_COL),
     where('showBirthdayInCommunity', '==', true),
-    limit(50),
   );
   const snapshot = await getDocs(q);
 
   return snapshot.docs
     .map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }))
     .filter((user) => {
-      const birthday = user.communityBirthday;
-      return typeof birthday === 'string' && birthday.endsWith(todaySuffix);
+      const monthDay = getBirthdayMonthDay(user.communityBirthday);
+      return monthDay && monthDay.month === todayMonth && monthDay.day === todayDay;
     })
     .map((user) => ({
       id: user.id,
@@ -796,15 +808,36 @@ export async function sendBirthdayWish({
     throw new Error('Birthday wishes cannot be sent to yourself.');
   }
 
-  await addDoc(collection(db, USERS_COL, recipientId, ACTIVITY_NOTIFICATIONS_COL), {
-    recipientId,
-    actorId: resolvedSenderId,
-    actorName: senderName || 'Someone',
-    type: 'birthday_wish',
-    title: 'Birthday wish',
-    body: `${senderName || 'Someone'} sent you a birthday wish: "${message}"`,
-    createdAt: serverTimestamp(),
-  });
+  // Deterministic id keyed on sender+recipient+day so a re-send is a no-op
+  // instead of a duplicate notification. The per-device localStorage guard only
+  // covers the originating browser; this also guards across devices and after a
+  // localStorage clear.
+  const today = new Date();
+  const dateKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+  const wishId = `birthday-${recipientId}-${resolvedSenderId}-${dateKey}`;
+  const wishRef = doc(db, USERS_COL, recipientId, ACTIVITY_NOTIFICATIONS_COL, wishId);
+
+  try {
+    await setDoc(wishRef, {
+      recipientId,
+      actorId: resolvedSenderId,
+      actorName: senderName || 'Someone',
+      type: 'birthday_wish',
+      title: 'Birthday wish',
+      body: `${senderName || 'Someone'} sent you a birthday wish: "${message}"`,
+      createdAt: serverTimestamp(),
+    }, { merge: false });
+  } catch (error) {
+    // The sender can't read the recipient's notifications (read is owner-only),
+    // so we can't pre-check existence. A same-day duplicate therefore lands on
+    // the already-existing doc, which the rules treat as an update (disallowed).
+    // That denial just means the wish is already recorded — surface it as an
+    // idempotent success rather than a failure.
+    if (error?.code === 'permission-denied') {
+      return { success: true, recipientId, senderId: resolvedSenderId, message, alreadySent: true };
+    }
+    throw error;
+  }
 
   return { success: true, recipientId, senderId: resolvedSenderId, message };
 }

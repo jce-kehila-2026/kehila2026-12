@@ -1,5 +1,4 @@
 import { useEffect, useState } from 'react';
-import { auth } from '../../../../firebase';
 import {
   COMMUNITY_GUIDELINES_VERSION,
   getAcceptedGuidelinesVersion,
@@ -11,7 +10,7 @@ import {
   saveCommunityGuidelinesAccepted,
 } from '../services/communityService';
 
-export default function useCommunityGuidelines() {
+export default function useCommunityGuidelines(uid) {
   // Start hidden and only reveal once the authoritative check (Firestore +
   // live version) resolves in the effect below. Seeding this from the
   // local-only guess caused a flash: the modal would render at first paint,
@@ -23,12 +22,23 @@ export default function useCommunityGuidelines() {
   const [liveVersion, setLiveVersion] = useState(COMMUNITY_GUIDELINES_VERSION);
 
   useEffect(() => {
+    // Wait for the resolved uid before deciding. Reading auth.currentUser at
+    // mount raced Firebase auth init: if the page mounted before auth resolved,
+    // the Firestore acceptance check was skipped, we fell back to localStorage
+    // only, and the effect never re-ran — so on a fresh device an
+    // already-accepted user saw the modal again. Keying the effect on uid makes
+    // it re-run when auth lands, and gating on a truthy uid preserves the
+    // no-flash guarantee (we still only ever flip false→true, and only once the
+    // authoritative Firestore check has run). uid is effectiveUID-aware, so
+    // acceptance is also read/written against the impersonated participant
+    // rather than the admin's own account.
+    if (!uid) return undefined;
+
     let cancelled = false;
-    const uid = auth.currentUser?.uid;
 
     Promise.all([
       getCommunitySettingsGuidelines().catch(() => null),
-      uid ? getCommunityGuidelinesAccepted(uid).catch(() => null) : Promise.resolve(null),
+      getCommunityGuidelinesAccepted(uid).catch(() => null),
     ]).then(([settings, firestoreAccepted]) => {
       if (cancelled) return;
 
@@ -46,13 +56,12 @@ export default function useCommunityGuidelines() {
     });
 
     return () => { cancelled = true; };
-  }, []);
+  }, [uid]);
 
   const handleGuidelinesContinue = () => {
     saveAcceptedGuidelinesVersion(liveVersion);
     setShowGuidelinesModal(false);
 
-    const uid = auth.currentUser?.uid;
     if (uid) {
       saveCommunityGuidelinesAccepted(uid, liveVersion).catch(() => {});
     }

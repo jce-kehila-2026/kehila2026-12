@@ -67,7 +67,7 @@ export default function CommunityPage({
     handleGuidelinesContinue,
     handleReadFullGuidelines,
     handleCloseFullGuidelines,
-  } = useCommunityGuidelines();
+  } = useCommunityGuidelines(personalDetails.id);
 
   useEffect(() => {
     if (!confirmingDeletePostId) return;
@@ -225,8 +225,11 @@ export default function CommunityPage({
     localUserId,
     communityDisplayName || 'Current User',
   );
+  // Birthdays shown in the card are limited to people you follow, plus your own
+  // (so you see your day celebrated even if you follow no one). The card hides
+  // the wish controls for your own entry.
   const followedBirthdayUsers = visibleBirthdayUsers.filter((user) => (
-    user?.id && followedAuthors.includes(user.id)
+    user?.id && (user.id === localUserId || followedAuthors.includes(user.id))
   ));
   const sortedVisiblePosts = sortFeedPosts(filteredPosts);
   const emptyFeedMessage = getEmptyFeedMessage(activeFeedTab, followedAuthors.length);
@@ -533,12 +536,12 @@ export default function CommunityPage({
             localUserId={localUserId}
             localUserName={communityDisplayName || 'Current User'}
           />
+          <div className="community-guidelines-shortcut">
+            <button type="button" onClick={handleReadFullGuidelines}>
+              {t('communityGuidelines')}
+            </button>
+          </div>
         </aside>
-      </div>
-      <div className="community-guidelines-shortcut">
-        <button type="button" onClick={handleReadFullGuidelines}>
-          {t('communityGuidelines')}
-        </button>
       </div>
       {showFullGuidelinesModal && (
         <CommunityGuidelinesModal
