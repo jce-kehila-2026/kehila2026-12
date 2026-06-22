@@ -67,7 +67,7 @@ export default function CommunityPage({
     handleGuidelinesContinue,
     handleReadFullGuidelines,
     handleCloseFullGuidelines,
-  } = useCommunityGuidelines();
+  } = useCommunityGuidelines(personalDetails.id);
 
   useEffect(() => {
     if (!confirmingDeletePostId) return;
