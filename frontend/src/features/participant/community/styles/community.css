@@ -360,7 +360,12 @@
   overflow-y: auto;
   overscroll-behavior: contain;
   padding-right: 0.25rem;
+  padding-bottom: 0.75rem;
   scrollbar-gutter: stable;
+  /* Soft-fade the bottom edge so posts scroll out cleanly instead of being
+     sliced by a hard line at the scroll-area edge (which read as a "bar"). */
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 1.5rem), transparent);
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 1.5rem), transparent);
 }
 
 .community-right-sidebar {
@@ -3760,6 +3765,10 @@
     overflow: visible;
     padding-right: 0;
     scrollbar-gutter: auto;
+    /* The feed is no longer an internal scroll box here (the page scrolls), so
+       drop the bottom fade — otherwise it would dim the real last post. */
+    -webkit-mask-image: none;
+    mask-image: none;
   }
 
   .community-right-sidebar {
