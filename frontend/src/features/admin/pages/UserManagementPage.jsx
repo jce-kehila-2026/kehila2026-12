@@ -296,10 +296,10 @@ export default function UserManagementPage() {
     display: 'grid',
     gridTemplateColumns: {
       xs: 'minmax(0, 1fr)',
-      md: 'minmax(300px, 1.45fr) 170px 150px 180px',
+      md: 'minmax(260px, 1.35fr) minmax(150px, 0.72fr) minmax(120px, 0.58fr) minmax(112px, 0.52fr) minmax(92px, 0.42fr)',
     },
     alignItems: 'center',
-    gap: '1rem',
+    columnGap: '0.75rem',
   };
 
   const actionIconSx = (tone = 'purple') => {
@@ -318,17 +318,18 @@ export default function UserManagementPage() {
     const palette = tones[tone] || tones.purple;
 
     return {
-      width: '2.625rem',
-      height: '2.625rem',
+      width: '2rem',
+      height: '2rem',
       color: palette.color,
-      bgcolor: palette.bgcolor,
-      border: '1px solid rgba(255, 255, 255, 0.72)',
-      boxShadow: '0 10px 22px rgba(91, 57, 145, 0.06)',
+      bgcolor: 'rgba(255, 255, 255, 0.97)',
+      border: 0,
+      boxShadow: '0 9px 24px rgba(91, 30, 140, 0.12)',
       transition: 'transform 160ms ease, background-color 160ms ease, box-shadow 160ms ease',
       '&:hover': {
-        bgcolor: palette.hover,
-        transform: 'translateY(-1px)',
-        boxShadow: '0 14px 28px rgba(91, 57, 145, 0.11)',
+        color: '#fff',
+        bgcolor: tone === 'pink' ? '#DF327B' : '#6D3CCF',
+        transform: 'translateY(-2px)',
+        boxShadow: '0 14px 26px rgba(223, 50, 123, 0.20)',
       },
     };
   };
@@ -430,11 +431,12 @@ export default function UserManagementPage() {
                 width: '100%',
                 maxWidth: 'none',
                 bgcolor: 'rgba(255, 255, 255, 0.82)',
-                border: '1px solid rgba(130, 92, 206, 0.14)',
-                borderRadius: '28px',
-                boxShadow: '0 28px 74px rgba(91, 57, 145, 0.11)',
-                backdropFilter: 'blur(22px)',
+                border: '1px solid rgba(167, 139, 250, 0.18)',
+                borderRadius: '24px',
+                boxShadow: 'none',
+                backdropFilter: 'blur(18px)',
                 alignSelf: 'flex-start',
+                overflow: 'hidden',
               }}
             >
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={0.5} alignItems={{ md: 'center' }} justifyContent="space-between" sx={{ px: { xs: 1, md: 1.35 }, pt: { xs: 0.75, md: 1 }, pb: 0.25, flexShrink: 0 }}>
@@ -535,20 +537,19 @@ export default function UserManagementPage() {
 
           <Box
             sx={{
-              px: { xs: 1, md: 1.35 },
-              pb: { xs: 0.75, md: 1 },
+              px: 0,
+              pb: 0,
             }}
           >
             <Box
               sx={{
                 ...rowGrid,
-                px: 2.2,
-                py: 0.5,
+                px: '1.125rem',
                 display: { xs: 'none', md: 'grid' },
-                borderRadius: '18px 18px 0 0',
-                border: '1px solid rgba(130, 92, 206, 0.10)',
-                borderBottom: 'none',
-                bgcolor: 'rgba(255,255,255,0.42)',
+                minHeight: '3.25rem',
+                borderTop: '1px solid rgba(167, 139, 250, 0.13)',
+                borderBottom: '1px solid rgba(167, 139, 250, 0.13)',
+                bgcolor: 'transparent',
                 flexShrink: 0,
               }}
             >
@@ -556,6 +557,7 @@ export default function UserManagementPage() {
                 { key: 'user', label: t('colUser') },
                 { key: 'role', label: t('colRole') },
                 { key: 'joined', label: t('colJoined') },
+                { key: 'status', label: t('apColStatus') },
                 { key: 'actions', label: t('colActions') },
               ].map((col) => (
                 <Typography
@@ -563,10 +565,11 @@ export default function UserManagementPage() {
                   variant="caption"
                   sx={{
                     fontWeight: 950,
-                    color: '#625B84',
+                    color: 'rgba(36, 16, 79, 0.64)',
                     textTransform: 'uppercase',
-                    letterSpacing: 0.3,
-                    textAlign: col.key === 'actions' ? 'right' : 'left',
+                    letterSpacing: 0,
+                    fontSize: '0.8125rem',
+                    textAlign: col.key === 'user' ? 'left' : 'center',
                   }}
                 >
                   {col.label}
@@ -579,15 +582,13 @@ export default function UserManagementPage() {
                 maxHeight: { xs: 'calc(100dvh - 420px)', md: 'calc(100dvh - 360px)' },
                 overflowY: 'auto',
                 overflowX: 'hidden',
-                scrollPaddingBottom: '72px',
-                pr: '6px',
-                mr: '-6px',
+                scrollPaddingBottom: 0,
                 '&::-webkit-scrollbar': { width: '0.5rem' },
                 '&::-webkit-scrollbar-track': { background: 'rgba(244, 238, 255, 0.45)', borderRadius: 999 },
                 '&::-webkit-scrollbar-thumb': { background: 'rgba(167, 139, 250, 0.5)', borderRadius: 999 },
               }}
             >
-              <Stack spacing={1.1} sx={{ pb: '72px' }}>
+              <Stack spacing={0} sx={{ pb: 0 }}>
                 {loading ? (
                   <Box sx={{ py: 8, textAlign: 'center' }}>
                     <CircularProgress />
@@ -605,77 +606,60 @@ export default function UserManagementPage() {
                     }}
                     sx={{
                       ...rowGrid,
-                      px: { xs: 1.7, md: 2.2 },
-                      py: 1.8,
-                      borderRadius: '22px',
-                      border: inactive ? '1px solid rgba(194, 65, 91, 0.18)' : '1px solid rgba(130, 92, 206, 0.10)',
-                      bgcolor: inactive ? 'rgba(255, 247, 250, 0.78)' : 'rgba(255,255,255,0.72)',
+                      minHeight: { xs: 'auto', md: '4.35rem' },
+                      px: { xs: 1.7, md: '1.125rem' },
+                      py: { xs: 1.35, md: 0 },
+                      borderRadius: { xs: '18px', md: 0 },
+                      border: 0,
+                      borderBottom: '1px solid rgba(167, 139, 250, 0.13)',
+                      bgcolor: inactive ? 'rgba(255, 247, 250, 0.62)' : 'transparent',
                       cursor: 'pointer',
                       transition: 'transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease, border-color 180ms ease',
                       ...(selectedUser?.id === user.id
                         ? {
-                            bgcolor: inactive ? 'rgba(255, 239, 245, 0.96)' : 'rgba(244, 238, 255, 0.95)',
-                            borderColor: inactive ? 'rgba(194, 65, 91, 0.34)' : 'rgba(124, 58, 237, 0.35)',
-                            boxShadow: '0 16px 34px rgba(91, 57, 145, 0.12)',
+                            bgcolor: inactive ? 'rgba(255, 239, 245, 0.8)' : 'rgba(244, 238, 255, 0.74)',
                           }
                         : {}),
                       '&:hover': {
-                        bgcolor: inactive ? 'rgba(255, 242, 247, 0.96)' : 'rgba(255, 250, 254, 0.94)',
-                        borderColor: inactive ? 'rgba(194, 65, 91, 0.28)' : 'rgba(124, 58, 237, 0.18)',
-                        boxShadow: '0 16px 34px rgba(91, 57, 145, 0.10)',
-                        transform: 'translateY(-2px) scale(1.002)',
+                        bgcolor: inactive ? 'rgba(255, 242, 247, 0.86)' : 'rgba(255, 250, 254, 0.82)',
                       },
                     }}
                   >
-                    <Stack direction="row" spacing={1.5} alignItems="center" sx={{ minWidth: 0 }}>
+                    <Stack direction="row" spacing={1.25} alignItems="center" sx={{ minWidth: 0 }}>
                       <Avatar
                         src={user.avatarUrl || ''}
                         sx={{
-                          width: '3.375rem',
-                          height: '3.375rem',
+                          width: '2.25rem',
+                          height: '2.25rem',
                           bgcolor: '#EEE7FF',
                           color: '#6D3CCF',
                           fontWeight: 950,
-                          fontSize: '1.1875rem',
-                          boxShadow: '0 10px 24px rgba(109, 60, 207, 0.12)',
+                          fontSize: '0.8125rem',
+                          boxShadow: 'none',
                         }}
                       >
                         {initials(user)}
                       </Avatar>
                       <Box sx={{ minWidth: 0 }}>
-                        <Typography fontWeight={950} noWrap sx={{ color: '#17122E' }}>{getFullName(user, t('umUnnamedUser'))}</Typography>
-                        <Typography color="#5E587E" noWrap sx={{ fontSize: '0.84375rem' }}>{user.email || t('umNoEmail')}</Typography>
-                        {inactive ? (
-                          <Chip
-                            label={t('umStatusInactive')}
-                            size="small"
-                            sx={{
-                              mt: 0.65,
-                              height: '1.5rem',
-                              borderRadius: 999,
-                              color: '#C2415B',
-                              bgcolor: 'rgba(244, 63, 94, 0.10)',
-                              border: '1px solid rgba(244, 63, 94, 0.16)',
-                              fontWeight: 900,
-                            }}
-                          />
-                        ) : null}
+                        <Typography fontWeight={900} noWrap sx={{ color: '#17122E', fontSize: '0.875rem', lineHeight: 1.2 }}>{getFullName(user, t('umUnnamedUser'))}</Typography>
+                        <Typography color="rgba(36, 16, 79, 0.55)" noWrap sx={{ fontSize: '0.75rem', mt: 0.25 }}>{user.email || t('umNoEmail')}</Typography>
                       </Box>
                     </Stack>
 
-                    <Box onClick={(event) => event.stopPropagation()}>
+                    <Box onClick={(event) => event.stopPropagation()} sx={{ display: 'flex', justifyContent: 'center', minWidth: 0 }}>
                       <Select
                         value={normalizeUserRole(user.role)}
                         onChange={(event) => handleRoleChange(user, event.target.value)}
                         disabled={saving === user.id}
                         size="small"
                         sx={{
-                          minWidth: '9.375rem',
-                          height: '2.625rem',
-                          borderRadius: 999,
-                          fontWeight: 900,
+                          width: '8.75rem',
+                          height: '2.25rem',
+                          borderRadius: '10px',
+                          fontWeight: 850,
+                          fontSize: '0.75rem',
                           ...(ROLE_STYLES[normalizeUserRole(user.role)] || ROLE_STYLES.participant),
-                          '& .MuiSelect-select': { py: 1.05 },
+                          '& .MuiSelect-select': { py: 0.75, textAlign: 'center' },
                           '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.65)' },
                         }}
                       >
@@ -683,12 +667,30 @@ export default function UserManagementPage() {
                       </Select>
                     </Box>
 
-                    <Typography fontWeight={800} color="#4F4A70" sx={{ textAlign: 'start' }}>{formatDateValue(getJoinedDate(user))}</Typography>
+                    <Typography fontWeight={800} color="rgba(36, 16, 79, 0.72)" sx={{ textAlign: 'center', fontSize: '0.8125rem' }}>{formatDateValue(getJoinedDate(user))}</Typography>
+
+                    <Box sx={{ display: 'flex', justifyContent: 'center', minWidth: 0 }}>
+                      <Chip
+                        label={inactive ? t('umStatusInactive') : t('umStatusActive')}
+                        size="small"
+                        sx={{
+                          height: '1.875rem',
+                          minWidth: '5.75rem',
+                          justifyContent: 'center',
+                          borderRadius: '10px',
+                          color: inactive ? '#C2415B' : '#329143',
+                          bgcolor: inactive ? 'rgba(244, 63, 94, 0.10)' : 'rgba(134, 209, 124, 0.22)',
+                          border: inactive ? '1px solid rgba(244, 63, 94, 0.16)' : '1px solid rgba(134, 209, 124, 0.18)',
+                          fontWeight: 850,
+                          fontSize: '0.75rem',
+                        }}
+                      />
+                    </Box>
 
                     <Stack
                       direction="row"
-                      spacing={1.1}
-                      justifyContent={{ xs: 'flex-start', md: 'flex-end' }}
+                      spacing={0.75}
+                      justifyContent={{ xs: 'flex-start', md: 'center' }}
                       onClick={(event) => event.stopPropagation()}
                     >
                       <IconButton aria-label={t('umEditAria').replace('{name}', getFullName(user, t('umUnnamedUser')))} onClick={() => selectUser(user)} sx={actionIconSx('purple')}>
