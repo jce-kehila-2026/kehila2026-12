@@ -635,7 +635,6 @@ function EventCard({
           aria-haspopup="dialog"
         >
           {registrationClosed ? t('evRegistrationClosed') : hasRegisteredSessions ? t('evChooseMoreDates') : t('evViewDates')}
-          <ArrowForwardIcon fontSize="small" />
         </button>
       </div>
     </article>
@@ -818,7 +817,6 @@ function AppointmentServiceCard({ event, isSelected, onOpenBooking }) {
         aria-haspopup="dialog"
       >
         {t('evViewAvailableTimes')}
-        <ArrowForwardIcon fontSize="small" />
       </button>
     </article>
   );
@@ -1064,7 +1062,6 @@ function AppointmentBookingDrawer({
               : isRegistered
                 ? t('evCancelBooking')
                 : t('evConfirmBooking')}
-            <ArrowForwardIcon fontSize="small" />
           </button>
         </div>
       </aside>
@@ -1142,7 +1139,6 @@ function WorkshopListCard({ event, registeredSessionIds, isSelected, onOpenBooki
         aria-haspopup="dialog"
       >
         {registrationClosed ? t('evRegistrationClosed') : isRegistered ? t('evViewRegistration') : t('evViewDetailsRegister')}
-        <ArrowForwardIcon fontSize="small" />
       </button>
     </article>
   );
@@ -1259,7 +1255,6 @@ function WorkshopDetailsPanel({
                 : registrationClosed
                   ? t('evRegistrationClosed')
                   : t('evRegister')}
-          <ArrowForwardIcon fontSize="small" />
         </button>
       </div>
     </aside>
@@ -1554,7 +1549,6 @@ function RegisteredSessionCard({ session, onCancelRegistration }) {
           onClick={() => onCancelRegistration(session)}
           disabled={session.isRegistering}
         >
-          <CalendarMonthIcon fontSize="small" />
           {session.isRegistering ? t('evPleaseWait') : t('evCancelRegistration')}
         </button>
       </div>
