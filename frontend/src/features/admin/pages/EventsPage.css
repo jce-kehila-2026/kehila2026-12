@@ -31,7 +31,7 @@
 .admin-events-page-title-slot {
   position: fixed;
   top: 1.75rem;
-  left: calc(var(--admin-sidebar-width) + 4rem);
+  inset-inline-start: calc(var(--admin-sidebar-width) + 4rem);
   z-index: 1100;
   min-height: 2.375rem;
   display: flex;
@@ -130,7 +130,7 @@
   white-space: nowrap;
   color: #fff;
   cursor: pointer;
-  margin-left: auto;
+  margin-inline-start: auto;
 }
 
 .admin-events-primary-btn__label {
@@ -2418,7 +2418,7 @@
   }
 
   .admin-events-page-title-slot {
-    left: calc(var(--admin-sidebar-width) + 2rem);
+    inset-inline-start: calc(var(--admin-sidebar-width) + 2rem);
   }
 
   .admin-events-table-footer {
@@ -2445,7 +2445,7 @@
 
   .admin-events-primary-btn {
     width: 100%;
-    margin-left: 0;
+    margin-inline-start: 0;
   }
 
   .admin-events-tabs-row {

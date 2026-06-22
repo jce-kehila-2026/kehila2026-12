@@ -27,7 +27,7 @@
 .appointments-admin-top-title {
   position: fixed;
   top: 1.75rem;
-  left: calc(var(--admin-sidebar-width) + 4rem);
+  inset-inline-start: calc(var(--admin-sidebar-width) + 4rem);
   z-index: 1100;
   margin: 0;
   color: #171239;

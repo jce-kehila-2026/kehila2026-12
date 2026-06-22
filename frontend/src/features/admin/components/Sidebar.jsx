@@ -89,7 +89,8 @@ const NAV_ITEMS = [
 export default function Sidebar({ drawerWidth = 260, collapsed = false, onToggleSidebar }) {
   const location = useLocation();
   const { currentUser, logout } = useAdmin();
-  const { t } = useAdminLocale();
+  const { t, direction } = useAdminLocale();
+  const isRtl = direction === 'rtl';
   const adminNameSource = currentUser?.displayName || currentUser?.email?.split('@')[0] || 'Tala Jabaren';
   const adminName = /tala/i.test(adminNameSource) ? 'Tala Jabaren' : adminNameSource;
   const initials = adminName
@@ -101,7 +102,7 @@ export default function Sidebar({ drawerWidth = 260, collapsed = false, onToggle
 
   return (
     <Drawer
-      anchor="left"
+      anchor={isRtl ? 'right' : 'left'}
       className={`admin-sidebar ${collapsed ? 'is-collapsed' : 'is-expanded'}`}
       PaperProps={{
         className: `admin-sidebar-paper ${collapsed ? 'is-collapsed' : 'is-expanded'}`,
@@ -115,8 +116,10 @@ export default function Sidebar({ drawerWidth = 260, collapsed = false, onToggle
         '& .MuiDrawer-paper': {
           width: { xs: '5.25rem', md: drawerWidth },
           top: { xs: 0, md: 16 },
-          left: { xs: 0, md: 12 },
-          right: 'auto !important',
+          // The Paper's internal content stays LTR (icon/label order unchanged —
+          // no visual redesign); only which physical edge it's pinned to flips.
+          left: isRtl ? 'auto !important' : { xs: 0, md: 12 },
+          right: isRtl ? { xs: 0, md: 12 } : 'auto !important',
           bottom: { xs: 0, md: 16 },
           height: { xs: '100vh', md: 'calc(100vh - 32px)' },
           direction: 'ltr',
