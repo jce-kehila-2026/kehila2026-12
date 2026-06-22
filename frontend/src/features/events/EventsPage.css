@@ -663,10 +663,10 @@
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
-  border: 1px solid rgba(91, 30, 140, 0.2);
+  border: 1px solid rgba(236, 72, 153, 0.38);
   border-radius: 1.125rem;
   background: rgba(255, 255, 255, 0.97);
-  color: #5b1e8c;
+  color: #ec4899;
   cursor: pointer;
   font: inherit;
   font-size: 0.85rem;
