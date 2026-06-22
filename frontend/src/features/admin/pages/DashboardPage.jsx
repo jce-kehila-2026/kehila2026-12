@@ -18,6 +18,13 @@ import { getAllAppointments } from '../services/appointmentService';
 import { getBookingsAndAppointmentsInsights, getRegistrationsPerWeek } from '../services/dashboardInsightsService';
 import { getReportedPosts } from '../services/communityModerationService';
 import { listJoinRequests, JOIN_REQUEST_STATUS } from '../services/joinRequestAdminService';
+import {
+  getTherapistMonthlyTreatments,
+  getActivityRegistrationReport,
+  buildTherapistChartRows,
+  buildActivityChartRows,
+} from '../services/reportsService';
+import ReportBarList from '../components/ReportBarList';
 import './DashboardPage.css';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -261,6 +268,12 @@ export default function DashboardPage() {
   const [registrationsPerWeek, setRegistrationsPerWeek] = useState([]);
   const [overdueJoinRequests, setOverdueJoinRequests] = useState([]);
 
+  // Report summary cards — same reportsService data/aggregation as the
+  // Reports page, just the top 5 of each (all-time, no month filter here).
+  const [therapistChartRows, setTherapistChartRows] = useState([]);
+  const [activityChartRows, setActivityChartRows] = useState([]);
+  const [reportsSummaryLoading, setReportsSummaryLoading] = useState(true);
+
   useEffect(() => {
     let ignore = false;
 
@@ -434,6 +447,35 @@ export default function DashboardPage() {
     };
   }, []);
 
+  useEffect(() => {
+    let ignore = false;
+
+    async function loadReportSummaries() {
+      try {
+        const [therapistRows, activityRows] = await Promise.all([
+          getTherapistMonthlyTreatments(),
+          getActivityRegistrationReport(),
+        ]);
+        if (ignore) return;
+        setTherapistChartRows(buildTherapistChartRows(therapistRows));
+        setActivityChartRows(buildActivityChartRows(activityRows, t('evUntitledEvent')));
+      } catch (error) {
+        console.error('Failed to load report summaries:', error);
+        if (!ignore) {
+          setTherapistChartRows([]);
+          setActivityChartRows([]);
+        }
+      } finally {
+        if (!ignore) setReportsSummaryLoading(false);
+      }
+    }
+
+    loadReportSummaries();
+    return () => {
+      ignore = true;
+    };
+  }, [t]);
+
   const maxWeekCount = Math.max(1, ...registrationsPerWeek.map((week) => week.count));
 
   const adminName =
@@ -581,6 +623,35 @@ export default function DashboardPage() {
             </div>
           </article>
         )}
+      </section>
+
+      {/* Report summaries — same data/aggregation as services/reportsService.js,
+          top 5 of each. There is no separate Reports page; the detailed,
+          row-level data behind these charts lives on the Bookings page. */}
+      <section className="admin-dashboard-insights-grid">
+        <article className="admin-dashboard-card admin-dashboard-reports-summary">
+          <div className="admin-dashboard-card__header">
+            <h2>{t('rptTherapistChartLabel')}</h2>
+            <a href="/admin/appointments">{t('dashViewBookingDetails')}</a>
+          </div>
+          {reportsSummaryLoading ? (
+            <p className="admin-dashboard-empty">{t('dashReportsLoading')}</p>
+          ) : (
+            <ReportBarList rows={therapistChartRows} emptyLabel={t('rptTherapistEmpty')} maxRows={5} />
+          )}
+        </article>
+
+        <article className="admin-dashboard-card admin-dashboard-reports-summary">
+          <div className="admin-dashboard-card__header">
+            <h2>{t('rptActivityChartLabel')}</h2>
+            <a href="/admin/appointments">{t('dashViewBookingDetails')}</a>
+          </div>
+          {reportsSummaryLoading ? (
+            <p className="admin-dashboard-empty">{t('dashReportsLoading')}</p>
+          ) : (
+            <ReportBarList rows={activityChartRows} emptyLabel={t('rptActivityEmpty')} maxRows={5} />
+          )}
+        </article>
       </section>
 
       <article className="admin-dashboard-card admin-dashboard-growth">
