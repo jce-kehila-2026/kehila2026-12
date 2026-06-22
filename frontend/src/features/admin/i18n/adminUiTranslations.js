@@ -87,6 +87,40 @@ export const adminUiTranslations = {
     colTarget: 'Target',
     colDetails: 'Details',
 
+    // ── Dashboard: today/this-week snapshot ─────────────────────────────────
+    dashSnapshotAria: 'Today and this week snapshot',
+    dashBookingsToday: 'Bookings Today',
+    dashBookingsTodaySub: 'Sessions scheduled today',
+    dashPendingJoinRequests: 'Pending Join Requests',
+    dashPendingJoinRequestsSub: 'Awaiting admin review',
+    dashReportedPosts: 'Reported Posts',
+    dashReportedPostsSub: 'Awaiting moderation',
+    dashUpcomingAppts48h: 'Upcoming Appointments',
+    dashUpcomingAppts48hSub: 'Next 48 hours',
+
+    // ── Dashboard: bookings & appointments funnel ───────────────────────────
+    dashFunnelTitle: 'Bookings & Appointments Funnel',
+    dashFunnelWorkshops: 'Workshops',
+    dashFunnelAppointments: 'Appointments',
+    dashFunnelCancellationRate: 'Cancellation rate',
+    dashFunnelEmpty: 'No bookings or appointments yet.',
+
+    // ── Dashboard: community moderation queue ───────────────────────────────
+    dashModerationTitle: 'Community Moderation Queue',
+    dashModerationViewAll: 'Open moderation',
+    dashModerationReportsCount: '{n} reports',
+    dashModerationReportsCountOne: '{n} report',
+    dashModerationAnonymous: 'Anonymous',
+
+    // ── Dashboard: membership growth & join requests ────────────────────────
+    dashGrowthTitle: 'Membership Growth & Join Requests',
+    dashGrowthChartLabel: 'Registrations per week',
+    dashGrowthEmpty: 'No new registrations in this period.',
+    dashOverdueRequestsTitle: 'Pending applications (3+ days)',
+    dashOverdueRequestsEmpty: 'No overdue join requests.',
+    dashDaysPending: '{n}d pending',
+    dashViewAllRequests: 'Review applications',
+
     // ── Audit log: chrome ─────────────────────────────────────────────────
     auditTitle: 'Admin Changes',
     auditSubtitle: 'Track changes made by admins across the platform.',
@@ -1040,6 +1074,40 @@ export const adminUiTranslations = {
     colAction: 'פעולה',
     colTarget: 'יעד',
     colDetails: 'פרטים',
+
+    // ── Dashboard: today/this-week snapshot ─────────────────────────────────
+    dashSnapshotAria: 'סיכום היום והשבוע',
+    dashBookingsToday: 'הזמנות היום',
+    dashBookingsTodaySub: 'מפגשים מתוכננים להיום',
+    dashPendingJoinRequests: 'בקשות הצטרפות ממתינות',
+    dashPendingJoinRequestsSub: 'מחכות לבדיקת מנהלת',
+    dashReportedPosts: 'פוסטים שדווחו',
+    dashReportedPostsSub: 'מחכים למודרציה',
+    dashUpcomingAppts48h: 'פגישות קרובות',
+    dashUpcomingAppts48hSub: '48 השעות הקרובות',
+
+    // ── Dashboard: bookings & appointments funnel ───────────────────────────
+    dashFunnelTitle: 'משפך הזמנות ופגישות',
+    dashFunnelWorkshops: 'סדנאות',
+    dashFunnelAppointments: 'פגישות',
+    dashFunnelCancellationRate: 'אחוז ביטולים',
+    dashFunnelEmpty: 'אין עדיין הזמנות או פגישות.',
+
+    // ── Dashboard: community moderation queue ───────────────────────────────
+    dashModerationTitle: 'תור מודרציה קהילתית',
+    dashModerationViewAll: 'פתיחת מודרציה',
+    dashModerationReportsCount: '{n} דיווחים',
+    dashModerationReportsCountOne: 'דיווח {n}',
+    dashModerationAnonymous: 'אנונימי',
+
+    // ── Dashboard: membership growth & join requests ────────────────────────
+    dashGrowthTitle: 'צמיחת חברות ובקשות הצטרפות',
+    dashGrowthChartLabel: 'הרשמות לפי שבוע',
+    dashGrowthEmpty: 'אין הרשמות חדשות בתקופה זו.',
+    dashOverdueRequestsTitle: 'בקשות ממתינות (3+ ימים)',
+    dashOverdueRequestsEmpty: 'אין בקשות הצטרפות שעברו את הזמן.',
+    dashDaysPending: 'ממתינה {n} ימים',
+    dashViewAllRequests: 'בדיקת בקשות',
 
     // ── Audit log: chrome ─────────────────────────────────────────────────
     auditTitle: 'שינויי מנהלים',

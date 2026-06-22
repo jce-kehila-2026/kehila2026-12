@@ -5,6 +5,8 @@ import {
   CalendarCheck,
   Clock3,
   UsersRound,
+  UserPlus,
+  ShieldAlert,
 } from 'lucide-react';
 import { db } from '../../../firebase';
 import { useAdmin } from '../context/AdminContext';
@@ -13,7 +15,18 @@ import { getAdminSummary } from '../services/statsService';
 
 import { getAllEvents } from '../services/eventService';
 import { getAllAppointments } from '../services/appointmentService';
+import { getBookingsAndAppointmentsInsights, getRegistrationsPerWeek } from '../services/dashboardInsightsService';
+import { getReportedPosts } from '../services/communityModerationService';
+import { listJoinRequests, JOIN_REQUEST_STATUS } from '../services/joinRequestAdminService';
 import './DashboardPage.css';
+
+const DAY_MS = 24 * 60 * 60 * 1000;
+const EMPTY_FUNNEL = {
+  workshop: { confirmed: 0, pending: 0, cancelled: 0 },
+  appointment: { confirmed: 0, pending: 0, cancelled: 0 },
+  cancellationRate: null,
+  totalCount: 0,
+};
 
 const FALLBACK_ACTIVITY = [
   {
@@ -138,9 +151,38 @@ function getEventType(event) {
   return String(event.eventType || event.type || event.category || '').toLowerCase();
 }
 
-function MetricCard({ accent, icon, label, value, subtext }) {
+// Most recent report timestamp on a community post, falling back to the
+// post's own timestamps when `reports` entries are missing one.
+function mostRecentReportDate(post) {
+  const reportDates = Array.isArray(post.reports)
+    ? post.reports.map((report) => toDate(report.createdAt)).filter(Boolean)
+    : [];
+  if (reportDates.length) {
+    return new Date(Math.max(...reportDates.map((date) => date.getTime())));
+  }
+  return toDate(post.updatedAt) || toDate(post.createdAt);
+}
+
+function formatRelativeAge(date) {
+  if (!date) return '';
+  const minutes = Math.max(0, Math.round((Date.now() - date.getTime()) / 60000));
+  if (minutes < 60) return `${minutes}m`;
+  const hours = Math.round(minutes / 60);
+  if (hours < 24) return `${hours}h`;
+  return `${Math.round(hours / 24)}d`;
+}
+
+function daysSince(value) {
+  const date = toDate(value);
+  if (!date) return 0;
+  return Math.max(0, Math.floor((Date.now() - date.getTime()) / DAY_MS));
+}
+
+function MetricCard({ accent, icon, label, value, subtext, alert = false }) {
   return (
-    <article className={`admin-dashboard-metric admin-dashboard-metric--${accent}`}>
+    <article
+      className={`admin-dashboard-metric admin-dashboard-metric--${accent}${alert ? ' admin-dashboard-metric--alert' : ''}`}
+    >
       <div className="admin-dashboard-metric__icon">{icon}</div>
       <div>
         <span>{label}</span>
@@ -151,6 +193,52 @@ function MetricCard({ accent, icon, label, value, subtext }) {
   );
 }
 
+// One row of the bookings/appointments funnel: a proportional stacked bar
+// (confirmed/pending/cancelled) plus a numeric legend underneath.
+function FunnelRow({ label, stats, t }) {
+  const total = stats.confirmed + stats.pending + stats.cancelled;
+  return (
+    <div className="admin-dashboard-funnel__row">
+      <div className="admin-dashboard-funnel__row-head">
+        <span>{label}</span>
+        <strong>{total}</strong>
+      </div>
+      <div className="admin-dashboard-funnel__bar">
+        {total > 0 && (
+          <>
+            <span
+              className="admin-dashboard-funnel__segment admin-dashboard-funnel__segment--confirmed"
+              style={{ width: `${(stats.confirmed / total) * 100}%` }}
+            />
+            <span
+              className="admin-dashboard-funnel__segment admin-dashboard-funnel__segment--pending"
+              style={{ width: `${(stats.pending / total) * 100}%` }}
+            />
+            <span
+              className="admin-dashboard-funnel__segment admin-dashboard-funnel__segment--cancelled"
+              style={{ width: `${(stats.cancelled / total) * 100}%` }}
+            />
+          </>
+        )}
+      </div>
+      <div className="admin-dashboard-funnel__legend">
+        <span>
+          <i className="admin-dashboard-funnel__dot admin-dashboard-funnel__dot--confirmed" />
+          {t('statusConfirmed')} {stats.confirmed}
+        </span>
+        <span>
+          <i className="admin-dashboard-funnel__dot admin-dashboard-funnel__dot--pending" />
+          {t('statusPending')} {stats.pending}
+        </span>
+        <span>
+          <i className="admin-dashboard-funnel__dot admin-dashboard-funnel__dot--cancelled" />
+          {t('statusCancelled')} {stats.cancelled}
+        </span>
+      </div>
+    </div>
+  );
+}
+
 export default function DashboardPage() {
   const { currentUser } = useAdmin();
   const { t } = useAdminLocale();
@@ -158,6 +246,20 @@ export default function DashboardPage() {
   const [bookings, setBookings] = useState([]);
   const [activity, setActivity] = useState([]);
   const [adminProfileName, setAdminProfileName] = useState('');
+
+  // Today/this-week snapshot + funnel + moderation queue + growth data.
+  // Loaded independently of the section above so a failure here never
+  // breaks the existing metrics/bookings/activity sections.
+  const [snapshot, setSnapshot] = useState({
+    bookingsToday: 0,
+    pendingJoinRequests: 0,
+    reportedPosts: 0,
+    upcomingAppointments48h: 0,
+  });
+  const [funnel, setFunnel] = useState(EMPTY_FUNNEL);
+  const [reportedPosts, setReportedPosts] = useState([]);
+  const [registrationsPerWeek, setRegistrationsPerWeek] = useState([]);
+  const [overdueJoinRequests, setOverdueJoinRequests] = useState([]);
 
   useEffect(() => {
     let ignore = false;
@@ -279,6 +381,61 @@ export default function DashboardPage() {
     };
   }, [currentUser?.email, currentUser?.uid]);
 
+  useEffect(() => {
+    let ignore = false;
+
+    async function loadInsights() {
+      try {
+        const [insights, weeklyRegistrations, reportedPostsList, joinRequests] = await Promise.all([
+          getBookingsAndAppointmentsInsights(),
+          getRegistrationsPerWeek(6),
+          getReportedPosts(),
+          listJoinRequests(),
+        ]);
+
+        if (ignore) return;
+
+        const pendingJoinRequests = joinRequests.filter((request) => request.status === JOIN_REQUEST_STATUS.NEW);
+        const overdue = pendingJoinRequests
+          .filter((request) => daysSince(request.createdAt) >= 3)
+          .sort((a, b) => daysSince(b.createdAt) - daysSince(a.createdAt));
+
+        setSnapshot({
+          bookingsToday: insights.bookingsToday,
+          pendingJoinRequests: pendingJoinRequests.length,
+          reportedPosts: reportedPostsList.length,
+          upcomingAppointments48h: insights.upcomingAppointments48h,
+        });
+        setFunnel({
+          workshop: insights.funnel.workshop,
+          appointment: insights.funnel.appointment,
+          cancellationRate: insights.cancellationRate,
+          totalCount: insights.totalCount,
+        });
+        setReportedPosts(reportedPostsList);
+        setRegistrationsPerWeek(weeklyRegistrations);
+        setOverdueJoinRequests(overdue);
+      } catch (error) {
+        console.error('Failed to load dashboard insights:', error);
+        // Safe empty states — never show fabricated numbers on failure.
+        if (!ignore) {
+          setSnapshot({ bookingsToday: 0, pendingJoinRequests: 0, reportedPosts: 0, upcomingAppointments48h: 0 });
+          setFunnel(EMPTY_FUNNEL);
+          setReportedPosts([]);
+          setRegistrationsPerWeek([]);
+          setOverdueJoinRequests([]);
+        }
+      }
+    }
+
+    loadInsights();
+    return () => {
+      ignore = true;
+    };
+  }, []);
+
+  const maxWeekCount = Math.max(1, ...registrationsPerWeek.map((week) => week.count));
+
   const adminName =
     adminProfileName ||
     cleanNameCandidate(currentUser?.displayName) ||
@@ -314,6 +471,41 @@ export default function DashboardPage() {
         </div>
       </header>
 
+      {/* Today / This Week Snapshot — always renders all 4 cards; a 0 is a
+          safe empty state, not a missing feature. */}
+      <section className="admin-dashboard-snapshot" aria-label={t('dashSnapshotAria')}>
+        <MetricCard
+          accent="purple"
+          icon={<CalendarCheck size={22} />}
+          label={t('dashBookingsToday')}
+          value={snapshot.bookingsToday}
+          subtext={t('dashBookingsTodaySub')}
+        />
+        <MetricCard
+          accent="pink"
+          alert={snapshot.pendingJoinRequests > 0}
+          icon={<UserPlus size={22} />}
+          label={t('dashPendingJoinRequests')}
+          value={snapshot.pendingJoinRequests}
+          subtext={t('dashPendingJoinRequestsSub')}
+        />
+        <MetricCard
+          accent="pink"
+          alert={snapshot.reportedPosts > 0}
+          icon={<ShieldAlert size={22} />}
+          label={t('dashReportedPosts')}
+          value={snapshot.reportedPosts}
+          subtext={t('dashReportedPostsSub')}
+        />
+        <MetricCard
+          accent="peach"
+          icon={<Clock3 size={22} />}
+          label={t('dashUpcomingAppts48h')}
+          value={snapshot.upcomingAppointments48h}
+          subtext={t('dashUpcomingAppts48hSub')}
+        />
+      </section>
+
       <section className="admin-dashboard-metrics" aria-label={t('dashMetricsAria')}>
         <MetricCard
           accent="purple"
@@ -337,6 +529,104 @@ export default function DashboardPage() {
           subtext={t('dashBookingsSubtext')}
         />
       </section>
+
+      <section className="admin-dashboard-insights-grid">
+        <article className="admin-dashboard-card admin-dashboard-funnel">
+          <div className="admin-dashboard-card__header">
+            <h2>{t('dashFunnelTitle')}</h2>
+          </div>
+          {funnel.totalCount === 0 ? (
+            <p className="admin-dashboard-empty">{t('dashFunnelEmpty')}</p>
+          ) : (
+            <div className="admin-dashboard-funnel__body">
+              <FunnelRow label={t('dashFunnelWorkshops')} stats={funnel.workshop} t={t} />
+              <FunnelRow label={t('dashFunnelAppointments')} stats={funnel.appointment} t={t} />
+              {funnel.cancellationRate !== null && (
+                <div className="admin-dashboard-funnel__rate">
+                  <span>{t('dashFunnelCancellationRate')}</span>
+                  <strong>{Math.round(funnel.cancellationRate * 100)}%</strong>
+                </div>
+              )}
+            </div>
+          )}
+        </article>
+
+        {/* Community Moderation Queue — per spec, only rendered when there are
+            reported posts to review; otherwise the section doesn't appear. */}
+        {reportedPosts.length > 0 && (
+          <article className="admin-dashboard-card admin-dashboard-moderation">
+            <div className="admin-dashboard-card__header">
+              <h2>{t('dashModerationTitle')}</h2>
+              <a href="/admin/community">{t('dashModerationViewAll')}</a>
+            </div>
+            <div className="admin-dashboard-moderation__list">
+              {reportedPosts.slice(0, 5).map((post) => {
+                const reportsCount = post.reportsCount ?? post.reportedBy?.length ?? 0;
+                const reportsLabel = (reportsCount === 1 ? t('dashModerationReportsCountOne') : t('dashModerationReportsCount')).replace(
+                  '{n}',
+                  reportsCount
+                );
+                return (
+                  <div className="admin-dashboard-moderation__row" key={post.id}>
+                    <p className="admin-dashboard-moderation__content">
+                      <strong>{post.isAnonymous ? t('dashModerationAnonymous') : post.authorDisplayName || t('dashModerationAnonymous')}</strong>
+                      {' — '}
+                      {String(post.content || '').slice(0, 80)}
+                    </p>
+                    <span className="admin-dashboard-moderation__reports">{reportsLabel}</span>
+                    <span className="admin-dashboard-moderation__age">{formatRelativeAge(mostRecentReportDate(post))}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </article>
+        )}
+      </section>
+
+      <article className="admin-dashboard-card admin-dashboard-growth">
+        <div className="admin-dashboard-card__header">
+          <h2>{t('dashGrowthTitle')}</h2>
+          <a href="/admin/users">{t('dashViewAllRequests')}</a>
+        </div>
+        <div className="admin-dashboard-growth__body">
+          <div className="admin-dashboard-growth__chart">
+            <span className="admin-dashboard-growth__chart-label">{t('dashGrowthChartLabel')}</span>
+            {registrationsPerWeek.every((week) => week.count === 0) ? (
+              <p className="admin-dashboard-empty">{t('dashGrowthEmpty')}</p>
+            ) : (
+              <div className="admin-dashboard-growth__bars">
+                {registrationsPerWeek.map((week) => (
+                  <div className="admin-dashboard-growth__bar-col" key={week.label}>
+                    <div
+                      className="admin-dashboard-growth__bar"
+                      style={{ height: `${(week.count / maxWeekCount) * 100}%` }}
+                    />
+                    <span>{week.count}</span>
+                    <small>{week.label}</small>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+          <div className="admin-dashboard-growth__overdue">
+            <h3>{t('dashOverdueRequestsTitle')}</h3>
+            {overdueJoinRequests.length === 0 ? (
+              <p className="admin-dashboard-empty">{t('dashOverdueRequestsEmpty')}</p>
+            ) : (
+              <div className="admin-dashboard-overdue-list">
+                {overdueJoinRequests.slice(0, 5).map((request) => (
+                  <div className="admin-dashboard-overdue-row" key={request.id}>
+                    <span>{request.fullName || request.email || t('umUnnamedUser')}</span>
+                    <span className="admin-dashboard-overdue-days">
+                      {t('dashDaysPending').replace('{n}', daysSince(request.createdAt))}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </article>
 
       <section className="admin-dashboard-main-grid">
         <article className="admin-dashboard-card admin-dashboard-bookings">
