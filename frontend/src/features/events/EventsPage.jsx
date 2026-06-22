@@ -874,15 +874,19 @@ function AppointmentBookingDrawer({
   const { t, lang } = useParticipantLocale();
   const intlLocale = INTL_LOCALE_BY_LANG[lang] || 'en';
   const providers = useMemo(() => getAppointmentProviders(event, t), [event, t]);
+  const registeredAppointmentOption = useMemo(
+    () => event.sessionOptions.find((option) => registeredSessionIds.has(option.id)) || null,
+    [event.sessionOptions, registeredSessionIds],
+  );
   const [selectedProviderId, setSelectedProviderId] = useState('');
   const [dateIndex, setDateIndex] = useState(0);
   const [selectedOptionId, setSelectedOptionId] = useState('');
 
   useEffect(() => {
-    setSelectedProviderId(providers[0]?.id || '');
+    setSelectedProviderId(registeredAppointmentOption?.providerId || providers[0]?.id || '');
     setDateIndex(0);
-    setSelectedOptionId('');
-  }, [event?.id, providers]);
+    setSelectedOptionId(registeredAppointmentOption?.id || '');
+  }, [event?.id, providers, registeredAppointmentOption?.id, registeredAppointmentOption?.providerId]);
 
   const selectedProvider = providers.find((provider) => provider.id === selectedProviderId) || providers[0] || null;
   const dateOptions = useMemo(
@@ -896,9 +900,11 @@ function AppointmentBookingDrawer({
   );
 
   useEffect(() => {
+    if (registeredAppointmentOption?.providerId === selectedProviderId) return;
+
     setDateIndex(0);
     setSelectedOptionId('');
-  }, [selectedProviderId]);
+  }, [registeredAppointmentOption?.providerId, selectedProviderId]);
 
   useEffect(() => {
     if (!dateOptions.length) {
@@ -906,16 +912,21 @@ function AppointmentBookingDrawer({
       return;
     }
 
-    setDateIndex((current) => Math.min(current, dateOptions.length - 1));
-  }, [dateOptions.length]);
+    const registeredDateIndex = registeredAppointmentOption?.dateKey
+      ? dateOptions.findIndex((dateOption) => dateOption.dateKey === registeredAppointmentOption.dateKey)
+      : -1;
+
+    setDateIndex((current) => (registeredDateIndex >= 0 ? registeredDateIndex : Math.min(current, dateOptions.length - 1)));
+  }, [dateOptions, registeredAppointmentOption?.dateKey]);
 
   useEffect(() => {
     const currentOption = timeOptions.find((timeOption) => timeOption.option?.id === selectedOptionId);
     if (currentOption && !currentOption.unavailable && !currentOption.isFull) return;
 
+    const firstRegisteredOption = timeOptions.find((timeOption) => timeOption.option && registeredSessionIds.has(timeOption.option.id));
     const firstOpenOption = timeOptions.find((timeOption) => timeOption.option && !timeOption.unavailable && !timeOption.isFull);
-    setSelectedOptionId(firstOpenOption?.option?.id || '');
-  }, [selectedOptionId, timeOptions]);
+    setSelectedOptionId(firstRegisteredOption?.option?.id || firstOpenOption?.option?.id || '');
+  }, [registeredSessionIds, selectedOptionId, timeOptions]);
 
   if (!event) return null;
 
@@ -946,7 +957,7 @@ function AppointmentBookingDrawer({
         aria-label="Close appointment booking"
       />
       <aside
-        className="appointment-drawer"
+        className={`appointment-drawer${isRegistered ? ' is-registered' : ''}`}
         role="dialog"
         aria-modal="true"
         aria-labelledby="appointment-drawer-title"
@@ -958,10 +969,50 @@ function AppointmentBookingDrawer({
 
         <header className="appointment-drawer__header">
           <h2 id="appointment-drawer-title">{serviceLabel}</h2>
-          <p>{t('evBookASession')}</p>
+          <p>{isRegistered ? t('evYouAreRegistered') : t('evBookASession')}</p>
         </header>
 
         <div className="appointment-drawer__body">
+          {isRegistered && selectedOption ? (
+            <div className="appointment-drawer__registered-details">
+              <div className="workshop-details-panel__detail-item">
+                <EventAvailableIcon fontSize="small" />
+                <div className="workshop-details-panel__detail-copy">
+                  <strong>{t('evDate')}</strong>
+                  <span>{selectedOption.date || selectedOption.selectedDate || selectedDate?.label || t('evDateTBD')}</span>
+                </div>
+              </div>
+              <div className="workshop-details-panel__detail-item">
+                <AccessTimeIcon fontSize="small" />
+                <div className="workshop-details-panel__detail-copy">
+                  <strong>{t('evTime')}</strong>
+                  <span>{selectedOption.time || selectedOption.selectedTimeSlot || selectedTime?.label || t('evTimeTBD')}</span>
+                </div>
+              </div>
+              <div className="workshop-details-panel__detail-item">
+                <PersonIcon fontSize="small" />
+                <div className="workshop-details-panel__detail-copy">
+                  <strong>{t('evTherapist')}</strong>
+                  <span>{selectedOption.providerName || selectedProvider?.name || t('evSheNaTeam')}</span>
+                </div>
+              </div>
+              <div className="workshop-details-panel__detail-item">
+                <HomeRoundedIcon fontSize="small" />
+                <div className="workshop-details-panel__detail-copy">
+                  <strong>{t('evLocation')}</strong>
+                  <span>{selectedOption.room || selectedOption.location || event.location || 'She-Na Center'}</span>
+                </div>
+              </div>
+              <div className="workshop-details-panel__detail-item">
+                <CalendarMonthIcon fontSize="small" />
+                <div className="workshop-details-panel__detail-copy">
+                  <strong>{tr(t, 'evCancellation', 'Cancellation')}</strong>
+                  <span>{canCancelBooking ? t('evRegistered') : t('evCancellationClosed')}</span>
+                </div>
+              </div>
+            </div>
+          ) : (
+          <>
           <section className="appointment-booking-step">
             <h3><span>1</span> {t('evStep1Instructor')}</h3>
             <div className="appointment-instructor-grid">
@@ -1048,6 +1099,8 @@ function AppointmentBookingDrawer({
               <p className="appointment-drawer__empty">{t('evNoTimesInstructor')}</p>
             )}
           </section>
+          </>
+          )}
         </div>
 
         <div className="appointment-drawer__actions">
@@ -1196,14 +1249,6 @@ function WorkshopDetailsPanel({
       </header>
 
       <div className="workshop-details-panel__body">
-        <section className="workshop-details-panel__section workshop-details-panel__detail-item workshop-details-panel__detail-item--description">
-          <VolunteerActivismIcon fontSize="small" />
-          <div className="workshop-details-panel__detail-copy">
-            <h3>{t('evWorkshopDetails')}</h3>
-            <p className="workshop-details-panel__description">{event.description}</p>
-          </div>
-        </section>
-
         <div className="workshop-details-panel__details">
           <div className="workshop-details-panel__detail-item">
             <EventAvailableIcon fontSize="small" />
@@ -1238,13 +1283,6 @@ function WorkshopDetailsPanel({
             <div className="workshop-details-panel__detail-copy">
               <strong>{t('evSpots')}</strong>
               <span>{getWorkshopAvailabilityLabel(session, t)}</span>
-            </div>
-          </div>
-          <div className="workshop-details-panel__detail-item">
-            <CalendarMonthIcon fontSize="small" />
-            <div className="workshop-details-panel__detail-copy">
-              <strong>{t('evStatus')}</strong>
-              <span>{isRegistered ? t('evRegistered') : registrationClosed ? t('evClosed') : isFull ? t('evFull') : t('evOpen')}</span>
             </div>
           </div>
         </div>
