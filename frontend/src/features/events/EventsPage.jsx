@@ -1049,10 +1049,6 @@ function AppointmentBookingDrawer({
             ) : (
               <p className="appointment-drawer__empty">{t('evNoTimesInstructor')}</p>
             )}
-            <p className="appointment-drawer__timezone">
-              <AccessTimeIcon fontSize="small" />
-              {t('evLocalTime')}
-            </p>
           </section>
         </div>
 
@@ -1069,9 +1065,6 @@ function AppointmentBookingDrawer({
                 ? t('evCancelBooking')
                 : t('evConfirmBooking')}
             <ArrowForwardIcon fontSize="small" />
-          </button>
-          <button className="appointment-drawer__cancel" type="button" onClick={onClose}>
-            {t('evCancel')}
           </button>
         </div>
       </aside>
@@ -1267,9 +1260,6 @@ function WorkshopDetailsPanel({
                   ? t('evRegistrationClosed')
                   : t('evRegister')}
           <ArrowForwardIcon fontSize="small" />
-        </button>
-        <button className="workshop-details-panel__secondary" type="button" onClick={onClose}>
-          {t('evClose')}
         </button>
       </div>
     </aside>
@@ -1930,10 +1920,10 @@ export default function EventsPage({ embedInDashboard = false, locale = 'he' }) 
   const categoryCards = useMemo(() => {
     return [
       {
-        type: VIEW_REGISTERED,
-        title: t('evCatRegisteredEvents'),
-        color: 'peach',
-        icon: PersonIcon,
+        type: VIEW_WORKSHOPS,
+        title: t('evCatWorkshops'),
+        color: 'lavender',
+        icon: VolunteerActivismIcon,
       },
       {
         type: VIEW_APPOINTMENTS,
@@ -1942,10 +1932,10 @@ export default function EventsPage({ embedInDashboard = false, locale = 'he' }) 
         icon: CalendarMonthIcon,
       },
       {
-        type: VIEW_WORKSHOPS,
-        title: t('evCatWorkshops'),
-        color: 'lavender',
-        icon: VolunteerActivismIcon,
+        type: VIEW_REGISTERED,
+        title: t('evCatRegisteredEvents'),
+        color: 'peach',
+        icon: PersonIcon,
       },
     ];
   }, [t]);

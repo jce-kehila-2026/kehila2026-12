@@ -1,7 +1,6 @@
 ﻿import { useEffect, useId, useMemo, useRef, useState, useCallback } from 'react';
 import { localizeField } from '../../../i18n/localizeField';
 import {
-  ArrowRight,
   CalendarDays,
   CalendarHeart,
   CalendarSync,
@@ -421,13 +420,14 @@ function FeatureDetail({ icon: Icon, value }) {
 function PremiumCta({ variant = 'pink', children, onClick }) {
   const className =
     variant === 'soft'
-      ? 'pd-btn pd-btn--soft pd-community__cta'
-      : `pd-btn pd-btn--${variant} pd-feature__cta`;
+      ? 'pd-btn pd-btn--view-cta pd-community__cta'
+      : variant === 'pink'
+        ? 'pd-btn pd-btn--view-cta pd-feature__cta'
+        : `pd-btn pd-btn--${variant} pd-feature__cta`;
 
   return (
     <button type="button" className={className} onClick={onClick}>
-      <span>{children}</span>
-      <ArrowRight size={16} strokeWidth={2.5} className="pd-btn__arrow" aria-hidden="true" />
+      {children}
     </button>
   );
 }
@@ -934,9 +934,8 @@ function CommunityEmptyCard({ onVisitCommunity, title, text, ctaLabel }) {
         <div className="pd-community-empty">
           <h3 className="pd-community-empty__title">{title}</h3>
           <p className="pd-community-empty__text">{text}</p>
-          <button type="button" className="pd-btn pd-btn--soft pd-community__cta" onClick={onVisitCommunity}>
-            <span>{ctaLabel ?? t('visitCommunity')}</span>
-            <ArrowRight size={16} strokeWidth={2.5} className="pd-btn__arrow" aria-hidden="true" />
+          <button type="button" className="pd-btn pd-btn--view-cta pd-community__cta" onClick={onVisitCommunity}>
+            {ctaLabel ?? t('visitCommunity')}
           </button>
         </div>
       </div>
@@ -1006,9 +1005,8 @@ function CommunityCard({ post, relativeTime, onViewPost }) {
             </span>
           </div>
 
-          <button type="button" className="pd-btn pd-btn--soft pd-community__cta" onClick={() => onViewPost(post.id)}>
-            <span>{t('viewPost')}</span>
-            <ArrowRight size={16} strokeWidth={2.5} className="pd-btn__arrow" aria-hidden="true" />
+          <button type="button" className="pd-btn pd-btn--view-cta pd-community__cta" onClick={() => onViewPost(post.id)}>
+            {t('viewPost')}
           </button>
         </div>
       </div>

@@ -17,6 +17,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import DeleteIcon from '@mui/icons-material/Delete';
 import EmailIcon from '@mui/icons-material/Email';
 import { useAdminLocale } from '../context/AdminLocaleContext';
+import CitySelect from '../../../shared/components/CitySelect';
 
 const EVENT_CATEGORIES = [
   'Workshop',
@@ -271,10 +272,10 @@ export default function EventDetailPage() {
             onChange={(e) => setForm((f) => ({ ...f, instructor: e.target.value }))}
             placeholder={t('edInstructorPlaceholder')}
           />
-          <TextField
+          <CitySelect
             label={t('edLocation')}
             value={form.location}
-            onChange={(e) => setForm((f) => ({ ...f, location: e.target.value }))}
+            onChange={(city) => setForm((f) => ({ ...f, location: city }))}
             required
           />
           <TextField

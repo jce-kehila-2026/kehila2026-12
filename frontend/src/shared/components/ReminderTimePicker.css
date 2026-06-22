@@ -1,0 +1,609 @@
+.pd-notes-picker {
+  position: relative;
+  min-width: 0;
+}
+
+.pd-notes-picker__trigger {
+  width: 100%;
+  min-height: 38px;
+  padding: 0 10px 0 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  border: 1px solid rgba(236, 22, 140, 0.18);
+  border-radius: 12px;
+  background: linear-gradient(180deg, #ffffff 0%, #fff9fc 100%);
+  color: #24103f;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    background 180ms ease;
+}
+
+.pd-notes-picker__trigger:hover {
+  border-color: rgba(138, 45, 168, 0.28);
+  background: #fff;
+}
+
+.pd-notes-picker__trigger:focus-visible {
+  outline: none;
+  border-color: rgba(236, 22, 140, 0.35);
+  box-shadow: 0 0 0 3px rgba(236, 22, 140, 0.1);
+}
+
+.pd-notes-picker.is-open .pd-notes-picker__trigger {
+  border-color: rgba(236, 22, 140, 0.38);
+  box-shadow: 0 0 0 3px rgba(236, 22, 140, 0.08);
+}
+
+.pd-notes-picker__value {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-align: left;
+  color: #24103f;
+}
+
+.pd-notes-picker__value.is-placeholder {
+  color: rgba(75, 19, 107, 0.48);
+  font-weight: 500;
+}
+
+.pd-notes-picker__icon {
+  flex-shrink: 0;
+  color: #ec168c;
+}
+
+.pd-notes-time__panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: auto;
+  z-index: 24;
+  width: min(264px, calc(100vw - 48px));
+  padding: 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(236, 22, 140, 0.14);
+  background: linear-gradient(180deg, #ffffff 0%, #fff9fc 100%);
+  box-shadow:
+    0 12px 32px rgba(91, 30, 140, 0.14),
+    0 4px 12px rgba(236, 22, 140, 0.08);
+}
+
+.pd-notes-time__panel--portal,
+.pd-notes-calendar__panel--portal {
+  position: fixed;
+  top: auto;
+  left: auto;
+  right: auto;
+}
+
+.reminder-picker-popover--portal {
+  animation: reminder-picker-popover-in 160ms ease;
+  transform-origin: top left;
+}
+
+@keyframes reminder-picker-popover-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.pd-notes-time__steppers {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 8px;
+  align-items: start;
+  direction: ltr;
+}
+
+.pd-notes-time__stepper,
+.pd-notes-time__period {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.pd-notes-time__column-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-align: center;
+  color: rgba(75, 19, 107, 0.52);
+}
+
+.pd-notes-time__step-btn {
+  width: 34px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(236, 22, 140, 0.16);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.95);
+  color: #c2185b;
+  cursor: pointer;
+  transition:
+    border-color 150ms ease,
+    background 150ms ease,
+    color 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.pd-notes-time__step-btn:hover {
+  border-color: rgba(236, 22, 140, 0.32);
+  background: rgba(255, 240, 248, 0.9);
+}
+
+.pd-notes-time__step-btn:focus-visible {
+  outline: none;
+  border-color: rgba(236, 22, 140, 0.35);
+  box-shadow: 0 0 0 3px rgba(236, 22, 140, 0.1);
+}
+
+.pd-notes-time__step-value {
+  min-width: 44px;
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+  background: rgba(251, 248, 255, 0.95);
+  border: 1px solid rgba(236, 22, 140, 0.12);
+  color: #c2185b;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+input.pd-notes-time__step-value {
+  width: 44px;
+  padding: 0;
+  text-align: center;
+  font: inherit;
+  appearance: none;
+  -moz-appearance: textfield;
+  cursor: text;
+}
+
+input.pd-notes-time__step-value:focus {
+  outline: none;
+  border-color: rgba(236, 22, 140, 0.35);
+  box-shadow: 0 0 0 3px rgba(236, 22, 140, 0.1);
+}
+
+input.pd-notes-time__step-value::-webkit-outer-spin-button,
+input.pd-notes-time__step-value::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.pd-notes-time__period-btns {
+  display: flex;
+  flex-direction: row;
+  gap: 4px;
+  width: 100%;
+}
+
+.pd-notes-time__period-spacer {
+  width: 34px;
+  height: 28px;
+  flex-shrink: 0;
+}
+
+.pd-notes-time__period-btn {
+  flex: 1;
+  min-height: 36px;
+  padding: 0 10px;
+  border: 1px solid rgba(236, 22, 140, 0.16);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.95);
+  color: rgba(36, 16, 63, 0.86);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background 150ms ease,
+    color 150ms ease,
+    border-color 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.pd-notes-time__period-btn:hover {
+  border-color: rgba(236, 22, 140, 0.32);
+  background: rgba(255, 240, 248, 0.9);
+  color: #c2185b;
+}
+
+.pd-notes-time__period-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(236, 22, 140, 0.1);
+}
+
+.pd-notes-time__period-btn.is-selected {
+  border-color: transparent;
+  background: linear-gradient(135deg, #ec168c 0%, #d946a1 50%, #7e22ce 100%);
+  color: #fff;
+  box-shadow: 0 6px 16px rgba(236, 22, 140, 0.24);
+}
+
+.reminder-time-picker__done {
+  width: 100%;
+  margin-top: 12px;
+  height: 40px;
+  min-height: 40px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(236, 22, 140, 0.18);
+  background: rgba(252, 232, 242, 0.95);
+  color: #c2185b;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(219, 79, 159, 0.06);
+  transition:
+    background 180ms ease,
+    box-shadow 180ms ease;
+}
+
+.reminder-time-picker__done:hover {
+  background: #fce8f2;
+  box-shadow: 0 3px 10px rgba(219, 79, 159, 0.1);
+}
+
+.reminder-time-picker__done:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(236, 22, 140, 0.12);
+}
+
+.admin-events-time-picker.pd-notes-picker {
+  width: 100%;
+}
+
+.admin-events-time-picker .pd-notes-picker__trigger {
+  min-height: 3.5rem;
+  padding: 0 1rem;
+  border-radius: 13px;
+  font-size: inherit;
+  font-weight: 700;
+}
+
+.admin-events-time-picker .pd-notes-picker__value {
+  font-weight: 700;
+}
+
+.pd-notes-time__panel--compact {
+  width: min(220px, calc(100vw - 32px));
+  padding: 8px;
+  border-radius: 12px;
+  box-shadow:
+    0 8px 22px rgba(91, 30, 140, 0.12),
+    0 2px 8px rgba(236, 22, 140, 0.06);
+}
+
+.pd-notes-time__panel--compact .pd-notes-time__steppers {
+  gap: 4px;
+}
+
+.pd-notes-time__panel--compact .pd-notes-time__stepper,
+.pd-notes-time__panel--compact .pd-notes-time__period {
+  gap: 3px;
+}
+
+.pd-notes-time__panel--compact .pd-notes-time__column-label {
+  font-size: 9px;
+  letter-spacing: 0.05em;
+}
+
+.pd-notes-time__panel--compact .pd-notes-time__step-btn {
+  width: 26px;
+  height: 22px;
+  border-radius: 8px;
+}
+
+.pd-notes-time__panel--compact .pd-notes-time__step-value {
+  min-width: 36px;
+  min-height: 28px;
+  border-radius: 8px;
+  font-size: 14px;
+}
+
+.pd-notes-time__panel--compact input.pd-notes-time__step-value {
+  width: 36px;
+}
+
+.pd-notes-time__panel--compact .pd-notes-time__period-spacer {
+  width: 26px;
+  height: 22px;
+}
+
+.pd-notes-time__panel--compact .pd-notes-time__period-btns {
+  gap: 3px;
+}
+
+.pd-notes-time__panel--compact .pd-notes-time__period-btn {
+  min-height: 28px;
+  padding: 0 6px;
+  border-radius: 8px;
+  font-size: 11px;
+}
+
+.pd-notes-time__panel--compact .pd-notes-time__period-btn.is-selected {
+  box-shadow: 0 4px 10px rgba(236, 22, 140, 0.2);
+}
+
+.pd-notes-time__panel--compact .reminder-time-picker__done {
+  margin-top: 6px;
+  height: 30px;
+  min-height: 30px;
+  padding: 0 10px;
+  font-size: 12px;
+}
+
+.pd-notes__datetime--modal .pd-notes-time__steppers {
+  width: min(264px, 100%);
+  margin-inline: auto;
+  gap: 12px;
+}
+
+.pd-notes__datetime--modal .pd-notes-time__stepper,
+.pd-notes__datetime--modal .pd-notes-time__period {
+  gap: 6px;
+}
+
+.pd-notes__datetime--modal .pd-notes-time__column-label {
+  font-size: 11px;
+}
+
+.pd-notes__datetime--modal .pd-notes-time__step-btn {
+  width: 40px;
+  height: 30px;
+  border-radius: 10px;
+}
+
+.pd-notes__datetime--modal .pd-notes-time__step-value {
+  min-width: 56px;
+  min-height: 52px;
+  border-radius: 12px;
+  font-size: 18px;
+}
+
+.pd-notes__datetime--modal input.pd-notes-time__step-value {
+  width: 56px;
+}
+
+.pd-notes__datetime--modal .pd-notes-time__period-spacer {
+  width: 40px;
+  height: 30px;
+}
+
+.pd-notes__datetime--modal .pd-notes-time__period-btn {
+  min-height: 52px;
+  padding: 0 8px;
+  border-radius: 10px;
+  font-size: 13px;
+}
+
+.pd-notes__datetime--modal .pd-notes-time .pd-notes-time__panel {
+  margin-inline-start: calc(-100% - 12px);
+}
+
+.pd-notes-schedule-modal__done {
+  width: 100%;
+  margin-top: 12px;
+  height: 40px;
+  min-height: 40px;
+  padding: 0 14px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.pd-notes-calendar__panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  z-index: 24;
+  min-width: 268px;
+  padding: 12px;
+  border-radius: 16px;
+  border: 1px solid rgba(236, 22, 140, 0.14);
+  background: linear-gradient(180deg, #ffffff 0%, #fff9fc 100%);
+  box-shadow:
+    0 12px 32px rgba(91, 30, 140, 0.14),
+    0 4px 12px rgba(236, 22, 140, 0.08);
+}
+
+.pd-notes-calendar__nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.pd-notes-calendar__nav-btn {
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid rgba(236, 22, 140, 0.16);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #c2185b;
+  cursor: pointer;
+  transition:
+    border-color 150ms ease,
+    background 150ms ease,
+    color 150ms ease;
+}
+
+.pd-notes-calendar__nav-btn:hover {
+  border-color: rgba(236, 22, 140, 0.32);
+  background: rgba(255, 240, 248, 0.9);
+}
+
+.pd-notes-calendar__nav-btn:focus-visible {
+  outline: none;
+  border-color: rgba(236, 22, 140, 0.35);
+  box-shadow: 0 0 0 3px rgba(236, 22, 140, 0.1);
+}
+
+.pd-notes-calendar__month {
+  font-size: 14px;
+  font-weight: 700;
+  color: #c2185b;
+  letter-spacing: 0.01em;
+}
+
+.pd-notes-calendar__weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  margin-bottom: 6px;
+}
+
+.pd-notes-calendar__weekdays span {
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(75, 19, 107, 0.52);
+}
+
+.pd-notes-calendar__grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.pd-notes-calendar__day {
+  width: 100%;
+  aspect-ratio: 1;
+  min-height: 32px;
+  border: none;
+  border-radius: 10px;
+  background: transparent;
+  color: rgba(36, 16, 63, 0.86);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background 150ms ease,
+    color 150ms ease,
+    box-shadow 150ms ease;
+}
+
+.pd-notes-calendar__day:hover:not(:disabled) {
+  background: rgba(255, 240, 248, 0.9);
+  color: #c2185b;
+}
+
+.pd-notes-calendar__day:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(236, 22, 140, 0.18);
+}
+
+.pd-notes-calendar__day.is-outside {
+  color: rgba(75, 19, 107, 0.28);
+}
+
+.pd-notes-calendar__day.is-today:not(.is-selected) {
+  box-shadow: inset 0 0 0 1px rgba(236, 22, 140, 0.28);
+  color: #c2185b;
+}
+
+.pd-notes-calendar__day.is-selected {
+  background: linear-gradient(135deg, #ec168c 0%, #d946a1 50%, #7e22ce 100%);
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(236, 22, 140, 0.22);
+}
+
+.pd-notes-calendar__day:disabled {
+  opacity: 0.34;
+  cursor: not-allowed;
+}
+
+.admin-events-date-picker.pd-notes-picker {
+  width: 100%;
+}
+
+.admin-events-date-picker .pd-notes-picker__trigger {
+  min-height: 3.5rem;
+  padding: 0 1rem;
+  border-radius: 13px;
+  font-size: inherit;
+  font-weight: 700;
+}
+
+.admin-events-date-picker .pd-notes-picker__value {
+  font-weight: 700;
+}
+
+.pd-notes-calendar__panel--compact {
+  min-width: 0;
+  padding: 8px;
+  border-radius: 12px;
+  box-shadow:
+    0 8px 22px rgba(91, 30, 140, 0.12),
+    0 2px 8px rgba(236, 22, 140, 0.06);
+}
+
+.pd-notes-calendar__panel--compact .pd-notes-calendar__nav {
+  margin-bottom: 6px;
+}
+
+.pd-notes-calendar__panel--compact .pd-notes-calendar__nav-btn {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+}
+
+.pd-notes-calendar__panel--compact .pd-notes-calendar__month {
+  font-size: 13px;
+}
+
+.pd-notes-calendar__panel--compact .pd-notes-calendar__weekdays {
+  margin-bottom: 4px;
+}
+
+.pd-notes-calendar__panel--compact .pd-notes-calendar__weekdays span {
+  font-size: 10px;
+}
+
+.pd-notes-calendar__panel--compact .pd-notes-calendar__day {
+  min-height: 28px;
+  border-radius: 8px;
+  font-size: 12px;
+}
+
+.pd-notes__datetime--modal .pd-notes-calendar__panel {
+  width: min(268px, 100%);
+  margin-inline: auto;
+}
+
+.pd-notes__datetime--modal .pd-notes-calendar__nav,
+.pd-notes__datetime--modal .pd-notes-calendar__weekdays,
+.pd-notes__datetime--modal .pd-notes-calendar__grid,
+.pd-notes__datetime--modal .pd-notes-picker__value {
+  direction: ltr;
+}

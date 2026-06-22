@@ -19,6 +19,7 @@ import {
   Typography,
 } from "@mui/material";
 import { Timestamp } from "firebase/firestore";
+import CitySelect from "../../../shared/components/CitySelect";
 import { updateParticipantData } from "../services/participantService";
 import useCommunityProfile from "../../participant/community/hooks/useCommunityProfile";
 import { WELLNESS, WELLNESS_DARK } from "../../appointments/appointmentTypeMeta";
@@ -887,14 +888,16 @@ function PersonalDetailsForm({
 
         <Grid item xs={12} md={6}>
           <FieldLabel>{t("city")}</FieldLabel>
-          <TextField
-            fullWidth
+          <CitySelect
             name="city"
             value={formData.city}
-            onChange={handleChange}
-            sx={fieldSx}
+            onChange={(city) => {
+              setFormData((prev) => ({ ...prev, city }));
+              clearFieldError("city");
+            }}
             error={Boolean(fieldErrors.city)}
             helperText={fieldErrors.city || undefined}
+            textFieldProps={{ sx: fieldSx }}
           />
         </Grid>
 

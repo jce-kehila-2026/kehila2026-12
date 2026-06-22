@@ -135,13 +135,29 @@ export async function approveJoinRequest(request) {
   }
 
   const tempPassword = generateTempPassword();
+
+  // Map the membership-application fields onto the participant profile using the
+  // exact field names the profile form (PersonalDetailsForm) reads, so the data
+  // the applicant entered shows up pre-filled in their account:
+  //   fullName  → First/Last name (the form splits fullName on whitespace)
+  //   phone     → phoneNumber
+  //   address   → city (the join form's location field is an Israeli city)
+  //   birthDate, email → same names
+  const firstName = String(request.firstName || '').trim();
+  const lastName = String(request.lastName || '').trim();
+  const fullName = String(request.fullName || '').trim() || [firstName, lastName].filter(Boolean).join(' ');
   const profile = {
     email,
-    displayName: request.fullName || '',
+    fullName,
+    firstName,
+    lastName,
+    displayName: fullName,
     role: 'participant',
     phoneNumber: request.phone || '',
-    address: request.address || '',
+    city: request.address || '',
+    streetAddress: '',
     birthDate: request.birthDate || '',
+    preferredContactMethod: 'email',
     mustChangePassword: true,
     source: 'membership-application',
     joinRequestId: request.id,
