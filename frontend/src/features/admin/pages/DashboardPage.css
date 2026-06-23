@@ -448,10 +448,6 @@
   background: #86d17c;
 }
 
-.admin-dashboard-funnel__segment--pending {
-  background: #fdba74;
-}
-
 .admin-dashboard-funnel__segment--cancelled {
   background: #f472b6;
 }
@@ -480,10 +476,6 @@
 
 .admin-dashboard-funnel__dot--confirmed {
   background: #329143;
-}
-
-.admin-dashboard-funnel__dot--pending {
-  background: #f97316;
 }
 
 .admin-dashboard-funnel__dot--cancelled {

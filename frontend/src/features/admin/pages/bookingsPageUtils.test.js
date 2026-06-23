@@ -37,7 +37,7 @@ describe('Admin Bookings helpers', () => {
 
     expect(rows).toHaveLength(1);
     expect(rows[0].source).toBe('booking');
-    expect(rows[0].status).toBe('approved');
+    expect(rows[0].status).toBe('confirmed');
   });
 
   it('does not invent participant, provider, or date values for incomplete records', () => {
