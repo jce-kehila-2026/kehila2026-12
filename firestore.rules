@@ -291,6 +291,31 @@ service cloud.firestore {
           (request.auth != null
             && resource.data.userId == request.auth.uid);
       }
+
+      // Per-slot seat counters used to enforce capacity transactionally
+      // (a client transaction can't run a query, so it reads this single doc).
+      // Any signed-in user may step the count by exactly one in either
+      // direction — paired with their own booking write in the same
+      // transaction — but cannot set it to an arbitrary value. NOTE: this is a
+      // best-effort guard; a determined client could still nudge a counter
+      // without booking (the airtight alternative is a Cloud Function gate).
+      // The backfill script reseeds via the Admin SDK, which bypasses rules.
+      match /slotCounters/{slotKey} {
+        allow read: if request.auth != null;
+        allow create: if request.auth != null
+          && request.resource.data.keys().hasOnly(['count', 'slotId', 'eventId', 'updatedAt'])
+          && request.resource.data.count == 1;
+        allow update: if request.auth != null
+          && request.resource.data.diff(resource.data).affectedKeys()
+               .hasOnly(['count', 'slotId', 'eventId', 'updatedAt'])
+          && request.resource.data.count is number
+          && request.resource.data.count >= 0
+          && (
+            request.resource.data.count == resource.data.count + 1
+            || request.resource.data.count == resource.data.count - 1
+          );
+        allow delete: if isAdmin();
+      }
     }
 
     // ── Appointments (flat, used by admin queries) ──────────
