@@ -1,5 +1,6 @@
 import { collection, doc, getDoc, getDocs, limit, query } from 'firebase/firestore';
 import { auth, db } from '../../../firebase';
+import { getActiveRegisteredAppointmentBookings } from '../../admin/services/registrationService';
 import {
   normalizeDashboardAppointment,
   normalizeDashboardEvent,
@@ -13,7 +14,13 @@ const USERS_COLLECTION = 'users';
 
 function isCancelled(data) {
   const status = String(data?.status || '').trim().toLowerCase();
-  return status === 'cancelled' || status === 'canceled';
+  return (
+    status === 'cancelled' ||
+    status === 'canceled' ||
+    status === 'inactive' ||
+    status === 'removed' ||
+    status === 'declined'
+  );
 }
 
 function isAppointmentBooking(row) {
@@ -107,28 +114,13 @@ function resolveParticipantId(userId) {
   return userId || auth.currentUser?.uid || null;
 }
 
+/**
+ * Same active-registration source as the Registered Events tab:
+ * getUserRegisteredEventIds + users/{uid}/bookings (no legacy appointments mirror).
+ */
 async function getParticipantAppointmentRows(participantId) {
-  const [bookingSnap, legacySnap] = await Promise.all([
-    getDocs(query(collection(db, USERS_COLLECTION, participantId, 'bookings'), limit(100))),
-    getDocs(query(collection(db, USERS_COLLECTION, participantId, 'appointments'), limit(50))),
-  ]);
-
-  const bookingRows = bookingSnap.docs
-    .map((docSnap) => ({ id: docSnap.id, source: 'booking', ...docSnap.data() }))
-    .filter(isAppointmentBooking);
-
-  const bookingIds = new Set(
-    bookingRows.flatMap((row) => [row.id, row.bookingId, row.appointmentId].filter(Boolean)),
-  );
-
-  const legacyRows = legacySnap.docs
-    .map((docSnap) => ({ id: docSnap.id, source: 'legacyAppointment', ...docSnap.data() }))
-    .filter(
-      (row) =>
-        !bookingIds.has(row.id) && !bookingIds.has(row.bookingId) && !bookingIds.has(row.appointmentId),
-    );
-
-  return [...bookingRows, ...legacyRows];
+  const { rows } = await getActiveRegisteredAppointmentBookings(participantId);
+  return rows;
 }
 
 async function getParticipantEventRegistrationRows(participantId) {
@@ -224,7 +216,22 @@ export async function fetchUpcomingAppointment(userId) {
 
   const rows = await getParticipantAppointmentRows(participantId);
   const nowMs = Date.now();
-  const nearest = sortByNearestStart(rows.filter((row) => isUpcomingRow(row, nowMs)))[0];
+  const upcoming = rows.filter((row) => isUpcomingRow(row, nowMs));
+  const nearest = sortByNearestStart(upcoming)[0];
+
+  if (import.meta.env.DEV) {
+    console.log('[Dashboard:appointments] upcoming after date filter', upcoming.map((row) => ({
+      id: row.id,
+      title: row.eventTitle || row.title,
+      status: row.status,
+      startsAt: resolveStartAt(row)?.toISOString(),
+    })));
+    console.log('[Dashboard:appointments] selected for Home card', nearest ? {
+      id: nearest.id,
+      title: nearest.eventTitle || nearest.title,
+      status: nearest.status,
+    } : null);
+  }
 
   if (!nearest) return null;
 

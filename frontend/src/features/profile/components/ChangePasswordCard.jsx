@@ -70,6 +70,8 @@ function ChangePasswordCard({ darkMode = false, t = (k) => k, variant = "default
     !samePasswordError &&
     !savingPassword;
 
+  const isUpdatePasswordEnabled = Boolean(newPassword.trim()) && !savingPassword;
+
   const handlePasswordChange = async () => {
     try {
       setSavingPassword(true);
@@ -367,9 +369,9 @@ function ChangePasswordCard({ darkMode = false, t = (k) => k, variant = "default
       >
         <button
           type="button"
-          className="ps-btn ps-btn--soft"
+          className="pd-btn pd-btn--view-cta pd-community__cta"
           onClick={handlePasswordChange}
-          disabled={!canUpdatePassword}
+          disabled={!isUpdatePasswordEnabled}
         >
           {t("updatePassword")}
         </button>

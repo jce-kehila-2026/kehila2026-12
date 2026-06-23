@@ -85,6 +85,8 @@ export default function ParticipantHome({ initialView = 'home' }) {
   const [participantProfile, setParticipantProfile] = useState(null);
   const [loadingParticipantProfile, setLoadingParticipantProfile] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(getStoredSidebarCollapsed);
+  const [homeRefreshKey, setHomeRefreshKey] = useState(0);
+  const prevActiveViewRef = useRef(activeView);
   const t = useMemo(() => createParticipantT(locale), [locale]);
   useCommunityStreak({ localUserId: effectiveUID || currentUser?.uid || '' });
 
@@ -336,6 +338,13 @@ export default function ParticipantHome({ initialView = 'home' }) {
   }, []);
 
   useEffect(() => {
+    if (activeView === 'home' && prevActiveViewRef.current !== 'home') {
+      setHomeRefreshKey((current) => current + 1);
+    }
+    prevActiveViewRef.current = activeView;
+  }, [activeView]);
+
+  useEffect(() => {
     if (location.pathname === '/appointments') {
       setActiveView('home');
       navigate('/home', { replace: true });
@@ -463,6 +472,7 @@ export default function ParticipantHome({ initialView = 'home' }) {
               latestNotification={notifications?.[0] ?? null}
               onOpenNotifications={handleOpenNotifications}
               locale={locale}
+              refreshToken={homeRefreshKey}
             />
           )}
 
