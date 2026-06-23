@@ -30,10 +30,8 @@ function normalizeAppointmentStatus(raw) {
   const s = String(raw ?? "")
     .trim()
     .toLowerCase();
-  if (s === "confirmed") return "confirmed";
   if (s === "cancelled" || s === "canceled") return "cancelled";
-  if (s === "pending") return "pending";
-  return "pending";
+  return "confirmed";
 }
 
 function toDate(value) {
