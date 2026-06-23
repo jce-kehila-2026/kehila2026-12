@@ -180,7 +180,9 @@ service cloud.firestore {
               && request.resource.data.type in ['streak_reminder', 'streak_grace', 'streak_lost']
             )
           );
-        allow update: if false;
+        // The owner may only flip their own read state; no other edits allowed.
+        allow update: if isSelf(uid)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read', 'readAt']);
       }
     }
 

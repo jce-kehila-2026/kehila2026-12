@@ -228,6 +228,7 @@ export default function ParticipantHome({ initialView = 'home' }) {
         <NotificationsDropdown
           updates={notifications}
           lastSeen={lastSeen}
+          readUpdateIds={readUpdateIds}
           onMarkAllRead={handleMarkAllRead}
           onNotificationClick={handleNotificationClick}
           onClose={() => setNotifOpen(false)}
