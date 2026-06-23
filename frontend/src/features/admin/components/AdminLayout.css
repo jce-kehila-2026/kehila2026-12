@@ -38,17 +38,19 @@
   transition: width 0.35s ease, padding 0.35s ease, gap 0.35s ease, all 0.3s ease !important;
 }
 
-/* Hebrew (RTL): mirror the whole shell — sidebar on the right, content on the left.
-   row-reverse flips the sides without touching `order`, and the fixed sidebar
-   panel is re-pinned to the right edge so it sits over its own reserved space. */
-[dir="rtl"] .admin-layout {
-  flex-direction: row-reverse !important;
+/* Hebrew (RTL): the sidebar panel itself stays where the rules above put it —
+   this only flips the CONTENT inside each nav row. The button content is
+   forced ltr by .admin-sidebar-paper above, so row-reverse here mirrors the
+   icon/label order (icon ends up on the right, label to its left) without
+   touching the panel's position, width, or the rest of the dashboard. */
+[dir="rtl"] .admin-sidebar-nav .MuiListItemButton-root,
+[dir="rtl"] .admin-sidebar-logout {
+  flex-direction: row-reverse;
 }
 
-[dir="rtl"] .admin-sidebar .admin-sidebar-paper {
-  left: auto !important;
-  right: 12px !important;
-  box-shadow: -4px 0 24px rgba(109, 40, 217, 0.04) !important;
+[dir="rtl"] .admin-sidebar-nav .MuiListItemText-primary,
+[dir="rtl"] .admin-sidebar-logout .MuiListItemText-primary {
+  text-align: right;
 }
 
 .admin-sidebar .admin-sidebar-paper.is-collapsed {

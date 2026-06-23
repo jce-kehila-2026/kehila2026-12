@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState, useCallback, useId } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import Pagination from '@mui/material/Pagination';
 import CalendarMonth from '@mui/icons-material/CalendarMonth';
 import Category from '@mui/icons-material/Category';
@@ -11,6 +11,7 @@ import FileDownloadOutlined from '@mui/icons-material/FileDownloadOutlined';
 import Groups from '@mui/icons-material/Groups';
 import LocationOnOutlined from '@mui/icons-material/LocationOnOutlined';
 import PersonRemoveOutlined from '@mui/icons-material/PersonRemoveOutlined';
+import PreviewIcon from '@mui/icons-material/Preview';
 import Refresh from '@mui/icons-material/Refresh';
 import SendOutlined from '@mui/icons-material/SendOutlined';
 import Schedule from '@mui/icons-material/Schedule';
@@ -18,6 +19,7 @@ import Search from '@mui/icons-material/Search';
 import Tune from '@mui/icons-material/Tune';
 import VisibilityOutlined from '@mui/icons-material/VisibilityOutlined';
 import MailOutlineOutlinedIcon from '@mui/icons-material/MailOutlineOutlined';
+import Button from '@mui/material/Button';
 import { createEvent, deleteEvent, getAllEvents, updateEvent } from '../services/eventService';
 import {
   getBookingsByEvent,
@@ -51,10 +53,7 @@ const EV_STATUS_LABEL_KEYS = {
 
 const PARTICIPANT_STATUS_LABEL_KEYS = {
   confirmed: 'pStatusConfirmed',
-  pending: 'pStatusPending',
   cancelled: 'pStatusCancelled',
-  completed: 'pStatusCompleted',
-  waitlist: 'pStatusWaitlist',
 };
 
 const WEEKDAY_OPTIONS = [
@@ -417,10 +416,7 @@ function getParticipantPhone(registration) {
 
 function getParticipantStatus(registration) {
   const status = String(registration.status || 'confirmed').toLowerCase();
-  if (status === 'cancelled' || status === 'canceled') return 'cancelled';
-  if (status === 'pending' || status === 'waitlist') return status;
-  if (status === 'completed') return 'completed';
-  return 'confirmed';
+  return status === 'cancelled' || status === 'canceled' ? 'cancelled' : 'confirmed';
 }
 
 function getInitials(nameOrEmail) {
@@ -483,8 +479,7 @@ function getRegistrationProviderName(registration) {
 }
 
 function getAppointmentStatus(registration) {
-  const status = getParticipantStatus(registration);
-  return status === 'waitlist' ? 'pending' : status;
+  return getParticipantStatus(registration);
 }
 
 function formatDateLabel(dateKey, intlLocale = 'en', fallback = 'Selected date') {
@@ -504,6 +499,7 @@ function csvEscape(value) {
 }
 
 export default function EventsPage() {
+  const navigate = useNavigate();
   const { t, lang, direction } = useAdminLocale();
   const intlLocale = INTL_LOCALE_BY_LANG[lang] || 'en';
   const evStatusLabel = (s) => (EV_STATUS_LABEL_KEYS[s] ? t(EV_STATUS_LABEL_KEYS[s]) : s);
@@ -633,9 +629,8 @@ export default function EventsPage() {
 
   const participantStats = useMemo(() => {
     const registered = registrations.length;
-    const waitlist = registrations.filter((registration) => getParticipantStatus(registration) === 'waitlist').length;
     const remaining = selectedEventCapacity ? Math.max(0, selectedEventCapacity - registered) : 0;
-    return { registered, remaining, waitlist };
+    return { registered, remaining };
   }, [registrations, selectedEventCapacity]);
 
   const filteredRegistrations = useMemo(() => {
@@ -1147,6 +1142,33 @@ export default function EventsPage() {
       <div className="admin-events-content">
       <div className="admin-events-page-title-slot">
         <h1 className="admin-events-page-title">{t('evTitle')}</h1>
+        <Button
+          variant="outlined"
+          startIcon={<PreviewIcon />}
+          onClick={() => navigate('/home')}
+          sx={{
+            alignSelf: { xs: 'flex-start', lg: 'center' },
+            height: '3rem',
+            px: 3.2,
+            borderRadius: 999,
+            borderColor: 'rgba(223, 50, 123, 0.46)',
+            color: '#C52A72',
+            bgcolor: 'rgba(255,255,255,0.62)',
+            fontWeight: 900,
+            boxShadow: '0 12px 28px rgba(223, 50, 123, 0.06)',
+            '& .MuiButton-startIcon': {
+              marginInlineEnd: '14px',
+              marginInlineStart: 0,
+              display: 'inherit',
+            },
+            '&:hover': {
+              borderColor: 'rgba(223, 50, 123, 0.7)',
+              bgcolor: 'rgba(255, 246, 251, 0.92)',
+            },
+          }}
+        >
+          {t('umPreviewParticipant')}
+        </Button>
       </div>
 
       <div className={`admin-events-shell${drawerOpen ? ' has-drawer' : ''}`}>
@@ -1569,7 +1591,7 @@ export default function EventsPage() {
                                 <strong>{t('evProviderN').replace('{n}', providerIndex + 1)}</strong>
                                 <button
                                   type="button"
-                                  className="admin-events-wizard-action-btn admin-events-wizard-action-btn--danger admin-events-wizard-remove-btn"
+                                  className="admin-events-wizard-action-btn admin-events-wizard-action-btn--outline public-cta-interaction"
                                   onClick={() => removeProvider(providerIndex)}
                                 >
                                   {t('evRemove')}
@@ -1658,7 +1680,7 @@ export default function EventsPage() {
                                     </label>
                                     <button
                                       type="button"
-                                      className="admin-events-wizard-action-btn admin-events-wizard-action-btn--danger admin-events-wizard-remove-btn"
+                                      className="admin-events-wizard-action-btn admin-events-wizard-action-btn--outline public-cta-interaction"
                                       onClick={() => removeProviderSlot(providerIndex, slotIndex)}
                                     >
                                       {t('evRemove')}
@@ -1949,9 +1971,7 @@ export default function EventsPage() {
                                   <span>{pStatusLabel(status)}</span>
                                   <select value={status} onChange={(event) => handleStatusUpdate(registration, event.target.value)}>
                                     <option value="confirmed">{t('pStatusConfirmed')}</option>
-                                    <option value="pending">{t('pStatusPending')}</option>
                                     <option value="cancelled">{t('pStatusCancelled')}</option>
-                                    <option value="completed">{t('pStatusCompleted')}</option>
                                   </select>
                                 </label>
                                 <div className="admin-events-participant-actions">
@@ -1993,7 +2013,6 @@ export default function EventsPage() {
                   <section className="admin-events-participant-stats" aria-label={t('pdSubtitle')}>
                     <article><Groups /><strong>{participantStats.registered}</strong><span>{t('pdRegistered')}</span></article>
                     <article><EventAvailable /><strong>{participantStats.remaining}</strong><span>{t('pdRemaining')}</span></article>
-                    <article><Schedule /><strong>{participantStats.waitlist}</strong><span>{t('pdWaitlist')}</span></article>
                   </section>
 
                   <section className="admin-events-participant-controls">
@@ -2010,7 +2029,6 @@ export default function EventsPage() {
                       <option value="all">{t('pdFilter')}</option>
                       <option value="confirmed">{t('pStatusConfirmed')}</option>
                       <option value="cancelled">{t('pStatusCancelled')}</option>
-                      <option value="waitlist">{t('pStatusWaitlist')}</option>
                     </select>
                     <select value={participantSort} onChange={(event) => setParticipantSort(event.target.value)}>
                       <option value="newest">{t('sortNewest')}</option>

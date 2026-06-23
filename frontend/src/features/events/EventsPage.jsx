@@ -635,7 +635,6 @@ function EventCard({
           aria-haspopup="dialog"
         >
           {registrationClosed ? t('evRegistrationClosed') : hasRegisteredSessions ? t('evChooseMoreDates') : t('evViewDates')}
-          <ArrowForwardIcon fontSize="small" />
         </button>
       </div>
     </article>
@@ -818,7 +817,6 @@ function AppointmentServiceCard({ event, isSelected, onOpenBooking }) {
         aria-haspopup="dialog"
       >
         {t('evViewAvailableTimes')}
-        <ArrowForwardIcon fontSize="small" />
       </button>
     </article>
   );
@@ -915,9 +913,15 @@ function AppointmentBookingDrawer({
     const currentOption = timeOptions.find((timeOption) => timeOption.option?.id === selectedOptionId);
     if (currentOption && !currentOption.unavailable && !currentOption.isFull) return;
 
-    const firstOpenOption = timeOptions.find((timeOption) => timeOption.option && !timeOption.unavailable && !timeOption.isFull);
-    setSelectedOptionId(firstOpenOption?.option?.id || '');
-  }, [selectedOptionId, timeOptions]);
+    const firstBookableOption = timeOptions.find((timeOption) => (
+      timeOption.option
+      && !registeredSessionIds.has(timeOption.option.id)
+      && !timeOption.unavailable
+      && !timeOption.isFull
+    ));
+    const firstRegisteredOption = timeOptions.find((timeOption) => timeOption.option && registeredSessionIds.has(timeOption.option.id));
+    setSelectedOptionId(firstBookableOption?.option?.id || firstRegisteredOption?.option?.id || '');
+  }, [registeredSessionIds, selectedOptionId, timeOptions]);
 
   if (!event) return null;
 
@@ -948,7 +952,7 @@ function AppointmentBookingDrawer({
         aria-label="Close appointment booking"
       />
       <aside
-        className="appointment-drawer"
+        className={`appointment-drawer${isRegistered ? ' is-registered' : ''}`}
         role="dialog"
         aria-modal="true"
         aria-labelledby="appointment-drawer-title"
@@ -960,10 +964,50 @@ function AppointmentBookingDrawer({
 
         <header className="appointment-drawer__header">
           <h2 id="appointment-drawer-title">{serviceLabel}</h2>
-          <p>{t('evBookASession')}</p>
+          <p>{isRegistered ? t('evYouAreRegistered') : t('evBookASession')}</p>
         </header>
 
         <div className="appointment-drawer__body">
+          {isRegistered && selectedOption ? (
+            <div className="appointment-drawer__registered-details">
+              <div className="workshop-details-panel__detail-item">
+                <EventAvailableIcon fontSize="small" />
+                <div className="workshop-details-panel__detail-copy">
+                  <strong>{t('evDate')}</strong>
+                  <span>{selectedOption.date || selectedOption.selectedDate || selectedDate?.label || t('evDateTBD')}</span>
+                </div>
+              </div>
+              <div className="workshop-details-panel__detail-item">
+                <AccessTimeIcon fontSize="small" />
+                <div className="workshop-details-panel__detail-copy">
+                  <strong>{t('evTime')}</strong>
+                  <span>{selectedOption.time || selectedOption.selectedTimeSlot || selectedTime?.label || t('evTimeTBD')}</span>
+                </div>
+              </div>
+              <div className="workshop-details-panel__detail-item">
+                <PersonIcon fontSize="small" />
+                <div className="workshop-details-panel__detail-copy">
+                  <strong>{t('evTherapist')}</strong>
+                  <span>{selectedOption.providerName || selectedProvider?.name || t('evSheNaTeam')}</span>
+                </div>
+              </div>
+              <div className="workshop-details-panel__detail-item">
+                <HomeRoundedIcon fontSize="small" />
+                <div className="workshop-details-panel__detail-copy">
+                  <strong>{t('evLocation')}</strong>
+                  <span>{selectedOption.room || selectedOption.location || event.location || 'She-Na Center'}</span>
+                </div>
+              </div>
+              <div className="workshop-details-panel__detail-item">
+                <CalendarMonthIcon fontSize="small" />
+                <div className="workshop-details-panel__detail-copy">
+                  <strong>{t('evStatus')}</strong>
+                  <span>{canCancelBooking ? t('evRegistered') : t('evCancellationClosed')}</span>
+                </div>
+              </div>
+            </div>
+          ) : (
+          <>
           <section className="appointment-booking-step">
             <h3><span>1</span> {t('evStep1Instructor')}</h3>
             <div className="appointment-instructor-grid">
@@ -1049,11 +1093,9 @@ function AppointmentBookingDrawer({
             ) : (
               <p className="appointment-drawer__empty">{t('evNoTimesInstructor')}</p>
             )}
-            <p className="appointment-drawer__timezone">
-              <AccessTimeIcon fontSize="small" />
-              {t('evLocalTime')}
-            </p>
           </section>
+          </>
+          )}
         </div>
 
         <div className="appointment-drawer__actions">
@@ -1068,10 +1110,6 @@ function AppointmentBookingDrawer({
               : isRegistered
                 ? t('evCancelBooking')
                 : t('evConfirmBooking')}
-            <ArrowForwardIcon fontSize="small" />
-          </button>
-          <button className="appointment-drawer__cancel" type="button" onClick={onClose}>
-            {t('evCancel')}
           </button>
         </div>
       </aside>
@@ -1149,7 +1187,6 @@ function WorkshopListCard({ event, registeredSessionIds, isSelected, onOpenBooki
         aria-haspopup="dialog"
       >
         {registrationClosed ? t('evRegistrationClosed') : isRegistered ? t('evViewRegistration') : t('evViewDetailsRegister')}
-        <ArrowForwardIcon fontSize="small" />
       </button>
     </article>
   );
@@ -1207,42 +1244,42 @@ function WorkshopDetailsPanel({
       </header>
 
       <div className="workshop-details-panel__body">
-        <section className="workshop-details-panel__section">
-          <h3>{t('evWorkshopDetails')}</h3>
-          <p className="workshop-details-panel__description">{event.description}</p>
-        </section>
-
         <div className="workshop-details-panel__details">
-          <span>
+          <div className="workshop-details-panel__detail-item">
             <EventAvailableIcon fontSize="small" />
-            <strong>{t('evDate')}</strong>
-            {session?.date || event.date || t('evDateTBD')}
-          </span>
-          <span>
+            <div className="workshop-details-panel__detail-copy">
+              <strong>{t('evDate')}</strong>
+              <span>{session?.date || event.date || t('evDateTBD')}</span>
+            </div>
+          </div>
+          <div className="workshop-details-panel__detail-item">
             <AccessTimeIcon fontSize="small" />
-            <strong>{t('evTime')}</strong>
-            {session?.time || event.time || t('evTimeTBD')}
-          </span>
-          <span>
+            <div className="workshop-details-panel__detail-copy">
+              <strong>{t('evTime')}</strong>
+              <span>{session?.time || event.time || t('evTimeTBD')}</span>
+            </div>
+          </div>
+          <div className="workshop-details-panel__detail-item">
             <HomeRoundedIcon fontSize="small" />
-            <strong>{t('evLocation')}</strong>
-            {session?.location || event.location || 'She-Na Center'}
-          </span>
-          <span>
+            <div className="workshop-details-panel__detail-copy">
+              <strong>{t('evLocation')}</strong>
+              <span>{session?.location || event.location || 'She-Na Center'}</span>
+            </div>
+          </div>
+          <div className="workshop-details-panel__detail-item">
             <PersonIcon fontSize="small" />
-            <strong>{t('evInstructorLabel')}</strong>
-            {session?.providerName || event.instructor || t('evSheNaTeam')}
-          </span>
-          <span>
+            <div className="workshop-details-panel__detail-copy">
+              <strong>{t('evInstructorLabel')}</strong>
+              <span>{session?.providerName || event.instructor || t('evSheNaTeam')}</span>
+            </div>
+          </div>
+          <div className="workshop-details-panel__detail-item">
             <GroupsRoundedIcon fontSize="small" />
-            <strong>{t('evSpots')}</strong>
-            {getWorkshopAvailabilityLabel(session, t)}
-          </span>
-          <span>
-            <CalendarMonthIcon fontSize="small" />
-            <strong>{t('evStatus')}</strong>
-            {isRegistered ? t('evRegistered') : registrationClosed ? t('evClosed') : isFull ? t('evFull') : t('evOpen')}
-          </span>
+            <div className="workshop-details-panel__detail-copy">
+              <strong>{t('evSpots')}</strong>
+              <span>{getWorkshopAvailabilityLabel(session, t)}</span>
+            </div>
+          </div>
         </div>
 
         {isRegistered && !canCancelBooking && (
@@ -1266,10 +1303,6 @@ function WorkshopDetailsPanel({
                 : registrationClosed
                   ? t('evRegistrationClosed')
                   : t('evRegister')}
-          <ArrowForwardIcon fontSize="small" />
-        </button>
-        <button className="workshop-details-panel__secondary" type="button" onClick={onClose}>
-          {t('evClose')}
         </button>
       </div>
     </aside>
@@ -1564,7 +1597,6 @@ function RegisteredSessionCard({ session, onCancelRegistration }) {
           onClick={() => onCancelRegistration(session)}
           disabled={session.isRegistering}
         >
-          <CalendarMonthIcon fontSize="small" />
           {session.isRegistering ? t('evPleaseWait') : t('evCancelRegistration')}
         </button>
       </div>
@@ -1930,10 +1962,10 @@ export default function EventsPage({ embedInDashboard = false, locale = 'he' }) 
   const categoryCards = useMemo(() => {
     return [
       {
-        type: VIEW_REGISTERED,
-        title: t('evCatRegisteredEvents'),
-        color: 'peach',
-        icon: PersonIcon,
+        type: VIEW_WORKSHOPS,
+        title: t('evCatWorkshops'),
+        color: 'lavender',
+        icon: VolunteerActivismIcon,
       },
       {
         type: VIEW_APPOINTMENTS,
@@ -1942,10 +1974,10 @@ export default function EventsPage({ embedInDashboard = false, locale = 'he' }) 
         icon: CalendarMonthIcon,
       },
       {
-        type: VIEW_WORKSHOPS,
-        title: t('evCatWorkshops'),
-        color: 'lavender',
-        icon: VolunteerActivismIcon,
+        type: VIEW_REGISTERED,
+        title: t('evCatRegisteredEvents'),
+        color: 'peach',
+        icon: PersonIcon,
       },
     ];
   }, [t]);
@@ -2178,10 +2210,10 @@ export default function EventsPage({ embedInDashboard = false, locale = 'he' }) 
       )}
 
       {!loadingEvents && !eventsError && filteredEvents.length === 0 && (
-        <section className="events-empty">
-          <AutoAwesomeIcon />
-          <h2>{t('evNoEventsTitle')}</h2>
-          <p>{t('evNoEventsBody')}</p>
+        <section className={`events-empty${activeView === VIEW_REGISTERED ? ' events-empty--registered' : ''}`}>
+          {activeView === VIEW_REGISTERED ? <EventAvailableIcon /> : <AutoAwesomeIcon />}
+          <h2>{t(activeView === VIEW_REGISTERED ? 'evNoRegisteredEventsTitle' : 'evNoEventsTitle')}</h2>
+          <p>{t(activeView === VIEW_REGISTERED ? 'evNoRegisteredEventsBody' : 'evNoEventsBody')}</p>
         </section>
       )}
 

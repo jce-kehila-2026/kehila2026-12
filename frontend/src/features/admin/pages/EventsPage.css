@@ -125,7 +125,7 @@
   white-space: nowrap;
   color: #fff;
   cursor: pointer;
-  margin-left: auto;
+  margin-inline-start: auto;
 }
 
 .admin-events-primary-btn__label {
@@ -1067,12 +1067,6 @@
   background: #dcf8ea;
 }
 
-.admin-events-participant-chip--pending,
-.admin-events-participant-chip--waitlist {
-  color: #b56b05;
-  background: #fff0d6;
-}
-
 .admin-events-participant-chip--cancelled {
   color: #c92d43;
   background: #ffe2e8;
@@ -1396,11 +1390,6 @@
   height: 100%;
   opacity: 0;
   cursor: pointer;
-}
-
-.admin-events-participant-chip--completed {
-  color: #285fca;
-  background: #e4edff;
 }
 
 .admin-events-booking-details {
@@ -2377,44 +2366,6 @@
   box-shadow: 0 9px 24px rgba(91, 30, 140, 0.12);
 }
 
-.admin-events-drawer .admin-events-provider-section button.admin-events-wizard-action-btn--danger,
-.admin-events-drawer .admin-events-provider-section button.admin-events-wizard-remove-btn {
-  border-color: rgba(233, 75, 147, 0.32);
-  color: #8f2f5f;
-  background: rgba(255, 255, 255, 0.97);
-  box-shadow: 0 9px 24px rgba(91, 30, 140, 0.12);
-}
-
-.admin-events-drawer .admin-events-provider-section button.admin-events-wizard-action-btn--danger:is(:hover, :focus-visible):not(:disabled),
-.admin-events-drawer .admin-events-provider-section button.admin-events-wizard-remove-btn:is(:hover, :focus-visible):not(:disabled) {
-  color: #8f2f5f;
-  background: rgba(255, 241, 248, 0.98);
-  border-color: rgba(233, 75, 147, 0.48);
-  box-shadow: 0 10px 22px rgba(233, 75, 147, 0.14);
-  transform: translateY(-2px);
-}
-
-.admin-events-drawer .admin-events-provider-section button.admin-events-wizard-action-btn--danger:active:not(:disabled),
-.admin-events-drawer .admin-events-provider-section button.admin-events-wizard-remove-btn:active:not(:disabled) {
-  transform: translateY(0);
-}
-
-.admin-events-drawer .admin-events-provider-section button.admin-events-wizard-action-btn--danger:focus-visible,
-.admin-events-drawer .admin-events-provider-section button.admin-events-wizard-remove-btn:focus-visible {
-  outline: 3px solid rgba(236, 72, 153, 0.28);
-  outline-offset: 3px;
-}
-
-/* Keep Remove outline-only — block global public-cta filled hover if ever combined */
-.admin-events-page.public-cta-scope .admin-events-drawer .admin-events-provider-section button.admin-events-wizard-action-btn--danger.public-cta-interaction:is(:hover, :focus-visible):not(:disabled),
-.admin-events-page.public-cta-scope .admin-events-drawer .admin-events-provider-section button.admin-events-wizard-remove-btn.public-cta-interaction:is(:hover, :focus-visible):not(:disabled) {
-  color: #8f2f5f;
-  background: rgba(255, 241, 248, 0.98);
-  border-color: rgba(233, 75, 147, 0.48);
-  box-shadow: 0 10px 22px rgba(233, 75, 147, 0.14);
-  transform: translateY(-2px);
-}
-
 .admin-events-provider-list {
   display: grid;
   gap: 0.75rem;
@@ -2666,7 +2617,7 @@
 
   .admin-events-primary-btn {
     width: 100%;
-    margin-left: 0;
+    margin-inline-start: 0;
   }
 
   .admin-events-tabs-row {

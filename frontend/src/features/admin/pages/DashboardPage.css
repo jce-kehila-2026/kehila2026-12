@@ -10,13 +10,15 @@
   --glass-border: rgba(167, 139, 250, 0.18);
   width: 100%;
   max-width: 100%;
-  height: calc(100vh - 6.5rem);
-  min-height: 0;
+  /* The page now has 7 stacked sections (was 3) and no longer fits a single
+     non-scrolling viewport. It scrolls inside .admin-main's own scroll
+     container (see AdminLayout.css), so rows just size to their content. */
+  min-height: calc(100vh - 6.5rem);
   display: grid;
-  grid-template-rows: 112px minmax(260px, 1fr) minmax(205px, 0.78fr);
+  grid-template-columns: minmax(0, 1fr);
   gap: 0.875rem;
   margin-top: 0;
-  overflow: hidden;
+  overflow: visible;
   box-sizing: border-box;
   color: var(--deep-purple);
 }
@@ -140,6 +142,30 @@
   color: rgba(36, 16, 79, 0.5);
   font-size: 0.8125rem;
   font-weight: 600;
+}
+
+/* Today / This Week Snapshot — reuses the metric-card look with a 4th
+   slot and an "alert" state (red badge) for counts that need attention. */
+.admin-dashboard-snapshot {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+  min-width: 0;
+  min-height: 0;
+  align-items: stretch;
+}
+
+.admin-dashboard-metric--alert {
+  border-color: rgba(180, 35, 85, 0.35);
+}
+
+.admin-dashboard-metric--alert .admin-dashboard-metric__icon {
+  color: #b42355;
+  background: rgba(244, 114, 182, 0.22);
+}
+
+.admin-dashboard-metric--alert strong {
+  color: #b42355;
 }
 
 .admin-dashboard-main-grid {
@@ -375,13 +401,241 @@
   background: rgba(253, 186, 116, 0.2);
 }
 
+/* Shared empty state used by the new funnel/growth cards. */
+.admin-dashboard-empty {
+  margin: 0.5rem 0 0;
+  color: rgba(36, 16, 79, 0.5);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+/* Bookings & Appointments Funnel + Community Moderation Queue */
+.admin-dashboard-insights-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1rem;
+  min-width: 0;
+}
+
+.admin-dashboard-funnel__body {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.admin-dashboard-funnel__row-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 0.375rem;
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.admin-dashboard-funnel__row-head strong {
+  font-size: 1rem;
+}
+
+.admin-dashboard-funnel__bar {
+  display: flex;
+  height: 0.625rem;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(167, 139, 250, 0.12);
+}
+
+.admin-dashboard-funnel__segment--confirmed {
+  background: #86d17c;
+}
+
+.admin-dashboard-funnel__segment--cancelled {
+  background: #f472b6;
+}
+
+.admin-dashboard-funnel__legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.875rem;
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: rgba(36, 16, 79, 0.7);
+}
+
+.admin-dashboard-funnel__legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+}
+
+.admin-dashboard-funnel__dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+}
+
+.admin-dashboard-funnel__dot--confirmed {
+  background: #329143;
+}
+
+.admin-dashboard-funnel__dot--cancelled {
+  background: #b42355;
+}
+
+.admin-dashboard-funnel__rate {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-top: 0.75rem;
+  border-top: 1px solid rgba(167, 139, 250, 0.14);
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: rgba(36, 16, 79, 0.7);
+}
+
+.admin-dashboard-funnel__rate strong {
+  font-size: 1rem;
+  color: #b42355;
+}
+
+.admin-dashboard-moderation__list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.admin-dashboard-moderation__row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding-bottom: 0.625rem;
+  border-bottom: 1px solid rgba(167, 139, 250, 0.14);
+  font-size: 0.8125rem;
+}
+
+.admin-dashboard-moderation__content {
+  margin: 0;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: rgba(36, 16, 79, 0.82);
+}
+
+.admin-dashboard-moderation__reports {
+  justify-self: end;
+  border-radius: 999px;
+  padding: 0.3125rem 0.6875rem;
+  font-size: 0.6875rem;
+  font-weight: 800;
+  color: #b42355;
+  background: rgba(244, 114, 182, 0.16);
+  white-space: nowrap;
+}
+
+.admin-dashboard-moderation__age {
+  justify-self: end;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: rgba(36, 16, 79, 0.5);
+  white-space: nowrap;
+}
+
+/* Membership Growth & Join Requests */
+.admin-dashboard-growth__body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+  gap: 1.5rem;
+}
+
+.admin-dashboard-growth__chart-label,
+.admin-dashboard-growth__overdue h3 {
+  display: block;
+  margin: 0 0 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: rgba(36, 16, 79, 0.6);
+  text-transform: uppercase;
+}
+
+.admin-dashboard-growth__bars {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.75rem;
+  height: 7.5rem;
+}
+
+.admin-dashboard-growth__bar-col {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  flex: 1 1 auto;
+  height: 100%;
+  gap: 0.25rem;
+}
+
+.admin-dashboard-growth__bar {
+  width: 100%;
+  max-width: 1.75rem;
+  min-height: 3px;
+  border-radius: 6px 6px 0 0;
+  background: linear-gradient(180deg, var(--lavender), var(--primary-purple));
+}
+
+.admin-dashboard-growth__bar-col span {
+  font-size: 0.6875rem;
+  font-weight: 800;
+  color: rgba(36, 16, 79, 0.75);
+}
+
+.admin-dashboard-growth__bar-col small {
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: rgba(36, 16, 79, 0.45);
+}
+
+.admin-dashboard-overdue-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.admin-dashboard-overdue-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(167, 139, 250, 0.14);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.admin-dashboard-overdue-days {
+  border-radius: 999px;
+  padding: 0.25rem 0.625rem;
+  font-size: 0.6875rem;
+  font-weight: 800;
+  color: #f97316;
+  background: rgba(253, 186, 116, 0.2);
+  white-space: nowrap;
+}
+
 @media (max-width: 1200px) {
-  .admin-dashboard-metrics {
+  .admin-dashboard-metrics,
+  .admin-dashboard-snapshot {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
   .admin-dashboard-main-grid {
     grid-template-columns: 1fr;
+  }
+
+  .admin-dashboard-insights-grid,
+  .admin-dashboard-growth__body {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -389,7 +643,6 @@
   .admin-dashboard-page {
     height: 100%;
     margin-top: 0;
-    grid-template-rows: auto;
     overflow: visible;
   }
 
@@ -404,10 +657,17 @@
   }
 
   .admin-dashboard-metrics,
+  .admin-dashboard-snapshot,
   .admin-dashboard-booking,
+  .admin-dashboard-moderation__row,
   .admin-dashboard-activity__head,
   .admin-dashboard-activity__row {
     grid-template-columns: 1fr;
+  }
+
+  .admin-dashboard-moderation__reports,
+  .admin-dashboard-moderation__age {
+    justify-self: start;
   }
 
   .admin-dashboard-booking {

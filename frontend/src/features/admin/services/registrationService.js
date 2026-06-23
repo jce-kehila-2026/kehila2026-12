@@ -315,7 +315,7 @@ export async function getBookingsByEvent(eventId) {
 export async function updateRegistrationStatus(regId, eventId, status) {
   if (!regId || !eventId) throw new Error('updateRegistrationStatus requires registration and event ids.');
   const normalizedStatus = String(status || '').toLowerCase();
-  const allowedStatuses = new Set(['confirmed', 'pending', 'cancelled', 'completed']);
+  const allowedStatuses = new Set(['confirmed', 'cancelled']);
   if (!allowedStatuses.has(normalizedStatus)) throw new Error('Unsupported registration status.');
 
   const rosterRef = doc(db, 'events', eventId, 'registrations', regId);

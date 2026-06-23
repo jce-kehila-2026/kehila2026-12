@@ -103,8 +103,10 @@ export default function Sidebar({ drawerWidth = 260, collapsed = false, onToggle
     <Drawer
       anchor="left"
       className={`admin-sidebar ${collapsed ? 'is-collapsed' : 'is-expanded'}`}
-      PaperProps={{
-        className: `admin-sidebar-paper ${collapsed ? 'is-collapsed' : 'is-expanded'}`,
+      slotProps={{
+        paper: {
+          className: `admin-sidebar-paper ${collapsed ? 'is-collapsed' : 'is-expanded'}`,
+        },
       }}
       variant="permanent"
       sx={{
