@@ -149,8 +149,27 @@ function getRegistrationUniqueKey(registration) {
   ].join('__');
 }
 
+function isInactiveRegistration(data) {
+  const status = String(data?.status || '').trim().toLowerCase();
+  return (
+    status === 'cancelled' ||
+    status === 'canceled' ||
+    status === 'inactive' ||
+    status === 'removed' ||
+    status === 'declined'
+  );
+}
+
 function isCancelledRegistration(data) {
-  return String(data?.status || '').trim().toLowerCase() === 'cancelled';
+  return isInactiveRegistration(data);
+}
+
+function isAppointmentRegistration(data) {
+  const eventType = String(data?.eventType || data?.type || data?.category || '').trim().toLowerCase();
+  return (
+    eventType.includes('appointment') ||
+    String(data?.eventTitle || data?.title || '').toLowerCase().includes('appointment')
+  );
 }
 
 function getUserRegistrationMapKey(data, docId = '') {
@@ -562,8 +581,16 @@ export async function removeRegistration(regId, participantName, eventId) {
   const rosterRef = doc(db, 'events', eventId, 'registrations', regId);
   const rosterSnap = await getDoc(rosterRef);
   const registration = rosterSnap.exists() ? rosterSnap.data() : {};
-  const uid = registration.userId || null;
-  const bookingId = registration.bookingId || '';
+  const bookingId = registration.bookingId || regId;
+  let uid = registration.userId || null;
+  if (!uid && bookingId) {
+    try {
+      const bookingSnap = await getDoc(doc(db, 'bookings', bookingId));
+      if (bookingSnap.exists()) {
+        uid = bookingSnap.data()?.userId || null;
+      }
+    } catch (_) {}
+  }
   const sessionEventId = registration.sessionEventId || registration.eventId || eventId;
   const templateEventId = registration.eventTemplateId || registration.parentEventId || '';
   const sessionRegistrationKey = registration.sessionRegistrationKey || registration.registrationKey || uid || regId;
@@ -671,4 +698,62 @@ export async function getUserRegisteredEventIds(emailOrUid) {
     console.warn('Could not read legacy user registrations for registration state:', error);
   }
   return map;
+}
+
+/**
+ * Active appointment bookings for a participant — same source/filter as the
+ * Registered Events tab (getUserRegisteredEventIds + users/{uid}/bookings).
+ * Does not read users/{uid}/appointments legacy mirror.
+ *
+ * @param {string} uid
+ * @returns {Promise<{ rows: Array<Record<string, unknown>>, registeredMap: Record<string, string> }>}
+ */
+export async function getActiveRegisteredAppointmentBookings(uid) {
+  if (!uid) return { rows: [], registeredMap: {} };
+
+  const registeredMap = await getUserRegisteredEventIds(uid);
+  const activeSessionKeys = new Set(Object.keys(registeredMap));
+
+  const bookingsSnap = await getDocs(
+    query(collection(db, 'users', uid, 'bookings'), limit(200)),
+  );
+
+  const allAppointmentBookings = bookingsSnap.docs.map((docSnap) => ({
+    id: docSnap.id,
+    source: 'booking',
+    ...docSnap.data(),
+  })).filter(isAppointmentRegistration);
+
+  const rows = allAppointmentBookings.filter((row) => {
+    if (isInactiveRegistration(row)) return false;
+    const mapKey = getUserRegistrationMapKey(row, row.id);
+    return activeSessionKeys.has(mapKey);
+  });
+
+  if (import.meta.env.DEV) {
+    console.log('[Dashboard:appointments] Registered Events active map', registeredMap);
+    console.log(
+      '[Dashboard:appointments] users/{uid}/bookings appointment rows',
+      allAppointmentBookings.map((row) => ({
+        id: row.id,
+        bookingId: row.bookingId,
+        status: row.status,
+        mapKey: getUserRegistrationMapKey(row, row.id),
+        title: row.eventTitle || row.title,
+        inRegisteredMap: activeSessionKeys.has(getUserRegistrationMapKey(row, row.id)),
+      })),
+    );
+    console.log(
+      '[Dashboard:appointments] active rows used by Home card',
+      rows.map((row) => ({
+        id: row.id,
+        bookingId: row.bookingId,
+        status: row.status,
+        mapKey: getUserRegistrationMapKey(row, row.id),
+        title: row.eventTitle || row.title,
+      })),
+    );
+  }
+
+  return { rows, registeredMap };
 }

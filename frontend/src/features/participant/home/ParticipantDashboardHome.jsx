@@ -1056,9 +1056,13 @@ export default function ParticipantDashboardHome({
   latestNotification = null,
   onOpenNotifications,
   locale = 'he',
+  refreshToken = 0,
 }) {
   const { t } = useParticipantLocale();
-  const { appointment, event, isLoading, appointmentError, eventError } = useParticipantDashboardHomeData(userId);
+  const { appointment, event, isLoading, appointmentError, eventError } = useParticipantDashboardHomeData(
+    userId,
+    refreshToken,
+  );
   const isBirthdayToday = useBirthdayToday(birthDate);
   const {
     post: latestCommunityPost,

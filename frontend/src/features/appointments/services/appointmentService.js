@@ -382,10 +382,30 @@ export async function cancelAppointment(appointmentId) {
 
   if (bookingSnap.exists()) {
     const booking = bookingSnap.data() || {};
+    const bookingId = booking.bookingId || appointmentId;
+    const uid = booking.userId || auth.currentUser?.uid;
+    const cancellationPatch = { status: "cancelled", cancelledAt: serverTimestamp() };
+
     if (booking.eventId) {
-      await removeRegistration(booking.bookingId || appointmentId, booking.userName || booking.userEmail || "Participant", booking.eventId);
-      return;
+      await removeRegistration(
+        bookingId,
+        booking.userName || booking.userEmail || "Participant",
+        booking.eventId
+      );
     }
+
+    const batch = writeBatch(db);
+    batch.set(bookingRef, cancellationPatch, { merge: true });
+    if (uid) {
+      batch.set(doc(db, USERS_COLLECTION, uid, "bookings", bookingId), cancellationPatch, { merge: true });
+      batch.set(
+        doc(db, USERS_COLLECTION, uid, "appointments", appointmentId),
+        cancellationPatch,
+        { merge: true }
+      );
+    }
+    await batch.commit();
+    return;
   }
 
   const flatRef = doc(db, LEGACY_APPOINTMENTS_COLLECTION, appointmentId);
