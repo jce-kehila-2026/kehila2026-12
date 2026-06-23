@@ -15,21 +15,18 @@ import CircularProgress from '@mui/material/CircularProgress';
 import Dialog from '@mui/material/Dialog';
 import Divider from '@mui/material/Divider';
 import Fade from '@mui/material/Fade';
-import FormControl from '@mui/material/FormControl';
-import Grid from '@mui/material/Grid';
 import IconButton from '@mui/material/IconButton';
-import InputAdornment from '@mui/material/InputAdornment';
 import MenuItem from '@mui/material/MenuItem';
+import Pagination from '@mui/material/Pagination';
 import Select from '@mui/material/Select';
 import Stack from '@mui/material/Stack';
-import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
 import CloseIcon from '@mui/icons-material/Close';
 import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
-import SearchIcon from '@mui/icons-material/Search';
-import SortIcon from '@mui/icons-material/Sort';
 import Avatar from '@mui/material/Avatar';
+
+const PAGE_SIZE = 10;
 
 const ROLES = ['participant', 'admin'];
 
@@ -128,6 +125,17 @@ function isInactiveUser(user) {
   return user?.isActive === false || String(user?.status || '').toLowerCase() === 'inactive';
 }
 
+function paginateUserRows(rows, page, pageSize) {
+  const pageCount = Math.max(1, Math.ceil(rows.length / pageSize));
+  const safePage = Math.min(Math.max(page, 1), pageCount);
+  const startIndex = (safePage - 1) * pageSize;
+  return {
+    page: safePage,
+    pageCount,
+    rows: rows.slice(startIndex, startIndex + pageSize),
+  };
+}
+
 export default function UserManagementPage() {
   const { currentUser } = useAdmin();
   const { t, direction } = useAdminLocale();
@@ -139,6 +147,7 @@ export default function UserManagementPage() {
   const [roleFilter, setRoleFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [sortBy, setSortBy] = useState('newest');
+  const [page, setPage] = useState(1);
   const [selectedUser, setSelectedUser] = useState(null);
   const [deactivateTarget, setDeactivateTarget] = useState(null);
   const [deactivating, setDeactivating] = useState(false);
@@ -179,6 +188,10 @@ export default function UserManagementPage() {
   useEffect(() => {
     loadJoinRequests();
   }, [loadJoinRequests]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [activeTab, roleFilter, search, sortBy, statusFilter]);
 
   async function handleRoleChange(user, newRole) {
     const oldRole = normalizeUserRole(user.role);
@@ -275,6 +288,15 @@ export default function UserManagementPage() {
     });
   }, [roleFilter, search, sortBy, statusFilter, users]);
 
+  const pagination = useMemo(() => paginateUserRows(filteredUsers, page, PAGE_SIZE), [filteredUsers, page]);
+
+  function clearFilters() {
+    setSearch('');
+    setRoleFilter('all');
+    setStatusFilter('all');
+    setSortBy('newest');
+  }
+
   const userDetailRows = selectedUser
     ? [
         [
@@ -334,6 +356,64 @@ export default function UserManagementPage() {
     };
   };
 
+  const filterFieldSx = {
+    minHeight: '2.5rem',
+    border: '1px solid rgba(0, 0, 0, 0.23)',
+    borderRadius: '18px',
+    background: 'rgba(255, 255, 255, 0.97)',
+    color: '#171239',
+    boxShadow: 'none',
+    transition: 'none',
+    position: 'relative',
+    display: 'flex',
+    alignItems: 'center',
+    px: '0.875rem',
+    '&:focus-within': {
+      borderColor: '#6d35b8',
+      boxShadow: '0 0 0 3px rgba(109, 53, 184, 0.14)',
+    },
+    '& span': {
+      position: 'absolute',
+      top: '-0.7rem',
+      left: '1rem',
+      px: '0.375rem',
+      color: '#171239',
+      background: 'rgba(255, 255, 255, 0.97)',
+      fontSize: '0.8125rem',
+      fontWeight: 500,
+      lineHeight: 1,
+      pointerEvents: 'none',
+    },
+    '& input': {
+      width: '100%',
+      border: 0,
+      outline: 0,
+      background: 'transparent',
+      color: 'inherit',
+      fontFamily: 'inherit',
+      fontSize: 'inherit',
+      lineHeight: 'inherit',
+      fontWeight: 400,
+    },
+    '& select': {
+      width: '100%',
+      border: 0,
+      outline: 0,
+      background: 'transparent',
+      color: 'inherit',
+      fontFamily: 'inherit',
+      fontSize: 'inherit',
+      lineHeight: 'inherit',
+      fontWeight: 400,
+      minWidth: 0,
+      cursor: 'pointer',
+    },
+    '& input::placeholder': {
+      color: 'rgba(23, 18, 57, 0.42)',
+      opacity: 1,
+    },
+  };
+
   const pendingApplications = joinRequests.filter((req) => (req.status || 'new') === 'new').length;
 
   return (
@@ -341,43 +421,65 @@ export default function UserManagementPage() {
       dir={direction}
       sx={{
         width: '100%',
-        maxWidth: 'none',
-        minHeight: '100%',
-        height: 'auto',
-        maxHeight: 'none',
-        overflow: 'visible',
+        maxWidth: '100%',
+        height: 'calc(100vh - 6.5rem)',
+        maxHeight: 'calc(100vh - 6.5rem)',
+        overflow: 'hidden',
+        color: '#24104f',
         boxSizing: 'border-box',
-        mt: { xs: -2, md: -4 },
+        display: 'flex',
+        flexDirection: 'column',
       }}
     >
-      <Stack spacing={1.25} sx={{ width: '100%', maxWidth: 'none', minHeight: 0 }}>
-        <Stack spacing={0.8}>
-          <Stack direction={{ xs: 'column', lg: 'row' }} spacing={2} alignItems={{ lg: 'center' }} justifyContent="space-between">
-            <Box>
-              <Typography variant="h3" sx={{ fontSize: { xs: '1.875rem', md: '2.4375rem' }, fontWeight: 950, color: '#100B2F', lineHeight: 1.05 }}>
-                {t('umTitle')}
-              </Typography>
-            </Box>
-          </Stack>
+      <Typography
+        component="h1"
+        sx={{
+          position: { xs: 'static', md: 'fixed' },
+          top: { md: '1.75rem' },
+          left: { md: 'calc(var(--admin-sidebar-width) + 4rem)' },
+          zIndex: { md: 1100 },
+          m: 0,
+          mb: { xs: 1, md: 0 },
+          color: '#171239',
+          fontSize: { xs: '1.875rem', md: '2.125rem' },
+          lineHeight: 1.1,
+          fontWeight: 900,
+          letterSpacing: 0,
+        }}
+      >
+        {t('umTitle')}
+      </Typography>
 
-          <Box
-            role="tablist"
-            aria-label={t('umSectionsAria')}
-            sx={{
-              width: 'fit-content',
-              minHeight: '2.75rem',
-              p: 0,
-              border: 0,
-              borderRadius: 0,
-              display: 'inline-flex',
-              flexWrap: 'wrap',
-              alignItems: 'center',
-              gap: '0.375rem',
-              background: 'transparent',
-              backdropFilter: 'none',
-              flexShrink: 0,
-            }}
-          >
+      <Box
+        component="header"
+        sx={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '1rem',
+          mb: '0.875rem',
+          p: '0.125rem 0.125rem 0',
+          overflow: 'visible',
+          flex: '0 0 auto',
+        }}
+      >
+        <Box
+          role="tablist"
+          aria-label={t('umSectionsAria')}
+          sx={{
+            width: 'fit-content',
+            minHeight: '2.75rem',
+            p: '0.25rem',
+            border: 0,
+            borderRadius: '12px',
+            display: 'inline-grid',
+            gridTemplateColumns: 'repeat(2, 1fr)',
+            alignItems: 'center',
+            gap: '0.25rem',
+            background: '#fdf2f8',
+            backdropFilter: 'none',
+          }}
+        >
           {[
             { key: 'users', label: t('tabUsers') },
             { key: 'applications', label: t('tabApplications') },
@@ -390,39 +492,26 @@ export default function UserManagementPage() {
                 aria-selected={selected}
                 onClick={() => setActiveTab(tab.key)}
                 sx={{
-                  width: 'auto',
-                  minWidth: '6.75rem',
-                  minHeight: '2.75rem',
-                  px: '1rem',
-                  py: '0.625rem',
-                  borderRadius: '1rem',
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '0.45rem',
-                  textTransform: 'none',
-                  fontWeight: 700,
-                  fontSize: '0.8rem',
-                  lineHeight: 1,
-                  color: selected ? '#fff' : '#ec4899',
-                  background: selected
-                    ? 'linear-gradient(135deg, #e73386, #dc2577)'
-                    : 'rgba(255, 255, 255, 0.97)',
-                  border: selected ? '1px solid #db4f9f' : '1px solid rgba(236, 72, 153, 0.38)',
+                  minWidth: '5.375rem',
+                  minHeight: '2.25rem',
+                  px: '0.9375rem',
+                  py: '0.5625rem',
+                  border: 0,
+                  borderRadius: '9px',
+                  color: selected ? '#fff' : '#db4f9f',
+                  background: selected ? 'linear-gradient(135deg, #e73386, #dc2577)' : 'transparent',
                   boxShadow: 'none',
-                  cursor: 'pointer',
                   fontFamily: 'inherit',
-                  transition: 'color 180ms ease, background 180ms ease, border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease',
+                  fontSize: 'inherit',
+                  lineHeight: 'inherit',
+                  fontWeight: 700,
+                  cursor: 'pointer',
+                  textTransform: 'capitalize',
+                  transition: 'color 160ms ease, background 160ms ease, box-shadow 160ms ease, transform 160ms ease',
                   '&:hover, &:focus-visible': {
-                    color: selected ? '#fff' : '#5b1e8c',
-                    background: selected ? 'linear-gradient(135deg, #e73386, #dc2577)' : '#fff5fa',
-                    borderColor: selected ? '#db4f9f' : 'rgba(91, 30, 140, 0.28)',
+                    color: '#fff',
+                    background: 'linear-gradient(135deg, #e73386, #dc2577)',
                     boxShadow: 'none',
-                    outline: 'none',
-                    transform: 'translateY(-1px)',
-                  },
-                  '&:active': {
-                    transform: selected ? 'none' : 'translateY(0)',
                   },
                 }}
               >
@@ -432,11 +521,11 @@ export default function UserManagementPage() {
                     component="span"
                     sx={{
                       ml: 1,
-                      px: 1,
-                      py: 0.15,
+                      px: 0.85,
+                      py: 0.1,
                       borderRadius: 999,
-                      fontSize: '0.75rem',
-                      fontWeight: 950,
+                      fontSize: '0.7rem',
+                      fontWeight: 900,
                       bgcolor: selected ? 'rgba(255,255,255,0.26)' : 'rgba(223, 50, 123, 0.14)',
                       color: selected ? '#fff' : '#C52A72',
                     }}
@@ -447,315 +536,342 @@ export default function UserManagementPage() {
               </Button>
             );
           })}
-          </Box>
-        </Stack>
+        </Box>
+      </Box>
 
-        <Grid
-          container
-          spacing={0}
-          alignItems="flex-start"
-          sx={{ width: '100%', maxWidth: 'none', minHeight: 0, flex: 1, m: 0 }}
-        >
-          <Grid item xs={12} sx={{ width: '100%', maxWidth: 'none', flexBasis: '100%', p: 0, alignSelf: 'flex-start' }}>
-            {activeTab === 'applications' ? (
-              <JoinRequestsTab requests={joinRequests} loading={joinLoading} onChanged={loadJoinRequests} />
-            ) : (
+      <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', gap: '1rem', overflow: 'hidden' }}>
+        {activeTab === 'applications' ? (
+          <Box sx={{ minHeight: 0, overflow: 'auto' }}>
+            <JoinRequestsTab requests={joinRequests} loading={joinLoading} onChanged={loadJoinRequests} />
+          </Box>
+        ) : (
+          <>
             <Box
+              component="section"
+              aria-label={t('apFiltersAria')}
               sx={{
-                width: '100%',
-                maxWidth: 'none',
-                bgcolor: 'rgba(255, 255, 255, 0.82)',
                 border: '1px solid rgba(167, 139, 250, 0.18)',
-                borderRadius: '24px',
+                borderRadius: '22px',
+                background: 'rgba(255, 255, 255, 0.78)',
                 boxShadow: 'none',
                 backdropFilter: 'blur(18px)',
-                alignSelf: 'flex-start',
-                overflow: 'hidden',
+                p: '1rem',
+                display: 'grid',
+                gridTemplateColumns: {
+                  xs: '1fr',
+                  md: 'minmax(280px, 2fr) minmax(150px, 1fr) minmax(150px, 1fr) minmax(160px, 1fr) auto',
+                },
+                gap: '0.75rem',
+                alignItems: 'center',
+                overflow: 'visible',
+                position: 'relative',
+                zIndex: 100,
+                flex: '0 0 auto',
               }}
             >
-          <Stack direction={{ xs: 'column', md: 'row' }} spacing={0.5} alignItems={{ md: 'center' }} justifyContent="space-between" sx={{ px: { xs: 1, md: 1.35 }, pt: { xs: 0.75, md: 1 }, pb: 0.25, flexShrink: 0 }}>
-            <Stack direction="row" spacing={1.1} alignItems="center" sx={{ flexShrink: 0 }}>
-              <Typography variant="h5" fontWeight={950} sx={{ color: '#100B2F' }}>{t('umUsersHeading')}</Typography>
-              <Chip
-                label={t('umTotalChip').replace('{n}', users.length)}
+              <Box component="label" sx={filterFieldSx}>
+                <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder={t('umSearchPlaceholder')} />
+              </Box>
+              <Box component="label" sx={filterFieldSx}>
+                <span>{t('colRole')}</span>
+                <select value={roleFilter} onChange={(event) => setRoleFilter(event.target.value)}>
+                  <option value="all">{t('umAllRoles')}</option>
+                  {ROLES.map((role) => <option key={role} value={role}>{roleLabel(role)}</option>)}
+                </select>
+              </Box>
+              <Box component="label" sx={filterFieldSx}>
+                <span>{t('apColStatus')}</span>
+                <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
+                  <option value="all">{t('umAllStatuses')}</option>
+                  <option value="active">{t('umStatusActive')}</option>
+                  <option value="inactive">{t('umStatusInactive')}</option>
+                </select>
+              </Box>
+              <Box component="label" sx={filterFieldSx}>
+                <span>{t('evSortBy')}</span>
+                <select value={sortBy} onChange={(event) => setSortBy(event.target.value)}>
+                  <option value="newest">{t('sortNewest')}</option>
+                  <option value="oldest">{t('sortOldest')}</option>
+                  <option value="name">{t('sortName')}</option>
+                  <option value="role">{t('sortRole')}</option>
+                </select>
+              </Box>
+              <Button
+                type="button"
+                onClick={clearFilters}
                 sx={{
-                  height: '1.875rem',
-                  bgcolor: '#F2ECFF',
-                  color: '#6D3CCF',
-                  fontWeight: 950,
-                  borderRadius: 999,
-                  border: '1px solid rgba(124, 58, 237, 0.08)',
-                }}
-              />
-            </Stack>
-
-            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1} sx={{ flex: 1, justifyContent: 'flex-end', minWidth: 0 }}>
-              <TextField
-                placeholder={t('umSearchPlaceholder')}
-                value={search}
-                onChange={(event) => setSearch(event.target.value)}
-                sx={{
-                  minWidth: { md: '20.625rem' },
-                  '& .MuiOutlinedInput-root': {
-                    height: '3.125rem',
-                    borderRadius: '16px',
-                    bgcolor: 'rgba(255,255,255,0.72)',
-                    boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.8)',
-                    '& fieldset': { borderColor: 'rgba(130, 92, 206, 0.16)' },
-                    '&:hover fieldset': { borderColor: 'rgba(124, 58, 237, 0.28)' },
-                    '&.Mui-focused fieldset': { borderColor: '#B57BE8' },
+                  minHeight: '2.5rem',
+                  px: '1.25rem',
+                  border: '1px solid rgba(0, 0, 0, 0.23)',
+                  borderRadius: '18px',
+                  color: '#171239',
+                  background: 'rgba(255, 255, 255, 0.97)',
+                  boxShadow: 'none',
+                  fontFamily: 'inherit',
+                  fontSize: '1rem',
+                  fontWeight: 400,
+                  textTransform: 'none',
+                  cursor: 'pointer',
+                  transition: 'color 180ms ease, background 180ms ease, border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease',
+                  '&:hover, &:focus-visible': {
+                    color: '#fff',
+                    background: 'linear-gradient(135deg, #e73386, #dc2577)',
+                    borderColor: 'transparent',
+                    boxShadow: '0 14px 26px rgba(223, 50, 123, 0.24)',
+                    transform: 'translateY(-2px)',
                   },
+                  '&:active': { transform: 'translateY(0)' },
                 }}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <SearchIcon fontSize="small" sx={{ color: '#6F6890' }} />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-              <FormControl size="small" sx={{ minWidth: '9.375rem' }}>
-                <Select
-                  value={roleFilter}
-                  onChange={(event) => setRoleFilter(event.target.value)}
-                  sx={{
-                    height: '3.125rem',
-                    borderRadius: '16px',
-                    bgcolor: 'rgba(255,255,255,0.72)',
-                    fontWeight: 750,
-                    '& fieldset': { borderColor: 'rgba(130, 92, 206, 0.16)' },
-                  }}
-                >
-                  <MenuItem value="all">{t('umAllRoles')}</MenuItem>
-                  {ROLES.map((role) => <MenuItem key={role} value={role}>{roleLabel(role)}</MenuItem>)}
-                </Select>
-              </FormControl>
-              <FormControl size="small" sx={{ minWidth: '9.375rem' }}>
-                <Select
-                  value={statusFilter}
-                  onChange={(event) => setStatusFilter(event.target.value)}
-                  sx={{
-                    height: '3.125rem',
-                    borderRadius: '16px',
-                    bgcolor: 'rgba(255,255,255,0.72)',
-                    fontWeight: 750,
-                    '& fieldset': { borderColor: 'rgba(130, 92, 206, 0.16)' },
-                  }}
-                >
-                  <MenuItem value="all">{t('umAllStatuses')}</MenuItem>
-                  <MenuItem value="active">{t('umStatusActive')}</MenuItem>
-                  <MenuItem value="inactive">{t('umStatusInactive')}</MenuItem>
-                </Select>
-              </FormControl>
-              <FormControl size="small" sx={{ minWidth: '10rem' }}>
-                <Select
-                  value={sortBy}
-                  onChange={(event) => setSortBy(event.target.value)}
-                  sx={{
-                    height: '3.125rem',
-                    borderRadius: '16px',
-                    bgcolor: 'rgba(255,255,255,0.72)',
-                    fontWeight: 750,
-                    '& fieldset': { borderColor: 'rgba(130, 92, 206, 0.16)' },
-                  }}
-                  startAdornment={<SortIcon fontSize="small" sx={{ ml: 1, mr: 0.5, color: '#6D3CCF' }} />}
-                >
-                  <MenuItem value="newest">{t('sortNewest')}</MenuItem>
-                  <MenuItem value="oldest">{t('sortOldest')}</MenuItem>
-                  <MenuItem value="name">{t('sortName')}</MenuItem>
-                  <MenuItem value="role">{t('sortRole')}</MenuItem>
-                </Select>
-              </FormControl>
-            </Stack>
-          </Stack>
-
-          <Box
-            sx={{
-              px: 0,
-              pb: 0,
-            }}
-          >
-            <Box
-              sx={{
-                ...rowGrid,
-                px: '1.125rem',
-                display: { xs: 'none', md: 'grid' },
-                minHeight: '3.25rem',
-                borderTop: '1px solid rgba(167, 139, 250, 0.13)',
-                borderBottom: '1px solid rgba(167, 139, 250, 0.13)',
-                bgcolor: 'transparent',
-                flexShrink: 0,
-              }}
-            >
-              {[
-                { key: 'user', label: t('colUser') },
-                { key: 'role', label: t('colRole') },
-                { key: 'joined', label: t('colJoined') },
-                { key: 'status', label: t('apColStatus') },
-                { key: 'actions', label: t('colActions') },
-              ].map((col) => (
-                <Typography
-                  key={col.key}
-                  variant="caption"
-                  sx={{
-                    fontWeight: 950,
-                    color: 'rgba(36, 16, 79, 0.64)',
-                    textTransform: 'uppercase',
-                    letterSpacing: 0,
-                    fontSize: '0.8125rem',
-                    textAlign: col.key === 'user' ? 'left' : 'center',
-                  }}
-                >
-                  {col.label}
-                </Typography>
-              ))}
+              >
+                {t('auditClear')}
+              </Button>
             </Box>
 
             <Box
+              component="section"
+              aria-busy={loading}
               sx={{
-                maxHeight: { xs: 'calc(100dvh - 420px)', md: 'calc(100dvh - 360px)' },
-                overflowY: 'auto',
-                overflowX: 'hidden',
-                scrollPaddingBottom: 0,
-                '&::-webkit-scrollbar': { width: '0.5rem' },
-                '&::-webkit-scrollbar-track': { background: 'rgba(244, 238, 255, 0.45)', borderRadius: 999 },
-                '&::-webkit-scrollbar-thumb': { background: 'rgba(167, 139, 250, 0.5)', borderRadius: 999 },
+                flex: '1 1 auto',
+                minHeight: 0,
+                display: 'flex',
+                flexDirection: 'column',
+                border: '1px solid rgba(167, 139, 250, 0.18)',
+                borderRadius: '24px',
+                background: 'rgba(255, 255, 255, 0.82)',
+                boxShadow: 'none',
+                backdropFilter: 'blur(18px)',
+                overflow: 'hidden',
+                position: 'relative',
+                zIndex: 1,
               }}
             >
-              <Stack spacing={0} sx={{ pb: 0 }}>
-                {loading ? (
-                  <Box sx={{ py: 8, textAlign: 'center' }}>
-                    <CircularProgress />
-                  </Box>
-                ) : filteredUsers.length > 0 ? filteredUsers.map((user) => {
-                  const inactive = isInactiveUser(user);
-                  return (
-                  <Box
-                    key={user.id}
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => selectUser(user)}
-                    onKeyDown={(event) => {
-                      if (event.key === 'Enter' || event.key === ' ') selectUser(user);
-                    }}
+              <Box
+                sx={{
+                  ...rowGrid,
+                  px: '1.125rem',
+                  display: { xs: 'none', md: 'grid' },
+                  minHeight: '3.25rem',
+                  borderBottom: '1px solid rgba(167, 139, 250, 0.13)',
+                  color: 'rgba(36, 16, 79, 0.64)',
+                  fontSize: '0.8125rem',
+                  fontWeight: 800,
+                  flex: '0 0 auto',
+                }}
+              >
+                {[
+                  { key: 'user', label: t('colUser') },
+                  { key: 'role', label: t('colRole') },
+                  { key: 'joined', label: t('colJoined') },
+                  { key: 'status', label: t('apColStatus') },
+                  { key: 'actions', label: t('colActions') },
+                ].map((col) => (
+                  <Typography
+                    key={col.key}
+                    component="span"
                     sx={{
-                      ...rowGrid,
-                      minHeight: { xs: 'auto', md: '4.35rem' },
-                      px: { xs: 1.7, md: '1.125rem' },
-                      py: { xs: 1.35, md: 0 },
-                      borderRadius: { xs: '18px', md: 0 },
-                      border: 0,
-                      borderBottom: '1px solid rgba(167, 139, 250, 0.13)',
-                      bgcolor: inactive ? 'rgba(255, 247, 250, 0.62)' : 'transparent',
-                      cursor: 'pointer',
-                      transition: 'transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease, border-color 180ms ease',
-                      ...(selectedUser?.id === user.id
-                        ? {
-                            bgcolor: inactive ? 'rgba(255, 239, 245, 0.8)' : 'rgba(244, 238, 255, 0.74)',
-                          }
-                        : {}),
-                      '&:hover': {
-                        bgcolor: inactive ? 'rgba(255, 242, 247, 0.86)' : 'rgba(255, 250, 254, 0.82)',
-                      },
+                      fontWeight: 800,
+                      color: 'rgba(36, 16, 79, 0.64)',
+                      fontSize: '0.8125rem',
+                      textAlign: col.key === 'user' ? 'left' : 'center',
                     }}
                   >
-                    <Stack direction="row" spacing={1.25} alignItems="center" sx={{ minWidth: 0 }}>
-                      <Avatar
-                        src={user.avatarUrl || ''}
-                        sx={{
-                          width: '2.25rem',
-                          height: '2.25rem',
-                          bgcolor: '#EEE7FF',
-                          color: '#6D3CCF',
-                          fontWeight: 950,
-                          fontSize: '0.8125rem',
-                          boxShadow: 'none',
-                        }}
-                      >
-                        {initials(user)}
-                      </Avatar>
-                      <Box sx={{ minWidth: 0 }}>
-                        <Typography fontWeight={900} noWrap sx={{ color: '#17122E', fontSize: '0.875rem', lineHeight: 1.2 }}>{getFullName(user, t('umUnnamedUser'))}</Typography>
-                        <Typography color="rgba(36, 16, 79, 0.55)" noWrap sx={{ fontSize: '0.75rem', mt: 0.25 }}>{user.email || t('umNoEmail')}</Typography>
-                      </Box>
-                    </Stack>
+                    {col.label}
+                  </Typography>
+                ))}
+              </Box>
 
-                    <Box onClick={(event) => event.stopPropagation()} sx={{ display: 'flex', justifyContent: 'center', minWidth: 0 }}>
-                      <Select
-                        value={normalizeUserRole(user.role)}
-                        onChange={(event) => handleRoleChange(user, event.target.value)}
-                        disabled={saving === user.id}
-                        size="small"
-                        sx={{
-                          width: '8.75rem',
-                          height: '2.25rem',
-                          borderRadius: '10px',
-                          fontWeight: 850,
-                          fontSize: '0.75rem',
-                          ...(ROLE_STYLES[normalizeUserRole(user.role)] || ROLE_STYLES.participant),
-                          '& .MuiSelect-select': { py: 0.75, textAlign: 'center' },
-                          '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.65)' },
-                        }}
-                      >
-                        {ROLES.map((role) => <MenuItem key={role} value={role}>{roleLabel(role)}</MenuItem>)}
-                      </Select>
-                    </Box>
-
-                    <Typography fontWeight={800} color="rgba(36, 16, 79, 0.72)" sx={{ textAlign: 'center', fontSize: '0.8125rem' }}>{formatDateValue(getJoinedDate(user))}</Typography>
-
-                    <Box sx={{ display: 'flex', justifyContent: 'center', minWidth: 0 }}>
-                      <Chip
-                        label={inactive ? t('umStatusInactive') : t('umStatusActive')}
-                        size="small"
-                        sx={{
-                          height: '1.875rem',
-                          minWidth: '5.75rem',
-                          justifyContent: 'center',
-                          borderRadius: '10px',
-                          color: inactive ? '#C2415B' : '#329143',
-                          bgcolor: inactive ? 'rgba(244, 63, 94, 0.10)' : 'rgba(134, 209, 124, 0.22)',
-                          border: inactive ? '1px solid rgba(244, 63, 94, 0.16)' : '1px solid rgba(134, 209, 124, 0.18)',
-                          fontWeight: 850,
-                          fontSize: '0.75rem',
-                        }}
-                      />
-                    </Box>
-
-                    <Stack
-                      direction="row"
-                      spacing={0.75}
-                      justifyContent={{ xs: 'flex-start', md: 'center' }}
-                      onClick={(event) => event.stopPropagation()}
-                    >
-                      <IconButton aria-label={t('umEditAria').replace('{name}', getFullName(user, t('umUnnamedUser')))} onClick={() => selectUser(user)} sx={actionIconSx('purple')}>
-                        <EditOutlinedIcon fontSize="small" />
-                      </IconButton>
-                      <IconButton
-                        aria-label={t('umDeactivateAria').replace('{name}', getFullName(user, t('umUnnamedUser')))}
-                        disabled={inactive || deactivating}
-                        onClick={() => setDeactivateTarget(user)}
-                        sx={actionIconSx('pink')}
-                      >
-                        <DeleteOutlinedIcon fontSize="small" />
-                      </IconButton>
-                    </Stack>
+              <Box sx={{ flex: '1 1 auto', minHeight: 0, overflow: 'hidden' }}>
+                {loading ? (
+                  <Box sx={{ minHeight: '100%', p: '2rem', display: 'grid', placeContent: 'center', justifyItems: 'center' }}>
+                    <CircularProgress />
                   </Box>
+                ) : pagination.rows.length > 0 ? pagination.rows.map((user) => {
+                  const inactive = isInactiveUser(user);
+                  return (
+                    <Box
+                      key={user.id}
+                      role="button"
+                      tabIndex={0}
+                      onClick={() => selectUser(user)}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter' || event.key === ' ') selectUser(user);
+                      }}
+                      sx={{
+                        ...rowGrid,
+                        minHeight: { xs: 'auto', md: '4rem' },
+                        px: { xs: 1.7, md: '1.125rem' },
+                        py: { xs: 1.35, md: 0 },
+                        borderRadius: { xs: '18px', md: 0 },
+                        border: 0,
+                        borderBottom: '1px solid rgba(167, 139, 250, 0.13)',
+                        color: 'rgba(36, 16, 79, 0.78)',
+                        fontSize: '0.8125rem',
+                        fontWeight: 700,
+                        bgcolor: inactive ? 'rgba(255, 247, 250, 0.62)' : 'transparent',
+                        cursor: 'pointer',
+                        transition: 'background-color 180ms ease',
+                        ...(selectedUser?.id === user.id
+                          ? {
+                              bgcolor: inactive ? 'rgba(255, 239, 245, 0.8)' : 'rgba(244, 238, 255, 0.74)',
+                            }
+                          : {}),
+                        '&:hover': {
+                          bgcolor: inactive ? 'rgba(255, 242, 247, 0.86)' : 'rgba(255, 250, 254, 0.82)',
+                        },
+                      }}
+                    >
+                      <Stack direction="row" spacing={1.25} alignItems="center" sx={{ minWidth: 0 }}>
+                        <Avatar
+                          src={user.avatarUrl || ''}
+                          sx={{
+                            width: '2rem',
+                            height: '2rem',
+                            background: 'linear-gradient(135deg, #fce7f3, #ddd6fe)',
+                            color: '#6D3CCF',
+                            fontWeight: 800,
+                            fontSize: '0.75rem',
+                            boxShadow: 'none',
+                          }}
+                        >
+                          {initials(user)}
+                        </Avatar>
+                        <Box sx={{ minWidth: 0 }}>
+                          <Typography fontWeight={800} noWrap sx={{ color: '#17122E', fontSize: '0.8125rem', lineHeight: 1.2 }}>{getFullName(user, t('umUnnamedUser'))}</Typography>
+                          <Typography color="rgba(36, 16, 79, 0.55)" noWrap sx={{ fontSize: '0.75rem', mt: 0.125 }}>{user.email || t('umNoEmail')}</Typography>
+                        </Box>
+                      </Stack>
+
+                      <Box onClick={(event) => event.stopPropagation()} sx={{ display: 'flex', justifyContent: 'center', minWidth: 0 }}>
+                        <Select
+                          value={normalizeUserRole(user.role)}
+                          onChange={(event) => handleRoleChange(user, event.target.value)}
+                          disabled={saving === user.id}
+                          size="small"
+                          sx={{
+                            width: '8.75rem',
+                            height: '2.25rem',
+                            borderRadius: '10px',
+                            fontWeight: 850,
+                            fontSize: '0.75rem',
+                            ...(ROLE_STYLES[normalizeUserRole(user.role)] || ROLE_STYLES.participant),
+                            '& .MuiSelect-select': { py: 0.75, textAlign: 'center' },
+                            '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(255,255,255,0.65)' },
+                          }}
+                        >
+                          {ROLES.map((role) => <MenuItem key={role} value={role}>{roleLabel(role)}</MenuItem>)}
+                        </Select>
+                      </Box>
+
+                      <Typography fontWeight={700} color="rgba(36, 16, 79, 0.72)" sx={{ textAlign: 'center', fontSize: '0.8125rem' }}>{formatDateValue(getJoinedDate(user))}</Typography>
+
+                      <Box sx={{ display: 'flex', justifyContent: 'center', minWidth: 0 }}>
+                        <Chip
+                          label={inactive ? t('umStatusInactive') : t('umStatusActive')}
+                          size="small"
+                          sx={{
+                            width: 'fit-content',
+                            borderRadius: '10px',
+                            px: '0.375rem',
+                            height: '1.875rem',
+                            minWidth: '5.75rem',
+                            justifyContent: 'center',
+                            color: inactive ? '#C2415B' : '#329143',
+                            bgcolor: inactive ? 'rgba(244, 63, 94, 0.10)' : 'rgba(134, 209, 124, 0.22)',
+                            border: inactive ? '1px solid rgba(244, 63, 94, 0.16)' : '1px solid rgba(134, 209, 124, 0.18)',
+                            fontWeight: 800,
+                            fontSize: '0.75rem',
+                          }}
+                        />
+                      </Box>
+
+                      <Stack
+                        direction="row"
+                        spacing={0.75}
+                        justifyContent={{ xs: 'flex-start', md: 'center' }}
+                        onClick={(event) => event.stopPropagation()}
+                      >
+                        <IconButton aria-label={t('umEditAria').replace('{name}', getFullName(user, t('umUnnamedUser')))} onClick={() => selectUser(user)} sx={actionIconSx('purple')}>
+                          <EditOutlinedIcon fontSize="small" />
+                        </IconButton>
+                        <IconButton
+                          aria-label={t('umDeactivateAria').replace('{name}', getFullName(user, t('umUnnamedUser')))}
+                          disabled={inactive || deactivating}
+                          onClick={() => setDeactivateTarget(user)}
+                          sx={actionIconSx('pink')}
+                        >
+                          <DeleteOutlinedIcon fontSize="small" />
+                        </IconButton>
+                      </Stack>
+                    </Box>
                   );
                 }) : (
-                  <Box sx={{ py: 8, textAlign: 'center' }}>
+                  <Box sx={{ minHeight: '100%', p: '2rem', display: 'grid', placeContent: 'center', justifyItems: 'center', color: 'rgba(36, 16, 79, 0.65)', fontWeight: 800, textAlign: 'center' }}>
                     <Typography fontWeight={900}>{t('umNoUsers')}</Typography>
                     <Typography color="text.secondary" sx={{ mt: 1 }}>{t('umNoUsersHint')}</Typography>
                   </Box>
                 )}
-              </Stack>
-            </Box>
-          </Box>
-            </Box>
-            )}
-          </Grid>
+              </Box>
 
-        </Grid>
-      </Stack>
+              <Box
+                component="footer"
+                sx={{
+                  flex: '0 0 auto',
+                  p: '0.75rem 1rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  borderTop: '1px solid rgba(167, 139, 250, 0.16)',
+                  background: 'rgba(255, 255, 255, 0.72)',
+                  '& .MuiPaginationItem-root': {
+                    border: '2px solid transparent',
+                    color: '#5b1e8c',
+                    background: 'rgba(255, 255, 255, 0.97)',
+                    boxShadow: '0 9px 24px rgba(91, 30, 140, 0.12)',
+                    fontWeight: 900,
+                    transition: 'color 180ms ease, background 180ms ease, border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease',
+                  },
+                  '& .MuiPaginationItem-root:hover': {
+                    color: '#fff',
+                    background: 'linear-gradient(135deg, #e73386, #dc2577)',
+                    borderColor: 'transparent',
+                    boxShadow: '0 14px 26px rgba(223, 50, 123, 0.24)',
+                    transform: 'translateY(-2px)',
+                  },
+                  '& .MuiPaginationItem-root:focus-visible': {
+                    color: '#fff',
+                    background: 'linear-gradient(135deg, #e73386, #dc2577)',
+                    borderColor: 'transparent',
+                    boxShadow: '0 14px 26px rgba(223, 50, 123, 0.24)',
+                    transform: 'translateY(-2px)',
+                  },
+                  '& .MuiPaginationItem-root:active': { transform: 'translateY(0)' },
+                  '& .MuiPaginationItem-root.Mui-selected': {
+                    color: '#fff',
+                    background: 'linear-gradient(135deg, #e73386, #dc2577)',
+                    borderColor: 'transparent',
+                    boxShadow: '0 14px 26px rgba(223, 50, 123, 0.24)',
+                  },
+                  '& .MuiPaginationItem-root.Mui-disabled': {
+                    color: 'rgba(91, 30, 140, 0.38)',
+                    background: 'rgba(255, 255, 255, 0.72)',
+                    boxShadow: 'none',
+                    transform: 'none',
+                  },
+                }}
+              >
+                <Pagination
+                  count={pagination.pageCount}
+                  page={pagination.page}
+                  onChange={(event, value) => setPage(value)}
+                  siblingCount={1}
+                  boundaryCount={1}
+                  shape="rounded"
+                />
+              </Box>
+            </Box>
+          </>
+        )}
+      </Box>
 
       <Dialog
         open={detailsOpen && Boolean(selectedUser)}
@@ -769,23 +885,25 @@ export default function UserManagementPage() {
             justifyContent: 'center',
           },
         }}
-        PaperProps={{
-          dir: direction,
-          sx: {
-            width: { xs: 'calc(100vw - 24px)', sm: 'min(49.5rem, calc(100vw - 32px))' },
-            maxWidth: 792,
-            m: 0,
-            position: 'fixed',
-            top: '50%',
-            insetInlineStart: '50%',
-            transform: 'translate(-50%, -50%)',
-            height: 'auto',
-            maxHeight: 'calc(100vh - 24px)',
-            borderRadius: { xs: '20px', md: '24px' },
-            overflow: 'hidden',
-            bgcolor: 'rgba(255, 255, 255, 0.94)',
-            backdropFilter: 'blur(18px)',
-            boxShadow: '0 30px 86px rgba(32, 20, 67, 0.28)',
+        slotProps={{
+          paper: {
+            dir: direction,
+            sx: {
+              width: { xs: 'calc(100vw - 24px)', sm: 'min(49.5rem, calc(100vw - 32px))' },
+              maxWidth: 792,
+              m: 0,
+              position: 'fixed',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              height: 'auto',
+              maxHeight: 'calc(100vh - 24px)',
+              borderRadius: { xs: '20px', md: '24px' },
+              overflow: 'hidden',
+              bgcolor: 'rgba(255, 255, 255, 0.94)',
+              backdropFilter: 'blur(18px)',
+              boxShadow: '0 30px 86px rgba(32, 20, 67, 0.28)',
+            },
           },
         }}
         BackdropProps={{
@@ -960,15 +1078,17 @@ export default function UserManagementPage() {
         onClose={() => {
           if (!deactivating) setDeactivateTarget(null);
         }}
-        PaperProps={{
-          dir: direction,
-          sx: {
-            width: { xs: 'calc(100vw - 32px)', sm: '26rem' },
-            borderRadius: '24px',
-            p: 0,
-            overflow: 'hidden',
-            bgcolor: 'rgba(255, 255, 255, 0.96)',
-            boxShadow: '0 26px 74px rgba(32, 20, 67, 0.24)',
+        slotProps={{
+          paper: {
+            dir: direction,
+            sx: {
+              width: { xs: 'calc(100vw - 32px)', sm: '26rem' },
+              borderRadius: '24px',
+              p: 0,
+              overflow: 'hidden',
+              bgcolor: 'rgba(255, 255, 255, 0.96)',
+              boxShadow: '0 26px 74px rgba(32, 20, 67, 0.24)',
+            },
           },
         }}
         BackdropProps={{
