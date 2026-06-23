@@ -352,18 +352,26 @@ export async function getRegistrationCounts(eventIds) {
   const ids = [...new Set(eventIds.filter(Boolean))];
   const aggregateSets = Object.fromEntries(ids.map((id) => [id, new Set()]));
 
-  const directEntries = await Promise.all(
-    ids.map(async (eid) => {
-      try {
-        const snap = await getCountFromServer(
-          collection(db, 'events', eid, 'registrations')
-        );
-        return [eid, snap.data().count];
-      } catch (_) {
-        return [eid, 0];
-      }
-    })
-  );
+  // One getCountFromServer() per event would fire them all at once for
+  // events-heavy dashboards, which is enough to trip Firestore's aggregation
+  // query rate limit (429 resource-exhausted). Run small batches in sequence
+  // instead of all-at-once so the burst stays under the limit.
+  const directEntries = [];
+  for (const group of chunk(ids, 3)) {
+    const groupEntries = await Promise.all(
+      group.map(async (eid) => {
+        try {
+          const snap = await getCountFromServer(
+            collection(db, 'events', eid, 'registrations')
+          );
+          return [eid, snap.data().count];
+        } catch (_) {
+          return [eid, 0];
+        }
+      })
+    );
+    directEntries.push(...groupEntries);
+  }
 
   const directCounts = Object.fromEntries(directEntries);
   const [bookingEventDocs, bookingSlotDocs, templateDocs, parentDocs, slotDocs] = await Promise.all([
