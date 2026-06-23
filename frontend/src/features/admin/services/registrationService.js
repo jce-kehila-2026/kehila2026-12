@@ -15,6 +15,7 @@ import {
   where,
   limit,
   writeBatch,
+  runTransaction,
   serverTimestamp,
 } from 'firebase/firestore';
 import { db } from '../../../firebase';
@@ -334,7 +335,7 @@ export async function getBookingsByEvent(eventId) {
 export async function updateRegistrationStatus(regId, eventId, status) {
   if (!regId || !eventId) throw new Error('updateRegistrationStatus requires registration and event ids.');
   const normalizedStatus = String(status || '').toLowerCase();
-  const allowedStatuses = new Set(['confirmed', 'pending', 'cancelled', 'completed']);
+  const allowedStatuses = new Set(['confirmed', 'cancelled']);
   if (!allowedStatuses.has(normalizedStatus)) throw new Error('Unsupported registration status.');
 
   const rosterRef = doc(db, 'events', eventId, 'registrations', regId);
@@ -462,6 +463,7 @@ export async function addRegistration(data) {
     sessionDateLabel,
     sessionTime,
     recurringSchedule,
+    capacity,
   } = data;
 
   if (!eventId) throw new Error('eventId is required');
@@ -543,18 +545,49 @@ export async function addRegistration(data) {
     registrationSource: 'event',
   };
 
-  // Note: stats counters and events/{eventId}.registeredCount are intentionally
-  // NOT updated here. Clients cannot write to shared aggregates under the new
-  // rules; a Cloud Function should maintain those counts on subcollection writes.
-  const batch = writeBatch(db);
-  batch.set(bookingRef, bookingDoc, { merge: true });
-  batch.set(eventRosterRef, eventRosterDoc, { merge: true });
+  // Capacity is enforced transactionally against a per-slot counter doc
+  // (events/{realEventId}/slotCounters/{slotKey}). The counter is the only
+  // value a client transaction can read to decide "is this slot full?", since
+  // Firestore transactions can't run queries. `capacity` is resolved by the
+  // caller (slot → provider → event cascade) and passed in; when it's 0/absent
+  // the counter is still maintained but no ceiling is enforced.
+  const slotKey = slotId || realEventId;
+  const counterRef = doc(db, 'events', realEventId, 'slotCounters', slotKey);
+  const userBookingRef = uid ? doc(db, 'users', uid, 'bookings', bookingId) : null;
+  const capacityLimit = Number(capacity) || 0;
 
-  if (uid) {
-    batch.set(doc(db, 'users', uid, 'bookings', bookingId), bookingDoc, { merge: true });
-  }
+  await runTransaction(db, async (tx) => {
+    // All reads must precede writes inside a transaction.
+    const [counterSnap, bookingSnap] = await Promise.all([
+      tx.get(counterRef),
+      tx.get(bookingRef),
+    ]);
+    const currentCount = counterSnap.exists() ? (Number(counterSnap.data().count) || 0) : 0;
+    const existingBooking = bookingSnap.exists() ? bookingSnap.data() : null;
+    // bookingId is deterministic per (user, event, slot), so a re-confirm of an
+    // already-active booking must NOT increment the counter again. Re-booking a
+    // previously cancelled slot does count as a new seat.
+    const alreadyActive = existingBooking ? existingBooking.status === 'confirmed' : false;
+    const takesNewSeat = !alreadyActive;
 
-  await batch.commit();
+    if (capacityLimit > 0 && takesNewSeat && currentCount >= capacityLimit) {
+      throw new Error('SLOT_FULL');
+    }
+
+    tx.set(bookingRef, bookingDoc, { merge: true });
+    tx.set(eventRosterRef, eventRosterDoc, { merge: true });
+    if (userBookingRef) {
+      tx.set(userBookingRef, bookingDoc, { merge: true });
+    }
+    if (takesNewSeat) {
+      tx.set(counterRef, {
+        count: currentCount + 1,
+        slotId: slotKey,
+        eventId: realEventId,
+        updatedAt: serverTimestamp(),
+      }, { merge: true });
+    }
+  });
 
   try {
     await logAuditEvent({
@@ -600,31 +633,55 @@ export async function removeRegistration(regId, participantName, eventId) {
       : sessionRegistrationKey
   );
 
-  // Counters are not maintained from the client (see note in addRegistration).
-  const batch = writeBatch(db);
-  if (bookingId) {
-    const cancellationPatch = {
-      status: 'cancelled',
-      cancelledAt: serverTimestamp(),
-    };
-    batch.set(doc(db, 'bookings', bookingId), cancellationPatch, { merge: true });
-    if (uid) {
-      batch.set(doc(db, 'users', uid, 'bookings', bookingId), cancellationPatch, { merge: true });
+  // Release the seat on the per-slot counter that addRegistration maintains.
+  // Keyed identically (events/{sessionEventId}/slotCounters/{slotKey}) and only
+  // decremented when the booking was actually active, so repeated cancels can't
+  // drive the count negative.
+  const slotKey = registration.slotId || sessionEventId;
+  const counterRef = doc(db, 'events', sessionEventId, 'slotCounters', slotKey);
+  const bookingDocRef = bookingId ? doc(db, 'bookings', bookingId) : null;
+
+  await runTransaction(db, async (tx) => {
+    const counterSnap = await tx.get(counterRef);
+    let wasActive = true;
+    if (bookingDocRef) {
+      const bookingSnap = await tx.get(bookingDocRef);
+      wasActive = bookingSnap.exists() ? bookingSnap.data().status === 'confirmed' : false;
     }
-  }
-  batch.delete(rosterRef);
-  if (sessionEventId && sessionEventId !== eventId) {
-    batch.delete(doc(db, 'events', sessionEventId, 'registrations', sessionRegistrationKey));
-  }
-  if (templateEventId && templateEventId !== eventId) {
-    batch.delete(doc(db, 'events', templateEventId, 'registrations', templateRosterKey));
-  }
-  if (uid) {
-    getLegacyUserRegistrationIds(registration, eventId).forEach((legacyRegistrationId) => {
-      batch.delete(doc(db, 'users', uid, 'registrations', legacyRegistrationId));
-    });
-  }
-  await batch.commit();
+    const currentCount = counterSnap.exists() ? (Number(counterSnap.data().count) || 0) : 0;
+
+    if (bookingId) {
+      const cancellationPatch = {
+        status: 'cancelled',
+        cancelledAt: serverTimestamp(),
+      };
+      tx.set(bookingDocRef, cancellationPatch, { merge: true });
+      if (uid) {
+        tx.set(doc(db, 'users', uid, 'bookings', bookingId), cancellationPatch, { merge: true });
+      }
+    }
+    tx.delete(rosterRef);
+    if (sessionEventId && sessionEventId !== eventId) {
+      tx.delete(doc(db, 'events', sessionEventId, 'registrations', sessionRegistrationKey));
+    }
+    if (templateEventId && templateEventId !== eventId) {
+      tx.delete(doc(db, 'events', templateEventId, 'registrations', templateRosterKey));
+    }
+    if (uid) {
+      getLegacyUserRegistrationIds(registration, eventId).forEach((legacyRegistrationId) => {
+        tx.delete(doc(db, 'users', uid, 'registrations', legacyRegistrationId));
+      });
+    }
+
+    if (wasActive && currentCount > 0) {
+      tx.set(counterRef, {
+        count: currentCount - 1,
+        slotId: slotKey,
+        eventId: sessionEventId,
+        updatedAt: serverTimestamp(),
+      }, { merge: true });
+    }
+  });
 
   try {
     await logAuditEvent({

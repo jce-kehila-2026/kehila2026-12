@@ -18,9 +18,7 @@ const PAGE_SIZE = 10;
 const INTL_LOCALE_BY_LANG = { he: 'he-IL', en: 'en-US' };
 
 const STATUS_LABEL_KEYS = {
-  approved: 'bkStatusApproved',
-  pending: 'bkStatusPending',
-  completed: 'bkStatusCompleted',
+  confirmed: 'bkStatusConfirmed',
   cancelled: 'bkStatusCancelled',
 };
 
@@ -402,9 +400,7 @@ export default function AppointmentsPage() {
               <span>{t('apColStatus')}</span>
               <select value={status} onChange={(event) => setStatus(event.target.value)}>
                 <option value="All Statuses">{t('apAllStatuses')}</option>
-                <option value="Approved">{t('bkStatusApproved')}</option>
-                <option value="Pending">{t('bkStatusPending')}</option>
-                <option value="Completed">{t('bkStatusCompleted')}</option>
+                <option value="Confirmed">{t('bkStatusConfirmed')}</option>
                 <option value="Cancelled">{t('bkStatusCancelled')}</option>
               </select>
             </label>

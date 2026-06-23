@@ -170,6 +170,7 @@ function CommunityPostCard({
       {!isReportedByCurrentUser && (
         <CommentsPreview
           comments={comments}
+          totalCommentsCount={commentsCount}
           isExpanded={isCommentsExpanded}
           localUserId={localUserId}
           localUserName={localUserName}

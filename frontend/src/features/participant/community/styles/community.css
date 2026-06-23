@@ -20,7 +20,7 @@
   --community-home-btn-shadow: 0 9px 24px rgba(91, 30, 140, 0.12);
   --community-home-btn-shadow-hover: 0 14px 26px rgba(223, 50, 123, 0.24);
   display: grid;
-  grid-template-rows: minmax(0, 1fr) auto;
+  grid-template-rows: minmax(0, 1fr);
   gap: 1.375rem;
   height: 100%;
   min-height: 0;
@@ -301,13 +301,16 @@
 }
 
 .community-guidelines-shortcut {
-  width: min(100%, 70.25rem);
+  /* Sits inside the right sidebar, directly under the birthday card. Span all
+     sidebar columns so it stays full-width even in the 2-column sidebar layout
+     used at the 1320px breakpoint. */
+  grid-column: 1 / -1;
+  width: 100%;
   display: flex;
-  justify-content: flex-end;
-  justify-self: center;
-  margin-top: 0.25rem;
+  justify-content: center;
   min-width: 0;
-  padding-right: 0.125rem;
+  margin-top: 0.125rem;
+  padding: 0;
 }
 
 .community-guidelines-shortcut button {
@@ -357,7 +360,12 @@
   overflow-y: auto;
   overscroll-behavior: contain;
   padding-right: 0.25rem;
+  padding-bottom: 0.75rem;
   scrollbar-gutter: stable;
+  /* Soft-fade the bottom edge so posts scroll out cleanly instead of being
+     sliced by a hard line at the scroll-area edge (which read as a "bar"). */
+  -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 1.5rem), transparent);
+  mask-image: linear-gradient(to bottom, #000 calc(100% - 1.5rem), transparent);
 }
 
 .community-right-sidebar {
@@ -3757,6 +3765,10 @@
     overflow: visible;
     padding-right: 0;
     scrollbar-gutter: auto;
+    /* The feed is no longer an internal scroll box here (the page scrolls), so
+       drop the bottom fade — otherwise it would dim the real last post. */
+    -webkit-mask-image: none;
+    mask-image: none;
   }
 
   .community-right-sidebar {

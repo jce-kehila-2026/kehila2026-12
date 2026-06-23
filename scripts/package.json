@@ -7,7 +7,8 @@
     "seed:events": "node seedEvents.js",
     "seed:events:clean": "node seedEvents.js --archive-existing",
     "seed:public-home": "node seedPublicHome.js",
-    "cleanup:public-home-cta": "node cleanupPublicHomeCta.js"
+    "cleanup:public-home-cta": "node cleanupPublicHomeCta.js",
+    "backfill:slot-counters": "node backfillSlotCounters.js"
   },
   "dependencies": {
     "firebase-admin": "^12.0.0"

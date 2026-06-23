@@ -11,14 +11,6 @@ const STATUS_STYLES = {
       border: "1px solid rgba(110, 231, 183, 0.55)",
     },
   },
-  pending: {
-    label: "Pending Approval",
-    sx: {
-      bgcolor: "rgba(255, 237, 213, 0.92)",
-      color: "#c2410c",
-      border: "1px solid rgba(251, 146, 60, 0.55)",
-    },
-  },
   cancelled: {
     label: "Cancelled",
     sx: {
@@ -34,10 +26,8 @@ function normalizeStatus(status) {
   const s = String(status ?? "")
     .trim()
     .toLowerCase();
-  if (s === "confirmed") return "confirmed";
   if (s === "cancelled" || s === "canceled") return "cancelled";
-  if (s === "pending") return "pending";
-  return "pending";
+  return "confirmed";
 }
 
 function parseAppointmentDate(appointment) {
@@ -75,9 +65,8 @@ function formatDateTimeLine(d, timeStr) {
 function AppointmentCard({ appointment, onCancel }) {
   const { time, provider, appointmentType, status, durationMins } = appointment;
   const statusKey = normalizeStatus(status);
-  const st = STATUS_STYLES[statusKey] || STATUS_STYLES.pending;
-  const canCancel =
-    (statusKey === "confirmed" || statusKey === "pending") && Boolean(onCancel);
+  const st = STATUS_STYLES[statusKey] || STATUS_STYLES.confirmed;
+  const canCancel = statusKey === "confirmed" && Boolean(onCancel);
 
   const d = parseAppointmentDate(appointment);
   const dateTimeLine = formatDateTimeLine(d, time);

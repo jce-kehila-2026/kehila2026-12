@@ -75,14 +75,6 @@ function slugifyIdentifier(value, fallback = "item") {
     .slice(0, 100) || fallback;
 }
 
-function normalizeStatus(status) {
-  const s = String(status || "pending").trim().toLowerCase();
-  if (s === "cancelled" || s === "canceled") return "cancelled";
-  if (s === "confirmed" || s === "approved") return "confirmed";
-  if (s === "completed") return "completed";
-  return "pending";
-}
-
 function getEventType(event) {
   return String(event?.eventType || event?.type || event?.category || "").trim().toLowerCase();
 }
@@ -327,6 +319,9 @@ export async function createAppointment(appointmentData = {}) {
   return addRegistration({
     eventId: appointmentData.eventId,
     slotId: appointmentData.slotId,
+    // A 1:1 therapy slot holds exactly one participant; respect a higher
+    // explicit capacity if a slot defines one (e.g. shared/group sessions).
+    capacity: Number(appointmentData.capacity) || 1,
     uid: user.uid,
     participantName,
     participantEmail: user.email || "",
@@ -349,7 +344,7 @@ export async function createAppointment(appointmentData = {}) {
     room: appointmentData.room || appointmentData.eventLocation || "",
     sessionDateLabel: appointmentData.selectedDate || appointmentData.dateKey || "",
     sessionTime: appointmentData.selectedTime || appointmentData.selectedTimeSlot || "",
-    status: appointmentData.status || "pending",
+    status: appointmentData.status || "confirmed",
     notes: appointmentData.notes || "",
   });
 }
