@@ -45,11 +45,11 @@ export default function useCommunityGuidelines(uid) {
       const version = settings?.version ?? COMMUNITY_GUIDELINES_VERSION;
       setLiveVersion(version);
 
-      const localAccepted = getAcceptedGuidelinesVersion();
+      const localAccepted = getAcceptedGuidelinesVersion(uid);
       const bestAccepted = firestoreAccepted || localAccepted;
 
       if (bestAccepted && bestAccepted !== localAccepted) {
-        saveAcceptedGuidelinesVersion(bestAccepted);
+        saveAcceptedGuidelinesVersion(bestAccepted, uid);
       }
 
       setShowGuidelinesModal(bestAccepted !== version);
@@ -59,7 +59,7 @@ export default function useCommunityGuidelines(uid) {
   }, [uid]);
 
   const handleGuidelinesContinue = () => {
-    saveAcceptedGuidelinesVersion(liveVersion);
+    saveAcceptedGuidelinesVersion(liveVersion, uid);
     setShowGuidelinesModal(false);
 
     if (uid) {

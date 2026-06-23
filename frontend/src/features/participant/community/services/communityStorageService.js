@@ -24,13 +24,22 @@ export const safeSaveStringToStorage = (storageKey, value) => {
   }
 };
 
-export const getAcceptedGuidelinesVersion = () => (
-  safeLoadStringFromStorage(COMMUNITY_GUIDELINES_ACCEPTED_KEY)
+// The accepted-version cache is namespaced per user so acceptance never leaks
+// between accounts sharing a browser (or an admin impersonating a participant):
+// without the uid suffix, the first member to accept would suppress the modal
+// for every subsequent member on that device. Falls back to the legacy global
+// key when no uid is supplied so older callers keep working.
+const getAcceptedGuidelinesKey = (uid) => (
+  uid ? `${COMMUNITY_GUIDELINES_ACCEPTED_KEY}:${uid}` : COMMUNITY_GUIDELINES_ACCEPTED_KEY
 );
 
-export const saveAcceptedGuidelinesVersion = (version) => {
+export const getAcceptedGuidelinesVersion = (uid) => (
+  safeLoadStringFromStorage(getAcceptedGuidelinesKey(uid))
+);
+
+export const saveAcceptedGuidelinesVersion = (version, uid) => {
   safeSaveStringToStorage(
-    COMMUNITY_GUIDELINES_ACCEPTED_KEY,
+    getAcceptedGuidelinesKey(uid),
     version ?? COMMUNITY_GUIDELINES_VERSION,
   );
 };

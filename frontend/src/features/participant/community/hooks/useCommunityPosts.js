@@ -79,7 +79,7 @@ export default function useCommunityPosts({
       }
     } catch {
       if (showFeedback) {
-        setRefreshFeedback(t('feedRefreshed'));
+        setRefreshFeedback(t('feedRefreshError'));
       }
     } finally {
       if (showFeedback) {
@@ -105,6 +105,28 @@ export default function useCommunityPosts({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // `localUserId` resolves asynchronously from the participant profile, so the
+  // initial load above often enriches against the 'current-user' fallback and
+  // marks the viewer's own likes/supports as inactive. Re-derive isLiked /
+  // isSupported from the server-backed likedBy/supportedBy arrays whenever the
+  // real id arrives so the viewer's reactions render correctly without a manual
+  // refresh.
+  useEffect(() => {
+    if (!localUserId) return;
+
+    setPosts((currentPosts) => {
+      let changed = false;
+      const nextPosts = currentPosts.map((post) => {
+        const isLiked = Array.isArray(post.likedBy) && post.likedBy.includes(localUserId);
+        const isSupported = Array.isArray(post.supportedBy) && post.supportedBy.includes(localUserId);
+        if (post.isLiked === isLiked && post.isSupported === isSupported) return post;
+        changed = true;
+        return { ...post, isLiked, isSupported };
+      });
+      return changed ? nextPosts : currentPosts;
+    });
+  }, [localUserId]);
 
   useEffect(() => {
     const timerId = window.setInterval(() => {
@@ -276,7 +298,7 @@ export default function useCommunityPosts({
     setPostAttachment(null);
     setPostAnonymously(false);
     setPostError('');
-    setTemporaryPostSuccessMessage('Post published successfully.');
+    setTemporaryPostSuccessMessage(t('postPublished'));
     registerCommunityActivity();
   };
 
