@@ -319,6 +319,9 @@ export async function createAppointment(appointmentData = {}) {
   return addRegistration({
     eventId: appointmentData.eventId,
     slotId: appointmentData.slotId,
+    // A 1:1 therapy slot holds exactly one participant; respect a higher
+    // explicit capacity if a slot defines one (e.g. shared/group sessions).
+    capacity: Number(appointmentData.capacity) || 1,
     uid: user.uid,
     participantName,
     participantEmail: user.email || "",

@@ -2013,6 +2013,7 @@ export default function EventsPage({ embedInDashboard = false, locale = 'he' }) 
       const newRegistrationId = await addRegistration({
         eventId: event.id,
         slotId: session.id,
+        capacity: session.capacity,
         uid: currentUser.uid,
         participantName: currentUser.displayName || currentUser.email.split('@')[0],
         participantEmail: currentUser.email,
@@ -2044,7 +2045,11 @@ export default function EventsPage({ embedInDashboard = false, locale = 'he' }) 
       }));
     } catch (error) {
       console.error('Registration action failed:', error);
-      setRegistrationWarning(t('evRegisterFailed'));
+      setRegistrationWarning(
+        error?.message === 'SLOT_FULL'
+          ? tr(t, 'evSlotFull', 'Sorry, this time slot just filled up.')
+          : t('evRegisterFailed'),
+      );
     } finally {
       setRegisteringId(null);
     }

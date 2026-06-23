@@ -64,6 +64,7 @@ export default function WorkshopFeed({ locale = 'he' }) {
     try {
       const regId = await addRegistration({
         eventId: event.id,
+        capacity: Number(event.maxParticipants || event.capacity) || 0,
         uid: currentUser.uid,
         participantName: currentUser.displayName || currentUser.email.split('@')[0],
         participantEmail: currentUser.email,
