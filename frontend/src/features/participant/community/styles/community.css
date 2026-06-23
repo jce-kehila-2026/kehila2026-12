@@ -3052,15 +3052,21 @@
 
 
 .participant-home--dark .community-page {
-  --community-card-bg: rgba(15, 23, 42, 0.92);
-  --community-card-border: rgba(236, 72, 153, 0.25);
+  --community-card-bg: #111827;
+  --community-card-border: rgba(148, 163, 184, 0.14);
   --community-card-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
-  --community-control-bg: rgba(30, 41, 59, 0.78);
-  --community-divider: rgba(236, 72, 153, 0.16);
-  --community-focus-ring: 0 0 0 4px rgba(236, 72, 153, 0.14);
-  --community-muted: #cbd5e1;
-  --community-muted-strong: #cbd5e1;
+  --community-control-bg: #172033;
+  --community-divider: rgba(148, 163, 184, 0.12);
+  --community-focus-ring: 0 0 0 3px rgba(236, 72, 153, 0.14);
+  --community-muted: #d1d5db;
+  --community-muted-strong: #a8b4c4;
   --community-primary-text: #f8fafc;
+  --community-home-btn-bg: rgba(23, 32, 51, 0.94);
+  --community-home-btn-border: rgba(192, 132, 252, 0.32);
+  --community-home-btn-text: #f472b6;
+  --community-home-btn-hover-bg: rgba(236, 72, 153, 0.14);
+  --community-home-btn-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
+  --community-home-btn-shadow-hover: 0 6px 18px rgba(236, 72, 153, 0.12);
 }
 
 .participant-home--dark .community-page-card,
@@ -3069,10 +3075,14 @@
 .participant-home--dark .birthday-card,
 .participant-home--dark .guidelines-card,
 .participant-home--dark .community-streak-card {
-  border-color: rgba(236, 72, 153, 0.25);
-  background: rgba(15, 23, 42, 0.92);
+  border-color: var(--community-card-border);
+  background: var(--community-card-bg);
   color: #e2e8f0;
-  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+  box-shadow: var(--community-card-shadow);
+}
+
+.participant-home--dark .community-streak-card {
+  background: #172033;
 }
 
 .participant-home--dark .community-page-card h2,
@@ -3096,7 +3106,8 @@
 }
 
 .participant-home--dark .create-post-card textarea {
-  background: #1e293b;
+  background: rgba(23, 32, 51, 0.94);
+  border: 1px solid var(--community-card-border);
   color: #f8fafc;
 }
 
@@ -3104,38 +3115,61 @@
   color: #94a3b8;
 }
 
-.participant-home--dark .create-post-card__toolbar {
-  border-top-color: rgba(236, 72, 153, 0.16);
+.participant-home--dark .create-post-card textarea:focus {
+  border-color: rgba(244, 114, 182, 0.45);
+  background: rgba(23, 32, 51, 0.98);
+  box-shadow: var(--community-focus-ring);
 }
 
-.participant-home--dark .create-post-card__action,
-.participant-home--dark .create-post-card__anonymous {
-  border-color: rgba(236, 72, 153, 0.18);
-  background: rgba(30, 41, 59, 0.72);
-  color: #fbcfe8;
+.participant-home--dark .create-post-card__toolbar {
+  border-top-color: var(--community-divider);
+}
+
+.participant-home--dark .create-post-card__voice-panel,
+.participant-home--dark .create-post-card__attachment-preview {
+  border-color: var(--community-card-border);
+  background: rgba(23, 32, 51, 0.72);
+}
+
+.participant-home--dark .create-post-card__emoji-popover {
+  border-color: var(--community-card-border);
+  background:
+    radial-gradient(circle at 88% 10%, rgba(236, 72, 153, 0.1), transparent 7rem),
+    rgba(17, 24, 39, 0.98);
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.42);
+}
+
+.participant-home--dark .create-post-card__emoji-header button,
+.participant-home--dark .create-post-card__emoji-grid button {
+  border-color: rgba(192, 132, 252, 0.28);
+  background: rgba(23, 32, 51, 0.94);
+  color: #f472b6;
+  box-shadow: none;
+}
+
+.participant-home--dark .create-post-card__emoji-grid button:hover,
+.participant-home--dark .create-post-card__emoji-grid button:focus-visible,
+.participant-home--dark .create-post-card__emoji-header button:hover,
+.participant-home--dark .create-post-card__emoji-header button:focus-visible {
+  border-color: rgba(244, 114, 182, 0.45);
+  background: rgba(236, 72, 153, 0.14);
+  color: #fce7f3;
 }
 
 .participant-home--dark .create-post-card__anonymous.is-active {
-  border-color: rgba(236, 72, 153, 0.28);
-  background: rgba(236, 72, 153, 0.14);
-  color: #fbcfe8;
+  border-color: rgba(244, 114, 182, 0.48);
+  background: rgba(236, 72, 153, 0.18);
+  color: #f9a8d4;
 }
 
 .participant-home--dark .create-post-card__anonymous-icon {
   background: rgba(236, 72, 153, 0.14);
-  color: #fbcfe8;
-}
-
-.participant-home--dark .create-post-card__action:hover,
-.participant-home--dark .create-post-card__action:focus-visible {
-  border-color: rgba(236, 72, 153, 0.38);
-  background: rgba(236, 72, 153, 0.14);
-  color: #fbcfe8;
+  color: #f472b6;
 }
 
 .participant-home--dark .create-post-card__helper {
-  background: rgba(236, 72, 153, 0.12);
-  color: #cbd5e1;
+  background: rgba(236, 72, 153, 0.1);
+  color: #d1d5db;
 }
 
 .participant-home--dark .create-post-card__success {
@@ -3144,41 +3178,20 @@
   color: #bbf7d0;
 }
 
-.participant-home--dark .community-feed-tabs button,
-.participant-home--dark .community-feed-refresh {
-  border-color: rgba(236, 72, 153, 0.18);
-  background: rgba(30, 41, 59, 0.72);
-  color: #cbd5e1;
-}
-
 .participant-home--dark .community-guidelines-shortcut button {
-  color: rgba(203, 213, 225, 0.72);
-  text-decoration-color: rgba(236, 72, 153, 0.3);
-}
-
-.participant-home--dark .community-feed-refresh:hover,
-.participant-home--dark .community-feed-refresh:focus-visible,
-.participant-home--dark .community-feed-refresh.is-refreshing {
-  border-color: rgba(236, 72, 153, 0.36);
-  background: rgba(236, 72, 153, 0.14);
-  color: #fbcfe8;
+  color: #a8b4c4;
+  text-decoration-color: rgba(192, 132, 252, 0.28);
 }
 
 .participant-home--dark .community-guidelines-shortcut button:hover {
-  color: #fbcfe8;
-  text-decoration-color: rgba(236, 72, 153, 0.66);
+  color: #f472b6;
+  text-decoration-color: rgba(244, 114, 182, 0.45);
 }
 
 .participant-home--dark .community-guidelines-shortcut button:focus-visible {
-  color: #fbcfe8;
-  text-decoration-color: rgba(236, 72, 153, 0.78);
-  box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.14);
-}
-
-.participant-home--dark .community-feed-tabs button.is-active {
-  border-color: rgba(236, 72, 153, 0.34);
-  background: rgba(236, 72, 153, 0.16);
-  color: #fbcfe8;
+  color: #f472b6;
+  text-decoration-color: rgba(244, 114, 182, 0.55);
+  box-shadow: var(--community-focus-ring);
 }
 
 .participant-home--dark .community-feed-refresh__feedback {
@@ -3188,54 +3201,17 @@
 }
 
 .participant-home--dark .community-page-post__actions {
-  border-top-color: rgba(236, 72, 153, 0.16);
-}
-
-.participant-home--dark .community-page-post__actions button {
-  color: rgba(255, 255, 255, 0.9);
-}
-
-/* Icons keep their original dark-mode colors; only the label/count text is
-   lightened (the svg would otherwise inherit the button color). */
-.participant-home--dark .community-page-post__actions button svg {
-  color: #cbd5e1;
-}
-
-.participant-home--dark .community-page-post__actions button:hover,
-.participant-home--dark .community-page-post__actions button:focus-visible,
-.participant-home--dark .community-page-post__actions button.is-liked,
-.participant-home--dark .community-page-post__actions button.is-supported,
-.participant-home--dark .community-page-post__actions button.is-commenting {
-  border-color: rgba(236, 72, 153, 0.28);
-  background: rgba(236, 72, 153, 0.14);
-  color: rgba(255, 255, 255, 0.9);
-}
-
-.participant-home--dark .community-page-post__actions button:hover svg,
-.participant-home--dark .community-page-post__actions button:focus-visible svg,
-.participant-home--dark .community-page-post__actions button.is-liked svg,
-.participant-home--dark .community-page-post__actions button.is-supported svg,
-.participant-home--dark .community-page-post__actions button.is-commenting svg {
-  color: #fbcfe8;
+  border-top-color: var(--community-divider);
 }
 
 .participant-home--dark .community-page-post__actions button span {
-  color: rgba(255, 255, 255, 0.9);
+  color: #a8b4c4;
 }
 
-.participant-home--dark .community-page-post__anonymous-badge,
-.participant-home--dark .community-page-post__more {
-  border-color: var(--community-home-btn-border, rgba(91, 30, 140, 0.2));
-  background: var(--community-home-btn-bg, rgba(255, 255, 255, 0.97));
-  color: var(--community-home-btn-text, #5b1e8c);
-}
-
-.participant-home--dark .community-page-post__more:hover,
-.participant-home--dark .community-page-post__more:focus-visible {
-  border-color: transparent;
-  background: var(--community-home-btn-hover-bg, linear-gradient(135deg, #e73386, #dc2577));
-  color: #fff;
-  box-shadow: none;
+.participant-home--dark .community-page-post__anonymous-badge {
+  border-color: rgba(192, 132, 252, 0.28);
+  background: rgba(23, 32, 51, 0.72);
+  color: #c084fc;
 }
 
 .participant-home--dark .community-page-post__menu-popover {
@@ -3293,18 +3269,18 @@
 }
 
 .participant-home--dark .community-report-modal__close {
-  border-color: rgba(91, 30, 140, 0.22);
-  background: #ffffff;
-  color: var(--community-home-btn-text, #5b1e8c);
-  box-shadow: 0 8px 18px rgba(91, 30, 140, 0.12);
+  border-color: rgba(192, 132, 252, 0.32);
+  background: rgba(23, 32, 51, 0.94);
+  color: #f472b6;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
 }
 
 .participant-home--dark .community-report-modal__close:hover,
 .participant-home--dark .community-report-modal__close:focus-visible {
-  color: #ffffff;
-  background: linear-gradient(135deg, #df327b, #cf1f70);
-  border-color: transparent;
-  box-shadow: 0 14px 26px rgba(207, 31, 112, 0.3);
+  color: #fce7f3;
+  background: rgba(236, 72, 153, 0.14);
+  border-color: rgba(244, 114, 182, 0.55);
+  box-shadow: 0 6px 18px rgba(236, 72, 153, 0.12);
 }
 
 .participant-home--dark .community-report-modal__reason:hover,
@@ -3349,13 +3325,13 @@
 }
 
 .participant-home--dark .comments-preview {
-  border-top-color: rgba(236, 72, 153, 0.18);
+  border-top-color: var(--community-divider);
 }
 
 .participant-home--dark .comments-preview__bubble,
 .participant-home--dark .community-comment-form__feedback {
-  border-color: rgba(236, 72, 153, 0.16);
-  background: rgba(30, 41, 59, 0.78);
+  border-color: var(--community-card-border);
+  background: rgba(23, 32, 51, 0.88);
 }
 
 .participant-home--dark .community-comment-toast,
@@ -3391,17 +3367,23 @@
 }
 
 .participant-home--dark .community-comment-form {
-  border-top-color: rgba(236, 72, 153, 0.16);
+  border-top-color: var(--community-divider);
 }
 
 .participant-home--dark .community-comment-form input {
-  border-color: rgba(236, 72, 153, 0.2);
-  background: rgba(30, 41, 59, 0.78);
+  border-color: var(--community-card-border);
+  background: rgba(23, 32, 51, 0.94);
   color: #f8fafc;
 }
 
 .participant-home--dark .community-comment-form input::placeholder {
   color: #94a3b8;
+}
+
+.participant-home--dark .community-comment-form input:focus {
+  border-color: rgba(244, 114, 182, 0.45);
+  background: rgba(23, 32, 51, 0.98);
+  box-shadow: var(--community-focus-ring);
 }
 
 .participant-home--dark .birthday-card__icon,
@@ -3508,13 +3490,13 @@
 
 .participant-home--dark .community-streak-card__ring {
   background:
-    conic-gradient(from -130deg, #ec4899 var(--streak-progress), rgba(139, 92, 246, 0.28) 0),
-    rgba(30, 41, 59, 0.72);
+    conic-gradient(from -130deg, #ec4899 var(--streak-progress), rgba(139, 92, 246, 0.22) 0),
+    rgba(23, 32, 51, 0.88);
 }
 
 .participant-home--dark .community-streak-card__ring::before {
-  background: #0f172a;
-  box-shadow: inset 0 0 0 1px rgba(236, 72, 153, 0.1);
+  background: #111827;
+  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.12);
 }
 
 .participant-home--dark .community-streak-card__completion-badge {
@@ -3524,14 +3506,14 @@
 }
 
 .participant-home--dark .community-streak-card__day {
-  background: rgba(30, 41, 59, 0.72);
-  box-shadow: inset 0 0 0 2px rgba(216, 180, 254, 0.34);
+  background: rgba(23, 32, 51, 0.88);
+  box-shadow: inset 0 0 0 1px rgba(148, 163, 184, 0.16);
 }
 
 .participant-home--dark .community-streak-card__day.is-today {
   box-shadow:
-    inset 0 0 0 2px rgba(236, 72, 153, 0.48),
-    0 8px 16px rgba(236, 72, 153, 0.12);
+    inset 0 0 0 2px rgba(244, 114, 182, 0.42),
+    0 8px 16px rgba(236, 72, 153, 0.1);
 }
 
 .participant-home--dark .community-streak-card__day.is-active {
@@ -3582,12 +3564,11 @@
 }
 
 .participant-home--dark .community-local-modal__panel,
-.participant-home--dark .create-post-card__emoji-popover,
 .participant-home--dark .create-post-card__voice-panel,
 .participant-home--dark .create-post-card__attachment-preview,
 .participant-home--dark .community-page-post__attachment {
-  border-color: rgba(236, 72, 153, 0.22);
-  background: rgba(30, 41, 59, 0.82);
+  border-color: var(--community-card-border);
+  background: rgba(23, 32, 51, 0.72);
 }
 
 .participant-home--dark .community-local-modal__panel h2,
@@ -3598,153 +3579,145 @@
 .participant-home--dark .community-local-modal__panel p,
 .participant-home--dark .community-local-modal__panel strong,
 .participant-home--dark .create-post-card__voice-panel p {
-  color: #cbd5e1;
+  color: #d1d5db;
 }
-
-.participant-home--dark .community-page-post__follow,
-.participant-home--dark .create-post-card__emoji-grid button,
-.participant-home--dark .create-post-card__voice-panel button,
-.participant-home--dark .create-post-card__attachment-preview button,
-.participant-home--dark .community-guidelines-modal__panel > .community-guidelines-modal__close,
-.participant-home--dark .community-local-modal__close {
-  border-color: rgba(236, 72, 153, 0.22);
-  background: rgba(15, 23, 42, 0.76);
-  color: #fbcfe8;
-}
-
-.participant-home--dark .create-post-card__emoji-header button,
-.participant-home--dark .community-guidelines-modal__close,
-.participant-home--dark .community-guidelines-modal__panel > .community-guidelines-modal__close,
-.participant-home--dark .community-local-modal__close {
-  border-color: rgba(91, 30, 140, 0.22);
-  background: #ffffff;
-  color: var(--community-home-btn-text, #5b1e8c);
-  box-shadow: 0 8px 18px rgba(91, 30, 140, 0.12);
-}
-
-.participant-home--dark .create-post-card__emoji-header button:hover,
-.participant-home--dark .create-post-card__emoji-header button:focus-visible,
-.participant-home--dark .community-guidelines-modal__close:hover,
-.participant-home--dark .community-guidelines-modal__close:focus-visible,
-.participant-home--dark .community-guidelines-modal__panel > .community-guidelines-modal__close:hover,
-.participant-home--dark .community-guidelines-modal__panel > .community-guidelines-modal__close:focus-visible,
-.participant-home--dark .community-local-modal__close:hover,
-.participant-home--dark .community-local-modal__close:focus-visible {
-  color: #ffffff;
-  background: linear-gradient(135deg, #df327b, #cf1f70);
-  border-color: transparent;
-  box-shadow: 0 14px 26px rgba(207, 31, 112, 0.3);
-}
-
 
 .participant-home--dark .community-circle-item {
-  border-color: rgba(236, 72, 153, 0.22);
-  background: #1e293b;
+  border-color: var(--community-card-border);
+  background: #172033;
 }
 
-.participant-home--dark .create-post-card__submit,
-.participant-home--dark .community-profile-setup__form button,
-.participant-home--dark .community-profile-setup__action,
-.participant-home--dark .community-report-modal__submit,
-.participant-home--dark .community-comment-form button,
-.participant-home--dark .birthday-card__send {
-  border-color: var(--community-home-btn-border, rgba(91, 30, 140, 0.2));
-  background: var(--community-home-btn-bg, rgba(255, 255, 255, 0.97));
-  color: var(--community-home-btn-text, #5b1e8c);
-  box-shadow: var(--community-home-btn-shadow, 0 9px 24px rgba(91, 30, 140, 0.12));
+/* Dark mode — unified card button surfaces (matches Participant Home) */
+.participant-home--dark .community-page .create-post-card__submit,
+.participant-home--dark .community-page .community-profile-setup__form button,
+.participant-home--dark .community-page .community-profile-setup__action,
+.participant-home--dark .community-page .community-report-modal__submit,
+.participant-home--dark .community-page .community-comment-form button,
+.participant-home--dark .community-page .birthday-card__send,
+.participant-home--dark .community-page .create-post-card__action,
+.participant-home--dark .community-page .create-post-card__voice-panel button,
+.participant-home--dark .community-page .create-post-card__attachment-preview button,
+.participant-home--dark .community-page .community-feed-tabs button,
+.participant-home--dark .community-page .community-feed-refresh,
+.participant-home--dark .community-page .community-profile-setup__actions button,
+.participant-home--dark .community-page .guidelines-card button,
+.participant-home--dark .community-page .birthday-card__messages button,
+.participant-home--dark .community-page .birthday-card__nav button,
+.participant-home--dark .community-page .community-page-post__follow,
+.participant-home--dark .community-page .community-page-post__actions button,
+.participant-home--dark .community-page .community-page-post__more,
+.participant-home--dark .community-page .community-report-modal__cancel,
+.participant-home--dark .community-page .community-guidelines-modal__close,
+.participant-home--dark .community-page .community-guidelines-modal__panel > .community-guidelines-modal__close,
+.participant-home--dark .community-page .community-local-modal__close,
+.participant-home--dark .community-page .create-post-card__emoji-header button,
+.participant-home--dark .community-page .create-post-card__emoji-grid button,
+.participant-home--dark .community-page .create-post-card__anonymous {
+  border-color: var(--community-home-btn-border);
+  background: var(--community-home-btn-bg);
+  color: var(--community-home-btn-text);
+  box-shadow: var(--community-home-btn-shadow);
 }
 
-.participant-home--dark .create-post-card__submit:hover,
-.participant-home--dark .create-post-card__submit:focus-visible,
-.participant-home--dark .community-profile-setup__form button:hover,
-.participant-home--dark .community-profile-setup__form button:focus-visible,
-.participant-home--dark .community-profile-setup__action:hover,
-.participant-home--dark .community-profile-setup__action:focus-visible,
-.participant-home--dark .community-report-modal__submit:hover,
-.participant-home--dark .community-report-modal__submit:focus-visible,
-.participant-home--dark .community-comment-form button:hover,
-.participant-home--dark .community-comment-form button:focus-visible,
-.participant-home--dark .birthday-card__send:hover,
-.participant-home--dark .birthday-card__send:focus-visible {
-  border-color: transparent;
-  background: var(--community-home-btn-hover-bg, linear-gradient(135deg, #e73386, #dc2577));
-  color: #fff;
-  box-shadow: var(--community-home-btn-shadow-hover, 0 14px 26px rgba(223, 50, 123, 0.24));
+.participant-home--dark .community-page .create-post-card__submit:hover,
+.participant-home--dark .community-page .create-post-card__submit:focus-visible,
+.participant-home--dark .community-page .community-profile-setup__form button:hover,
+.participant-home--dark .community-page .community-profile-setup__form button:focus-visible,
+.participant-home--dark .community-page .community-profile-setup__action:hover,
+.participant-home--dark .community-page .community-profile-setup__action:focus-visible,
+.participant-home--dark .community-page .community-report-modal__submit:hover,
+.participant-home--dark .community-page .community-report-modal__submit:focus-visible,
+.participant-home--dark .community-page .community-comment-form button:hover,
+.participant-home--dark .community-page .community-comment-form button:focus-visible,
+.participant-home--dark .community-page .birthday-card__send:hover,
+.participant-home--dark .community-page .birthday-card__send:focus-visible,
+.participant-home--dark .community-page .create-post-card__action:hover,
+.participant-home--dark .community-page .create-post-card__action:focus-visible,
+.participant-home--dark .community-page .create-post-card__voice-panel button:hover,
+.participant-home--dark .community-page .create-post-card__voice-panel button:focus-visible,
+.participant-home--dark .community-page .create-post-card__attachment-preview button:hover,
+.participant-home--dark .community-page .create-post-card__attachment-preview button:focus-visible,
+.participant-home--dark .community-page .community-feed-tabs button:hover,
+.participant-home--dark .community-page .community-feed-tabs button:focus-visible,
+.participant-home--dark .community-page .community-feed-refresh:hover,
+.participant-home--dark .community-page .community-feed-refresh:focus-visible,
+.participant-home--dark .community-page .community-feed-refresh.is-refreshing,
+.participant-home--dark .community-page .community-profile-setup__actions button:hover,
+.participant-home--dark .community-page .community-profile-setup__actions button:focus-visible,
+.participant-home--dark .community-page .guidelines-card button:hover,
+.participant-home--dark .community-page .guidelines-card button:focus-visible,
+.participant-home--dark .community-page .birthday-card__messages button:hover,
+.participant-home--dark .community-page .birthday-card__messages button:focus-visible,
+.participant-home--dark .community-page .birthday-card__nav button:hover,
+.participant-home--dark .community-page .birthday-card__nav button:focus-visible,
+.participant-home--dark .community-page .community-page-post__follow:hover,
+.participant-home--dark .community-page .community-page-post__follow:focus-visible,
+.participant-home--dark .community-page .community-page-post__actions button:hover,
+.participant-home--dark .community-page .community-page-post__actions button:focus-visible,
+.participant-home--dark .community-page .community-page-post__more:hover,
+.participant-home--dark .community-page .community-page-post__more:focus-visible,
+.participant-home--dark .community-page .community-report-modal__cancel:hover,
+.participant-home--dark .community-page .community-report-modal__cancel:focus-visible,
+.participant-home--dark .community-page .create-post-card__anonymous:hover,
+.participant-home--dark .community-page .create-post-card__anonymous:focus-within,
+.participant-home--dark .community-page .community-guidelines-modal__close:hover,
+.participant-home--dark .community-page .community-guidelines-modal__close:focus-visible,
+.participant-home--dark .community-page .community-guidelines-modal__panel > .community-guidelines-modal__close:hover,
+.participant-home--dark .community-page .community-guidelines-modal__panel > .community-guidelines-modal__close:focus-visible,
+.participant-home--dark .community-page .community-local-modal__close:hover,
+.participant-home--dark .community-page .community-local-modal__close:focus-visible,
+.participant-home--dark .community-page .create-post-card__emoji-header button:hover,
+.participant-home--dark .community-page .create-post-card__emoji-header button:focus-visible,
+.participant-home--dark .community-page .create-post-card__emoji-grid button:hover,
+.participant-home--dark .community-page .create-post-card__emoji-grid button:focus-visible {
+  border-color: rgba(244, 114, 182, 0.55);
+  background: var(--community-home-btn-hover-bg);
+  color: #fce7f3;
+  box-shadow: var(--community-home-btn-shadow-hover);
+  transform: translateY(-1px);
 }
 
-.participant-home--dark .create-post-card__action,
-.participant-home--dark .create-post-card__voice-panel button,
-.participant-home--dark .create-post-card__attachment-preview button,
-.participant-home--dark .community-feed-tabs button,
-.participant-home--dark .community-feed-refresh,
-.participant-home--dark .community-profile-setup__actions button,
-.participant-home--dark .guidelines-card button,
-.participant-home--dark .birthday-card__messages button,
-.participant-home--dark .birthday-card__nav button,
-.participant-home--dark .community-page-post__follow,
-.participant-home--dark .community-page-post__actions button,
-.participant-home--dark .community-report-modal__cancel {
-  border-color: var(--community-home-btn-border, rgba(91, 30, 140, 0.2));
-  background: var(--community-home-btn-bg, rgba(255, 255, 255, 0.97));
-  color: var(--community-home-btn-text, #5b1e8c);
-  box-shadow: var(--community-home-btn-shadow, 0 9px 24px rgba(91, 30, 140, 0.12));
-}
-
-.participant-home--dark .create-post-card__action:hover,
-.participant-home--dark .create-post-card__action:focus-visible,
-.participant-home--dark .create-post-card__action.is-active,
-.participant-home--dark .create-post-card__voice-panel button:hover,
-.participant-home--dark .create-post-card__voice-panel button:focus-visible,
-.participant-home--dark .create-post-card__attachment-preview button:hover,
-.participant-home--dark .create-post-card__attachment-preview button:focus-visible,
-.participant-home--dark .community-feed-tabs button:hover,
-.participant-home--dark .community-feed-tabs button:focus-visible,
-.participant-home--dark .community-feed-tabs button.is-active,
-.participant-home--dark .community-feed-refresh:hover,
-.participant-home--dark .community-feed-refresh:focus-visible,
-.participant-home--dark .community-feed-refresh.is-refreshing,
-.participant-home--dark .community-profile-setup__actions button:hover,
-.participant-home--dark .community-profile-setup__actions button:focus-visible,
-.participant-home--dark .guidelines-card button:hover,
-.participant-home--dark .guidelines-card button:focus-visible,
-.participant-home--dark .birthday-card__messages button:hover,
-.participant-home--dark .birthday-card__messages button:focus-visible,
-.participant-home--dark .birthday-card__messages button.is-selected,
-.participant-home--dark .birthday-card__nav button:hover,
-.participant-home--dark .birthday-card__nav button:focus-visible,
-.participant-home--dark .community-page-post__follow:hover,
-.participant-home--dark .community-page-post__follow:focus-visible,
-.participant-home--dark .community-page-post__follow.is-following,
-.participant-home--dark .community-page-post__actions button:hover,
-.participant-home--dark .community-page-post__actions button:focus-visible,
-.participant-home--dark .community-page-post__actions button.is-liked,
-.participant-home--dark .community-page-post__actions button.is-supported,
-.participant-home--dark .community-page-post__actions button.is-commenting,
-.participant-home--dark .community-report-modal__cancel:hover,
-.participant-home--dark .community-report-modal__cancel:focus-visible {
-  border-color: transparent;
-  background: var(--community-home-btn-hover-bg, linear-gradient(135deg, #e73386, #dc2577));
-  color: #fff;
-  box-shadow: var(--community-home-btn-shadow-hover, 0 14px 26px rgba(223, 50, 123, 0.24));
-}
-
-.participant-home--dark .community-page-post__actions button.is-liked,
-.participant-home--dark .community-page-post__actions button.is-commenting {
-  border-color: var(--community-home-btn-border, rgba(91, 30, 140, 0.2));
-  background: var(--community-home-btn-bg, rgba(255, 255, 255, 0.97));
-  color: var(--community-home-btn-text, #5b1e8c);
-  box-shadow: none;
+.participant-home--dark .community-page .community-feed-tabs button.is-active,
+.participant-home--dark .community-page .create-post-card__action.is-active,
+.participant-home--dark .community-page .community-page-post__actions button.is-liked,
+.participant-home--dark .community-page .community-page-post__actions button.is-supported,
+.participant-home--dark .community-page .community-page-post__actions button.is-commenting,
+.participant-home--dark .community-page .community-page-post__follow.is-following,
+.participant-home--dark .community-page .birthday-card__messages button.is-selected {
+  border-color: rgba(244, 114, 182, 0.55);
+  background: rgba(236, 72, 153, 0.18);
+  color: #f9a8d4;
+  box-shadow: 0 4px 14px rgba(236, 72, 153, 0.1);
   transform: none;
 }
 
-.participant-home--dark .community-page-post__actions button.is-liked svg,
-.participant-home--dark .community-page-post__actions button.is-commenting svg {
-  color: #ec168c;
+.participant-home--dark .community-page .community-page-post__actions button.is-liked svg,
+.participant-home--dark .community-page .community-page-post__actions button.is-supported svg,
+.participant-home--dark .community-page .community-page-post__actions button.is-commenting svg {
+  color: #f472b6;
 }
 
-.participant-home--dark .community-page-post__actions button.is-liked span,
-.participant-home--dark .community-page-post__actions button.is-commenting span {
-  color: rgba(75, 19, 107, 0.52);
+.participant-home--dark .community-page .community-page-post__actions button.is-liked span,
+.participant-home--dark .community-page .community-page-post__actions button.is-supported span,
+.participant-home--dark .community-page .community-page-post__actions button.is-commenting span {
+  color: #f9a8d4;
+}
+
+.participant-home--dark .community-page .create-post-card__action svg,
+.participant-home--dark .community-page .community-feed-refresh svg,
+.participant-home--dark .community-page .community-page-post__actions button svg,
+.participant-home--dark .community-page .community-page-post__follow svg {
+  color: currentColor;
+}
+
+.participant-home--dark .community-page .create-post-card__submit:focus-visible,
+.participant-home--dark .community-page .create-post-card__action:focus-visible,
+.participant-home--dark .community-page .community-feed-tabs button:focus-visible,
+.participant-home--dark .community-page .community-feed-refresh:focus-visible,
+.participant-home--dark .community-page .community-page-post__actions button:focus-visible,
+.participant-home--dark .community-page .community-comment-form button:focus-visible {
+  outline: 2px solid rgba(244, 114, 182, 0.45);
+  outline-offset: 2px;
 }
 
 @media (max-width: 1320px) {

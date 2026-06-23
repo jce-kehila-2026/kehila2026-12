@@ -1002,7 +1002,7 @@ function PersonalDetailsForm({
         >
           <button
             type="submit"
-            className="ps-btn ps-btn--soft"
+            className="pd-btn pd-btn--view-cta pd-community__cta"
             disabled={saving}
           >
             {saving ? t("saving") : t("saveChanges")}

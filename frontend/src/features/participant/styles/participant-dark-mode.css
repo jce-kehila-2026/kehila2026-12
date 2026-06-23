@@ -166,8 +166,9 @@
   color: var(--pd-text-muted-dark);
 }
 
-/* Participant Home — all card action buttons (dark surface, pink/lilac accent) */
-.participant-home--dark .pd-home .pd-btn--view-cta {
+/* Participant Home + Settings — card action buttons (dark surface, pink/lilac accent) */
+.participant-home--dark .pd-home .pd-btn--view-cta,
+.participant-home--dark .profile-settings .pd-btn--view-cta {
   color: #f472b6;
   background: rgba(23, 32, 51, 0.94);
   border: 1.5px solid rgba(236, 72, 153, 0.38);
@@ -175,7 +176,9 @@
 }
 
 .participant-home--dark .pd-home .pd-btn--view-cta:hover,
-.participant-home--dark .pd-home .pd-btn--view-cta:focus-visible {
+.participant-home--dark .pd-home .pd-btn--view-cta:focus-visible,
+.participant-home--dark .profile-settings .pd-btn--view-cta:hover,
+.participant-home--dark .profile-settings .pd-btn--view-cta:focus-visible {
   color: #fce7f3;
   background: rgba(236, 72, 153, 0.16);
   border-color: rgba(244, 114, 182, 0.55);
@@ -184,23 +187,44 @@
   filter: none;
 }
 
-.participant-home--dark .pd-home .pd-btn--view-cta:active {
+.participant-home--dark .pd-home .pd-btn--view-cta:active,
+.participant-home--dark .profile-settings .pd-btn--view-cta:active {
   transform: translateY(0);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.24);
 }
 
-.participant-home--dark .pd-home .pd-btn--view-cta:focus-visible {
+.participant-home--dark .pd-home .pd-btn--view-cta:focus-visible,
+.participant-home--dark .profile-settings .pd-btn--view-cta:focus-visible {
   outline: 2px solid rgba(244, 114, 182, 0.45);
   outline-offset: 2px;
 }
 
-.participant-home--dark .pd-home .pd-btn--view-cta .pd-btn__arrow {
+.participant-home--dark .pd-home .pd-btn--view-cta .pd-btn__arrow,
+.participant-home--dark .profile-settings .pd-btn--view-cta .pd-btn__arrow {
   color: currentColor;
 }
 
 .participant-home--dark .pd-home .pd-btn--view-cta:hover .pd-btn__arrow,
-.participant-home--dark .pd-home .pd-btn--view-cta:focus-visible .pd-btn__arrow {
+.participant-home--dark .pd-home .pd-btn--view-cta:focus-visible .pd-btn__arrow,
+.participant-home--dark .profile-settings .pd-btn--view-cta:hover .pd-btn__arrow,
+.participant-home--dark .profile-settings .pd-btn--view-cta:focus-visible .pd-btn__arrow {
   color: currentColor;
+}
+
+.participant-home--dark .profile-settings .pd-btn--view-cta:disabled,
+.participant-home--dark .profile-settings button.pd-btn--view-cta:disabled,
+.participant-home--dark .profile-settings .pd-btn--view-cta:disabled:hover,
+.participant-home--dark .profile-settings button.pd-btn--view-cta:disabled:hover,
+.participant-home--dark .profile-settings .pd-btn--view-cta:disabled:focus-visible,
+.participant-home--dark .profile-settings button.pd-btn--view-cta:disabled:focus-visible {
+  color: rgba(244, 114, 182, 0.42);
+  background: rgba(23, 32, 51, 0.55);
+  border-color: rgba(236, 72, 153, 0.18);
+  box-shadow: none;
+  transform: none;
+  filter: none;
+  cursor: not-allowed;
+  outline: none;
 }
 
 /* Empty appointment/event cards — large icon badge */
@@ -610,12 +634,19 @@
 /* ── Community ──────────────────────────────────────────────────────────── */
 
 .participant-home--dark .community-page {
-  --community-primary-text: var(--pd-text-dark);
-  --community-muted: var(--pd-text-muted-dark);
-  --community-muted-strong: var(--pd-text-muted-dark);
-  --community-card-border: var(--pd-border-dark);
-  --community-card-bg: var(--pd-card-dark);
-  --community-control-bg: var(--pd-card-dark-soft);
+  --community-primary-text: #f8fafc;
+  --community-muted: #d1d5db;
+  --community-muted-strong: #a8b4c4;
+  --community-card-border: rgba(148, 163, 184, 0.14);
+  --community-card-bg: #111827;
+  --community-control-bg: #172033;
+  --community-divider: rgba(148, 163, 184, 0.12);
+  --community-home-btn-bg: rgba(23, 32, 51, 0.94);
+  --community-home-btn-border: rgba(192, 132, 252, 0.32);
+  --community-home-btn-text: #f472b6;
+  --community-home-btn-hover-bg: rgba(236, 72, 153, 0.14);
+  --community-home-btn-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
+  --community-home-btn-shadow-hover: 0 6px 18px rgba(236, 72, 153, 0.12);
 }
 
 .participant-home--dark .community-page-shell,
@@ -632,10 +663,14 @@
 .participant-home--dark .guidelines-card,
 .participant-home--dark .community-streak-card,
 .participant-home--dark .community-profile-setup {
-  background: var(--pd-card-dark);
-  border-color: var(--pd-border-dark);
+  background: var(--community-card-bg);
+  border-color: var(--community-card-border);
   color: var(--pd-text-dark);
   box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+}
+
+.participant-home--dark .community-streak-card {
+  background: #172033;
 }
 
 .participant-home--dark .birthday-card__header span:not(.birthday-card__icon),
@@ -658,8 +693,8 @@
 .participant-home--dark .create-post-card textarea,
 .participant-home--dark .birthday-card__textarea,
 .participant-home--dark .community-comment-form input {
-  background: var(--pd-card-dark-soft);
-  border-color: var(--pd-border-dark);
+  background: rgba(23, 32, 51, 0.94);
+  border-color: var(--community-card-border);
   color: var(--pd-text-dark);
 }
 
