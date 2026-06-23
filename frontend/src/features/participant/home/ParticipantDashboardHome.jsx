@@ -542,7 +542,7 @@ function AppointmentEmptyCard({ onBook }) {
             {t('bookAppointmentText')}
           </p>
           <div className="pd-feature__footer">
-            <PremiumCta variant="pink" onClick={onBook}>
+            <PremiumCta variant="soft" onClick={onBook}>
               {t('bookAppointment')}
             </PremiumCta>
           </div>
@@ -568,7 +568,7 @@ function EventEmptyCard({ onExplore }) {
             {t('exploreEventsText')}
           </p>
           <div className="pd-feature__footer">
-            <PremiumCta variant="pink" onClick={onExplore}>
+            <PremiumCta variant="soft" onClick={onExplore}>
               {t('exploreEvents')}
             </PremiumCta>
           </div>
