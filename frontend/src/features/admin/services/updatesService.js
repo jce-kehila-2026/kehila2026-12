@@ -10,6 +10,7 @@ import {
   orderBy,
   limit,
   serverTimestamp,
+  arrayUnion,
 } from 'firebase/firestore';
 
 import { db } from '../../../firebase';
@@ -114,19 +115,40 @@ function seenCutoffMs(update, lastSeen) {
 }
 
 /**
+ * Whether a single notification is still unread for this participant.
+ *
+ * Read state is tracked per item so clicking one notification clears only that
+ * one: community activity carries a `read` flag on its own doc, announcements
+ * are tracked by id in `readUpdateIds`. The per-tab timestamp cutoff is the
+ * bulk "Mark all read" / migration baseline layered on top.
+ *
+ * @param {object} update – a notification item
+ * @param {{ general: any, community: any }|null} lastSeen – per-tab cutoffs
+ * @param {Set<string>} [readIds] – announcement ids already marked read
+ */
+export function isItemUnread(update, lastSeen, readIds) {
+  if (update.active === false) return false;
+  if (isCommunityItem(update)) {
+    if (update.read === true) return false;
+  } else if (readIds?.has?.(update.id)) {
+    return false;
+  }
+  const seenMs = seenCutoffMs(update, lastSeen);
+  if (seenMs == null) return true;
+  return (update.createdAt?.toMillis?.() ?? 0) > seenMs;
+}
+
+/**
  * Calculate the number of unread updates for a participant.
  * Uses client-side filtering against a pre-fetched updates list for zero extra reads.
  *
  * @param {{ general: any, community: any }|null} lastSeen – per-tab cutoffs from getLastSeenAt()
  * @param {Array} updates – already-fetched list from fetchUpdates()
+ * @param {string[]} [readUpdateIds] – announcement ids already marked read
  */
-export function countUnread(lastSeen, updates) {
-  return updates.filter((u) => {
-    if (u.active === false) return false;
-    const seenMs = seenCutoffMs(u, lastSeen);
-    if (seenMs == null) return true;
-    return (u.createdAt?.toMillis?.() ?? 0) > seenMs;
-  }).length;
+export function countUnread(lastSeen, updates, readUpdateIds = []) {
+  const readIds = new Set(readUpdateIds);
+  return updates.filter((u) => isItemUnread(u, lastSeen, readIds)).length;
 }
 
 const ACTIVITY_VERB = {
@@ -206,6 +228,7 @@ async function isStaleActivityNotification(docSnap) {
  */
 function activityDocToItem(docSnap) {
   const data = docSnap.data();
+  const read = data.read === true;
   if (data.type === 'birthday_wish') {
     return {
       id: docSnap.id,
@@ -216,6 +239,7 @@ function activityDocToItem(docSnap) {
       postId: data.postId ?? null,
       createdAt: data.createdAt,
       active: true,
+      read,
     };
   }
 
@@ -229,6 +253,7 @@ function activityDocToItem(docSnap) {
       postId: data.postId ?? null,
       createdAt: data.createdAt,
       active: true,
+      read,
     };
   }
 
@@ -248,6 +273,7 @@ function activityDocToItem(docSnap) {
     postId: data.postId ?? null,
     createdAt: data.createdAt,
     active: true,
+    read,
   };
 }
 
@@ -298,11 +324,12 @@ export async function fetchActivityNotifications(uid, max = 20, { pruneStale = t
  */
 export async function getLastSeenAt(uid) {
   const snap = await getDoc(doc(db, 'users', uid));
-  if (!snap.exists()) return { general: null, community: null };
+  if (!snap.exists()) return { general: null, community: null, readUpdateIds: [] };
   const data = snap.data();
   return {
     general: data.lastSeenUpdatesAt ?? null,
     community: data.lastSeenCommunityAt ?? null,
+    readUpdateIds: Array.isArray(data.readUpdateIds) ? data.readUpdateIds : [],
   };
 }
 
@@ -318,19 +345,25 @@ export async function markAllAsRead(uid) {
 }
 
 /**
- * Advance one feed's "seen" cutoff to a specific timestamp without touching the
- * other feed — so opening a community post never marks admin announcements read.
- *
- * @param {string} uid
- * @param {any} seenAt – the timestamp to mark seen through
- * @param {'general'|'community'} [scope]
+ * Mark a single community activity notification read, by flipping a `read` flag
+ * on its own doc — so clicking one notification clears only that one.
  */
-export async function markUpdatesSeenThrough(uid, seenAt, scope = 'general') {
-  if (!uid || !seenAt) return null;
+export async function markActivityNotificationRead(uid, notificationId) {
+  if (!uid || !notificationId) return null;
+  return updateDoc(doc(db, 'users', uid, 'activity_notifications', notificationId), {
+    read: true,
+    readAt: serverTimestamp(),
+  });
+}
 
-  const field = scope === 'community' ? 'lastSeenCommunityAt' : 'lastSeenUpdatesAt';
+/**
+ * Mark a single admin announcement read. Announcements live in an admin-write
+ * collection, so per-user read state is tracked as an id list on the user doc.
+ */
+export async function markUpdateRead(uid, updateId) {
+  if (!uid || !updateId) return null;
   return updateDoc(doc(db, 'users', uid), {
-    [field]: seenAt,
+    readUpdateIds: arrayUnion(updateId),
   });
 }
 

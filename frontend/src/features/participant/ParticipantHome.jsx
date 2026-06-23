@@ -19,7 +19,8 @@ import {
   fetchUpdates,
   getLastSeenAt,
   markAllAsRead,
-  markUpdatesSeenThrough,
+  markActivityNotificationRead,
+  markUpdateRead,
 } from '../admin/services/updatesService';
 import {
   getParticipantLocaleDirection,
@@ -96,6 +97,9 @@ export default function ParticipantHome({ initialView = 'home' }) {
   // Per-tab "seen" cutoffs: { general, community }. Tracking them separately
   // keeps reading one feed from silently marking the other read.
   const [lastSeen, setLastSeen] = useState({ general: null, community: null });
+  // Ids of admin announcements this user has individually marked read. Community
+  // activity tracks its read state per-doc instead (see markActivityNotificationRead).
+  const [readUpdateIds, setReadUpdateIds] = useState([]);
   const notifBellRef = useRef(null);
 
   const notifications = useMemo(
@@ -113,8 +117,8 @@ export default function ParticipantHome({ initialView = 'home' }) {
   );
 
   const unreadCount = useMemo(
-    () => countUnread(lastSeen, notifications),
-    [lastSeen, notifications],
+    () => countUnread(lastSeen, notifications, readUpdateIds),
+    [lastSeen, notifications, readUpdateIds],
   );
 
   // pruneStale runs the per-item staleness scan (an extra read per item plus
@@ -131,7 +135,8 @@ export default function ParticipantHome({ initialView = 'home' }) {
       ]);
       setAnnouncements(data);
       setActivity(activityItems);
-      setLastSeen(seen);
+      setLastSeen({ general: seen.general, community: seen.community });
+      setReadUpdateIds(seen.readUpdateIds ?? []);
     } catch (err) {
       console.error('Failed to load notifications:', err);
     }
@@ -176,22 +181,23 @@ export default function ParticipantHome({ initialView = 'home' }) {
 
   const handleNotificationClick = useCallback((notification) => {
     if (!notification) return;
+    const uid = effectiveUID || currentUser?.uid;
 
-    // Community activity and admin announcements advance independent cutoffs, so
-    // clicking one feed never marks the other read. Community falls back to the
-    // general cutoff for accounts that predate the community cutoff field.
-    const scope = notification.kind === 'activity' ? 'community' : 'general';
-    const seenAt = notification.createdAt;
-    const currentSeen = scope === 'community'
-      ? (lastSeen.community ?? lastSeen.general)
-      : lastSeen.general;
-    const currentSeenMs = currentSeen?.toMillis?.() ?? Number(currentSeen ?? 0);
-    const seenMs = seenAt?.toMillis?.() ?? Number(seenAt ?? 0);
-
-    if (seenAt && seenMs > currentSeenMs) {
-      setLastSeen((prev) => ({ ...prev, [scope]: seenAt }));
-      if (currentUser) {
-        markUpdatesSeenThrough(effectiveUID || currentUser.uid, seenAt, scope).catch((err) => {
+    // Mark ONLY the clicked notification read — community activity via a per-doc
+    // flag, announcements via an id list — so it never spills onto siblings.
+    if (notification.kind === 'activity') {
+      setActivity((prev) => prev.map((item) => (
+        item.id === notification.id ? { ...item, read: true } : item
+      )));
+      if (uid) {
+        markActivityNotificationRead(uid, notification.id).catch((err) => {
+          console.error('Failed to mark notification as read:', err);
+        });
+      }
+    } else {
+      setReadUpdateIds((prev) => (prev.includes(notification.id) ? prev : [...prev, notification.id]));
+      if (uid) {
+        markUpdateRead(uid, notification.id).catch((err) => {
           console.error('Failed to mark notification as read:', err);
         });
       }
@@ -204,7 +210,7 @@ export default function ParticipantHome({ initialView = 'home' }) {
       setCommunityFocusPostId(notification.postId);
       setActiveView('community');
     }
-  }, [currentUser, effectiveUID, lastSeen]);
+  }, [currentUser, effectiveUID]);
 
   const notificationsBell = (
     <div className="participant-notif-wrap" ref={notifBellRef}>
