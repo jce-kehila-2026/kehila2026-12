@@ -33,7 +33,7 @@ service cloud.firestore {
         && request.resource.data.bookingId == bookingId
         && request.resource.data.eventId is string
         && request.resource.data.eventId.size() > 0
-        && request.resource.data.status in ['pending', 'confirmed', 'approved']
+        && request.resource.data.status == 'confirmed'
         && eventAcceptsRegistrations(request.resource.data.eventId);
     }
     function bookingIdentityIsUnchanged() {
@@ -55,7 +55,6 @@ service cloud.firestore {
         && bookingIdentityIsUnchanged()
         && request.resource.data.status == 'cancelled'
         && resource.data.status != 'cancelled'
-        && resource.data.status != 'completed'
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
           'status', 'cancelledAt'
         ]);
@@ -65,7 +64,7 @@ service cloud.firestore {
         && resource.data.userId == request.auth.uid
         && bookingIdentityIsUnchanged()
         && resource.data.status == 'cancelled'
-        && request.resource.data.status in ['pending', 'confirmed', 'approved']
+        && request.resource.data.status == 'confirmed'
         && eventAcceptsRegistrations(resource.data.eventId);
     }
     // A signed-in non-author may touch ONLY engagement/aggregate fields on a
@@ -230,7 +229,7 @@ service cloud.firestore {
             && request.resource.data.userId == request.auth.uid
             && request.resource.data.eventId == eventId
             && request.resource.data.bookingId == rosterKey
-            && request.resource.data.status in ['pending', 'confirmed', 'approved']
+            && request.resource.data.status == 'confirmed'
             && eventAcceptsRegistrations(eventId)
             && (
               rosterKey == request.auth.uid

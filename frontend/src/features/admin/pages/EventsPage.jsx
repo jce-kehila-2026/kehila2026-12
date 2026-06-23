@@ -51,10 +51,7 @@ const EV_STATUS_LABEL_KEYS = {
 
 const PARTICIPANT_STATUS_LABEL_KEYS = {
   confirmed: 'pStatusConfirmed',
-  pending: 'pStatusPending',
   cancelled: 'pStatusCancelled',
-  completed: 'pStatusCompleted',
-  waitlist: 'pStatusWaitlist',
 };
 
 const WEEKDAY_OPTIONS = [
@@ -421,10 +418,7 @@ function getParticipantPhone(registration) {
 
 function getParticipantStatus(registration) {
   const status = String(registration.status || 'confirmed').toLowerCase();
-  if (status === 'cancelled' || status === 'canceled') return 'cancelled';
-  if (status === 'pending' || status === 'waitlist') return status;
-  if (status === 'completed') return 'completed';
-  return 'confirmed';
+  return status === 'cancelled' || status === 'canceled' ? 'cancelled' : 'confirmed';
 }
 
 function getInitials(nameOrEmail) {
@@ -487,8 +481,7 @@ function getRegistrationProviderName(registration) {
 }
 
 function getAppointmentStatus(registration) {
-  const status = getParticipantStatus(registration);
-  return status === 'waitlist' ? 'pending' : status;
+  return getParticipantStatus(registration);
 }
 
 function formatDateLabel(dateKey, intlLocale = 'en', fallback = 'Selected date') {
@@ -631,9 +624,8 @@ export default function EventsPage() {
 
   const participantStats = useMemo(() => {
     const registered = registrations.length;
-    const waitlist = registrations.filter((registration) => getParticipantStatus(registration) === 'waitlist').length;
     const remaining = selectedEventCapacity ? Math.max(0, selectedEventCapacity - registered) : 0;
-    return { registered, remaining, waitlist };
+    return { registered, remaining };
   }, [registrations, selectedEventCapacity]);
 
   const filteredRegistrations = useMemo(() => {
@@ -1984,9 +1976,7 @@ export default function EventsPage() {
                                   <span>{pStatusLabel(status)}</span>
                                   <select value={status} onChange={(event) => handleStatusUpdate(registration, event.target.value)}>
                                     <option value="confirmed">{t('pStatusConfirmed')}</option>
-                                    <option value="pending">{t('pStatusPending')}</option>
                                     <option value="cancelled">{t('pStatusCancelled')}</option>
-                                    <option value="completed">{t('pStatusCompleted')}</option>
                                   </select>
                                 </label>
                                 <div className="admin-events-participant-actions">
@@ -2028,7 +2018,6 @@ export default function EventsPage() {
                   <section className="admin-events-participant-stats" aria-label={t('pdSubtitle')}>
                     <article><Groups /><strong>{participantStats.registered}</strong><span>{t('pdRegistered')}</span></article>
                     <article><EventAvailable /><strong>{participantStats.remaining}</strong><span>{t('pdRemaining')}</span></article>
-                    <article><Schedule /><strong>{participantStats.waitlist}</strong><span>{t('pdWaitlist')}</span></article>
                   </section>
 
                   <section className="admin-events-participant-controls">
@@ -2045,7 +2034,6 @@ export default function EventsPage() {
                       <option value="all">{t('pdFilter')}</option>
                       <option value="confirmed">{t('pStatusConfirmed')}</option>
                       <option value="cancelled">{t('pStatusCancelled')}</option>
-                      <option value="waitlist">{t('pStatusWaitlist')}</option>
                     </select>
                     <select value={participantSort} onChange={(event) => setParticipantSort(event.target.value)}>
                       <option value="newest">{t('sortNewest')}</option>

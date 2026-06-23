@@ -29,8 +29,8 @@ import './DashboardPage.css';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const EMPTY_FUNNEL = {
-  workshop: { confirmed: 0, pending: 0, cancelled: 0 },
-  appointment: { confirmed: 0, pending: 0, cancelled: 0 },
+  workshop: { confirmed: 0, cancelled: 0 },
+  appointment: { confirmed: 0, cancelled: 0 },
   cancellationRate: null,
   totalCount: 0,
 };
@@ -201,9 +201,9 @@ function MetricCard({ accent, icon, label, value, subtext, alert = false }) {
 }
 
 // One row of the bookings/appointments funnel: a proportional stacked bar
-// (confirmed/pending/cancelled) plus a numeric legend underneath.
+// (confirmed/cancelled) plus a numeric legend underneath.
 function FunnelRow({ label, stats, t }) {
-  const total = stats.confirmed + stats.pending + stats.cancelled;
+  const total = stats.confirmed + stats.cancelled;
   return (
     <div className="admin-dashboard-funnel__row">
       <div className="admin-dashboard-funnel__row-head">
@@ -218,10 +218,6 @@ function FunnelRow({ label, stats, t }) {
               style={{ width: `${(stats.confirmed / total) * 100}%` }}
             />
             <span
-              className="admin-dashboard-funnel__segment admin-dashboard-funnel__segment--pending"
-              style={{ width: `${(stats.pending / total) * 100}%` }}
-            />
-            <span
               className="admin-dashboard-funnel__segment admin-dashboard-funnel__segment--cancelled"
               style={{ width: `${(stats.cancelled / total) * 100}%` }}
             />
@@ -232,10 +228,6 @@ function FunnelRow({ label, stats, t }) {
         <span>
           <i className="admin-dashboard-funnel__dot admin-dashboard-funnel__dot--confirmed" />
           {t('statusConfirmed')} {stats.confirmed}
-        </span>
-        <span>
-          <i className="admin-dashboard-funnel__dot admin-dashboard-funnel__dot--pending" />
-          {t('statusPending')} {stats.pending}
         </span>
         <span>
           <i className="admin-dashboard-funnel__dot admin-dashboard-funnel__dot--cancelled" />
@@ -344,7 +336,7 @@ export default function DashboardPage() {
             type: 'Appointment',
             date: formatDate(item.date || item.createdAt),
             time: item.time || item.selectedTimeSlot || formatTime(item.date || item.createdAt),
-            status: item.status || 'pending',
+            status: item.status || 'confirmed',
             sortDate: toDate(item.createdAt || item.date) || new Date(0),
           })),
         ]
@@ -486,14 +478,9 @@ export default function DashboardPage() {
 
   const typeLabel = (type) => (type === 'Appointment' ? t('typeAppointment') : t('typeWorkshop'));
   const statusLabel = (status) => {
-    const key = {
-      confirmed: 'statusConfirmed',
-      pending: 'statusPending',
-      cancelled: 'statusCancelled',
-      canceled: 'statusCancelled',
-      completed: 'statusCompleted',
-    }[String(status).toLowerCase()];
-    return key ? t(key) : status;
+    const normalized = String(status).toLowerCase();
+    const key = normalized === 'cancelled' || normalized === 'canceled' ? 'statusCancelled' : 'statusConfirmed';
+    return t(key);
   };
   const actionLabel = (action) => {
     const key = {

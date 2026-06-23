@@ -948,12 +948,6 @@
   background: #dcf8ea;
 }
 
-.admin-events-participant-chip--pending,
-.admin-events-participant-chip--waitlist {
-  color: #b56b05;
-  background: #fff0d6;
-}
-
 .admin-events-participant-chip--cancelled {
   color: #c92d43;
   background: #ffe2e8;
@@ -1277,11 +1271,6 @@
   height: 100%;
   opacity: 0;
   cursor: pointer;
-}
-
-.admin-events-participant-chip--completed {
-  color: #285fca;
-  background: #e4edff;
 }
 
 .admin-events-booking-details {

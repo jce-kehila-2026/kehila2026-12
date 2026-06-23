@@ -6,6 +6,20 @@ import { AdminContext } from './AdminContext';
 import { logAuditEvent } from '../services/auditService';
 import { resolveUserRole } from '../services/authRoleService';
 
+const ADMIN_PROFILE_TIMEOUT_MS = 6000;
+
+function withTimeout(promise, fallback, label) {
+  let timeoutId;
+  const timeout = new Promise((resolve) => {
+    timeoutId = setTimeout(() => {
+      console.warn(`${label} timed out; continuing with fallback.`);
+      resolve(fallback);
+    }, ADMIN_PROFILE_TIMEOUT_MS);
+  });
+
+  return Promise.race([promise, timeout]).finally(() => clearTimeout(timeoutId));
+}
+
 export default function AdminProvider({ children }) {
   const [currentUser, setCurrentUser] = useState(null);
   const [userRole, setUserRole] = useState(null);
@@ -20,29 +34,38 @@ export default function AdminProvider({ children }) {
     const unsub = onAuthStateChanged(auth, async (user) => {
       setLoading(true);
       setCurrentUser(user);
-      if (user) {
-        const role = await resolveUserRole(user);
-        setUserRole(role || 'participant');
-        // Members approved from a join request get a temporary password and a
-        // `mustChangePassword` flag, which gates them to the set-password screen.
-        try {
-          const snap = await getDoc(doc(db, 'users', user.uid));
-          const profile = snap.exists() ? snap.data() : {};
-          const inactive = profile.isActive === false || String(profile.status || '').toLowerCase() === 'inactive';
-          setAccountInactive(inactive);
-          setMustChangePassword(!inactive && profile.mustChangePassword === true);
-        } catch (err) {
-          console.error('Failed to read profile flags:', err);
-          setAccountInactive(false);
+
+      try {
+        if (user) {
+          const role = await withTimeout(resolveUserRole(user), 'participant', 'Admin role lookup');
+          setUserRole(role || 'participant');
+          // Members approved from a join request get a temporary password and a
+          // `mustChangePassword` flag, which gates them to the set-password screen.
+          try {
+            const snap = await withTimeout(getDoc(doc(db, 'users', user.uid)), null, 'Admin profile lookup');
+            const profile = snap?.exists?.() ? snap.data() : {};
+            const inactive = profile.isActive === false || String(profile.status || '').toLowerCase() === 'inactive';
+            setAccountInactive(inactive);
+            setMustChangePassword(!inactive && profile.mustChangePassword === true);
+          } catch (err) {
+            console.error('Failed to read profile flags:', err);
+            setAccountInactive(false);
+            setMustChangePassword(false);
+          }
+        } else {
+          setUserRole(null);
+          setImpersonatedUserUID(null);
           setMustChangePassword(false);
+          setAccountInactive(false);
         }
-      } else {
-        setUserRole(null);
-        setImpersonatedUserUID(null);
-        setMustChangePassword(false);
+      } catch (err) {
+        console.error('Failed to resolve admin auth state:', err);
+        setUserRole(user ? 'participant' : null);
         setAccountInactive(false);
+        setMustChangePassword(false);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     });
     return unsub;
   }, []);

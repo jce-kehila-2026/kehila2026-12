@@ -521,10 +521,7 @@
   text-transform: capitalize;
 }
 
-.appointments-status--confirmed,
-.appointments-status--approved { color: #329143; background: rgba(134, 209, 124, 0.22); }
-.appointments-status--pending { color: #f59e0b; background: rgba(253, 186, 116, 0.24); }
-.appointments-status--completed { color: #6d35b8; background: rgba(167, 139, 250, 0.22); }
+.appointments-status--confirmed { color: #329143; background: rgba(134, 209, 124, 0.22); }
 .appointments-status--cancelled { color: #e05297; background: rgba(252, 231, 243, 0.92); }
 
 .appointments-actions {
