@@ -10,6 +10,7 @@ import { localizeField } from '../../../../i18n/localizeField';
 
 export default function CommentsPreview({
   comments = [],
+  totalCommentsCount = 0,
   isExpanded = false,
   localUserId,
   localUserName,
@@ -18,7 +19,14 @@ export default function CommentsPreview({
   relativeTimeNow,
 }) {
   const { t, locale } = useParticipantLocale();
-  const hasMoreComments = comments.length > COMMENTS_PREVIEW_LIMIT;
+  // Compare against the server-backed total, not the loaded array: the feed only
+  // preloads the first two comments, so relying on comments.length here would
+  // hide the "show more" toggle for any post with more than two comments and
+  // leave the rest permanently unreachable (the toggle is what triggers the
+  // full fetch).
+  const totalComments = Math.max(totalCommentsCount, comments.length);
+  const hasMoreComments = totalComments > COMMENTS_PREVIEW_LIMIT;
+  const remainingCount = totalComments - COMMENTS_PREVIEW_LIMIT;
   const visibleComments = getVisiblePreviewComments(comments, isExpanded);
 
   if (visibleComments.length === 0) {
@@ -66,7 +74,7 @@ export default function CommentsPreview({
         <button className="comments-preview__view-all" onClick={onToggleExpanded} type="button">
           {isExpanded
             ? t('showLess')
-            : t('showMoreComments').replace('{n}', String(comments.length - COMMENTS_PREVIEW_LIMIT))}
+            : t('showMoreComments').replace('{n}', String(remainingCount))}
         </button>
       )}
     </section>
