@@ -54,26 +54,39 @@ function relativeTime(ts, t, lang = 'en') {
   return date.toLocaleDateString(DATE_LOCALE_BY_LANG[lang] || 'en-US', { month: 'short', day: 'numeric' });
 }
 
-function isUnread(update, lastSeenAt) {
-  if (!lastSeenAt) return true;
-  const seenMs = lastSeenAt.toMillis ? lastSeenAt.toMillis() : Number(lastSeenAt);
-  return (update.createdAt?.toMillis?.() ?? 0) > seenMs;
-}
-
 function isCommunityNotification(update) {
   return update.kind === 'activity';
 }
 
+// Community activity and admin announcements track independent "seen" cutoffs.
+// Older accounts only have the general cutoff, so community falls back to it.
+function isUnread(update, lastSeen) {
+  const general = lastSeen?.general ?? null;
+  const community = lastSeen?.community ?? general;
+  const cutoff = isCommunityNotification(update) ? community : general;
+  if (!cutoff) return true;
+  const seenMs = cutoff.toMillis ? cutoff.toMillis() : Number(cutoff);
+  return (update.createdAt?.toMillis?.() ?? 0) > seenMs;
+}
+
 export default function NotificationsDropdown({
   updates,
-  lastSeenAt,
+  lastSeen,
   onMarkAllRead,
   onNotificationClick,
   onClose,
   ignoreOutsideClickRef,
 }) {
   const panelRef = useRef(null);
-  const [activeTab, setActiveTab] = useState('community');
+  // Open on whichever tab actually has unread items so the bell badge never
+  // points at a feed the dropdown isn't showing. Runs once per open (the
+  // dropdown remounts each time it's toggled). Defaults to community.
+  const [activeTab, setActiveTab] = useState(() => {
+    const active = updates.filter((u) => u.active !== false);
+    if (active.some((u) => isCommunityNotification(u) && isUnread(u, lastSeen))) return 'community';
+    if (active.some((u) => !isCommunityNotification(u) && isUnread(u, lastSeen))) return 'general';
+    return 'community';
+  });
   const { t, lang: currentLanguage } = useParticipantLocale();
 
   // Close on Escape
@@ -108,8 +121,8 @@ export default function NotificationsDropdown({
   const communityUpdates = activeUpdates.filter(isCommunityNotification);
   const generalUpdates = activeUpdates.filter((update) => !isCommunityNotification(update));
   const visibleUpdates = activeTab === 'community' ? communityUpdates : generalUpdates;
-  const unreadCommunityCount = communityUpdates.filter((update) => isUnread(update, lastSeenAt)).length;
-  const unreadGeneralCount = generalUpdates.filter((update) => isUnread(update, lastSeenAt)).length;
+  const unreadCommunityCount = communityUpdates.filter((update) => isUnread(update, lastSeen)).length;
+  const unreadGeneralCount = generalUpdates.filter((update) => isUnread(update, lastSeen)).length;
   const unreadTotalCount = unreadCommunityCount + unreadGeneralCount;
 
   return (
@@ -166,25 +179,28 @@ export default function NotificationsDropdown({
         {visibleUpdates.map((update) => {
           const meta = TYPE_META[update.type] ?? TYPE_META.general;
           const { Icon } = meta;
-          const unread = isUnread(update, lastSeenAt);
+          const unread = isUnread(update, lastSeen);
           const title = getLocalizedText(update.title, currentLanguage);
           const body = getLocalizedText(update.body || update.text || update.message, currentLanguage);
-          const canOpenTarget = Boolean(update.postId && update.kind === 'activity');
-          const handleOpenTarget = () => {
-            if (canOpenTarget) onNotificationClick?.(update);
+          const canNavigate = Boolean(update.postId && update.kind === 'activity');
+          // Navigable items always act; other items act only while unread, so a
+          // click dismisses them (the parent advances the matching feed cutoff).
+          const interactive = canNavigate || unread;
+          const handleActivate = () => {
+            if (interactive) onNotificationClick?.(update);
           };
           const handleItemKeyDown = (event) => {
-            if (!canOpenTarget || (event.key !== 'Enter' && event.key !== ' ')) return;
+            if (!interactive || (event.key !== 'Enter' && event.key !== ' ')) return;
             event.preventDefault();
-            handleOpenTarget();
+            handleActivate();
           };
           return (
             <div
               key={`${update.kind ?? 'update'}-${update.id}`}
-              className={`notif-dropdown__item${unread ? ' is-unread' : ''}${canOpenTarget ? ' is-clickable' : ''}`}
-              role={canOpenTarget ? 'button' : undefined}
-              tabIndex={canOpenTarget ? 0 : undefined}
-              onClick={handleOpenTarget}
+              className={`notif-dropdown__item${unread ? ' is-unread' : ''}${interactive ? ' is-clickable' : ''}`}
+              role={interactive ? 'button' : undefined}
+              tabIndex={interactive ? 0 : undefined}
+              onClick={handleActivate}
               onKeyDown={handleItemKeyDown}
             >
               {unread && <span className="notif-dropdown__unread-dot" style={{ '--dot-color': meta.color }} />}

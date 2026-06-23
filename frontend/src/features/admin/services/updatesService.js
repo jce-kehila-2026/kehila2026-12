@@ -92,17 +92,41 @@ export async function deleteUpdate(updateId) {
   return deleteDoc(doc(db, UPDATES_COL, updateId));
 }
 
+/** A notification belongs to the "community" tab when it's auto-generated activity. */
+function isCommunityItem(update) {
+  return update.kind === 'activity';
+}
+
+/**
+ * Resolve the "last seen" millisecond cutoff that applies to a given item.
+ * Community activity and admin announcements track independent cutoffs so that
+ * reading one feed never silently marks the other read. Older accounts only
+ * have the general cutoff, so community falls back to it for a clean migration.
+ *
+ * @param {{ general: any, community: any }|any} lastSeen
+ */
+function seenCutoffMs(update, lastSeen) {
+  const general = lastSeen?.general ?? null;
+  const community = lastSeen?.community ?? general;
+  const cutoff = isCommunityItem(update) ? community : general;
+  if (cutoff == null) return null;
+  return cutoff.toMillis ? cutoff.toMillis() : Number(cutoff);
+}
+
 /**
  * Calculate the number of unread updates for a participant.
  * Uses client-side filtering against a pre-fetched updates list for zero extra reads.
  *
- * @param {import('firebase/firestore').Timestamp|null} lastSeenAt
+ * @param {{ general: any, community: any }|null} lastSeen – per-tab cutoffs from getLastSeenAt()
  * @param {Array} updates – already-fetched list from fetchUpdates()
  */
-export function countUnread(lastSeenAt, updates) {
-  if (!lastSeenAt) return updates.filter((u) => u.active !== false).length;
-  const seenMs = lastSeenAt.toMillis ? lastSeenAt.toMillis() : lastSeenAt;
-  return updates.filter((u) => u.active !== false && u.createdAt?.toMillis?.() > seenMs).length;
+export function countUnread(lastSeen, updates) {
+  return updates.filter((u) => {
+    if (u.active === false) return false;
+    const seenMs = seenCutoffMs(u, lastSeen);
+    if (seenMs == null) return true;
+    return (u.createdAt?.toMillis?.() ?? 0) > seenMs;
+  }).length;
 }
 
 const ACTIVITY_VERB = {
@@ -231,14 +255,28 @@ function activityDocToItem(docSnap) {
  * Fetch the most recent activity notifications for a participant from their
  * own users/{uid}/activity_notifications subcollection. A single capped query —
  * scoped to the user's own data, so reads stay minimal and no index is needed.
+ *
+ * Staleness pruning (detecting likes/comments that were since removed) costs an
+ * extra read per item plus deletes, so it is opt-in via `pruneStale`. Background
+ * polling skips it to avoid an N+1 read burst every minute; it runs only when
+ * the participant actually opens the bell.
+ *
+ * @param {string} uid
+ * @param {number} [max]
+ * @param {{ pruneStale?: boolean }} [options]
  */
-export async function fetchActivityNotifications(uid, max = 20) {
+export async function fetchActivityNotifications(uid, max = 20, { pruneStale = true } = {}) {
   if (!uid) return [];
   const snap = await getDocs(query(
     collection(db, 'users', uid, 'activity_notifications'),
     orderBy('createdAt', 'desc'),
     limit(max),
   ));
+
+  if (!pruneStale) {
+    return snap.docs.map(activityDocToItem);
+  }
+
   const resolvedDocs = await Promise.all(snap.docs.map(async (docSnap) => {
     const stale = await isStaleActivityNotification(docSnap);
     if (stale) {
@@ -252,29 +290,47 @@ export async function fetchActivityNotifications(uid, max = 20) {
 }
 
 /**
- * Read the lastSeenUpdatesAt timestamp from the participant's user document.
- * Returns null if the field doesn't exist yet.
+ * Read the per-tab "last seen" cutoffs from the participant's user document.
+ * `general` covers admin announcements; `community` covers activity. Either is
+ * null when the user has never marked that feed seen.
+ *
+ * @returns {Promise<{ general: any, community: any }>}
  */
 export async function getLastSeenAt(uid) {
   const snap = await getDoc(doc(db, 'users', uid));
-  return snap.exists() ? (snap.data().lastSeenUpdatesAt ?? null) : null;
+  if (!snap.exists()) return { general: null, community: null };
+  const data = snap.data();
+  return {
+    general: data.lastSeenUpdatesAt ?? null,
+    community: data.lastSeenCommunityAt ?? null,
+  };
 }
 
 /**
  * Stamp the participant's user document with the current server time,
- * marking all current updates as "seen".
+ * marking every update across both tabs as "seen".
  */
 export async function markAllAsRead(uid) {
   return updateDoc(doc(db, 'users', uid), {
     lastSeenUpdatesAt: serverTimestamp(),
+    lastSeenCommunityAt: serverTimestamp(),
   });
 }
 
-export async function markUpdatesSeenThrough(uid, seenAt) {
+/**
+ * Advance one feed's "seen" cutoff to a specific timestamp without touching the
+ * other feed — so opening a community post never marks admin announcements read.
+ *
+ * @param {string} uid
+ * @param {any} seenAt – the timestamp to mark seen through
+ * @param {'general'|'community'} [scope]
+ */
+export async function markUpdatesSeenThrough(uid, seenAt, scope = 'general') {
   if (!uid || !seenAt) return null;
 
+  const field = scope === 'community' ? 'lastSeenCommunityAt' : 'lastSeenUpdatesAt';
   return updateDoc(doc(db, 'users', uid), {
-    lastSeenUpdatesAt: seenAt,
+    [field]: seenAt,
   });
 }
 
