@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState, useCallback, useId } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import ArrowForward from '@mui/icons-material/ArrowForward';
 import CalendarMonth from '@mui/icons-material/CalendarMonth';
 import Category from '@mui/icons-material/Category';
 import Close from '@mui/icons-material/Close';
@@ -30,7 +29,7 @@ import {
 import { useAdminLocale } from '../context/AdminLocaleContext';
 import ReminderTimePicker from '../../../shared/components/ReminderTimePicker';
 import ReminderDatePicker from '../../../shared/components/ReminderDatePicker';
-import CitySelect from '../../../shared/components/CitySelect';
+import ISRAELI_CITIES from '../../../shared/data/israeliCities.json';
 import '../../../shared/components/ReminderTimePicker.css';
 import '../../../shared/styles/public-cta-button.css';
 import './EventsPage.css';
@@ -722,6 +721,9 @@ export default function EventsPage() {
   const isWeeklyWorkshopSchedule = form.type === 'workshop' && form.recurrence === 'weekly';
   const workshopStartTimePickerId = useId();
   const workshopDatePickerId = useId();
+  const appointmentDatePickerId = useId();
+  const appointmentStartTimePickerId = useId();
+  const appointmentStartTime = normalizeTimeString(form.startTime || '');
 
   const datePickerLabels = useMemo(
     () => ({
@@ -746,6 +748,14 @@ export default function EventsPage() {
     }),
     [t],
   );
+
+  const locationOptions = useMemo(() => {
+    const trimmed = (form.location || '').trim();
+    if (trimmed && !ISRAELI_CITIES.some((city) => city.he === trimmed)) {
+      return [{ he: trimmed, en: '' }, ...ISRAELI_CITIES];
+    }
+    return ISRAELI_CITIES;
+  }, [form.location]);
 
   useEffect(() => {
     if (!selectedEventIsAppointment) return;
@@ -985,6 +995,12 @@ export default function EventsPage() {
     } else if (isRecurring && preparedForm.weeklyDayIndex === '') {
       setToast(t('evToastChooseDay'));
       return;
+    } else if (!preparedForm.date?.trim()) {
+      setToast(t('evToastAddDate'));
+      return;
+    } else if (!normalizeTimeString(preparedForm.startTime)) {
+      setToast(t('evToastAddStartTime'));
+      return;
     } else if (isRecurring && !firstSlot) {
       setToast(t('evToastAddSlot'));
       return;
@@ -1001,7 +1017,9 @@ export default function EventsPage() {
       weeklyDay: isRecurring ? getWeekdayName(preparedForm.weeklyDayIndex) : '',
       weeklyDayIndex: isRecurring ? Number(preparedForm.weeklyDayIndex) : null,
       date: preparedForm.date || null,
-      startTime: isRecurring ? firstSlot.startTime : startDate,
+      startTime: isRecurring
+        ? (normalizeTimeString(preparedForm.startTime) || firstSlot?.startTime)
+        : startDate,
       endTime: isRecurring ? (lastSlot.endTime || lastSlot.startTime) : endDate,
       location: preparedForm.location.trim(),
       description: preparedForm.description.trim(),
@@ -1135,11 +1153,12 @@ export default function EventsPage() {
 
   return (
     <section className="admin-events-page public-cta-scope" dir={direction}>
+      <div className="admin-events-content">
       <div className="admin-events-page-title-slot">
         <h1 className="admin-events-page-title">{t('evTitle')}</h1>
       </div>
 
-      <div className={`admin-events-shell${drawerOpen || participantsDrawerOpen ? ' has-drawer' : ''}${participantsDrawerOpen ? ' has-participants-drawer' : ''}`}>
+      <div className={`admin-events-shell${drawerOpen ? ' has-drawer' : ''}`}>
         <main className="admin-events-main">
 
           <section className="admin-events-stats" aria-label={t('evSummaryAria')}>
@@ -1354,12 +1373,6 @@ export default function EventsPage() {
                     </li>
                   ))}
                 </ol>
-
-                <div className="admin-events-modal-tip-card">
-                  <CalendarMonth />
-                  <strong>{t('evTipAllSet')}</strong>
-                  <p>{t('evTipSaveDraft')}</p>
-                </div>
               </aside>
 
               <section className="admin-events-modal-content">
@@ -1368,11 +1381,6 @@ export default function EventsPage() {
                     <span>{activeFormStep + 1}</span>
                     <div>
                       <h3>{t(currentFormStep.titleKey)}</h3>
-                      <p>
-                        {activeFormStep === 0
-                          ? t('evStep0Intro')
-                          : t(currentFormStep.descKey)}
-                      </p>
                     </div>
                   </header>
 
@@ -1399,11 +1407,6 @@ export default function EventsPage() {
                         />
                         <small>{descriptionCount}/120</small>
                       </label>
-
-                      <div className="admin-events-wizard-tip">
-                        <Tune fontSize="small" />
-                        <span>{t('evTipBasic')}</span>
-                      </div>
                     </div>
                   )}
 
@@ -1551,27 +1554,30 @@ export default function EventsPage() {
                         </select>
                       </label>
                       <label>
-                        <span className="admin-events-field-label">
-                          {t('evDate')} {form.recurrence !== 'weekly' ? <b>*</b> : null}
-                        </span>
-                        <input
-                          type="date"
+                        <span className="admin-events-field-label">{t('evDate')} <b>*</b></span>
+                        <ReminderDatePicker
+                          id={appointmentDatePickerId}
+                          className="admin-events-date-picker"
                           value={form.date}
-                          onChange={(event) => updateForm('date', event.target.value)}
-                          required={form.recurrence !== 'weekly'}
-                          disabled={form.recurrence === 'weekly'}
+                          ariaLabel={t('evDate')}
+                          labels={datePickerLabels}
+                          onChange={(nextDate) => updateForm('date', nextDate)}
+                          portal
+                          compact
                         />
                       </label>
                       <label>
-                        <span className="admin-events-field-label">
-                          {t('evStartTime')} {form.recurrence !== 'weekly' ? <b>*</b> : null}
-                        </span>
-                        <input
-                          type="time"
-                          value={form.startTime}
-                          onChange={(event) => updateForm('startTime', event.target.value)}
-                          required={form.recurrence !== 'weekly'}
-                          disabled={form.recurrence === 'weekly'}
+                        <span className="admin-events-field-label">{t('evStartTime')} <b>*</b></span>
+                        <ReminderTimePicker
+                          id={appointmentStartTimePickerId}
+                          className="admin-events-time-picker"
+                          value={appointmentStartTime}
+                          ariaLabel={t('evStartTime')}
+                          labels={timePickerLabels}
+                          onChange={(nextTime) => updateForm('startTime', normalizeTimeString(nextTime) || nextTime)}
+                          portal
+                          compact
+                          showDoneButton
                         />
                       </label>
                       <section className="admin-events-provider-section admin-events-span-2">
@@ -1580,14 +1586,26 @@ export default function EventsPage() {
                             <h3>{t('evProvidersTitle')}</h3>
                             <p>{t('evProvidersDesc')}</p>
                           </div>
-                          <button type="button" onClick={addProvider}>{t('evAddProvider')}</button>
+                          <button
+                            type="button"
+                            className="admin-events-wizard-action-btn admin-events-wizard-action-btn--outline public-cta-interaction"
+                            onClick={addProvider}
+                          >
+                            {t('evAddProvider')}
+                          </button>
                         </header>
                         <div className="admin-events-provider-list">
                           {form.providers.map((provider, providerIndex) => (
                             <article className="admin-events-provider-card" key={`${providerIndex}-${provider.id || 'provider'}`}>
                               <div className="admin-events-provider-card__header">
                                 <strong>{t('evProviderN').replace('{n}', providerIndex + 1)}</strong>
-                                <button type="button" onClick={() => removeProvider(providerIndex)}>{t('evRemove')}</button>
+                                <button
+                                  type="button"
+                                  className="admin-events-wizard-action-btn admin-events-wizard-action-btn--danger admin-events-wizard-remove-btn"
+                                  onClick={() => removeProvider(providerIndex)}
+                                >
+                                  {t('evRemove')}
+                                </button>
                               </div>
                               <div className="admin-events-provider-fields">
                                 <label>
@@ -1627,7 +1645,13 @@ export default function EventsPage() {
                               <div className="admin-events-slot-list">
                                 <div className="admin-events-slot-list__title">
                                   <span>{t('evTimeSlots')}</span>
-                                  <button type="button" onClick={() => addProviderSlot(providerIndex)}>{t('evAddSlot')}</button>
+                                  <button
+                                    type="button"
+                                    className="admin-events-wizard-action-btn admin-events-wizard-action-btn--outline public-cta-interaction"
+                                    onClick={() => addProviderSlot(providerIndex)}
+                                  >
+                                    {t('evAddSlot')}
+                                  </button>
                                 </div>
                                 {provider.slots.map((slot, slotIndex) => (
                                   <div className="admin-events-slot-row" key={`${slotIndex}-${slot.id || 'slot'}`}>
@@ -1664,7 +1688,13 @@ export default function EventsPage() {
                                         onChange={(event) => updateProviderSlot(providerIndex, slotIndex, 'capacity', event.target.value)}
                                       />
                                     </label>
-                                    <button type="button" onClick={() => removeProviderSlot(providerIndex, slotIndex)}>{t('evRemove')}</button>
+                                    <button
+                                      type="button"
+                                      className="admin-events-wizard-action-btn admin-events-wizard-action-btn--danger admin-events-wizard-remove-btn"
+                                      onClick={() => removeProviderSlot(providerIndex, slotIndex)}
+                                    >
+                                      {t('evRemove')}
+                                    </button>
                                   </div>
                                 ))}
                               </div>
@@ -1679,13 +1709,18 @@ export default function EventsPage() {
                     <div className="admin-events-wizard-fields">
                       <label>
                         <span className="admin-events-field-label">{t('evLocationLabel')} <b>*</b></span>
-                        <CitySelect
+                        <select
                           value={form.location}
-                          onChange={(city) => updateForm('location', city)}
-                          placeholder={t('evLocationPlaceholder')}
+                          onChange={(event) => updateForm('location', event.target.value)}
                           required
-                          size="small"
-                        />
+                        >
+                          <option value="">{t('evLocationPlaceholder')}</option>
+                          {locationOptions.map((city) => (
+                            <option key={city.he} value={city.he}>
+                              {city.en ? `${city.he} (${city.en})` : city.he}
+                            </option>
+                          ))}
+                        </select>
                       </label>
                       <label>
                         {t('evCapacity')}
@@ -1764,29 +1799,25 @@ export default function EventsPage() {
                 </section>
 
                 <footer className="admin-events-wizard-footer">
-                  <div className="admin-events-progress-dots" aria-label={t('evFormProgressAria')}>
-                    {EVENT_FORM_STEPS.map((step, index) => (
-                      <button
-                        className={index === activeFormStep ? 'is-active' : ''}
-                        type="button"
-                        onClick={() => setActiveFormStep(index)}
-                        aria-label={t(step.titleKey)}
-                        key={step.titleKey}
-                      />
-                    ))}
-                  </div>
                   <div className="admin-events-wizard-actions">
-                    <button className="admin-events-cancel-btn" type="button" onClick={activeFormStep === 0 ? closeDrawer : goToPreviousFormStep}>
-                      {activeFormStep === 0 ? t('evCancel') : t('evBack')}
+                    <button
+                      className="admin-events-primary-btn public-cta-interaction admin-events-wizard-secondary-btn"
+                      type="button"
+                      onClick={activeFormStep === 0 ? closeDrawer : goToPreviousFormStep}
+                    >
+                      <span className="admin-events-primary-btn__label">
+                        {activeFormStep === 0 ? t('evCancel') : t('evBack')}
+                      </span>
                     </button>
                     {isLastFormStep ? (
-                      <button className="admin-events-save-btn" type="submit" disabled={saving}>
-                        {saving ? t('evSaving') : editingEvent ? t('evSaveChanges') : t('evPublishEvent')}
+                      <button className="admin-events-primary-btn public-cta-highlight" type="submit" disabled={saving}>
+                        <span className="admin-events-primary-btn__label">
+                          {saving ? t('evSaving') : editingEvent ? t('evSaveChanges') : t('evPublishEvent')}
+                        </span>
                       </button>
                     ) : (
-                      <button className="admin-events-save-btn" type="button" onClick={goToNextFormStep}>
-                        {t('evNextStep')}
-                        <ArrowForward fontSize="small" />
+                      <button className="admin-events-primary-btn public-cta-highlight" type="button" onClick={goToNextFormStep}>
+                        <span className="admin-events-primary-btn__label">{t('evNextStep')}</span>
                       </button>
                     )}
                   </div>
@@ -1795,8 +1826,24 @@ export default function EventsPage() {
             </div>
           </form>
         </aside>
+      </div>
+      </div>
 
-        <aside className={`admin-events-participants-drawer${participantsDrawerOpen ? ' is-open' : ''}`} aria-label={t('pdAria')} dir={direction}>
+      {participantsDrawerOpen ? (
+        <>
+          <button
+            className="admin-events-backdrop admin-events-backdrop--modal"
+            type="button"
+            onClick={closeParticipantsDrawer}
+            aria-label={t('pdClose')}
+          />
+          <aside
+            className="admin-events-participants-drawer is-open"
+            aria-label={t('pdAria')}
+            aria-modal="true"
+            role="dialog"
+            dir={direction}
+          >
           <header className="admin-events-participants-header">
             <div>
               <h2>{t('pdTitle')}</h2>
@@ -2120,8 +2167,9 @@ export default function EventsPage() {
               </dl>
             </section>
           ) : null}
-        </aside>
-      </div>
+          </aside>
+        </>
+      ) : null}
 
       {drawerOpen ? (
         <button
@@ -2129,14 +2177,6 @@ export default function EventsPage() {
           type="button"
           onClick={closeDrawer}
           aria-label={t('evCloseModal')}
-        />
-      ) : null}
-      {participantsDrawerOpen ? (
-        <button
-          className="admin-events-backdrop admin-events-backdrop--participants"
-          type="button"
-          onClick={closeParticipantsDrawer}
-          aria-label={t('pdClose')}
         />
       ) : null}
       {toast ? <div className="admin-events-toast" role="status">{toast}</div> : null}
