@@ -166,6 +166,70 @@
   color: var(--pd-text-muted-dark);
 }
 
+/* Participant Home — all card action buttons (dark surface, pink/lilac accent) */
+.participant-home--dark .pd-home .pd-btn--view-cta {
+  color: #f472b6;
+  background: rgba(23, 32, 51, 0.94);
+  border: 1.5px solid rgba(236, 72, 153, 0.38);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
+}
+
+.participant-home--dark .pd-home .pd-btn--view-cta:hover,
+.participant-home--dark .pd-home .pd-btn--view-cta:focus-visible {
+  color: #fce7f3;
+  background: rgba(236, 72, 153, 0.16);
+  border-color: rgba(244, 114, 182, 0.55);
+  box-shadow: 0 6px 18px rgba(236, 72, 153, 0.14);
+  transform: translateY(-1px);
+  filter: none;
+}
+
+.participant-home--dark .pd-home .pd-btn--view-cta:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.24);
+}
+
+.participant-home--dark .pd-home .pd-btn--view-cta:focus-visible {
+  outline: 2px solid rgba(244, 114, 182, 0.45);
+  outline-offset: 2px;
+}
+
+.participant-home--dark .pd-home .pd-btn--view-cta .pd-btn__arrow {
+  color: currentColor;
+}
+
+.participant-home--dark .pd-home .pd-btn--view-cta:hover .pd-btn__arrow,
+.participant-home--dark .pd-home .pd-btn--view-cta:focus-visible .pd-btn__arrow {
+  color: currentColor;
+}
+
+/* Empty appointment/event cards — large icon badge */
+.participant-home--dark .pd-card--appointment.pd-card--empty .pd-feature-empty__badge,
+.participant-home--dark .pd-card--event.pd-card--empty .pd-feature-empty__badge {
+  color: #f472b6;
+  background:
+    radial-gradient(circle at 30% 24%, rgba(236, 72, 153, 0.16) 0%, transparent 52%),
+    linear-gradient(145deg, rgba(31, 23, 42, 0.96) 0%, rgba(42, 24, 52, 0.94) 48%, rgba(34, 20, 44, 0.92) 100%);
+  box-shadow:
+    0 6px 18px rgba(0, 0, 0, 0.28),
+    0 10px 28px rgba(236, 72, 153, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.participant-home--dark .pd-card--appointment.pd-card--empty .pd-feature-empty__badge--appointment {
+  color: #c084fc;
+}
+
+.participant-home--dark .pd-card--event.pd-card--empty .pd-feature-empty__badge--event {
+  color: #f472b6;
+}
+
+.participant-home--dark .pd-card--appointment.pd-card--empty .pd-feature-empty__badge-ring,
+.participant-home--dark .pd-card--event.pd-card--empty .pd-feature-empty__badge-ring {
+  border-color: rgba(192, 132, 252, 0.38);
+  opacity: 0.8;
+}
+
 .participant-home--dark .pd-card--feature .pd-feature__detail-sep,
 .participant-home--dark .pd-notes__copy small,
 .participant-home--dark .pd-card--feature .pd-countdown-ring__label span,
