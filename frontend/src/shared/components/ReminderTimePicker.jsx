@@ -103,6 +103,7 @@ function TimeStepperInput({ id, label, value, onCommit, maxLength }) {
  *   portal?: boolean,
  *   compact?: boolean,
  *   className?: string,
+ *   disabled?: boolean,
  * }} props
  */
 export default function ReminderTimePicker({
@@ -119,6 +120,7 @@ export default function ReminderTimePicker({
   portal = false,
   compact = false,
   className = '',
+  disabled = false,
 }) {
   const hourInputId = useId();
   const minuteInputId = useId();
@@ -129,6 +131,7 @@ export default function ReminderTimePicker({
   const [panelStyle, setPanelStyle] = useState({});
   const isControlled = controlledOpen !== undefined && onOpenChange != null;
   const isOpen = isControlled ? controlledOpen : internalOpen;
+  const isAdminEventsPicker = className.includes('admin-events-time-picker');
 
   const setOpen = useCallback(
     (next) => {
@@ -234,6 +237,7 @@ export default function ReminderTimePicker({
         'pd-notes-time__panel',
         portal ? 'pd-notes-time__panel--portal reminder-picker-popover--portal' : '',
         compact ? 'pd-notes-time__panel--compact' : '',
+        isAdminEventsPicker ? 'admin-events-time-picker-panel' : '',
       ].filter(Boolean).join(' ')}
       style={portal ? panelStyle : undefined}
       role="dialog"
@@ -300,6 +304,7 @@ export default function ReminderTimePicker({
         'pd-notes-time',
         isOpen ? 'is-open' : '',
         compact ? 'reminder-time-picker--compact' : '',
+        disabled ? 'is-disabled' : '',
         className,
       ].filter(Boolean).join(' ')}
       ref={rootRef}
@@ -311,7 +316,11 @@ export default function ReminderTimePicker({
         aria-haspopup="dialog"
         aria-expanded={isOpen}
         aria-label={ariaLabel}
-        onClick={() => setOpen((current) => !current)}
+        disabled={disabled}
+        onClick={() => {
+          if (disabled) return;
+          setOpen((current) => !current);
+        }}
       >
         <span className={`pd-notes-picker__value${displayLabel ? '' : ' is-placeholder'}`} dir="ltr">
           {displayLabel || labels.selectTime}
