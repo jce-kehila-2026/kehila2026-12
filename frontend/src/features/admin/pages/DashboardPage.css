@@ -99,39 +99,39 @@
 }
 
 .admin-dashboard-metric--purple {
-  --metric-bg-start: rgba(245, 240, 255, 0.98);
-  --metric-bg-end: rgba(232, 221, 255, 0.88);
-  --metric-border: rgba(109, 53, 184, 0.18);
-  --metric-icon-color: #6d35b8;
-  --metric-icon-bg: rgba(109, 53, 184, 0.14);
-  --metric-number-color: #24104f;
+  --metric-bg-start: #f5f1ff;
+  --metric-bg-end: #f5f1ff;
+  --metric-border: rgba(139, 107, 232, 0.24);
+  --metric-icon-color: #8b6be8;
+  --metric-icon-bg: rgba(139, 107, 232, 0.12);
+  --metric-number-color: #8b6be8;
 }
 
 .admin-dashboard-metric--pink {
-  --metric-bg-start: rgba(255, 242, 249, 0.98);
-  --metric-bg-end: rgba(252, 231, 243, 0.9);
-  --metric-border: rgba(224, 82, 151, 0.2);
-  --metric-icon-color: var(--soft-pink);
-  --metric-icon-bg: rgba(224, 82, 151, 0.14);
-  --metric-number-color: #24104f;
+  --metric-bg-start: #fdf2f7;
+  --metric-bg-end: #fdf2f7;
+  --metric-border: rgba(216, 91, 154, 0.22);
+  --metric-icon-color: #d85b9a;
+  --metric-icon-bg: rgba(216, 91, 154, 0.12);
+  --metric-number-color: #d85b9a;
 }
 
 .admin-dashboard-metric--lavender {
-  --metric-bg-start: rgba(250, 247, 255, 0.98);
-  --metric-bg-end: rgba(237, 233, 254, 0.92);
-  --metric-border: rgba(167, 139, 250, 0.22);
-  --metric-icon-color: #7c3aed;
-  --metric-icon-bg: rgba(167, 139, 250, 0.18);
-  --metric-number-color: #24104f;
+  --metric-bg-start: #f1fbf5;
+  --metric-bg-end: #f1fbf5;
+  --metric-border: rgba(99, 179, 122, 0.24);
+  --metric-icon-color: #63b37a;
+  --metric-icon-bg: rgba(99, 179, 122, 0.12);
+  --metric-number-color: #63b37a;
 }
 
 .admin-dashboard-metric--peach {
-  --metric-bg-start: rgba(255, 248, 241, 0.98);
-  --metric-bg-end: rgba(255, 237, 213, 0.9);
-  --metric-border: rgba(253, 186, 116, 0.28);
-  --metric-icon-color: #c05621;
-  --metric-icon-bg: rgba(253, 186, 116, 0.22);
-  --metric-number-color: #24104f;
+  --metric-bg-start: #fff8ec;
+  --metric-bg-end: #fff8ec;
+  --metric-border: rgba(217, 164, 65, 0.26);
+  --metric-icon-color: #d9a441;
+  --metric-icon-bg: rgba(217, 164, 65, 0.13);
+  --metric-number-color: #d9a441;
 }
 
 .admin-dashboard-metric__icon {
@@ -147,6 +147,7 @@
 .admin-dashboard-metric span {
   display: block;
   margin: 0.1875rem 0 0.375rem;
+  color: var(--metric-icon-color);
   font-weight: 700;
 }
 
@@ -161,7 +162,7 @@
 
 .admin-dashboard-metric p {
   margin: 0.4375rem 0 0;
-  color: rgba(36, 16, 79, 0.5);
+  color: color-mix(in srgb, var(--metric-icon-color) 70%, #ffffff);
   font-size: 0.8125rem;
   font-weight: 600;
 }
@@ -178,16 +179,16 @@
 }
 
 .admin-dashboard-metric--alert {
-  border-color: rgba(224, 82, 151, 0.36);
+  border-color: rgba(217, 164, 65, 0.26);
 }
 
 .admin-dashboard-metric--alert .admin-dashboard-metric__icon {
-  color: var(--soft-pink);
-  background: rgba(224, 82, 151, 0.16);
+  color: #d9a441;
+  background: rgba(217, 164, 65, 0.13);
 }
 
 .admin-dashboard-metric--alert strong {
-  color: var(--deep-purple);
+  color: #d9a441;
 }
 
 .admin-dashboard-card {
@@ -376,7 +377,7 @@
 }
 
 .admin-dashboard-funnel__segment--cancelled {
-  background: #f472b6;
+  background: #b42355;
 }
 
 .admin-dashboard-funnel__legend {
