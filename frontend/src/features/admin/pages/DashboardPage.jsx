@@ -6,7 +6,6 @@ import {
   Clock3,
   UsersRound,
   UserPlus,
-  ShieldAlert,
 } from 'lucide-react';
 import { db } from '../../../firebase';
 import { useAdmin } from '../context/AdminContext';
@@ -502,7 +501,21 @@ export default function DashboardPage() {
 
       {/* Today / This Week Snapshot — always renders all 4 cards; a 0 is a
           safe empty state, not a missing feature. */}
-      <section className="admin-dashboard-snapshot" aria-label={t('dashSnapshotAria')}>
+      <section className="admin-dashboard-snapshot" aria-label={t('dashMetricsAria')}>
+        <MetricCard
+          accent="pink"
+          icon={<UsersRound size={22} />}
+          label={t('dashRegisteredUsers')}
+          value={stats.users}
+          subtext={t('dashCommunityMembers')}
+        />
+        <MetricCard
+          accent="purple"
+          icon={<CalendarDays size={22} />}
+          label={t('dashTotalEvents')}
+          value={stats.events}
+          subtext={t('dashActivePlatformEvents')}
+        />
         <MetricCard
           accent="purple"
           icon={<CalendarCheck size={22} />}
@@ -517,45 +530,6 @@ export default function DashboardPage() {
           label={t('dashPendingJoinRequests')}
           value={snapshot.pendingJoinRequests}
           subtext={t('dashPendingJoinRequestsSub')}
-        />
-        <MetricCard
-          accent="pink"
-          alert={snapshot.reportedPosts > 0}
-          icon={<ShieldAlert size={22} />}
-          label={t('dashReportedPosts')}
-          value={snapshot.reportedPosts}
-          subtext={t('dashReportedPostsSub')}
-        />
-        <MetricCard
-          accent="peach"
-          icon={<Clock3 size={22} />}
-          label={t('dashUpcomingAppts48h')}
-          value={snapshot.upcomingAppointments48h}
-          subtext={t('dashUpcomingAppts48hSub')}
-        />
-      </section>
-
-      <section className="admin-dashboard-metrics" aria-label={t('dashMetricsAria')}>
-        <MetricCard
-          accent="purple"
-          icon={<CalendarDays size={25} />}
-          label={t('dashTotalEvents')}
-          value={stats.events}
-          subtext={t('dashActivePlatformEvents')}
-        />
-        <MetricCard
-          accent="pink"
-          icon={<UsersRound size={25} />}
-          label={t('dashRegisteredUsers')}
-          value={stats.users}
-          subtext={t('dashCommunityMembers')}
-        />
-        <MetricCard
-          accent="peach"
-          icon={<CalendarCheck size={25} />}
-          label={t('dashTotalBookings')}
-          value={stats.bookings}
-          subtext={t('dashBookingsSubtext')}
         />
       </section>
 

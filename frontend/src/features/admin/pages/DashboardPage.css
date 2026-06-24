@@ -60,16 +60,6 @@
   font-weight: 700;
 }
 
-.admin-dashboard-metrics {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1rem;
-  min-width: 0;
-  min-height: 0;
-  margin-bottom: 0;
-  align-items: stretch;
-}
-
 .admin-dashboard-metric,
 .admin-dashboard-card {
   border: 1px solid var(--glass-border);
@@ -624,7 +614,6 @@
 }
 
 @media (max-width: 1200px) {
-  .admin-dashboard-metrics,
   .admin-dashboard-snapshot {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -656,7 +645,6 @@
     flex-direction: column;
   }
 
-  .admin-dashboard-metrics,
   .admin-dashboard-snapshot,
   .admin-dashboard-booking,
   .admin-dashboard-moderation__row,
