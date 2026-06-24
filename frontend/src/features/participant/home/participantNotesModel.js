@@ -22,6 +22,8 @@
 
  * @property {boolean} syncToCalendar
 
+ * @property {string} [calendarNoteId]
+
  */
 
 
