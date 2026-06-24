@@ -407,7 +407,7 @@ export default function DashboardPage() {
           {reportsSummaryLoading ? (
             <p className="admin-dashboard-empty">{t('dashReportsLoading')}</p>
           ) : (
-            <ReportBarList rows={therapistChartRows} emptyLabel={t('rptTherapistEmpty')} maxRows={5} />
+            <ReportBarList rows={therapistChartRows} emptyLabel={t('rptTherapistEmpty')} maxRows={5} tone="purple" />
           )}
         </article>
 
@@ -419,7 +419,7 @@ export default function DashboardPage() {
           {reportsSummaryLoading ? (
             <p className="admin-dashboard-empty">{t('dashReportsLoading')}</p>
           ) : (
-            <ReportBarList rows={activityChartRows} emptyLabel={t('rptActivityEmpty')} maxRows={5} />
+            <ReportBarList rows={activityChartRows} emptyLabel={t('rptActivityEmpty')} maxRows={5} tone="pink" />
           )}
         </article>
         <article className="admin-dashboard-card admin-dashboard-bookings">
