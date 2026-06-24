@@ -31,6 +31,7 @@ import {
   setSubmissionHandled,
 } from '../services/formSubmissionAdminService';
 import { useAdminLocale } from '../context/AdminLocaleContext';
+import AdminPageHeader from '../components/AdminPageHeader';
 import './FormsPage.css';
 
 const INTL_LOCALE_BY_LANG = { he: 'he-IL', en: 'en-US' };
@@ -214,7 +215,7 @@ export default function FormsPage() {
 
   return (
     <Box component="section" className="forms-admin-page" dir={direction}>
-      <h1 className="forms-admin-top-title">{t('fmTitle')}</h1>
+      <AdminPageHeader title={t('fmTitle')} />
 
       {actionError ? (
         <Alert severity="error" sx={{ mb: 1, borderRadius: '14px', flex: '0 0 auto' }} onClose={() => setActionError('')}>

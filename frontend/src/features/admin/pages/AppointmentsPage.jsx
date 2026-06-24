@@ -11,6 +11,7 @@ import { db } from '../../../firebase';
 import { getAllAppointments } from '../services/appointmentService';
 import { mergeBookingRows, paginateRows, toDateKey } from './bookingsPageUtils';
 import { useAdminLocale } from '../context/AdminLocaleContext';
+import AdminPageHeader from '../components/AdminPageHeader';
 import './AppointmentsPage.css';
 
 const PAGE_SIZE = 10;
@@ -358,7 +359,21 @@ export default function AppointmentsPage() {
 
   return (
     <section className="appointments-admin-page" dir={direction}>
-      <h1 className="appointments-admin-top-title">{t('apTitle')}</h1>
+      <AdminPageHeader
+        title={t('apTitle')}
+        actions={(
+          <button
+            type="button"
+            className="appointments-export-csv-btn"
+            onClick={() => downloadCsv(filtered, t, intlLocale, { type, search, status, dateFrom, provider })}
+            disabled={loading || filtered.length === 0}
+            title={t('apExportCsv')}
+          >
+            <Download size={17} />
+            {t('apExportCsv')}
+          </button>
+        )}
+      />
       <header className="appointments-admin-header">
         <div className="appointments-type-tabs" role="tablist" aria-label={t('apColEventType')}>
           {[
@@ -378,16 +393,6 @@ export default function AppointmentsPage() {
             </button>
           ))}
         </div>
-        <button
-          type="button"
-          className="appointments-export-csv-btn"
-          onClick={() => downloadCsv(filtered, t, intlLocale, { type, search, status, dateFrom, provider })}
-          disabled={loading || filtered.length === 0}
-          title={t('apExportCsv')}
-        >
-          <Download size={17} />
-          {t('apExportCsv')}
-        </button>
       </header>
 
       <div className="appointments-admin-layout">

@@ -10,9 +10,6 @@
   --glass-border: rgba(167, 139, 250, 0.18);
   width: 100%;
   max-width: 100%;
-  /* The page now has 7 stacked sections (was 3) and no longer fits a single
-     non-scrolling viewport. It scrolls inside .admin-main's own scroll
-     container (see AdminLayout.css), so rows just size to their content. */
   min-height: calc(100vh - 6.5rem);
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -28,35 +25,19 @@
 .admin-dashboard-page *::after {
   box-sizing: border-box;
 }
-
-.admin-dashboard-hero {
-  position: fixed;
-  top: 1.75rem;
-  inset-inline-start: calc(var(--admin-sidebar-width) + 4rem);
-  z-index: 1100;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1.125rem;
-  min-width: 0;
-  min-height: 2.375rem;
-  margin-bottom: 0;
-}
-
-.admin-dashboard-hero h1 {
-  margin: 0;
-  font-size: clamp(1.5rem, 1.7vw, 1.875rem);
-  line-height: 1.12;
-  font-weight: 800;
-  letter-spacing: 0;
+.admin-dashboard-page .admin-page-header {
+  position: static;
+  margin-top: -1.5rem;
+  padding-top: 0;
+  background: transparent;
 }
 
 .admin-dashboard-card__header a {
   border: 1px solid var(--glass-border);
-  border-radius: 16px;
-  background: rgba(255, 255, 255, 0.76);
+  border-radius: 999px;
+  background: #ffffff;
   color: var(--primary-purple);
-  box-shadow: 0 14px 34px rgba(109, 53, 184, 0.08);
+  box-shadow: none;
   font-weight: 700;
 }
 
@@ -64,14 +45,16 @@
 .admin-dashboard-card {
   border: 1px solid var(--glass-border);
   border-radius: 24px;
+}
+
+.admin-dashboard-metric {
   box-shadow: 0 18px 45px rgba(109, 53, 184, 0.08);
   backdrop-filter: blur(18px) saturate(1.12);
 }
 
 .admin-dashboard-card {
-  background:
-    linear-gradient(145deg, rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.58)),
-    var(--glass);
+  background: #ffffff;
+  box-shadow: none;
 }
 
 .admin-dashboard-metric {
@@ -100,39 +83,39 @@
 }
 
 .admin-dashboard-metric--purple {
-  --metric-bg-start: rgba(245, 240, 255, 0.98);
-  --metric-bg-end: rgba(232, 221, 255, 0.88);
-  --metric-border: rgba(109, 53, 184, 0.18);
-  --metric-icon-color: #6d35b8;
-  --metric-icon-bg: rgba(109, 53, 184, 0.14);
-  --metric-number-color: #24104f;
+  --metric-bg-start: #f5f1ff;
+  --metric-bg-end: #f5f1ff;
+  --metric-border: rgba(139, 107, 232, 0.24);
+  --metric-icon-color: #8b6be8;
+  --metric-icon-bg: rgba(139, 107, 232, 0.12);
+  --metric-number-color: #8b6be8;
 }
 
 .admin-dashboard-metric--pink {
-  --metric-bg-start: rgba(255, 242, 249, 0.98);
-  --metric-bg-end: rgba(252, 231, 243, 0.9);
-  --metric-border: rgba(224, 82, 151, 0.2);
-  --metric-icon-color: var(--soft-pink);
-  --metric-icon-bg: rgba(224, 82, 151, 0.14);
-  --metric-number-color: #24104f;
+  --metric-bg-start: #fdf2f7;
+  --metric-bg-end: #fdf2f7;
+  --metric-border: rgba(216, 91, 154, 0.22);
+  --metric-icon-color: #d85b9a;
+  --metric-icon-bg: rgba(216, 91, 154, 0.12);
+  --metric-number-color: #d85b9a;
 }
 
 .admin-dashboard-metric--lavender {
-  --metric-bg-start: rgba(250, 247, 255, 0.98);
-  --metric-bg-end: rgba(237, 233, 254, 0.92);
-  --metric-border: rgba(167, 139, 250, 0.22);
-  --metric-icon-color: #7c3aed;
-  --metric-icon-bg: rgba(167, 139, 250, 0.18);
-  --metric-number-color: #24104f;
+  --metric-bg-start: #f1fbf5;
+  --metric-bg-end: #f1fbf5;
+  --metric-border: rgba(99, 179, 122, 0.24);
+  --metric-icon-color: #63b37a;
+  --metric-icon-bg: rgba(99, 179, 122, 0.12);
+  --metric-number-color: #63b37a;
 }
 
 .admin-dashboard-metric--peach {
-  --metric-bg-start: rgba(255, 248, 241, 0.98);
-  --metric-bg-end: rgba(255, 237, 213, 0.9);
-  --metric-border: rgba(253, 186, 116, 0.28);
-  --metric-icon-color: #c05621;
-  --metric-icon-bg: rgba(253, 186, 116, 0.22);
-  --metric-number-color: #24104f;
+  --metric-bg-start: #fff8ec;
+  --metric-bg-end: #fff8ec;
+  --metric-border: rgba(217, 164, 65, 0.26);
+  --metric-icon-color: #d9a441;
+  --metric-icon-bg: rgba(217, 164, 65, 0.13);
+  --metric-number-color: #d9a441;
 }
 
 .admin-dashboard-metric__icon {
@@ -141,15 +124,14 @@
 }
 
 .admin-dashboard-metric span,
-.admin-dashboard-booking__main span,
-.admin-dashboard-booking__date small,
-.admin-dashboard-booking__date span {
+.admin-dashboard-booking__participant span {
   color: rgba(36, 16, 79, 0.64);
 }
 
 .admin-dashboard-metric span {
   display: block;
   margin: 0.1875rem 0 0.375rem;
+  color: var(--metric-icon-color);
   font-weight: 700;
 }
 
@@ -164,7 +146,7 @@
 
 .admin-dashboard-metric p {
   margin: 0.4375rem 0 0;
-  color: rgba(36, 16, 79, 0.5);
+  color: color-mix(in srgb, var(--metric-icon-color) 70%, #ffffff);
   font-size: 0.8125rem;
   font-weight: 600;
 }
@@ -181,26 +163,16 @@
 }
 
 .admin-dashboard-metric--alert {
-  border-color: rgba(224, 82, 151, 0.36);
+  border-color: rgba(217, 164, 65, 0.26);
 }
 
 .admin-dashboard-metric--alert .admin-dashboard-metric__icon {
-  color: var(--soft-pink);
-  background: rgba(224, 82, 151, 0.16);
+  color: #d9a441;
+  background: rgba(217, 164, 65, 0.13);
 }
 
 .admin-dashboard-metric--alert strong {
-  color: var(--deep-purple);
-}
-
-.admin-dashboard-main-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr);
-  gap: 1rem;
-  min-width: 0;
-  min-height: 0;
-  margin-bottom: 0;
-  overflow: hidden;
+  color: #d9a441;
 }
 
 .admin-dashboard-card {
@@ -240,7 +212,7 @@
   font-size: 0.8125rem;
 }
 
-.admin-dashboard-booking-list {
+.admin-dashboard-booking-table {
   display: grid;
   gap: 0;
   height: calc(100% - 2.625rem);
@@ -250,12 +222,24 @@
 
 .admin-dashboard-booking {
   min-height: 0;
-  height: 3.25rem;
+  height: 3rem;
   display: grid;
-  grid-template-columns: 36px minmax(220px, 1.4fr) auto minmax(180px, 1fr) auto;
+  grid-template-columns: minmax(8.5rem, 1fr) minmax(10rem, 1.3fr) minmax(6rem, 0.55fr);
   align-items: center;
-  gap: 0.5625rem;
+  gap: 0.75rem;
   border-bottom: 1px solid rgba(167, 139, 250, 0.14);
+  color: rgba(36, 16, 79, 0.78);
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.admin-dashboard-booking--head {
+  height: 2.375rem;
+  color: rgba(36, 16, 79, 0.58);
+  font-size: 0.6875rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0;
 }
 
 .admin-dashboard-booking__avatar {
@@ -273,59 +257,41 @@
   font-size: 0.75rem;
 }
 
-.admin-dashboard-booking__main {
+.admin-dashboard-booking__participant,
+.admin-dashboard-booking__event {
   min-width: 0;
 }
 
-.admin-dashboard-booking__main strong,
-.admin-dashboard-booking__main span {
+.admin-dashboard-booking__participant {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.admin-dashboard-booking__participant span:last-child,
+.admin-dashboard-booking__event strong {
   display: block;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.admin-dashboard-booking__main strong {
-  margin-bottom: 0.1875rem;
+.admin-dashboard-booking__event strong {
   font-size: 0.8125rem;
 }
 
-.admin-dashboard-booking__main span {
+.admin-dashboard-booking__participant span:last-child {
   font-size: 0.75rem;
   font-weight: 600;
 }
 
-.admin-dashboard-type,
 .admin-dashboard-status {
   justify-self: start;
   border-radius: 999px;
-  padding: 0.3125rem 0.6875rem;
-  font-size: 0.6875rem;
+  padding: 0.25rem 0.5625rem;
+  font-size: 0.625rem;
   line-height: 1;
   font-weight: 800;
-}
-
-.admin-dashboard-type--workshop {
-  color: var(--primary-purple);
-  background: rgba(167, 139, 250, 0.18);
-}
-
-.admin-dashboard-type--appointment {
-  color: var(--soft-pink);
-  background: rgba(224, 82, 151, 0.13);
-}
-
-.admin-dashboard-booking__date {
-  display: grid;
-  grid-template-columns: 18px 1fr;
-  gap: 0.1875rem 0.5rem;
-  color: rgba(36, 16, 79, 0.7);
-  font-size: 0.75rem;
-  font-weight: 700;
-}
-
-.admin-dashboard-booking__date svg {
-  color: #6b5ba6;
 }
 
 .admin-dashboard-status--confirmed {
@@ -344,7 +310,6 @@
   background: rgba(244, 114, 182, 0.16);
 }
 
-/* Shared empty state used by the new funnel/growth cards. */
 .admin-dashboard-empty {
   margin: 0.5rem 0 0;
   color: rgba(36, 16, 79, 0.5);
@@ -352,12 +317,16 @@
   font-weight: 600;
 }
 
-/* Bookings & Appointments Funnel + Community Moderation Queue */
-.admin-dashboard-insights-grid {
+.admin-dashboard-overview-grid {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 1rem;
   min-width: 0;
+  align-items: stretch;
+}
+
+.admin-dashboard-overview-grid > .admin-dashboard-card {
+  min-height: 17.5rem;
 }
 
 .admin-dashboard-funnel__body {
@@ -384,15 +353,15 @@
   height: 0.625rem;
   border-radius: 999px;
   overflow: hidden;
-  background: rgba(167, 139, 250, 0.12);
+  background: #f5f1ff;
 }
 
 .admin-dashboard-funnel__segment--confirmed {
-  background: #86d17c;
+  background: #63b37a;
 }
 
 .admin-dashboard-funnel__segment--cancelled {
-  background: #f472b6;
+  background: #d85b9a;
 }
 
 .admin-dashboard-funnel__legend {
@@ -418,11 +387,11 @@
 }
 
 .admin-dashboard-funnel__dot--confirmed {
-  background: #329143;
+  background: #63b37a;
 }
 
 .admin-dashboard-funnel__dot--cancelled {
-  background: #b42355;
+  background: #d85b9a;
 }
 
 .admin-dashboard-funnel__rate {
@@ -438,132 +407,7 @@
 
 .admin-dashboard-funnel__rate strong {
   font-size: 1rem;
-  color: #b42355;
-}
-
-.admin-dashboard-moderation__list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.625rem;
-}
-
-.admin-dashboard-moderation__row {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
-  align-items: center;
-  gap: 0.75rem;
-  padding-bottom: 0.625rem;
-  border-bottom: 1px solid rgba(167, 139, 250, 0.14);
-  font-size: 0.8125rem;
-}
-
-.admin-dashboard-moderation__content {
-  margin: 0;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  color: rgba(36, 16, 79, 0.82);
-}
-
-.admin-dashboard-moderation__reports {
-  justify-self: end;
-  border-radius: 999px;
-  padding: 0.3125rem 0.6875rem;
-  font-size: 0.6875rem;
-  font-weight: 800;
-  color: #b42355;
-  background: rgba(244, 114, 182, 0.16);
-  white-space: nowrap;
-}
-
-.admin-dashboard-moderation__age {
-  justify-self: end;
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: rgba(36, 16, 79, 0.5);
-  white-space: nowrap;
-}
-
-/* Membership Growth & Join Requests */
-.admin-dashboard-growth__body {
-  display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
-  gap: 1.5rem;
-}
-
-.admin-dashboard-growth__chart-label,
-.admin-dashboard-growth__overdue h3 {
-  display: block;
-  margin: 0 0 0.75rem;
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: rgba(36, 16, 79, 0.6);
-  text-transform: uppercase;
-}
-
-.admin-dashboard-growth__bars {
-  display: flex;
-  align-items: flex-end;
-  gap: 0.75rem;
-  height: 7.5rem;
-}
-
-.admin-dashboard-growth__bar-col {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-end;
-  flex: 1 1 auto;
-  height: 100%;
-  gap: 0.25rem;
-}
-
-.admin-dashboard-growth__bar {
-  width: 100%;
-  max-width: 1.75rem;
-  min-height: 3px;
-  border-radius: 6px 6px 0 0;
-  background: linear-gradient(180deg, var(--lavender), var(--primary-purple));
-}
-
-.admin-dashboard-growth__bar-col span {
-  font-size: 0.6875rem;
-  font-weight: 800;
-  color: rgba(36, 16, 79, 0.75);
-}
-
-.admin-dashboard-growth__bar-col small {
-  font-size: 0.625rem;
-  font-weight: 600;
-  color: rgba(36, 16, 79, 0.45);
-}
-
-.admin-dashboard-overdue-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.admin-dashboard-overdue-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid rgba(167, 139, 250, 0.14);
-  font-size: 0.8125rem;
-  font-weight: 600;
-}
-
-.admin-dashboard-overdue-days {
-  border-radius: 999px;
-  padding: 0.25rem 0.625rem;
-  font-size: 0.6875rem;
-  font-weight: 800;
-  color: #f97316;
-  background: rgba(253, 186, 116, 0.2);
-  white-space: nowrap;
+  color: #d85b9a;
 }
 
 @media (max-width: 1200px) {
@@ -571,12 +415,7 @@
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
-  .admin-dashboard-main-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .admin-dashboard-insights-grid,
-  .admin-dashboard-growth__body {
+  .admin-dashboard-overview-grid {
     grid-template-columns: minmax(0, 1fr);
   }
 }
@@ -588,30 +427,24 @@
     overflow: visible;
   }
 
-  .admin-dashboard-hero {
-    position: static;
-  }
-
-  .admin-dashboard-hero,
   .admin-dashboard-card__header {
     align-items: stretch;
     flex-direction: column;
   }
 
   .admin-dashboard-snapshot,
-  .admin-dashboard-booking,
-  .admin-dashboard-moderation__row {
+  .admin-dashboard-booking {
     grid-template-columns: 1fr;
   }
 
-  .admin-dashboard-moderation__reports,
-  .admin-dashboard-moderation__age {
-    justify-self: start;
+  .admin-dashboard-booking--head {
+    display: none;
   }
 
   .admin-dashboard-booking {
     align-items: start;
     padding: 0.75rem 0;
+    height: auto;
   }
 
 }

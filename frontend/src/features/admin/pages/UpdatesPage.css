@@ -22,57 +22,6 @@
 
 /* ── Header ───────────────────────────────────────────── */
 
-.updates-page__header {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1rem;
-  flex-wrap: wrap;
-}
-
-.updates-page__header-text {
-  display: flex;
-  align-items: flex-start;
-  gap: 0.875rem;
-}
-
-.updates-page__icon-wrap {
-  width: 3rem;
-  height: 3rem;
-  flex-shrink: 0;
-  border-radius: 16px;
-  background: linear-gradient(135deg, rgba(109, 53, 184, 0.12), rgba(224, 82, 151, 0.1));
-  border: 1px solid var(--glass-border);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--primary-purple);
-}
-
-.updates-page__icon-wrap svg {
-  font-size: 1.5rem;
-}
-
-.updates-page__header-text h1 {
-  margin: 0;
-  font-size: clamp(1.25rem, 1.5vw, 1.625rem);
-  font-weight: 800;
-  line-height: 1.15;
-}
-
-.updates-page__header-text p {
-  margin: 0.25rem 0 0;
-  color: rgba(36, 16, 79, 0.62);
-  font-size: 0.875rem;
-}
-
-.updates-page__header-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.625rem;
-  flex-shrink: 0;
-}
-
 /* ── Buttons ──────────────────────────────────────────── */
 
 .updates-page__new-btn {

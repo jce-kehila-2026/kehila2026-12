@@ -28,34 +28,7 @@
 }
 
 /* Title → stats → tabs → filters → table (normal page flow) */
-.admin-events-content {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-  margin: 0;
-  padding: 0;
-}
-
 /* Page title — scrolls with content (not fixed/sticky) */
-.admin-events-page-title-slot {
-  position: static;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  flex: 0 0 auto;
-  margin: 0 0 0.5rem;
-}
-
-.admin-events-page-title {
-  margin: 0;
-  font-size: clamp(1.5rem, 1.7vw, 1.875rem);
-  font-weight: 800;
-  line-height: 1.12;
-  letter-spacing: 0;
-  color: #24104f;
-}
-
 .admin-events-shell {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -2596,6 +2569,11 @@
 @media (max-width: 860px) {
   .admin-events-table-card {
     max-height: calc(100dvh - 17rem);
+  }
+
+  .admin-events-table-footer {
+    align-items: stretch;
+    flex-direction: column;
   }
 
   .admin-events-primary-btn {

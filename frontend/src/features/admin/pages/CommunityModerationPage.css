@@ -25,26 +25,6 @@
 
 /* ── Hero ────────────────────────────────────────────────────────────────── */
 
-.admin-community-hero {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 1.125rem;
-}
-
-.admin-community-hero h1 {
-  margin: 0;
-  font-size: clamp(1.375rem, 1.6vw, 1.75rem);
-  font-weight: 800;
-  line-height: 1.12;
-}
-
-.admin-community-hero p {
-  margin: 0.3125rem 0 0;
-  color: rgba(36, 16, 79, 0.68);
-  font-size: 0.9375rem;
-}
-
 .admin-community-refresh-btn {
   min-height: 2.375rem;
   padding: 0 1rem;
@@ -830,11 +810,6 @@
 }
 
 @media (max-width: 780px) {
-  .admin-community-hero {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
   .admin-community-metrics {
     grid-template-columns: 1fr 1fr;
   }
