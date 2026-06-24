@@ -41,10 +41,9 @@ function getOperationTime(row) {
 }
 
 export function normalizeBookingStatus(status) {
-  const value = String(status || 'pending').trim().toLowerCase();
-  if (value === 'confirmed') return 'approved';
-  if (value === 'canceled') return 'cancelled';
-  return value;
+  const value = String(status || 'confirmed').trim().toLowerCase();
+  if (value === 'cancelled' || value === 'canceled') return 'cancelled';
+  return 'confirmed';
 }
 
 export function normalizeCentralBooking(item, index = 0) {

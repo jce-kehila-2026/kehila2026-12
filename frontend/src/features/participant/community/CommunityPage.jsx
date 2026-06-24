@@ -271,7 +271,11 @@ export default function CommunityPage({
       window.clearInterval(retryTimer);
       window.clearTimeout(timeoutTimer);
     };
-  }, [focusPostId, sortedVisiblePosts, onFocusPostHandled]);
+    // Depend on the post count (a stable signal that the feed grew) rather than
+    // the freshly-built sortedVisiblePosts array, which changes identity every
+    // render and would otherwise tear down and recreate these timers each time.
+    // The retry interval already handles the target not being mounted yet.
+  }, [focusPostId, sortedVisiblePosts.length, onFocusPostHandled]);
 
   useEffect(() => {
     if (!allowAnonymousPosting && postAnonymously) {

@@ -6,7 +6,6 @@ import {
   Clock3,
   UsersRound,
   UserPlus,
-  ShieldAlert,
 } from 'lucide-react';
 import { db } from '../../../firebase';
 import { useAdmin } from '../context/AdminContext';
@@ -29,54 +28,11 @@ import './DashboardPage.css';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const EMPTY_FUNNEL = {
-  workshop: { confirmed: 0, pending: 0, cancelled: 0 },
-  appointment: { confirmed: 0, pending: 0, cancelled: 0 },
+  workshop: { confirmed: 0, cancelled: 0 },
+  appointment: { confirmed: 0, cancelled: 0 },
   cancellationRate: null,
   totalCount: 0,
 };
-
-const FALLBACK_ACTIVITY = [
-  {
-    id: 'activity-1',
-    timestampLabel: '17:04:59, 26/05/2026',
-    admin: 'talajabaren12@gmail.com',
-    action: 'UPDATE',
-    target: 'Public Home Partner',
-    details: 'Updated content and settings',
-  },
-  {
-    id: 'activity-2',
-    timestampLabel: '16:52:03, 26/05/2026',
-    admin: 'talajabaren12@gmail.com',
-    action: 'UPDATE',
-    target: 'Public Home Hero',
-    details: 'Updated hero section',
-  },
-  {
-    id: 'activity-3',
-    timestampLabel: '15:29:45, 26/05/2026',
-    admin: 'talajabaren12@gmail.com',
-    action: 'UPDATE',
-    target: 'Public Home Hero',
-    details: 'Updated hero section',
-  },
-  {
-    id: 'activity-4',
-    timestampLabel: '15:24:54, 26/05/2026',
-    admin: 'talajabaren12@gmail.com',
-    action: 'CREATE',
-    target: 'Public Home Partner',
-    details: 'Created new partner',
-  },
-  {
-    id: 'activity-5',
-    timestampLabel: '13:42:52, 26/05/2026',
-    admin: 'talajabaren12@gmail.com',
-    action: 'REORDER',
-    target: 'Team Members',
-    details: 'Reordered team members',
-  },
-];
 
 function toDate(value) {
   if (!value) return null;
@@ -96,35 +52,6 @@ function formatTime(value, fallback = '') {
   const date = toDate(value);
   if (date) return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
   return fallback || '10:00 AM';
-}
-
-function formatActivityTime(value) {
-  const date = toDate(value);
-  if (!date) return '26/05/2026';
-  return date.toLocaleString('en-GB', {
-    hour: '2-digit',
-    minute: '2-digit',
-    second: '2-digit',
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  });
-}
-
-function titleFromAction(actionType = '') {
-  if (actionType.includes('CREATE')) return 'CREATE';
-  if (actionType.includes('DELETE') || actionType.includes('REMOVE')) return 'DELETE';
-  if (actionType.includes('REORDER')) return 'REORDER';
-  return 'UPDATE';
-}
-
-function humanizeTarget(log) {
-  const raw = log.summary || log.targetId || '';
-  if (!raw) return 'Dashboard';
-  return String(raw)
-    .replace(/[_-]/g, ' ')
-    .replace(/\b\w/g, (letter) => letter.toUpperCase())
-    .slice(0, 34);
 }
 
 function cleanNameCandidate(value) {
@@ -201,9 +128,9 @@ function MetricCard({ accent, icon, label, value, subtext, alert = false }) {
 }
 
 // One row of the bookings/appointments funnel: a proportional stacked bar
-// (confirmed/pending/cancelled) plus a numeric legend underneath.
+// (confirmed/cancelled) plus a numeric legend underneath.
 function FunnelRow({ label, stats, t }) {
-  const total = stats.confirmed + stats.pending + stats.cancelled;
+  const total = stats.confirmed + stats.cancelled;
   return (
     <div className="admin-dashboard-funnel__row">
       <div className="admin-dashboard-funnel__row-head">
@@ -218,10 +145,6 @@ function FunnelRow({ label, stats, t }) {
               style={{ width: `${(stats.confirmed / total) * 100}%` }}
             />
             <span
-              className="admin-dashboard-funnel__segment admin-dashboard-funnel__segment--pending"
-              style={{ width: `${(stats.pending / total) * 100}%` }}
-            />
-            <span
               className="admin-dashboard-funnel__segment admin-dashboard-funnel__segment--cancelled"
               style={{ width: `${(stats.cancelled / total) * 100}%` }}
             />
@@ -232,10 +155,6 @@ function FunnelRow({ label, stats, t }) {
         <span>
           <i className="admin-dashboard-funnel__dot admin-dashboard-funnel__dot--confirmed" />
           {t('statusConfirmed')} {stats.confirmed}
-        </span>
-        <span>
-          <i className="admin-dashboard-funnel__dot admin-dashboard-funnel__dot--pending" />
-          {t('statusPending')} {stats.pending}
         </span>
         <span>
           <i className="admin-dashboard-funnel__dot admin-dashboard-funnel__dot--cancelled" />
@@ -251,12 +170,11 @@ export default function DashboardPage() {
   const { t } = useAdminLocale();
   const [stats, setStats] = useState({ events: 0, users: 0, bookings: 0 });
   const [bookings, setBookings] = useState([]);
-  const [activity, setActivity] = useState([]);
   const [adminProfileName, setAdminProfileName] = useState('');
 
   // Today/this-week snapshot + funnel + moderation queue + growth data.
   // Loaded independently of the section above so a failure here never
-  // breaks the existing metrics/bookings/activity sections.
+  // breaks the existing metrics/bookings sections.
   const [snapshot, setSnapshot] = useState({
     bookingsToday: 0,
     pendingJoinRequests: 0,
@@ -322,10 +240,6 @@ export default function DashboardPage() {
           console.warn('Recent bookings are unavailable for dashboard:', error);
         }
 
-        const logsSnap = await getDocs(
-          query(collection(db, 'audit_logs'), orderBy('timestamp', 'desc'), limit(5))
-        );
-
         const bookingRows = [
           ...centralBookings.map((item) => ({
             id: `booking-${item.bookingId || item.id}`,
@@ -344,7 +258,7 @@ export default function DashboardPage() {
             type: 'Appointment',
             date: formatDate(item.date || item.createdAt),
             time: item.time || item.selectedTimeSlot || formatTime(item.date || item.createdAt),
-            status: item.status || 'pending',
+            status: item.status || 'confirmed',
             sortDate: toDate(item.createdAt || item.date) || new Date(0),
           })),
         ]
@@ -354,21 +268,6 @@ export default function DashboardPage() {
         if (!ignore) {
           setAdminProfileName(profileName);
           setBookings(bookingRows);
-          setActivity(
-            logsSnap.docs.length
-              ? logsSnap.docs.map((docSnap) => {
-                  const log = { id: docSnap.id, ...docSnap.data() };
-                  return {
-                    id: log.id,
-                    timestampLabel: formatActivityTime(log.timestamp),
-                    admin: log.adminEmail || log.actorEmail || log.adminId || 'admin',
-                    action: titleFromAction(log.actionType),
-                    target: humanizeTarget(log),
-                    details: log.summary || 'Updated dashboard data',
-                  };
-                })
-              : FALLBACK_ACTIVITY
-          );
           setStats({
             events: summary.publishedEvents ?? allEvents.length,
             users: summary.totalUsers ?? 0,
@@ -383,7 +282,6 @@ export default function DashboardPage() {
         if (!ignore) {
           setAdminProfileName('');
           setBookings([]);
-          setActivity(FALLBACK_ACTIVITY);
         }
       }
     }
@@ -486,25 +384,10 @@ export default function DashboardPage() {
 
   const typeLabel = (type) => (type === 'Appointment' ? t('typeAppointment') : t('typeWorkshop'));
   const statusLabel = (status) => {
-    const key = {
-      confirmed: 'statusConfirmed',
-      pending: 'statusPending',
-      cancelled: 'statusCancelled',
-      canceled: 'statusCancelled',
-      completed: 'statusCompleted',
-    }[String(status).toLowerCase()];
-    return key ? t(key) : status;
+    const normalized = String(status).toLowerCase();
+    const key = normalized === 'cancelled' || normalized === 'canceled' ? 'statusCancelled' : 'statusConfirmed';
+    return t(key);
   };
-  const actionLabel = (action) => {
-    const key = {
-      CREATE: 'actionCreate',
-      UPDATE: 'actionUpdate',
-      DELETE: 'actionDelete',
-      REORDER: 'actionReorder',
-    }[action];
-    return key ? t(key) : action;
-  };
-
   return (
     <section className="admin-dashboard-page">
       <header className="admin-dashboard-hero">
@@ -515,60 +398,35 @@ export default function DashboardPage() {
 
       {/* Today / This Week Snapshot — always renders all 4 cards; a 0 is a
           safe empty state, not a missing feature. */}
-      <section className="admin-dashboard-snapshot" aria-label={t('dashSnapshotAria')}>
+      <section className="admin-dashboard-snapshot" aria-label={t('dashMetricsAria')}>
+        <MetricCard
+          accent="pink"
+          icon={<UsersRound size={22} />}
+          label={t('dashRegisteredUsers')}
+          value={stats.users}
+          subtext={t('dashCommunityMembers')}
+        />
         <MetricCard
           accent="purple"
+          icon={<CalendarDays size={22} />}
+          label={t('dashTotalEvents')}
+          value={stats.events}
+          subtext={t('dashActivePlatformEvents')}
+        />
+        <MetricCard
+          accent="lavender"
           icon={<CalendarCheck size={22} />}
           label={t('dashBookingsToday')}
           value={snapshot.bookingsToday}
           subtext={t('dashBookingsTodaySub')}
         />
         <MetricCard
-          accent="pink"
+          accent="peach"
           alert={snapshot.pendingJoinRequests > 0}
           icon={<UserPlus size={22} />}
           label={t('dashPendingJoinRequests')}
           value={snapshot.pendingJoinRequests}
           subtext={t('dashPendingJoinRequestsSub')}
-        />
-        <MetricCard
-          accent="pink"
-          alert={snapshot.reportedPosts > 0}
-          icon={<ShieldAlert size={22} />}
-          label={t('dashReportedPosts')}
-          value={snapshot.reportedPosts}
-          subtext={t('dashReportedPostsSub')}
-        />
-        <MetricCard
-          accent="peach"
-          icon={<Clock3 size={22} />}
-          label={t('dashUpcomingAppts48h')}
-          value={snapshot.upcomingAppointments48h}
-          subtext={t('dashUpcomingAppts48hSub')}
-        />
-      </section>
-
-      <section className="admin-dashboard-metrics" aria-label={t('dashMetricsAria')}>
-        <MetricCard
-          accent="purple"
-          icon={<CalendarDays size={25} />}
-          label={t('dashTotalEvents')}
-          value={stats.events}
-          subtext={t('dashActivePlatformEvents')}
-        />
-        <MetricCard
-          accent="pink"
-          icon={<UsersRound size={25} />}
-          label={t('dashRegisteredUsers')}
-          value={stats.users}
-          subtext={t('dashCommunityMembers')}
-        />
-        <MetricCard
-          accent="peach"
-          icon={<CalendarCheck size={25} />}
-          label={t('dashTotalBookings')}
-          value={stats.bookings}
-          subtext={t('dashBookingsSubtext')}
         />
       </section>
 
@@ -733,37 +591,6 @@ export default function DashboardPage() {
         </article>
       </section>
 
-      <article className="admin-dashboard-card admin-dashboard-activity">
-        <div className="admin-dashboard-card__header">
-          <h2>{t('dashRecentActivity')}</h2>
-          <a href="/admin/audit-log">{t('dashViewAllActivity')}</a>
-        </div>
-        <div className="admin-dashboard-activity__table">
-          <div className="admin-dashboard-activity__head">
-            <span>{t('colTime')}</span>
-            <span>{t('colAdmin')}</span>
-            <span>{t('colAction')}</span>
-            <span>{t('colTarget')}</span>
-            <span>{t('colDetails')}</span>
-          </div>
-          {activity.map((item) => (
-            <div className="admin-dashboard-activity__row" key={item.id}>
-              <span>{item.timestampLabel}</span>
-              <span className="admin-dashboard-admin-cell">
-                <i>{item.admin.slice(0, 2).toUpperCase()}</i>
-                {item.admin}
-              </span>
-              <span>
-                <b className={`admin-dashboard-action admin-dashboard-action--${item.action.toLowerCase()}`}>
-                  {actionLabel(item.action)}
-                </b>
-              </span>
-              <span>{item.target}</span>
-              <span>{item.details}</span>
-            </div>
-          ))}
-        </div>
-      </article>
     </section>
   );
 }

@@ -29,9 +29,7 @@ function bookingDate(record) {
 
 function statusBucket(status) {
   const normalized = String(status || '').trim().toLowerCase();
-  if (normalized === 'cancelled' || normalized === 'canceled') return 'cancelled';
-  if (normalized === 'pending') return 'pending';
-  return 'confirmed';
+  return normalized === 'cancelled' || normalized === 'canceled' ? 'cancelled' : 'confirmed';
 }
 
 function typeBucket(record) {
@@ -55,8 +53,8 @@ export async function getBookingsAndAppointmentsInsights() {
   const in48h = new Date(now.getTime() + 2 * DAY_MS);
 
   const funnel = {
-    workshop: { confirmed: 0, pending: 0, cancelled: 0 },
-    appointment: { confirmed: 0, pending: 0, cancelled: 0 },
+    workshop: { confirmed: 0, cancelled: 0 },
+    appointment: { confirmed: 0, cancelled: 0 },
   };
   let bookingsToday = 0;
   let upcomingAppointments48h = 0;

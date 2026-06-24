@@ -41,6 +41,11 @@
   box-shadow: 0 0 0 3px rgba(236, 22, 140, 0.08);
 }
 
+.pd-notes-picker.is-disabled .pd-notes-picker__trigger {
+  opacity: 0.72;
+  cursor: not-allowed;
+}
+
 .pd-notes-picker__value {
   min-width: 0;
   overflow: hidden;
@@ -606,4 +611,76 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 .pd-notes__datetime--modal .pd-notes-calendar__grid,
 .pd-notes__datetime--modal .pd-notes-picker__value {
   direction: ltr;
+}
+
+/* Add Event modal — portaled compact time picker */
+.pd-notes-time__panel.admin-events-time-picker-panel {
+  border-color: rgba(233, 75, 147, 0.12);
+  background: linear-gradient(180deg, #ffffff 0%, #fff7fb 100%);
+  box-shadow:
+    0 12px 28px rgba(233, 75, 147, 0.12),
+    0 2px 8px rgba(233, 75, 147, 0.06);
+}
+
+.pd-notes-time__panel.admin-events-time-picker-panel .pd-notes-time__column-label {
+  color: #9a7089;
+}
+
+.pd-notes-time__panel.admin-events-time-picker-panel .pd-notes-time__step-btn,
+.pd-notes-time__panel.admin-events-time-picker-panel .pd-notes-time__period-btn:not(.is-selected) {
+  border: 1px solid rgba(91, 30, 140, 0.2);
+  background: rgba(255, 255, 255, 0.97);
+  color: #8f2f5f;
+  box-shadow: 0 4px 12px rgba(91, 30, 140, 0.06);
+}
+
+.pd-notes-time__panel.admin-events-time-picker-panel .pd-notes-time__step-btn:hover,
+.pd-notes-time__panel.admin-events-time-picker-panel .pd-notes-time__period-btn:not(.is-selected):hover {
+  border-color: rgba(233, 75, 147, 0.28);
+  background: #fff;
+  color: #8f2f5f;
+}
+
+.pd-notes-time__panel.admin-events-time-picker-panel .pd-notes-time__step-btn:focus-visible,
+.pd-notes-time__panel.admin-events-time-picker-panel .pd-notes-time__period-btn:focus-visible {
+  outline: none;
+  border-color: rgba(233, 75, 147, 0.35);
+  box-shadow: 0 0 0 3px rgba(233, 75, 147, 0.1);
+}
+
+.pd-notes-time__panel.admin-events-time-picker-panel .pd-notes-time__step-value {
+  background: linear-gradient(180deg, #ffffff 0%, #fff9fc 100%);
+  border-color: rgba(233, 75, 147, 0.14);
+  color: #4a243f;
+}
+
+.pd-notes-time__panel.admin-events-time-picker-panel .pd-notes-time__period-btn.is-selected {
+  border-color: transparent;
+  background: linear-gradient(135deg, #e73386, #dc2577);
+  color: #fff;
+  box-shadow: 0 8px 18px rgba(223, 50, 123, 0.2);
+}
+
+.pd-notes-time__panel.admin-events-time-picker-panel .pd-notes-time__period-btn.is-selected:hover {
+  background: linear-gradient(135deg, #df327b, #cf1f70);
+}
+
+.pd-notes-time__panel.admin-events-time-picker-panel .reminder-time-picker__done {
+  border: transparent;
+  background: linear-gradient(135deg, #e73386, #dc2577);
+  color: #fff;
+  font-weight: 800;
+  box-shadow: 0 10px 22px rgba(223, 50, 123, 0.2);
+}
+
+.pd-notes-time__panel.admin-events-time-picker-panel .reminder-time-picker__done:hover {
+  background: linear-gradient(135deg, #df327b, #cf1f70);
+  box-shadow: 0 12px 24px rgba(223, 50, 123, 0.24);
+}
+
+.pd-notes-time__panel.admin-events-time-picker-panel .reminder-time-picker__done:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 3px rgba(236, 72, 153, 0.28),
+    0 10px 22px rgba(223, 50, 123, 0.2);
 }

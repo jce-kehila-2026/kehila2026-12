@@ -51,9 +51,7 @@ export const adminUiTranslations = {
     typeWorkshop: 'Workshop',
     typeAppointment: 'Appointment',
     statusConfirmed: 'confirmed',
-    statusPending: 'pending',
     statusCancelled: 'cancelled',
-    statusCompleted: 'completed',
     communityMember: 'Community member',
     retry: 'Retry',
     view: 'View',
@@ -263,10 +261,7 @@ export const adminUiTranslations = {
 
     // ── Shared: participant / booking statuses ────────────────────────────
     pStatusConfirmed: 'Confirmed',
-    pStatusPending: 'Pending',
     pStatusCancelled: 'Cancelled',
-    pStatusCompleted: 'Completed',
-    pStatusWaitlist: 'Waitlist',
 
     // ── Events page: chrome ───────────────────────────────────────────────
     evTitle: 'Events Management',
@@ -470,7 +465,6 @@ export const adminUiTranslations = {
     pdEmailParticipantAria: 'Email participant',
     pdRegistered: 'Registered',
     pdRemaining: 'Remaining',
-    pdWaitlist: 'Waitlist',
     pdSearchParticipant: 'Search participant...',
     pdFilter: 'Filter',
     pdParticipantsCount: '{n} Participants',
@@ -541,9 +535,7 @@ export const adminUiTranslations = {
     apTypeWorkshop: 'Workshop',
     apTypeAppointment: 'Appointment',
     apAllStatuses: 'All Statuses',
-    bkStatusApproved: 'Approved',
-    bkStatusPending: 'Pending',
-    bkStatusCompleted: 'Completed',
+    bkStatusConfirmed: 'Confirmed',
     bkStatusCancelled: 'Cancelled',
     apOpenCalendar: 'Open calendar date filter',
     apFilterByDate: 'Filter by event date',
@@ -1089,9 +1081,7 @@ export const adminUiTranslations = {
     typeWorkshop: 'סדנה',
     typeAppointment: 'פגישה',
     statusConfirmed: 'מאושר',
-    statusPending: 'ממתין',
     statusCancelled: 'בוטל',
-    statusCompleted: 'הושלם',
     communityMember: 'חברת קהילה',
     retry: 'נסי שוב',
     view: 'צפייה',
@@ -1301,10 +1291,7 @@ export const adminUiTranslations = {
 
     // ── Shared: participant / booking statuses ────────────────────────────
     pStatusConfirmed: 'מאושר',
-    pStatusPending: 'ממתין',
     pStatusCancelled: 'בוטל',
-    pStatusCompleted: 'הושלם',
-    pStatusWaitlist: 'רשימת המתנה',
 
     // ── Events page: chrome ───────────────────────────────────────────────
     evTitle: 'ניהול אירועים',
@@ -1508,7 +1495,6 @@ export const adminUiTranslations = {
     pdEmailParticipantAria: 'שליחת אימייל למשתתפת',
     pdRegistered: 'נרשמו',
     pdRemaining: 'נותרו',
-    pdWaitlist: 'רשימת המתנה',
     pdSearchParticipant: 'חיפוש משתתפת...',
     pdFilter: 'סינון',
     pdParticipantsCount: '{n} משתתפות',
@@ -1579,9 +1565,7 @@ export const adminUiTranslations = {
     apTypeWorkshop: 'סדנה',
     apTypeAppointment: 'תור',
     apAllStatuses: 'כל הסטטוסים',
-    bkStatusApproved: 'מאושר',
-    bkStatusPending: 'ממתין',
-    bkStatusCompleted: 'הושלם',
+    bkStatusConfirmed: 'מאושר',
     bkStatusCancelled: 'בוטל',
     apOpenCalendar: 'פתיחת סינון לפי תאריך',
     apFilterByDate: 'סינון לפי תאריך האירוע',

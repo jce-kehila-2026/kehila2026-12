@@ -60,25 +60,18 @@
   font-weight: 700;
 }
 
-.admin-dashboard-metrics {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1rem;
-  min-width: 0;
-  min-height: 0;
-  margin-bottom: 0;
-  align-items: stretch;
-}
-
 .admin-dashboard-metric,
 .admin-dashboard-card {
   border: 1px solid var(--glass-border);
   border-radius: 24px;
+  box-shadow: 0 18px 45px rgba(109, 53, 184, 0.08);
+  backdrop-filter: blur(18px) saturate(1.12);
+}
+
+.admin-dashboard-card {
   background:
     linear-gradient(145deg, rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.58)),
     var(--glass);
-  box-shadow: 0 18px 45px rgba(109, 53, 184, 0.08);
-  backdrop-filter: blur(18px) saturate(1.12);
 }
 
 .admin-dashboard-metric {
@@ -90,6 +83,10 @@
   align-items: flex-start;
   gap: 1.125rem;
   overflow: hidden;
+  isolation: isolate;
+  background:
+    linear-gradient(135deg, var(--metric-bg-start), var(--metric-bg-end));
+  border-color: var(--metric-border);
 }
 
 .admin-dashboard-metric__icon {
@@ -99,21 +96,48 @@
   display: grid;
   place-items: center;
   flex: 0 0 auto;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
 }
 
-.admin-dashboard-metric--purple .admin-dashboard-metric__icon {
-  color: #8b5cf6;
-  background: rgba(167, 139, 250, 0.2);
+.admin-dashboard-metric--purple {
+  --metric-bg-start: rgba(245, 240, 255, 0.98);
+  --metric-bg-end: rgba(232, 221, 255, 0.88);
+  --metric-border: rgba(109, 53, 184, 0.18);
+  --metric-icon-color: #6d35b8;
+  --metric-icon-bg: rgba(109, 53, 184, 0.14);
+  --metric-number-color: #24104f;
 }
 
-.admin-dashboard-metric--pink .admin-dashboard-metric__icon {
-  color: var(--soft-pink);
-  background: rgba(224, 82, 151, 0.14);
+.admin-dashboard-metric--pink {
+  --metric-bg-start: rgba(255, 242, 249, 0.98);
+  --metric-bg-end: rgba(252, 231, 243, 0.9);
+  --metric-border: rgba(224, 82, 151, 0.2);
+  --metric-icon-color: var(--soft-pink);
+  --metric-icon-bg: rgba(224, 82, 151, 0.14);
+  --metric-number-color: #24104f;
 }
 
-.admin-dashboard-metric--peach .admin-dashboard-metric__icon {
-  color: #f97316;
-  background: rgba(253, 186, 116, 0.2);
+.admin-dashboard-metric--lavender {
+  --metric-bg-start: rgba(250, 247, 255, 0.98);
+  --metric-bg-end: rgba(237, 233, 254, 0.92);
+  --metric-border: rgba(167, 139, 250, 0.22);
+  --metric-icon-color: #7c3aed;
+  --metric-icon-bg: rgba(167, 139, 250, 0.18);
+  --metric-number-color: #24104f;
+}
+
+.admin-dashboard-metric--peach {
+  --metric-bg-start: rgba(255, 248, 241, 0.98);
+  --metric-bg-end: rgba(255, 237, 213, 0.9);
+  --metric-border: rgba(253, 186, 116, 0.28);
+  --metric-icon-color: #c05621;
+  --metric-icon-bg: rgba(253, 186, 116, 0.22);
+  --metric-number-color: #24104f;
+}
+
+.admin-dashboard-metric__icon {
+  color: var(--metric-icon-color);
+  background: var(--metric-icon-bg);
 }
 
 .admin-dashboard-metric span,
@@ -135,6 +159,7 @@
   line-height: 1;
   font-weight: 800;
   letter-spacing: 0;
+  color: var(--metric-number-color);
 }
 
 .admin-dashboard-metric p {
@@ -156,16 +181,16 @@
 }
 
 .admin-dashboard-metric--alert {
-  border-color: rgba(180, 35, 85, 0.35);
+  border-color: rgba(224, 82, 151, 0.36);
 }
 
 .admin-dashboard-metric--alert .admin-dashboard-metric__icon {
-  color: #b42355;
-  background: rgba(244, 114, 182, 0.22);
+  color: var(--soft-pink);
+  background: rgba(224, 82, 151, 0.16);
 }
 
 .admin-dashboard-metric--alert strong {
-  color: #b42355;
+  color: var(--deep-purple);
 }
 
 .admin-dashboard-main-grid {
@@ -233,8 +258,7 @@
   border-bottom: 1px solid rgba(167, 139, 250, 0.14);
 }
 
-.admin-dashboard-booking__avatar,
-.admin-dashboard-admin-cell i {
+.admin-dashboard-booking__avatar {
   display: grid;
   place-items: center;
   border-radius: 50%;
@@ -272,8 +296,7 @@
 }
 
 .admin-dashboard-type,
-.admin-dashboard-status,
-.admin-dashboard-action {
+.admin-dashboard-status {
   justify-self: start;
   border-radius: 999px;
   padding: 0.3125rem 0.6875rem;
@@ -282,8 +305,7 @@
   font-weight: 800;
 }
 
-.admin-dashboard-type--workshop,
-.admin-dashboard-action--update {
+.admin-dashboard-type--workshop {
   color: var(--primary-purple);
   background: rgba(167, 139, 250, 0.18);
 }
@@ -320,85 +342,6 @@
 .admin-dashboard-status--canceled {
   color: #b42355;
   background: rgba(244, 114, 182, 0.16);
-}
-
-.admin-dashboard-activity {
-  height: 100%;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.admin-dashboard-activity__table {
-  display: grid;
-  flex: 1 1 auto;
-  position: relative;
-  z-index: 1;
-  min-height: 0;
-  overflow: auto;
-  padding-inline-end: 0.25rem;
-}
-
-.admin-dashboard-activity__head,
-.admin-dashboard-activity__row {
-  display: grid;
-  grid-template-columns: 1.1fr 1.55fr 0.8fr 1.35fr 1.65fr;
-  gap: 1rem;
-  align-items: center;
-  min-height: 2.125rem;
-  border-bottom: 1px solid rgba(167, 139, 250, 0.14);
-}
-
-.admin-dashboard-activity__head {
-  color: rgba(36, 16, 79, 0.68);
-  font-size: 0.75rem;
-  font-weight: 800;
-}
-
-.admin-dashboard-activity__row {
-  color: rgba(36, 16, 79, 0.82);
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-
-.admin-dashboard-activity__head span,
-.admin-dashboard-activity__row span {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.admin-dashboard-admin-cell {
-  min-width: 0;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.75rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.admin-dashboard-admin-cell i {
-  width: 1.5rem;
-  height: 1.5rem;
-  flex: 0 0 auto;
-  font-size: 0.625rem;
-}
-
-.admin-dashboard-action--create {
-  color: #329143;
-  background: rgba(134, 209, 124, 0.2);
-}
-
-.admin-dashboard-action--delete {
-  color: #b42355;
-  background: rgba(224, 82, 151, 0.13);
-}
-
-.admin-dashboard-action--reorder {
-  color: #f97316;
-  background: rgba(253, 186, 116, 0.2);
 }
 
 /* Shared empty state used by the new funnel/growth cards. */
@@ -448,10 +391,6 @@
   background: #86d17c;
 }
 
-.admin-dashboard-funnel__segment--pending {
-  background: #fdba74;
-}
-
 .admin-dashboard-funnel__segment--cancelled {
   background: #f472b6;
 }
@@ -480,10 +419,6 @@
 
 .admin-dashboard-funnel__dot--confirmed {
   background: #329143;
-}
-
-.admin-dashboard-funnel__dot--pending {
-  background: #f97316;
 }
 
 .admin-dashboard-funnel__dot--cancelled {
@@ -632,7 +567,6 @@
 }
 
 @media (max-width: 1200px) {
-  .admin-dashboard-metrics,
   .admin-dashboard-snapshot {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -664,12 +598,9 @@
     flex-direction: column;
   }
 
-  .admin-dashboard-metrics,
   .admin-dashboard-snapshot,
   .admin-dashboard-booking,
-  .admin-dashboard-moderation__row,
-  .admin-dashboard-activity__head,
-  .admin-dashboard-activity__row {
+  .admin-dashboard-moderation__row {
     grid-template-columns: 1fr;
   }
 
@@ -681,10 +612,6 @@
   .admin-dashboard-booking {
     align-items: start;
     padding: 0.75rem 0;
-  }
-
-  .admin-dashboard-activity__head {
-    display: none;
   }
 
 }

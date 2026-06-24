@@ -336,7 +336,6 @@ function AppointmentBookingForm({
         appointmentType: selectedAppointmentTypeKey,
         providerName,
         notes: notes.trim(),
-        status: "pending",
       });
 
       setProviderId("");

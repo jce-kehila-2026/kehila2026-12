@@ -33,7 +33,7 @@ service cloud.firestore {
         && request.resource.data.bookingId == bookingId
         && request.resource.data.eventId is string
         && request.resource.data.eventId.size() > 0
-        && request.resource.data.status in ['pending', 'confirmed', 'approved']
+        && request.resource.data.status == 'confirmed'
         && eventAcceptsRegistrations(request.resource.data.eventId);
     }
     function bookingIdentityIsUnchanged() {
@@ -55,7 +55,6 @@ service cloud.firestore {
         && bookingIdentityIsUnchanged()
         && request.resource.data.status == 'cancelled'
         && resource.data.status != 'cancelled'
-        && resource.data.status != 'completed'
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
           'status', 'cancelledAt'
         ]);
@@ -65,21 +64,64 @@ service cloud.firestore {
         && resource.data.userId == request.auth.uid
         && bookingIdentityIsUnchanged()
         && resource.data.status == 'cancelled'
-        && request.resource.data.status in ['pending', 'confirmed', 'approved']
+        && request.resource.data.status == 'confirmed'
         && eventAcceptsRegistrations(resource.data.eventId);
     }
     // A signed-in non-author may touch ONLY engagement/aggregate fields on a
-    // post (likes, supports, comment count, reports). `status` may only move to
-    // 'reported' via this path so it can't be used to hide/delete others' posts.
+    // post, and only in ways tied to themselves: toggle their OWN like/support,
+    // bump the comment count by one, or add their OWN report. This stops vote
+    // inflation, liking on behalf of others, and report tampering/erasure on
+    // other members' posts (the previous rule allowed any value for these).
+    function listAddsOnlySelf(field) {
+      let before = resource.data.get(field, []);
+      let after = request.resource.data.get(field, []);
+      return after.hasAll(before)
+        && after.size() == before.size() + 1
+        && (request.auth.uid in after)
+        && !(request.auth.uid in before);
+    }
+    function listRemovesOnlySelf(field) {
+      let before = resource.data.get(field, []);
+      let after = request.resource.data.get(field, []);
+      return before.hasAll(after)
+        && after.size() == before.size() - 1
+        && (request.auth.uid in before)
+        && !(request.auth.uid in after);
+    }
+    function countChangedBy(field, delta) {
+      return request.resource.data.get(field, 0) == resource.data.get(field, 0) + delta;
+    }
+    function isLikeEngagement() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likedBy', 'likesCount'])
+        && (
+          (listAddsOnlySelf('likedBy') && countChangedBy('likesCount', 1))
+          || (listRemovesOnlySelf('likedBy') && countChangedBy('likesCount', -1))
+        );
+    }
+    function isSupportEngagement() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['supportedBy', 'supportCount'])
+        && (
+          (listAddsOnlySelf('supportedBy') && countChangedBy('supportCount', 1))
+          || (listRemovesOnlySelf('supportedBy') && countChangedBy('supportCount', -1))
+        );
+    }
+    function isCommentCountEngagement() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['commentsCount'])
+        && (countChangedBy('commentsCount', 1) || countChangedBy('commentsCount', -1));
+    }
+    function isReportEngagement() {
+      return request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['reportedBy', 'reportsCount', 'reports', 'status'])
+        && listAddsOnlySelf('reportedBy')
+        && countChangedBy('reportsCount', 1)
+        && request.resource.data.get('reports', []).size() == resource.data.get('reports', []).size() + 1
+        && request.resource.data.status == 'reported';
+    }
     function isCommunityEngagementUpdate() {
-      let changed = request.resource.data.diff(resource.data).affectedKeys();
-      return changed.hasOnly([
-        'likedBy', 'likesCount',
-        'supportedBy', 'supportCount',
-        'commentsCount',
-        'reportedBy', 'reportsCount', 'reports', 'status'
-      ])
-      && (!changed.hasAny(['status']) || request.resource.data.status == 'reported');
+      return isLikeEngagement()
+        || isSupportEngagement()
+        || isCommentCountEngagement()
+        || isReportEngagement();
     }
 
     // Admin aggregate screens use collectionGroup('registrations') across
@@ -104,7 +146,13 @@ service cloud.firestore {
       // which reads users/{uid}.role — from being self-grantable.
       allow update: if isAdmin()
         || (isSelf(uid)
-            && request.resource.data.get('role', '') == resource.data.get('role', ''));
+            && request.resource.data.get('role', '') == resource.data.get('role', '')
+            // Account state is admin-controlled: a user must not be able to
+            // reactivate themselves or clear an inactive status to bypass the
+            // deactivation gate. (`mustChangePassword` stays writable — the user
+            // clears it themselves when completing the forced password change.)
+            && request.resource.data.get('isActive', true) == resource.data.get('isActive', true)
+            && request.resource.data.get('status', '') == resource.data.get('status', ''));
       allow delete: if isSelf(uid) || isAdmin();
 
       // Per-user subcollections — the owner has full access. Admins also have access.
@@ -181,7 +229,9 @@ service cloud.firestore {
               && request.resource.data.type in ['streak_reminder', 'streak_grace', 'streak_lost']
             )
           );
-        allow update: if false;
+        // The owner may only flip their own read state; no other edits allowed.
+        allow update: if isSelf(uid)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read', 'readAt']);
       }
     }
 
@@ -230,7 +280,7 @@ service cloud.firestore {
             && request.resource.data.userId == request.auth.uid
             && request.resource.data.eventId == eventId
             && request.resource.data.bookingId == rosterKey
-            && request.resource.data.status in ['pending', 'confirmed', 'approved']
+            && request.resource.data.status == 'confirmed'
             && eventAcceptsRegistrations(eventId)
             && (
               rosterKey == request.auth.uid
@@ -240,6 +290,31 @@ service cloud.firestore {
         allow delete: if isAdmin() ||
           (request.auth != null
             && resource.data.userId == request.auth.uid);
+      }
+
+      // Per-slot seat counters used to enforce capacity transactionally
+      // (a client transaction can't run a query, so it reads this single doc).
+      // Any signed-in user may step the count by exactly one in either
+      // direction — paired with their own booking write in the same
+      // transaction — but cannot set it to an arbitrary value. NOTE: this is a
+      // best-effort guard; a determined client could still nudge a counter
+      // without booking (the airtight alternative is a Cloud Function gate).
+      // The backfill script reseeds via the Admin SDK, which bypasses rules.
+      match /slotCounters/{slotKey} {
+        allow read: if request.auth != null;
+        allow create: if request.auth != null
+          && request.resource.data.keys().hasOnly(['count', 'slotId', 'eventId', 'updatedAt'])
+          && request.resource.data.count == 1;
+        allow update: if request.auth != null
+          && request.resource.data.diff(resource.data).affectedKeys()
+               .hasOnly(['count', 'slotId', 'eventId', 'updatedAt'])
+          && request.resource.data.count is number
+          && request.resource.data.count >= 0
+          && (
+            request.resource.data.count == resource.data.count + 1
+            || request.resource.data.count == resource.data.count - 1
+          );
+        allow delete: if isAdmin();
       }
     }
 
