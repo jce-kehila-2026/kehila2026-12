@@ -188,10 +188,13 @@ service cloud.firestore {
             && request.resource.data.content is string
             && request.resource.data.content.size() > 0
             && request.resource.data.content.size() <= 5000);
-        allow update, delete: if isAdmin()
+        allow update: if isAdmin()
           || (isSelf(uid)
             && request.resource.data.userId == resource.data.userId
             && request.resource.data.userId == uid);
+        allow delete: if isAdmin()
+          || (isSelf(uid)
+            && resource.data.userId == uid);
       }
       match /dashboard_notes/{noteId} {
         allow read: if request.auth != null && request.auth.uid == uid;
