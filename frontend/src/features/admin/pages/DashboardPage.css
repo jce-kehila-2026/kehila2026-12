@@ -369,15 +369,15 @@
   height: 0.625rem;
   border-radius: 999px;
   overflow: hidden;
-  background: rgba(167, 139, 250, 0.12);
+  background: #f5f1ff;
 }
 
 .admin-dashboard-funnel__segment--confirmed {
-  background: #86d17c;
+  background: #63b37a;
 }
 
 .admin-dashboard-funnel__segment--cancelled {
-  background: #b42355;
+  background: #d85b9a;
 }
 
 .admin-dashboard-funnel__legend {
@@ -403,11 +403,11 @@
 }
 
 .admin-dashboard-funnel__dot--confirmed {
-  background: #329143;
+  background: #63b37a;
 }
 
 .admin-dashboard-funnel__dot--cancelled {
-  background: #b42355;
+  background: #d85b9a;
 }
 
 .admin-dashboard-funnel__rate {
@@ -423,7 +423,7 @@
 
 .admin-dashboard-funnel__rate strong {
   font-size: 1rem;
-  color: #b42355;
+  color: #d85b9a;
 }
 
 @media (max-width: 1200px) {
