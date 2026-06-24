@@ -140,9 +140,7 @@
 }
 
 .admin-dashboard-metric span,
-.admin-dashboard-booking__main span,
-.admin-dashboard-booking__date small,
-.admin-dashboard-booking__date span {
+.admin-dashboard-booking__participant span {
   color: rgba(36, 16, 79, 0.64);
 }
 
@@ -229,7 +227,7 @@
   font-size: 0.8125rem;
 }
 
-.admin-dashboard-booking-list {
+.admin-dashboard-booking-table {
   display: grid;
   gap: 0;
   height: calc(100% - 2.625rem);
@@ -239,12 +237,24 @@
 
 .admin-dashboard-booking {
   min-height: 0;
-  height: 3.25rem;
+  height: 3rem;
   display: grid;
-  grid-template-columns: 36px minmax(220px, 1.4fr) auto minmax(180px, 1fr) auto;
+  grid-template-columns: minmax(8.5rem, 1fr) minmax(10rem, 1.3fr) minmax(6rem, 0.55fr);
   align-items: center;
-  gap: 0.5625rem;
+  gap: 0.75rem;
   border-bottom: 1px solid rgba(167, 139, 250, 0.14);
+  color: rgba(36, 16, 79, 0.78);
+  font-size: 0.8125rem;
+  font-weight: 700;
+}
+
+.admin-dashboard-booking--head {
+  height: 2.375rem;
+  color: rgba(36, 16, 79, 0.58);
+  font-size: 0.6875rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0;
 }
 
 .admin-dashboard-booking__avatar {
@@ -262,59 +272,41 @@
   font-size: 0.75rem;
 }
 
-.admin-dashboard-booking__main {
+.admin-dashboard-booking__participant,
+.admin-dashboard-booking__event {
   min-width: 0;
 }
 
-.admin-dashboard-booking__main strong,
-.admin-dashboard-booking__main span {
+.admin-dashboard-booking__participant {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.admin-dashboard-booking__participant span:last-child,
+.admin-dashboard-booking__event strong {
   display: block;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.admin-dashboard-booking__main strong {
-  margin-bottom: 0.1875rem;
+.admin-dashboard-booking__event strong {
   font-size: 0.8125rem;
 }
 
-.admin-dashboard-booking__main span {
+.admin-dashboard-booking__participant span:last-child {
   font-size: 0.75rem;
   font-weight: 600;
 }
 
-.admin-dashboard-type,
 .admin-dashboard-status {
   justify-self: start;
   border-radius: 999px;
-  padding: 0.3125rem 0.6875rem;
-  font-size: 0.6875rem;
+  padding: 0.25rem 0.5625rem;
+  font-size: 0.625rem;
   line-height: 1;
   font-weight: 800;
-}
-
-.admin-dashboard-type--workshop {
-  color: var(--primary-purple);
-  background: rgba(167, 139, 250, 0.18);
-}
-
-.admin-dashboard-type--appointment {
-  color: var(--soft-pink);
-  background: rgba(224, 82, 151, 0.13);
-}
-
-.admin-dashboard-booking__date {
-  display: grid;
-  grid-template-columns: 18px 1fr;
-  gap: 0.1875rem 0.5rem;
-  color: rgba(36, 16, 79, 0.7);
-  font-size: 0.75rem;
-  font-weight: 700;
-}
-
-.admin-dashboard-booking__date svg {
-  color: #6b5ba6;
 }
 
 .admin-dashboard-status--confirmed {
@@ -465,9 +457,14 @@
     grid-template-columns: 1fr;
   }
 
+  .admin-dashboard-booking--head {
+    display: none;
+  }
+
   .admin-dashboard-booking {
     align-items: start;
     padding: 0.75rem 0;
+    height: auto;
   }
 
 }

@@ -3,7 +3,6 @@ import { collection, doc, getCountFromServer, getDoc, getDocs, limit, orderBy, q
 import {
   CalendarDays,
   CalendarCheck,
-  Clock3,
   UsersRound,
   UserPlus,
 } from 'lucide-react';
@@ -332,7 +331,6 @@ export default function DashboardPage() {
     humanizeEmailLocal(currentUser?.email) ||
     'Admin';
 
-  const typeLabel = (type) => (type === 'Appointment' ? t('typeAppointment') : t('typeWorkshop'));
   const statusLabel = (status) => {
     const normalized = String(status).toLowerCase();
     const key = normalized === 'cancelled' || normalized === 'canceled' ? 'statusCancelled' : 'statusConfirmed';
@@ -429,24 +427,22 @@ export default function DashboardPage() {
             <h2>{t('dashRecentBookings')}</h2>
             <a href="/admin/appointments">{t('dashViewAllBookings')}</a>
           </div>
-          <div className="admin-dashboard-booking-list">
+          <div className="admin-dashboard-booking-table">
+            <div className="admin-dashboard-booking admin-dashboard-booking--head">
+              <span>{t('apColParticipant')}</span>
+              <span>{t('apColEventName')}</span>
+              <span>{t('apColStatus')}</span>
+            </div>
             {bookings.map((booking) => (
               <div className="admin-dashboard-booking" key={booking.id}>
-                <div className="admin-dashboard-booking__avatar">
-                  {booking.participant.slice(0, 1).toUpperCase()}
-                </div>
-                <div className="admin-dashboard-booking__main">
-                  <strong>{booking.title}</strong>
+                <div className="admin-dashboard-booking__participant">
+                  <span className="admin-dashboard-booking__avatar">
+                    {booking.participant.slice(0, 1).toUpperCase()}
+                  </span>
                   <span>{booking.participant}</span>
                 </div>
-                <span className={`admin-dashboard-type admin-dashboard-type--${booking.type.toLowerCase()}`}>
-                  {typeLabel(booking.type)}
-                </span>
-                <div className="admin-dashboard-booking__date">
-                  <CalendarDays size={17} />
-                  <span>{booking.date}</span>
-                  <Clock3 size={14} />
-                  <small>{booking.time}</small>
+                <div className="admin-dashboard-booking__event">
+                  <strong>{booking.title}</strong>
                 </div>
                 <span className={`admin-dashboard-status admin-dashboard-status--${String(booking.status).toLowerCase()}`}>
                   {statusLabel(booking.status)}
