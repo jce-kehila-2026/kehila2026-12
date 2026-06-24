@@ -64,11 +64,14 @@
 .admin-dashboard-card {
   border: 1px solid var(--glass-border);
   border-radius: 24px;
+  box-shadow: 0 18px 45px rgba(109, 53, 184, 0.08);
+  backdrop-filter: blur(18px) saturate(1.12);
+}
+
+.admin-dashboard-card {
   background:
     linear-gradient(145deg, rgba(255, 255, 255, 0.86), rgba(255, 255, 255, 0.58)),
     var(--glass);
-  box-shadow: 0 18px 45px rgba(109, 53, 184, 0.08);
-  backdrop-filter: blur(18px) saturate(1.12);
 }
 
 .admin-dashboard-metric {
@@ -80,6 +83,10 @@
   align-items: flex-start;
   gap: 1.125rem;
   overflow: hidden;
+  isolation: isolate;
+  background:
+    linear-gradient(135deg, var(--metric-bg-start), var(--metric-bg-end));
+  border-color: var(--metric-border);
 }
 
 .admin-dashboard-metric__icon {
@@ -89,21 +96,48 @@
   display: grid;
   place-items: center;
   flex: 0 0 auto;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.72);
 }
 
-.admin-dashboard-metric--purple .admin-dashboard-metric__icon {
-  color: #8b5cf6;
-  background: rgba(167, 139, 250, 0.2);
+.admin-dashboard-metric--purple {
+  --metric-bg-start: rgba(245, 240, 255, 0.98);
+  --metric-bg-end: rgba(232, 221, 255, 0.88);
+  --metric-border: rgba(109, 53, 184, 0.18);
+  --metric-icon-color: #6d35b8;
+  --metric-icon-bg: rgba(109, 53, 184, 0.14);
+  --metric-number-color: #24104f;
 }
 
-.admin-dashboard-metric--pink .admin-dashboard-metric__icon {
-  color: var(--soft-pink);
-  background: rgba(224, 82, 151, 0.14);
+.admin-dashboard-metric--pink {
+  --metric-bg-start: rgba(255, 242, 249, 0.98);
+  --metric-bg-end: rgba(252, 231, 243, 0.9);
+  --metric-border: rgba(224, 82, 151, 0.2);
+  --metric-icon-color: var(--soft-pink);
+  --metric-icon-bg: rgba(224, 82, 151, 0.14);
+  --metric-number-color: #24104f;
 }
 
-.admin-dashboard-metric--peach .admin-dashboard-metric__icon {
-  color: #f97316;
-  background: rgba(253, 186, 116, 0.2);
+.admin-dashboard-metric--lavender {
+  --metric-bg-start: rgba(250, 247, 255, 0.98);
+  --metric-bg-end: rgba(237, 233, 254, 0.92);
+  --metric-border: rgba(167, 139, 250, 0.22);
+  --metric-icon-color: #7c3aed;
+  --metric-icon-bg: rgba(167, 139, 250, 0.18);
+  --metric-number-color: #24104f;
+}
+
+.admin-dashboard-metric--peach {
+  --metric-bg-start: rgba(255, 248, 241, 0.98);
+  --metric-bg-end: rgba(255, 237, 213, 0.9);
+  --metric-border: rgba(253, 186, 116, 0.28);
+  --metric-icon-color: #c05621;
+  --metric-icon-bg: rgba(253, 186, 116, 0.22);
+  --metric-number-color: #24104f;
+}
+
+.admin-dashboard-metric__icon {
+  color: var(--metric-icon-color);
+  background: var(--metric-icon-bg);
 }
 
 .admin-dashboard-metric span,
@@ -125,6 +159,7 @@
   line-height: 1;
   font-weight: 800;
   letter-spacing: 0;
+  color: var(--metric-number-color);
 }
 
 .admin-dashboard-metric p {
@@ -146,16 +181,16 @@
 }
 
 .admin-dashboard-metric--alert {
-  border-color: rgba(180, 35, 85, 0.35);
+  border-color: rgba(224, 82, 151, 0.36);
 }
 
 .admin-dashboard-metric--alert .admin-dashboard-metric__icon {
-  color: #b42355;
-  background: rgba(244, 114, 182, 0.22);
+  color: var(--soft-pink);
+  background: rgba(224, 82, 151, 0.16);
 }
 
 .admin-dashboard-metric--alert strong {
-  color: #b42355;
+  color: var(--deep-purple);
 }
 
 .admin-dashboard-main-grid {

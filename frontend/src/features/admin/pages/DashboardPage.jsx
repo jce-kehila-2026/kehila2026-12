@@ -517,14 +517,14 @@ export default function DashboardPage() {
           subtext={t('dashActivePlatformEvents')}
         />
         <MetricCard
-          accent="purple"
+          accent="lavender"
           icon={<CalendarCheck size={22} />}
           label={t('dashBookingsToday')}
           value={snapshot.bookingsToday}
           subtext={t('dashBookingsTodaySub')}
         />
         <MetricCard
-          accent="pink"
+          accent="peach"
           alert={snapshot.pendingJoinRequests > 0}
           icon={<UserPlus size={22} />}
           label={t('dashPendingJoinRequests')}
