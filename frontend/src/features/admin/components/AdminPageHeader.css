@@ -13,6 +13,10 @@
   background: transparent;
 }
 
+.admin-page-header--no-clip {
+  margin-top: 0;
+}
+
 .admin-page-header__content {
   min-width: 0;
 }

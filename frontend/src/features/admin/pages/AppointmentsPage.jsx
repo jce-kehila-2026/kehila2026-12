@@ -361,6 +361,7 @@ export default function AppointmentsPage() {
     <section className="appointments-admin-page" dir={direction}>
       <AdminPageHeader
         title={t('apTitle')}
+        className="admin-page-header--no-clip"
         actions={(
           <button
             type="button"

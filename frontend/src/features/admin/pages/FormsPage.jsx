@@ -215,7 +215,7 @@ export default function FormsPage() {
 
   return (
     <Box component="section" className="forms-admin-page" dir={direction}>
-      <AdminPageHeader title={t('fmTitle')} />
+      <AdminPageHeader title={t('fmTitle')} className="admin-page-header--no-clip" />
 
       {actionError ? (
         <Alert severity="error" sx={{ mb: 1, borderRadius: '14px', flex: '0 0 auto' }} onClose={() => setActionError('')}>
