@@ -508,7 +508,12 @@ export default function UserManagementPage() {
                   cursor: 'pointer',
                   textTransform: 'capitalize',
                   transition: 'color 160ms ease, background 160ms ease, box-shadow 160ms ease, transform 160ms ease',
-                  '&:hover, &:focus-visible': {
+                  '&:hover': {
+                    color: '#fff',
+                    background: 'linear-gradient(135deg, #e73386, #dc2577)',
+                    boxShadow: 'none',
+                  },
+                  '&:focus-visible': {
                     color: '#fff',
                     background: 'linear-gradient(135deg, #e73386, #dc2577)',
                     boxShadow: 'none',
@@ -613,7 +618,14 @@ export default function UserManagementPage() {
                   textTransform: 'none',
                   cursor: 'pointer',
                   transition: 'color 180ms ease, background 180ms ease, border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease',
-                  '&:hover, &:focus-visible': {
+                  '&:hover': {
+                    color: '#fff',
+                    background: 'linear-gradient(135deg, #e73386, #dc2577)',
+                    borderColor: 'transparent',
+                    boxShadow: '0 14px 26px rgba(223, 50, 123, 0.24)',
+                    transform: 'translateY(-2px)',
+                  },
+                  '&:focus-visible': {
                     color: '#fff',
                     background: 'linear-gradient(135deg, #e73386, #dc2577)',
                     borderColor: 'transparent',
@@ -931,9 +943,9 @@ export default function UserManagementPage() {
                 aria-label="Close user details"
                 sx={{
                   position: 'absolute',
-                  top: '12px /* @noflip */',
-                  right: '12px /* @noflip */',
-                  left: 'auto /* @noflip */',
+                  top: '12px',
+                  right: '12px',
+                  left: 'auto',
                   width: '1.75rem',
                   height: '1.75rem',
                   bgcolor: 'rgba(109, 60, 207, 0.06)',
