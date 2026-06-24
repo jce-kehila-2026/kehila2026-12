@@ -25,27 +25,11 @@
 .admin-dashboard-page *::after {
   box-sizing: border-box;
 }
-
-.admin-dashboard-hero {
-  position: fixed;
-  top: 1.75rem;
-  inset-inline-start: calc(var(--admin-sidebar-width) + 4rem);
-  z-index: 1100;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1.125rem;
-  min-width: 0;
-  min-height: 2.375rem;
-  margin-bottom: 0;
-}
-
-.admin-dashboard-hero h1 {
-  margin: 0;
-  font-size: clamp(1.5rem, 1.7vw, 1.875rem);
-  line-height: 1.12;
-  font-weight: 800;
-  letter-spacing: 0;
+.admin-dashboard-page .admin-page-header {
+  position: static;
+  margin-top: -1.5rem;
+  padding-top: 0;
+  background: transparent;
 }
 
 .admin-dashboard-card__header a {
@@ -443,11 +427,6 @@
     overflow: visible;
   }
 
-  .admin-dashboard-hero {
-    position: static;
-  }
-
-  .admin-dashboard-hero,
   .admin-dashboard-card__header {
     align-items: stretch;
     flex-direction: column;
