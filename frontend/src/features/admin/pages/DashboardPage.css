@@ -258,8 +258,7 @@
   border-bottom: 1px solid rgba(167, 139, 250, 0.14);
 }
 
-.admin-dashboard-booking__avatar,
-.admin-dashboard-admin-cell i {
+.admin-dashboard-booking__avatar {
   display: grid;
   place-items: center;
   border-radius: 50%;
@@ -297,8 +296,7 @@
 }
 
 .admin-dashboard-type,
-.admin-dashboard-status,
-.admin-dashboard-action {
+.admin-dashboard-status {
   justify-self: start;
   border-radius: 999px;
   padding: 0.3125rem 0.6875rem;
@@ -307,8 +305,7 @@
   font-weight: 800;
 }
 
-.admin-dashboard-type--workshop,
-.admin-dashboard-action--update {
+.admin-dashboard-type--workshop {
   color: var(--primary-purple);
   background: rgba(167, 139, 250, 0.18);
 }
@@ -345,85 +342,6 @@
 .admin-dashboard-status--canceled {
   color: #b42355;
   background: rgba(244, 114, 182, 0.16);
-}
-
-.admin-dashboard-activity {
-  height: 100%;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-}
-
-.admin-dashboard-activity__table {
-  display: grid;
-  flex: 1 1 auto;
-  position: relative;
-  z-index: 1;
-  min-height: 0;
-  overflow: auto;
-  padding-inline-end: 0.25rem;
-}
-
-.admin-dashboard-activity__head,
-.admin-dashboard-activity__row {
-  display: grid;
-  grid-template-columns: 1.1fr 1.55fr 0.8fr 1.35fr 1.65fr;
-  gap: 1rem;
-  align-items: center;
-  min-height: 2.125rem;
-  border-bottom: 1px solid rgba(167, 139, 250, 0.14);
-}
-
-.admin-dashboard-activity__head {
-  color: rgba(36, 16, 79, 0.68);
-  font-size: 0.75rem;
-  font-weight: 800;
-}
-
-.admin-dashboard-activity__row {
-  color: rgba(36, 16, 79, 0.82);
-  font-size: 0.75rem;
-  font-weight: 600;
-}
-
-.admin-dashboard-activity__head span,
-.admin-dashboard-activity__row span {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.admin-dashboard-admin-cell {
-  min-width: 0;
-  display: inline-flex;
-  align-items: center;
-  gap: 0.75rem;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.admin-dashboard-admin-cell i {
-  width: 1.5rem;
-  height: 1.5rem;
-  flex: 0 0 auto;
-  font-size: 0.625rem;
-}
-
-.admin-dashboard-action--create {
-  color: #329143;
-  background: rgba(134, 209, 124, 0.2);
-}
-
-.admin-dashboard-action--delete {
-  color: #b42355;
-  background: rgba(224, 82, 151, 0.13);
-}
-
-.admin-dashboard-action--reorder {
-  color: #f97316;
-  background: rgba(253, 186, 116, 0.2);
 }
 
 /* Shared empty state used by the new funnel/growth cards. */
@@ -682,9 +600,7 @@
 
   .admin-dashboard-snapshot,
   .admin-dashboard-booking,
-  .admin-dashboard-moderation__row,
-  .admin-dashboard-activity__head,
-  .admin-dashboard-activity__row {
+  .admin-dashboard-moderation__row {
     grid-template-columns: 1fr;
   }
 
@@ -696,10 +612,6 @@
   .admin-dashboard-booking {
     align-items: start;
     padding: 0.75rem 0;
-  }
-
-  .admin-dashboard-activity__head {
-    display: none;
   }
 
 }
