@@ -21,6 +21,7 @@ import {
   createParticipantProfile,
 } from "../services/participantService";
 import { WELLNESS, WELLNESS_DARK } from "../../appointments/appointmentTypeMeta";
+import "../../participant/home/ParticipantDashboardHome.css";
 import "./ProfilePage.css";
 
 const profileCacheRtl = createCache({

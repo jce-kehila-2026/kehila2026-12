@@ -52,6 +52,7 @@ function usePickerDismiss(open, setOpen, rootRef, panelRef, enabled = true) {
  *   portal?: boolean,
  *   compact?: boolean,
  *   className?: string,
+ *   disabled?: boolean,
  * }} props
  */
 export default function ReminderDatePicker({
@@ -67,6 +68,7 @@ export default function ReminderDatePicker({
   portal = false,
   compact = false,
   className = '',
+  disabled = false,
 }) {
   const internalRef = useRef(null);
   const panelRef = useRef(null);
@@ -210,6 +212,7 @@ export default function ReminderDatePicker({
         'pd-notes-calendar',
         isOpen ? 'is-open' : '',
         compact ? 'reminder-date-picker--compact' : '',
+        disabled ? 'is-disabled' : '',
         className,
       ].filter(Boolean).join(' ')}
       ref={rootRef}
@@ -221,7 +224,11 @@ export default function ReminderDatePicker({
         aria-haspopup="dialog"
         aria-expanded={isOpen}
         aria-label={ariaLabel}
-        onClick={() => setOpen((current) => !current)}
+        disabled={disabled}
+        onClick={() => {
+          if (disabled) return;
+          setOpen((current) => !current);
+        }}
       >
         <span className={`pd-notes-picker__value${displayLabel ? '' : ' is-placeholder'}`} dir="ltr">
           {displayLabel || labels.selectDate}

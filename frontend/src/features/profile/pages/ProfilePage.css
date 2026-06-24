@@ -464,6 +464,24 @@
   cursor: not-allowed;
 }
 
+/* Home CTA buttons in Settings — disabled state (e.g. empty New Password) */
+.profile-settings .pd-btn.pd-btn--view-cta:disabled,
+.profile-settings button.pd-btn.pd-btn--view-cta:disabled,
+.profile-settings .pd-btn.pd-btn--view-cta:disabled:hover,
+.profile-settings button.pd-btn.pd-btn--view-cta:disabled:hover,
+.profile-settings .pd-btn.pd-btn--view-cta:disabled:focus-visible,
+.profile-settings button.pd-btn.pd-btn--view-cta:disabled:focus-visible {
+  color: rgba(236, 72, 153, 0.45);
+  background: rgba(255, 255, 255, 0.72);
+  border: 2px solid rgba(236, 72, 153, 0.16);
+  box-shadow: none;
+  transform: none;
+  filter: none;
+  cursor: not-allowed;
+  opacity: 1;
+  outline: none;
+}
+
 .profile-settings .MuiButton-root.ps-btn--soft.MuiButton-contained,
 .profile-settings .MuiButton-root.ps-btn--soft.MuiButton-containedPrimary {
   background-color: var(--ps-btn-soft-bg) !important;
@@ -487,6 +505,22 @@
   color: #f8fafc !important;
   background: rgba(219, 79, 159, 0.12) !important;
   border-color: rgba(219, 79, 159, 0.28) !important;
+}
+
+.profile-settings--dark .pd-btn.pd-btn--view-cta:disabled,
+.profile-settings--dark button.pd-btn.pd-btn--view-cta:disabled,
+.profile-settings--dark .pd-btn.pd-btn--view-cta:disabled:hover,
+.profile-settings--dark button.pd-btn.pd-btn--view-cta:disabled:hover,
+.profile-settings--dark .pd-btn.pd-btn--view-cta:disabled:focus-visible,
+.profile-settings--dark button.pd-btn.pd-btn--view-cta:disabled:focus-visible {
+  color: rgba(244, 114, 182, 0.42);
+  background: rgba(23, 32, 51, 0.55);
+  border-color: rgba(236, 72, 153, 0.18);
+  box-shadow: none;
+  transform: none;
+  filter: none;
+  cursor: not-allowed;
+  outline: none;
 }
 
 .profile-settings__setting-row {

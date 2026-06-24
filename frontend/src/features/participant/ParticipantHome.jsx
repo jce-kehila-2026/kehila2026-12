@@ -19,7 +19,8 @@ import {
   fetchUpdates,
   getLastSeenAt,
   markAllAsRead,
-  markUpdatesSeenThrough,
+  markActivityNotificationRead,
+  markUpdateRead,
 } from '../admin/services/updatesService';
 import {
   getParticipantLocaleDirection,
@@ -84,6 +85,8 @@ export default function ParticipantHome({ initialView = 'home' }) {
   const [participantProfile, setParticipantProfile] = useState(null);
   const [loadingParticipantProfile, setLoadingParticipantProfile] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(getStoredSidebarCollapsed);
+  const [homeRefreshKey, setHomeRefreshKey] = useState(0);
+  const prevActiveViewRef = useRef(activeView);
   const t = useMemo(() => createParticipantT(locale), [locale]);
   useCommunityStreak({ localUserId: effectiveUID || currentUser?.uid || '' });
 
@@ -93,7 +96,12 @@ export default function ParticipantHome({ initialView = 'home' }) {
   const [notifOpen, setNotifOpen] = useState(false);
   const [announcements, setAnnouncements] = useState([]);
   const [activity, setActivity] = useState([]);
-  const [lastSeenAt, setLastSeenAt] = useState(null);
+  // Per-tab "seen" cutoffs: { general, community }. Tracking them separately
+  // keeps reading one feed from silently marking the other read.
+  const [lastSeen, setLastSeen] = useState({ general: null, community: null });
+  // Ids of admin announcements this user has individually marked read. Community
+  // activity tracks its read state per-doc instead (see markActivityNotificationRead).
+  const [readUpdateIds, setReadUpdateIds] = useState([]);
   const notifBellRef = useRef(null);
 
   const notifications = useMemo(
@@ -111,22 +119,26 @@ export default function ParticipantHome({ initialView = 'home' }) {
   );
 
   const unreadCount = useMemo(
-    () => countUnread(lastSeenAt, notifications),
-    [lastSeenAt, notifications],
+    () => countUnread(lastSeen, notifications, readUpdateIds),
+    [lastSeen, notifications, readUpdateIds],
   );
 
-  const loadNotifications = useCallback(async () => {
+  // pruneStale runs the per-item staleness scan (an extra read per item plus
+  // deletes). It is only worth it when the user actually opens the bell, so the
+  // background poll passes pruneStale: false to avoid an N+1 read burst/minute.
+  const loadNotifications = useCallback(async ({ pruneStale = false } = {}) => {
     if (!currentUser) return;
     const uid = effectiveUID || currentUser.uid;
     try {
       const [data, activityItems, seen] = await Promise.all([
         fetchUpdates(true, uid),
-        fetchActivityNotifications(uid),
+        fetchActivityNotifications(uid, 20, { pruneStale }),
         getLastSeenAt(uid),
       ]);
       setAnnouncements(data);
       setActivity(activityItems);
-      setLastSeenAt(seen);
+      setLastSeen({ general: seen.general, community: seen.community });
+      setReadUpdateIds(seen.readUpdateIds ?? []);
     } catch (err) {
       console.error('Failed to load notifications:', err);
     }
@@ -139,7 +151,7 @@ export default function ParticipantHome({ initialView = 'home' }) {
   useEffect(() => {
     if (!currentUser) return undefined;
 
-    const intervalId = window.setInterval(loadNotifications, 60 * 1000);
+    const intervalId = window.setInterval(() => loadNotifications(), 60 * 1000);
 
     return () => window.clearInterval(intervalId);
   }, [currentUser, loadNotifications]);
@@ -150,44 +162,57 @@ export default function ParticipantHome({ initialView = 'home' }) {
       return;
     }
     setNotifOpen(true);
-    loadNotifications();
+    loadNotifications({ pruneStale: true });
   }, [notifOpen, loadNotifications]);
 
   const handleOpenNotifications = useCallback(() => {
     setNotifOpen(true);
-    loadNotifications();
+    loadNotifications({ pruneStale: true });
   }, [loadNotifications]);
 
   const handleMarkAllRead = useCallback(async () => {
     if (!currentUser) return;
     try {
       await markAllAsRead(effectiveUID || currentUser.uid);
-      setLastSeenAt({ toMillis: () => Date.now() });
+      const now = { toMillis: () => Date.now() };
+      setLastSeen({ general: now, community: now });
     } catch (err) {
       console.error('Failed to mark as read:', err);
     }
   }, [currentUser, effectiveUID]);
 
   const handleNotificationClick = useCallback((notification) => {
-    if (notification?.postId && notification.kind === 'activity') {
-      const notificationSeenAt = notification.createdAt;
-      const currentSeenMs = lastSeenAt?.toMillis?.() ?? Number(lastSeenAt ?? 0);
-      const notificationSeenMs = notificationSeenAt?.toMillis?.() ?? Number(notificationSeenAt ?? 0);
+    if (!notification) return;
+    const uid = effectiveUID || currentUser?.uid;
 
-      if (notificationSeenAt && notificationSeenMs > currentSeenMs) {
-        setLastSeenAt(notificationSeenAt);
-        if (currentUser) {
-          markUpdatesSeenThrough(effectiveUID || currentUser.uid, notificationSeenAt).catch((err) => {
-            console.error('Failed to mark notification as read:', err);
-          });
-        }
+    // Mark ONLY the clicked notification read — community activity via a per-doc
+    // flag, announcements via an id list — so it never spills onto siblings.
+    if (notification.kind === 'activity') {
+      setActivity((prev) => prev.map((item) => (
+        item.id === notification.id ? { ...item, read: true } : item
+      )));
+      if (uid) {
+        markActivityNotificationRead(uid, notification.id).catch((err) => {
+          console.error('Failed to mark notification as read:', err);
+        });
       }
+    } else {
+      setReadUpdateIds((prev) => (prev.includes(notification.id) ? prev : [...prev, notification.id]));
+      if (uid) {
+        markUpdateRead(uid, notification.id).catch((err) => {
+          console.error('Failed to mark notification as read:', err);
+        });
+      }
+    }
 
+    // Only community posts have somewhere to navigate; dismiss-only clicks keep
+    // the dropdown open so the user can read/clear more.
+    if (notification.postId && notification.kind === 'activity') {
       setNotifOpen(false);
       setCommunityFocusPostId(notification.postId);
       setActiveView('community');
     }
-  }, [currentUser, effectiveUID, lastSeenAt]);
+  }, [currentUser, effectiveUID]);
 
   const notificationsBell = (
     <div className="participant-notif-wrap" ref={notifBellRef}>
@@ -204,7 +229,8 @@ export default function ParticipantHome({ initialView = 'home' }) {
       {notifOpen ? (
         <NotificationsDropdown
           updates={notifications}
-          lastSeenAt={lastSeenAt}
+          lastSeen={lastSeen}
+          readUpdateIds={readUpdateIds}
           onMarkAllRead={handleMarkAllRead}
           onNotificationClick={handleNotificationClick}
           onClose={() => setNotifOpen(false)}
@@ -310,6 +336,13 @@ export default function ParticipantHome({ initialView = 'home' }) {
   const handleCommunityFocusHandled = useCallback(() => {
     setCommunityFocusPostId(null);
   }, []);
+
+  useEffect(() => {
+    if (activeView === 'home' && prevActiveViewRef.current !== 'home') {
+      setHomeRefreshKey((current) => current + 1);
+    }
+    prevActiveViewRef.current = activeView;
+  }, [activeView]);
 
   useEffect(() => {
     if (location.pathname === '/appointments') {
@@ -439,6 +472,7 @@ export default function ParticipantHome({ initialView = 'home' }) {
               latestNotification={notifications?.[0] ?? null}
               onOpenNotifications={handleOpenNotifications}
               locale={locale}
+              refreshToken={homeRefreshKey}
             />
           )}
 

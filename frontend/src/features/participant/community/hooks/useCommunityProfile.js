@@ -9,6 +9,7 @@ import {
   getCommunityBirthday,
   getExistingDisplayName,
   hasRequiredCommunityPersonalDetails,
+  normalizeCommunityBirthday,
 } from '../utils/communityProfileUtils';
 import { createParticipantT } from '../../i18n/participantUiTranslations';
 
@@ -122,6 +123,25 @@ export default function useCommunityProfile({
 
   const displayName = getExistingDisplayName(personalDetails);
   const birthDate = getCommunityBirthday(personalDetails);
+
+  // Keep the community birthday in sync with the member's real birth date.
+  // `communityBirthday` was historically snapshotted when a member first
+  // completed the birthday-preference setup, so editing your birthday in
+  // Settings later left both communityBirthday and the public_profiles mirror
+  // (which the birthday widget reads for everyone) pointing at the old date —
+  // your birthday would then silently never surface to anyone. Whenever the
+  // fresh birth date drifts from the stored one, re-save it (updateCommunityProfile
+  // re-mirrors the month/day to public_profiles).
+  useEffect(() => {
+    if (!isRealUserId(uid)) return;
+    if (!birthDate) return;
+    if (!communityUserProfile.profileCompleted) return;
+    if (normalizeCommunityBirthday(communityUserProfile.birthday) === birthDate) return;
+
+    setCommunityUserProfile((currentProfile) => ({ ...currentProfile, birthday: birthDate }));
+    updateCommunityProfile(uid, { communityBirthday: birthDate }).catch(() => {});
+  }, [uid, birthDate, communityUserProfile.profileCompleted, communityUserProfile.birthday]);
+
   const hasCompletedCommunityProfile = communityUserProfile.profileCompleted === true;
   const communityDisplayName = hasCompletedCommunityProfile
     ? communityUserProfile.displayName

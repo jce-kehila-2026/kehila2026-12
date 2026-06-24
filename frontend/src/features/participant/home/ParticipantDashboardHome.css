@@ -1422,6 +1422,26 @@
 
   margin-top: 0;
 
+  width: auto;
+
+  max-width: 168px;
+
+  min-width: 160px;
+
+  align-self: flex-start;
+
+}
+
+.pd-card--feature .pd-feature__footer > .pd-btn--view-cta {
+
+  width: auto;
+
+  max-width: 168px;
+
+  min-width: 160px;
+
+  align-self: flex-start;
+
 }
 
 

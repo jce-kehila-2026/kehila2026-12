@@ -35,6 +35,7 @@ export default function CitySelect({
   id,
   name,
   size,
+  className,
   textFieldProps = {},
 }) {
   const selectedOption = useMemo(() => {
@@ -53,6 +54,7 @@ export default function CitySelect({
 
   return (
     <Autocomplete
+      className={className}
       options={options}
       value={selectedOption}
       onChange={(_event, next) => onChange?.(next ? next.he : '')}

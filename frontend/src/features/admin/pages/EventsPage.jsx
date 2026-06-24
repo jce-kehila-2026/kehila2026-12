@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, useCallback, useId } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import ArrowForward from '@mui/icons-material/ArrowForward';
+import Pagination from '@mui/material/Pagination';
 import CalendarMonth from '@mui/icons-material/CalendarMonth';
 import Category from '@mui/icons-material/Category';
 import Close from '@mui/icons-material/Close';
@@ -8,7 +8,6 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EditOutlined from '@mui/icons-material/EditOutlined';
 import EventAvailable from '@mui/icons-material/EventAvailable';
 import FileDownloadOutlined from '@mui/icons-material/FileDownloadOutlined';
-import FilterList from '@mui/icons-material/FilterList';
 import Groups from '@mui/icons-material/Groups';
 import LocationOnOutlined from '@mui/icons-material/LocationOnOutlined';
 import PersonRemoveOutlined from '@mui/icons-material/PersonRemoveOutlined';
@@ -33,10 +32,13 @@ import { useAdminLocale } from '../context/AdminLocaleContext';
 import AdminPageHeader from '../components/AdminPageHeader';
 import ReminderTimePicker from '../../../shared/components/ReminderTimePicker';
 import ReminderDatePicker from '../../../shared/components/ReminderDatePicker';
-import CitySelect from '../../../shared/components/CitySelect';
+import ISRAELI_CITIES from '../../../shared/data/israeliCities.json';
 import '../../../shared/components/ReminderTimePicker.css';
 import '../../../shared/styles/public-cta-button.css';
+import { paginateRows } from './bookingsPageUtils';
 import './EventsPage.css';
+
+const PAGE_SIZE = 10;
 
 const INTL_LOCALE_BY_LANG = { he: 'he-IL', en: 'en' };
 
@@ -101,14 +103,12 @@ function createInitialForm(type = 'workshop') {
     imageUrl: '',
     recurrence: 'weekly',
     weeklyDayIndex: '',
-    registrationOpen: true,
     disabledDates: '',
     date: '',
     startTime: '',
     endTime: '',
     location: '',
     maxParticipants: '',
-    status: 'published',
     providers: [createEmptyProvider()],
   };
 }
@@ -230,7 +230,6 @@ function eventToForm(event) {
     imageUrl: event.imageUrl || event.thumbnailUrl || event.coverImageUrl || '',
     recurrence: isRecurring ? 'weekly' : 'one-time',
     weeklyDayIndex: recurringDayIndex,
-    registrationOpen: event.registrationOpen !== false,
     disabledDates: Array.isArray(event.disabledDates) ? event.disabledDates.join(', ') : '',
     date: dateInputValue(event.date) || dateInputValue(event.startTime || event.date),
     startTime: type === 'workshop'
@@ -239,7 +238,6 @@ function eventToForm(event) {
     endTime: timeInputValue(event.endTime),
     location: event.location || '',
     maxParticipants: event.maxParticipants || event.capacity || '',
-    status: normalizeStatus(event.status),
     providers,
   };
 }
@@ -521,6 +519,7 @@ export default function EventsPage() {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [sortBy, setSortBy] = useState('newest');
+  const [page, setPage] = useState(1);
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState('');
   const [participantsDrawerOpen, setParticipantsDrawerOpen] = useState(false);
@@ -623,6 +622,12 @@ export default function EventsPage() {
       });
   }, [activeTab, searchTerm, sortBy, statusFilter, typedEvents]);
 
+  useEffect(() => {
+    setPage(1);
+  }, [activeTab, searchTerm, sortBy, statusFilter]);
+
+  const pagination = useMemo(() => paginateRows(filteredEvents, page, PAGE_SIZE), [filteredEvents, page]);
+
   const participantStats = useMemo(() => {
     const registered = registrations.length;
     const remaining = selectedEventCapacity ? Math.max(0, selectedEventCapacity - registered) : 0;
@@ -715,9 +720,11 @@ export default function EventsPage() {
 
   const workshopProvider = form.providers?.[0] || createEmptyProvider();
   const workshopStartTime = getWorkshopStartTime(form);
-  const isWeeklyWorkshopSchedule = form.type === 'workshop' && form.recurrence === 'weekly';
   const workshopStartTimePickerId = useId();
   const workshopDatePickerId = useId();
+  const appointmentDatePickerId = useId();
+  const appointmentStartTimePickerId = useId();
+  const appointmentStartTime = normalizeTimeString(form.startTime || '');
 
   const datePickerLabels = useMemo(
     () => ({
@@ -742,6 +749,14 @@ export default function EventsPage() {
     }),
     [t],
   );
+
+  const locationOptions = useMemo(() => {
+    const trimmed = (form.location || '').trim();
+    if (trimmed && !ISRAELI_CITIES.some((city) => city.he === trimmed)) {
+      return [{ he: trimmed, en: '' }, ...ISRAELI_CITIES];
+    }
+    return ISRAELI_CITIES;
+  }, [form.location]);
 
   useEffect(() => {
     if (!selectedEventIsAppointment) return;
@@ -840,15 +855,6 @@ export default function EventsPage() {
   }
 
   function updateWorkshopScheduling(field, value) {
-    if (field === 'recurrence') {
-      setForm((current) => ({
-        ...current,
-        recurrence: value,
-        weeklyDayIndex: value === 'weekly' ? current.weeklyDayIndex : '',
-      }));
-      return;
-    }
-
     if (field === 'startTime') {
       const nextTime = String(value ?? '');
       setForm((current) => {
@@ -940,7 +946,7 @@ export default function EventsPage() {
   async function handleSave(event) {
     event.preventDefault();
     const preparedForm = syncWorkshopFormForSave(form);
-    const isRecurring = preparedForm.recurrence === 'weekly';
+    const isRecurring = preparedForm.type === 'workshop' || preparedForm.recurrence === 'weekly';
     const providersPayload = buildProvidersPayload(preparedForm.providers);
     const firstSlot = getFirstProviderSlot(providersPayload);
     const lastSlot = getLastProviderSlot(providersPayload);
@@ -965,21 +971,22 @@ export default function EventsPage() {
         setToast(t('evToastAddStartTime'));
         return;
       }
-      if (isRecurring) {
-        if (preparedForm.weeklyDayIndex === '' || preparedForm.weeklyDayIndex === null || preparedForm.weeklyDayIndex === undefined) {
-          setToast(t('evToastChooseDay'));
-          return;
-        }
-        if (!firstSlot) {
-          setToast(t('evToastAddSlot'));
-          return;
-        }
-      } else if (!startDate) {
-        setToast(t('evToastAddDateTime'));
+      if (preparedForm.weeklyDayIndex === '' || preparedForm.weeklyDayIndex === null || preparedForm.weeklyDayIndex === undefined) {
+        setToast(t('evToastChooseDay'));
+        return;
+      }
+      if (!firstSlot) {
+        setToast(t('evToastAddSlot'));
         return;
       }
     } else if (isRecurring && preparedForm.weeklyDayIndex === '') {
       setToast(t('evToastChooseDay'));
+      return;
+    } else if (!preparedForm.date?.trim()) {
+      setToast(t('evToastAddDate'));
+      return;
+    } else if (!normalizeTimeString(preparedForm.startTime)) {
+      setToast(t('evToastAddStartTime'));
       return;
     } else if (isRecurring && !firstSlot) {
       setToast(t('evToastAddSlot'));
@@ -992,21 +999,23 @@ export default function EventsPage() {
     const payload = {
       title: preparedForm.title.trim(),
       type: preparedForm.type,
-      recurrence: preparedForm.recurrence,
+      recurrence: preparedForm.type === 'workshop' ? 'weekly' : preparedForm.recurrence,
       isRecurringTemplate: isRecurring,
       weeklyDay: isRecurring ? getWeekdayName(preparedForm.weeklyDayIndex) : '',
       weeklyDayIndex: isRecurring ? Number(preparedForm.weeklyDayIndex) : null,
       date: preparedForm.date || null,
-      startTime: isRecurring ? firstSlot.startTime : startDate,
+      startTime: isRecurring
+        ? (normalizeTimeString(preparedForm.startTime) || firstSlot?.startTime)
+        : startDate,
       endTime: isRecurring ? (lastSlot.endTime || lastSlot.startTime) : endDate,
       location: preparedForm.location.trim(),
       description: preparedForm.description.trim(),
       imageUrl: preparedForm.imageUrl.trim(),
       maxParticipants: Number(preparedForm.maxParticipants) || 0,
-      registrationOpen: preparedForm.registrationOpen,
+      registrationOpen: editingEvent ? editingEvent.registrationOpen !== false : true,
       disabledDates: parseDisabledDates(preparedForm.disabledDates),
       providers: providersPayload,
-      status: preparedForm.status,
+      status: editingEvent ? normalizeStatus(editingEvent.status) : 'published',
     };
 
     setSaving(true);
@@ -1217,9 +1226,8 @@ export default function EventsPage() {
             </button>
           </div>
 
-          <section className="admin-events-filterbar" aria-label={t('evSearchFilterAria')}>
-            <label className="admin-events-search">
-              <Search />
+          <section className="admin-events-filterbar appointments-filter-card" aria-label={t('evSearchFilterAria')}>
+            <label className="appointments-search-field">
               <input
                 type="search"
                 placeholder={t('evSearchByTitle')}
@@ -1227,7 +1235,7 @@ export default function EventsPage() {
                 onChange={(event) => setSearchTerm(event.target.value)}
               />
             </label>
-            <label>
+            <label className="appointments-filter-field">
               <span>{t('evStatusLabel')}</span>
               <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
                 <option value="all">{t('evAllStatuses')}</option>
@@ -1236,7 +1244,7 @@ export default function EventsPage() {
                 ))}
               </select>
             </label>
-            <label>
+            <label className="appointments-filter-field">
               <span>{t('evSortBy')}</span>
               <select value={sortBy} onChange={(event) => setSortBy(event.target.value)}>
                 <option value="newest">{t('evSortNewest')}</option>
@@ -1244,9 +1252,6 @@ export default function EventsPage() {
                 <option value="title">{t('evSortTitle')}</option>
               </select>
             </label>
-            <button className="admin-events-icon-btn admin-events-filter-btn public-cta-interaction" type="button" aria-label={t('evAdvancedFilters')}>
-              <FilterList />
-            </button>
             <button className="admin-events-icon-btn public-cta-interaction" type="button" onClick={fetchEvents} aria-label={t('evRefresh')}>
               <Refresh />
             </button>
@@ -1273,7 +1278,7 @@ export default function EventsPage() {
                       </tr>
                     ))
                   ) : filteredEvents.length ? (
-                    filteredEvents.map((event) => {
+                    pagination.rows.map((event) => {
                       const registered = counts[event.id] ?? 0;
                       const capacity = Number(event.maxParticipants || event.capacity) || 0;
                       const progress = capacity ? Math.min(100, (registered / capacity) * 100) : 0;
@@ -1348,8 +1353,14 @@ export default function EventsPage() {
               </table>
             </div>
             <footer className="admin-events-table-footer">
-              <span>{(activeTab === 'workshop' ? t('evShowingWorkshops') : t('evShowingAppointments')).replace('{shown}', filteredEvents.length).replace('{total}', filteredEvents.length)}</span>
-              <span>{t('evRowsPerPage')}</span>
+              <Pagination
+                count={pagination.pageCount}
+                page={pagination.page}
+                onChange={(event, value) => setPage(value)}
+                siblingCount={1}
+                boundaryCount={1}
+                shape="rounded"
+              />
             </footer>
           </section>
         </main>
@@ -1379,12 +1390,6 @@ export default function EventsPage() {
                     </li>
                   ))}
                 </ol>
-
-                <div className="admin-events-modal-tip-card">
-                  <CalendarMonth />
-                  <strong>{t('evTipAllSet')}</strong>
-                  <p>{t('evTipSaveDraft')}</p>
-                </div>
               </aside>
 
               <section className="admin-events-modal-content">
@@ -1393,11 +1398,6 @@ export default function EventsPage() {
                     <span>{activeFormStep + 1}</span>
                     <div>
                       <h3>{t(currentFormStep.titleKey)}</h3>
-                      <p>
-                        {activeFormStep === 0
-                          ? t('evStep0Intro')
-                          : t(currentFormStep.descKey)}
-                      </p>
                     </div>
                   </header>
 
@@ -1424,78 +1424,55 @@ export default function EventsPage() {
                         />
                         <small>{descriptionCount}/120</small>
                       </label>
-
-                      <div className="admin-events-wizard-tip">
-                        <Tune fontSize="small" />
-                        <span>{t('evTipBasic')}</span>
-                      </div>
                     </div>
                   )}
 
                   {activeFormStep === 1 && form.type === 'workshop' && (
-                    <div className="admin-events-wizard-fields admin-events-wizard-fields--workshop-schedule">
-                      <div className="admin-events-workshop-schedule-grid admin-events-workshop-schedule-grid--type-row">
-                        <label className={isWeeklyWorkshopSchedule ? undefined : 'admin-events-workshop-schedule-field--solo'}>
-                          <span className="admin-events-field-label">{t('evScheduleType')} <b>*</b></span>
-                          <select
-                            value={form.recurrence}
-                            onChange={(event) => updateWorkshopScheduling('recurrence', event.target.value)}
-                            required
-                          >
-                            <option value="weekly">{t('evWeeklyRecurring')}</option>
-                            <option value="one-time">{t('evOneTime')}</option>
-                          </select>
-                        </label>
+                    <div className="admin-events-wizard-fields">
+                      <label>
+                        <span className="admin-events-field-label">{t('evWeeklyDay')} <b>*</b></span>
+                        <select
+                          value={form.weeklyDayIndex}
+                          onChange={(event) => updateWorkshopScheduling('weeklyDayIndex', event.target.value)}
+                          required
+                        >
+                          <option value="">{t('evChooseDay')}</option>
+                          {WEEKDAY_OPTIONS.map((day) => (
+                            <option key={day.value} value={day.value}>{t(`wd${day.value}`)}</option>
+                          ))}
+                        </select>
+                      </label>
 
-                        {isWeeklyWorkshopSchedule ? (
-                          <label>
-                            <span className="admin-events-field-label">{t('evWeeklyDay')} <b>*</b></span>
-                            <select
-                              value={form.weeklyDayIndex}
-                              onChange={(event) => updateWorkshopScheduling('weeklyDayIndex', event.target.value)}
-                              required
-                            >
-                              <option value="">{t('evChooseDay')}</option>
-                              {WEEKDAY_OPTIONS.map((day) => (
-                                <option key={day.value} value={day.value}>{t(`wd${day.value}`)}</option>
-                              ))}
-                            </select>
-                          </label>
-                        ) : null}
-                      </div>
+                      <label>
+                        <span className="admin-events-field-label">{t('evDate')} <b>*</b></span>
+                        <ReminderDatePicker
+                          id={workshopDatePickerId}
+                          className="admin-events-date-picker"
+                          value={form.date}
+                          ariaLabel={t('evDate')}
+                          labels={datePickerLabels}
+                          onChange={(nextDate) => updateWorkshopScheduling('date', nextDate)}
+                          portal
+                          compact
+                        />
+                      </label>
 
-                      <div className="admin-events-workshop-schedule-grid admin-events-workshop-schedule-grid--datetime-row">
-                        <label>
-                          <span className="admin-events-field-label">{t('evDate')} <b>*</b></span>
-                          <ReminderDatePicker
-                            id={workshopDatePickerId}
-                            className="admin-events-date-picker"
-                            value={form.date}
-                            ariaLabel={t('evDate')}
-                            labels={datePickerLabels}
-                            onChange={(nextDate) => updateWorkshopScheduling('date', nextDate)}
-                            portal
-                            compact
-                          />
-                        </label>
+                      <label>
+                        <span className="admin-events-field-label">{t('evStartTime')} <b>*</b></span>
+                        <ReminderTimePicker
+                          id={workshopStartTimePickerId}
+                          className="admin-events-time-picker"
+                          value={workshopStartTime}
+                          ariaLabel={t('evStartTime')}
+                          labels={timePickerLabels}
+                          onChange={(nextTime) => updateWorkshopScheduling('startTime', nextTime)}
+                          portal
+                          compact
+                          showDoneButton
+                        />
+                      </label>
 
-                        <label>
-                          <span className="admin-events-field-label">{t('evStartTime')} <b>*</b></span>
-                          <ReminderTimePicker
-                            id={workshopStartTimePickerId}
-                            className="admin-events-time-picker"
-                            value={workshopStartTime}
-                            ariaLabel={t('evStartTime')}
-                            labels={timePickerLabels}
-                            onChange={(nextTime) => updateWorkshopScheduling('startTime', nextTime)}
-                            portal
-                            compact
-                            showDoneButton
-                          />
-                        </label>
-                      </div>
-
-                      <section className="admin-events-provider-section admin-events-workshop-schedule-provider">
+                      <section className="admin-events-provider-section admin-events-span-2">
                         <header>
                           <div>
                             <h3>{t('evWorkshopProviderTitle')}</h3>
@@ -1553,13 +1530,6 @@ export default function EventsPage() {
                   {activeFormStep === 1 && form.type !== 'workshop' && (
                     <div className="admin-events-wizard-fields">
                       <label>
-                        {t('evScheduleType')}
-                        <select value={form.recurrence} onChange={(event) => updateForm('recurrence', event.target.value)}>
-                          <option value="weekly">{t('evWeeklyRecurring')}</option>
-                          <option value="one-time">{t('evOneTime')}</option>
-                        </select>
-                      </label>
-                      <label>
                         <span className="admin-events-field-label">
                           {t('evWeeklyDay')} {form.recurrence === 'weekly' ? <b>*</b> : null}
                         </span>
@@ -1576,27 +1546,30 @@ export default function EventsPage() {
                         </select>
                       </label>
                       <label>
-                        <span className="admin-events-field-label">
-                          {t('evDate')} {form.recurrence !== 'weekly' ? <b>*</b> : null}
-                        </span>
-                        <input
-                          type="date"
+                        <span className="admin-events-field-label">{t('evDate')} <b>*</b></span>
+                        <ReminderDatePicker
+                          id={appointmentDatePickerId}
+                          className="admin-events-date-picker"
                           value={form.date}
-                          onChange={(event) => updateForm('date', event.target.value)}
-                          required={form.recurrence !== 'weekly'}
-                          disabled={form.recurrence === 'weekly'}
+                          ariaLabel={t('evDate')}
+                          labels={datePickerLabels}
+                          onChange={(nextDate) => updateForm('date', nextDate)}
+                          portal
+                          compact
                         />
                       </label>
                       <label>
-                        <span className="admin-events-field-label">
-                          {t('evStartTime')} {form.recurrence !== 'weekly' ? <b>*</b> : null}
-                        </span>
-                        <input
-                          type="time"
-                          value={form.startTime}
-                          onChange={(event) => updateForm('startTime', event.target.value)}
-                          required={form.recurrence !== 'weekly'}
-                          disabled={form.recurrence === 'weekly'}
+                        <span className="admin-events-field-label">{t('evStartTime')} <b>*</b></span>
+                        <ReminderTimePicker
+                          id={appointmentStartTimePickerId}
+                          className="admin-events-time-picker"
+                          value={appointmentStartTime}
+                          ariaLabel={t('evStartTime')}
+                          labels={timePickerLabels}
+                          onChange={(nextTime) => updateForm('startTime', normalizeTimeString(nextTime) || nextTime)}
+                          portal
+                          compact
+                          showDoneButton
                         />
                       </label>
                       <section className="admin-events-provider-section admin-events-span-2">
@@ -1605,14 +1578,26 @@ export default function EventsPage() {
                             <h3>{t('evProvidersTitle')}</h3>
                             <p>{t('evProvidersDesc')}</p>
                           </div>
-                          <button type="button" onClick={addProvider}>{t('evAddProvider')}</button>
+                          <button
+                            type="button"
+                            className="admin-events-wizard-action-btn admin-events-wizard-action-btn--outline public-cta-interaction"
+                            onClick={addProvider}
+                          >
+                            {t('evAddProvider')}
+                          </button>
                         </header>
                         <div className="admin-events-provider-list">
                           {form.providers.map((provider, providerIndex) => (
                             <article className="admin-events-provider-card" key={`${providerIndex}-${provider.id || 'provider'}`}>
                               <div className="admin-events-provider-card__header">
                                 <strong>{t('evProviderN').replace('{n}', providerIndex + 1)}</strong>
-                                <button type="button" onClick={() => removeProvider(providerIndex)}>{t('evRemove')}</button>
+                                <button
+                                  type="button"
+                                  className="admin-events-wizard-action-btn admin-events-wizard-action-btn--outline public-cta-interaction"
+                                  onClick={() => removeProvider(providerIndex)}
+                                >
+                                  {t('evRemove')}
+                                </button>
                               </div>
                               <div className="admin-events-provider-fields">
                                 <label>
@@ -1652,7 +1637,13 @@ export default function EventsPage() {
                               <div className="admin-events-slot-list">
                                 <div className="admin-events-slot-list__title">
                                   <span>{t('evTimeSlots')}</span>
-                                  <button type="button" onClick={() => addProviderSlot(providerIndex)}>{t('evAddSlot')}</button>
+                                  <button
+                                    type="button"
+                                    className="admin-events-wizard-action-btn admin-events-wizard-action-btn--outline public-cta-interaction"
+                                    onClick={() => addProviderSlot(providerIndex)}
+                                  >
+                                    {t('evAddSlot')}
+                                  </button>
                                 </div>
                                 {provider.slots.map((slot, slotIndex) => (
                                   <div className="admin-events-slot-row" key={`${slotIndex}-${slot.id || 'slot'}`}>
@@ -1689,7 +1680,13 @@ export default function EventsPage() {
                                         onChange={(event) => updateProviderSlot(providerIndex, slotIndex, 'capacity', event.target.value)}
                                       />
                                     </label>
-                                    <button type="button" onClick={() => removeProviderSlot(providerIndex, slotIndex)}>{t('evRemove')}</button>
+                                    <button
+                                      type="button"
+                                      className="admin-events-wizard-action-btn admin-events-wizard-action-btn--outline public-cta-interaction"
+                                      onClick={() => removeProviderSlot(providerIndex, slotIndex)}
+                                    >
+                                      {t('evRemove')}
+                                    </button>
                                   </div>
                                 ))}
                               </div>
@@ -1704,13 +1701,18 @@ export default function EventsPage() {
                     <div className="admin-events-wizard-fields">
                       <label>
                         <span className="admin-events-field-label">{t('evLocationLabel')} <b>*</b></span>
-                        <CitySelect
+                        <select
                           value={form.location}
-                          onChange={(city) => updateForm('location', city)}
-                          placeholder={t('evLocationPlaceholder')}
+                          onChange={(event) => updateForm('location', event.target.value)}
                           required
-                          size="small"
-                        />
+                        >
+                          <option value="">{t('evLocationPlaceholder')}</option>
+                          {locationOptions.map((city) => (
+                            <option key={city.he} value={city.he}>
+                              {city.en ? `${city.he} (${city.en})` : city.he}
+                            </option>
+                          ))}
+                        </select>
                       </label>
                       <label>
                         {t('evCapacity')}
@@ -1752,24 +1754,6 @@ export default function EventsPage() {
                           )}
                         </div>
                       </section>
-                      <label>
-                        {t('evRegistration')}
-                        <select
-                          value={form.registrationOpen ? 'open' : 'closed'}
-                          onChange={(event) => updateForm('registrationOpen', event.target.value === 'open')}
-                        >
-                          <option value="open">{t('evOpen')}</option>
-                          <option value="closed">{t('evClosed')}</option>
-                        </select>
-                      </label>
-                      <label>
-                        {t('evStatusLabel')}
-                        <select value={form.status} onChange={(event) => updateForm('status', event.target.value)}>
-                          {STATUS_OPTIONS.map((status) => (
-                            <option key={status} value={status}>{evStatusLabel(status)}</option>
-                          ))}
-                        </select>
-                      </label>
                     </div>
                   )}
 
@@ -1778,8 +1762,6 @@ export default function EventsPage() {
                       <article><span>{t('evReviewTitle')}</span><strong>{form.title || t('evUntitledEventLower')}</strong></article>
                       <article><span>{t('evReviewType')}</span><strong>{typeLabel(form.type)}</strong></article>
                       <article><span>{t('evReviewSchedule')}</span><strong>{form.recurrence === 'weekly' ? [t('evEveryDay').replace('{day}', weekdayLabel(form.weeklyDayIndex) || t('evTBD')), form.date].filter(Boolean).join(' · ') : (form.date || t('evDateTBD'))}</strong></article>
-                      <article><span>{t('evReviewRegistration')}</span><strong>{form.registrationOpen ? t('evOpen') : t('evClosed')}</strong></article>
-                      <article><span>{t('evReviewStatus')}</span><strong>{evStatusLabel(form.status)}</strong></article>
                       <article className="admin-events-span-2">
                         <span>{t('evReviewProviders')}</span>
                         <strong>{form.providers.map((provider) => provider.name).filter(Boolean).join(', ') || t('evNoProviders')}</strong>
@@ -1789,29 +1771,25 @@ export default function EventsPage() {
                 </section>
 
                 <footer className="admin-events-wizard-footer">
-                  <div className="admin-events-progress-dots" aria-label={t('evFormProgressAria')}>
-                    {EVENT_FORM_STEPS.map((step, index) => (
-                      <button
-                        className={index === activeFormStep ? 'is-active' : ''}
-                        type="button"
-                        onClick={() => setActiveFormStep(index)}
-                        aria-label={t(step.titleKey)}
-                        key={step.titleKey}
-                      />
-                    ))}
-                  </div>
                   <div className="admin-events-wizard-actions">
-                    <button className="admin-events-cancel-btn" type="button" onClick={activeFormStep === 0 ? closeDrawer : goToPreviousFormStep}>
-                      {activeFormStep === 0 ? t('evCancel') : t('evBack')}
+                    <button
+                      className="admin-events-primary-btn public-cta-interaction admin-events-wizard-secondary-btn"
+                      type="button"
+                      onClick={activeFormStep === 0 ? closeDrawer : goToPreviousFormStep}
+                    >
+                      <span className="admin-events-primary-btn__label">
+                        {activeFormStep === 0 ? t('evCancel') : t('evBack')}
+                      </span>
                     </button>
                     {isLastFormStep ? (
-                      <button className="admin-events-save-btn" type="submit" disabled={saving}>
-                        {saving ? t('evSaving') : editingEvent ? t('evSaveChanges') : t('evPublishEvent')}
+                      <button className="admin-events-primary-btn public-cta-highlight" type="submit" disabled={saving}>
+                        <span className="admin-events-primary-btn__label">
+                          {saving ? t('evSaving') : editingEvent ? t('evSaveChanges') : t('evPublishEvent')}
+                        </span>
                       </button>
                     ) : (
-                      <button className="admin-events-save-btn" type="button" onClick={goToNextFormStep}>
-                        {t('evNextStep')}
-                        <ArrowForward fontSize="small" />
+                      <button className="admin-events-primary-btn public-cta-highlight" type="button" onClick={goToNextFormStep}>
+                        <span className="admin-events-primary-btn__label">{t('evNextStep')}</span>
                       </button>
                     )}
                   </div>
@@ -1820,8 +1798,23 @@ export default function EventsPage() {
             </div>
           </form>
         </aside>
+      </div>
 
-        <aside className={`admin-events-participants-drawer${participantsDrawerOpen ? ' is-open' : ''}`} aria-label={t('pdAria')} dir={direction}>
+      {participantsDrawerOpen ? (
+        <>
+          <button
+            className="admin-events-backdrop admin-events-backdrop--modal"
+            type="button"
+            onClick={closeParticipantsDrawer}
+            aria-label={t('pdClose')}
+          />
+          <aside
+            className="admin-events-participants-drawer is-open"
+            aria-label={t('pdAria')}
+            aria-modal="true"
+            role="dialog"
+            dir={direction}
+          >
           <header className="admin-events-participants-header">
             <div>
               <h2>{t('pdTitle')}</h2>
@@ -2111,15 +2104,31 @@ export default function EventsPage() {
           ) : null}
 
           <footer className="admin-events-participants-footer">
-            <button type="button" onClick={handleExportCsv} disabled={!visibleParticipantRows.length}>
+            <button
+              className="admin-events-primary-btn public-cta-interaction admin-events-wizard-secondary-btn"
+              type="button"
+              onClick={handleExportCsv}
+              disabled={!visibleParticipantRows.length}
+            >
               <FileDownloadOutlined />
-              {t('pdExportCsv')}
+              <span className="admin-events-primary-btn__label">{t('pdExportCsv')}</span>
             </button>
-            <button type="button" onClick={handleSendReminderAll} disabled={!visibleParticipantRows.length}>
+            <button
+              className="admin-events-primary-btn public-cta-interaction admin-events-wizard-secondary-btn"
+              type="button"
+              onClick={handleSendReminderAll}
+              disabled={!visibleParticipantRows.length}
+            >
               <SendOutlined />
-              {t('pdSendReminder')}
+              <span className="admin-events-primary-btn__label">{t('pdSendReminder')}</span>
             </button>
-            <button type="button" onClick={closeParticipantsDrawer}>{t('pdCloseBtn')}</button>
+            <button
+              className="admin-events-primary-btn public-cta-highlight"
+              type="button"
+              onClick={closeParticipantsDrawer}
+            >
+              <span className="admin-events-primary-btn__label">{t('pdCloseBtn')}</span>
+            </button>
           </footer>
 
           {selectedBookingDetails ? (
@@ -2141,8 +2150,9 @@ export default function EventsPage() {
               </dl>
             </section>
           ) : null}
-        </aside>
-      </div>
+          </aside>
+        </>
+      ) : null}
 
       {drawerOpen ? (
         <button
@@ -2150,14 +2160,6 @@ export default function EventsPage() {
           type="button"
           onClick={closeDrawer}
           aria-label={t('evCloseModal')}
-        />
-      ) : null}
-      {participantsDrawerOpen ? (
-        <button
-          className="admin-events-backdrop admin-events-backdrop--participants"
-          type="button"
-          onClick={closeParticipantsDrawer}
-          aria-label={t('pdClose')}
         />
       ) : null}
       {toast ? <div className="admin-events-toast" role="status">{toast}</div> : null}

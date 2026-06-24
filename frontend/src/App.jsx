@@ -28,6 +28,7 @@ const AppointmentsPage = lazy(() => import('./features/admin/pages/AppointmentsP
 const CMSPage = lazy(() => import('./features/admin/pages/CMSPage'));
 const UserManagementPage = lazy(() => import('./features/admin/pages/UserManagementPage'));
 const FormsPage = lazy(() => import('./features/admin/pages/FormsPage'));
+const BugReportsPage = lazy(() => import('./features/admin/pages/BugReportsPage'));
 const AuditLogPage = lazy(() => import('./features/admin/pages/AuditLogPage'));
 const CommunityModerationPage = lazy(() => import('./features/admin/pages/CommunityModerationPage'));
 const UpdatesPage = lazy(() => import('./features/admin/pages/UpdatesPage'));
@@ -128,6 +129,7 @@ function ThemedApp() {
                 <Route path="cms" element={<CMSPage />} />
                 <Route path="users" element={<UserManagementPage />} />
                 <Route path="forms" element={<FormsPage />} />
+                <Route path="bug-reports" element={<BugReportsPage />} />
                 <Route path="roles" element={<Navigate to="/admin/users?tab=roles" replace />} />
                 <Route path="community" element={<CommunityModerationPage />} />
                 <Route path="updates" element={<UpdatesPage />} />
