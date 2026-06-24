@@ -8,6 +8,7 @@ import { listJoinRequests } from '../services/joinRequestAdminService';
 import { useAdminLocale } from '../context/AdminLocaleContext';
 import JoinRequestsTab from './JoinRequestsTab';
 import AdminDetailInfoCard from '../components/AdminDetailInfoCard';
+import AdminPageHeader from '../components/AdminPageHeader';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
@@ -431,24 +432,7 @@ export default function UserManagementPage() {
         flexDirection: 'column',
       }}
     >
-      <Typography
-        component="h1"
-        sx={{
-          position: { xs: 'static', md: 'fixed' },
-          top: { md: '1.75rem' },
-          left: { md: 'calc(var(--admin-sidebar-width) + 4rem)' },
-          zIndex: { md: 1100 },
-          m: 0,
-          mb: { xs: 1, md: 0 },
-          color: '#171239',
-          fontSize: { xs: '1.875rem', md: '2.125rem' },
-          lineHeight: 1.1,
-          fontWeight: 900,
-          letterSpacing: 0,
-        }}
-      >
-        {t('umTitle')}
-      </Typography>
+      <AdminPageHeader title={t('umTitle')} />
 
       <Box
         component="header"

@@ -19,6 +19,7 @@ import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import SearchIcon from '@mui/icons-material/Search';
 import { db } from '../../../firebase';
 import { useAdminLocale } from '../context/AdminLocaleContext';
+import AdminPageHeader from '../components/AdminPageHeader';
 
 const INTL_LOCALE_BY_LANG = { he: 'he-IL', en: 'en' };
 const PAGE_SIZE = 10;
@@ -510,21 +511,7 @@ export default function AuditLogPage() {
         color: '#24104f',
       }}
     >
-      <Box
-        sx={{
-          position: 'fixed',
-          top: '1.75rem',
-          insetInlineStart: 'calc(var(--admin-sidebar-width) + 4rem)',
-          zIndex: 1100,
-          minHeight: '2.375rem',
-          display: 'flex',
-          alignItems: 'center',
-        }}
-      >
-        <Typography variant="h4" sx={{ fontWeight: 900, letterSpacing: 0, lineHeight: 1.1, color: '#171239' }}>
-          {t('auditTitle')}
-        </Typography>
-      </Box>
+      <AdminPageHeader title={t('auditTitle')} />
 
       <Box
         sx={{

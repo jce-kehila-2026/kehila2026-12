@@ -3,13 +3,13 @@ import { collection, getDocs, updateDoc, doc, query, limit, orderBy, documentId 
 import { db } from '../../../firebase';
 import { logAuditEvent } from '../services/auditService';
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import { DataGrid } from '@mui/x-data-grid';
 import { heIL } from '@mui/x-data-grid/locales';
 import { useAdminLocale } from '../context/AdminLocaleContext';
+import AdminPageHeader from '../components/AdminPageHeader';
 
 const ROLES = ['participant', 'admin'];
 
@@ -116,12 +116,7 @@ export default function RoleManagementPage() {
 
   return (
     <Box>
-      <Box sx={{ mb: 3 }}>
-        <Typography variant="h4">{t('rmTitle')}</Typography>
-        <Typography variant="subtitle1" sx={{ mt: 0.5 }}>
-          {t('rmSubtitle')}
-        </Typography>
-      </Box>
+      <AdminPageHeader title={t('rmTitle')} subtitle={t('rmSubtitle')} />
 
       <Box sx={{ height: 500 }}>
         <DataGrid

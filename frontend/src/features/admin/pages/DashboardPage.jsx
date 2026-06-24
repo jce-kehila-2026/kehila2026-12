@@ -22,6 +22,7 @@ import {
   buildActivityChartRows,
 } from '../services/reportsService';
 import ReportBarList from '../components/ReportBarList';
+import AdminPageHeader from '../components/AdminPageHeader';
 import './DashboardPage.css';
 
 const EMPTY_FUNNEL = {
@@ -338,11 +339,7 @@ export default function DashboardPage() {
   };
   return (
     <section className="admin-dashboard-page">
-      <header className="admin-dashboard-hero">
-        <div>
-          <h1>{t('dashWelcome').replace('{name}', adminName)}</h1>
-        </div>
-      </header>
+      <AdminPageHeader title={t('dashWelcome').replace('{name}', adminName)} />
 
       {/* Today / This Week Snapshot — always renders all 4 cards; a 0 is a
           safe empty state, not a missing feature. */}
