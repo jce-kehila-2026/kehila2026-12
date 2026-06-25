@@ -309,7 +309,7 @@ export default function BugReportsPage() {
               ) : (
                 <div className="forms-table-state">
                   <strong>{t('brEmpty')}</strong>
-                  <span>{reports.length === 0 ? t('brEmpty') : t('brEmptyFilter')}</span>
+                  <span>{reports.length === 0 ? t('brEmptyHint') : t('brEmptyFilter')}</span>
                 </div>
               )}
             </div>
