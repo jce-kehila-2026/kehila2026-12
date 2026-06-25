@@ -31,8 +31,21 @@ Open http://localhost:3000
 (Or: docker-compose up --build)
 
 ## Demo / Deployment
-- Deployed app: https://your-app.example.com  
-- CI: GitHub Actions (push → deploy)
+- Hosting platform: Firebase Hosting
+- Firebase project ID: `fullstack-team-12`
+- Live URLs:
+  - https://fullstack-team-12.web.app
+  - https://fullstack-team-12.firebaseapp.com
+- Hosting output directory: `frontend/dist`
+- Manual deploy:
+  1. `cd frontend`
+  2. `npm ci`
+  3. `npm run build`
+  4. `cd ..`
+  5. `firebase use fullstack-team-12`
+  6. `firebase deploy --only hosting`
+- CI/CD: GitHub Actions deploys Firebase Hosting automatically on every push to `main`.
+- Full deployment guide: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)
 
 ## Handover (minimum)
 - [ ] Deployed URL + admin credentials (shared securely)  
