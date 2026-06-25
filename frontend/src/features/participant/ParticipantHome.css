@@ -1856,3 +1856,23 @@
   box-shadow: 0 14px 26px rgba(223, 50, 123, 0.24);
   transform: translateY(-2px);
 }
+
+.participant-home--dark .participant-notif-wrap > button,
+.participant-home--dark .pd-home__header-actions .participant-notif-wrap > button {
+  background: rgba(26, 16, 40, 0.72);
+  border-color: rgba(236, 72, 153, 0.28);
+  color: #fbcfe8;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.22);
+}
+
+.participant-home--dark .participant-notif-wrap > button:hover,
+.participant-home--dark .participant-notif-wrap > button:focus-visible,
+.participant-home--dark .participant-notif-wrap > button.is-active,
+.participant-home--dark .pd-home__header-actions .participant-notif-wrap > button:hover,
+.participant-home--dark .pd-home__header-actions .participant-notif-wrap > button:focus-visible,
+.participant-home--dark .pd-home__header-actions .participant-notif-wrap > button.is-active {
+  background: rgba(236, 72, 153, 0.12);
+  border-color: rgba(244, 114, 182, 0.38);
+  color: #f9a8d4;
+  box-shadow: 0 16px 34px rgba(236, 72, 153, 0.16);
+}

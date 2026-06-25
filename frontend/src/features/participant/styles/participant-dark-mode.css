@@ -550,6 +550,23 @@
   box-shadow: none !important;
 }
 
+.participant-home--dark .events-empty {
+  border-color: var(--pd-border-dark) !important;
+  background: var(--pd-card-dark) !important;
+}
+
+.participant-home--dark .events-empty h2 {
+  color: var(--pd-text-dark) !important;
+}
+
+.participant-home--dark .events-empty p {
+  color: var(--pd-text-muted-dark) !important;
+}
+
+.participant-home--dark .events-empty svg {
+  color: var(--pd-pink) !important;
+}
+
 .participant-home--dark .events-card {
   background: var(--pd-card-dark) !important;
   border-color: var(--pd-border-dark) !important;
@@ -583,13 +600,13 @@
 }
 
 .participant-home--dark .events-category-grid {
-  background: #f7eff5;
+  background: transparent;
 }
 
 .participant-home--dark .events-category-button {
-  background: transparent !important;
-  border: 0 !important;
-  color: rgba(75, 19, 107, 0.62) !important;
+  background: var(--pd-card-dark-soft) !important;
+  border: 1px solid rgba(236, 72, 153, 0.2) !important;
+  color: var(--pd-text-muted-dark) !important;
   box-shadow: none !important;
   filter: none !important;
 }
@@ -610,10 +627,12 @@
 }
 
 .participant-home--dark .events-category-button:hover {
-  background: #f1e3ee !important;
-  color: rgba(75, 19, 107, 0.78) !important;
-  transform: none;
-  box-shadow: none !important;
+  background: rgba(236, 72, 153, 0.1) !important;
+  border-color: rgba(236, 72, 153, 0.38) !important;
+  color: var(--pd-text-dark) !important;
+  box-shadow:
+    0 0 0 1px rgba(236, 72, 153, 0.14),
+    0 8px 18px rgba(236, 72, 153, 0.16) !important;
 }
 
 .participant-home--dark .events-category-button:hover span {
@@ -621,10 +640,10 @@
 }
 
 .participant-home--dark .events-category-button.is-active {
-  background: #db4f9f !important;
+  background: rgba(236, 72, 153, 0.88) !important;
+  border-color: rgba(244, 114, 182, 0.58) !important;
   color: #ffffff !important;
-  transform: none;
-  box-shadow: 0 2px 8px rgba(219, 79, 159, 0.24) !important;
+  box-shadow: 0 10px 22px rgba(236, 72, 153, 0.24) !important;
 }
 
 .participant-home--dark .events-category-button.is-active span {

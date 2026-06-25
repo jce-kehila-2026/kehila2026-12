@@ -4516,10 +4516,10 @@
 .participant-home--dark .events-main--embedded .workshop-list-card,
 .participant-home--dark .events-main--embedded .appointment-service-card,
 .participant-home--dark .events-main--embedded .registered-session-card {
-  background: #111827 !important;
+  background: var(--pd-card-dark) !important;
   background-image: none !important;
-  border: 1px solid rgba(236, 72, 153, 0.25) !important;
-  box-shadow: none !important;
+  border: 1px solid var(--pd-border-dark) !important;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35) !important;
   backdrop-filter: none !important;
   -webkit-backdrop-filter: none !important;
 }
@@ -4540,54 +4540,55 @@
 .participant-home--dark .events-main--embedded .appointment-service-card:hover,
 .participant-home--dark .events-main--embedded .appointment-service-card.is-selected,
 .participant-home--dark .events-main--embedded .registered-session-card:hover {
-  background: #1f2937 !important;
+  background: var(--pd-card-dark-soft) !important;
   background-image: none !important;
-  border-color: rgba(236, 72, 153, 0.25) !important;
-  box-shadow: none !important;
+  border-color: var(--pd-border-dark) !important;
+  box-shadow: 0 20px 54px rgba(0, 0, 0, 0.38) !important;
 }
 
 .participant-home--dark .events-main--embedded .workshop-list-card__content h3,
 .participant-home--dark .events-main--embedded .appointment-service-card__copy h3,
 .participant-home--dark .events-main--embedded .registered-session-card__content h3 {
-  color: #f8fafc !important;
+  color: var(--pd-text-dark) !important;
 }
 
 .participant-home--dark .events-main--embedded .workshop-list-card__content p,
 .participant-home--dark .events-main--embedded .appointment-service-card__copy p,
 .participant-home--dark .events-main--embedded .registered-session-card__content p {
-  color: #cbd5e1 !important;
+  color: var(--pd-text-muted-dark) !important;
 }
 
 .participant-home--dark .events-main--embedded .workshop-list-card__meta span,
 .participant-home--dark .events-main--embedded .appointment-service-card__meta span,
 .participant-home--dark .events-main--embedded .registered-session-card__meta span,
 .participant-home--dark .events-main--embedded .appointment-service-card__provider-count {
-  background: rgba(236, 72, 153, 0.12) !important;
-  border: 1px solid rgba(236, 72, 153, 0.25) !important;
-  color: #94a3b8 !important;
+  background: rgba(236, 72, 153, 0.14) !important;
+  border: 1px solid rgba(236, 72, 153, 0.34) !important;
+  color: var(--pd-text-dark) !important;
   box-shadow: none !important;
 }
 
 .participant-home--dark .events-main--embedded .workshop-list-card__meta svg,
-.participant-home--dark .events-main--embedded .registered-session-card__meta svg {
-  color: #f472b6;
+.participant-home--dark .events-main--embedded .registered-session-card__meta svg,
+.participant-home--dark .events-main--embedded .appointment-service-card__meta svg {
+  color: var(--pd-pink);
 }
 
 .participant-home--dark .events-main--embedded .workshop-list-card__media,
 .participant-home--dark .events-main--embedded .appointment-service-card__media,
 .participant-home--dark .events-main--embedded .registered-session-card__media {
-  background: #1f2937 !important;
+  background: var(--pd-card-dark-soft) !important;
   background-image: none !important;
-  border-color: rgba(236, 72, 153, 0.2) !important;
+  border-color: var(--pd-border-dark) !important;
   box-shadow: none !important;
 }
 
 .participant-home--dark .events-main--embedded .workshop-list-card__action,
 .participant-home--dark .events-main--embedded .appointment-service-card__action {
-  border-color: rgba(236, 72, 153, 0.38) !important;
-  background: rgba(255, 255, 255, 0.97) !important;
-  color: #ec4899 !important;
-  box-shadow: 0 9px 24px rgba(91, 30, 140, 0.12) !important;
+  border-color: rgba(236, 72, 153, 0.36) !important;
+  background: rgba(17, 24, 39, 0.92) !important;
+  color: var(--pd-pink) !important;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.26) !important;
   filter: none !important;
 }
 
@@ -4595,18 +4596,17 @@
 .participant-home--dark .events-main--embedded .appointment-service-card__action:hover:not(:disabled),
 .participant-home--dark .events-main--embedded .workshop-list-card__action:focus-visible:not(:disabled),
 .participant-home--dark .events-main--embedded .appointment-service-card__action:focus-visible:not(:disabled) {
-  border-color: transparent !important;
-  background: linear-gradient(135deg, #e73386, #dc2577) !important;
-  color: #fff !important;
-  box-shadow: 0 14px 26px rgba(223, 50, 123, 0.24) !important;
+  border-color: rgba(236, 72, 153, 0.55) !important;
+  background: rgba(236, 72, 153, 0.2) !important;
+  color: #fce7f3 !important;
+  box-shadow: 0 12px 28px rgba(236, 72, 153, 0.2) !important;
   filter: none !important;
-  outline: none !important;
   transform: translateY(-2px) !important;
 }
 
 .participant-home--dark .events-main--embedded .workshop-list-card__action:focus-visible:not(:disabled),
 .participant-home--dark .events-main--embedded .appointment-service-card__action:focus-visible:not(:disabled) {
-  outline: 3px solid rgba(236, 72, 153, 0.28) !important;
+  outline: 2px solid rgba(236, 72, 153, 0.45) !important;
   outline-offset: 3px !important;
 }
 
@@ -4616,26 +4616,25 @@
 }
 
 .participant-home--dark .events-main--embedded .registered-session-card__cancel {
-  border-color: rgba(236, 72, 153, 0.38) !important;
-  background: rgba(255, 255, 255, 0.97) !important;
-  color: #ec4899 !important;
-  box-shadow: 0 9px 24px rgba(91, 30, 140, 0.12) !important;
+  border-color: rgba(236, 72, 153, 0.36) !important;
+  background: rgba(17, 24, 39, 0.92) !important;
+  color: var(--pd-pink) !important;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.26) !important;
   filter: none !important;
 }
 
 .participant-home--dark .events-main--embedded .registered-session-card__cancel:hover:not(:disabled),
 .participant-home--dark .events-main--embedded .registered-session-card__cancel:focus-visible:not(:disabled) {
-  border-color: transparent !important;
-  background: linear-gradient(135deg, #e73386, #dc2577) !important;
-  color: #fff !important;
-  box-shadow: 0 14px 26px rgba(223, 50, 123, 0.24) !important;
+  border-color: rgba(236, 72, 153, 0.55) !important;
+  background: rgba(236, 72, 153, 0.2) !important;
+  color: #fce7f3 !important;
+  box-shadow: 0 12px 28px rgba(236, 72, 153, 0.2) !important;
   filter: none !important;
-  outline: none !important;
   transform: translateY(-2px) !important;
 }
 
 .participant-home--dark .events-main--embedded .registered-session-card__cancel:focus-visible:not(:disabled) {
-  outline: 3px solid rgba(236, 72, 153, 0.28) !important;
+  outline: 2px solid rgba(236, 72, 153, 0.45) !important;
   outline-offset: 3px !important;
 }
 
@@ -4644,8 +4643,16 @@
 }
 
 .participant-home--dark .events-main--embedded .registered-session-card__status {
-  background: rgba(236, 72, 153, 0.12) !important;
-  border: 1px solid rgba(236, 72, 153, 0.25) !important;
-  color: #f8fafc !important;
+  background: rgba(168, 85, 247, 0.2) !important;
+  border: 1px solid rgba(168, 85, 247, 0.4) !important;
+  color: var(--pd-text-dark) !important;
   box-shadow: none !important;
+}
+
+.participant-home--dark .events-main--embedded .events-list-panel::-webkit-scrollbar-track {
+  background: rgba(17, 24, 39, 0.9);
+}
+
+.participant-home--dark .events-main--embedded .events-list-panel::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, rgba(236, 72, 153, 0.62), rgba(126, 34, 206, 0.62));
 }

@@ -97,19 +97,19 @@ export const participantUiTranslations = {
 
     // ── Dashboard home: appointment / event cards ─────────────────────────
     nextAppointment: 'Next Appointment',
-    upcomingEvent: 'Upcoming Event',
+    upcomingEvent: 'Upcoming Workshop',
     viewAppointment: 'View Appointment',
-    viewEvent: 'View Event',
+    viewEvent: 'View Workshop',
     loadingAppointment: 'Loading appointment',
-    loadingEvent: 'Loading event',
+    loadingEvent: 'Loading workshop',
     noUpcomingAppointments: 'No upcoming appointments',
     bookAppointmentText: 'Take the next step in your wellness journey and book a session with one of our therapists.',
     bookAppointment: 'Book Appointment',
-    noUpcomingEvents: 'No upcoming events',
+    noUpcomingEvents: 'No upcoming workshops',
     exploreEventsText: 'Explore upcoming workshops, support groups, and community activities.',
-    exploreEvents: 'Explore Events',
+    exploreEvents: 'Explore Workshops',
     featureLoadError: "We couldn't load this right now.",
-    rowApptEventAria: 'Upcoming appointment and event',
+    rowApptEventAria: 'Upcoming appointment and workshop',
     rowNotesCommunityAria: 'Notes and community',
 
     // ── Dashboard home: notes & reminders ─────────────────────────────────
@@ -675,19 +675,19 @@ export const participantUiTranslations = {
 
     // ── Dashboard home: appointment / event cards ─────────────────────────
     nextAppointment: 'הפגישה הבאה',
-    upcomingEvent: 'האירוע הקרוב',
+    upcomingEvent: 'הסדנה הקרובה',
     viewAppointment: 'צפייה בפגישה',
-    viewEvent: 'צפייה באירוע',
+    viewEvent: 'צפייה בסדנה',
     loadingAppointment: 'טוען פגישה',
-    loadingEvent: 'טוען אירוע',
+    loadingEvent: 'טוען סדנה',
     noUpcomingAppointments: 'אין פגישות קרובות',
     bookAppointmentText: 'עשי את הצעד הבא במסע הבריאות שלך וקבעי פגישה עם אחת המטפלות שלנו.',
     bookAppointment: 'קביעת פגישה',
-    noUpcomingEvents: 'אין אירועים קרובים',
+    noUpcomingEvents: 'אין סדנאות קרובות',
     exploreEventsText: 'גלי סדנאות קרובות, קבוצות תמיכה ופעילויות קהילה.',
-    exploreEvents: 'גילוי אירועים',
+    exploreEvents: 'גילוי סדנאות',
     featureLoadError: 'לא הצלחנו לטעון זאת כרגע.',
-    rowApptEventAria: 'פגישה ואירוע קרובים',
+    rowApptEventAria: 'פגישה וסדנה קרובות',
     rowNotesCommunityAria: 'פתקים וקהילה',
 
     // ── Dashboard home: notes & reminders ─────────────────────────────────
@@ -1253,19 +1253,19 @@ export const participantUiTranslations = {
 
     // ── Dashboard home: appointment / event cards ─────────────────────────
     nextAppointment: 'الموعد القادم',
-    upcomingEvent: 'الفعالية القادمة',
+    upcomingEvent: 'ورشة العمل القادمة',
     viewAppointment: 'عرض الموعد',
-    viewEvent: 'عرض الفعالية',
+    viewEvent: 'عرض ورشة العمل',
     loadingAppointment: 'جارٍ تحميل الموعد',
-    loadingEvent: 'جارٍ تحميل الفعالية',
+    loadingEvent: 'جارٍ تحميل ورشة العمل',
     noUpcomingAppointments: 'لا توجد مواعيد قادمة',
     bookAppointmentText: 'اتخذي الخطوة التالية في رحلة عافيتك واحجزي جلسة مع إحدى معالِجاتنا.',
     bookAppointment: 'حجز موعد',
-    noUpcomingEvents: 'لا توجد فعاليات قادمة',
+    noUpcomingEvents: 'لا توجد ورش عمل قادمة',
     exploreEventsText: 'استكشفي ورش العمل القادمة ومجموعات الدعم وأنشطة المجتمع.',
-    exploreEvents: 'استكشاف الفعاليات',
+    exploreEvents: 'استكشاف ورش العمل',
     featureLoadError: 'تعذّر علينا تحميل هذا الآن.',
-    rowApptEventAria: 'الموعد والفعالية القادمان',
+    rowApptEventAria: 'الموعد وورشة العمل القادمان',
     rowNotesCommunityAria: 'الملاحظات والمجتمع',
 
     // ── Dashboard home: notes & reminders ─────────────────────────────────

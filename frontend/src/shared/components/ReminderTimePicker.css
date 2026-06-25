@@ -601,11 +601,6 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
   font-size: 12px;
 }
 
-.pd-notes__datetime--modal .pd-notes-calendar__panel {
-  width: min(268px, 100%);
-  margin-inline: auto;
-}
-
 .pd-notes__datetime--modal .pd-notes-calendar__nav,
 .pd-notes__datetime--modal .pd-notes-calendar__weekdays,
 .pd-notes__datetime--modal .pd-notes-calendar__grid,

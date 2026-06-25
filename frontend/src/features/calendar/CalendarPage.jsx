@@ -1,10 +1,10 @@
-import { useEffect, useId, useMemo, useState } from 'react';
+import { useCallback, useEffect, useId, useMemo, useState } from 'react';
 import './CalendarPage.css';
 import '../participant/home/ParticipantDashboardHome.css';
 import CalendarNoteModal from './CalendarNoteModal';
 import { useAdmin } from '../admin/context/AdminContext';
 import { useParticipantLocale } from '../participant/context/ParticipantLocaleContext';
-import { createCalendarNote, getCalendarData } from './calendarService';
+import { createCalendarNote, deleteCalendarNoteById, getCalendarData } from './calendarService';
 
 const TODAY_KEY = toDateKey(new Date());
 const TIME_SLOTS = Array.from({ length: 24 }, (_, hour) => `${String(hour).padStart(2, '0')}:00`);
@@ -125,7 +125,7 @@ function getHour(time) {
   return Number(time.split(':')[0]);
 }
 
-function CalendarItem({ item }) {
+function CalendarItem({ item, onDeleteNote, isDeletingNote = false }) {
   const { t } = useParticipantLocale();
   const isNote = item.type === 'note';
   const isAppointment = item.type === 'appointment';
@@ -135,6 +135,10 @@ function CalendarItem({ item }) {
       ? [t('itemAppointment'), t('itemRegistration')]
       : [item.registered ? t('itemRegistration') : t(itemTypeKeys[item.type] ?? 'itemEvent')];
   const detailText = isNote ? item.content : isAppointment ? item.description : '';
+  const handleDeleteClick = (event) => {
+    event.stopPropagation();
+    onDeleteNote(item);
+  };
 
   return (
     <article className={`calendar-item calendar-item--${item.type}`}>
@@ -145,7 +149,19 @@ function CalendarItem({ item }) {
         ))}
       </div>
       <div className="calendar-item__body">
-        <h3>{item.title}</h3>
+        <div className="calendar-item__title-row">
+          <h3>{item.title}</h3>
+          {isNote ? (
+            <button
+              type="button"
+              className="calendar-item__delete-btn"
+              onClick={handleDeleteClick}
+              disabled={isDeletingNote}
+            >
+              {t('delete')}
+            </button>
+          ) : null}
+        </div>
         {detailText && <p>{detailText}</p>}
       </div>
       {!isNote && (
@@ -182,6 +198,7 @@ export default function CalendarPage({ variant = 'standalone' }) {
   const [loadingCalendar, setLoadingCalendar] = useState(true);
   const [calendarError, setCalendarError] = useState('');
   const [savingNote, setSavingNote] = useState(false);
+  const [deletingNoteIds, setDeletingNoteIds] = useState(() => new Set());
   const [noteModalOpen, setNoteModalOpen] = useState(false);
   const [scheduleOpen, setScheduleOpen] = useState(false);
   const datePickerId = useId();
@@ -264,6 +281,37 @@ export default function CalendarPage({ variant = 'standalone' }) {
     day: 'numeric',
   }).format(activeDate);
   const noteModalError = noteModalOpen ? calendarError : '';
+
+  const handleDeleteCalendarNote = useCallback(async (item) => {
+    console.log('DELETE CLICKED', item);
+    if (!item || item.type !== 'note' || !item.id || !calendarUser?.uid) {
+      console.error('DELETE FAILED', new Error('Missing note item, note id, or user uid'));
+      return;
+    }
+
+    setDeletingNoteIds((current) => {
+      const next = new Set(current);
+      next.add(item.id);
+      return next;
+    });
+
+    try {
+      await deleteCalendarNoteById(calendarUser, item.id);
+      setCalendarData((current) => ({
+        ...current,
+        notes: current.notes.filter((note) => note.id !== item.id),
+      }));
+      console.log('DELETE SUCCESS', item.id);
+    } catch (error) {
+      console.error('DELETE FAILED', error);
+    } finally {
+      setDeletingNoteIds((current) => {
+        const next = new Set(current);
+        next.delete(item.id);
+        return next;
+      });
+    }
+  }, [calendarUser]);
 
   function handleSelectDate(dateKey, nextView = calendarView) {
     setSelectedDate(dateKey);
@@ -457,7 +505,12 @@ export default function CalendarPage({ variant = 'standalone' }) {
               {selectedDateItems.length > 0 ? (
                 <div className="selected-day-list">
                   {selectedDateItems.map((item) => (
-                    <CalendarItem key={item.id} item={item} />
+                    <CalendarItem
+                      key={item.id}
+                      item={item}
+                      onDeleteNote={handleDeleteCalendarNote}
+                      isDeletingNote={deletingNoteIds.has(item.id)}
+                    />
                   ))}
                 </div>
               ) : (
@@ -562,7 +615,14 @@ export default function CalendarPage({ variant = 'standalone' }) {
                         return (
                           <div className="weekly-calendar__cell" key={`${day.key}-${slot}`}>
                             {items.length > 0 ? (
-                              items.map((item) => <CalendarItem key={item.id} item={item} />)
+                              items.map((item) => (
+                                <CalendarItem
+                                  key={item.id}
+                                  item={item}
+                                  onDeleteNote={handleDeleteCalendarNote}
+                                  isDeletingNote={deletingNoteIds.has(item.id)}
+                                />
+                              ))
                             ) : (
                               <span className="weekly-calendar__empty" aria-hidden="true" />
                             )}
@@ -589,7 +649,14 @@ export default function CalendarPage({ variant = 'standalone' }) {
                         <time>{slot}</time>
                         <div>
                           {items.length > 0 ? (
-                            items.map((item) => <CalendarItem key={item.id} item={item} />)
+                            items.map((item) => (
+                              <CalendarItem
+                                key={item.id}
+                                item={item}
+                                onDeleteNote={handleDeleteCalendarNote}
+                                isDeletingNote={deletingNoteIds.has(item.id)}
+                              />
+                            ))
                           ) : (
                             <span className="day-calendar__empty">{t('calNoItems')}</span>
                           )}

@@ -1,6 +1,7 @@
 import {
   addDoc,
   collection,
+  deleteDoc,
   doc,
   limit,
   onSnapshot,
@@ -35,6 +36,7 @@ export function mapDashboardNoteDoc(docSnap) {
     time: String(data.time ?? data.startTime ?? '').trim(),
     done: Boolean(data.done),
     syncToCalendar: Boolean(data.syncToCalendar),
+    calendarNoteId: String(data.calendarNoteId ?? '').trim(),
   };
 }
 
@@ -90,6 +92,7 @@ export async function createParticipantNote(userId, note) {
     time: String(note.time ?? '').trim(),
     done: Boolean(note.done),
     syncToCalendar: Boolean(note.syncToCalendar),
+    calendarNoteId: String(note.calendarNoteId ?? '').trim(),
     participantId,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
@@ -132,9 +135,23 @@ export async function updateParticipantNote(userId, noteId, patch) {
   if (patch.time !== undefined) payload.time = String(patch.time).trim();
   if (patch.done !== undefined) payload.done = Boolean(patch.done);
   if (patch.syncToCalendar !== undefined) payload.syncToCalendar = Boolean(patch.syncToCalendar);
+  if (patch.calendarNoteId !== undefined) payload.calendarNoteId = String(patch.calendarNoteId).trim();
 
   await updateDoc(
     doc(db, USERS_COLLECTION, participantId, NOTES_SUBCOLLECTION, noteId),
     payload,
   );
+}
+
+/**
+ * @param {string|null|undefined} userId
+ * @param {string} noteId
+ */
+export async function deleteParticipantNote(userId, noteId) {
+  const participantId = resolveParticipantId(userId);
+  if (!participantId || !noteId) {
+    throw new Error('Cannot delete note: missing participant or note id.');
+  }
+
+  await deleteDoc(doc(db, USERS_COLLECTION, participantId, NOTES_SUBCOLLECTION, noteId));
 }

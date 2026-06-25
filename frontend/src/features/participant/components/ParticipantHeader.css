@@ -168,3 +168,25 @@
   border-color: rgba(236, 72, 153, 0.28);
   color: #fbcfe8;
 }
+
+.participant-home--dark .pd-home__header-actions .public-lang-switcher__trigger,
+.participant-home--dark .pd-home__header-actions .pd-header-lang__trigger {
+  background: rgba(26, 16, 40, 0.72);
+  border-color: rgba(236, 72, 153, 0.28);
+  color: #fbcfe8;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.22);
+}
+
+.participant-home--dark .pd-home__header-actions .public-lang-switcher__trigger:hover,
+.participant-home--dark .pd-home__header-actions .public-lang-switcher__trigger:focus-visible,
+.participant-home--dark .pd-home__header-actions .public-lang-switcher--open .public-lang-switcher__trigger,
+.participant-home--dark .pd-header-icon-btn:hover,
+.participant-home--dark .pd-header-icon-btn:focus-visible,
+.participant-home--dark .pd-home__header-actions .participant-notif-wrap > button:hover,
+.participant-home--dark .pd-home__header-actions .participant-notif-wrap > button:focus-visible,
+.participant-home--dark .pd-home__header-actions .participant-notif-wrap > button.is-active {
+  background: rgba(236, 72, 153, 0.12);
+  border-color: rgba(244, 114, 182, 0.38);
+  color: #f9a8d4;
+  box-shadow: 0 16px 34px rgba(236, 72, 153, 0.16);
+}
