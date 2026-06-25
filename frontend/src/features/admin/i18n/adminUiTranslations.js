@@ -152,14 +152,6 @@ export const adminUiTranslations = {
     dashModerationReportsCountOne: '{n} report',
     dashModerationAnonymous: 'Anonymous',
 
-    // ── Dashboard: membership growth & join requests ────────────────────────
-    dashGrowthTitle: 'Membership Growth & Join Requests',
-    dashGrowthChartLabel: 'Registrations per week',
-    dashGrowthEmpty: 'No new registrations in this period.',
-    dashOverdueRequestsTitle: 'Pending applications (3+ days)',
-    dashOverdueRequestsEmpty: 'No overdue join requests.',
-    dashDaysPending: '{n}d pending',
-    dashViewAllRequests: 'Review applications',
     dashViewBookingDetails: 'View details',
     dashReportsLoading: 'Loading report summary…',
 
@@ -1224,14 +1216,6 @@ export const adminUiTranslations = {
     dashModerationReportsCountOne: 'דיווח {n}',
     dashModerationAnonymous: 'אנונימי',
 
-    // ── Dashboard: membership growth & join requests ────────────────────────
-    dashGrowthTitle: 'צמיחת חברות ובקשות הצטרפות',
-    dashGrowthChartLabel: 'הרשמות לפי שבוע',
-    dashGrowthEmpty: 'אין הרשמות חדשות בתקופה זו.',
-    dashOverdueRequestsTitle: 'בקשות ממתינות (3+ ימים)',
-    dashOverdueRequestsEmpty: 'אין בקשות הצטרפות שעברו את הזמן.',
-    dashDaysPending: 'ממתינה {n} ימים',
-    dashViewAllRequests: 'בדיקת בקשות',
     dashViewBookingDetails: 'צפייה בפרטים',
     dashReportsLoading: 'טוען סיכום דוחות…',
 

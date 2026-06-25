@@ -511,7 +511,7 @@ export default function AuditLogPage() {
         color: '#24104f',
       }}
     >
-      <AdminPageHeader title={t('auditTitle')} />
+      <AdminPageHeader title={t('auditTitle')} className="admin-page-header--no-clip" />
 
       <Box
         sx={{
