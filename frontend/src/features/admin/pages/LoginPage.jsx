@@ -273,10 +273,6 @@ function LoginPageInner() {
               </div>
 
               <div className="login-page__row">
-                <label className="login-page__remember">
-                  <input type="checkbox" />
-                  {t('loginRememberMe')}
-                </label>
                 <button
                   type="button"
                   className="login-page__link-btn"

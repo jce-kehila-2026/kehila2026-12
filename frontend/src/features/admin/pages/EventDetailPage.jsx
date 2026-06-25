@@ -18,6 +18,7 @@ import DeleteIcon from '@mui/icons-material/Delete';
 import EmailIcon from '@mui/icons-material/Email';
 import { useAdminLocale } from '../context/AdminLocaleContext';
 import CitySelect from '../../../shared/components/CitySelect';
+import AdminPageHeader from '../components/AdminPageHeader';
 
 const EVENT_CATEGORIES = [
   'Workshop',
@@ -213,12 +214,14 @@ export default function EventDetailPage() {
 
   return (
     <Box dir={direction}>
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: '0.75rem', mb: 1 }}>
-        <IconButton onClick={() => navigate('/admin/events')} size="small">
-          <ArrowBackIcon />
-        </IconButton>
-        <Typography variant="h4">{t('edDetailsTitle').replace('{title}', event.title)}</Typography>
-      </Box>
+      <AdminPageHeader
+        title={t('edDetailsTitle').replace('{title}', event.title)}
+        actions={(
+          <IconButton onClick={() => navigate('/admin/events')} size="small">
+            <ArrowBackIcon />
+          </IconButton>
+        )}
+      />
 
       <Box sx={{ borderBottom: 1, borderColor: 'divider', mt: 2 }}>
         <Tabs value={tab} onChange={(_, v) => setTab(v)}>

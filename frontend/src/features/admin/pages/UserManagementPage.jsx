@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { collection, doc, documentId, getDoc, getDocs, limit, orderBy, query, serverTimestamp, updateDoc } from 'firebase/firestore';
-import { Ban, Pencil, ShieldCheck } from 'lucide-react';
+import { Ban, Download, Pencil, ShieldCheck } from 'lucide-react';
 import { db } from '../../../firebase';
 import { useAdmin } from '../context/AdminContext';
 import { logAuditEvent } from '../services/auditService';
@@ -8,6 +8,8 @@ import { listJoinRequests } from '../services/joinRequestAdminService';
 import { useAdminLocale } from '../context/AdminLocaleContext';
 import JoinRequestsTab from './JoinRequestsTab';
 import AdminDetailInfoCard from '../components/AdminDetailInfoCard';
+import AdminPageHeader from '../components/AdminPageHeader';
+import './AppointmentsPage.css';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
@@ -72,6 +74,21 @@ function formatDateValue(value) {
   return String(value);
 }
 
+function escapeCsvValue(value) {
+  const str = String(value ?? '');
+  if (str.includes(',') || str.includes('"') || str.includes('\n')) {
+    return `"${str.replace(/"/g, '""')}"`;
+  }
+  return str;
+}
+
+function sanitizeFileName(value) {
+  return String(value)
+    .replace(/[\\/:*?"<>|]/g, '-')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
 function getFullName(user, fallback = 'Unnamed user') {
   return user?.fullName || user?.displayName || user?.name || fallback;
 }
@@ -134,6 +151,44 @@ function paginateUserRows(rows, page, pageSize) {
     pageCount,
     rows: rows.slice(startIndex, startIndex + pageSize),
   };
+}
+
+function downloadUsersCsv(rows, t, roleLabel) {
+  const headers = [
+    t('colUser'),
+    t('fieldEmail'),
+    t('colRole'),
+    t('colJoined'),
+    t('apColStatus'),
+  ];
+
+  const csvRows = [headers.map(escapeCsvValue).join(',')];
+
+  for (const user of rows) {
+    const inactive = isInactiveUser(user);
+    csvRows.push(
+      [
+        getFullName(user, t('umUnnamedUser')),
+        user.email || t('umNoEmail'),
+        roleLabel(user.role),
+        formatDateValue(getJoinedDate(user)),
+        inactive ? t('umStatusInactive') : t('umStatusActive'),
+      ]
+        .map(escapeCsvValue)
+        .join(',')
+    );
+  }
+
+  const bom = '\uFEFF';
+  const blob = new Blob([bom + csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = `${sanitizeFileName(t('umTitle'))}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
 }
 
 export default function UserManagementPage() {
@@ -431,24 +486,22 @@ export default function UserManagementPage() {
         flexDirection: 'column',
       }}
     >
-      <Typography
-        component="h1"
-        sx={{
-          position: { xs: 'static', md: 'fixed' },
-          top: { md: '1.75rem' },
-          left: { md: 'calc(var(--admin-sidebar-width) + 4rem)' },
-          zIndex: { md: 1100 },
-          m: 0,
-          mb: { xs: 1, md: 0 },
-          color: '#171239',
-          fontSize: { xs: '1.875rem', md: '2.125rem' },
-          lineHeight: 1.1,
-          fontWeight: 900,
-          letterSpacing: 0,
-        }}
-      >
-        {t('umTitle')}
-      </Typography>
+      <AdminPageHeader
+        title={t('umTitle')}
+        className="admin-page-header--no-clip"
+        actions={activeTab === 'users' ? (
+          <button
+            type="button"
+            className="appointments-export-csv-btn"
+            onClick={() => downloadUsersCsv(filteredUsers, t, roleLabel)}
+            disabled={loading || filteredUsers.length === 0}
+            title={t('apExportCsv')}
+          >
+            <Download size={17} />
+            {t('apExportCsv')}
+          </button>
+        ) : null}
+      />
 
       <Box
         component="header"
@@ -508,7 +561,12 @@ export default function UserManagementPage() {
                   cursor: 'pointer',
                   textTransform: 'capitalize',
                   transition: 'color 160ms ease, background 160ms ease, box-shadow 160ms ease, transform 160ms ease',
-                  '&:hover, &:focus-visible': {
+                  '&:hover': {
+                    color: '#fff',
+                    background: 'linear-gradient(135deg, #e73386, #dc2577)',
+                    boxShadow: 'none',
+                  },
+                  '&:focus-visible': {
                     color: '#fff',
                     background: 'linear-gradient(135deg, #e73386, #dc2577)',
                     boxShadow: 'none',
@@ -613,7 +671,14 @@ export default function UserManagementPage() {
                   textTransform: 'none',
                   cursor: 'pointer',
                   transition: 'color 180ms ease, background 180ms ease, border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease',
-                  '&:hover, &:focus-visible': {
+                  '&:hover': {
+                    color: '#fff',
+                    background: 'linear-gradient(135deg, #e73386, #dc2577)',
+                    borderColor: 'transparent',
+                    boxShadow: '0 14px 26px rgba(223, 50, 123, 0.24)',
+                    transform: 'translateY(-2px)',
+                  },
+                  '&:focus-visible': {
                     color: '#fff',
                     background: 'linear-gradient(135deg, #e73386, #dc2577)',
                     borderColor: 'transparent',
@@ -680,7 +745,15 @@ export default function UserManagementPage() {
                 ))}
               </Box>
 
-              <Box sx={{ flex: '1 1 auto', minHeight: 0, overflow: 'hidden' }}>
+              <Box
+                sx={{
+                  flex: '1 1 auto',
+                  minHeight: 0,
+                  overflowY: 'auto',
+                  overflowX: 'hidden',
+                  scrollbarGutter: 'stable',
+                }}
+              >
                 {loading ? (
                   <Box sx={{ minHeight: '100%', p: '2rem', display: 'grid', placeContent: 'center', justifyItems: 'center' }}>
                     <CircularProgress />
@@ -931,9 +1004,9 @@ export default function UserManagementPage() {
                 aria-label="Close user details"
                 sx={{
                   position: 'absolute',
-                  top: '12px /* @noflip */',
-                  right: '12px /* @noflip */',
-                  left: 'auto /* @noflip */',
+                  top: '12px',
+                  right: '12px',
+                  left: 'auto',
                   width: '1.75rem',
                   height: '1.75rem',
                   bgcolor: 'rgba(109, 60, 207, 0.06)',

@@ -5,7 +5,6 @@ import CssBaseline from '@mui/material/CssBaseline';
 import CircularProgress from '@mui/material/CircularProgress';
 import { CacheProvider } from '@emotion/react';
 import createCache from '@emotion/cache';
-import { prefixer } from 'stylis';
 import rtlPlugin from 'stylis-plugin-rtl';
 import { createAppTheme } from './theme';
 import { DirectionProvider, useDirection } from './features/admin/context/DirectionContext';
@@ -29,6 +28,7 @@ const AppointmentsPage = lazy(() => import('./features/admin/pages/AppointmentsP
 const CMSPage = lazy(() => import('./features/admin/pages/CMSPage'));
 const UserManagementPage = lazy(() => import('./features/admin/pages/UserManagementPage'));
 const FormsPage = lazy(() => import('./features/admin/pages/FormsPage'));
+const BugReportsPage = lazy(() => import('./features/admin/pages/BugReportsPage'));
 const AuditLogPage = lazy(() => import('./features/admin/pages/AuditLogPage'));
 const CommunityModerationPage = lazy(() => import('./features/admin/pages/CommunityModerationPage'));
 const UpdatesPage = lazy(() => import('./features/admin/pages/UpdatesPage'));
@@ -41,9 +41,10 @@ const PublicStoriesArticlesPage = lazy(() => import('./features/public/pages/Pub
 const PublicTeamPartnersPage = lazy(() => import('./features/public/pages/PublicTeamPartnersPage'));
 const AccessibilityStatementPage = lazy(() => import('./features/public/pages/AccessibilityStatementPage'));
 
-// Emotion caches for RTL and LTR
-const cacheRtl = createCache({ key: 'muirtl', stylisPlugins: [prefixer, rtlPlugin] });
-const cacheLtr = createCache({ key: 'muiltr', stylisPlugins: [prefixer] });
+// Emotion caches for RTL and LTR. The Stylis prefixer can crash on some
+// generated MUI styles in dev, so keep only the RTL transform plugin.
+const cacheRtl = createCache({ key: 'muirtl', stylisPlugins: [rtlPlugin] });
+const cacheLtr = createCache({ key: 'muiltr' });
 
 function RouteFallback() {
   return (
@@ -128,6 +129,7 @@ function ThemedApp() {
                 <Route path="cms" element={<CMSPage />} />
                 <Route path="users" element={<UserManagementPage />} />
                 <Route path="forms" element={<FormsPage />} />
+                <Route path="bug-reports" element={<BugReportsPage />} />
                 <Route path="roles" element={<Navigate to="/admin/users?tab=roles" replace />} />
                 <Route path="community" element={<CommunityModerationPage />} />
                 <Route path="updates" element={<UpdatesPage />} />

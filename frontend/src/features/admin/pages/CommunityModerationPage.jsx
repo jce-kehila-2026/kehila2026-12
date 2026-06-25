@@ -27,6 +27,7 @@ import {
   restorePost,
   saveGuidelinesDoc,
 } from '../services/communityModerationService';
+import AdminPageHeader from '../components/AdminPageHeader';
 import './CommunityModerationPage.css';
 
 const TONE_COLORS = {
@@ -740,23 +741,23 @@ export default function CommunityModerationPage() {
 
   return (
     <section className="admin-community-page" dir={direction}>
-      <header className="admin-community-hero">
-        <div>
-          <h1>{t('cmTitle')}</h1>
-          <p>{t('cmSubtitle')}</p>
-        </div>
-        <button
-          id="btn-refresh-community-stats"
-          className="admin-community-refresh-btn"
-          type="button"
-          disabled={statsLoading}
-          aria-label={t('cmRefreshAria')}
-          onClick={loadStats}
-        >
-          <RefreshCw size={15} className={statsLoading ? 'is-spinning' : ''} />
-          {t('cmRefresh')}
-        </button>
-      </header>
+      <AdminPageHeader
+        title={t('cmTitle')}
+        subtitle={t('cmSubtitle')}
+        actions={(
+          <button
+            id="btn-refresh-community-stats"
+            className="admin-community-refresh-btn"
+            type="button"
+            disabled={statsLoading}
+            aria-label={t('cmRefreshAria')}
+            onClick={loadStats}
+          >
+            <RefreshCw size={15} className={statsLoading ? 'is-spinning' : ''} />
+            {t('cmRefresh')}
+          </button>
+        )}
+      />
 
       <section className="admin-community-metrics" aria-label={t('cmMetricsAria')}>
         <MetricCard

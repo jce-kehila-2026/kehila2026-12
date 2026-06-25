@@ -512,6 +512,36 @@ service cloud.firestore {
       allow read, update, delete: if isAdmin();
     }
 
+    // ── Bug / problem reports (participant app) ─────────────
+    // Signed-in participants report issues from inside the app. Authenticated
+    // create, constrained to a fixed field set with bounded sizes and a pinned
+    // status/source so it can't be used to write arbitrary/oversized docs. The
+    // reporter must attribute the report to themselves. Admins triage them.
+    match /bugReports/{reportId} {
+      allow create: if request.auth != null
+        && request.resource.data.reporterUid == request.auth.uid
+        && request.resource.data.keys().hasOnly([
+             'message', 'category', 'route', 'locale', 'userAgent', 'appVersion',
+             'reporterUid', 'reporterEmail', 'reporterName',
+             'status', 'source', 'createdAt'
+           ])
+        && request.resource.data.message is string
+        && request.resource.data.message.size() > 0
+        && request.resource.data.message.size() <= 5000
+        && request.resource.data.category in ['bug', 'visual', 'content', 'performance', 'other']
+        && request.resource.data.get('route', '') is string
+        && request.resource.data.get('route', '').size() <= 600
+        && request.resource.data.get('userAgent', '') is string
+        && request.resource.data.get('userAgent', '').size() <= 1000
+        && request.resource.data.get('reporterEmail', '') is string
+        && request.resource.data.get('reporterEmail', '').size() <= 320
+        && request.resource.data.get('reporterName', '') is string
+        && request.resource.data.get('reporterName', '').size() <= 200
+        && request.resource.data.status == 'new'
+        && request.resource.data.source == 'participant-app';
+      allow read, update, delete: if isAdmin();
+    }
+
     // ── Updates / Announcements ─────────────────────────────
     // Any authenticated user can read active announcements.
     // Only admins can create, update, and delete announcements.

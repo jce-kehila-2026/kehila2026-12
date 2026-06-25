@@ -405,11 +405,13 @@
 }
 
 .participant-main--community {
+  box-sizing: border-box;
   height: 100vh;
   min-height: 0;
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
   overflow: hidden;
+  padding-bottom: 0;
 }
 
 .participant-main--events {

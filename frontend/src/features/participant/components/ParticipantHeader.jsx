@@ -3,6 +3,7 @@ import sheNaLogo from '../../../assets/she-na-logo.png';
 import DarkModeToggle from '../../profile/components/DarkModeToggle';
 import { PublicSectionHeadingDivider } from '../../public/components/PublicSectionHeading';
 import ParticipantLanguageSwitcher from './ParticipantLanguageSwitcher';
+import ReportProblemButton from './ReportProblemButton';
 import { useParticipantLocale } from '../context/ParticipantLocaleContext';
 import '../../public/styles/public-section-heading.css';
 import './ParticipantHeader.css';
@@ -35,6 +36,8 @@ export default function ParticipantHeader({
             <Bell size={18} strokeWidth={2.2} />
           </button>
         )}
+
+        <ReportProblemButton />
 
         <ParticipantLanguageSwitcher
           locale={locale}

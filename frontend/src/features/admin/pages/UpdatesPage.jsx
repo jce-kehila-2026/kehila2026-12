@@ -21,6 +21,7 @@ import {
   deleteUpdate,
   fetchParticipants,
 } from '../services/updatesService';
+import AdminPageHeader from '../components/AdminPageHeader';
 import './UpdatesPage.css';
 
 const UPDATE_TYPES = [
@@ -262,30 +263,25 @@ export default function UpdatesPage() {
   return (
     <div className="updates-page" dir={direction}>
       {/* Header */}
-      <div className="updates-page__header">
-        <div className="updates-page__header-text">
-          <div className="updates-page__icon-wrap">
-            <CampaignOutlinedIcon />
-          </div>
-          <div>
-            <h1>{t('upHeaderTitle')}</h1>
-            <p>{t('upHeaderSubtitle')}</p>
-          </div>
-        </div>
-        <div className="updates-page__header-actions">
-          <button
-            type="button"
-            className={`updates-page__toggle-archived${showArchived ? ' is-active' : ''}`}
-            onClick={() => setShowArchived((v) => !v)}
-          >
-            {showArchived ? t('upHideArchived') : t('upShowArchived')}
-          </button>
-          <button type="button" className="updates-page__new-btn" onClick={openModal}>
-            <AddIcon fontSize="small" />
-            {t('upNewUpdate')}
-          </button>
-        </div>
-      </div>
+      <AdminPageHeader
+        title={t('upHeaderTitle')}
+        subtitle={t('upHeaderSubtitle')}
+        actions={(
+          <>
+            <button
+              type="button"
+              className={`updates-page__toggle-archived${showArchived ? ' is-active' : ''}`}
+              onClick={() => setShowArchived((v) => !v)}
+            >
+              {showArchived ? t('upHideArchived') : t('upShowArchived')}
+            </button>
+            <button type="button" className="updates-page__new-btn" onClick={openModal}>
+              <AddIcon fontSize="small" />
+              {t('upNewUpdate')}
+            </button>
+          </>
+        )}
+      />
 
       {/* List */}
       <div className="updates-page__list">

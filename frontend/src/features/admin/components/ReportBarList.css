@@ -6,9 +6,21 @@
 }
 
 .admin-report-bars {
+  --report-bar-bg: #f5f1ff;
+  --report-bar-fill: #8b6be8;
   display: flex;
   flex-direction: column;
   gap: 0.625rem;
+}
+
+.admin-report-bars--pink {
+  --report-bar-bg: #fdf2f7;
+  --report-bar-fill: #d85b9a;
+}
+
+.admin-report-bars--purple {
+  --report-bar-bg: #f5f1ff;
+  --report-bar-fill: #8b6be8;
 }
 
 .admin-report-bar-row {
@@ -30,14 +42,14 @@
   height: 0.875rem;
   border-radius: 999px;
   overflow: hidden;
-  background: rgba(167, 139, 250, 0.14);
+  background: var(--report-bar-bg);
 }
 
 .admin-report-bar-fill {
   display: block;
   height: 100%;
   border-radius: 999px;
-  background: linear-gradient(90deg, #a78bfa, #6d35b8);
+  background: var(--report-bar-fill);
   min-width: 2px;
 }
 
