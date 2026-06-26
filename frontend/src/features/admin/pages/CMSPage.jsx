@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import Box from '@mui/material/Box';
-import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
@@ -20,6 +19,7 @@ import PublicHomePageTeamTab from './PublicHomePageTeamTab';
 import PartnersManagementPage from './PartnersManagementPage';
 import PublicHomePageContactTab from './PublicHomePageContactTab';
 import { useAdminLocale } from '../context/AdminLocaleContext';
+import AdminPageHeader from '../components/AdminPageHeader';
 
 const TABS = [
   { key: 'home', labelKey: 'cmsTabHome', icon: <HomeIcon />, Component: PublicHomePageHomeTab },
@@ -62,33 +62,66 @@ export default function CMSPage() {
 
   return (
     <Box sx={{ pb: 12 }} dir={direction}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3, gap: '1rem' }}>
-        <Box>
-          <Typography variant="h4">{t('cmsHomePageTitle')}</Typography>
-          <Typography variant="subtitle1" sx={{ mt: 0.5 }}>
-            {t('cmsHomePageSubtitle')}
-          </Typography>
-        </Box>
-        <Button
-          variant="outlined"
-          startIcon={<PreviewIcon />}
-          component="a"
-          href="/public?preview=1"
-          target="_blank"
-          rel="noopener noreferrer"
-          sx={{ flexShrink: 0 }}
-        >
-          {t('cmsPreviewHomePage')}
-        </Button>
-      </Box>
+      <AdminPageHeader
+        title={t('cmsHomePageTitle')}
+        subtitle={t('cmsHomePageSubtitle')}
+        actions={(
+          <Button
+            variant="outlined"
+            startIcon={<PreviewIcon />}
+            component="a"
+            href="/public?preview=1"
+            target="_blank"
+            rel="noopener noreferrer"
+            sx={{ flexShrink: 0 }}
+          >
+            {t('cmsPreviewHomePage')}
+          </Button>
+        )}
+      />
 
       <Tabs
         value={tabIndex}
         onChange={(_, v) => setTabIndex(v)}
-        sx={{ mb: 3, borderBottom: 1, borderColor: 'divider' }}
+        TabIndicatorProps={{ sx: { display: 'none' } }}
+        sx={{
+          mb: 3,
+          minHeight: '2.375rem',
+          width: 'fit-content',
+          maxWidth: '100%',
+          padding: '0.1875rem',
+          borderRadius: '12px',
+          background: '#fdf2f8',
+          '& .MuiTabs-flexContainer': {
+            gap: '0.1875rem',
+          },
+        }}
       >
         {TABS.map((tab) => (
-          <Tab key={tab.key} label={t(tab.labelKey)} icon={tab.icon} iconPosition="start" />
+          <Tab
+            key={tab.key}
+            label={t(tab.labelKey)}
+            icon={tab.icon}
+            iconPosition="start"
+            disableRipple
+            sx={{
+              minHeight: '1.875rem',
+              minWidth: 'auto',
+              padding: '0.4375rem 0.75rem',
+              borderRadius: '9px',
+              color: '#db4f9f',
+              fontWeight: 700,
+              transition: 'color 160ms ease, background 160ms ease, box-shadow 160ms ease',
+              '&:hover': {
+                color: '#fff',
+                background: 'linear-gradient(135deg, #e73386, #dc2577)',
+              },
+              '&.Mui-selected': {
+                color: '#fff',
+                background: 'linear-gradient(135deg, #e73386, #dc2577)',
+              },
+            }}
+          />
         ))}
       </Tabs>
 

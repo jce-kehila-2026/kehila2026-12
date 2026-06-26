@@ -3647,13 +3647,7 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 
 .pd-notes__list li {
 
-  display: grid;
-
-  grid-template-columns: auto minmax(0, 1fr);
-
-  gap: 10px;
-
-  align-items: start;
+  display: block;
 
   padding: 10px 12px;
 
@@ -3722,6 +3716,60 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
   line-height: 1.4;
 
   color: var(--pd-title);
+
+}
+
+.pd-notes__copy-head {
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: space-between;
+
+  gap: 12px;
+
+}
+
+.pd-notes__delete-btn {
+
+  border: none;
+
+  background: transparent;
+
+  color: #8a2da8;
+
+  font: inherit;
+
+  font-size: 12px;
+
+  font-weight: 700;
+
+  line-height: 1;
+
+  cursor: pointer;
+
+  padding: 0;
+
+  text-decoration: none;
+
+  transition: color 160ms ease, opacity 160ms ease;
+
+}
+
+.pd-notes__delete-btn:hover {
+
+  color: #6f1f9d;
+
+  text-decoration: underline;
+
+}
+
+.pd-notes__delete-btn:disabled {
+
+  opacity: 0.5;
+
+  cursor: not-allowed;
 
 }
 

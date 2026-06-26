@@ -4,7 +4,6 @@ import {
   CalendarDays,
   CalendarHeart,
   CalendarSync,
-  Check,
   ChevronRight,
   Heart,
   MapPin,
@@ -19,7 +18,11 @@ import communityHighlightFallback from '../../../assets/images/support-groups.jp
 import { auth } from '../../../firebase';
 import { getLocalizedText } from '../../../shared/i18n/getLocalizedText';
 import { useParticipantLocale } from '../context/ParticipantLocaleContext';
-import { createCalendarNote } from '../../calendar/calendarService';
+import {
+  createCalendarNote,
+  deleteCalendarNoteById,
+  deleteCalendarNoteForDashboardNote,
+} from '../../calendar/calendarService';
 import {
   formatReminderDateTimeLabel,
   getSyncValidationError,
@@ -27,7 +30,7 @@ import {
 } from './participantNotesModel';
 import NotesScheduleModal from './NotesScheduleModal';
 import { useParticipantDashboardHomeData } from './useParticipantDashboardHomeData';
-import { createParticipantNote, updateParticipantNote } from './participantNotesService';
+import { createParticipantNote, deleteParticipantNote, updateParticipantNote } from './participantNotesService';
 import { useParticipantNotes } from './useParticipantNotes';
 import useLatestCommunityPost from '../community/hooks/useLatestCommunityPost';
 import BirthdayGreeting from './BirthdayGreeting';
@@ -473,7 +476,7 @@ function AppointmentCard({ appointment, onView }) {
   );
 }
 
-function EventCard({ event, onView, locale = 'he' }) {
+function WorkshopCard({ event, onView, locale = 'he' }) {
   const { t } = useParticipantLocale();
   const countdown = useCountdownRing(event.targetDate, 'event');
 
@@ -556,7 +559,7 @@ function AppointmentEmptyCard({ onBook }) {
   );
 }
 
-function EventEmptyCard({ onExplore }) {
+function WorkshopEmptyCard({ onExplore }) {
   const { t } = useParticipantLocale();
   return (
     <article className="pd-card pd-card--dashboard-skin pd-card--feature pd-card--event pd-card--empty">
@@ -611,11 +614,8 @@ function FeatureCardErrorState({ variant, headingIcon: HeadingIcon, headingLabel
   );
 }
 
-const NOTES_COMPLETION_FEEDBACK_MS = 650;
-
 function NotesCard({ userId }) {
   const { t } = useParticipantLocale();
-  const completionHideTimeoutsRef = useRef(new Map());
   const titleInputId = useId();
   const datePickerId = useId();
   const timePickerId = useId();
@@ -629,20 +629,12 @@ function NotesCard({ userId }) {
   const [syncHint, setSyncHint] = useState('');
   const [scheduleOpen, setScheduleOpen] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-  const [completingNoteIds, setCompletingNoteIds] = useState(() => new Set());
+  const [deletingNoteIds, setDeletingNoteIds] = useState(() => new Set());
   const { notes } = useParticipantNotes(userId);
 
-  useEffect(() => {
-    const timeouts = completionHideTimeoutsRef.current;
-    return () => {
-      timeouts.forEach(clearTimeout);
-      timeouts.clear();
-    };
-  }, []);
-
   const activeNotes = useMemo(
-    () => notes.filter((note) => !note.done || completingNoteIds.has(note.id)),
-    [notes, completingNoteIds],
+    () => notes.filter((note) => !note.done),
+    [notes],
   );
 
   const clearSyncHint = () => {
@@ -678,7 +670,7 @@ function NotesCard({ userId }) {
     setIsSaving(true);
 
     try {
-      await createParticipantNote(participantId, {
+      const dashboardNoteId = await createParticipantNote(participantId, {
         title,
         date: willSync ? date : '',
         time: willSync ? time : '',
@@ -688,7 +680,11 @@ function NotesCard({ userId }) {
 
       if (willSync) {
         try {
-          await createCalendarNote({ uid: participantId }, { title, date, time, content: '' });
+          const calendarNote = await createCalendarNote(
+            { uid: participantId },
+            { title, date, time, content: title, source: 'dashboard-note', type: 'note', dashboardNoteId },
+          );
+          await updateParticipantNote(participantId, dashboardNoteId, { calendarNoteId: calendarNote.id });
         } catch (calendarError) {
           console.error('[Dashboard notes] Calendar sync failed (note was saved):', calendarError);
         }
@@ -731,51 +727,62 @@ function NotesCard({ userId }) {
     void handleAddNote(value);
   };
 
-  const completeNote = useCallback(async (id) => {
-    const note = notes.find((entry) => entry.id === id);
-    const participantId = auth.currentUser?.uid || userId;
-    if (!note || note.done || !participantId || completingNoteIds.has(id)) return;
-
-    setCompletingNoteIds((current) => {
-      const next = new Set(current);
-      next.add(id);
-      return next;
-    });
-
-    const existingTimeout = completionHideTimeoutsRef.current.get(id);
-    if (existingTimeout) clearTimeout(existingTimeout);
-
-    const hideTimeout = setTimeout(() => {
-      setCompletingNoteIds((current) => {
-        if (!current.has(id)) return current;
-        const next = new Set(current);
-        next.delete(id);
-        return next;
-      });
-      completionHideTimeoutsRef.current.delete(id);
-    }, NOTES_COMPLETION_FEEDBACK_MS);
-
-    completionHideTimeoutsRef.current.set(id, hideTimeout);
-
-    try {
-      await updateParticipantNote(participantId, id, { done: true });
-    } catch (error) {
-      console.error('[Dashboard notes] Failed to update note:', error);
-      clearTimeout(hideTimeout);
-      completionHideTimeoutsRef.current.delete(id);
-      setCompletingNoteIds((current) => {
-        if (!current.has(id)) return current;
-        const next = new Set(current);
-        next.delete(id);
-        return next;
-      });
-    }
-  }, [completingNoteIds, notes, userId]);
-
   const handleSyncToggle = () => {
     setSyncEnabled((value) => !value);
     setSyncHint('');
   };
+
+  const handleDeleteNote = useCallback(async (note) => {
+    const participantId = auth.currentUser?.uid || userId;
+    if (!participantId || !note?.id) {
+      console.error('[Dashboard notes] Cannot delete note - missing participant or note id');
+      return;
+    }
+
+    setDeletingNoteIds((current) => {
+      const next = new Set(current);
+      next.add(note.id);
+      return next;
+    });
+
+    try {
+      const linkedCalendarNoteId = String(note?.calendarNoteId ?? '').trim();
+      const shouldAttemptCalendarDelete = Boolean(
+        note?.syncToCalendar
+          || linkedCalendarNoteId
+          || (note?.title && note?.date && note?.time),
+      );
+
+      if (shouldAttemptCalendarDelete) {
+        try {
+          if (linkedCalendarNoteId) {
+            await deleteCalendarNoteById({ uid: participantId }, linkedCalendarNoteId);
+          } else {
+            await deleteCalendarNoteForDashboardNote({ uid: participantId }, note);
+          }
+        } catch (calendarError) {
+          console.error('[Dashboard notes] Calendar note deletion failed after dashboard delete:', {
+            noteId: note.id,
+            calendarNoteId: note.calendarNoteId ?? '',
+            title: note.title,
+            date: note.date,
+            time: note.time,
+            error: calendarError,
+          });
+        }
+      }
+
+      await deleteParticipantNote(participantId, note.id);
+    } catch (error) {
+      console.error('[Dashboard notes] Failed to delete note:', error);
+    } finally {
+      setDeletingNoteIds((current) => {
+        const next = new Set(current);
+        next.delete(note.id);
+        return next;
+      });
+    }
+  }, [userId]);
 
   return (
     <article className="pd-card pd-card--dashboard-skin pd-card--notes">
@@ -851,21 +858,22 @@ function NotesCard({ userId }) {
       <ul className="pd-notes__list">
         {activeNotes.map((note) => {
           const scheduleLabel = formatReminderDateTimeLabel(note.date, note.time);
-          const isCompleted = note.done || completingNoteIds.has(note.id);
+          const isDeleting = deletingNoteIds.has(note.id);
 
           return (
-            <li key={note.id} className={isCompleted ? 'is-done' : ''}>
-              <button
-                type="button"
-                className={`pd-notes__check${isCompleted ? ' is-checked' : ''}`}
-                aria-label={t('markNoteComplete')}
-                aria-pressed={isCompleted}
-                onClick={() => completeNote(note.id)}
-              >
-                {isCompleted ? <Check size={14} strokeWidth={3} /> : null}
-              </button>
+            <li key={note.id}>
               <div className="pd-notes__copy">
-                <span>{note.title}</span>
+                <div className="pd-notes__copy-head">
+                  <span>{note.title}</span>
+                  <button
+                    type="button"
+                    className="pd-notes__delete-btn"
+                    onClick={() => void handleDeleteNote(note)}
+                    disabled={isDeleting}
+                  >
+                    {t('delete')}
+                  </button>
+                </div>
                 {scheduleLabel ? (
                   <small>
                     {scheduleLabel}
@@ -1075,7 +1083,7 @@ export default function ParticipantDashboardHome({
     onNavigateToView?.('events', { eventsTab: 'registered' });
   }, [onNavigateToView]);
 
-  const goToExploreEvents = useCallback(() => {
+  const goToExploreWorkshops = useCallback(() => {
     onNavigateToView?.('events', { eventsTab: 'workshops' });
   }, [onNavigateToView]);
 
@@ -1083,7 +1091,7 @@ export default function ParticipantDashboardHome({
     onNavigateToView?.('calendar');
   }, [onNavigateToView]);
 
-  const goToEvents = useCallback(() => {
+  const goToWorkshopDetails = useCallback(() => {
     goToEventsView();
   }, [goToEventsView]);
 
@@ -1122,7 +1130,7 @@ export default function ParticipantDashboardHome({
           <AppointmentEmptyCard onBook={goToAppointments} />
         )}
         {event ? (
-          <EventCard event={event} onView={goToEvents} locale={locale} />
+          <WorkshopCard event={event} onView={goToWorkshopDetails} locale={locale} />
         ) : eventError ? (
           <FeatureCardErrorState
             variant="event"
@@ -1133,7 +1141,7 @@ export default function ParticipantDashboardHome({
         ) : isLoading ? (
           <FeatureCardLoadingShell variant="event" label={t('loadingEvent')} />
         ) : (
-          <EventEmptyCard onExplore={goToExploreEvents} />
+          <WorkshopEmptyCard onExplore={goToExploreWorkshops} />
         )}
       </section>
 

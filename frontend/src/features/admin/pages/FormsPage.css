@@ -20,22 +20,6 @@
   box-sizing: border-box;
 }
 
-.forms-admin-top-title {
-  position: fixed;
-  top: 1.75rem;
-  inset-inline-start: calc(var(--admin-sidebar-width) + 4rem);
-  z-index: 1100;
-  min-height: 2.375rem;
-  margin: 0;
-  display: flex;
-  align-items: center;
-  color: #171239;
-  font-size: 2.125rem;
-  line-height: 1.1;
-  font-weight: 900;
-  letter-spacing: 0;
-}
-
 .forms-admin-layout {
   flex: 1 1 auto;
   min-height: 0;
@@ -430,12 +414,6 @@
     height: auto;
     max-height: none;
     overflow: visible;
-  }
-
-  .forms-admin-top-title {
-    position: static;
-    margin-bottom: 1rem;
-    font-size: 1.85rem;
   }
 
   .forms-admin-header,

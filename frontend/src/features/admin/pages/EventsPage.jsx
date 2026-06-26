@@ -29,6 +29,7 @@ import {
   updateRegistrationStatus,
 } from '../services/registrationService';
 import { useAdminLocale } from '../context/AdminLocaleContext';
+import AdminPageHeader from '../components/AdminPageHeader';
 import ReminderTimePicker from '../../../shared/components/ReminderTimePicker';
 import ReminderDatePicker from '../../../shared/components/ReminderDatePicker';
 import ISRAELI_CITIES from '../../../shared/data/israeliCities.json';
@@ -1139,39 +1140,40 @@ export default function EventsPage() {
 
   return (
     <section className="admin-events-page public-cta-scope" dir={direction}>
-      <div className="admin-events-content">
-      <div className="admin-events-page-title-slot">
-        <h1 className="admin-events-page-title">{t('evTitle')}</h1>
-        <Button
-          variant="outlined"
-          startIcon={<PreviewIcon />}
-          onClick={() => navigate('/home')}
-          sx={{
-            alignSelf: { xs: 'flex-start', lg: 'center' },
-            height: '3rem',
-            px: 3.2,
-            borderRadius: 999,
-            borderColor: 'rgba(223, 50, 123, 0.46)',
-            color: '#C52A72',
-            bgcolor: 'rgba(255,255,255,0.62)',
-            fontWeight: 900,
-            boxShadow: '0 12px 28px rgba(223, 50, 123, 0.06)',
-            '& .MuiButton-startIcon': {
-              marginInlineEnd: '14px',
-              marginInlineStart: 0,
-              display: 'inherit',
-            },
-            '&:hover': {
-              borderColor: 'rgba(223, 50, 123, 0.7)',
-              bgcolor: 'rgba(255, 246, 251, 0.92)',
-            },
-          }}
-        >
-          {t('umPreviewParticipant')}
-        </Button>
-      </div>
+      <AdminPageHeader
+        title={t('evTitle')}
+        actions={(
+          <Button
+            variant="outlined"
+            startIcon={<PreviewIcon />}
+            onClick={() => navigate('/home')}
+            sx={{
+              alignSelf: { xs: 'flex-start', lg: 'center' },
+              height: '3rem',
+              px: 3.2,
+              borderRadius: 999,
+              borderColor: 'rgba(223, 50, 123, 0.46)',
+              color: '#C52A72',
+              bgcolor: 'rgba(255,255,255,0.62)',
+              fontWeight: 900,
+              boxShadow: '0 12px 28px rgba(223, 50, 123, 0.06)',
+              '& .MuiButton-startIcon': {
+                marginInlineEnd: '14px',
+                marginInlineStart: 0,
+                display: 'inherit',
+              },
+              '&:hover': {
+                borderColor: 'rgba(223, 50, 123, 0.7)',
+                bgcolor: 'rgba(255, 246, 251, 0.92)',
+              },
+            }}
+          >
+            {t('umPreviewParticipant')}
+          </Button>
+        )}
+      />
 
-      <div className={`admin-events-shell${drawerOpen ? ' has-drawer' : ''}`}>
+      <div className={`admin-events-shell${drawerOpen || participantsDrawerOpen ? ' has-drawer' : ''}${participantsDrawerOpen ? ' has-participants-drawer' : ''}`}>
         <main className="admin-events-main">
 
           <section className="admin-events-stats" aria-label={t('evSummaryAria')}>
@@ -1798,7 +1800,6 @@ export default function EventsPage() {
             </div>
           </form>
         </aside>
-      </div>
       </div>
 
       {participantsDrawerOpen ? (

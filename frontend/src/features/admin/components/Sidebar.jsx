@@ -15,6 +15,7 @@ import HomeWorkOutlinedIcon from '@mui/icons-material/HomeWorkOutlined';
 import CampaignOutlinedIcon from '@mui/icons-material/CampaignOutlined';
 import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
+import BugReportOutlinedIcon from '@mui/icons-material/BugReportOutlined';
 import LogoutIcon from '@mui/icons-material/Logout';
 import { useAdmin } from '../context/AdminContext';
 import { useAdminLocale } from '../context/AdminLocaleContext';
@@ -83,6 +84,13 @@ const NAV_ITEMS = [
     icon: <ReceiptLongIcon fontSize="small" />,
     id: 'nav-audit-log',
     active: (pathname) => pathname.startsWith('/admin/audit-log'),
+  },
+  {
+    labelKey: 'navBugReports',
+    path: '/admin/bug-reports',
+    icon: <BugReportOutlinedIcon fontSize="small" />,
+    id: 'nav-bug-reports',
+    active: (pathname) => pathname.startsWith('/admin/bug-reports'),
   },
 ];
 

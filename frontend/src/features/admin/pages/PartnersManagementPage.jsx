@@ -30,6 +30,7 @@ import AddIcon from '@mui/icons-material/Add';
 import ArrowUpwardIcon from '@mui/icons-material/ArrowUpward';
 import ArrowDownwardIcon from '@mui/icons-material/ArrowDownward';
 import HandshakeIcon from '@mui/icons-material/Handshake';
+import AdminPageHeader from '../components/AdminPageHeader';
 
 const LIMITS = {
   name: 80,
@@ -280,17 +281,15 @@ export default function PartnersManagementPage() {
 
   return (
     <Box sx={{ pb: 12 }} dir={direction}>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 3, gap: '1rem' }}>
-        <Box>
-          <Typography variant="h4">{t('cmsPartnersTitle')}</Typography>
-          <Typography variant="subtitle1" sx={{ mt: 0.5 }}>
-            {t('cmsPartnersSubtitle')}
-          </Typography>
-        </Box>
-        <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate} sx={{ flexShrink: 0 }}>
-          {t('cmsAddPartner')}
-        </Button>
-      </Box>
+      <AdminPageHeader
+        title={t('cmsPartnersTitle')}
+        subtitle={t('cmsPartnersSubtitle')}
+        actions={(
+          <Button variant="contained" startIcon={<AddIcon />} onClick={openCreate} sx={{ flexShrink: 0 }}>
+            {t('cmsAddPartner')}
+          </Button>
+        )}
+      />
 
       <Paper sx={{ p: 3 }}>
         {partners.length === 0 ? (

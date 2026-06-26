@@ -1,9 +1,9 @@
-// Forms page — volunteer & donation contact-form submissions from the public
-// website. The public modals write to the `formSubmissions` collection (see
-// features/public/services/formSubmissionService.js); this page lists them and
-// lets an admin mark each as handled or delete it.
+// Bug Reports page — in-app problem reports submitted by participants. The
+// participant header "Report a problem" button writes to the `bugReports`
+// collection (see features/participant/services/bugReportService.js); this page
+// lists them and lets an admin mark each handled (or reopen) and delete it.
 //
-// Styling/structure intentionally mirror JoinRequestsTab so the two admin
+// Styling/structure/behaviour intentionally mirror FormsPage so the admin
 // review screens feel like one product.
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Alert from '@mui/material/Alert';
@@ -24,38 +24,31 @@ import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import ReplayIcon from '@mui/icons-material/Replay';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import {
-  FORM_SUBMISSION_STATUS,
-  FORM_SUBMISSION_TYPE,
-  deleteSubmission,
-  listFormSubmissions,
-  setSubmissionHandled,
-} from '../services/formSubmissionAdminService';
+  BUG_REPORT_STATUS,
+  deleteBugReport,
+  listBugReports,
+  setBugReportHandled,
+} from '../services/bugReportAdminService';
 import { useAdminLocale } from '../context/AdminLocaleContext';
-import AdminPageHeader from '../components/AdminPageHeader';
 import './FormsPage.css';
 
 const INTL_LOCALE_BY_LANG = { he: 'he-IL', en: 'en-US' };
 const PAGE_SIZE = 10;
 
-const STATUS_META = {
-  [FORM_SUBMISSION_STATUS.NEW]: { labelKey: 'fmStatusNew', color: '#B45309', bg: 'rgba(245, 158, 11, 0.16)' },
-  [FORM_SUBMISSION_STATUS.HANDLED]: { labelKey: 'fmStatusHandled', color: '#15803D', bg: 'rgba(34, 197, 94, 0.16)' },
+const CATEGORY_KEYS = {
+  bug: 'brCatBug',
+  visual: 'brCatVisual',
+  content: 'brCatContent',
+  performance: 'brCatPerformance',
+  other: 'brCatOther',
 };
 
-const TYPE_META = {
-  [FORM_SUBMISSION_TYPE.VOLUNTEER]: { labelKey: 'fmTypeVolunteer' },
-  [FORM_SUBMISSION_TYPE.DONATION]: { labelKey: 'fmTypeDonation' },
+const STATUS_KEYS = {
+  [BUG_REPORT_STATUS.NEW]: 'fmStatusNew',
+  [BUG_REPORT_STATUS.HANDLED]: 'fmStatusHandled',
 };
 
-function formatDate(value, intlLocale) {
-  if (!value) return '-';
-  if (typeof value.toDate === 'function') return value.toDate().toLocaleDateString(intlLocale);
-  if (typeof value === 'object' && typeof value.seconds === 'number') {
-    return new Date(value.seconds * 1000).toLocaleDateString(intlLocale);
-  }
-  const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? String(value) : parsed.toLocaleDateString(intlLocale);
-}
+const CATEGORIES = ['bug', 'visual', 'content', 'performance', 'other'];
 
 function formatTableDate(value) {
   let date = null;
@@ -70,6 +63,15 @@ function formatTableDate(value) {
   ].join('/');
 }
 
+function formatDateTime(value, intlLocale) {
+  let date = null;
+  if (value?.toDate) date = value.toDate();
+  else if (value && typeof value === 'object' && typeof value.seconds === 'number') date = new Date(value.seconds * 1000);
+  else if (value) date = new Date(value);
+  if (!date || Number.isNaN(date.getTime())) return '-';
+  return date.toLocaleString(intlLocale, { dateStyle: 'medium', timeStyle: 'short' });
+}
+
 function initialsOf(name) {
   return (
     String(name || '')
@@ -81,16 +83,7 @@ function initialsOf(name) {
   );
 }
 
-const TABLE_COLUMNS = [
-  { key: 'user', label: 'User', align: 'left' },
-  { key: 'contact', label: 'Contact', align: 'left' },
-  { key: 'type', label: 'Type', align: 'center' },
-  { key: 'submitted', label: 'Submitted', align: 'center' },
-  { key: 'status', label: 'Status', align: 'center' },
-  { key: 'actions', label: 'Actions', align: 'center' },
-];
-
-function FormDetailLine({ label, value }) {
+function DetailLine({ label, value }) {
   return (
     <Box sx={{ minWidth: 0 }}>
       <Typography sx={{ color: 'rgba(36, 16, 79, 0.56)', fontSize: '0.72rem', fontWeight: 900 }}>
@@ -103,26 +96,17 @@ function FormDetailLine({ label, value }) {
   );
 }
 
-function getRequestTitle(type) {
-  return type === FORM_SUBMISSION_TYPE.DONATION ? 'Donation request' : 'Volunteer join request';
-}
-
-function getRequesterLabel(type) {
-  return type === FORM_SUBMISSION_TYPE.DONATION ? 'Donor name' : 'Volunteer name';
-}
-
-export default function FormsPage() {
+export default function BugReportsPage() {
   const { t, lang, direction } = useAdminLocale();
   const intlLocale = INTL_LOCALE_BY_LANG[lang] || 'en-US';
-  const [submissions, setSubmissions] = useState([]);
+  const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
-  const [typeFilter, setTypeFilter] = useState('all');
+  const [categoryFilter, setCategoryFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [page, setPage] = useState(1);
   const [selected, setSelected] = useState(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
-
   const [busyId, setBusyId] = useState(null);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [actionError, setActionError] = useState('');
@@ -130,34 +114,32 @@ export default function FormsPage() {
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const list = await listFormSubmissions();
-      setSubmissions(list);
+      setReports(await listBugReports());
     } catch (err) {
-      console.error('Failed to fetch form submissions:', err);
+      console.error('Failed to fetch bug reports:', err);
+      setActionError(t('brLoadError'));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
-  useEffect(() => {
-    load();
-  }, [load]);
+  useEffect(() => { load(); }, [load]);
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return submissions.filter((sub) => {
-      const matchesType = typeFilter === 'all' || (sub.type || 'volunteer') === typeFilter;
-      const matchesStatus = statusFilter === 'all' || (sub.status || 'new') === statusFilter;
+    return reports.filter((report) => {
+      const matchesCategory = categoryFilter === 'all' || (report.category || 'other') === categoryFilter;
+      const matchesStatus = statusFilter === 'all' || (report.status || 'new') === statusFilter;
       const matchesSearch =
         !q ||
-        [sub.fullName, sub.email, sub.phone, sub.message].some((value) => String(value || '').toLowerCase().includes(q));
-      return matchesType && matchesStatus && matchesSearch;
+        [report.message, report.reporterName, report.reporterEmail, report.route].some(
+          (value) => String(value || '').toLowerCase().includes(q),
+        );
+      return matchesCategory && matchesStatus && matchesSearch;
     });
-  }, [submissions, search, typeFilter, statusFilter]);
+  }, [reports, search, categoryFilter, statusFilter]);
 
-  useEffect(() => {
-    setPage(1);
-  }, [search, typeFilter, statusFilter]);
+  useEffect(() => { setPage(1); }, [search, categoryFilter, statusFilter]);
 
   const pageCount = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
 
@@ -172,25 +154,30 @@ export default function FormsPage() {
 
   const clearFilters = () => {
     setSearch('');
-    setTypeFilter('all');
+    setCategoryFilter('all');
     setStatusFilter('all');
   };
 
-  function openDetails(sub) {
-    setSelected(sub);
+  function openDetails(report) {
+    setSelected(report);
     setDetailsOpen(true);
   }
 
-  async function toggleHandled(sub) {
-    const handled = (sub.status || 'new') !== FORM_SUBMISSION_STATUS.HANDLED;
-    setBusyId(sub.id);
+  async function toggleHandled(report) {
+    const handled = (report.status || 'new') !== BUG_REPORT_STATUS.HANDLED;
+    setBusyId(report.id);
     setActionError('');
     try {
-      await setSubmissionHandled(sub, handled);
+      await setBugReportHandled(report, handled);
+      setSelected((current) => (
+        current && current.id === report.id
+          ? { ...current, status: handled ? BUG_REPORT_STATUS.HANDLED : BUG_REPORT_STATUS.NEW }
+          : current
+      ));
       await load();
     } catch (err) {
       console.error('Update failed:', err);
-      setActionError(err?.message || t('fmErrUpdate'));
+      setActionError(t('brActionError'));
     } finally {
       setBusyId(null);
     }
@@ -201,13 +188,13 @@ export default function FormsPage() {
     setBusyId(deleteTarget.id);
     setActionError('');
     try {
-      await deleteSubmission(deleteTarget);
+      await deleteBugReport(deleteTarget);
       setDeleteTarget(null);
       setDetailsOpen(false);
       await load();
     } catch (err) {
       console.error('Delete failed:', err);
-      setActionError(err?.message || t('fmErrDelete'));
+      setActionError(t('brActionError'));
     } finally {
       setBusyId(null);
     }
@@ -215,7 +202,7 @@ export default function FormsPage() {
 
   return (
     <Box component="section" className="forms-admin-page" dir={direction}>
-      <AdminPageHeader title={t('fmTitle')} className="admin-page-header--no-clip" />
+      <h1 className="forms-admin-top-title">{t('brTitle')}</h1>
 
       {actionError ? (
         <Alert severity="error" sx={{ mb: 1, borderRadius: '14px', flex: '0 0 auto' }} onClose={() => setActionError('')}>
@@ -227,22 +214,23 @@ export default function FormsPage() {
         <main className="forms-admin-main">
           <section className="forms-filter-card" aria-label={t('apFiltersAria')}>
             <label className="forms-search-field">
-              <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder={t('fmSearchPlaceholder')} />
+              <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder={t('brSearchPlaceholder')} />
             </label>
             <label className="forms-filter-field">
-              <span>{t('apColEventType')}</span>
-              <select value={typeFilter} onChange={(event) => setTypeFilter(event.target.value)}>
-                <option value="all">{t('fmAllTypes')}</option>
-                <option value={FORM_SUBMISSION_TYPE.VOLUNTEER}>{t('fmTypeVolunteer')}</option>
-                <option value={FORM_SUBMISSION_TYPE.DONATION}>{t('fmTypeDonation')}</option>
+              <span>{t('brColCategory')}</span>
+              <select value={categoryFilter} onChange={(event) => setCategoryFilter(event.target.value)}>
+                <option value="all">{t('brAllCategories')}</option>
+                {CATEGORIES.map((category) => (
+                  <option key={category} value={category}>{t(CATEGORY_KEYS[category])}</option>
+                ))}
               </select>
             </label>
             <label className="forms-filter-field">
-              <span>{t('apColStatus')}</span>
+              <span>{t('brColStatus')}</span>
               <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
                 <option value="all">{t('fmAllStatuses')}</option>
-                <option value={FORM_SUBMISSION_STATUS.NEW}>{t('fmStatusNew')}</option>
-                <option value={FORM_SUBMISSION_STATUS.HANDLED}>{t('fmStatusHandled')}</option>
+                <option value={BUG_REPORT_STATUS.NEW}>{t('fmStatusNew')}</option>
+                <option value={BUG_REPORT_STATUS.HANDLED}>{t('fmStatusHandled')}</option>
               </select>
             </label>
             <button type="button" className="forms-filter-clear-btn" onClick={clearFilters}>
@@ -252,9 +240,12 @@ export default function FormsPage() {
 
           <section className="forms-table-card" aria-busy={loading}>
             <div className="forms-table forms-table--head" dir="ltr">
-              {TABLE_COLUMNS.map((column) => (
-                <span key={column.key}>{column.label}</span>
-              ))}
+              <span>{t('brColReporter')}</span>
+              <span>{t('brColWhere')}</span>
+              <span>{t('brColCategory')}</span>
+              <span>{t('brColSubmitted')}</span>
+              <span>{t('brColStatus')}</span>
+              <span>{t('brColActions')}</span>
             </div>
 
             <div className="forms-table-body forms-table-wrapper" dir="ltr">
@@ -263,32 +254,32 @@ export default function FormsPage() {
                   <CircularProgress size={26} />
                 </div>
               ) : paginated.length > 0 ? (
-                paginated.map((sub) => {
-                  const isHandled = (sub.status || 'new') === FORM_SUBMISSION_STATUS.HANDLED;
-                  const isBusy = busyId === sub.id;
+                paginated.map((report) => {
+                  const isHandled = (report.status || 'new') === BUG_REPORT_STATUS.HANDLED;
+                  const isBusy = busyId === report.id;
                   return (
-                    <div className="forms-table forms-table--row" key={sub.id}>
+                    <div className="forms-table forms-table--row" key={report.id}>
                       <div className="forms-user-cell">
-                        <span className="forms-avatar">{initialsOf(sub.fullName)}</span>
-                        <strong dir="auto">{sub.fullName || t('fmUnnamed')}</strong>
+                        <span className="forms-avatar">{initialsOf(report.reporterName || report.reporterEmail)}</span>
+                        <strong dir="auto">{report.reporterName || report.reporterEmail || t('fmUnnamed')}</strong>
                       </div>
                       <div className="forms-contact-cell">
-                        <span dir="ltr">{sub.email || t('fmNoEmail')}</span>
-                        {sub.phone ? <small dir="ltr">{sub.phone}</small> : null}
+                        <span dir="ltr">{report.route || '-'}</span>
+                        {report.locale ? <small dir="ltr">{report.locale}</small> : null}
                       </div>
-                      <span className={`forms-type-badge forms-type-badge--${sub.type || FORM_SUBMISSION_TYPE.VOLUNTEER}`}>
-                        {t(TYPE_META[sub.type]?.labelKey || TYPE_META[FORM_SUBMISSION_TYPE.VOLUNTEER].labelKey)}
+                      <span className="forms-type-badge forms-type-badge--volunteer">
+                        {t(CATEGORY_KEYS[report.category] || 'brCatOther')}
                       </span>
-                      <span className="forms-date-cell">{formatTableDate(sub.createdAt)}</span>
-                      <span className={`forms-status forms-status--${sub.status || FORM_SUBMISSION_STATUS.NEW}`}>
-                        {t(STATUS_META[sub.status]?.labelKey || STATUS_META[FORM_SUBMISSION_STATUS.NEW].labelKey)}
+                      <span className="forms-date-cell">{formatTableDate(report.createdAt)}</span>
+                      <span className={`forms-status forms-status--${report.status || 'new'}`}>
+                        {t(STATUS_KEYS[report.status] || 'fmStatusNew')}
                       </span>
                       <span className="forms-actions" onClick={(event) => event.stopPropagation()}>
                         <button
                           type="button"
-                          aria-label={(isHandled ? t('fmReopenAria') : t('fmMarkHandledAria')).replace('{name}', sub.fullName || t('fmSubmissionWord'))}
-                          title={(isHandled ? t('fmReopenBtn') : t('fmMarkAsHandled'))}
-                          onClick={() => toggleHandled(sub)}
+                          title={isHandled ? t('fmReopenBtn') : t('fmMarkAsHandled')}
+                          aria-label={isHandled ? t('fmReopenBtn') : t('fmMarkAsHandled')}
+                          onClick={() => toggleHandled(report)}
                           disabled={isBusy}
                         >
                           {isBusy ? <CircularProgress size={14} color="inherit" /> : isHandled ? <ReplayIcon fontSize="small" /> : <CheckCircleIcon fontSize="small" />}
@@ -296,18 +287,18 @@ export default function FormsPage() {
                         <button
                           type="button"
                           className="forms-action-danger"
-                          aria-label={t('fmDeleteAria').replace('{name}', sub.fullName || t('fmSubmissionWord'))}
-                          title={t('fmDeleteBtn')}
-                          onClick={() => setDeleteTarget(sub)}
+                          title={t('brDelete')}
+                          aria-label={t('brDelete')}
+                          onClick={() => setDeleteTarget(report)}
                           disabled={isBusy}
                         >
                           <DeleteOutlineIcon fontSize="small" />
                         </button>
                         <button
                           type="button"
-                          aria-label={t('fmViewAria').replace('{name}', sub.fullName || t('fmSubmissionWord'))}
-                          title={t('fmViewAria').replace('{name}', sub.fullName || t('fmSubmissionWord'))}
-                          onClick={() => openDetails(sub)}
+                          title={t('brViewAria')}
+                          aria-label={t('brViewAria')}
+                          onClick={() => openDetails(report)}
                         >
                           <VisibilityOutlinedIcon fontSize="small" />
                         </button>
@@ -317,8 +308,8 @@ export default function FormsPage() {
                 })
               ) : (
                 <div className="forms-table-state">
-                  <strong>{t('fmNoSubmissions')}</strong>
-                  <span>{submissions.length === 0 ? t('fmEmptyHint') : t('fmEmptyFilterHint')}</span>
+                  <strong>{t('brEmpty')}</strong>
+                  <span>{reports.length === 0 ? t('brEmptyHint') : t('brEmptyFilter')}</span>
                 </div>
               )}
             </div>
@@ -341,7 +332,7 @@ export default function FormsPage() {
         <Box
           role="dialog"
           aria-modal="true"
-          aria-label={t('fmViewAria').replace('{name}', selected.fullName || t('fmSubmissionWord'))}
+          aria-label={t('brDetailsTitle')}
           sx={{
             position: 'fixed',
             inset: 0,
@@ -373,7 +364,7 @@ export default function FormsPage() {
           >
             <IconButton
               onClick={() => setDetailsOpen(false)}
-              aria-label={t('fmCloseDetails')}
+              aria-label={t('brCancel')}
               sx={{
                 position: 'absolute',
                 top: 16,
@@ -411,71 +402,17 @@ export default function FormsPage() {
             >
               <Typography
                 variant="h5"
-                sx={{
-                  m: 0,
-                  color: '#4b136b',
-                  fontSize: { xs: '1.5rem', sm: '1.8rem' },
-                  fontWeight: 900,
-                  lineHeight: 1.14,
-                  overflowWrap: 'anywhere',
-                }}
+                sx={{ m: 0, color: '#4b136b', fontSize: { xs: '1.5rem', sm: '1.8rem' }, fontWeight: 900, lineHeight: 1.14, overflowWrap: 'anywhere' }}
               >
-                {getRequestTitle(selected.type)}
+                {t('brDetailsTitle')}
               </Typography>
-              <Box
-                sx={{
-                  display: 'inline-grid',
-                  justifyItems: 'center',
-                  gap: 0.2,
-                  minWidth: { xs: 'min(100%, 16rem)', sm: '18rem' },
-                  maxWidth: '100%',
-                  borderRadius: '16px',
-                  px: 2.2,
-                  py: 0.85,
-                  background: 'rgba(255, 255, 255, 0.72)',
-                  border: '1px solid rgba(223, 50, 123, 0.16)',
-                }}
-              >
-                <Typography sx={{ color: 'rgba(75, 19, 107, 0.52)', fontSize: '0.72rem', fontWeight: 850, textTransform: 'uppercase', letterSpacing: 0.4 }}>
-                  {getRequesterLabel(selected.type)}
-                </Typography>
-                <Typography dir="auto" sx={{ maxWidth: '100%', color: '#171239', fontSize: '1.05rem', fontWeight: 950, lineHeight: 1.2, overflowWrap: 'anywhere' }}>
-                  {selected.fullName || t('fmUnnamed')}
-                </Typography>
-              </Box>
+              <span className={`forms-status forms-status--${selected.status || 'new'}`}>
+                {t(STATUS_KEYS[selected.status] || 'fmStatusNew')}
+              </span>
             </Box>
 
             <Box sx={{ minHeight: 0, overflowY: 'auto', p: { xs: 1.5, sm: 2 } }}>
               <Box sx={{ display: 'grid', gap: 1.1 }}>
-                <Box
-                  component="section"
-                  sx={{
-                    display: 'grid',
-                    gap: 1.2,
-                    p: 1.5,
-                    border: '1px solid rgba(223, 50, 123, 0.1)',
-                    borderRadius: '16px',
-                    background: 'linear-gradient(135deg, rgba(255, 247, 251, 0.72), rgba(255, 255, 255, 0.98))',
-                  }}
-                >
-                  <Typography sx={{ m: 0, color: '#4b136b', fontSize: '1.02rem', fontWeight: 900, lineHeight: 1.3 }}>
-                    {t('auditDetailsAria')}
-                  </Typography>
-                  <Box sx={{ display: 'grid', gridTemplateColumns: '1fr', gap: 1.15 }}>
-                    <FormDetailLine label={t('fmEmail')} value={selected.email || t('fmNoEmail')} />
-                    <FormDetailLine label={t('fmPhone')} value={selected.phone} />
-                    <FormDetailLine label="Type" value={t(TYPE_META[selected.type]?.labelKey || TYPE_META[FORM_SUBMISSION_TYPE.VOLUNTEER].labelKey)} />
-                    <FormDetailLine label="Status" value={t(STATUS_META[selected.status]?.labelKey || STATUS_META[FORM_SUBMISSION_STATUS.NEW].labelKey)} />
-                    <FormDetailLine label="Submitted" value={formatTableDate(selected.createdAt)} />
-                    {selected.status === FORM_SUBMISSION_STATUS.HANDLED ? (
-                      <FormDetailLine
-                        label={t('fmHandledLabel').replace('{date}', formatDate(selected.handledAt, intlLocale))}
-                        value={selected.handledBy ? t('fmHandledBy').replace('{name}', selected.handledBy) : '-'}
-                      />
-                    ) : null}
-                  </Box>
-                </Box>
-
                 <Box
                   component="section"
                   sx={{
@@ -488,30 +425,44 @@ export default function FormsPage() {
                   }}
                 >
                   <Typography sx={{ m: 0, color: '#4b136b', fontSize: '1.02rem', fontWeight: 900, lineHeight: 1.3 }}>
-                    {t('fmMessage')}
+                    {t('brMessage')}
                   </Typography>
-                  <Typography dir="auto" sx={{ color: 'rgba(36, 16, 79, 0.76)', fontSize: '0.95rem', fontWeight: 650, lineHeight: 1.45, overflowWrap: 'anywhere' }}>
+                  <Typography dir="auto" sx={{ color: 'rgba(36, 16, 79, 0.76)', fontSize: '0.95rem', fontWeight: 650, lineHeight: 1.45, overflowWrap: 'anywhere', whiteSpace: 'pre-wrap' }}>
                     {selected.message || '-'}
                   </Typography>
+                </Box>
+
+                <Box
+                  component="section"
+                  sx={{
+                    display: 'grid',
+                    gap: 1.2,
+                    p: 1.5,
+                    border: '1px solid rgba(223, 50, 123, 0.1)',
+                    borderRadius: '16px',
+                    background: 'linear-gradient(135deg, rgba(255, 247, 251, 0.72), rgba(255, 255, 255, 0.98))',
+                  }}
+                >
+                  <Box sx={{ display: 'grid', gridTemplateColumns: '1fr', gap: 1.15 }}>
+                    <DetailLine label={t('brColReporter')} value={selected.reporterName || t('fmUnnamed')} />
+                    <DetailLine label={t('fmEmail')} value={selected.reporterEmail} />
+                    <DetailLine label={t('brColCategory')} value={t(CATEGORY_KEYS[selected.category] || 'brCatOther')} />
+                    <DetailLine label={t('brRoute')} value={selected.route} />
+                    <DetailLine label={t('brLocale')} value={selected.locale} />
+                    <DetailLine label={t('brColSubmitted')} value={formatDateTime(selected.createdAt, intlLocale)} />
+                  </Box>
                 </Box>
               </Box>
             </Box>
 
-            <Box
-              sx={{
-                px: { xs: 1.5, sm: 2 },
-                py: 1.25,
-                borderTop: '1px solid rgba(223, 50, 123, 0.1)',
-                background: 'rgba(255, 255, 255, 0.9)',
-              }}
-            >
+            <Box sx={{ px: { xs: 1.5, sm: 2 }, py: 1.25, borderTop: '1px solid rgba(223, 50, 123, 0.1)', background: 'rgba(255, 255, 255, 0.9)' }}>
               <Stack direction="row" spacing={1} justifyContent="flex-end" flexWrap="wrap" useFlexGap>
                 <Button
-                  onClick={() => toggleHandled(selected).then(() => setSelected((cur) => (cur ? { ...cur, status: (cur.status || 'new') === FORM_SUBMISSION_STATUS.HANDLED ? FORM_SUBMISSION_STATUS.NEW : FORM_SUBMISSION_STATUS.HANDLED } : cur)))}
-                  startIcon={(selected.status || 'new') === FORM_SUBMISSION_STATUS.HANDLED ? <ReplayIcon /> : <CheckCircleIcon />}
+                  onClick={() => toggleHandled(selected)}
+                  disabled={Boolean(busyId)}
+                  startIcon={(selected.status || 'new') === BUG_REPORT_STATUS.HANDLED ? <ReplayIcon /> : <CheckCircleIcon />}
                   sx={{
                     minHeight: 40,
-                    minWidth: 0,
                     px: 1.7,
                     border: '2px solid rgba(91, 30, 140, 0.2)',
                     borderRadius: 999,
@@ -530,22 +481,15 @@ export default function FormsPage() {
                       boxShadow: '0 14px 26px rgba(223, 50, 123, 0.24)',
                       transform: 'translateY(-2px)',
                     },
-                    '&:active': {
-                      transform: 'translateY(0)',
-                    },
                   }}
                 >
-                  {(selected.status || 'new') === FORM_SUBMISSION_STATUS.HANDLED ? t('fmReopenBtn') : t('fmMarkAsHandled')}
+                  {(selected.status || 'new') === BUG_REPORT_STATUS.HANDLED ? t('fmReopenBtn') : t('fmMarkAsHandled')}
                 </Button>
                 <Button
-                  onClick={() => {
-                    setDeleteTarget(selected);
-                    setDetailsOpen(false);
-                  }}
+                  onClick={() => { setDeleteTarget(selected); setDetailsOpen(false); }}
                   startIcon={<DeleteOutlineIcon />}
                   sx={{
                     minHeight: 40,
-                    minWidth: 0,
                     px: 1.7,
                     border: '2px solid rgba(91, 30, 140, 0.2)',
                     borderRadius: 999,
@@ -564,12 +508,9 @@ export default function FormsPage() {
                       boxShadow: '0 14px 26px rgba(223, 50, 123, 0.24)',
                       transform: 'translateY(-2px)',
                     },
-                    '&:active': {
-                      transform: 'translateY(0)',
-                    },
                   }}
                 >
-                  {t('fmDeleteBtn')}
+                  {t('brDelete')}
                 </Button>
               </Stack>
             </Box>
@@ -577,21 +518,18 @@ export default function FormsPage() {
         </Box>
       ) : null}
 
-      {/* Delete confirmation */}
       <Dialog
         open={Boolean(deleteTarget)}
         onClose={() => (busyId ? null : setDeleteTarget(null))}
         PaperProps={{ dir: direction, sx: { borderRadius: '24px', width: { xs: 'calc(100vw - 32px)', sm: '30rem' }, maxWidth: 480 } }}
       >
-        <DialogTitle sx={{ fontWeight: 950, color: '#100B2F' }}>{t('fmDeleteTitle')}</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 950, color: '#100B2F' }}>{t('brDeleteTitle')}</DialogTitle>
         <DialogContent>
-          <Typography sx={{ color: '#4F4A70' }}>
-            {t('fmDeleteConfirmPre')}<strong dir="auto">{deleteTarget?.fullName || deleteTarget?.email || t('fmThisContact')}</strong>{t('fmDeleteConfirmPost')}
-          </Typography>
+          <Typography sx={{ color: '#4F4A70' }}>{t('brDeleteConfirm')}</Typography>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2.4 }}>
           <Button onClick={() => setDeleteTarget(null)} disabled={Boolean(busyId)} sx={{ borderRadius: 999, textTransform: 'none', fontWeight: 800, color: '#6F6890' }}>
-            {t('fmCancel')}
+            {t('brCancel')}
           </Button>
           <Button
             onClick={confirmDelete}
@@ -601,7 +539,7 @@ export default function FormsPage() {
             startIcon={busyId ? <CircularProgress size={16} color="inherit" /> : <DeleteOutlineIcon />}
             sx={{ borderRadius: 999, textTransform: 'none', fontWeight: 950, px: 2.8 }}
           >
-            {busyId ? t('fmDeleting') : t('fmDeleteBtn')}
+            {busyId ? t('brDeleting') : t('brDelete')}
           </Button>
         </DialogActions>
       </Dialog>

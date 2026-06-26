@@ -481,6 +481,13 @@
   min-width: 0;
 }
 
+.calendar-item__title-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.625rem;
+}
+
 .calendar-item h3 {
   font-size: 0.98rem;
   font-weight: 800;
@@ -490,6 +497,31 @@
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
+}
+
+.calendar-item__delete-btn {
+  border: none;
+  background: transparent;
+  color: #7b3fa1;
+  font: inherit;
+  font-size: 0.74rem;
+  font-weight: 700;
+  line-height: 1;
+  padding: 0;
+  cursor: pointer;
+  pointer-events: auto;
+  flex-shrink: 0;
+  transition: color 160ms ease, opacity 160ms ease;
+}
+
+.calendar-item__delete-btn:hover {
+  color: #5b1e8c;
+  text-decoration: underline;
+}
+
+.calendar-item__delete-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .calendar-item p {
@@ -1424,6 +1456,14 @@
 
 .participant-home--dark .calendar-item h3 {
   color: #f8fafc;
+}
+
+.participant-home--dark .calendar-item__delete-btn {
+  color: #c084fc;
+}
+
+.participant-home--dark .calendar-item__delete-btn:hover {
+  color: #e9d5ff;
 }
 
 .participant-home--dark .calendar-item p,

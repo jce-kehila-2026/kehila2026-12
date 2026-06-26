@@ -1,0 +1,211 @@
+.report-modal__overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(45, 10, 78, 0.38);
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+  animation: report-fade 0.16s ease;
+}
+
+@keyframes report-fade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.report-modal {
+  width: 100%;
+  max-width: 30rem;
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 24px 70px rgba(75, 19, 107, 0.22);
+  overflow: hidden;
+  animation: report-pop 0.18s cubic-bezier(0.34, 1.4, 0.64, 1);
+}
+
+@keyframes report-pop {
+  from { opacity: 0; transform: translateY(10px) scale(0.98); }
+  to { opacity: 1; transform: none; }
+}
+
+.report-modal__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 1.25rem 1.25rem 0.75rem;
+}
+
+.report-modal__heading h2 {
+  margin: 0;
+  font-size: 1.0625rem;
+  font-weight: 800;
+  color: #2d0a4e;
+}
+
+.report-modal__heading p {
+  margin: 0.25rem 0 0;
+  font-size: 0.8125rem;
+  color: rgba(75, 19, 107, 0.6);
+  line-height: 1.4;
+}
+
+.report-modal__close {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  border-radius: 999px;
+  background: rgba(167, 139, 250, 0.12);
+  color: #7b3fa1;
+  cursor: pointer;
+  transition: background 0.16s;
+}
+
+.report-modal__close:hover {
+  background: rgba(167, 139, 250, 0.24);
+}
+
+.report-modal__form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.875rem;
+  padding: 0.5rem 1.25rem 1.25rem;
+}
+
+.report-modal__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+}
+
+.report-modal__field > span {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #4b136b;
+}
+
+.report-modal__field select,
+.report-modal__field textarea {
+  width: 100%;
+  border: 1px solid rgba(167, 139, 250, 0.4);
+  border-radius: 12px;
+  padding: 0.625rem 0.75rem;
+  font: inherit;
+  font-size: 0.875rem;
+  color: #2d0a4e;
+  background: #fff;
+  resize: vertical;
+}
+
+.report-modal__field select:focus,
+.report-modal__field textarea:focus {
+  outline: none;
+  border-color: #ec168c;
+  box-shadow: 0 0 0 3px rgba(236, 22, 140, 0.14);
+}
+
+.report-modal__error {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: #dc2626;
+}
+
+.report-modal__actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.625rem;
+  margin-top: 0.25rem;
+}
+
+.report-modal__cancel,
+.report-modal__submit {
+  border: none;
+  border-radius: 999px;
+  padding: 0.5rem 1.125rem;
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: opacity 0.16s, background 0.16s;
+}
+
+.report-modal__cancel {
+  background: rgba(167, 139, 250, 0.14);
+  color: #4b136b;
+}
+
+.report-modal__cancel:hover {
+  background: rgba(167, 139, 250, 0.26);
+}
+
+.report-modal__submit {
+  background: linear-gradient(135deg, #ec168c, #7b3fa1);
+  color: #fff;
+}
+
+.report-modal__submit:hover:not(:disabled) {
+  opacity: 0.92;
+}
+
+.report-modal__submit:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.report-modal__success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem 1.5rem;
+  text-align: center;
+}
+
+.report-modal__success p {
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: #2d0a4e;
+}
+
+/* RTL: flip the action row so primary stays at the inline-end. */
+[dir='rtl'] .report-modal__actions {
+  justify-content: flex-start;
+}
+
+/* Dark mode (participant home toggles this ancestor class). */
+.participant-home--dark .report-modal {
+  background: #2a1840;
+}
+
+.participant-home--dark .report-modal__heading h2 {
+  color: #f5ecff;
+}
+
+.participant-home--dark .report-modal__heading p {
+  color: rgba(245, 236, 255, 0.62);
+}
+
+.participant-home--dark .report-modal__field > span {
+  color: #e7d9ff;
+}
+
+.participant-home--dark .report-modal__field select,
+.participant-home--dark .report-modal__field textarea {
+  background: #1f1133;
+  color: #f5ecff;
+  border-color: rgba(167, 139, 250, 0.34);
+}
+
+.participant-home--dark .report-modal__success p {
+  color: #f5ecff;
+}

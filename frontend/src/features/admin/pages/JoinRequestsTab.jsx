@@ -326,43 +326,31 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
       dir={direction}
       sx={{
         width: '100%',
-        bgcolor: 'rgba(255, 255, 255, 0.82)',
-        border: '1px solid rgba(130, 92, 206, 0.14)',
-        borderRadius: '28px',
-        boxShadow: '0 28px 74px rgba(91, 57, 145, 0.11)',
-        backdropFilter: 'blur(22px)',
-        overflow: 'hidden',
         height: '100%',
         maxHeight: '100%',
         display: 'flex',
         flexDirection: 'column',
+        gap: '1rem',
         minHeight: 0,
       }}
     >
       <Stack
         direction={{ xs: 'column', xl: 'row' }}
-        spacing={2}
+        spacing={1.5}
         alignItems={{ xl: 'center' }}
         justifyContent="space-between"
-        sx={{ p: { xs: 2.2, md: 3 }, flexShrink: 0 }}
+        sx={{
+          border: '1px solid rgba(167, 139, 250, 0.18)',
+          borderRadius: '22px',
+          background: 'rgba(255, 255, 255, 0.78)',
+          boxShadow: 'none',
+          backdropFilter: 'blur(18px)',
+          p: '1rem',
+          flexShrink: 0,
+          position: 'relative',
+          zIndex: 100,
+        }}
       >
-        <Stack direction="row" spacing={1.1} alignItems="center">
-          <Typography variant="h5" fontWeight={950} sx={{ color: '#100B2F' }}>
-            {t('jrTitle')}
-          </Typography>
-          <Chip
-            label={t('jrTotal').replace('{n}', requests.length)}
-            sx={{
-              height: '1.875rem',
-              bgcolor: '#F2ECFF',
-              color: '#6D3CCF',
-              fontWeight: 950,
-              borderRadius: 999,
-              border: '1px solid rgba(124, 58, 237, 0.08)',
-            }}
-          />
-        </Stack>
-
         <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.4} sx={{ flex: 1, justifyContent: 'flex-end' }}>
           <TextField
             placeholder={t('jrSearchPlaceholder')}
@@ -371,12 +359,12 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
             sx={{
               minWidth: { md: '20.625rem' },
               '& .MuiOutlinedInput-root': {
-                height: '3.125rem',
-                borderRadius: '16px',
-                bgcolor: 'rgba(255,255,255,0.72)',
-                '& fieldset': { borderColor: 'rgba(130, 92, 206, 0.16)' },
-                '&:hover fieldset': { borderColor: 'rgba(124, 58, 237, 0.28)' },
-                '&.Mui-focused fieldset': { borderColor: '#B57BE8' },
+                height: '2.5rem',
+                borderRadius: '18px',
+                bgcolor: 'rgba(255, 255, 255, 0.97)',
+                '& fieldset': { borderColor: 'rgba(0, 0, 0, 0.23)' },
+                '&:hover fieldset': { borderColor: 'rgba(0, 0, 0, 0.32)' },
+                '&.Mui-focused fieldset': { borderColor: '#6d35b8', boxShadow: '0 0 0 3px rgba(109, 53, 184, 0.14)' },
               },
             }}
             InputProps={{
@@ -392,11 +380,11 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
               value={statusFilter}
               onChange={(event) => setStatusFilter(event.target.value)}
               sx={{
-                height: '3.125rem',
-                borderRadius: '16px',
-                bgcolor: 'rgba(255,255,255,0.72)',
-                fontWeight: 750,
-                '& fieldset': { borderColor: 'rgba(130, 92, 206, 0.16)' },
+                height: '2.5rem',
+                borderRadius: '18px',
+                bgcolor: 'rgba(255, 255, 255, 0.97)',
+                fontWeight: 400,
+                '& fieldset': { borderColor: 'rgba(0, 0, 0, 0.23)' },
               }}
             >
               <MenuItem value="all">{t('jrAllStatuses')}</MenuItem>
@@ -410,37 +398,42 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
 
       <Box
         sx={{
-          px: { xs: 2, md: 3 },
-          pb: { xs: 2.2, md: 3 },
-          flex: 1,
+          flex: '1 1 auto',
           minHeight: 0,
           overflow: 'hidden',
           display: 'flex',
           flexDirection: 'column',
+          border: '1px solid rgba(167, 139, 250, 0.18)',
+          borderRadius: '24px',
+          background: 'rgba(255, 255, 255, 0.82)',
+          boxShadow: 'none',
+          backdropFilter: 'blur(18px)',
+          position: 'relative',
+          zIndex: 1,
         }}
       >
         <Box
           sx={{
             ...rowGrid,
-            px: 2.2,
-            py: 1.4,
+            px: '1.125rem',
             display: { xs: 'none', md: 'grid' },
-            borderRadius: '18px 18px 0 0',
-            border: '1px solid rgba(130, 92, 206, 0.10)',
-            borderBottom: 'none',
-            bgcolor: 'rgba(255,255,255,0.42)',
-            flexShrink: 0,
+            minHeight: '3.25rem',
+            borderBottom: '1px solid rgba(167, 139, 250, 0.13)',
+            color: 'rgba(36, 16, 79, 0.64)',
+            fontSize: '0.8125rem',
+            fontWeight: 800,
+            flex: '0 0 auto',
           }}
         >
           {['jrColApplicant', 'jrColPhone', 'jrColSubmitted', 'jrColStatus', 'jrColActions'].map((key, index) => (
             <Typography
               key={key}
-              variant="caption"
-              sx={{
-                fontWeight: 950,
-                color: '#625B84',
-                textTransform: 'uppercase',
-                letterSpacing: 0.3,
+                sx={{
+                fontWeight: 800,
+                color: 'rgba(36, 16, 79, 0.64)',
+                fontSize: '0.8125rem',
+                textTransform: 'none',
+                letterSpacing: 0,
                 textAlign: index === 4 ? 'end' : 'start',
               }}
             >
@@ -451,19 +444,17 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
 
         <Box
           sx={{
-            flex: 1,
+            flex: '1 1 auto',
             minHeight: 0,
-            maxHeight: 'calc(100vh - 330px)',
             overflowY: 'auto',
             overflowX: 'hidden',
-            pr: '6px',
-            mr: '-6px',
+            scrollbarGutter: 'stable',
             '&::-webkit-scrollbar': { width: '0.5rem' },
             '&::-webkit-scrollbar-track': { background: 'rgba(244, 238, 255, 0.45)', borderRadius: 999 },
             '&::-webkit-scrollbar-thumb': { background: 'rgba(167, 139, 250, 0.5)', borderRadius: 999 },
           }}
         >
-          <Stack spacing={1.1}>
+          <Stack spacing={0}>
             {loading ? (
               <Box sx={{ py: 8, textAlign: 'center' }}>
                 <CircularProgress />
@@ -482,40 +473,39 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
                     }}
                     sx={{
                       ...rowGrid,
-                      px: { xs: 1.7, md: 2.2 },
-                      py: 1.8,
-                      borderRadius: '22px',
-                      border: '1px solid rgba(130, 92, 206, 0.10)',
-                      bgcolor: 'rgba(255,255,255,0.72)',
+                      minHeight: { xs: 'auto', md: '4rem' },
+                      px: { xs: 1.7, md: '1.125rem' },
+                      py: { xs: 1.35, md: 0 },
+                      borderRadius: { xs: '18px', md: 0 },
+                      border: 0,
+                      borderBottom: '1px solid rgba(167, 139, 250, 0.13)',
+                      bgcolor: 'transparent',
                       cursor: 'pointer',
-                      transition: 'transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease, border-color 180ms ease',
+                      transition: 'background-color 180ms ease',
                       '&:hover': {
-                        bgcolor: 'rgba(255, 250, 254, 0.94)',
-                        borderColor: 'rgba(124, 58, 237, 0.18)',
-                        boxShadow: '0 16px 34px rgba(91, 57, 145, 0.10)',
-                        transform: 'translateY(-2px) scale(1.002)',
+                        bgcolor: 'rgba(255, 250, 254, 0.82)',
                       },
                     }}
                   >
                     <Stack direction="row" spacing={1.5} alignItems="center" sx={{ minWidth: 0 }}>
                       <Avatar
                         sx={{
-                          width: '3.375rem',
-                          height: '3.375rem',
-                          bgcolor: '#EEE7FF',
+                          width: '2rem',
+                          height: '2rem',
+                          background: 'linear-gradient(135deg, #fce7f3, #ddd6fe)',
                           color: '#6D3CCF',
-                          fontWeight: 950,
-                          fontSize: '1.1875rem',
-                          boxShadow: '0 10px 24px rgba(109, 60, 207, 0.12)',
+                          fontWeight: 800,
+                          fontSize: '0.75rem',
+                          boxShadow: 'none',
                         }}
                       >
                         {initialsOf(req.fullName)}
                       </Avatar>
                       <Box sx={{ minWidth: 0 }}>
-                        <Typography dir="auto" fontWeight={950} noWrap sx={{ color: '#17122E' }}>
+                        <Typography dir="auto" fontWeight={800} noWrap sx={{ color: '#17122E', fontSize: '0.8125rem', lineHeight: 1.2 }}>
                           {req.fullName || t('jrUnnamed')}
                         </Typography>
-                        <Typography color="#5E587E" noWrap sx={{ fontSize: '0.84375rem' }}>
+                        <Typography color="rgba(36, 16, 79, 0.55)" noWrap sx={{ fontSize: '0.75rem', mt: 0.125 }}>
                           {req.email || t('jrNoEmail')}
                         </Typography>
                       </Box>
