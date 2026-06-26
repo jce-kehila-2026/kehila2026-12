@@ -11,11 +11,11 @@
   width: 100%;
   max-width: none;
   min-height: 0;
-  height: auto;
-  max-height: none;
+  height: calc(100vh - 6.5rem);
+  max-height: calc(100vh - 6.5rem);
   margin: 0;
   padding: 0;
-  overflow: visible;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   align-self: stretch;
@@ -27,7 +27,25 @@
   outline: none;
 }
 
+.admin-main:has(.admin-events-page) {
+  overflow-y: hidden !important;
+}
+
 /* Title → stats → tabs → filters → table (normal page flow) */
+<<<<<<< HEAD
+.admin-events-content {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+}
+
+=======
+>>>>>>> bb78ec160efc7a751ea2de57a428e363761a0001
 /* Page title — scrolls with content (not fixed/sticky) */
 .admin-events-shell {
   display: grid;
@@ -39,7 +57,7 @@
   height: auto;
   gap: 0;
   align-items: stretch;
-  overflow: visible;
+  overflow: hidden;
   margin: 0;
   padding: 0;
   background: transparent;
@@ -57,11 +75,11 @@
   width: 100%;
   max-width: none;
   min-height: 0;
-  height: auto;
+  height: 100%;
   min-width: 0;
   flex: 1 1 auto;
   flex-direction: column;
-  overflow: visible;
+  overflow: hidden;
   margin: 0;
   padding: 0;
   background: transparent;
@@ -97,8 +115,28 @@
   letter-spacing: 0;
   white-space: nowrap;
   color: #fff;
+  background: linear-gradient(135deg, #e73386, #dc2577);
   cursor: pointer;
   margin-inline-start: auto;
+  box-shadow: none;
+  transform: none;
+}
+
+.admin-events-page.public-cta-scope .admin-events-primary-btn.public-cta-highlight {
+  background: linear-gradient(135deg, #e73386, #dc2577);
+  box-shadow: none;
+  transform: none;
+}
+
+.admin-events-page.public-cta-scope .admin-events-primary-btn.public-cta-highlight:is(:hover, :focus-visible):not(:disabled) {
+  background: linear-gradient(135deg, #df327b, #cf1f70);
+  box-shadow: none;
+  transform: none;
+}
+
+.admin-events-page.public-cta-scope .admin-events-primary-btn.public-cta-highlight:active:not(:disabled) {
+  box-shadow: none;
+  transform: none;
 }
 
 .admin-events-primary-btn__label {
@@ -113,9 +151,17 @@
 }
 
 .admin-events-tabs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
+  width: fit-content;
+  min-height: 2.75rem;
+  padding: 0.25rem;
+  border: 0;
+  border-radius: 12px;
+  display: inline-grid;
+  grid-template-columns: repeat(2, 1fr);
+  align-items: center;
+  gap: 0.25rem;
+  background: #fdf2f8;
+  backdrop-filter: none;
   margin: 0;
   overflow: visible;
 }
@@ -124,36 +170,45 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.625rem;
-  min-height: 2.5rem;
-  border: 1px solid rgba(17, 24, 50, 0.08);
-  border-radius: 999px;
-  padding: 0.3125rem 1rem 0.3125rem 0.375rem;
-  color: #1a2138;
-  background: rgba(255, 255, 255, 0.92);
-  font-weight: 800;
+  gap: 0.5rem;
+  min-width: 5.375rem;
+  min-height: 2.25rem;
+  border: 0;
+  border-radius: 9px;
+  padding: 0.5625rem 0.9375rem;
+  color: #db4f9f;
+  background: transparent;
+  font: inherit;
+  font-weight: 700;
   cursor: pointer;
-  box-shadow: 0 10px 22px rgba(51, 29, 95, 0.08);
+  text-transform: capitalize;
+  box-shadow: none;
+  transition: color 160ms ease, background 160ms ease, box-shadow 160ms ease, transform 160ms ease;
 }
 
 .admin-events-tabs button span {
-  display: grid;
-  width: 1.875rem;
-  height: 1.875rem;
+  display: inline-flex;
+  width: auto;
+  height: auto;
   place-items: center;
-  border-radius: 50%;
-  color: #111832;
-  background: #fff;
-  box-shadow: inset 0 0 0 1px rgba(17, 24, 50, 0.1);
+  border-radius: 0;
+  color: currentColor;
+  background: transparent;
+  box-shadow: none;
 }
 
+.admin-events-tabs button:hover,
+.admin-events-tabs button:focus-visible,
 .admin-events-tabs button.is-active {
-  font-weight: 800;
+  color: #fff;
+  background: linear-gradient(135deg, #e73386, #dc2577);
+  box-shadow: none;
+  transform: none;
 }
 
 .admin-events-page.public-cta-scope .admin-events-tabs .public-cta-highlight.is-active span {
   color: #fff;
-  background: rgba(255, 255, 255, 0.18);
+  background: transparent;
   box-shadow: none;
 }
 
@@ -429,7 +484,7 @@
   flex: 1 1 auto;
   flex-direction: column;
   overflow: hidden;
-  max-height: calc(100dvh - 20rem);
+  max-height: none;
   border: 1px solid var(--admin-border);
   border-radius: 14px;
   background: #fff;
@@ -447,6 +502,10 @@
   width: 100%;
   min-width: 57.5rem;
   border-collapse: collapse;
+}
+
+.admin-events-table--appointments {
+  min-width: 49rem;
 }
 
 .admin-events-table th {
@@ -2479,17 +2538,16 @@
 /* Back to Website hover — tab icon badge */
 .admin-events-page.public-cta-scope .admin-events-tabs .public-cta-interaction:is(:hover, :focus-visible):not(:disabled) span {
   color: #fff;
-  background: rgba(255, 255, 255, 0.18);
+  background: transparent;
   box-shadow: none;
 }
 
-/* Tabs: keep Personal Area colors but avoid scale/lift clipping inside layout */
 .admin-events-page.public-cta-scope .admin-events-tabs .public-cta-highlight:is(:hover, :focus-visible):not(:disabled) {
-  transform: translateY(-2px);
+  transform: none;
 }
 
 .admin-events-page.public-cta-scope .admin-events-tabs .public-cta-highlight:active:not(:disabled) {
-  transform: translateY(0);
+  transform: none;
 }
 
 @media (max-width: 1320px) {
@@ -2568,7 +2626,7 @@
 
 @media (max-width: 860px) {
   .admin-events-table-card {
-    max-height: calc(100dvh - 17rem);
+    max-height: none;
   }
 
   .admin-events-table-footer {
@@ -2590,7 +2648,7 @@
   }
 
   .admin-events-tabs button {
-    flex: 1 1 180px;
+    min-width: 0;
   }
 
   .admin-events-primary-btn {
