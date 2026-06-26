@@ -671,7 +671,6 @@ export default function EventsPage() {
   const appointmentsCount = typedEvents.filter((event) => event.eventType === 'appointment').length;
   const selectedEventCapacity = Number(selectedEvent?.maxParticipants || selectedEvent?.capacity) || 0;
   const selectedEventRegistered = selectedEvent ? (counts[selectedEvent.id] ?? registrations.length) : 0;
-  const selectedEventProgress = selectedEventCapacity ? Math.min(100, (selectedEventRegistered / selectedEventCapacity) * 100) : 0;
 
   // A recurring workshop's drawer is shown per-session (date selector + per-session
   // count/capacity) to match the events table, instead of one mixed all-sessions list.
@@ -1015,6 +1014,26 @@ export default function EventsPage() {
         return {
           ...current,
           startTime: nextTime,
+          providers,
+        };
+      });
+      return;
+    }
+
+    if (field === 'endTime') {
+      const nextTime = String(value ?? '');
+      setForm((current) => {
+        const providers = (current.providers?.length ? current.providers : [createEmptyProvider()]).map(
+          (provider, providerIndex) => {
+            if (providerIndex !== 0) return provider;
+            const slots = provider.slots?.length ? [...provider.slots] : [createEmptySlot()];
+            slots[0] = { ...(slots[0] || createEmptySlot()), endTime: nextTime };
+            return { ...provider, slots };
+          }
+        );
+        return {
+          ...current,
+          endTime: nextTime,
           providers,
         };
       });
@@ -2007,8 +2026,8 @@ export default function EventsPage() {
                     <span><Schedule /> {formatScheduleTime(selectedEvent, intlLocale, t('evTimeTBD'))}</span>
                   </div>
                   <div className="admin-events-participant-summary__capacity">
-                    <strong>{selectedEventRegistered} / {selectedEventCapacity || '-'}</strong>
-                    <span><i style={{ width: `${selectedEventProgress}%` }} /></span>
+                    <strong>{summaryRegistered} / {summaryCapacity || '-'}</strong>
+                    <span><i style={{ width: `${summaryProgress}%` }} /></span>
                   </div>
                 </div>
               </section>
@@ -2173,6 +2192,30 @@ export default function EventsPage() {
                 </>
               ) : (
                 <>
+                  {selectedEventIsRecurringWorkshop ? (
+                    <section className="admin-events-schedule-toolbar">
+                      <label>
+                        <span>{t('pdSessionDate')}</span>
+                        <select
+                          value={selectedParticipantDate}
+                          disabled={!workshopSessionDates.length}
+                          onChange={(event) => setSelectedParticipantDate(event.target.value)}
+                        >
+                          {workshopSessionDates.length ? (
+                            workshopSessionDates.map((item) => (
+                              <option value={item.dateKey} key={item.dateKey}>
+                                {formatDateLabel(item.dateKey, intlLocale, t('pdSelectedDate'))} ({item.count})
+                              </option>
+                            ))
+                          ) : (
+                            <option value="">{t('pdNoBookedDatesOption')}</option>
+                          )}
+                        </select>
+                      </label>
+                      <p>{t('pdWorkshopSessionHint')}</p>
+                    </section>
+                  ) : null}
+
                   <section className="admin-events-participant-stats" aria-label={t('pdSubtitle')}>
                     <article><Groups /><strong>{participantStats.registered}</strong><span>{t('pdRegistered')}</span></article>
                     <article><EventAvailable /><strong>{participantStats.remaining}</strong><span>{t('pdRemaining')}</span></article>
@@ -2199,7 +2242,7 @@ export default function EventsPage() {
                     </select>
                   </section>
 
-                  <p className="admin-events-participant-count">{t('pdParticipantsCount').replace('{n}', filteredRegistrations.length)}</p>
+                  <p className="admin-events-participant-count">{t('pdParticipantsCount').replace('{n}', visibleParticipantRows.length)}</p>
 
                   <section className="admin-events-participant-list">
                     {registrationsLoading ? (
@@ -2211,8 +2254,8 @@ export default function EventsPage() {
                         <p>{registrationsError}</p>
                         <button type="button" onClick={handleParticipantsRetry}>{t('pdRetry')}</button>
                       </div>
-                    ) : filteredRegistrations.length ? (
-                      filteredRegistrations.map((registration) => {
+                    ) : visibleParticipantRows.length ? (
+                      visibleParticipantRows.map((registration) => {
                         const name = getParticipantName(registration);
                         const email = getParticipantEmail(registration);
                         const status = getParticipantStatus(registration);
