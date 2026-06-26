@@ -13,6 +13,13 @@
   background: transparent;
 }
 
+.admin-page-header--topbar {
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  min-height: 3.25rem;
+}
+
 .admin-page-header--no-clip {
   margin-top: 0;
 }
@@ -28,7 +35,14 @@
   font-size: 2.125rem;
   font-weight: 900;
   letter-spacing: 0;
-  line-height: 1.1;
+  line-height: 1.2;
+}
+
+.admin-page-header--topbar .admin-page-title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  padding: 0.05rem 0 0.16rem;
 }
 
 .admin-page-subtitle {
@@ -55,8 +69,16 @@
     flex-direction: column;
   }
 
+  .admin-page-header--topbar {
+    gap: 0.5rem;
+  }
+
   .admin-page-title {
     font-size: 1.85rem;
+  }
+
+  .admin-page-header--topbar .admin-page-title {
+    font-size: clamp(1.35rem, 7vw, 1.85rem);
   }
 
   .admin-page-header__actions {

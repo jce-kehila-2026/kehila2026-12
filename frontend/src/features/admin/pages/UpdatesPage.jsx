@@ -265,7 +265,6 @@ export default function UpdatesPage() {
       {/* Header */}
       <AdminPageHeader
         title={t('upHeaderTitle')}
-        subtitle={t('upHeaderSubtitle')}
         actions={(
           <>
             <button

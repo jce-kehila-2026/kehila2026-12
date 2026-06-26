@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { collection, doc, documentId, getDoc, getDocs, limit, orderBy, query, serverTimestamp, updateDoc } from 'firebase/firestore';
-import { Ban, Download, Pencil, ShieldCheck } from 'lucide-react';
+import { Download } from 'lucide-react';
 import { db } from '../../../firebase';
 import { useAdmin } from '../context/AdminContext';
 import { logAuditEvent } from '../services/auditService';
@@ -15,7 +15,6 @@ import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
 import Dialog from '@mui/material/Dialog';
-import Divider from '@mui/material/Divider';
 import Fade from '@mui/material/Fade';
 import IconButton from '@mui/material/IconButton';
 import MenuItem from '@mui/material/MenuItem';
@@ -25,7 +24,7 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import CloseIcon from '@mui/icons-material/Close';
 import DeleteOutlinedIcon from '@mui/icons-material/DeleteOutlined';
-import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
+import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import Avatar from '@mui/material/Avatar';
 
 const PAGE_SIZE = 10;
@@ -42,36 +41,19 @@ const ROLE_STYLES = {
   participant: { color: '#6D3CCF', backgroundColor: 'rgba(109, 60, 207, 0.12)' },
 };
 
-const actionButtonBaseSx = {
-  height: '2rem',
-  borderRadius: 2.25,
-  px: 1.25,
-  fontSize: '0.78125rem',
-  fontWeight: 850,
-  letterSpacing: 0,
-  border: '1px solid transparent',
-  boxShadow: '0 8px 18px rgba(91, 57, 145, 0.05)',
-  transition: 'transform 160ms ease, box-shadow 160ms ease, background 160ms ease, border-color 160ms ease',
-  '& .MuiButton-startIcon': {
-    mr: 0.75,
-    '& svg': {
-      width: '0.9375rem',
-      height: '0.9375rem',
-      strokeWidth: 2.2,
-    },
-  },
-  '&:hover': {
-    transform: 'translateY(-1px)',
-  },
-};
-
 function formatDateValue(value) {
   if (!value) return '-';
-  if (value?.toDate) return value.toDate().toLocaleDateString();
+  const formatDayMonthYear = (date) => {
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    return `${day}/${month}/${date.getFullYear()}`;
+  };
+  if (value?.toDate) return formatDayMonthYear(value.toDate());
   if (typeof value === 'object' && typeof value.seconds === 'number') {
-    return new Date(value.seconds * 1000).toLocaleDateString();
+    return formatDayMonthYear(new Date(value.seconds * 1000));
   }
-  return String(value);
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? String(value) : formatDayMonthYear(parsed);
 }
 
 function escapeCsvValue(value) {
@@ -373,7 +355,7 @@ export default function UserManagementPage() {
     display: 'grid',
     gridTemplateColumns: {
       xs: 'minmax(0, 1fr)',
-      md: 'minmax(260px, 1.35fr) minmax(150px, 0.72fr) minmax(120px, 0.58fr) minmax(112px, 0.52fr) minmax(92px, 0.42fr)',
+      md: 'minmax(260px, 1.35fr) minmax(150px, 0.72fr) minmax(120px, 0.58fr) minmax(112px, 0.52fr) 116px',
     },
     alignItems: 'center',
     columnGap: '0.75rem',
@@ -391,6 +373,11 @@ export default function UserManagementPage() {
         bgcolor: 'rgba(223, 50, 123, 0.10)',
         hover: 'rgba(223, 50, 123, 0.16)',
       },
+      bookingEye: {
+        color: '#5b1e8c',
+        bgcolor: 'rgba(255, 255, 255, 0.97)',
+        hover: 'linear-gradient(135deg, #e73386, #dc2577)',
+      },
     };
     const palette = tones[tone] || tones.purple;
 
@@ -398,15 +385,21 @@ export default function UserManagementPage() {
       width: '2rem',
       height: '2rem',
       color: palette.color,
-      bgcolor: 'rgba(255, 255, 255, 0.97)',
+      bgcolor: tone === 'bookingEye' ? palette.bgcolor : 'rgba(255, 255, 255, 0.97)',
       border: 0,
       boxShadow: '0 9px 24px rgba(91, 30, 140, 0.12)',
-      transition: 'transform 160ms ease, background-color 160ms ease, box-shadow 160ms ease',
+      transition: 'color 180ms ease, background 180ms ease, box-shadow 180ms ease, transform 180ms ease',
       '&:hover': {
         color: '#fff',
-        bgcolor: tone === 'pink' ? '#DF327B' : '#6D3CCF',
+        background: tone === 'bookingEye' ? palette.hover : tone === 'pink' ? '#DF327B' : '#6D3CCF',
         transform: 'translateY(-2px)',
-        boxShadow: '0 14px 26px rgba(223, 50, 123, 0.20)',
+        boxShadow: tone === 'bookingEye' ? '0 14px 26px rgba(223, 50, 123, 0.24)' : '0 14px 26px rgba(223, 50, 123, 0.20)',
+      },
+      '&:focus-visible': {
+        color: '#fff',
+        background: tone === 'bookingEye' ? palette.hover : tone === 'pink' ? '#DF327B' : '#6D3CCF',
+        transform: 'translateY(-2px)',
+        boxShadow: tone === 'bookingEye' ? '0 14px 26px rgba(223, 50, 123, 0.24)' : '0 14px 26px rgba(223, 50, 123, 0.20)',
       },
     };
   };
@@ -477,8 +470,8 @@ export default function UserManagementPage() {
       sx={{
         width: '100%',
         maxWidth: '100%',
-        height: 'calc(100vh - 6.5rem)',
-        maxHeight: 'calc(100vh - 6.5rem)',
+        height: '100%',
+        maxHeight: '100%',
         overflow: 'hidden',
         color: '#24104f',
         boxSizing: 'border-box',
@@ -763,12 +756,6 @@ export default function UserManagementPage() {
                   return (
                     <Box
                       key={user.id}
-                      role="button"
-                      tabIndex={0}
-                      onClick={() => selectUser(user)}
-                      onKeyDown={(event) => {
-                        if (event.key === 'Enter' || event.key === ' ') selectUser(user);
-                      }}
                       sx={{
                         ...rowGrid,
                         minHeight: { xs: 'auto', md: '4rem' },
@@ -780,17 +767,8 @@ export default function UserManagementPage() {
                         color: 'rgba(36, 16, 79, 0.78)',
                         fontSize: '0.8125rem',
                         fontWeight: 700,
-                        bgcolor: inactive ? 'rgba(255, 247, 250, 0.62)' : 'transparent',
-                        cursor: 'pointer',
-                        transition: 'background-color 180ms ease',
-                        ...(selectedUser?.id === user.id
-                          ? {
-                              bgcolor: inactive ? 'rgba(255, 239, 245, 0.8)' : 'rgba(244, 238, 255, 0.74)',
-                            }
-                          : {}),
-                        '&:hover': {
-                          bgcolor: inactive ? 'rgba(255, 242, 247, 0.86)' : 'rgba(255, 250, 254, 0.82)',
-                        },
+                        bgcolor: 'transparent',
+                        cursor: 'default',
                       }}
                     >
                       <Stack direction="row" spacing={1.25} alignItems="center" sx={{ minWidth: 0 }}>
@@ -810,7 +788,6 @@ export default function UserManagementPage() {
                         </Avatar>
                         <Box sx={{ minWidth: 0 }}>
                           <Typography fontWeight={800} noWrap sx={{ color: '#17122E', fontSize: '0.8125rem', lineHeight: 1.2 }}>{getFullName(user, t('umUnnamedUser'))}</Typography>
-                          <Typography color="rgba(36, 16, 79, 0.55)" noWrap sx={{ fontSize: '0.75rem', mt: 0.125 }}>{user.email || t('umNoEmail')}</Typography>
                         </Box>
                       </Stack>
 
@@ -860,11 +837,16 @@ export default function UserManagementPage() {
                       <Stack
                         direction="row"
                         spacing={0.75}
-                        justifyContent={{ xs: 'flex-start', md: 'center' }}
                         onClick={(event) => event.stopPropagation()}
+                        sx={{
+                          width: '100%',
+                          minWidth: 0,
+                          justifyContent: { xs: 'flex-start', md: 'center' },
+                          justifySelf: { xs: 'start', md: 'stretch' },
+                        }}
                       >
-                        <IconButton aria-label={t('umEditAria').replace('{name}', getFullName(user, t('umUnnamedUser')))} onClick={() => selectUser(user)} sx={actionIconSx('purple')}>
-                          <EditOutlinedIcon fontSize="small" />
+                        <IconButton aria-label={t('umViewAria').replace('{name}', getFullName(user, t('umUnnamedUser')))} onClick={() => selectUser(user)} sx={actionIconSx('bookingEye')}>
+                          <VisibilityOutlinedIcon fontSize="small" />
                         </IconButton>
                         <IconButton
                           aria-label={t('umDeactivateAria').replace('{name}', getFullName(user, t('umUnnamedUser')))}
@@ -956,192 +938,161 @@ export default function UserManagementPage() {
           '& .MuiDialog-container': {
             alignItems: 'center',
             justifyContent: 'center',
+            p: '18px',
           },
         }}
         slotProps={{
           paper: {
             dir: direction,
             sx: {
-              width: { xs: 'calc(100vw - 24px)', sm: 'min(49.5rem, calc(100vw - 32px))' },
-              maxWidth: 792,
+              width: 'min(640px, calc(100vw - 36px))',
+              maxHeight: 'calc(100vh - 36px)',
               m: 0,
-              position: 'fixed',
-              top: '50%',
-              left: '50%',
-              transform: 'translate(-50%, -50%)',
-              height: 'auto',
-              maxHeight: 'calc(100vh - 24px)',
-              borderRadius: { xs: '20px', md: '24px' },
+              border: '1px solid rgba(223, 50, 123, 0.14)',
+              borderRadius: '24px',
               overflow: 'hidden',
-              bgcolor: 'rgba(255, 255, 255, 0.94)',
-              backdropFilter: 'blur(18px)',
-              boxShadow: '0 30px 86px rgba(32, 20, 67, 0.28)',
+              color: '#24104f',
+              bgcolor: 'rgba(255, 255, 255, 0.98)',
+              boxShadow: '0 24px 56px rgba(31, 12, 42, 0.22)',
             },
           },
         }}
         BackdropProps={{
           sx: {
-            bgcolor: 'rgba(18, 12, 35, 0.54)',
-            backdropFilter: 'blur(12px)',
+            bgcolor: 'rgba(32, 38, 55, 0.38)',
+            backdropFilter: 'blur(10px)',
           },
         }}
       >
         {selectedUser ? (
-          <Box sx={{ display: 'flex', flexDirection: 'column', background: 'radial-gradient(circle at 50% 0%, rgba(223, 50, 123, 0.08), transparent 32%), linear-gradient(180deg, #FFFFFF 0%, #FFFBFE 100%)' }}>
+          <Box sx={{ display: 'grid', gridTemplateRows: 'auto minmax(0, 1fr)', maxHeight: 'calc(100vh - 36px)', minHeight: 0 }}>
             <Box
               sx={{
-                px: { xs: 2, sm: 2.25 },
-                pt: { xs: 1.5, sm: 1.875 },
-                pb: { xs: 1.375, sm: 1.5 },
+                px: { xs: 5.5, sm: 7 },
+                py: { xs: 2, sm: 2.2 },
                 position: 'relative',
                 flexShrink: 0,
-                borderBottom: '1px solid rgba(130, 92, 206, 0.08)',
+                display: 'grid',
+                justifyItems: 'center',
+                gap: 1,
+                textAlign: 'center',
+                borderBottom: '1px solid rgba(223, 50, 123, 0.1)',
+                background: 'linear-gradient(180deg, rgba(255, 247, 251, 0.92), rgba(255, 255, 255, 0.98))',
               }}
             >
               <IconButton
-                size="small"
                 onClick={closeDetails}
-                aria-label="Close user details"
+                aria-label={t('umCloseDetails')}
                 sx={{
                   position: 'absolute',
-                  top: '12px',
-                  right: '12px',
-                  left: 'auto',
-                  width: '1.75rem',
-                  height: '1.75rem',
-                  bgcolor: 'rgba(109, 60, 207, 0.06)',
-                  color: '#4E466B',
+                  top: '16px /* @noflip */',
+                  right: '16px /* @noflip */',
+                  left: 'auto /* @noflip */',
+                  width: 38,
+                  height: 38,
+                  color: '#5b1e8c',
+                  background: '#fff',
+                  border: '1px solid rgba(91, 30, 140, 0.22)',
+                  boxShadow: '0 8px 18px rgba(91, 30, 140, 0.12)',
                   zIndex: 1,
-                  '&:hover': { bgcolor: 'rgba(109, 60, 207, 0.12)' },
+                  '&:hover, &:focus-visible': {
+                    color: '#fff',
+                    background: 'linear-gradient(135deg, #df327b, #cf1f70)',
+                    borderColor: 'transparent',
+                    boxShadow: '0 14px 26px rgba(207, 31, 112, 0.3)',
+                    transform: 'translateY(-2px) scale(1.04)',
+                  },
                 }}
               >
-                <CloseIcon sx={{ fontSize: '1rem' }} />
+                <CloseIcon />
               </IconButton>
 
-              <Stack spacing={1.125} alignItems="stretch" sx={{ pr: 3.5 }} dir="ltr">
-                <Stack direction="row" spacing={1.125} alignItems="flex-start" sx={{ width: '100%' }}>
-                  <Avatar
-                    src={selectedUser.avatarUrl || ''}
+              <Avatar
+                src={selectedUser.avatarUrl || ''}
+                sx={{
+                  width: '3.25rem',
+                  height: '3.25rem',
+                  bgcolor: '#EEE7FF',
+                  color: '#6D3CCF',
+                  fontSize: '1.0625rem',
+                  fontWeight: 950,
+                  boxShadow: '0 10px 22px rgba(109, 60, 207, 0.14)',
+                }}
+              >
+                {initials(selectedUser)}
+              </Avatar>
+              <Stack direction="row" spacing={0.75} alignItems="center" justifyContent="center" flexWrap="wrap" useFlexGap>
+                <RoleChip role={selectedUser.role} t={t} />
+                {isInactiveUser(selectedUser) ? (
+                  <Chip
+                    label={t('umStatusInactive')}
+                    size="small"
                     sx={{
-                      width: '3.25rem',
-                      height: '3.25rem',
-                      bgcolor: '#EEE7FF',
-                      color: '#6D3CCF',
-                      fontSize: '1.0625rem',
-                      fontWeight: 950,
-                      boxShadow: '0 10px 22px rgba(109, 60, 207, 0.14)',
-                      flexShrink: 0,
+                      height: '1.625rem',
+                      borderRadius: 999,
+                      color: '#C2415B',
+                      bgcolor: 'rgba(244, 63, 94, 0.10)',
+                      border: '1px solid rgba(244, 63, 94, 0.16)',
+                      fontWeight: 900,
                     }}
-                  >
-                    {initials(selectedUser)}
-                  </Avatar>
-                  <Box sx={{ minWidth: 0, flex: 1, textAlign: 'left' }}>
-                    <Stack spacing={0.5} alignItems="flex-start">
-                      <Stack direction="row" spacing={0.75} alignItems="center" flexWrap="wrap" useFlexGap>
-                        <RoleChip role={selectedUser.role} t={t} />
-                        {isInactiveUser(selectedUser) ? (
-                          <Chip
-                            label={t('umStatusInactive')}
-                            size="small"
-                            sx={{
-                              height: '1.625rem',
-                              borderRadius: 999,
-                              color: '#C2415B',
-                              bgcolor: 'rgba(244, 63, 94, 0.10)',
-                              border: '1px solid rgba(244, 63, 94, 0.16)',
-                              fontWeight: 900,
-                            }}
-                          />
-                        ) : null}
-                        {detailsLoading ? <CircularProgress size={14} /> : null}
-                      </Stack>
-                      <Typography variant="h5" fontWeight={950} noWrap sx={{ fontSize: '1.125rem', textAlign: 'left', minWidth: 0, width: '100%' }}>
-                        {getFullName(selectedUser, t('umUnnamedUser'))}
-                      </Typography>
-                      <Typography color="text.secondary" sx={{ fontSize: '0.8125rem', textAlign: 'left', lineHeight: 1.35 }}>
-                        {t('umJoinedLabel').replace('{date}', formatDateValue(getJoinedDate(selectedUser)))}
-                      </Typography>
-                    </Stack>
-                    <Stack direction="row" spacing={0.625} justifyContent="flex-start" flexWrap="wrap" useFlexGap sx={{ mt: 1.125 }}>
-                      <Button
-                        size="small"
-                        startIcon={<Pencil />}
-                        sx={{
-                          ...actionButtonBaseSx,
-                          color: '#6D3CCF',
-                          bgcolor: 'rgba(109, 60, 207, 0.09)',
-                          borderColor: 'rgba(109, 60, 207, 0.10)',
-                          '&:hover': {
-                            ...actionButtonBaseSx['&:hover'],
-                            bgcolor: 'rgba(109, 60, 207, 0.14)',
-                            boxShadow: '0 10px 22px rgba(109, 60, 207, 0.14)',
-                          },
-                        }}
-                      >
-                        {t('btnEdit')}
-                      </Button>
-                      <Button
-                        size="small"
-                        startIcon={<ShieldCheck />}
-                        sx={{
-                          ...actionButtonBaseSx,
-                          color: '#5B21B6',
-                          background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.13), rgba(223, 50, 123, 0.12))',
-                          borderColor: 'rgba(181, 123, 232, 0.18)',
-                          '&:hover': {
-                            ...actionButtonBaseSx['&:hover'],
-                            background: 'linear-gradient(135deg, rgba(124, 58, 237, 0.18), rgba(223, 50, 123, 0.16))',
-                            boxShadow: '0 10px 24px rgba(181, 123, 232, 0.20)',
-                          },
-                        }}
-                      >
-                        {t('umChangeRole')}
-                      </Button>
-                      <Button
-                        size="small"
-                        startIcon={<Ban />}
-                        disabled={isInactiveUser(selectedUser)}
-                        onClick={() => setDeactivateTarget(selectedUser)}
-                        sx={{
-                          ...actionButtonBaseSx,
-                          color: '#C2415B',
-                          bgcolor: 'rgba(244, 63, 94, 0.08)',
-                          borderColor: 'rgba(244, 63, 94, 0.12)',
-                          '&:hover': {
-                            ...actionButtonBaseSx['&:hover'],
-                            bgcolor: 'rgba(244, 63, 94, 0.13)',
-                            boxShadow: '0 10px 22px rgba(244, 63, 94, 0.12)',
-                          },
-                        }}
-                      >
-                        {t('umDeactivate')}
-                      </Button>
-                    </Stack>
-                  </Box>
-                </Stack>
+                  />
+                ) : null}
+                {detailsLoading ? <CircularProgress size={14} /> : null}
               </Stack>
+              <Typography
+                dir="auto"
+                variant="h5"
+                sx={{
+                  m: 0,
+                  color: '#4b136b',
+                  fontSize: { xs: '1.45rem', sm: '1.8rem' },
+                  fontWeight: 900,
+                  lineHeight: 1.14,
+                  overflowWrap: 'anywhere',
+                }}
+              >
+                {getFullName(selectedUser, t('umUnnamedUser'))}
+              </Typography>
+              <Typography color="text.secondary" sx={{ fontSize: '0.8125rem', lineHeight: 1.35 }}>
+                {t('umJoinedLabel').replace('{date}', formatDateValue(getJoinedDate(selectedUser)))}
+              </Typography>
             </Box>
 
-            <Box sx={{ flexShrink: 0, px: { xs: 2, sm: 2.25 }, py: { xs: 1.5, sm: 1.875 } }} dir="ltr">
-              <Stack spacing={0.875}>
-                {userDetailRows.map((row, rowIndex) => (
-                  <Box
-                    key={rowIndex}
-                    sx={{
-                      display: 'grid',
-                      gridTemplateColumns: { xs: 'minmax(0, 1fr)', sm: 'repeat(2, minmax(0, 1fr))' },
-                      gap: 0.875,
-                      alignItems: 'stretch',
-                    }}
-                  >
-                    {row.map(({ fieldKey, labelKey, value }) => (
-                      <Box key={fieldKey} sx={{ minWidth: 0, display: 'flex' }}>
-                        <AdminDetailInfoCard label={t(labelKey)} value={value} iconKey={fieldKey} />
-                      </Box>
-                    ))}
-                  </Box>
-                ))}
-              </Stack>
+            <Box sx={{ minHeight: 0, overflowY: 'auto', p: { xs: 1.5, sm: 2 } }} dir="ltr">
+              <Box
+                component="section"
+                sx={{
+                  display: 'grid',
+                  gap: 1.15,
+                  p: 1.5,
+                  border: '1px solid rgba(223, 50, 123, 0.1)',
+                  borderRadius: '16px',
+                  background: 'linear-gradient(135deg, rgba(255, 247, 251, 0.72), rgba(255, 255, 255, 0.98))',
+                }}
+              >
+                <Typography sx={{ m: 0, color: '#4b136b', fontSize: '1.02rem', fontWeight: 900, lineHeight: 1.3 }}>
+                  {t('auditDetailsAria')}
+                </Typography>
+                <Stack spacing={0.875}>
+                  {userDetailRows.map((row, rowIndex) => (
+                    <Box
+                      key={rowIndex}
+                      sx={{
+                        display: 'grid',
+                        gridTemplateColumns: { xs: 'minmax(0, 1fr)', sm: 'repeat(2, minmax(0, 1fr))' },
+                        gap: 0.875,
+                        alignItems: 'stretch',
+                      }}
+                    >
+                      {row.map(({ fieldKey, labelKey, value }) => (
+                        <Box key={fieldKey} sx={{ minWidth: 0, display: 'flex' }}>
+                          <AdminDetailInfoCard label={t(labelKey)} value={value} iconKey={fieldKey} />
+                        </Box>
+                      ))}
+                    </Box>
+                  ))}
+                </Stack>
+              </Box>
             </Box>
           </Box>
         ) : null}
@@ -1156,60 +1107,99 @@ export default function UserManagementPage() {
             dir: direction,
             sx: {
               width: { xs: 'calc(100vw - 32px)', sm: '26rem' },
+              border: '1px solid rgba(223, 50, 123, 0.14)',
               borderRadius: '24px',
               p: 0,
               overflow: 'hidden',
-              bgcolor: 'rgba(255, 255, 255, 0.96)',
-              boxShadow: '0 26px 74px rgba(32, 20, 67, 0.24)',
+              color: '#24104f',
+              bgcolor: 'rgba(255, 255, 255, 0.98)',
+              boxShadow: '0 24px 56px rgba(31, 12, 42, 0.22)',
             },
           },
         }}
         BackdropProps={{
           sx: {
-            bgcolor: 'rgba(18, 12, 35, 0.42)',
-            backdropFilter: 'blur(8px)',
+            bgcolor: 'rgba(32, 38, 55, 0.38)',
+            backdropFilter: 'blur(10px)',
           },
         }}
       >
-        <Box sx={{ p: { xs: 2.25, sm: 2.75 } }}>
-          <Typography variant="h6" fontWeight={950} sx={{ color: '#17122E' }}>
+        <Box
+          sx={{
+            px: { xs: 2.25, sm: 2.75 },
+            pt: { xs: 2.1, sm: 2.5 },
+            pb: { xs: 1.8, sm: 2.1 },
+            background: 'linear-gradient(180deg, rgba(255, 247, 251, 0.92), rgba(255, 255, 255, 0.98))',
+          }}
+        >
+          <Typography variant="h6" fontWeight={950} sx={{ color: '#4b136b' }}>
             {t('umDeactivateTitle')}
           </Typography>
-          <Typography sx={{ mt: 1, color: '#5E587E', lineHeight: 1.55 }}>
+          <Typography sx={{ mt: 1, color: 'rgba(36, 16, 79, 0.72)', lineHeight: 1.55, fontWeight: 650 }}>
             {t('umDeactivateConfirm')}
           </Typography>
           {deactivateTarget ? (
-            <Typography sx={{ mt: 1.25, color: '#17122E', fontWeight: 900 }}>
+            <Typography sx={{ mt: 1.25, color: '#17122E', fontWeight: 900, overflowWrap: 'anywhere' }}>
               {getFullName(deactivateTarget, t('umUnnamedUser'))}
             </Typography>
           ) : null}
           <Stack direction="row" spacing={1.25} justifyContent="flex-end" sx={{ mt: 3 }}>
             <Button
-              variant="outlined"
               onClick={() => setDeactivateTarget(null)}
               disabled={deactivating}
               sx={{
+                minHeight: 40,
                 borderRadius: 999,
                 px: 2.4,
-                borderColor: 'rgba(130, 92, 206, 0.18)',
+                border: '2px solid rgba(91, 30, 140, 0.2)',
                 color: '#5B21B6',
+                background: 'rgba(255, 255, 255, 0.97)',
+                boxShadow: '0 9px 24px rgba(91, 30, 140, 0.12)',
                 fontWeight: 900,
+                textTransform: 'none',
+                transition: 'color 180ms ease, background 180ms ease, border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease',
+                '&:hover, &:focus-visible': {
+                  color: '#fff',
+                  background: 'linear-gradient(135deg, #e73386, #dc2577)',
+                  borderColor: 'transparent',
+                  boxShadow: '0 14px 26px rgba(223, 50, 123, 0.24)',
+                  transform: 'translateY(-2px)',
+                },
+                '&:disabled': {
+                  color: 'rgba(91, 30, 140, 0.38)',
+                  background: 'rgba(255, 255, 255, 0.72)',
+                  boxShadow: 'none',
+                  transform: 'none',
+                },
               }}
             >
               {t('btnCancel')}
             </Button>
             <Button
-              variant="contained"
               onClick={confirmDeactivateUser}
               disabled={deactivating}
               sx={{
+                minHeight: 40,
                 borderRadius: 999,
                 px: 2.6,
-                bgcolor: '#C52A72',
+                border: '2px solid transparent',
+                background: 'linear-gradient(135deg, #df327b, #cf1f70)',
                 color: '#fff',
                 fontWeight: 900,
-                boxShadow: '0 12px 26px rgba(197, 42, 114, 0.18)',
-                '&:hover': { bgcolor: '#B52568' },
+                textTransform: 'none',
+                boxShadow: '0 14px 26px rgba(207, 31, 112, 0.3)',
+                transition: 'box-shadow 180ms ease, transform 180ms ease, filter 180ms ease',
+                '&:hover, &:focus-visible': {
+                  filter: 'brightness(1.03)',
+                  boxShadow: '0 18px 32px rgba(207, 31, 112, 0.34)',
+                  transform: 'translateY(-2px)',
+                },
+                '&:disabled': {
+                  color: 'rgba(255, 255, 255, 0.82)',
+                  background: 'linear-gradient(135deg, rgba(223, 50, 123, 0.55), rgba(207, 31, 112, 0.55))',
+                  boxShadow: 'none',
+                  transform: 'none',
+                },
               }}
             >
               {deactivating ? t('umDeactivating') : t('umDeactivateConfirmButton')}

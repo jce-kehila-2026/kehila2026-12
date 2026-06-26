@@ -59,15 +59,19 @@ function AdminLayoutInner() {
             className="admin-topbar"
             sx={{
               display: 'flex',
-              justifyContent: direction === 'rtl' ? 'flex-start' : 'flex-end',
+              justifyContent: 'space-between',
               alignItems: 'center',
+              gap: 2,
               px: { xs: 2, sm: 3, md: '32px' },
               pt: { xs: 1.5, md: 2.5 },
-              pb: 0,
+              pb: { xs: 1, md: 1.5 },
               flexShrink: 0,
             }}
           >
-            <AdminLanguageSwitcher />
+            <div id="admin-topbar-page-header" className="admin-topbar-page-header" />
+            <div className="admin-topbar__tools">
+              <AdminLanguageSwitcher />
+            </div>
           </Box>
           <Box
             component="main"

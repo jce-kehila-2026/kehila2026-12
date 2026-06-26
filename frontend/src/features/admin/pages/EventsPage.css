@@ -11,8 +11,8 @@
   width: 100%;
   max-width: none;
   min-height: 0;
-  height: calc(100vh - 6.5rem);
-  max-height: calc(100vh - 6.5rem);
+  height: 100%;
+  max-height: 100%;
   margin: 0;
   padding: 0;
   overflow: hidden;
@@ -32,7 +32,6 @@
 }
 
 /* Title → stats → tabs → filters → table (normal page flow) */
-<<<<<<< HEAD
 .admin-events-content {
   display: flex;
   flex-direction: column;
@@ -44,8 +43,6 @@
   overflow: hidden;
 }
 
-=======
->>>>>>> bb78ec160efc7a751ea2de57a428e363761a0001
 /* Page title — scrolls with content (not fixed/sticky) */
 .admin-events-shell {
   display: grid;
