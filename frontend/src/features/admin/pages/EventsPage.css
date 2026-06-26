@@ -2444,7 +2444,7 @@
 
 .admin-events-slot-row {
   display: grid;
-  grid-template-columns: minmax(82px, 0.85fr) minmax(82px, 0.85fr) minmax(120px, 1fr) minmax(82px, 0.75fr) auto;
+  grid-template-columns: minmax(82px, 1fr) minmax(82px, 1fr) auto;
   gap: 0.5rem;
   align-items: end;
   padding: 0.625rem;

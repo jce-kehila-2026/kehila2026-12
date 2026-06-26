@@ -1114,7 +1114,15 @@ export default function EventsPage() {
     event.preventDefault();
     const preparedForm = syncWorkshopFormForSave(form);
     const isRecurring = preparedForm.type === 'workshop' || preparedForm.recurrence === 'weekly';
-    const providersPayload = buildProvidersPayload(preparedForm.providers);
+    const builtProviders = buildProvidersPayload(preparedForm.providers);
+    // Appointments are strictly 1:1 — force every slot's capacity to 1 regardless of
+    // any value carried over from legacy data, since the field is no longer editable.
+    const providersPayload = preparedForm.type === 'appointment'
+      ? builtProviders.map((provider) => ({
+        ...provider,
+        slots: provider.slots.map((slot) => ({ ...slot, capacity: 1 })),
+      }))
+      : builtProviders;
     const firstSlot = getFirstProviderSlot(providersPayload);
     const lastSlot = getLastProviderSlot(providersPayload);
     const startDate = isRecurring ? null : composeDateTime(preparedForm.date, preparedForm.startTime);
@@ -1178,7 +1186,8 @@ export default function EventsPage() {
       location: preparedForm.location.trim(),
       description: preparedForm.description.trim(),
       imageUrl: preparedForm.imageUrl.trim(),
-      maxParticipants: Number(preparedForm.maxParticipants) || 0,
+      // Appointments are 1:1; the event-level capacity is meaningless, so pin it to 1.
+      maxParticipants: preparedForm.type === 'appointment' ? 1 : (Number(preparedForm.maxParticipants) || 0),
       registrationOpen: editingEvent ? editingEvent.registrationOpen !== false : true,
       disabledDates: parseDisabledDates(preparedForm.disabledDates),
       providers: providersPayload,
@@ -1865,23 +1874,6 @@ export default function EventsPage() {
                                         onChange={(event) => updateProviderSlot(providerIndex, slotIndex, 'endTime', event.target.value)}
                                       />
                                     </label>
-                                    <label>
-                                      {t('evRoom')}
-                                      <input
-                                        value={slot.room}
-                                        onChange={(event) => updateProviderSlot(providerIndex, slotIndex, 'room', event.target.value)}
-                                        placeholder={provider.room || t('evRoom')}
-                                      />
-                                    </label>
-                                    <label>
-                                      {t('evCapacity')}
-                                      <input
-                                        type="number"
-                                        min="1"
-                                        value={slot.capacity}
-                                        onChange={(event) => updateProviderSlot(providerIndex, slotIndex, 'capacity', event.target.value)}
-                                      />
-                                    </label>
                                     <button
                                       type="button"
                                       className="admin-events-wizard-action-btn admin-events-wizard-action-btn--outline public-cta-interaction"
@@ -1916,16 +1908,20 @@ export default function EventsPage() {
                           ))}
                         </select>
                       </label>
-                      <label>
-                        {form.type === 'workshop' ? t('evCapacityPerSession') : t('evCapacity')}
-                        <input
-                          type="number"
-                          min="1"
-                          value={form.maxParticipants}
-                          onChange={(event) => updateForm('maxParticipants', event.target.value)}
-                          placeholder="20"
-                        />
-                      </label>
+                      {/* Appointments are 1:1, so capacity is fixed at 1 and not editable.
+                          Only workshops expose a capacity field. */}
+                      {form.type === 'workshop' && (
+                        <label>
+                          {t('evCapacityPerSession')}
+                          <input
+                            type="number"
+                            min="1"
+                            value={form.maxParticipants}
+                            onChange={(event) => updateForm('maxParticipants', event.target.value)}
+                            placeholder="20"
+                          />
+                        </label>
+                      )}
                       <label className="admin-events-span-2">
                         {t('evDisabledDates')}
                         <input
