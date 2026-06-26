@@ -201,6 +201,53 @@ function slugifyIdentifier(value, fallback = 'item') {
     .slice(0, 80) || fallback;
 }
 
+function toDateKey(date) {
+  return [
+    date.getFullYear(),
+    pad(date.getMonth() + 1),
+    pad(date.getDate()),
+  ].join('-');
+}
+
+function getTimeKey(timeStr) {
+  const time = parseTimeString(timeStr);
+  if (!time) return 'time-tbd';
+  return `${pad(time.hours)}${pad(time.minutes)}`;
+}
+
+function getUpcomingSessionDate(dayIndex, timeStr) {
+  const now = new Date();
+  const today = new Date(now);
+  today.setHours(0, 0, 0, 0);
+  const daysUntil = (dayIndex - today.getDay() + 7) % 7;
+  const sessionDate = new Date(today);
+  sessionDate.setDate(today.getDate() + daysUntil);
+  const time = parseTimeString(timeStr);
+  if (time) sessionDate.setHours(time.hours, time.minutes, 0, 0);
+  if (sessionDate.getTime() <= now.getTime()) sessionDate.setDate(sessionDate.getDate() + 7);
+  return sessionDate;
+}
+
+function buildUpcomingSessionIds(event) {
+  const dayIndex = Number(event.weeklyDayIndex ?? event.dayIndex);
+  if (!Number.isInteger(dayIndex) || dayIndex < 0 || dayIndex > 6) return [];
+  const providers = event.providers || [];
+  if (!providers.length) return [];
+  const firstSlotTime = providers[0]?.slots?.[0]?.startTime || '';
+  const sessionDate = getUpcomingSessionDate(dayIndex, firstSlotTime);
+  const dateKey = toDateKey(sessionDate);
+  return providers.flatMap((provider, pi) => {
+    const providerName = provider.name || `Provider ${pi + 1}`;
+    const providerId = slugifyIdentifier(provider.id || providerName, `provider-${pi + 1}`);
+    return (provider.slots || []).map((slot, si) => {
+      const slotId = slugifyIdentifier(
+        slot.id || `${providerId}-${getTimeKey(slot.startTime)}-${getTimeKey(slot.endTime)}-${si + 1}`,
+      );
+      return `${event.id}__${dateKey}__${providerId}__${slotId}`;
+    });
+  });
+}
+
 function inferType(event) {
   const raw = `${event.type || ''} ${event.category || ''}`.toLowerCase();
   if (raw.includes('appointment') || raw.includes('therapy') || raw.includes('session')) {
@@ -540,7 +587,11 @@ export default function EventsPage() {
       const data = await getAllEvents();
       setEvents(data);
       if (data.length) {
-        const countsData = await getRegistrationCounts(data.map((event) => event.id));
+        const templateIds = data.map((event) => event.id);
+        const sessionIds = data.flatMap((event) =>
+          (event.isRecurringTemplate || event.recurrence === 'weekly') ? buildUpcomingSessionIds(event) : []
+        );
+        const countsData = await getRegistrationCounts([...templateIds, ...sessionIds]);
         setCounts(countsData);
       } else {
         setCounts({});
@@ -1279,8 +1330,16 @@ export default function EventsPage() {
                     ))
                   ) : filteredEvents.length ? (
                     pagination.rows.map((event) => {
-                      const registered = counts[event.id] ?? 0;
-                      const capacity = Number(event.maxParticipants || event.capacity) || 0;
+                      const isRecurring = event.isRecurringTemplate || event.recurrence === 'weekly';
+                      let registered = counts[event.id] ?? 0;
+                      let capacity = Number(event.maxParticipants || event.capacity) || 0;
+                      if (isRecurring) {
+                        const sessionIds = buildUpcomingSessionIds(event);
+                        const sessionCount = sessionIds.reduce((sum, id) => sum + (counts[id] ?? 0), 0);
+                        const firstSlot = event.providers?.[0]?.slots?.[0];
+                        registered = sessionCount;
+                        if (firstSlot?.capacity) capacity = Number(firstSlot.capacity);
+                      }
                       const progress = capacity ? Math.min(100, (registered / capacity) * 100) : 0;
                       const imageUrl = getEventImage(event);
 
