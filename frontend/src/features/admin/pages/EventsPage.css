@@ -2453,6 +2453,50 @@
   background: rgba(255, 250, 252, 0.88);
 }
 
+.admin-events-disabled-dates {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.admin-events-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.admin-events-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.4rem 0.25rem 0.7rem;
+  border-radius: 999px;
+  background: rgba(233, 75, 147, 0.12);
+  color: #6c2247;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.admin-events-chip button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: inherit;
+  line-height: 0;
+  cursor: pointer;
+}
+
+.admin-events-chip button:hover {
+  color: #c52a72;
+}
+
 .admin-events-wizard-footer {
   display: flex;
   align-items: center;

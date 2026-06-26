@@ -103,7 +103,7 @@ function createInitialForm(type = 'workshop') {
     imageUrl: '',
     recurrence: 'weekly',
     weeklyDayIndex: '',
-    disabledDates: '',
+    disabledDates: [],
     date: '',
     startTime: '',
     endTime: '',
@@ -291,7 +291,7 @@ function eventToForm(event) {
     imageUrl: event.imageUrl || event.thumbnailUrl || event.coverImageUrl || '',
     recurrence: isRecurring ? 'weekly' : 'one-time',
     weeklyDayIndex: recurringDayIndex,
-    disabledDates: Array.isArray(event.disabledDates) ? event.disabledDates.join(', ') : '',
+    disabledDates: Array.isArray(event.disabledDates) ? event.disabledDates : [],
     date: dateInputValue(event.date) || dateInputValue(event.startTime || event.date),
     startTime: type === 'workshop'
       ? timeInputValue(workshopSlotTime || event.startTime)
@@ -856,6 +856,7 @@ export default function EventsPage() {
   const workshopEndTimePickerId = useId();
   const workshopDatePickerId = useId();
   const appointmentDatePickerId = useId();
+  const disabledDatesPickerId = useId();
 
   const datePickerLabels = useMemo(
     () => ({
@@ -900,6 +901,45 @@ export default function EventsPage() {
     const targetDay = Number(form.weeklyDayIndex);
     return (date) => date.getDay() === targetDay;
   }, [isWeeklyRecurrence, hasWeeklyDay, form.weeklyDayIndex]);
+
+  // Skipped occurrences are picked from a calendar (constrained to the event's weekday),
+  // shown as removable chips. Only meaningful for weekly-recurring events.
+  const disabledDates = Array.isArray(form.disabledDates) ? form.disabledDates : [];
+  const disabledDatesField = isWeeklyRecurrence ? (
+    <div className="admin-events-span-2 admin-events-disabled-dates">
+      <span className="admin-events-field-label">{t('evDisabledDates')}</span>
+      <ReminderDatePicker
+        id={disabledDatesPickerId}
+        className="admin-events-date-picker"
+        multiple
+        value={disabledDates}
+        ariaLabel={t('evDisabledDates')}
+        labels={datePickerLabels}
+        onChange={(next) => updateForm('disabledDates', next)}
+        isDateSelectable={weeklyDateConstraint}
+        disabled={!hasWeeklyDay}
+        portal
+        compact
+      />
+      {disabledDates.length > 0 && (
+        <ul className="admin-events-chip-list">
+          {[...disabledDates].sort().map((dateKey) => (
+            <li key={dateKey} className="admin-events-chip">
+              <span>{formatDate(`${dateKey}T00:00:00`, intlLocale, dateKey)}</span>
+              <button
+                type="button"
+                aria-label={t('evRemove')}
+                onClick={() => updateForm('disabledDates', disabledDates.filter((item) => item !== dateKey))}
+              >
+                <Close fontSize="small" />
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      <small>{hasWeeklyDay ? t('evDisabledDatesHint') : t('evChooseDayFirst')}</small>
+    </div>
+  ) : null;
 
   useEffect(() => {
     if (!selectedEventIsAppointment) return;
@@ -1236,7 +1276,9 @@ export default function EventsPage() {
       // Appointments are 1:1; the event-level capacity is meaningless, so pin it to 1.
       maxParticipants: preparedForm.type === 'appointment' ? 1 : (Number(preparedForm.maxParticipants) || 0),
       registrationOpen: editingEvent ? editingEvent.registrationOpen !== false : true,
-      disabledDates: parseDisabledDates(preparedForm.disabledDates),
+      disabledDates: Array.isArray(preparedForm.disabledDates)
+        ? preparedForm.disabledDates
+        : parseDisabledDates(preparedForm.disabledDates),
       providers: providersPayload,
       status: editingEvent ? normalizeStatus(editingEvent.status) : 'published',
     };
@@ -1748,17 +1790,7 @@ export default function EventsPage() {
                         />
                       </label>
 
-                      {isWeeklyRecurrence && (
-                        <label className="admin-events-span-2">
-                          {t('evDisabledDates')}
-                          <input
-                            placeholder="2026-06-03, 2026-06-10"
-                            value={form.disabledDates}
-                            onChange={(event) => updateForm('disabledDates', event.target.value)}
-                          />
-                          <small>{t('evDisabledDatesHint')}</small>
-                        </label>
-                      )}
+                      {disabledDatesField}
 
                       <section className="admin-events-provider-section admin-events-span-2">
                         <header>
@@ -1863,17 +1895,7 @@ export default function EventsPage() {
                         )}
                       </label>
 
-                      {isWeeklyRecurrence && (
-                        <label className="admin-events-span-2">
-                          {t('evDisabledDates')}
-                          <input
-                            placeholder="2026-06-03, 2026-06-10"
-                            value={form.disabledDates}
-                            onChange={(event) => updateForm('disabledDates', event.target.value)}
-                          />
-                          <small>{t('evDisabledDatesHint')}</small>
-                        </label>
-                      )}
+                      {disabledDatesField}
 
                       {/* Appointment times come from each provider time slot below,
                           not a single event-level start time. */}
