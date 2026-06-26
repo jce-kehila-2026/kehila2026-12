@@ -53,6 +53,7 @@ function usePickerDismiss(open, setOpen, rootRef, panelRef, enabled = true) {
  *   compact?: boolean,
  *   className?: string,
  *   disabled?: boolean,
+ *   isDateSelectable?: (date: Date) => boolean,
  * }} props
  */
 export default function ReminderDatePicker({
@@ -69,6 +70,7 @@ export default function ReminderDatePicker({
   compact = false,
   className = '',
   disabled = false,
+  isDateSelectable,
 }) {
   const internalRef = useRef(null);
   const panelRef = useRef(null);
@@ -136,8 +138,13 @@ export default function ReminderDatePicker({
     setViewMonth((currentMonth) => currentMonth + 1);
   };
 
+  const canSelectDate = useCallback(
+    (date) => isReminderDateSelectable(date) && (!isDateSelectable || isDateSelectable(date)),
+    [isDateSelectable],
+  );
+
   const handleSelect = (nextValue, date) => {
-    if (!isReminderDateSelectable(date)) return;
+    if (!canSelectDate(date)) return;
     onChange(nextValue);
     setOpen(false);
   };
@@ -175,7 +182,7 @@ export default function ReminderDatePicker({
 
       <div className="pd-notes-calendar__grid" role="grid">
         {cells.map((cell) => {
-          const selectable = isReminderDateSelectable(cell.date);
+          const selectable = canSelectDate(cell.date);
           const isSelected = value === cell.value;
           const isToday = cell.value === toDateInputValue(new Date());
 

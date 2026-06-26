@@ -356,6 +356,12 @@ function getSessionStartsForEvent(event, providerSlots = null) {
   const disabledDateKeys = new Set(getDisabledDateKeys(event));
   const filterDisabledDates = (dates) => dates.filter((date) => !disabledDateKeys.has(toDateKey(date)));
 
+  // One-time events have a single fixed occurrence — don't expand into a weekly series.
+  if (event.recurrence === 'one-time') {
+    const single = toDate(fallbackStart);
+    return single ? filterDisabledDates([single]) : [];
+  }
+
   if (Number.isInteger(eventDayIndex)) {
     const slots = providerSlots || getProviderSlots(event);
     return filterDisabledDates(getNextWeeklySessionStartsByDay(
@@ -377,6 +383,11 @@ function getDisabledDateKeys(event) {
 }
 
 function getWeeklyScheduleLabel(event, fallbackStart, t = null, intlLocale = 'en') {
+  // One-time events show their single date, not an "Every {day}" recurrence label.
+  if (event.recurrence === 'one-time') {
+    return formatSessionDate(toDate(fallbackStart), t, intlLocale);
+  }
+
   if (event.weeklyDay) return tr(t, 'evEveryDay', 'Every {day}').replace('{day}', event.weeklyDay);
 
   const eventDayIndex = getEventWeeklyDayIndex(event);

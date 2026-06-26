@@ -891,6 +891,18 @@ export default function EventsPage() {
     return ISRAELI_CITIES;
   }, [form.location]);
 
+  // In weekly mode the date picker only allows dates that fall on the chosen weekday;
+  // in one-time mode any date is allowed (predicate undefined). Until a weekday is
+  // picked, nothing is selectable so the admin is nudged to choose the day first.
+  const isWeeklyRecurrence = form.recurrence === 'weekly';
+  const hasWeeklyDay = form.weeklyDayIndex !== '' && form.weeklyDayIndex !== null && form.weeklyDayIndex !== undefined;
+  const weeklyDateConstraint = useMemo(() => {
+    if (!isWeeklyRecurrence) return undefined;
+    if (!hasWeeklyDay) return () => false;
+    const targetDay = Number(form.weeklyDayIndex);
+    return (date) => date.getDay() === targetDay;
+  }, [isWeeklyRecurrence, hasWeeklyDay, form.weeklyDayIndex]);
+
   useEffect(() => {
     if (!selectedEventIsAppointment) return;
     if (selectedProviderId && appointmentProviders.some((provider) => provider.id === selectedProviderId)) return;
@@ -1045,6 +1057,34 @@ export default function EventsPage() {
     updateForm(field, value);
   }
 
+  // Switching between "Weekly recurring" and "One-time" event.
+  function updateRecurrence(nextRecurrence) {
+    setForm((current) => ({
+      ...current,
+      recurrence: nextRecurrence,
+      // One-time events have no weekday; clear it so a stale value can't leak into save.
+      weeklyDayIndex: nextRecurrence === 'weekly' ? current.weeklyDayIndex : '',
+      // Entering weekly mode: drop any previously-picked date so the admin must choose
+      // one that matches the chosen weekday (the picker only allows those).
+      date: nextRecurrence === 'weekly' ? '' : current.date,
+    }));
+  }
+
+  // Choosing the weekly day. Clears a previously-picked date that doesn't fall on the
+  // new weekday so a Monday workshop can't keep a Tuesday start date by accident.
+  function updateWeeklyDay(value) {
+    setForm((current) => {
+      const next = { ...current, weeklyDayIndex: value };
+      if (current.date) {
+        const picked = new Date(`${current.date}T00:00:00`);
+        if (!Number.isNaN(picked.getTime()) && picked.getDay() !== Number(value)) {
+          next.date = '';
+        }
+      }
+      return next;
+    });
+  }
+
   function changeTab(nextTab) {
     setActiveTab(nextTab);
     setSearchParams(nextTab === 'appointment' ? { type: 'appointments' } : { type: 'workshops' });
@@ -1113,7 +1153,8 @@ export default function EventsPage() {
   async function handleSave(event) {
     event.preventDefault();
     const preparedForm = syncWorkshopFormForSave(form);
-    const isRecurring = preparedForm.type === 'workshop' || preparedForm.recurrence === 'weekly';
+    // Both workshops and appointments can now be weekly-recurring or one-time.
+    const isRecurring = preparedForm.recurrence === 'weekly';
     const builtProviders = buildProvidersPayload(preparedForm.providers);
     // Appointments are strictly 1:1 — force every slot's capacity to 1 regardless of
     // any value carried over from legacy data, since the field is no longer editable.
@@ -1146,7 +1187,7 @@ export default function EventsPage() {
         setToast(t('evToastAddStartTime'));
         return;
       }
-      if (preparedForm.weeklyDayIndex === '' || preparedForm.weeklyDayIndex === null || preparedForm.weeklyDayIndex === undefined) {
+      if (isRecurring && (preparedForm.weeklyDayIndex === '' || preparedForm.weeklyDayIndex === null || preparedForm.weeklyDayIndex === undefined)) {
         setToast(t('evToastChooseDay'));
         return;
       }
@@ -1174,7 +1215,7 @@ export default function EventsPage() {
     const payload = {
       title: preparedForm.title.trim(),
       type: preparedForm.type,
-      recurrence: preparedForm.type === 'workshop' ? 'weekly' : preparedForm.recurrence,
+      recurrence: isRecurring ? 'weekly' : 'one-time',
       isRecurringTemplate: isRecurring,
       weeklyDay: isRecurring ? getWeekdayName(preparedForm.weeklyDayIndex) : '',
       weeklyDayIndex: isRecurring ? Number(preparedForm.weeklyDayIndex) : null,
@@ -1626,18 +1667,31 @@ export default function EventsPage() {
                   {activeFormStep === 1 && form.type === 'workshop' && (
                     <div className="admin-events-wizard-fields">
                       <label>
-                        <span className="admin-events-field-label">{t('evWeeklyDay')} <b>*</b></span>
+                        <span className="admin-events-field-label">{t('evScheduleType')}</span>
                         <select
-                          value={form.weeklyDayIndex}
-                          onChange={(event) => updateWorkshopScheduling('weeklyDayIndex', event.target.value)}
-                          required
+                          value={form.recurrence}
+                          onChange={(event) => updateRecurrence(event.target.value)}
                         >
-                          <option value="">{t('evChooseDay')}</option>
-                          {WEEKDAY_OPTIONS.map((day) => (
-                            <option key={day.value} value={day.value}>{t(`wd${day.value}`)}</option>
-                          ))}
+                          <option value="weekly">{t('evWeeklyRecurring')}</option>
+                          <option value="one-time">{t('evOneTime')}</option>
                         </select>
                       </label>
+
+                      {isWeeklyRecurrence && (
+                        <label>
+                          <span className="admin-events-field-label">{t('evWeeklyDay')} <b>*</b></span>
+                          <select
+                            value={form.weeklyDayIndex}
+                            onChange={(event) => updateWeeklyDay(event.target.value)}
+                            required
+                          >
+                            <option value="">{t('evChooseDay')}</option>
+                            {WEEKDAY_OPTIONS.map((day) => (
+                              <option key={day.value} value={day.value}>{t(`wd${day.value}`)}</option>
+                            ))}
+                          </select>
+                        </label>
+                      )}
 
                       <label>
                         <span className="admin-events-field-label">{t('evDate')} <b>*</b></span>
@@ -1648,9 +1702,14 @@ export default function EventsPage() {
                           ariaLabel={t('evDate')}
                           labels={datePickerLabels}
                           onChange={(nextDate) => updateWorkshopScheduling('date', nextDate)}
+                          isDateSelectable={weeklyDateConstraint}
+                          disabled={isWeeklyRecurrence && !hasWeeklyDay}
                           portal
                           compact
                         />
+                        {isWeeklyRecurrence && !hasWeeklyDay && (
+                          <small>{t('evChooseDayFirst')}</small>
+                        )}
                       </label>
 
                       <label>
@@ -1741,21 +1800,32 @@ export default function EventsPage() {
                   {activeFormStep === 1 && form.type !== 'workshop' && (
                     <div className="admin-events-wizard-fields">
                       <label>
-                        <span className="admin-events-field-label">
-                          {t('evWeeklyDay')} {form.recurrence === 'weekly' ? <b>*</b> : null}
-                        </span>
+                        <span className="admin-events-field-label">{t('evScheduleType')}</span>
                         <select
-                          value={form.weeklyDayIndex}
-                          onChange={(event) => updateForm('weeklyDayIndex', event.target.value)}
-                          required={form.recurrence === 'weekly'}
-                          disabled={form.recurrence !== 'weekly'}
+                          value={form.recurrence}
+                          onChange={(event) => updateRecurrence(event.target.value)}
                         >
-                          <option value="">{t('evChooseDay')}</option>
-                          {WEEKDAY_OPTIONS.map((day) => (
-                            <option key={day.value} value={day.value}>{t(`wd${day.value}`)}</option>
-                          ))}
+                          <option value="weekly">{t('evWeeklyRecurring')}</option>
+                          <option value="one-time">{t('evOneTime')}</option>
                         </select>
                       </label>
+
+                      {isWeeklyRecurrence && (
+                        <label>
+                          <span className="admin-events-field-label">{t('evWeeklyDay')} <b>*</b></span>
+                          <select
+                            value={form.weeklyDayIndex}
+                            onChange={(event) => updateWeeklyDay(event.target.value)}
+                            required
+                          >
+                            <option value="">{t('evChooseDay')}</option>
+                            {WEEKDAY_OPTIONS.map((day) => (
+                              <option key={day.value} value={day.value}>{t(`wd${day.value}`)}</option>
+                            ))}
+                          </select>
+                        </label>
+                      )}
+
                       <label>
                         <span className="admin-events-field-label">{t('evDate')} <b>*</b></span>
                         <ReminderDatePicker
@@ -1765,9 +1835,14 @@ export default function EventsPage() {
                           ariaLabel={t('evDate')}
                           labels={datePickerLabels}
                           onChange={(nextDate) => updateForm('date', nextDate)}
+                          isDateSelectable={weeklyDateConstraint}
+                          disabled={isWeeklyRecurrence && !hasWeeklyDay}
                           portal
                           compact
                         />
+                        {isWeeklyRecurrence && !hasWeeklyDay && (
+                          <small>{t('evChooseDayFirst')}</small>
+                        )}
                       </label>
                       <label>
                         <span className="admin-events-field-label">{t('evStartTime')} <b>*</b></span>
