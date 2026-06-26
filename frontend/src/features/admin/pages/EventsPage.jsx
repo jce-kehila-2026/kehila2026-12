@@ -248,6 +248,20 @@ function buildUpcomingSessionIds(event) {
   });
 }
 
+// Comparable timestamp for list sorting. Recurring templates store `startTime` as a
+// bare "HH:MM" string, which `toDate()` can't parse (→ NaN), so date sort silently
+// did nothing for workshops. Resolve them to their next upcoming occurrence instead.
+function getEventSortTime(event) {
+  if (event.isRecurringTemplate || event.recurrence === 'weekly') {
+    const dayIndex = Number(event.weeklyDayIndex ?? event.dayIndex);
+    if (Number.isInteger(dayIndex) && dayIndex >= 0 && dayIndex <= 6) {
+      const firstSlotTime = event.providers?.[0]?.slots?.[0]?.startTime || event.startTime || '';
+      return getUpcomingSessionDate(dayIndex, firstSlotTime).getTime();
+    }
+  }
+  return toDate(event.startTime)?.getTime() || toDate(event.date)?.getTime() || 0;
+}
+
 function inferType(event) {
   const raw = `${event.type || ''} ${event.category || ''}`.toLowerCase();
   if (raw.includes('appointment') || raw.includes('therapy') || raw.includes('session')) {
@@ -423,7 +437,11 @@ function syncWorkshopFormForSave(form) {
       slots: [{
         ...slot,
         startTime,
-        capacity: slot.capacity || String(form.maxParticipants || '1'),
+        // The workshop form only exposes a single "Capacity" field (maxParticipants),
+        // so it must be the authoritative per-session capacity. Previously slot.capacity
+        // (defaulted to '1' by createEmptySlot) always won, so admin-created workshops
+        // silently enforced a cap of 1 regardless of the entered value.
+        capacity: String(form.maxParticipants || slot.capacity || '1'),
       }],
     }],
   };
