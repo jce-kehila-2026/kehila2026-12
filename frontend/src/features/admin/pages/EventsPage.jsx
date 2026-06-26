@@ -1913,7 +1913,7 @@ export default function EventsPage() {
                         </select>
                       </label>
                       <label>
-                        {t('evCapacity')}
+                        {form.type === 'workshop' ? t('evCapacityPerSession') : t('evCapacity')}
                         <input
                           type="number"
                           min="1"
