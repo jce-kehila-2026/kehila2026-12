@@ -910,6 +910,20 @@ export default function EventsPage() {
     }
   }, [appointmentBookedDates, selectedEventIsAppointment, selectedParticipantDate]);
 
+  useEffect(() => {
+    if (!selectedEventIsRecurringWorkshop) return;
+    const dateKeys = workshopSessionDates.map((item) => item.dateKey);
+
+    if (!dateKeys.length) {
+      if (selectedParticipantDate) setSelectedParticipantDate('');
+      return;
+    }
+
+    if (!dateKeys.includes(selectedParticipantDate)) {
+      setSelectedParticipantDate(getNearestUpcomingDateKey(dateKeys));
+    }
+  }, [workshopSessionDates, selectedEventIsRecurringWorkshop, selectedParticipantDate]);
+
   function updateForm(field, value) {
     setForm((current) => ({ ...current, [field]: value }));
   }
@@ -1210,10 +1224,18 @@ export default function EventsPage() {
     try {
       await removeRegistration(registration.id, name, selectedEvent.id);
       setRegistrations((current) => current.filter((item) => item.id !== registration.id));
-      setCounts((current) => ({
-        ...current,
-        [selectedEvent.id]: Math.max(0, (current[selectedEvent.id] ?? registrations.length) - 1),
-      }));
+      setCounts((current) => {
+        const next = {
+          ...current,
+          // Template aggregate — drawer summary for one-time events / fallback.
+          [selectedEvent.id]: Math.max(0, (current[selectedEvent.id] ?? registrations.length) - 1),
+        };
+        // Per-session counter the events table reads for recurring workshops.
+        if (registration.slotId) {
+          next[registration.slotId] = Math.max(0, (current[registration.slotId] ?? 1) - 1);
+        }
+        return next;
+      });
       setToast(t('evToastParticipantRemoved'));
     } catch (err) {
       console.error('Remove participant failed:', err);
