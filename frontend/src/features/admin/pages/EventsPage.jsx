@@ -851,7 +851,9 @@ export default function EventsPage() {
 
   const workshopProvider = form.providers?.[0] || createEmptyProvider();
   const workshopStartTime = getWorkshopStartTime(form);
+  const workshopEndTime = normalizeTimeString(workshopProvider.slots?.[0]?.endTime || form.endTime || '');
   const workshopStartTimePickerId = useId();
+  const workshopEndTimePickerId = useId();
   const workshopDatePickerId = useId();
   const appointmentDatePickerId = useId();
   const appointmentStartTimePickerId = useId();
@@ -1647,6 +1649,21 @@ export default function EventsPage() {
                           ariaLabel={t('evStartTime')}
                           labels={timePickerLabels}
                           onChange={(nextTime) => updateWorkshopScheduling('startTime', nextTime)}
+                          portal
+                          compact
+                          showDoneButton
+                        />
+                      </label>
+
+                      <label>
+                        <span className="admin-events-field-label">{t('evEndTime')}</span>
+                        <ReminderTimePicker
+                          id={workshopEndTimePickerId}
+                          className="admin-events-time-picker"
+                          value={workshopEndTime}
+                          ariaLabel={t('evEndTime')}
+                          labels={timePickerLabels}
+                          onChange={(nextTime) => updateWorkshopScheduling('endTime', nextTime)}
                           portal
                           compact
                           showDoneButton
