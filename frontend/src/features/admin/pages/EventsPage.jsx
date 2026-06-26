@@ -856,8 +856,6 @@ export default function EventsPage() {
   const workshopEndTimePickerId = useId();
   const workshopDatePickerId = useId();
   const appointmentDatePickerId = useId();
-  const appointmentStartTimePickerId = useId();
-  const appointmentStartTime = normalizeTimeString(form.startTime || '');
 
   const datePickerLabels = useMemo(
     () => ({
@@ -1166,8 +1164,16 @@ export default function EventsPage() {
       : builtProviders;
     const firstSlot = getFirstProviderSlot(providersPayload);
     const lastSlot = getLastProviderSlot(providersPayload);
-    const startDate = isRecurring ? null : composeDateTime(preparedForm.date, preparedForm.startTime);
-    const endDate = isRecurring ? null : composeDateTime(preparedForm.date, preparedForm.endTime);
+    // Workshops have a single event-level time; appointments derive their time from
+    // the provider slots (there is no event-level start time field for appointments).
+    const effectiveStartTime = preparedForm.type === 'appointment'
+      ? (firstSlot?.startTime || '')
+      : preparedForm.startTime;
+    const effectiveEndTime = preparedForm.type === 'appointment'
+      ? (lastSlot?.endTime || lastSlot?.startTime || '')
+      : preparedForm.endTime;
+    const startDate = isRecurring ? null : composeDateTime(preparedForm.date, effectiveStartTime);
+    const endDate = isRecurring ? null : composeDateTime(preparedForm.date, effectiveEndTime);
 
     if (!preparedForm.title.trim()) {
       setToast(t('evToastAddTitle'));
@@ -1201,11 +1207,11 @@ export default function EventsPage() {
     } else if (!preparedForm.date?.trim()) {
       setToast(t('evToastAddDate'));
       return;
-    } else if (!normalizeTimeString(preparedForm.startTime)) {
-      setToast(t('evToastAddStartTime'));
-      return;
-    } else if (isRecurring && !firstSlot) {
+    } else if (!firstSlot) {
       setToast(t('evToastAddSlot'));
+      return;
+    } else if (!normalizeTimeString(effectiveStartTime)) {
+      setToast(t('evToastAddStartTime'));
       return;
     } else if (!isRecurring && !startDate) {
       setToast(t('evToastAddDateTime'));
@@ -1221,9 +1227,9 @@ export default function EventsPage() {
       weeklyDayIndex: isRecurring ? Number(preparedForm.weeklyDayIndex) : null,
       date: preparedForm.date || null,
       startTime: isRecurring
-        ? (normalizeTimeString(preparedForm.startTime) || firstSlot?.startTime)
+        ? (normalizeTimeString(effectiveStartTime) || firstSlot?.startTime)
         : startDate,
-      endTime: isRecurring ? (lastSlot.endTime || lastSlot.startTime) : endDate,
+      endTime: isRecurring ? (lastSlot?.endTime || lastSlot?.startTime) : endDate,
       location: preparedForm.location.trim(),
       description: preparedForm.description.trim(),
       imageUrl: preparedForm.imageUrl.trim(),
@@ -1742,6 +1748,18 @@ export default function EventsPage() {
                         />
                       </label>
 
+                      {isWeeklyRecurrence && (
+                        <label className="admin-events-span-2">
+                          {t('evDisabledDates')}
+                          <input
+                            placeholder="2026-06-03, 2026-06-10"
+                            value={form.disabledDates}
+                            onChange={(event) => updateForm('disabledDates', event.target.value)}
+                          />
+                          <small>{t('evDisabledDatesHint')}</small>
+                        </label>
+                      )}
+
                       <section className="admin-events-provider-section admin-events-span-2">
                         <header>
                           <div>
@@ -1844,20 +1862,21 @@ export default function EventsPage() {
                           <small>{t('evChooseDayFirst')}</small>
                         )}
                       </label>
-                      <label>
-                        <span className="admin-events-field-label">{t('evStartTime')} <b>*</b></span>
-                        <ReminderTimePicker
-                          id={appointmentStartTimePickerId}
-                          className="admin-events-time-picker"
-                          value={appointmentStartTime}
-                          ariaLabel={t('evStartTime')}
-                          labels={timePickerLabels}
-                          onChange={(nextTime) => updateForm('startTime', normalizeTimeString(nextTime) || nextTime)}
-                          portal
-                          compact
-                          showDoneButton
-                        />
-                      </label>
+
+                      {isWeeklyRecurrence && (
+                        <label className="admin-events-span-2">
+                          {t('evDisabledDates')}
+                          <input
+                            placeholder="2026-06-03, 2026-06-10"
+                            value={form.disabledDates}
+                            onChange={(event) => updateForm('disabledDates', event.target.value)}
+                          />
+                          <small>{t('evDisabledDatesHint')}</small>
+                        </label>
+                      )}
+
+                      {/* Appointment times come from each provider time slot below,
+                          not a single event-level start time. */}
                       <section className="admin-events-provider-section admin-events-span-2">
                         <header>
                           <div>
@@ -1997,15 +2016,6 @@ export default function EventsPage() {
                           />
                         </label>
                       )}
-                      <label className="admin-events-span-2">
-                        {t('evDisabledDates')}
-                        <input
-                          placeholder="2026-06-03, 2026-06-10"
-                          value={form.disabledDates}
-                          onChange={(event) => updateForm('disabledDates', event.target.value)}
-                        />
-                        <small>{t('evDisabledDatesHint')}</small>
-                      </label>
                       <section className="admin-events-image-section admin-events-span-2">
                         <div>
                           <label>
