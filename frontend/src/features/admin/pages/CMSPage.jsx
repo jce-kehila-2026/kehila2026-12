@@ -61,10 +61,9 @@ export default function CMSPage() {
   const [tabIndex, setTabIndex] = useState(0);
 
   return (
-    <Box sx={{ pb: 12 }} dir={direction}>
+    <Box className="admin-cms-page" sx={{ pb: 12 }} dir={direction}>
       <AdminPageHeader
         title={t('cmsHomePageTitle')}
-        subtitle={t('cmsHomePageSubtitle')}
         actions={(
           <Button
             variant="outlined"

@@ -29,6 +29,7 @@ import {
   listBugReports,
   setBugReportHandled,
 } from '../services/bugReportAdminService';
+import AdminPageHeader from '../components/AdminPageHeader';
 import { useAdminLocale } from '../context/AdminLocaleContext';
 import './FormsPage.css';
 
@@ -202,7 +203,7 @@ export default function BugReportsPage() {
 
   return (
     <Box component="section" className="forms-admin-page" dir={direction}>
-      <h1 className="forms-admin-top-title">{t('brTitle')}</h1>
+      <AdminPageHeader title={t('brTitle')} className="admin-page-header--no-clip" />
 
       {actionError ? (
         <Alert severity="error" sx={{ mb: 1, borderRadius: '14px', flex: '0 0 auto' }} onClose={() => setActionError('')}>

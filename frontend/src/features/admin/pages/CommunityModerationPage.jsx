@@ -743,7 +743,6 @@ export default function CommunityModerationPage() {
     <section className="admin-community-page" dir={direction}>
       <AdminPageHeader
         title={t('cmTitle')}
-        subtitle={t('cmSubtitle')}
         actions={(
           <button
             id="btn-refresh-community-stats"

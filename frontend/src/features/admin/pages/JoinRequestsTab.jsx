@@ -7,7 +7,7 @@
 //   - Reject records an optional reason.
 //   Automatic email of the temp password is added in Phase 3; for now the admin
 //   shares it manually.
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Alert from '@mui/material/Alert';
 import Avatar from '@mui/material/Avatar';
 import Box from '@mui/material/Box';
@@ -21,11 +21,8 @@ import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import Fade from '@mui/material/Fade';
-import FormControl from '@mui/material/FormControl';
 import IconButton from '@mui/material/IconButton';
-import InputAdornment from '@mui/material/InputAdornment';
-import MenuItem from '@mui/material/MenuItem';
-import Select from '@mui/material/Select';
+import Pagination from '@mui/material/Pagination';
 import Stack from '@mui/material/Stack';
 import TextField from '@mui/material/TextField';
 import Typography from '@mui/material/Typography';
@@ -33,7 +30,6 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircleOutlineOutlined';
 import CloseIcon from '@mui/icons-material/Close';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import DoNotDisturbAltIcon from '@mui/icons-material/DoNotDisturbAlt';
-import SearchIcon from '@mui/icons-material/Search';
 import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import AdminDetailInfoCard from '../components/AdminDetailInfoCard';
 import {
@@ -50,6 +46,7 @@ import {
 import { useAdminLocale } from '../context/AdminLocaleContext';
 
 const INTL_LOCALE_BY_LANG = { he: 'he-IL', en: 'en-US' };
+const PAGE_SIZE = 10;
 
 const STATUS_META = {
   [JOIN_REQUEST_STATUS.NEW]: { labelKey: 'jrStatusNew', color: '#B45309', bg: 'rgba(245, 158, 11, 0.16)' },
@@ -59,12 +56,17 @@ const STATUS_META = {
 
 function formatDate(value, intlLocale) {
   if (!value) return '-';
-  if (typeof value.toDate === 'function') return value.toDate().toLocaleDateString(intlLocale);
+  const formatDayMonthYear = (date) => {
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    return `${day}/${month}/${date.getFullYear()}`;
+  };
+  if (typeof value.toDate === 'function') return formatDayMonthYear(value.toDate());
   if (typeof value === 'object' && typeof value.seconds === 'number') {
-    return new Date(value.seconds * 1000).toLocaleDateString(intlLocale);
+    return formatDayMonthYear(new Date(value.seconds * 1000));
   }
   const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? String(value) : parsed.toLocaleDateString(intlLocale);
+  return Number.isNaN(parsed.getTime()) ? String(value) : formatDayMonthYear(parsed);
 }
 
 function formatBool(value, t) {
@@ -83,6 +85,28 @@ function initialsOf(name) {
       .map((part) => part[0]?.toUpperCase())
       .join('') || '?'
   );
+}
+
+function getCreatedDateValue(request) {
+  const value = request?.createdAt;
+  if (!value) return new Date(0);
+  if (typeof value.toDate === 'function') return value.toDate();
+  if (typeof value === 'object' && typeof value.seconds === 'number') {
+    return new Date(value.seconds * 1000);
+  }
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime()) ? new Date(0) : parsed;
+}
+
+function paginateRows(rows, page, pageSize) {
+  const pageCount = Math.max(1, Math.ceil(rows.length / pageSize));
+  const safePage = Math.min(Math.max(page, 1), pageCount);
+  const startIndex = (safePage - 1) * pageSize;
+  return {
+    page: safePage,
+    pageCount,
+    rows: rows.slice(startIndex, startIndex + pageSize),
+  };
 }
 
 function StatusChip({ status, t, compact = false }) {
@@ -126,6 +150,9 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
   };
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [readyFilter, setReadyFilter] = useState('all');
+  const [sortBy, setSortBy] = useState('newest');
+  const [page, setPage] = useState(1);
   const [selected, setSelected] = useState(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
 
@@ -142,16 +169,46 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return requests.filter((req) => {
+    const next = requests.filter((req) => {
       const matchesStatus = statusFilter === 'all' || (req.status || 'new') === statusFilter;
+      const matchesReady =
+        readyFilter === 'all' ||
+        (readyFilter === 'yes' && req.readyToJoin === true) ||
+        (readyFilter === 'no' && req.readyToJoin === false);
       const matchesSearch =
         !q ||
-        [req.fullName, req.email, req.phone, req.address].some((value) =>
+        [req.fullName, req.email, req.phone, req.address, req.cancerStory].some((value) =>
           String(value || '').toLowerCase().includes(q),
         );
-      return matchesStatus && matchesSearch;
+      return matchesStatus && matchesReady && matchesSearch;
     });
-  }, [requests, search, statusFilter]);
+
+    return [...next].sort((left, right) => {
+      if (sortBy === 'name') return String(left.fullName || '').localeCompare(String(right.fullName || ''));
+      if (sortBy === 'status') {
+        const leftStatus = left.status || JOIN_REQUEST_STATUS.NEW;
+        const rightStatus = right.status || JOIN_REQUEST_STATUS.NEW;
+        return leftStatus.localeCompare(rightStatus);
+      }
+
+      const leftDate = getCreatedDateValue(left);
+      const rightDate = getCreatedDateValue(right);
+      return sortBy === 'oldest' ? leftDate - rightDate : rightDate - leftDate;
+    });
+  }, [readyFilter, requests, search, sortBy, statusFilter]);
+
+  const pagination = useMemo(() => paginateRows(filtered, page, PAGE_SIZE), [filtered, page]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [readyFilter, search, sortBy, statusFilter]);
+
+  function clearFilters() {
+    setSearch('');
+    setStatusFilter('all');
+    setReadyFilter('all');
+    setSortBy('newest');
+  }
 
   const applicationDetailRows = useMemo(() => {
     if (!selected) return [];
@@ -178,21 +235,14 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
       selected.status === JOIN_REQUEST_STATUS.APPROVED
       || selected.status === JOIN_REQUEST_STATUS.REJECTED
     ) {
-      const decisionValue = [
-        selected.decidedBy && t('jrDecidedBy').replace('{name}', selected.decidedBy),
-        selected.rejectionReason && t('jrReason').replace('{reason}', selected.rejectionReason),
-      ].filter(Boolean).join('\n') || '-';
-
       rows.push([
         {
           fieldKey: 'decision',
-          label: t('jrDecisionLabel')
-            .replace('{label}', (() => {
-              const meta = STATUS_META[selected.status];
-              return meta ? t(meta.labelKey) : t('jrDecision');
-            })())
-            .replace('{date}', formatDate(selected.decidedAt, intlLocale)),
-          value: decisionValue,
+          label: `${statusLabel(selected.status)} ${t('jrBy')}`,
+          value: [
+            selected.decidedBy,
+            selected.rejectionReason && t('jrReason').replace('{reason}', selected.rejectionReason),
+          ].filter(Boolean).join('\n') || '-',
         },
       ]);
     }
@@ -315,10 +365,68 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
     display: 'grid',
     gridTemplateColumns: {
       xs: 'minmax(0, 1fr)',
-      md: 'minmax(240px, 1.5fr) 140px 120px 110px 150px',
+      md: 'minmax(260px, 1.35fr) minmax(150px, 0.72fr) minmax(120px, 0.58fr) minmax(112px, 0.52fr) 116px',
     },
     alignItems: 'center',
-    gap: '1rem',
+    columnGap: '0.75rem',
+  };
+
+  const filterFieldSx = {
+    minHeight: '2.5rem',
+    border: '1px solid rgba(0, 0, 0, 0.23)',
+    borderRadius: '18px',
+    background: 'rgba(255, 255, 255, 0.97)',
+    color: '#171239',
+    boxShadow: 'none',
+    transition: 'none',
+    position: 'relative',
+    display: 'flex',
+    alignItems: 'center',
+    px: '0.875rem',
+    '&:focus-within': {
+      borderColor: '#6d35b8',
+      boxShadow: '0 0 0 3px rgba(109, 53, 184, 0.14)',
+    },
+    '& span': {
+      position: 'absolute',
+      top: '-0.7rem',
+      left: '1rem',
+      px: '0.375rem',
+      color: '#171239',
+      background: 'rgba(255, 255, 255, 0.97)',
+      fontSize: '0.8125rem',
+      fontWeight: 500,
+      lineHeight: 1,
+      pointerEvents: 'none',
+    },
+    '& input': {
+      width: '100%',
+      border: 0,
+      outline: 0,
+      background: 'transparent',
+      color: 'inherit',
+      fontFamily: 'inherit',
+      fontSize: 'inherit',
+      lineHeight: 'inherit',
+      fontWeight: 400,
+    },
+    '& select': {
+      width: '100%',
+      border: 0,
+      outline: 0,
+      background: 'transparent',
+      color: 'inherit',
+      fontFamily: 'inherit',
+      fontSize: 'inherit',
+      lineHeight: 'inherit',
+      fontWeight: 400,
+      minWidth: 0,
+      cursor: 'pointer',
+    },
+    '& input::placeholder': {
+      color: 'rgba(23, 18, 57, 0.42)',
+      opacity: 1,
+    },
   };
 
   return (
@@ -334,11 +442,9 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
         minHeight: 0,
       }}
     >
-      <Stack
-        direction={{ xs: 'column', xl: 'row' }}
-        spacing={1.5}
-        alignItems={{ xl: 'center' }}
-        justifyContent="space-between"
+      <Box
+        component="section"
+        aria-label={t('apFiltersAria')}
         sx={{
           border: '1px solid rgba(167, 139, 250, 0.18)',
           borderRadius: '22px',
@@ -346,55 +452,85 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
           boxShadow: 'none',
           backdropFilter: 'blur(18px)',
           p: '1rem',
-          flexShrink: 0,
+          display: 'grid',
+          gridTemplateColumns: {
+            xs: '1fr',
+            md: 'minmax(280px, 2fr) minmax(150px, 1fr) minmax(150px, 1fr) minmax(160px, 1fr) auto',
+          },
+          gap: '0.75rem',
+          alignItems: 'center',
+          overflow: 'visible',
           position: 'relative',
           zIndex: 100,
+          flex: '0 0 auto',
         }}
       >
-        <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.4} sx={{ flex: 1, justifyContent: 'flex-end' }}>
-          <TextField
-            placeholder={t('jrSearchPlaceholder')}
-            value={search}
-            onChange={(event) => setSearch(event.target.value)}
-            sx={{
-              minWidth: { md: '20.625rem' },
-              '& .MuiOutlinedInput-root': {
-                height: '2.5rem',
-                borderRadius: '18px',
-                bgcolor: 'rgba(255, 255, 255, 0.97)',
-                '& fieldset': { borderColor: 'rgba(0, 0, 0, 0.23)' },
-                '&:hover fieldset': { borderColor: 'rgba(0, 0, 0, 0.32)' },
-                '&.Mui-focused fieldset': { borderColor: '#6d35b8', boxShadow: '0 0 0 3px rgba(109, 53, 184, 0.14)' },
-              },
-            }}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon fontSize="small" sx={{ color: '#6F6890' }} />
-                </InputAdornment>
-              ),
-            }}
-          />
-          <FormControl size="small" sx={{ minWidth: '10rem' }}>
-            <Select
-              value={statusFilter}
-              onChange={(event) => setStatusFilter(event.target.value)}
-              sx={{
-                height: '2.5rem',
-                borderRadius: '18px',
-                bgcolor: 'rgba(255, 255, 255, 0.97)',
-                fontWeight: 400,
-                '& fieldset': { borderColor: 'rgba(0, 0, 0, 0.23)' },
-              }}
-            >
-              <MenuItem value="all">{t('jrAllStatuses')}</MenuItem>
-              <MenuItem value={JOIN_REQUEST_STATUS.NEW}>{t('jrStatusNew')}</MenuItem>
-              <MenuItem value={JOIN_REQUEST_STATUS.APPROVED}>{t('jrStatusApproved')}</MenuItem>
-              <MenuItem value={JOIN_REQUEST_STATUS.REJECTED}>{t('jrStatusRejected')}</MenuItem>
-            </Select>
-          </FormControl>
-        </Stack>
-      </Stack>
+        <Box component="label" sx={filterFieldSx}>
+          <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder={t('jrSearchPlaceholder')} />
+        </Box>
+        <Box component="label" sx={filterFieldSx}>
+          <span>{t('jrColStatus')}</span>
+          <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
+            <option value="all">{t('jrAllStatuses')}</option>
+            <option value={JOIN_REQUEST_STATUS.NEW}>{t('jrStatusNew')}</option>
+            <option value={JOIN_REQUEST_STATUS.APPROVED}>{t('jrStatusApproved')}</option>
+            <option value={JOIN_REQUEST_STATUS.REJECTED}>{t('jrStatusRejected')}</option>
+          </select>
+        </Box>
+        <Box component="label" sx={filterFieldSx}>
+          <span>{t('jrReadyToJoin')}</span>
+          <select value={readyFilter} onChange={(event) => setReadyFilter(event.target.value)}>
+            <option value="all">{t('jrAllReadiness')}</option>
+            <option value="yes">{t('jrYes')}</option>
+            <option value="no">{t('jrNo')}</option>
+          </select>
+        </Box>
+        <Box component="label" sx={filterFieldSx}>
+          <span>{t('evSortBy')}</span>
+          <select value={sortBy} onChange={(event) => setSortBy(event.target.value)}>
+            <option value="newest">{t('sortNewest')}</option>
+            <option value="oldest">{t('sortOldest')}</option>
+            <option value="name">{t('sortName')}</option>
+            <option value="status">{t('jrColStatus')}</option>
+          </select>
+        </Box>
+        <Button
+          type="button"
+          onClick={clearFilters}
+          sx={{
+            minHeight: '2.5rem',
+            px: '1.25rem',
+            border: '1px solid rgba(0, 0, 0, 0.23)',
+            borderRadius: '18px',
+            color: '#171239',
+            background: 'rgba(255, 255, 255, 0.97)',
+            boxShadow: 'none',
+            fontFamily: 'inherit',
+            fontSize: '1rem',
+            fontWeight: 400,
+            textTransform: 'none',
+            cursor: 'pointer',
+            transition: 'color 180ms ease, background 180ms ease, border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease',
+            '&:hover': {
+              color: '#fff',
+              background: 'linear-gradient(135deg, #e73386, #dc2577)',
+              borderColor: 'transparent',
+              boxShadow: '0 14px 26px rgba(223, 50, 123, 0.24)',
+              transform: 'translateY(-2px)',
+            },
+            '&:focus-visible': {
+              color: '#fff',
+              background: 'linear-gradient(135deg, #e73386, #dc2577)',
+              borderColor: 'transparent',
+              boxShadow: '0 14px 26px rgba(223, 50, 123, 0.24)',
+              transform: 'translateY(-2px)',
+            },
+            '&:active': { transform: 'translateY(0)' },
+          }}
+        >
+          {t('auditClear')}
+        </Button>
+      </Box>
 
       <Box
         sx={{
@@ -428,13 +564,13 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
           {['jrColApplicant', 'jrColPhone', 'jrColSubmitted', 'jrColStatus', 'jrColActions'].map((key, index) => (
             <Typography
               key={key}
-                sx={{
+              sx={{
                 fontWeight: 800,
                 color: 'rgba(36, 16, 79, 0.64)',
                 fontSize: '0.8125rem',
                 textTransform: 'none',
                 letterSpacing: 0,
-                textAlign: index === 4 ? 'end' : 'start',
+                textAlign: index === 0 ? 'left' : 'center',
               }}
             >
               {t(key)}
@@ -454,23 +590,16 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
             '&::-webkit-scrollbar-thumb': { background: 'rgba(167, 139, 250, 0.5)', borderRadius: 999 },
           }}
         >
-          <Stack spacing={0}>
             {loading ? (
-              <Box sx={{ py: 8, textAlign: 'center' }}>
+              <Box sx={{ minHeight: '100%', p: '2rem', display: 'grid', placeContent: 'center', justifyItems: 'center' }}>
                 <CircularProgress />
               </Box>
-            ) : filtered.length > 0 ? (
-              filtered.map((req) => {
+            ) : pagination.rows.length > 0 ? (
+              pagination.rows.map((req) => {
                 const isNew = (req.status || 'new') === JOIN_REQUEST_STATUS.NEW;
                 return (
                   <Box
                     key={req.id}
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => openDetails(req)}
-                    onKeyDown={(event) => {
-                      if (event.key === 'Enter' || event.key === ' ') openDetails(req);
-                    }}
                     sx={{
                       ...rowGrid,
                       minHeight: { xs: 'auto', md: '4rem' },
@@ -480,11 +609,7 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
                       border: 0,
                       borderBottom: '1px solid rgba(167, 139, 250, 0.13)',
                       bgcolor: 'transparent',
-                      cursor: 'pointer',
-                      transition: 'background-color 180ms ease',
-                      '&:hover': {
-                        bgcolor: 'rgba(255, 250, 254, 0.82)',
-                      },
+                      cursor: 'default',
                     }}
                   >
                     <Stack direction="row" spacing={1.5} alignItems="center" sx={{ minWidth: 0 }}>
@@ -505,29 +630,31 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
                         <Typography dir="auto" fontWeight={800} noWrap sx={{ color: '#17122E', fontSize: '0.8125rem', lineHeight: 1.2 }}>
                           {req.fullName || t('jrUnnamed')}
                         </Typography>
-                        <Typography color="rgba(36, 16, 79, 0.55)" noWrap sx={{ fontSize: '0.75rem', mt: 0.125 }}>
-                          {req.email || t('jrNoEmail')}
-                        </Typography>
                       </Box>
                     </Stack>
 
-                    <Typography fontWeight={800} color="#4F4A70" noWrap dir="ltr">
+                    <Typography fontWeight={700} color="rgba(36, 16, 79, 0.72)" noWrap dir="ltr" sx={{ textAlign: 'center', fontSize: '0.8125rem' }}>
                       {req.phone || '-'}
                     </Typography>
 
-                    <Typography fontWeight={800} color="#4F4A70">
+                    <Typography fontWeight={700} color="rgba(36, 16, 79, 0.72)" sx={{ textAlign: 'center', fontSize: '0.8125rem' }}>
                       {formatDate(req.createdAt, intlLocale)}
                     </Typography>
 
-                    <Box>
+                    <Box sx={{ display: 'flex', justifyContent: 'center', minWidth: 0 }}>
                       <StatusChip status={req.status} t={t} />
                     </Box>
 
                     <Stack
                       direction="row"
                       spacing={0.75}
-                      justifyContent={{ xs: 'flex-start', md: 'flex-end' }}
                       onClick={(event) => event.stopPropagation()}
+                      sx={{
+                        width: '100%',
+                        minWidth: 0,
+                        justifyContent: { xs: 'flex-start', md: 'center' },
+                        justifySelf: { xs: 'start', md: 'stretch' },
+                      }}
                     >
                       {isNew ? (
                         <>
@@ -535,8 +662,8 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
                             aria-label={t('jrApproveAria').replace('{name}', req.fullName || t('jrApplicationWord'))}
                             onClick={() => startApprove(req)}
                             sx={{
-                              width: '2.5rem',
-                              height: '2.5rem',
+                              width: '2rem',
+                              height: '2rem',
                               color: '#15803D',
                               bgcolor: 'rgba(34, 197, 94, 0.12)',
                               border: '1px solid rgba(255,255,255,0.72)',
@@ -549,8 +676,8 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
                             aria-label={t('jrRejectAria').replace('{name}', req.fullName || t('jrApplicationWord'))}
                             onClick={() => startReject(req)}
                             sx={{
-                              width: '2.5rem',
-                              height: '2.5rem',
+                              width: '2rem',
+                              height: '2rem',
                               color: '#B91C1C',
                               bgcolor: 'rgba(239, 68, 68, 0.10)',
                               border: '1px solid rgba(255,255,255,0.72)',
@@ -565,12 +692,19 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
                         aria-label={t('jrViewAria').replace('{name}', req.fullName || t('jrApplicationWord'))}
                         onClick={() => openDetails(req)}
                         sx={{
-                          width: '2.5rem',
-                          height: '2.5rem',
-                          color: '#6D3CCF',
-                          bgcolor: 'rgba(109, 60, 207, 0.09)',
-                          border: '1px solid rgba(255, 255, 255, 0.72)',
-                          '&:hover': { bgcolor: 'rgba(109, 60, 207, 0.15)' },
+                          width: '2rem',
+                          height: '2rem',
+                          color: '#5b1e8c',
+                          bgcolor: 'rgba(255, 255, 255, 0.97)',
+                          border: 0,
+                          boxShadow: '0 9px 24px rgba(91, 30, 140, 0.12)',
+                          transition: 'color 180ms ease, background 180ms ease, box-shadow 180ms ease, transform 180ms ease',
+                          '&:hover, &:focus-visible': {
+                            color: '#fff',
+                            background: 'linear-gradient(135deg, #e73386, #dc2577)',
+                            boxShadow: '0 14px 26px rgba(223, 50, 123, 0.24)',
+                            transform: 'translateY(-2px)',
+                          },
                         }}
                       >
                         <VisibilityOutlinedIcon fontSize="small" />
@@ -580,7 +714,7 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
                 );
               })
             ) : (
-              <Box sx={{ py: 8, textAlign: 'center' }}>
+              <Box sx={{ minHeight: '100%', p: '2rem', display: 'grid', placeContent: 'center', justifyItems: 'center', color: 'rgba(36, 16, 79, 0.65)', fontWeight: 800, textAlign: 'center' }}>
                 <Typography fontWeight={900}>{t('jrNoApplications')}</Typography>
                 <Typography color="text.secondary" sx={{ mt: 1 }}>
                   {requests.length === 0
@@ -589,7 +723,63 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
                 </Typography>
               </Box>
             )}
-          </Stack>
+        </Box>
+
+        <Box
+          component="footer"
+          sx={{
+            flex: '0 0 auto',
+            p: '0.75rem 1rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            borderTop: '1px solid rgba(167, 139, 250, 0.16)',
+            background: 'rgba(255, 255, 255, 0.72)',
+            '& .MuiPaginationItem-root': {
+              border: '2px solid transparent',
+              color: '#5b1e8c',
+              background: 'rgba(255, 255, 255, 0.97)',
+              boxShadow: '0 9px 24px rgba(91, 30, 140, 0.12)',
+              fontWeight: 900,
+              transition: 'color 180ms ease, background 180ms ease, border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease',
+            },
+            '& .MuiPaginationItem-root:hover': {
+              color: '#fff',
+              background: 'linear-gradient(135deg, #e73386, #dc2577)',
+              borderColor: 'transparent',
+              boxShadow: '0 14px 26px rgba(223, 50, 123, 0.24)',
+              transform: 'translateY(-2px)',
+            },
+            '& .MuiPaginationItem-root:focus-visible': {
+              color: '#fff',
+              background: 'linear-gradient(135deg, #e73386, #dc2577)',
+              borderColor: 'transparent',
+              boxShadow: '0 14px 26px rgba(223, 50, 123, 0.24)',
+              transform: 'translateY(-2px)',
+            },
+            '& .MuiPaginationItem-root:active': { transform: 'translateY(0)' },
+            '& .MuiPaginationItem-root.Mui-selected': {
+              color: '#fff',
+              background: 'linear-gradient(135deg, #e73386, #dc2577)',
+              borderColor: 'transparent',
+              boxShadow: '0 14px 26px rgba(223, 50, 123, 0.24)',
+            },
+            '& .MuiPaginationItem-root.Mui-disabled': {
+              color: 'rgba(91, 30, 140, 0.38)',
+              background: 'rgba(255, 255, 255, 0.72)',
+              boxShadow: 'none',
+              transform: 'none',
+            },
+          }}
+        >
+          <Pagination
+            count={pagination.pageCount}
+            page={pagination.page}
+            onChange={(event, value) => setPage(value)}
+            siblingCount={1}
+            boundaryCount={1}
+            shape="rounded"
+          />
         </Box>
       </Box>
 
@@ -604,134 +794,160 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
           '& .MuiDialog-container': {
             alignItems: 'center',
             justifyContent: 'center',
+            p: '18px',
           },
         }}
         PaperProps={{
           dir: direction,
           sx: {
-            width: { xs: 'calc(100vw - 24px)', sm: 'min(49.5rem, calc(100vw - 32px))' },
-            maxWidth: 792,
+            width: 'min(640px, calc(100vw - 36px))',
+            height: 'calc(100vh - 36px)',
+            maxHeight: 'calc(100vh - 36px)',
             m: 0,
-            position: 'fixed',
-            top: '50%',
-            insetInlineStart: '50%',
-            transform: 'translate(-50%, -50%)',
-            height: 'auto',
-            maxHeight: 'calc(100vh - 24px)',
-            borderRadius: { xs: '20px', md: '24px' },
+            border: '1px solid rgba(223, 50, 123, 0.14)',
+            borderRadius: '24px',
             overflow: 'hidden',
-            bgcolor: 'rgba(255, 255, 255, 0.94)',
-            backdropFilter: 'blur(18px)',
-            boxShadow: '0 30px 86px rgba(32, 20, 67, 0.28)',
+            color: '#24104f',
+            bgcolor: 'rgba(255, 255, 255, 0.98)',
+            boxShadow: '0 24px 56px rgba(31, 12, 42, 0.22)',
           },
         }}
         BackdropProps={{
           sx: {
-            bgcolor: 'rgba(18, 12, 35, 0.54)',
-            backdropFilter: 'blur(12px)',
+            bgcolor: 'rgba(32, 38, 55, 0.38)',
+            backdropFilter: 'blur(10px)',
           },
         }}
       >
         {selected ? (
-          <Box sx={{ display: 'flex', flexDirection: 'column', maxHeight: 'calc(100vh - 24px)', background: 'radial-gradient(circle at 50% 0%, rgba(223, 50, 123, 0.08), transparent 32%), linear-gradient(180deg, #FFFFFF 0%, #FFFBFE 100%)' }}>
+          <Box sx={{ display: 'grid', gridTemplateRows: 'auto minmax(0, 1fr) auto', height: '100%', minHeight: 0 }}>
             <Box
               sx={{
-                px: { xs: 2, sm: 2.25 },
-                pt: { xs: 1.5, sm: 1.875 },
-                pb: { xs: 1.375, sm: 1.5 },
+                px: { xs: 5.5, sm: 7 },
+                py: { xs: 2, sm: 2.2 },
                 position: 'relative',
                 flexShrink: 0,
-                borderBottom: '1px solid rgba(130, 92, 206, 0.08)',
+                display: 'grid',
+                justifyItems: 'center',
+                gap: 1,
+                textAlign: 'center',
+                borderBottom: '1px solid rgba(223, 50, 123, 0.1)',
+                background: 'linear-gradient(180deg, rgba(255, 247, 251, 0.92), rgba(255, 255, 255, 0.98))',
               }}
             >
               <IconButton
-                size="small"
                 onClick={() => setDetailsOpen(false)}
                 aria-label={t('jrCloseDetails')}
                 sx={{
                   position: 'absolute',
-                  top: '12px /* @noflip */',
-                  right: '12px /* @noflip */',
+                  top: '16px /* @noflip */',
+                  right: '16px /* @noflip */',
                   left: 'auto /* @noflip */',
-                  width: '1.75rem',
-                  height: '1.75rem',
-                  bgcolor: 'rgba(109, 60, 207, 0.06)',
-                  color: '#4E466B',
+                  width: 38,
+                  height: 38,
+                  color: '#5b1e8c',
+                  background: '#fff',
+                  border: '1px solid rgba(91, 30, 140, 0.22)',
+                  boxShadow: '0 8px 18px rgba(91, 30, 140, 0.12)',
                   zIndex: 1,
-                  '&:hover': { bgcolor: 'rgba(109, 60, 207, 0.12)' },
+                  '&:hover, &:focus-visible': {
+                    color: '#fff',
+                    background: 'linear-gradient(135deg, #df327b, #cf1f70)',
+                    borderColor: 'transparent',
+                    boxShadow: '0 14px 26px rgba(207, 31, 112, 0.3)',
+                    transform: 'translateY(-2px) scale(1.04)',
+                  },
                 }}
               >
-                <CloseIcon sx={{ fontSize: '1rem' }} />
+                <CloseIcon />
               </IconButton>
 
-              <Stack spacing={1.125} alignItems="stretch" sx={{ pr: 3.5 }} dir="ltr">
-                <Stack direction="row" spacing={1.125} alignItems="flex-start" sx={{ width: '100%' }}>
-                  <Avatar
-                    sx={{
-                      width: '3.25rem',
-                      height: '3.25rem',
-                      bgcolor: '#EEE7FF',
-                      color: '#6D3CCF',
-                      fontSize: '1.0625rem',
-                      fontWeight: 950,
-                      boxShadow: '0 10px 22px rgba(109, 60, 207, 0.14)',
-                      flexShrink: 0,
-                    }}
-                  >
-                    {initialsOf(selected.fullName)}
-                  </Avatar>
-                  <Box sx={{ minWidth: 0, flex: 1, textAlign: 'left' }}>
-                    <Stack spacing={0.5} alignItems="flex-start">
-                      <Typography dir="auto" variant="h5" fontWeight={950} noWrap sx={{ fontSize: '1.125rem', textAlign: 'left', minWidth: 0, width: '100%' }}>
-                        {selected.fullName || t('jrUnnamed')}
-                      </Typography>
-                      <Stack direction="row" spacing={0.75} alignItems="center" flexWrap="wrap" useFlexGap>
-                        <Typography color="text.secondary" sx={{ fontSize: '0.8125rem', textAlign: 'left', lineHeight: 1.35 }}>
-                          {t('jrSubmittedAt').replace('{date}', formatDate(selected.createdAt, intlLocale))}
-                        </Typography>
-                        <StatusChip status={selected.status} t={t} compact />
-                      </Stack>
-                    </Stack>
-                  </Box>
-                </Stack>
+              <Avatar
+                sx={{
+                  width: '3.25rem',
+                  height: '3.25rem',
+                  bgcolor: '#EEE7FF',
+                  color: '#6D3CCF',
+                  fontSize: '1.0625rem',
+                  fontWeight: 950,
+                  boxShadow: '0 10px 22px rgba(109, 60, 207, 0.14)',
+                }}
+              >
+                {initialsOf(selected.fullName)}
+              </Avatar>
+              <Typography
+                id="join-request-details-title"
+                dir="auto"
+                variant="h5"
+                sx={{
+                  m: 0,
+                  color: '#4b136b',
+                  fontSize: { xs: '1.45rem', sm: '1.8rem' },
+                  fontWeight: 900,
+                  lineHeight: 1.14,
+                  overflowWrap: 'anywhere',
+                }}
+              >
+                {selected.fullName || t('jrUnnamed')}
+              </Typography>
+              <Stack direction="row" spacing={0.75} alignItems="center" justifyContent="center" flexWrap="wrap" useFlexGap>
+                <Typography color="text.secondary" sx={{ fontSize: '0.8125rem', lineHeight: 1.35 }}>
+                  {t('jrSubmittedAt').replace('{date}', formatDate(selected.createdAt, intlLocale))}
+                </Typography>
+                <StatusChip status={selected.status} t={t} compact />
               </Stack>
             </Box>
 
-            <Box sx={{ flex: 1, overflow: 'auto', flexShrink: 0, px: { xs: 2, sm: 2.25 }, py: { xs: 1.5, sm: 1.875 } }} dir="ltr">
-              <Stack spacing={0.875}>
-                {applicationDetailRows.map((row, rowIndex) => (
-                  <Box
-                    key={rowIndex}
-                    sx={{
-                      display: 'grid',
-                      gridTemplateColumns: { xs: 'minmax(0, 1fr)', sm: 'repeat(2, minmax(0, 1fr))' },
-                      gap: 0.875,
-                      alignItems: 'stretch',
-                    }}
-                  >
-                    {row.map(({ fieldKey, labelKey, label, value }) => (
-                      <Box key={fieldKey} sx={{ minWidth: 0, display: 'flex' }}>
-                        <AdminDetailInfoCard
-                          label={labelKey ? t(labelKey) : label}
-                          value={value}
-                          iconKey={fieldKey}
-                        />
-                      </Box>
-                    ))}
-                  </Box>
-                ))}
-              </Stack>
+            <Box sx={{ minHeight: 0, overflowY: 'auto', p: { xs: 1.5, sm: 2 } }} dir="ltr">
+              <Box
+                component="section"
+                sx={{
+                  display: 'grid',
+                  gap: 1.15,
+                  p: 1.5,
+                  border: '1px solid rgba(223, 50, 123, 0.1)',
+                  borderRadius: '16px',
+                  background: 'linear-gradient(135deg, rgba(255, 247, 251, 0.72), rgba(255, 255, 255, 0.98))',
+                }}
+              >
+                <Typography sx={{ m: 0, color: '#4b136b', fontSize: '1.02rem', fontWeight: 900, lineHeight: 1.3 }}>
+                  {t('auditDetailsAria')}
+                </Typography>
+                <Stack spacing={0.875}>
+                  {applicationDetailRows.map((row, rowIndex) => (
+                    <Box
+                      key={rowIndex}
+                      sx={{
+                        display: 'grid',
+                        gridTemplateColumns: { xs: 'minmax(0, 1fr)', sm: 'repeat(2, minmax(0, 1fr))' },
+                        gap: 0.875,
+                        alignItems: 'stretch',
+                      }}
+                    >
+                      {row.map(({ fieldKey, labelKey, label, value }) => (
+                        <Box key={fieldKey} sx={{ minWidth: 0, display: 'flex' }}>
+                          <AdminDetailInfoCard
+                            label={labelKey ? t(labelKey) : label}
+                            value={value}
+                            iconKey={fieldKey}
+                          />
+                        </Box>
+                      ))}
+                    </Box>
+                  ))}
+                </Stack>
+              </Box>
             </Box>
 
             {(selected.status || 'new') === JOIN_REQUEST_STATUS.NEW ? (
-              <Box sx={{ px: { xs: 2, sm: 2.25 }, py: { xs: 1.5, sm: 1.875 }, flexShrink: 0, borderTop: '1px solid rgba(130, 92, 206, 0.08)' }}>
-                <Stack direction="row" spacing={1.2} justifyContent="flex-end">
+              <Box sx={{ px: { xs: 1.5, sm: 2 }, py: 1.25, borderTop: '1px solid rgba(223, 50, 123, 0.1)', background: 'rgba(255, 255, 255, 0.9)' }}>
+                <Stack direction="row" spacing={1} justifyContent="flex-end" flexWrap="wrap" useFlexGap>
                   <Button
                     onClick={() => startReject(selected)}
                     startIcon={<DoNotDisturbAltIcon />}
                     sx={{
-                      px: 2.4,
-                      height: '2.75rem',
+                      minHeight: 40,
+                      px: 1.7,
                       borderRadius: 999,
                       fontWeight: 900,
                       textTransform: 'none',
@@ -747,8 +963,8 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
                     onClick={() => startApprove(selected)}
                     startIcon={<CheckCircleIcon />}
                     sx={{
-                      px: 2.8,
-                      height: '2.75rem',
+                      minHeight: 40,
+                      px: 1.7,
                       borderRadius: 999,
                       fontWeight: 950,
                       textTransform: 'none',

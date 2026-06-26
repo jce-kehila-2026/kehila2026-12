@@ -503,7 +503,7 @@ export default function AuditLogPage() {
   return (
     <Box
       sx={{
-        height: 'calc(100vh - 6.5rem)',
+        height: '100%',
         minHeight: 0,
         display: 'flex',
         flexDirection: 'column',
