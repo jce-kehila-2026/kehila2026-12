@@ -513,7 +513,7 @@ function getProviderSlots(event, t = null) {
           slotId,
           startSource,
           endSource,
-          room: slot.room || slot.location || provider.room || provider.location || event.room || event.location || 'She-Na Center',
+          room: slot.room || slot.location || provider.room || provider.location || event.room || event.location,
           capacity: Number(slot.maxParticipants || slot.capacity || slot.availableSpots || provider.maxParticipants || provider.capacity || event.maxParticipants || event.capacity) || 0,
         };
       });
@@ -536,7 +536,7 @@ function getProviderSlots(event, t = null) {
         slotId: slugifyIdentifier(slot.id || `${providerId}-${getTimeKey(startSource)}-${getTimeKey(endSource)}-${slotIndex + 1}`),
         startSource,
         endSource,
-        room: slot.room || slot.location || event.room || event.location || 'She-Na Center',
+        room: slot.room || slot.location || event.room || event.location,
         capacity: Number(slot.maxParticipants || slot.capacity || slot.availableSpots || event.maxParticipants || event.capacity) || 0,
       };
     });
@@ -554,7 +554,7 @@ function getProviderSlots(event, t = null) {
       slotId: slugifyIdentifier(`${providerId}-${getTimeKey(event.startTime || event.date)}-${getTimeKey(event.endTime)}`),
       startSource: event.startTime || event.date,
       endSource: event.endTime,
-      room: event.room || event.location || 'She-Na Center',
+      room: event.room || event.location,
       capacity: Number(event.maxParticipants || event.capacity) || 0,
     },
   ];
@@ -1006,7 +1006,7 @@ function AppointmentBookingDrawer({
                 <HomeRoundedIcon fontSize="small" />
                 <div className="workshop-details-panel__detail-copy">
                   <strong>{t('evLocation')}</strong>
-                  <span>{selectedOption.room || selectedOption.location || event.location || 'She-Na Center'}</span>
+                  <span>{selectedOption.room || selectedOption.location || event.location}</span>
                 </div>
               </div>
               <div className="workshop-details-panel__detail-item">
@@ -1181,7 +1181,7 @@ function WorkshopListCard({ event, registeredSessionIds, isSelected, onOpenBooki
           </span>
           <span>
             <HomeRoundedIcon fontSize="small" />
-            {session?.location || event.location || 'She-Na Center'}
+            {session?.location || event.location}
           </span>
           <span>
             <GroupsRoundedIcon fontSize="small" />
@@ -1274,7 +1274,7 @@ function WorkshopDetailsPanel({
             <HomeRoundedIcon fontSize="small" />
             <div className="workshop-details-panel__detail-copy">
               <strong>{t('evLocation')}</strong>
-              <span>{session?.location || event.location || 'She-Na Center'}</span>
+              <span>{session?.location || event.location}</span>
             </div>
           </div>
           <div className="workshop-details-panel__detail-item">
@@ -1867,7 +1867,7 @@ export default function EventsPage({ embedInDashboard = false, locale = 'he' }) 
         const providerSlots = getProviderSlots(event, t);
         const providerNames = [...new Set(providerSlots.map((slot) => slot.providerName))];
         const roomLabels = [...new Set(providerSlots.map((slot) => slot.room).filter(Boolean))];
-        const displayLocation = roomLabels.length > 1 ? t('evMultipleRooms') : roomLabels[0] || localizeField(event.translations?.location ?? event.location, locale) || 'She-Na Center';
+        const displayLocation = roomLabels.length > 1 ? t('evMultipleRooms') : roomLabels[0] || localizeField(event.translations?.location ?? event.location, locale);
         const sessionStarts = getSessionStartsForEvent(event, providerSlots);
         const weeklySchedule = getWeeklyScheduleLabel(event, templateStart, t, intlLocale);
         const templateDescription = localizeField(event.translations?.description ?? event.description, locale) || t('evMoreDetailsSoon');

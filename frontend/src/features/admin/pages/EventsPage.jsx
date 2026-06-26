@@ -1220,6 +1220,11 @@ export default function EventsPage() {
       return;
     }
 
+    if (!preparedForm.location.trim()) {
+      setToast(t('evToastAddLocation'));
+      return;
+    }
+
     if (preparedForm.type === 'workshop') {
       if (!preparedForm.providers?.[0]?.name?.trim()) {
         setToast(t('evToastSelectProvider'));
@@ -1591,7 +1596,7 @@ export default function EventsPage() {
                           <td>
                             <div className="admin-events-location">
                               <LocationOnOutlined />
-                              {event.location || 'She-Na Center'}
+                              {event.location || t('evLocationTBD')}
                             </div>
                           </td>
                           {shouldShowCapacity && (
