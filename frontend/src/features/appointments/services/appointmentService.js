@@ -143,7 +143,7 @@ function getProviderSlots(provider, event, providerIndex) {
         baseSlotId,
         startTime,
         endTime,
-        room: slot.room || slot.location || provider.room || provider.location || event.room || event.location || "She-Na Center",
+        room: slot.room || slot.location || provider.room || provider.location || event.room || event.location,
         capacity: Number(slot.capacity || slot.maxParticipants || provider.capacity || event.maxParticipants || 1) || 1,
       };
     })

@@ -53,6 +53,7 @@ function usePickerDismiss(open, setOpen, rootRef, panelRef, enabled = true) {
  *   compact?: boolean,
  *   className?: string,
  *   disabled?: boolean,
+ *   isDateSelectable?: (date: Date) => boolean,
  * }} props
  */
 export default function ReminderDatePicker({
@@ -69,7 +70,13 @@ export default function ReminderDatePicker({
   compact = false,
   className = '',
   disabled = false,
+  isDateSelectable,
+  multiple = false,
 }) {
+  // In multiple mode `value` is an array of "YYYY-MM-DD" strings and the calendar
+  // stays open so several dates can be toggled in one go.
+  const selectedValues = multiple ? (Array.isArray(value) ? value : []) : [];
+  const viewSeedValue = multiple ? (selectedValues[0] || '') : value;
   const internalRef = useRef(null);
   const panelRef = useRef(null);
   const rootRef = pickerRef ?? internalRef;
@@ -102,21 +109,22 @@ export default function ReminderDatePicker({
     estimatedHeight: compact ? 290 : 320,
   });
 
-  const initialView = getInitialCalendarView(value);
+  const initialView = getInitialCalendarView(viewSeedValue);
   const [viewYear, setViewYear] = useState(initialView.year);
   const [viewMonth, setViewMonth] = useState(initialView.month);
 
   useEffect(() => {
     if (!isOpen) return;
 
-    const nextView = getInitialCalendarView(value);
+    const nextView = getInitialCalendarView(viewSeedValue);
     setViewYear(nextView.year);
     setViewMonth(nextView.month);
-  }, [isOpen, value]);
+  }, [isOpen, viewSeedValue]);
 
   const cells = useMemo(() => buildCalendarMonthCells(viewYear, viewMonth), [viewYear, viewMonth]);
   const monthLabel = getCalendarMonthLabel(viewYear, viewMonth);
-  const displayLabel = formatReminderDateDisplay(value);
+  const displayLabel = multiple ? '' : formatReminderDateDisplay(value);
+  const hasValue = multiple ? selectedValues.length > 0 : Boolean(value);
 
   const goPrevMonth = () => {
     if (viewMonth === 0) {
@@ -136,8 +144,21 @@ export default function ReminderDatePicker({
     setViewMonth((currentMonth) => currentMonth + 1);
   };
 
+  const canSelectDate = useCallback(
+    (date) => isReminderDateSelectable(date) && (!isDateSelectable || isDateSelectable(date)),
+    [isDateSelectable],
+  );
+
   const handleSelect = (nextValue, date) => {
-    if (!isReminderDateSelectable(date)) return;
+    if (!canSelectDate(date)) return;
+    if (multiple) {
+      // Toggle the date in/out of the selection and keep the calendar open.
+      const next = selectedValues.includes(nextValue)
+        ? selectedValues.filter((item) => item !== nextValue)
+        : [...selectedValues, nextValue].sort();
+      onChange(next);
+      return;
+    }
     onChange(nextValue);
     setOpen(false);
   };
@@ -175,8 +196,8 @@ export default function ReminderDatePicker({
 
       <div className="pd-notes-calendar__grid" role="grid">
         {cells.map((cell) => {
-          const selectable = isReminderDateSelectable(cell.date);
-          const isSelected = value === cell.value;
+          const selectable = canSelectDate(cell.date);
+          const isSelected = multiple ? selectedValues.includes(cell.value) : value === cell.value;
           const isToday = cell.value === toDateInputValue(new Date());
 
           return (
@@ -220,7 +241,7 @@ export default function ReminderDatePicker({
       <button
         type="button"
         id={id}
-        className={`pd-notes-picker__trigger${value ? ' is-filled' : ''}`}
+        className={`pd-notes-picker__trigger${hasValue ? ' is-filled' : ''}`}
         aria-haspopup="dialog"
         aria-expanded={isOpen}
         aria-label={ariaLabel}

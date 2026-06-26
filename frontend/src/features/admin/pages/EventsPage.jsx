@@ -103,7 +103,7 @@ function createInitialForm(type = 'workshop') {
     imageUrl: '',
     recurrence: 'weekly',
     weeklyDayIndex: '',
-    disabledDates: '',
+    disabledDates: [],
     date: '',
     startTime: '',
     endTime: '',
@@ -201,6 +201,67 @@ function slugifyIdentifier(value, fallback = 'item') {
     .slice(0, 80) || fallback;
 }
 
+function toDateKey(date) {
+  return [
+    date.getFullYear(),
+    pad(date.getMonth() + 1),
+    pad(date.getDate()),
+  ].join('-');
+}
+
+function getTimeKey(timeStr) {
+  const time = parseTimeString(timeStr);
+  if (!time) return 'time-tbd';
+  return `${pad(time.hours)}${pad(time.minutes)}`;
+}
+
+function getUpcomingSessionDate(dayIndex, timeStr) {
+  const now = new Date();
+  const today = new Date(now);
+  today.setHours(0, 0, 0, 0);
+  const daysUntil = (dayIndex - today.getDay() + 7) % 7;
+  const sessionDate = new Date(today);
+  sessionDate.setDate(today.getDate() + daysUntil);
+  const time = parseTimeString(timeStr);
+  if (time) sessionDate.setHours(time.hours, time.minutes, 0, 0);
+  if (sessionDate.getTime() <= now.getTime()) sessionDate.setDate(sessionDate.getDate() + 7);
+  return sessionDate;
+}
+
+function buildUpcomingSessionIds(event) {
+  const dayIndex = Number(event.weeklyDayIndex ?? event.dayIndex);
+  if (!Number.isInteger(dayIndex) || dayIndex < 0 || dayIndex > 6) return [];
+  const providers = event.providers || [];
+  if (!providers.length) return [];
+  const firstSlotTime = providers[0]?.slots?.[0]?.startTime || '';
+  const sessionDate = getUpcomingSessionDate(dayIndex, firstSlotTime);
+  const dateKey = toDateKey(sessionDate);
+  return providers.flatMap((provider, pi) => {
+    const providerName = provider.name || `Provider ${pi + 1}`;
+    const providerId = slugifyIdentifier(provider.id || providerName, `provider-${pi + 1}`);
+    return (provider.slots || []).map((slot, si) => {
+      const slotId = slugifyIdentifier(
+        slot.id || `${providerId}-${getTimeKey(slot.startTime)}-${getTimeKey(slot.endTime)}-${si + 1}`,
+      );
+      return `${event.id}__${dateKey}__${providerId}__${slotId}`;
+    });
+  });
+}
+
+// Comparable timestamp for list sorting. Recurring templates store `startTime` as a
+// bare "HH:MM" string, which `toDate()` can't parse (→ NaN), so date sort silently
+// did nothing for workshops. Resolve them to their next upcoming occurrence instead.
+function getEventSortTime(event) {
+  if (event.isRecurringTemplate || event.recurrence === 'weekly') {
+    const dayIndex = Number(event.weeklyDayIndex ?? event.dayIndex);
+    if (Number.isInteger(dayIndex) && dayIndex >= 0 && dayIndex <= 6) {
+      const firstSlotTime = event.providers?.[0]?.slots?.[0]?.startTime || event.startTime || '';
+      return getUpcomingSessionDate(dayIndex, firstSlotTime).getTime();
+    }
+  }
+  return toDate(event.startTime)?.getTime() || toDate(event.date)?.getTime() || 0;
+}
+
 function inferType(event) {
   const raw = `${event.type || ''} ${event.category || ''}`.toLowerCase();
   if (raw.includes('appointment') || raw.includes('therapy') || raw.includes('session')) {
@@ -230,7 +291,7 @@ function eventToForm(event) {
     imageUrl: event.imageUrl || event.thumbnailUrl || event.coverImageUrl || '',
     recurrence: isRecurring ? 'weekly' : 'one-time',
     weeklyDayIndex: recurringDayIndex,
-    disabledDates: Array.isArray(event.disabledDates) ? event.disabledDates.join(', ') : '',
+    disabledDates: Array.isArray(event.disabledDates) ? event.disabledDates : [],
     date: dateInputValue(event.date) || dateInputValue(event.startTime || event.date),
     startTime: type === 'workshop'
       ? timeInputValue(workshopSlotTime || event.startTime)
@@ -376,7 +437,11 @@ function syncWorkshopFormForSave(form) {
       slots: [{
         ...slot,
         startTime,
-        capacity: slot.capacity || String(form.maxParticipants || '1'),
+        // The workshop form only exposes a single "Capacity" field (maxParticipants),
+        // so it must be the authoritative per-session capacity. Previously slot.capacity
+        // (defaulted to '1' by createEmptySlot) always won, so admin-created workshops
+        // silently enforced a cap of 1 regardless of the entered value.
+        capacity: String(form.maxParticipants || slot.capacity || '1'),
       }],
     }],
   };
@@ -540,7 +605,15 @@ export default function EventsPage() {
       const data = await getAllEvents();
       setEvents(data);
       if (data.length) {
-        const countsData = await getRegistrationCounts(data.map((event) => event.id));
+        const templateIds = data.map((event) => event.id);
+        // Per-session counters are only meaningful for recurring *workshops*. Recurring
+        // appointments have many single-seat slots and use the template/booking counts.
+        const sessionIds = data.flatMap((event) =>
+          inferType(event) === 'workshop' && (event.isRecurringTemplate || event.recurrence === 'weekly')
+            ? buildUpcomingSessionIds(event)
+            : []
+        );
+        const countsData = await getRegistrationCounts([...templateIds, ...sessionIds]);
         setCounts(countsData);
       } else {
         setCounts({});
@@ -598,7 +671,52 @@ export default function EventsPage() {
   const appointmentsCount = typedEvents.filter((event) => event.eventType === 'appointment').length;
   const selectedEventCapacity = Number(selectedEvent?.maxParticipants || selectedEvent?.capacity) || 0;
   const selectedEventRegistered = selectedEvent ? (counts[selectedEvent.id] ?? registrations.length) : 0;
-  const selectedEventProgress = selectedEventCapacity ? Math.min(100, (selectedEventRegistered / selectedEventCapacity) * 100) : 0;
+
+  // A recurring workshop's drawer is shown per-session (date selector + per-session
+  // count/capacity) to match the events table, instead of one mixed all-sessions list.
+  const selectedEventIsRecurringWorkshop = Boolean(
+    selectedEvent
+    && inferType(selectedEvent) !== 'appointment'
+    && (selectedEvent.isRecurringTemplate || selectedEvent.recurrence === 'weekly')
+  );
+  const selectedSessionCapacity = Number(
+    selectedEvent?.providers?.[0]?.slots?.[0]?.capacity
+    || selectedEvent?.maxParticipants
+    || selectedEvent?.capacity
+  ) || 0;
+  const selectedSessionRegistered = useMemo(() => {
+    if (!selectedEventIsRecurringWorkshop || !selectedParticipantDate) return 0;
+    return registrations.filter((registration) =>
+      getBookingDateKey(registration) === selectedParticipantDate
+      && getParticipantStatus(registration) !== 'cancelled'
+    ).length;
+  }, [registrations, selectedEventIsRecurringWorkshop, selectedParticipantDate]);
+
+  // Session dates for the workshop date selector: every date that has a registration,
+  // plus the next upcoming session so it always appears even with zero sign-ups.
+  const workshopSessionDates = useMemo(() => {
+    if (!selectedEventIsRecurringWorkshop) return [];
+    const dateCounts = new Map();
+    const dayIndex = Number(selectedEvent.weeklyDayIndex ?? selectedEvent.dayIndex);
+    if (Number.isInteger(dayIndex) && dayIndex >= 0 && dayIndex <= 6) {
+      const firstSlotTime = selectedEvent.providers?.[0]?.slots?.[0]?.startTime || '';
+      dateCounts.set(toDateKey(getUpcomingSessionDate(dayIndex, firstSlotTime)), 0);
+    }
+    registrations.forEach((registration) => {
+      if (getParticipantStatus(registration) === 'cancelled') return;
+      const dateKey = getBookingDateKey(registration);
+      if (!dateKey) return;
+      dateCounts.set(dateKey, (dateCounts.get(dateKey) || 0) + 1);
+    });
+    return Array.from(dateCounts.entries())
+      .sort(([leftDate], [rightDate]) => leftDate.localeCompare(rightDate))
+      .map(([dateKey, count]) => ({ dateKey, count }));
+  }, [registrations, selectedEvent, selectedEventIsRecurringWorkshop]);
+
+  const summaryRegistered = selectedEventIsRecurringWorkshop ? selectedSessionRegistered : selectedEventRegistered;
+  const summaryCapacity = selectedEventIsRecurringWorkshop ? selectedSessionCapacity : selectedEventCapacity;
+  const summaryProgress = summaryCapacity ? Math.min(100, (summaryRegistered / summaryCapacity) * 100) : 0;
+
   const currentFormStep = EVENT_FORM_STEPS[activeFormStep];
   const isLastFormStep = activeFormStep === EVENT_FORM_STEPS.length - 1;
   const descriptionCount = form.description.length;
@@ -616,8 +734,8 @@ export default function EventsPage() {
       })
       .sort((left, right) => {
         if (sortBy === 'title') return String(left.title || '').localeCompare(String(right.title || ''));
-        const leftDate = toDate(left.startTime)?.getTime() || 0;
-        const rightDate = toDate(right.startTime)?.getTime() || 0;
+        const leftDate = getEventSortTime(left);
+        const rightDate = getEventSortTime(right);
         return sortBy === 'oldest' ? leftDate - rightDate : rightDate - leftDate;
       });
   }, [activeTab, searchTerm, sortBy, statusFilter, typedEvents]);
@@ -629,10 +747,10 @@ export default function EventsPage() {
   const pagination = useMemo(() => paginateRows(filteredEvents, page, PAGE_SIZE), [filteredEvents, page]);
 
   const participantStats = useMemo(() => {
-    const registered = registrations.length;
-    const remaining = selectedEventCapacity ? Math.max(0, selectedEventCapacity - registered) : 0;
+    const registered = summaryRegistered;
+    const remaining = summaryCapacity ? Math.max(0, summaryCapacity - registered) : 0;
     return { registered, remaining };
-  }, [registrations, selectedEventCapacity]);
+  }, [summaryRegistered, summaryCapacity]);
 
   const filteredRegistrations = useMemo(() => {
     const search = participantSearch.trim().toLowerCase();
@@ -716,15 +834,29 @@ export default function EventsPage() {
       .sort((left, right) => getAppointmentSortTime(left).localeCompare(getAppointmentSortTime(right)));
   }, [registrations, selectedEventIsAppointment, selectedParticipantDate, selectedProviderId]);
 
-  const visibleParticipantRows = selectedEventIsAppointment ? appointmentScheduleRows : filteredRegistrations;
+  // Recurring workshops reuse the already-filtered/sorted list, narrowed to the
+  // selected session date so each occurrence is managed on its own.
+  const workshopSessionRows = useMemo(() => {
+    if (!selectedEventIsRecurringWorkshop) return [];
+    return filteredRegistrations.filter(
+      (registration) => getBookingDateKey(registration) === selectedParticipantDate
+    );
+  }, [filteredRegistrations, selectedEventIsRecurringWorkshop, selectedParticipantDate]);
+
+  const visibleParticipantRows = selectedEventIsAppointment
+    ? appointmentScheduleRows
+    : selectedEventIsRecurringWorkshop
+      ? workshopSessionRows
+      : filteredRegistrations;
 
   const workshopProvider = form.providers?.[0] || createEmptyProvider();
   const workshopStartTime = getWorkshopStartTime(form);
+  const workshopEndTime = normalizeTimeString(workshopProvider.slots?.[0]?.endTime || form.endTime || '');
   const workshopStartTimePickerId = useId();
+  const workshopEndTimePickerId = useId();
   const workshopDatePickerId = useId();
   const appointmentDatePickerId = useId();
-  const appointmentStartTimePickerId = useId();
-  const appointmentStartTime = normalizeTimeString(form.startTime || '');
+  const disabledDatesPickerId = useId();
 
   const datePickerLabels = useMemo(
     () => ({
@@ -758,6 +890,57 @@ export default function EventsPage() {
     return ISRAELI_CITIES;
   }, [form.location]);
 
+  // In weekly mode the date picker only allows dates that fall on the chosen weekday;
+  // in one-time mode any date is allowed (predicate undefined). Until a weekday is
+  // picked, nothing is selectable so the admin is nudged to choose the day first.
+  const isWeeklyRecurrence = form.recurrence === 'weekly';
+  const hasWeeklyDay = form.weeklyDayIndex !== '' && form.weeklyDayIndex !== null && form.weeklyDayIndex !== undefined;
+  const weeklyDateConstraint = useMemo(() => {
+    if (!isWeeklyRecurrence) return undefined;
+    if (!hasWeeklyDay) return () => false;
+    const targetDay = Number(form.weeklyDayIndex);
+    return (date) => date.getDay() === targetDay;
+  }, [isWeeklyRecurrence, hasWeeklyDay, form.weeklyDayIndex]);
+
+  // Skipped occurrences are picked from a calendar (constrained to the event's weekday),
+  // shown as removable chips. Only meaningful for weekly-recurring events.
+  const disabledDates = Array.isArray(form.disabledDates) ? form.disabledDates : [];
+  const disabledDatesField = isWeeklyRecurrence ? (
+    <div className="admin-events-span-2 admin-events-disabled-dates">
+      <span className="admin-events-field-label">{t('evDisabledDates')}</span>
+      <ReminderDatePicker
+        id={disabledDatesPickerId}
+        className="admin-events-date-picker"
+        multiple
+        value={disabledDates}
+        ariaLabel={t('evDisabledDates')}
+        labels={datePickerLabels}
+        onChange={(next) => updateForm('disabledDates', next)}
+        isDateSelectable={weeklyDateConstraint}
+        disabled={!hasWeeklyDay}
+        portal
+        compact
+      />
+      {disabledDates.length > 0 && (
+        <ul className="admin-events-chip-list">
+          {[...disabledDates].sort().map((dateKey) => (
+            <li key={dateKey} className="admin-events-chip">
+              <span>{formatDate(`${dateKey}T00:00:00`, intlLocale, dateKey)}</span>
+              <button
+                type="button"
+                aria-label={t('evRemove')}
+                onClick={() => updateForm('disabledDates', disabledDates.filter((item) => item !== dateKey))}
+              >
+                <Close fontSize="small" />
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+      <small>{hasWeeklyDay ? t('evDisabledDatesHint') : t('evChooseDayFirst')}</small>
+    </div>
+  ) : null;
+
   useEffect(() => {
     if (!selectedEventIsAppointment) return;
     if (selectedProviderId && appointmentProviders.some((provider) => provider.id === selectedProviderId)) return;
@@ -777,6 +960,20 @@ export default function EventsPage() {
       setSelectedParticipantDate(getNearestUpcomingDateKey(dateKeys));
     }
   }, [appointmentBookedDates, selectedEventIsAppointment, selectedParticipantDate]);
+
+  useEffect(() => {
+    if (!selectedEventIsRecurringWorkshop) return;
+    const dateKeys = workshopSessionDates.map((item) => item.dateKey);
+
+    if (!dateKeys.length) {
+      if (selectedParticipantDate) setSelectedParticipantDate('');
+      return;
+    }
+
+    if (!dateKeys.includes(selectedParticipantDate)) {
+      setSelectedParticipantDate(getNearestUpcomingDateKey(dateKeys));
+    }
+  }, [workshopSessionDates, selectedEventIsRecurringWorkshop, selectedParticipantDate]);
 
   function updateForm(field, value) {
     setForm((current) => ({ ...current, [field]: value }));
@@ -875,7 +1072,55 @@ export default function EventsPage() {
       return;
     }
 
+    if (field === 'endTime') {
+      const nextTime = String(value ?? '');
+      setForm((current) => {
+        const providers = (current.providers?.length ? current.providers : [createEmptyProvider()]).map(
+          (provider, providerIndex) => {
+            if (providerIndex !== 0) return provider;
+            const slots = provider.slots?.length ? [...provider.slots] : [createEmptySlot()];
+            slots[0] = { ...(slots[0] || createEmptySlot()), endTime: nextTime };
+            return { ...provider, slots };
+          }
+        );
+        return {
+          ...current,
+          endTime: nextTime,
+          providers,
+        };
+      });
+      return;
+    }
+
     updateForm(field, value);
+  }
+
+  // Switching between "Weekly recurring" and "One-time" event.
+  function updateRecurrence(nextRecurrence) {
+    setForm((current) => ({
+      ...current,
+      recurrence: nextRecurrence,
+      // One-time events have no weekday; clear it so a stale value can't leak into save.
+      weeklyDayIndex: nextRecurrence === 'weekly' ? current.weeklyDayIndex : '',
+      // Entering weekly mode: drop any previously-picked date so the admin must choose
+      // one that matches the chosen weekday (the picker only allows those).
+      date: nextRecurrence === 'weekly' ? '' : current.date,
+    }));
+  }
+
+  // Choosing the weekly day. Clears a previously-picked date that doesn't fall on the
+  // new weekday so a Monday workshop can't keep a Tuesday start date by accident.
+  function updateWeeklyDay(value) {
+    setForm((current) => {
+      const next = { ...current, weeklyDayIndex: value };
+      if (current.date) {
+        const picked = new Date(`${current.date}T00:00:00`);
+        if (!Number.isNaN(picked.getTime()) && picked.getDay() !== Number(value)) {
+          next.date = '';
+        }
+      }
+      return next;
+    });
   }
 
   function changeTab(nextTab) {
@@ -946,15 +1191,37 @@ export default function EventsPage() {
   async function handleSave(event) {
     event.preventDefault();
     const preparedForm = syncWorkshopFormForSave(form);
-    const isRecurring = preparedForm.type === 'workshop' || preparedForm.recurrence === 'weekly';
-    const providersPayload = buildProvidersPayload(preparedForm.providers);
+    // Both workshops and appointments can now be weekly-recurring or one-time.
+    const isRecurring = preparedForm.recurrence === 'weekly';
+    const builtProviders = buildProvidersPayload(preparedForm.providers);
+    // Appointments are strictly 1:1 — force every slot's capacity to 1 regardless of
+    // any value carried over from legacy data, since the field is no longer editable.
+    const providersPayload = preparedForm.type === 'appointment'
+      ? builtProviders.map((provider) => ({
+        ...provider,
+        slots: provider.slots.map((slot) => ({ ...slot, capacity: 1 })),
+      }))
+      : builtProviders;
     const firstSlot = getFirstProviderSlot(providersPayload);
     const lastSlot = getLastProviderSlot(providersPayload);
-    const startDate = isRecurring ? null : composeDateTime(preparedForm.date, preparedForm.startTime);
-    const endDate = isRecurring ? null : composeDateTime(preparedForm.date, preparedForm.endTime);
+    // Workshops have a single event-level time; appointments derive their time from
+    // the provider slots (there is no event-level start time field for appointments).
+    const effectiveStartTime = preparedForm.type === 'appointment'
+      ? (firstSlot?.startTime || '')
+      : preparedForm.startTime;
+    const effectiveEndTime = preparedForm.type === 'appointment'
+      ? (lastSlot?.endTime || lastSlot?.startTime || '')
+      : preparedForm.endTime;
+    const startDate = isRecurring ? null : composeDateTime(preparedForm.date, effectiveStartTime);
+    const endDate = isRecurring ? null : composeDateTime(preparedForm.date, effectiveEndTime);
 
     if (!preparedForm.title.trim()) {
       setToast(t('evToastAddTitle'));
+      return;
+    }
+
+    if (!preparedForm.location.trim()) {
+      setToast(t('evToastAddLocation'));
       return;
     }
 
@@ -971,7 +1238,7 @@ export default function EventsPage() {
         setToast(t('evToastAddStartTime'));
         return;
       }
-      if (preparedForm.weeklyDayIndex === '' || preparedForm.weeklyDayIndex === null || preparedForm.weeklyDayIndex === undefined) {
+      if (isRecurring && (preparedForm.weeklyDayIndex === '' || preparedForm.weeklyDayIndex === null || preparedForm.weeklyDayIndex === undefined)) {
         setToast(t('evToastChooseDay'));
         return;
       }
@@ -985,11 +1252,11 @@ export default function EventsPage() {
     } else if (!preparedForm.date?.trim()) {
       setToast(t('evToastAddDate'));
       return;
-    } else if (!normalizeTimeString(preparedForm.startTime)) {
-      setToast(t('evToastAddStartTime'));
-      return;
-    } else if (isRecurring && !firstSlot) {
+    } else if (!firstSlot) {
       setToast(t('evToastAddSlot'));
+      return;
+    } else if (!normalizeTimeString(effectiveStartTime)) {
+      setToast(t('evToastAddStartTime'));
       return;
     } else if (!isRecurring && !startDate) {
       setToast(t('evToastAddDateTime'));
@@ -999,21 +1266,24 @@ export default function EventsPage() {
     const payload = {
       title: preparedForm.title.trim(),
       type: preparedForm.type,
-      recurrence: preparedForm.type === 'workshop' ? 'weekly' : preparedForm.recurrence,
+      recurrence: isRecurring ? 'weekly' : 'one-time',
       isRecurringTemplate: isRecurring,
       weeklyDay: isRecurring ? getWeekdayName(preparedForm.weeklyDayIndex) : '',
       weeklyDayIndex: isRecurring ? Number(preparedForm.weeklyDayIndex) : null,
       date: preparedForm.date || null,
       startTime: isRecurring
-        ? (normalizeTimeString(preparedForm.startTime) || firstSlot?.startTime)
+        ? (normalizeTimeString(effectiveStartTime) || firstSlot?.startTime)
         : startDate,
-      endTime: isRecurring ? (lastSlot.endTime || lastSlot.startTime) : endDate,
+      endTime: isRecurring ? (lastSlot?.endTime || lastSlot?.startTime) : endDate,
       location: preparedForm.location.trim(),
       description: preparedForm.description.trim(),
       imageUrl: preparedForm.imageUrl.trim(),
-      maxParticipants: Number(preparedForm.maxParticipants) || 0,
+      // Appointments are 1:1; the event-level capacity is meaningless, so pin it to 1.
+      maxParticipants: preparedForm.type === 'appointment' ? 1 : (Number(preparedForm.maxParticipants) || 0),
       registrationOpen: editingEvent ? editingEvent.registrationOpen !== false : true,
-      disabledDates: parseDisabledDates(preparedForm.disabledDates),
+      disabledDates: Array.isArray(preparedForm.disabledDates)
+        ? preparedForm.disabledDates
+        : parseDisabledDates(preparedForm.disabledDates),
       providers: providersPayload,
       status: editingEvent ? normalizeStatus(editingEvent.status) : 'published',
     };
@@ -1078,10 +1348,18 @@ export default function EventsPage() {
     try {
       await removeRegistration(registration.id, name, selectedEvent.id);
       setRegistrations((current) => current.filter((item) => item.id !== registration.id));
-      setCounts((current) => ({
-        ...current,
-        [selectedEvent.id]: Math.max(0, (current[selectedEvent.id] ?? registrations.length) - 1),
-      }));
+      setCounts((current) => {
+        const next = {
+          ...current,
+          // Template aggregate — drawer summary for one-time events / fallback.
+          [selectedEvent.id]: Math.max(0, (current[selectedEvent.id] ?? registrations.length) - 1),
+        };
+        // Per-session counter the events table reads for recurring workshops.
+        if (registration.slotId) {
+          next[registration.slotId] = Math.max(0, (current[registration.slotId] ?? 1) - 1);
+        }
+        return next;
+      });
       setToast(t('evToastParticipantRemoved'));
     } catch (err) {
       console.error('Remove participant failed:', err);
@@ -1279,9 +1557,19 @@ export default function EventsPage() {
                     ))
                   ) : filteredEvents.length ? (
                     pagination.rows.map((event) => {
-                      const registered = counts[event.id] ?? 0;
+                      // Capacity column is hidden for appointments (teammate's change);
+                      // for recurring workshops it shows the next session's count / per-session cap.
+                      const isRecurringWorkshop = event.eventType === 'workshop'
+                        && (event.isRecurringTemplate || event.recurrence === 'weekly');
                       const shouldShowCapacity = activeTab !== 'appointment';
-                      const capacity = shouldShowCapacity ? Number(event.maxParticipants || event.capacity) || 0 : 0;
+                      let registered = counts[event.id] ?? 0;
+                      let capacity = shouldShowCapacity ? Number(event.maxParticipants || event.capacity) || 0 : 0;
+                      if (isRecurringWorkshop) {
+                        const sessionIds = buildUpcomingSessionIds(event);
+                        registered = sessionIds.reduce((sum, id) => sum + (counts[id] ?? 0), 0);
+                        const slotCapacity = Number(event.providers?.[0]?.slots?.[0]?.capacity) || 0;
+                        if (slotCapacity) capacity = slotCapacity;
+                      }
                       const progress = capacity ? Math.min(100, (registered / capacity) * 100) : 0;
                       const imageUrl = getEventImage(event);
 
@@ -1308,7 +1596,7 @@ export default function EventsPage() {
                           <td>
                             <div className="admin-events-location">
                               <LocationOnOutlined />
-                              {event.location || 'She-Na Center'}
+                              {event.location || t('evLocationTBD')}
                             </div>
                           </td>
                           {shouldShowCapacity && (
@@ -1432,18 +1720,31 @@ export default function EventsPage() {
                   {activeFormStep === 1 && form.type === 'workshop' && (
                     <div className="admin-events-wizard-fields">
                       <label>
-                        <span className="admin-events-field-label">{t('evWeeklyDay')} <b>*</b></span>
+                        <span className="admin-events-field-label">{t('evScheduleType')}</span>
                         <select
-                          value={form.weeklyDayIndex}
-                          onChange={(event) => updateWorkshopScheduling('weeklyDayIndex', event.target.value)}
-                          required
+                          value={form.recurrence}
+                          onChange={(event) => updateRecurrence(event.target.value)}
                         >
-                          <option value="">{t('evChooseDay')}</option>
-                          {WEEKDAY_OPTIONS.map((day) => (
-                            <option key={day.value} value={day.value}>{t(`wd${day.value}`)}</option>
-                          ))}
+                          <option value="weekly">{t('evWeeklyRecurring')}</option>
+                          <option value="one-time">{t('evOneTime')}</option>
                         </select>
                       </label>
+
+                      {isWeeklyRecurrence && (
+                        <label>
+                          <span className="admin-events-field-label">{t('evWeeklyDay')} <b>*</b></span>
+                          <select
+                            value={form.weeklyDayIndex}
+                            onChange={(event) => updateWeeklyDay(event.target.value)}
+                            required
+                          >
+                            <option value="">{t('evChooseDay')}</option>
+                            {WEEKDAY_OPTIONS.map((day) => (
+                              <option key={day.value} value={day.value}>{t(`wd${day.value}`)}</option>
+                            ))}
+                          </select>
+                        </label>
+                      )}
 
                       <label>
                         <span className="admin-events-field-label">{t('evDate')} <b>*</b></span>
@@ -1454,9 +1755,14 @@ export default function EventsPage() {
                           ariaLabel={t('evDate')}
                           labels={datePickerLabels}
                           onChange={(nextDate) => updateWorkshopScheduling('date', nextDate)}
+                          isDateSelectable={weeklyDateConstraint}
+                          disabled={isWeeklyRecurrence && !hasWeeklyDay}
                           portal
                           compact
                         />
+                        {isWeeklyRecurrence && !hasWeeklyDay && (
+                          <small>{t('evChooseDayFirst')}</small>
+                        )}
                       </label>
 
                       <label>
@@ -1473,6 +1779,23 @@ export default function EventsPage() {
                           showDoneButton
                         />
                       </label>
+
+                      <label>
+                        <span className="admin-events-field-label">{t('evEndTime')}</span>
+                        <ReminderTimePicker
+                          id={workshopEndTimePickerId}
+                          className="admin-events-time-picker"
+                          value={workshopEndTime}
+                          ariaLabel={t('evEndTime')}
+                          labels={timePickerLabels}
+                          onChange={(nextTime) => updateWorkshopScheduling('endTime', nextTime)}
+                          portal
+                          compact
+                          showDoneButton
+                        />
+                      </label>
+
+                      {disabledDatesField}
 
                       <section className="admin-events-provider-section admin-events-span-2">
                         <header>
@@ -1532,21 +1855,32 @@ export default function EventsPage() {
                   {activeFormStep === 1 && form.type !== 'workshop' && (
                     <div className="admin-events-wizard-fields">
                       <label>
-                        <span className="admin-events-field-label">
-                          {t('evWeeklyDay')} {form.recurrence === 'weekly' ? <b>*</b> : null}
-                        </span>
+                        <span className="admin-events-field-label">{t('evScheduleType')}</span>
                         <select
-                          value={form.weeklyDayIndex}
-                          onChange={(event) => updateForm('weeklyDayIndex', event.target.value)}
-                          required={form.recurrence === 'weekly'}
-                          disabled={form.recurrence !== 'weekly'}
+                          value={form.recurrence}
+                          onChange={(event) => updateRecurrence(event.target.value)}
                         >
-                          <option value="">{t('evChooseDay')}</option>
-                          {WEEKDAY_OPTIONS.map((day) => (
-                            <option key={day.value} value={day.value}>{t(`wd${day.value}`)}</option>
-                          ))}
+                          <option value="weekly">{t('evWeeklyRecurring')}</option>
+                          <option value="one-time">{t('evOneTime')}</option>
                         </select>
                       </label>
+
+                      {isWeeklyRecurrence && (
+                        <label>
+                          <span className="admin-events-field-label">{t('evWeeklyDay')} <b>*</b></span>
+                          <select
+                            value={form.weeklyDayIndex}
+                            onChange={(event) => updateWeeklyDay(event.target.value)}
+                            required
+                          >
+                            <option value="">{t('evChooseDay')}</option>
+                            {WEEKDAY_OPTIONS.map((day) => (
+                              <option key={day.value} value={day.value}>{t(`wd${day.value}`)}</option>
+                            ))}
+                          </select>
+                        </label>
+                      )}
+
                       <label>
                         <span className="admin-events-field-label">{t('evDate')} <b>*</b></span>
                         <ReminderDatePicker
@@ -1556,24 +1890,20 @@ export default function EventsPage() {
                           ariaLabel={t('evDate')}
                           labels={datePickerLabels}
                           onChange={(nextDate) => updateForm('date', nextDate)}
+                          isDateSelectable={weeklyDateConstraint}
+                          disabled={isWeeklyRecurrence && !hasWeeklyDay}
                           portal
                           compact
                         />
+                        {isWeeklyRecurrence && !hasWeeklyDay && (
+                          <small>{t('evChooseDayFirst')}</small>
+                        )}
                       </label>
-                      <label>
-                        <span className="admin-events-field-label">{t('evStartTime')} <b>*</b></span>
-                        <ReminderTimePicker
-                          id={appointmentStartTimePickerId}
-                          className="admin-events-time-picker"
-                          value={appointmentStartTime}
-                          ariaLabel={t('evStartTime')}
-                          labels={timePickerLabels}
-                          onChange={(nextTime) => updateForm('startTime', normalizeTimeString(nextTime) || nextTime)}
-                          portal
-                          compact
-                          showDoneButton
-                        />
-                      </label>
+
+                      {disabledDatesField}
+
+                      {/* Appointment times come from each provider time slot below,
+                          not a single event-level start time. */}
                       <section className="admin-events-provider-section admin-events-span-2">
                         <header>
                           <div>
@@ -1665,23 +1995,6 @@ export default function EventsPage() {
                                         onChange={(event) => updateProviderSlot(providerIndex, slotIndex, 'endTime', event.target.value)}
                                       />
                                     </label>
-                                    <label>
-                                      {t('evRoom')}
-                                      <input
-                                        value={slot.room}
-                                        onChange={(event) => updateProviderSlot(providerIndex, slotIndex, 'room', event.target.value)}
-                                        placeholder={provider.room || t('evRoom')}
-                                      />
-                                    </label>
-                                    <label>
-                                      {t('evCapacity')}
-                                      <input
-                                        type="number"
-                                        min="1"
-                                        value={slot.capacity}
-                                        onChange={(event) => updateProviderSlot(providerIndex, slotIndex, 'capacity', event.target.value)}
-                                      />
-                                    </label>
                                     <button
                                       type="button"
                                       className="admin-events-wizard-action-btn admin-events-wizard-action-btn--outline public-cta-interaction"
@@ -1716,25 +2029,20 @@ export default function EventsPage() {
                           ))}
                         </select>
                       </label>
-                      <label>
-                        {t('evCapacity')}
-                        <input
-                          type="number"
-                          min="1"
-                          value={form.maxParticipants}
-                          onChange={(event) => updateForm('maxParticipants', event.target.value)}
-                          placeholder="20"
-                        />
-                      </label>
-                      <label className="admin-events-span-2">
-                        {t('evDisabledDates')}
-                        <input
-                          placeholder="2026-06-03, 2026-06-10"
-                          value={form.disabledDates}
-                          onChange={(event) => updateForm('disabledDates', event.target.value)}
-                        />
-                        <small>{t('evDisabledDatesHint')}</small>
-                      </label>
+                      {/* Appointments are 1:1, so capacity is fixed at 1 and not editable.
+                          Only workshops expose a capacity field. */}
+                      {form.type === 'workshop' && (
+                        <label>
+                          {t('evCapacityPerSession')}
+                          <input
+                            type="number"
+                            min="1"
+                            value={form.maxParticipants}
+                            onChange={(event) => updateForm('maxParticipants', event.target.value)}
+                            placeholder="20"
+                          />
+                        </label>
+                      )}
                       <section className="admin-events-image-section admin-events-span-2">
                         <div>
                           <label>
@@ -1847,8 +2155,8 @@ export default function EventsPage() {
                     <span><Schedule /> {formatScheduleTime(selectedEvent, intlLocale, t('evTimeTBD'))}</span>
                   </div>
                   <div className="admin-events-participant-summary__capacity">
-                    <strong>{selectedEventRegistered} / {selectedEventCapacity || '-'}</strong>
-                    <span><i style={{ width: `${selectedEventProgress}%` }} /></span>
+                    <strong>{summaryRegistered} / {summaryCapacity || '-'}</strong>
+                    <span><i style={{ width: `${summaryProgress}%` }} /></span>
                   </div>
                 </div>
               </section>
@@ -2013,6 +2321,30 @@ export default function EventsPage() {
                 </>
               ) : (
                 <>
+                  {selectedEventIsRecurringWorkshop ? (
+                    <section className="admin-events-schedule-toolbar">
+                      <label>
+                        <span>{t('pdSessionDate')}</span>
+                        <select
+                          value={selectedParticipantDate}
+                          disabled={!workshopSessionDates.length}
+                          onChange={(event) => setSelectedParticipantDate(event.target.value)}
+                        >
+                          {workshopSessionDates.length ? (
+                            workshopSessionDates.map((item) => (
+                              <option value={item.dateKey} key={item.dateKey}>
+                                {formatDateLabel(item.dateKey, intlLocale, t('pdSelectedDate'))} ({item.count})
+                              </option>
+                            ))
+                          ) : (
+                            <option value="">{t('pdNoBookedDatesOption')}</option>
+                          )}
+                        </select>
+                      </label>
+                      <p>{t('pdWorkshopSessionHint')}</p>
+                    </section>
+                  ) : null}
+
                   <section className="admin-events-participant-stats" aria-label={t('pdSubtitle')}>
                     <article><Groups /><strong>{participantStats.registered}</strong><span>{t('pdRegistered')}</span></article>
                     <article><EventAvailable /><strong>{participantStats.remaining}</strong><span>{t('pdRemaining')}</span></article>
@@ -2039,7 +2371,7 @@ export default function EventsPage() {
                     </select>
                   </section>
 
-                  <p className="admin-events-participant-count">{t('pdParticipantsCount').replace('{n}', filteredRegistrations.length)}</p>
+                  <p className="admin-events-participant-count">{t('pdParticipantsCount').replace('{n}', visibleParticipantRows.length)}</p>
 
                   <section className="admin-events-participant-list">
                     {registrationsLoading ? (
@@ -2051,8 +2383,8 @@ export default function EventsPage() {
                         <p>{registrationsError}</p>
                         <button type="button" onClick={handleParticipantsRetry}>{t('pdRetry')}</button>
                       </div>
-                    ) : filteredRegistrations.length ? (
-                      filteredRegistrations.map((registration) => {
+                    ) : visibleParticipantRows.length ? (
+                      visibleParticipantRows.map((registration) => {
                         const name = getParticipantName(registration);
                         const email = getParticipantEmail(registration);
                         const status = getParticipantStatus(registration);
