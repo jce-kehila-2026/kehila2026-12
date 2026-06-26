@@ -1434,13 +1434,13 @@ export default function EventsPage() {
 
           <section className="admin-events-table-card">
             <div className="admin-events-table-wrap">
-              <table className="admin-events-table">
+              <table className={`admin-events-table ${activeTab === 'appointment' ? 'admin-events-table--appointments' : ''}`}>
                 <thead>
                   <tr>
                     <th>{t('evColEvent')}</th>
                     <th>{t('evColDateTime')}</th>
                     <th>{t('evColLocation')}</th>
-                    <th>{t('evColCapacity')}</th>
+                    {activeTab !== 'appointment' && <th>{t('evColCapacity')}</th>}
                     <th>{t('evColStatus')}</th>
                     <th>{t('evColActions')}</th>
                   </tr>
@@ -1449,15 +1449,18 @@ export default function EventsPage() {
                   {loading ? (
                     Array.from({ length: 4 }).map((_, index) => (
                       <tr className="admin-events-skeleton-row" key={index}>
-                        <td colSpan="6"><span /></td>
+                        <td colSpan={activeTab === 'appointment' ? 5 : 6}><span /></td>
                       </tr>
                     ))
                   ) : filteredEvents.length ? (
                     pagination.rows.map((event) => {
+                      // Capacity column is hidden for appointments (teammate's change);
+                      // for recurring workshops it shows the next session's count / per-session cap.
                       const isRecurringWorkshop = event.eventType === 'workshop'
                         && (event.isRecurringTemplate || event.recurrence === 'weekly');
+                      const shouldShowCapacity = activeTab !== 'appointment';
                       let registered = counts[event.id] ?? 0;
-                      let capacity = Number(event.maxParticipants || event.capacity) || 0;
+                      let capacity = shouldShowCapacity ? Number(event.maxParticipants || event.capacity) || 0 : 0;
                       if (isRecurringWorkshop) {
                         const sessionIds = buildUpcomingSessionIds(event);
                         registered = sessionIds.reduce((sum, id) => sum + (counts[id] ?? 0), 0);
@@ -1478,7 +1481,6 @@ export default function EventsPage() {
                               )}
                               <div>
                                 <strong>{event.title || t('evUntitledEvent')}</strong>
-                                <span>{event.category || typeLabel(event.eventType)}</span>
                               </div>
                             </div>
                           </td>
@@ -1494,12 +1496,14 @@ export default function EventsPage() {
                               {event.location || 'She-Na Center'}
                             </div>
                           </td>
-                          <td>
-                            <div className="admin-events-capacity">
-                              <strong>{registered} / {capacity || '-'}</strong>
-                              <span><i style={{ width: `${progress}%` }} /></span>
-                            </div>
-                          </td>
+                          {shouldShowCapacity && (
+                            <td>
+                              <div className="admin-events-capacity">
+                                <strong>{registered} / {capacity || '-'}</strong>
+                                <span><i style={{ width: `${progress}%` }} /></span>
+                              </div>
+                            </td>
+                          )}
                           <td>
                             <span className={`admin-events-status admin-events-status--${event.status}`}>
                               {evStatusLabel(event.status)}
@@ -1523,7 +1527,7 @@ export default function EventsPage() {
                     })
                   ) : (
                     <tr>
-                      <td colSpan="6">
+                      <td colSpan={activeTab === 'appointment' ? 5 : 6}>
                         <div className="admin-events-empty">
                           <Tune />
                           <strong>{activeTab === 'workshop' ? t('evNoWorkshopsFound') : t('evNoAppointmentsFound')}</strong>
