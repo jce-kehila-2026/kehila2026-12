@@ -606,8 +606,12 @@ export default function EventsPage() {
       setEvents(data);
       if (data.length) {
         const templateIds = data.map((event) => event.id);
+        // Per-session counters are only meaningful for recurring *workshops*. Recurring
+        // appointments have many single-seat slots and use the template/booking counts.
         const sessionIds = data.flatMap((event) =>
-          (event.isRecurringTemplate || event.recurrence === 'weekly') ? buildUpcomingSessionIds(event) : []
+          inferType(event) === 'workshop' && (event.isRecurringTemplate || event.recurrence === 'weekly')
+            ? buildUpcomingSessionIds(event)
+            : []
         );
         const countsData = await getRegistrationCounts([...templateIds, ...sessionIds]);
         setCounts(countsData);
@@ -668,6 +672,52 @@ export default function EventsPage() {
   const selectedEventCapacity = Number(selectedEvent?.maxParticipants || selectedEvent?.capacity) || 0;
   const selectedEventRegistered = selectedEvent ? (counts[selectedEvent.id] ?? registrations.length) : 0;
   const selectedEventProgress = selectedEventCapacity ? Math.min(100, (selectedEventRegistered / selectedEventCapacity) * 100) : 0;
+
+  // A recurring workshop's drawer is shown per-session (date selector + per-session
+  // count/capacity) to match the events table, instead of one mixed all-sessions list.
+  const selectedEventIsRecurringWorkshop = Boolean(
+    selectedEvent
+    && inferType(selectedEvent) !== 'appointment'
+    && (selectedEvent.isRecurringTemplate || selectedEvent.recurrence === 'weekly')
+  );
+  const selectedSessionCapacity = Number(
+    selectedEvent?.providers?.[0]?.slots?.[0]?.capacity
+    || selectedEvent?.maxParticipants
+    || selectedEvent?.capacity
+  ) || 0;
+  const selectedSessionRegistered = useMemo(() => {
+    if (!selectedEventIsRecurringWorkshop || !selectedParticipantDate) return 0;
+    return registrations.filter((registration) =>
+      getBookingDateKey(registration) === selectedParticipantDate
+      && getParticipantStatus(registration) !== 'cancelled'
+    ).length;
+  }, [registrations, selectedEventIsRecurringWorkshop, selectedParticipantDate]);
+
+  // Session dates for the workshop date selector: every date that has a registration,
+  // plus the next upcoming session so it always appears even with zero sign-ups.
+  const workshopSessionDates = useMemo(() => {
+    if (!selectedEventIsRecurringWorkshop) return [];
+    const dateCounts = new Map();
+    const dayIndex = Number(selectedEvent.weeklyDayIndex ?? selectedEvent.dayIndex);
+    if (Number.isInteger(dayIndex) && dayIndex >= 0 && dayIndex <= 6) {
+      const firstSlotTime = selectedEvent.providers?.[0]?.slots?.[0]?.startTime || '';
+      dateCounts.set(toDateKey(getUpcomingSessionDate(dayIndex, firstSlotTime)), 0);
+    }
+    registrations.forEach((registration) => {
+      if (getParticipantStatus(registration) === 'cancelled') return;
+      const dateKey = getBookingDateKey(registration);
+      if (!dateKey) return;
+      dateCounts.set(dateKey, (dateCounts.get(dateKey) || 0) + 1);
+    });
+    return Array.from(dateCounts.entries())
+      .sort(([leftDate], [rightDate]) => leftDate.localeCompare(rightDate))
+      .map(([dateKey, count]) => ({ dateKey, count }));
+  }, [registrations, selectedEvent, selectedEventIsRecurringWorkshop]);
+
+  const summaryRegistered = selectedEventIsRecurringWorkshop ? selectedSessionRegistered : selectedEventRegistered;
+  const summaryCapacity = selectedEventIsRecurringWorkshop ? selectedSessionCapacity : selectedEventCapacity;
+  const summaryProgress = summaryCapacity ? Math.min(100, (summaryRegistered / summaryCapacity) * 100) : 0;
+
   const currentFormStep = EVENT_FORM_STEPS[activeFormStep];
   const isLastFormStep = activeFormStep === EVENT_FORM_STEPS.length - 1;
   const descriptionCount = form.description.length;
@@ -685,8 +735,8 @@ export default function EventsPage() {
       })
       .sort((left, right) => {
         if (sortBy === 'title') return String(left.title || '').localeCompare(String(right.title || ''));
-        const leftDate = toDate(left.startTime)?.getTime() || 0;
-        const rightDate = toDate(right.startTime)?.getTime() || 0;
+        const leftDate = getEventSortTime(left);
+        const rightDate = getEventSortTime(right);
         return sortBy === 'oldest' ? leftDate - rightDate : rightDate - leftDate;
       });
   }, [activeTab, searchTerm, sortBy, statusFilter, typedEvents]);
@@ -698,10 +748,10 @@ export default function EventsPage() {
   const pagination = useMemo(() => paginateRows(filteredEvents, page, PAGE_SIZE), [filteredEvents, page]);
 
   const participantStats = useMemo(() => {
-    const registered = registrations.length;
-    const remaining = selectedEventCapacity ? Math.max(0, selectedEventCapacity - registered) : 0;
+    const registered = summaryRegistered;
+    const remaining = summaryCapacity ? Math.max(0, summaryCapacity - registered) : 0;
     return { registered, remaining };
-  }, [registrations, selectedEventCapacity]);
+  }, [summaryRegistered, summaryCapacity]);
 
   const filteredRegistrations = useMemo(() => {
     const search = participantSearch.trim().toLowerCase();
@@ -785,7 +835,20 @@ export default function EventsPage() {
       .sort((left, right) => getAppointmentSortTime(left).localeCompare(getAppointmentSortTime(right)));
   }, [registrations, selectedEventIsAppointment, selectedParticipantDate, selectedProviderId]);
 
-  const visibleParticipantRows = selectedEventIsAppointment ? appointmentScheduleRows : filteredRegistrations;
+  // Recurring workshops reuse the already-filtered/sorted list, narrowed to the
+  // selected session date so each occurrence is managed on its own.
+  const workshopSessionRows = useMemo(() => {
+    if (!selectedEventIsRecurringWorkshop) return [];
+    return filteredRegistrations.filter(
+      (registration) => getBookingDateKey(registration) === selectedParticipantDate
+    );
+  }, [filteredRegistrations, selectedEventIsRecurringWorkshop, selectedParticipantDate]);
+
+  const visibleParticipantRows = selectedEventIsAppointment
+    ? appointmentScheduleRows
+    : selectedEventIsRecurringWorkshop
+      ? workshopSessionRows
+      : filteredRegistrations;
 
   const workshopProvider = form.providers?.[0] || createEmptyProvider();
   const workshopStartTime = getWorkshopStartTime(form);
@@ -1348,15 +1411,15 @@ export default function EventsPage() {
                     ))
                   ) : filteredEvents.length ? (
                     pagination.rows.map((event) => {
-                      const isRecurring = event.isRecurringTemplate || event.recurrence === 'weekly';
+                      const isRecurringWorkshop = event.eventType === 'workshop'
+                        && (event.isRecurringTemplate || event.recurrence === 'weekly');
                       let registered = counts[event.id] ?? 0;
                       let capacity = Number(event.maxParticipants || event.capacity) || 0;
-                      if (isRecurring) {
+                      if (isRecurringWorkshop) {
                         const sessionIds = buildUpcomingSessionIds(event);
-                        const sessionCount = sessionIds.reduce((sum, id) => sum + (counts[id] ?? 0), 0);
-                        const firstSlot = event.providers?.[0]?.slots?.[0];
-                        registered = sessionCount;
-                        if (firstSlot?.capacity) capacity = Number(firstSlot.capacity);
+                        registered = sessionIds.reduce((sum, id) => sum + (counts[id] ?? 0), 0);
+                        const slotCapacity = Number(event.providers?.[0]?.slots?.[0]?.capacity) || 0;
+                        if (slotCapacity) capacity = slotCapacity;
                       }
                       const progress = capacity ? Math.min(100, (registered / capacity) * 100) : 0;
                       const imageUrl = getEventImage(event);
