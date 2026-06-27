@@ -701,6 +701,7 @@ function getAppointmentProviders(event, t = null) {
       name: option.providerName || tr(t, 'evSheNaTeam', 'She-Na Team'),
       specialty: option.providerSpecialty || event.category || tr(t, 'evWellnessTeacher', 'Wellness Teacher'),
       avatar: option.providerAvatar || '',
+      room: existing?.room || option.room || option.location || event.location || '',
       dateKeys: nextDates,
       sessions: (existing?.sessions || 0) + 1,
     });
@@ -1005,8 +1006,8 @@ function AppointmentBookingDrawer({
               <div className="workshop-details-panel__detail-item">
                 <HomeRoundedIcon fontSize="small" />
                 <div className="workshop-details-panel__detail-copy">
-                  <strong>{t('evLocation')}</strong>
-                  <span>{selectedOption.room || selectedOption.location || event.location}</span>
+                  <strong>{t('evRoom')}</strong>
+                  <span>{selectedOption.room || selectedProvider?.room || event.location}</span>
                 </div>
               </div>
               <div className="workshop-details-panel__detail-item">

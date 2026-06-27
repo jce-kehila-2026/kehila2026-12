@@ -161,7 +161,7 @@ function mapAppointmentRowToRaw(row) {
     title: rawTitle,
     therapistName: row.providerName || row.therapistName || 'Provider',
     therapistRole: row.providerSpecialty || row.therapistRole,
-    location: row.eventLocation || row.room || row.location || '',
+    location: row.room || row.eventLocation || row.location || '',
     startsAt,
   };
 }

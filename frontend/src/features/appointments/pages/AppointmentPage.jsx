@@ -67,6 +67,7 @@ function mapAppointmentDocToCard(docRow) {
     dateIso: docRow.selectedDate || docRow.dateKey || toDateKey(docRow.startAt || docRow.eventDate || docRow.date),
     time: docRow.selectedTime || docRow.selectedTimeSlot || docRow.sessionTime || docRow.time,
     provider: docRow.providerName || docRow.therapistName || "Provider",
+    room: docRow.room || docRow.eventLocation || docRow.location || "",
     appointmentType: typeLabel,
     durationMins: opt.durationMins,
     status: normalizeAppointmentStatus(docRow.status),

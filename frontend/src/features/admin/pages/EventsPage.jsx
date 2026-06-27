@@ -31,7 +31,6 @@ import AdminPageHeader from '../components/AdminPageHeader';
 import AdminPreviewButton from '../components/AdminPreviewButton';
 import ReminderTimePicker from '../../../shared/components/ReminderTimePicker';
 import ReminderDatePicker from '../../../shared/components/ReminderDatePicker';
-import ISRAELI_CITIES from '../../../shared/data/israeliCities.json';
 import '../../../shared/components/ReminderTimePicker.css';
 import '../../../shared/styles/public-cta-button.css';
 import { paginateRows } from './bookingsPageUtils';
@@ -106,7 +105,7 @@ function createInitialForm(type = 'workshop') {
     date: '',
     startTime: '',
     endTime: '',
-    location: '',
+    ...(type === 'workshop' ? { location: '' } : {}),
     maxParticipants: '',
     providers: [createEmptyProvider()],
   };
@@ -298,7 +297,7 @@ function eventToForm(event) {
       ? timeInputValue(workshopSlotTime || event.startTime)
       : timeInputValue(event.startTime || event.date),
     endTime: timeInputValue(event.endTime),
-    location: event.location || '',
+    ...(type === 'workshop' ? { location: event.location || '' } : {}),
     maxParticipants: event.maxParticipants || event.capacity || '',
     providers,
   };
@@ -448,6 +447,22 @@ function syncWorkshopFormForSave(form) {
         capacity: String(form.maxParticipants || slot.capacity || '1'),
       }],
     }],
+  };
+}
+
+function syncAppointmentRoomsForSave(form) {
+  if (form.type !== 'appointment') return form;
+
+  return {
+    ...form,
+    providers: form.providers.map((provider) => {
+      const room = String(provider.room || '').trim();
+      return {
+        ...provider,
+        room,
+        slots: provider.slots.map((slot) => ({ ...slot, room })),
+      };
+    }),
   };
 }
 
@@ -886,14 +901,6 @@ export default function EventsPage() {
     [t],
   );
 
-  const locationOptions = useMemo(() => {
-    const trimmed = (form.location || '').trim();
-    if (trimmed && !ISRAELI_CITIES.some((city) => city.he === trimmed)) {
-      return [{ he: trimmed, en: '' }, ...ISRAELI_CITIES];
-    }
-    return ISRAELI_CITIES;
-  }, [form.location]);
-
   // In weekly mode the date picker only allows dates that fall on the chosen weekday;
   // in one-time mode any date is allowed (predicate undefined). Until a weekday is
   // picked, nothing is selectable so the admin is nudged to choose the day first.
@@ -1197,7 +1204,7 @@ export default function EventsPage() {
 
   async function handleSave(event) {
     event.preventDefault();
-    const preparedForm = syncWorkshopFormForSave(form);
+    const preparedForm = syncAppointmentRoomsForSave(syncWorkshopFormForSave(form));
     // Both workshops and appointments can now be weekly-recurring or one-time.
     const isRecurring = preparedForm.recurrence === 'weekly';
     const builtProviders = buildProvidersPayload(preparedForm.providers);
@@ -1227,8 +1234,16 @@ export default function EventsPage() {
       return;
     }
 
-    if (!preparedForm.location.trim()) {
+    if (preparedForm.type === 'workshop' && !preparedForm.location?.trim()) {
       setToast(t('evToastAddLocation'));
+      return;
+    }
+
+    if (
+      preparedForm.type === 'appointment'
+      && preparedForm.providers.some((provider) => !String(provider.room || '').trim())
+    ) {
+      setToast(t('evToastAddProviderRoom'));
       return;
     }
 
@@ -1282,7 +1297,9 @@ export default function EventsPage() {
         ? (normalizeTimeString(effectiveStartTime) || firstSlot?.startTime)
         : startDate,
       endTime: isRecurring ? (lastSlot?.endTime || lastSlot?.startTime) : endDate,
-      location: preparedForm.location.trim(),
+      ...(preparedForm.type === 'workshop'
+        ? { location: preparedForm.location.trim() }
+        : {}),
       description: preparedForm.description.trim(),
       imageUrl: preparedForm.imageUrl.trim(),
       // Appointments are 1:1; the event-level capacity is meaningless, so pin it to 1.
@@ -1933,11 +1950,12 @@ export default function EventsPage() {
                                   />
                                 </label>
                                 <label>
-                                  {t('evDefaultRoom')}
+                                  <span className="admin-events-field-label">{t('evDefaultRoom')} <b>*</b></span>
                                   <input
                                     value={provider.room}
                                     onChange={(event) => updateProvider(providerIndex, 'room', event.target.value)}
                                     placeholder={t('evRoomPlaceholder')}
+                                    required
                                   />
                                 </label>
                                 <label>
@@ -1998,7 +2016,7 @@ export default function EventsPage() {
 
                   {activeFormStep === 2 && (
                     <div className="admin-events-wizard-fields">
-                      {form.type === 'workshop' ? (
+                      {form.type === 'workshop' && (
                         <label>
                           <span className="admin-events-field-label">{t('evRoom')} <b>*</b></span>
                           <input
@@ -2007,22 +2025,6 @@ export default function EventsPage() {
                             placeholder={t('evWorkshopRoomLabel')}
                             required
                           />
-                        </label>
-                      ) : (
-                        <label>
-                          <span className="admin-events-field-label">{t('evLocationLabel')} <b>*</b></span>
-                          <select
-                            value={form.location}
-                            onChange={(event) => updateForm('location', event.target.value)}
-                            required
-                          >
-                            <option value="">{t('evLocationPlaceholder')}</option>
-                            {locationOptions.map((city) => (
-                              <option key={city.he} value={city.he}>
-                                {city.en ? `${city.he} (${city.en})` : city.he}
-                              </option>
-                            ))}
-                          </select>
                         </label>
                       )}
                       {/* Appointments are 1:1, so capacity is fixed at 1 and not editable.

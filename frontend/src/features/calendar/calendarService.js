@@ -141,7 +141,7 @@ function normalizeBookingAppointment(docData) {
     date: docData.dateKey || docData.selectedDate || toDateKey(date),
     startTime,
     endTime,
-    location: docData.eventLocation || docData.room || docData.location || '',
+    location: docData.room || docData.eventLocation || docData.location || '',
     description: docData.description || docData.notes || `${docData.providerName || 'Provider'} appointment.`,
     registered: true,
   };
@@ -160,7 +160,7 @@ function normalizeAppointment(docData) {
     date: docData.dateKey || toDateKey(date),
     startTime,
     endTime,
-    location: docData.location || docData.room || '',
+    location: docData.room || docData.location || '',
     description: docData.description || docData.notes || `${docData.providerName || docData.therapistName || 'Provider'} appointment.`,
     registered: true,
   };
