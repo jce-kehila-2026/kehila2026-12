@@ -63,7 +63,7 @@ function formatDateTimeLine(d, timeStr) {
  * Single horizontal wellness booking card: details left, status + cancel right.
  */
 function AppointmentCard({ appointment, onCancel }) {
-  const { time, provider, appointmentType, status, durationMins } = appointment;
+  const { time, provider, room, appointmentType, status, durationMins } = appointment;
   const statusKey = normalizeStatus(status);
   const st = STATUS_STYLES[statusKey] || STATUS_STYLES.confirmed;
   const canCancel = statusKey === "confirmed" && Boolean(onCancel);
@@ -155,6 +155,21 @@ function AppointmentCard({ appointment, onCancel }) {
             >
               {provider}
             </Typography>
+
+            {room ? (
+              <Typography
+                sx={{
+                  mt: 0.35,
+                  fontSize: '0.8125rem',
+                  fontWeight: 600,
+                  color: WELLNESS.muted,
+                  lineHeight: 1.4,
+                  fontFamily: '"Plus Jakarta Sans", sans-serif',
+                }}
+              >
+                Room: {room}
+              </Typography>
+            ) : null}
 
             <Typography
               sx={{

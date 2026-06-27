@@ -21,7 +21,6 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import StarRoundedIcon from '@mui/icons-material/StarRounded';
 import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivismOutlined';
 import { useLocation, useNavigate } from 'react-router-dom';
 import appointmentsHero from '../../assets/appointments-hero.png';
@@ -670,11 +669,6 @@ function getProviderInitials(name = 'SN') {
   return parts.slice(0, 2).map((part) => part[0]).join('').toUpperCase();
 }
 
-function getProviderRating(providerName = '') {
-  const score = [...String(providerName)].reduce((sum, char) => sum + char.charCodeAt(0), 0);
-  return score % 3 === 0 ? '4.8' : '4.9';
-}
-
 function sortSessionsByDate(left, right) {
   const leftDate = toDate(left.startDate);
   const rightDate = toDate(right.startDate);
@@ -701,6 +695,7 @@ function getAppointmentProviders(event, t = null) {
       name: option.providerName || tr(t, 'evSheNaTeam', 'She-Na Team'),
       specialty: option.providerSpecialty || event.category || tr(t, 'evWellnessTeacher', 'Wellness Teacher'),
       avatar: option.providerAvatar || '',
+      room: existing?.room || option.room || option.location || event.location || '',
       dateKeys: nextDates,
       sessions: (existing?.sessions || 0) + 1,
     });
@@ -1005,8 +1000,8 @@ function AppointmentBookingDrawer({
               <div className="workshop-details-panel__detail-item">
                 <HomeRoundedIcon fontSize="small" />
                 <div className="workshop-details-panel__detail-copy">
-                  <strong>{t('evLocation')}</strong>
-                  <span>{selectedOption.room || selectedOption.location || event.location}</span>
+                  <strong>{t('evRoom')}</strong>
+                  <span>{selectedOption.room || selectedProvider?.room || event.location}</span>
                 </div>
               </div>
               <div className="workshop-details-panel__detail-item">
@@ -1042,10 +1037,12 @@ function AppointmentBookingDrawer({
                     )}
                     <strong>{provider.name}</strong>
                     <small>{provider.specialty}</small>
-                    <em>
-                      <StarRoundedIcon fontSize="small" />
-                      {getProviderRating(provider.name)}
-                    </em>
+                    {provider.room ? (
+                      <span className="appointment-instructor-card__room">
+                        <HomeRoundedIcon fontSize="small" />
+                        {t('evRoom')}: {provider.room}
+                      </span>
+                    ) : null}
                   </button>
                 );
               })}

@@ -505,6 +505,7 @@ export async function addRegistration(data) {
   const resolvedStartAt = startAt || eventDate || null;
   const resolvedEndAt = endAt || null;
   const resolvedDateKey = callerDateKey || selectedDate || getDateKey(resolvedStartAt);
+  const resolvedRoom = room || eventLocation || '';
 
   const resolvedStatus = requestedStatus || 'confirmed';
   const bookingDoc = {
@@ -532,7 +533,7 @@ export async function addRegistration(data) {
     selectedTime: resolvedSelectedTime,
     selectedTimeSlot: resolvedSelectedTime,
     eventDate: eventDate || resolvedStartAt,
-    eventLocation: eventLocation || '',
+    eventLocation: resolvedRoom,
     eventCoverUrl: eventCoverUrl || '',
     // Legacy field aliases kept so existing UI columns work unchanged.
     participantName: participantName || '',
@@ -541,7 +542,7 @@ export async function addRegistration(data) {
     eventTemplateId: templateEventId,
     parentEventId: parentEventId || templateEventId,
     sessionEventId: realEventId,
-    room: room || eventLocation || '',
+    room: resolvedRoom,
     notes: notes || '',
     sessionDateLabel: sessionDateLabel || '',
     sessionTime: sessionTime || '',

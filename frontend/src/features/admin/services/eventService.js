@@ -1,5 +1,5 @@
 // Phase 1 changes: added limit() to bounded list queries.
-import { collection, getDocs, getDoc, addDoc, updateDoc, deleteDoc, doc, query, orderBy, limit, onSnapshot, serverTimestamp } from 'firebase/firestore';
+import { collection, getDocs, getDoc, addDoc, updateDoc, deleteDoc, deleteField, doc, query, orderBy, limit, onSnapshot, serverTimestamp } from 'firebase/firestore';
 import { db } from '../../../firebase';
 import { logAuditEvent } from './auditService';
 import { isTranslationConfigured, translateFields } from './translationService';
@@ -106,10 +106,12 @@ export async function createEvent(data) {
  * @param {string} id The event document ID.
  * @param {Object} data The updated event data.
  */
-export async function updateEvent(id, data) {
+export async function updateEvent(id, data, { deleteFields = [] } = {}) {
   const payload = await withEventTranslations(data);
+  const removedFields = Object.fromEntries(deleteFields.map((field) => [field, deleteField()]));
   await updateDoc(doc(db, 'events', id), {
     ...payload,
+    ...removedFields,
     updatedAt: serverTimestamp(),
   });
   

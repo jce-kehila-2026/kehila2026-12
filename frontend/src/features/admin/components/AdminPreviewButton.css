@@ -1,0 +1,29 @@
+.admin-preview-button.MuiIconButton-root {
+  width: 2.75rem;
+  height: 2.75rem;
+  min-width: 2.75rem;
+  flex: 0 0 2.75rem;
+  padding: 0;
+  border: 1px solid rgba(223, 50, 123, 0.46);
+  border-radius: 50%;
+  color: #c52a72;
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: none;
+  transition: color 160ms ease, border-color 160ms ease, background-color 160ms ease;
+}
+
+.admin-preview-button.MuiIconButton-root svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.admin-preview-button.MuiIconButton-root:hover {
+  border-color: rgba(223, 50, 123, 0.7);
+  color: #b82166;
+  background: rgba(255, 246, 251, 0.96);
+}
+
+.admin-preview-button.MuiIconButton-root:focus-visible {
+  outline: 3px solid rgba(223, 50, 123, 0.2);
+  outline-offset: 2px;
+}

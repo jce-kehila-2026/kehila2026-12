@@ -2419,7 +2419,7 @@
 
 .appointment-instructor-card {
   position: relative;
-  min-height: 8.75rem;
+  min-height: 9.5rem;
   display: grid;
   justify-items: center;
   align-content: center;
@@ -2483,7 +2483,7 @@
 
 .appointment-instructor-card strong,
 .appointment-instructor-card small,
-.appointment-instructor-card em {
+.appointment-instructor-card__room {
   max-width: 100%;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -2502,19 +2502,21 @@
   font-weight: 800;
 }
 
-.appointment-instructor-card em {
+.appointment-instructor-card__room {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.25rem;
-  color: #d94f92;
-  font-size: 0.68rem;
-  font-style: normal;
-  font-weight: 900;
+  color: rgba(70, 42, 119, 0.68);
+  font-size: 0.64rem;
+  font-weight: 800;
 }
 
-.appointment-instructor-card em svg {
+.appointment-instructor-card__room svg {
   width: 0.875rem;
   height: 0.875rem;
+  flex: 0 0 auto;
+  color: #d94f92;
 }
 
 .appointment-date-selector {

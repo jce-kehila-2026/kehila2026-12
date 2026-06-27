@@ -331,7 +331,7 @@ export async function createAppointment(appointmentData = {}) {
     dateKey: appointmentData.dateKey || appointmentData.selectedDate || "",
     startAt: appointmentData.startAt || null,
     endAt: appointmentData.endAt || null,
-    eventLocation: appointmentData.eventLocation || appointmentData.room || "",
+    eventLocation: appointmentData.room || appointmentData.eventLocation || "",
     eventCoverUrl: appointmentData.eventCoverUrl || "",
     eventTemplateId: appointmentData.eventId,
     parentEventId: appointmentData.eventId,

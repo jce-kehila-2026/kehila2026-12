@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import Box from '@mui/material/Box';
-import Button from '@mui/material/Button';
 import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import HomeIcon from '@mui/icons-material/Home';
@@ -10,7 +9,6 @@ import NewspaperIcon from '@mui/icons-material/Newspaper';
 import GroupsIcon from '@mui/icons-material/Groups';
 import HandshakeIcon from '@mui/icons-material/Handshake';
 import ContactMailIcon from '@mui/icons-material/ContactMail';
-import PreviewIcon from '@mui/icons-material/Preview';
 import PublicHomePageHomeTab from './PublicHomePageHomeTab';
 import PublicHomePageLearnTogetherTab from './PublicHomePageLearnTogetherTab';
 import PublicHomePageInspirationStoriesTab from './PublicHomePageInspirationStoriesTab';
@@ -20,6 +18,7 @@ import PartnersManagementPage from './PartnersManagementPage';
 import PublicHomePageContactTab from './PublicHomePageContactTab';
 import { useAdminLocale } from '../context/AdminLocaleContext';
 import AdminPageHeader from '../components/AdminPageHeader';
+import AdminPreviewButton from '../components/AdminPreviewButton';
 
 const TABS = [
   { key: 'home', labelKey: 'cmsTabHome', icon: <HomeIcon />, Component: PublicHomePageHomeTab },
@@ -65,17 +64,12 @@ export default function CMSPage() {
       <AdminPageHeader
         title={t('cmsHomePageTitle')}
         actions={(
-          <Button
-            variant="outlined"
-            startIcon={<PreviewIcon />}
-            component="a"
+          <AdminPreviewButton
+            label={t('cmsPreviewHomePage')}
             href="/public?preview=1"
             target="_blank"
             rel="noopener noreferrer"
-            sx={{ flexShrink: 0 }}
-          >
-            {t('cmsPreviewHomePage')}
-          </Button>
+          />
         )}
       />
 

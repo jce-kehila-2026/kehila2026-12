@@ -11,7 +11,6 @@ import FileDownloadOutlined from '@mui/icons-material/FileDownloadOutlined';
 import Groups from '@mui/icons-material/Groups';
 import LocationOnOutlined from '@mui/icons-material/LocationOnOutlined';
 import PersonRemoveOutlined from '@mui/icons-material/PersonRemoveOutlined';
-import PreviewIcon from '@mui/icons-material/Preview';
 import Refresh from '@mui/icons-material/Refresh';
 import SendOutlined from '@mui/icons-material/SendOutlined';
 import Schedule from '@mui/icons-material/Schedule';
@@ -19,7 +18,6 @@ import Search from '@mui/icons-material/Search';
 import Tune from '@mui/icons-material/Tune';
 import VisibilityOutlined from '@mui/icons-material/VisibilityOutlined';
 import MailOutlineOutlinedIcon from '@mui/icons-material/MailOutlineOutlined';
-import Button from '@mui/material/Button';
 import { createEvent, deleteEvent, getAllEvents, updateEvent } from '../services/eventService';
 import {
   getBookingsByEvent,
@@ -30,9 +28,9 @@ import {
 } from '../services/registrationService';
 import { useAdminLocale } from '../context/AdminLocaleContext';
 import AdminPageHeader from '../components/AdminPageHeader';
+import AdminPreviewButton from '../components/AdminPreviewButton';
 import ReminderTimePicker from '../../../shared/components/ReminderTimePicker';
 import ReminderDatePicker from '../../../shared/components/ReminderDatePicker';
-import ISRAELI_CITIES from '../../../shared/data/israeliCities.json';
 import '../../../shared/components/ReminderTimePicker.css';
 import '../../../shared/styles/public-cta-button.css';
 import { paginateRows } from './bookingsPageUtils';
@@ -103,11 +101,11 @@ function createInitialForm(type = 'workshop') {
     imageUrl: '',
     recurrence: 'weekly',
     weeklyDayIndex: '',
-    disabledDates: [],
+    ...(type === 'appointment' ? { disabledDates: [] } : {}),
     date: '',
     startTime: '',
     endTime: '',
-    location: '',
+    ...(type === 'workshop' ? { location: '' } : {}),
     maxParticipants: '',
     providers: [createEmptyProvider()],
   };
@@ -291,13 +289,15 @@ function eventToForm(event) {
     imageUrl: event.imageUrl || event.thumbnailUrl || event.coverImageUrl || '',
     recurrence: isRecurring ? 'weekly' : 'one-time',
     weeklyDayIndex: recurringDayIndex,
-    disabledDates: Array.isArray(event.disabledDates) ? event.disabledDates : [],
+    ...(type === 'appointment'
+      ? { disabledDates: Array.isArray(event.disabledDates) ? event.disabledDates : [] }
+      : {}),
     date: dateInputValue(event.date) || dateInputValue(event.startTime || event.date),
     startTime: type === 'workshop'
       ? timeInputValue(workshopSlotTime || event.startTime)
       : timeInputValue(event.startTime || event.date),
     endTime: timeInputValue(event.endTime),
-    location: event.location || '',
+    ...(type === 'workshop' ? { location: event.location || '' } : {}),
     maxParticipants: event.maxParticipants || event.capacity || '',
     providers,
   };
@@ -428,15 +428,18 @@ function syncWorkshopFormForSave(form) {
   const provider = form.providers?.[0] || createEmptyProvider();
   const slot = provider.slots?.[0] || createEmptySlot();
   const startTime = normalizeTimeString(getWorkshopStartTime(form) || slot.startTime);
+  const room = String(form.location || '').trim();
 
   return {
     ...form,
     startTime,
     providers: [{
       ...provider,
+      room,
       slots: [{
         ...slot,
         startTime,
+        room,
         // The workshop form only exposes a single "Capacity" field (maxParticipants),
         // so it must be the authoritative per-session capacity. Previously slot.capacity
         // (defaulted to '1' by createEmptySlot) always won, so admin-created workshops
@@ -444,6 +447,22 @@ function syncWorkshopFormForSave(form) {
         capacity: String(form.maxParticipants || slot.capacity || '1'),
       }],
     }],
+  };
+}
+
+function syncAppointmentRoomsForSave(form) {
+  if (form.type !== 'appointment') return form;
+
+  return {
+    ...form,
+    providers: form.providers.map((provider) => {
+      const room = String(provider.room || '').trim();
+      return {
+        ...provider,
+        room,
+        slots: provider.slots.map((slot) => ({ ...slot, room })),
+      };
+    }),
   };
 }
 
@@ -882,14 +901,6 @@ export default function EventsPage() {
     [t],
   );
 
-  const locationOptions = useMemo(() => {
-    const trimmed = (form.location || '').trim();
-    if (trimmed && !ISRAELI_CITIES.some((city) => city.he === trimmed)) {
-      return [{ he: trimmed, en: '' }, ...ISRAELI_CITIES];
-    }
-    return ISRAELI_CITIES;
-  }, [form.location]);
-
   // In weekly mode the date picker only allows dates that fall on the chosen weekday;
   // in one-time mode any date is allowed (predicate undefined). Until a weekday is
   // picked, nothing is selectable so the admin is nudged to choose the day first.
@@ -902,17 +913,17 @@ export default function EventsPage() {
     return (date) => date.getDay() === targetDay;
   }, [isWeeklyRecurrence, hasWeeklyDay, form.weeklyDayIndex]);
 
-  // Skipped occurrences are picked from a calendar (constrained to the event's weekday),
-  // shown as removable chips. Only meaningful for weekly-recurring events.
-  const disabledDates = Array.isArray(form.disabledDates) ? form.disabledDates : [];
-  const disabledDatesField = isWeeklyRecurrence ? (
+  // Appointment occurrences can be skipped from their weekly schedule. Workshops
+  // intentionally do not expose or persist disabled dates.
+  const appointmentDisabledDates = Array.isArray(form.disabledDates) ? form.disabledDates : [];
+  const appointmentDisabledDatesField = form.type === 'appointment' && isWeeklyRecurrence ? (
     <div className="admin-events-span-2 admin-events-disabled-dates">
       <span className="admin-events-field-label">{t('evDisabledDates')}</span>
       <ReminderDatePicker
         id={disabledDatesPickerId}
         className="admin-events-date-picker"
         multiple
-        value={disabledDates}
+        value={appointmentDisabledDates}
         ariaLabel={t('evDisabledDates')}
         labels={datePickerLabels}
         onChange={(next) => updateForm('disabledDates', next)}
@@ -921,15 +932,18 @@ export default function EventsPage() {
         portal
         compact
       />
-      {disabledDates.length > 0 && (
+      {appointmentDisabledDates.length > 0 && (
         <ul className="admin-events-chip-list">
-          {[...disabledDates].sort().map((dateKey) => (
+          {[...appointmentDisabledDates].sort().map((dateKey) => (
             <li key={dateKey} className="admin-events-chip">
               <span>{formatDate(`${dateKey}T00:00:00`, intlLocale, dateKey)}</span>
               <button
                 type="button"
                 aria-label={t('evRemove')}
-                onClick={() => updateForm('disabledDates', disabledDates.filter((item) => item !== dateKey))}
+                onClick={() => updateForm(
+                  'disabledDates',
+                  appointmentDisabledDates.filter((item) => item !== dateKey),
+                )}
               >
                 <Close fontSize="small" />
               </button>
@@ -1190,7 +1204,7 @@ export default function EventsPage() {
 
   async function handleSave(event) {
     event.preventDefault();
-    const preparedForm = syncWorkshopFormForSave(form);
+    const preparedForm = syncAppointmentRoomsForSave(syncWorkshopFormForSave(form));
     // Both workshops and appointments can now be weekly-recurring or one-time.
     const isRecurring = preparedForm.recurrence === 'weekly';
     const builtProviders = buildProvidersPayload(preparedForm.providers);
@@ -1220,8 +1234,16 @@ export default function EventsPage() {
       return;
     }
 
-    if (!preparedForm.location.trim()) {
+    if (preparedForm.type === 'workshop' && !preparedForm.location?.trim()) {
       setToast(t('evToastAddLocation'));
+      return;
+    }
+
+    if (
+      preparedForm.type === 'appointment'
+      && preparedForm.providers.some((provider) => !String(provider.room || '').trim())
+    ) {
+      setToast(t('evToastAddProviderRoom'));
       return;
     }
 
@@ -1275,15 +1297,21 @@ export default function EventsPage() {
         ? (normalizeTimeString(effectiveStartTime) || firstSlot?.startTime)
         : startDate,
       endTime: isRecurring ? (lastSlot?.endTime || lastSlot?.startTime) : endDate,
-      location: preparedForm.location.trim(),
+      ...(preparedForm.type === 'workshop'
+        ? { location: preparedForm.location.trim() }
+        : {}),
       description: preparedForm.description.trim(),
       imageUrl: preparedForm.imageUrl.trim(),
       // Appointments are 1:1; the event-level capacity is meaningless, so pin it to 1.
       maxParticipants: preparedForm.type === 'appointment' ? 1 : (Number(preparedForm.maxParticipants) || 0),
       registrationOpen: editingEvent ? editingEvent.registrationOpen !== false : true,
-      disabledDates: Array.isArray(preparedForm.disabledDates)
-        ? preparedForm.disabledDates
-        : parseDisabledDates(preparedForm.disabledDates),
+      ...(preparedForm.type === 'appointment'
+        ? {
+          disabledDates: Array.isArray(preparedForm.disabledDates)
+            ? preparedForm.disabledDates
+            : parseDisabledDates(preparedForm.disabledDates),
+        }
+        : {}),
       providers: providersPayload,
       status: editingEvent ? normalizeStatus(editingEvent.status) : 'published',
     };
@@ -1291,7 +1319,11 @@ export default function EventsPage() {
     setSaving(true);
     try {
       if (editingEvent) {
-        await updateEvent(editingEvent.id, payload);
+        await updateEvent(
+          editingEvent.id,
+          payload,
+          preparedForm.type === 'workshop' ? { deleteFields: ['disabledDates'] } : undefined,
+        );
         setToast(t('evToastUpdated'));
       } else {
         await createEvent(payload);
@@ -1421,33 +1453,10 @@ export default function EventsPage() {
       <AdminPageHeader
         title={t('evTitle')}
         actions={(
-          <Button
-            variant="outlined"
-            startIcon={<PreviewIcon />}
+          <AdminPreviewButton
+            label={t('umPreviewParticipant')}
             onClick={() => navigate('/home')}
-            sx={{
-              alignSelf: { xs: 'flex-start', lg: 'center' },
-              height: '3rem',
-              px: 3.2,
-              borderRadius: 999,
-              borderColor: 'rgba(223, 50, 123, 0.46)',
-              color: '#C52A72',
-              bgcolor: 'rgba(255,255,255,0.62)',
-              fontWeight: 900,
-              boxShadow: '0 12px 28px rgba(223, 50, 123, 0.06)',
-              '& .MuiButton-startIcon': {
-                marginInlineEnd: '14px',
-                marginInlineStart: 0,
-                display: 'inherit',
-              },
-              '&:hover': {
-                borderColor: 'rgba(223, 50, 123, 0.7)',
-                bgcolor: 'rgba(255, 246, 251, 0.92)',
-              },
-            }}
-          >
-            {t('umPreviewParticipant')}
-          </Button>
+          />
         )}
       />
 
@@ -1456,24 +1465,26 @@ export default function EventsPage() {
 
           <section className="admin-events-stats" aria-label={t('evSummaryAria')}>
             <article className="admin-events-stat admin-events-stat--pink">
-              <header>
-                <span className="admin-events-stat__icon"><Groups /></span>
-                <span className="admin-events-stat__menu">...</span>
-              </header>
-              <p>{t('evWorkshops')}</p>
-              <strong>{workshopsCount}</strong>
-              <span className="admin-events-stat__bar"><i style={{ width: `${typedEvents.length ? (workshopsCount / typedEvents.length) * 100 : 0}%` }} /></span>
-              <small>{workshopsCount} {workshopsCount === 1 ? t('evEventOne') : t('evEventMany')}</small>
+              <span className="admin-events-stat__icon"><Groups /></span>
+              <div className="admin-events-stat__content">
+                <p>{t('evWorkshops')}</p>
+                <strong>{workshopsCount}</strong>
+                <span className="admin-events-stat__bar">
+                  <i style={{ width: `${typedEvents.length ? (workshopsCount / typedEvents.length) * 100 : 0}%` }} />
+                </span>
+                <small>{workshopsCount} {workshopsCount === 1 ? t('evEventOne') : t('evEventMany')}</small>
+              </div>
             </article>
             <article className="admin-events-stat admin-events-stat--purple">
-              <header>
-                <span className="admin-events-stat__icon"><EventAvailable /></span>
-                <span className="admin-events-stat__menu">...</span>
-              </header>
-              <p>{t('evAppointments')}</p>
-              <strong>{appointmentsCount}</strong>
-              <span className="admin-events-stat__bar"><i style={{ width: `${typedEvents.length ? (appointmentsCount / typedEvents.length) * 100 : 0}%` }} /></span>
-              <small>{appointmentsCount} {appointmentsCount === 1 ? t('evEventOne') : t('evEventMany')}</small>
+              <span className="admin-events-stat__icon"><EventAvailable /></span>
+              <div className="admin-events-stat__content">
+                <p>{t('evAppointments')}</p>
+                <strong>{appointmentsCount}</strong>
+                <span className="admin-events-stat__bar">
+                  <i style={{ width: `${typedEvents.length ? (appointmentsCount / typedEvents.length) * 100 : 0}%` }} />
+                </span>
+                <small>{appointmentsCount} {appointmentsCount === 1 ? t('evEventOne') : t('evEventMany')}</small>
+              </div>
             </article>
           </section>
 
@@ -1795,8 +1806,6 @@ export default function EventsPage() {
                         />
                       </label>
 
-                      {disabledDatesField}
-
                       <section className="admin-events-provider-section admin-events-span-2">
                         <header>
                           <div>
@@ -1821,14 +1830,6 @@ export default function EventsPage() {
                                   value={workshopProvider.specialty}
                                   onChange={(event) => updateProvider(0, 'specialty', event.target.value)}
                                   placeholder={t('evSpecialtyPlaceholder')}
-                                />
-                              </label>
-                              <label>
-                                {t('evDefaultRoom')}
-                                <input
-                                  value={workshopProvider.room}
-                                  onChange={(event) => updateProvider(0, 'room', event.target.value)}
-                                  placeholder={t('evRoomPlaceholder')}
                                 />
                               </label>
                               <label>
@@ -1900,7 +1901,7 @@ export default function EventsPage() {
                         )}
                       </label>
 
-                      {disabledDatesField}
+                      {appointmentDisabledDatesField}
 
                       {/* Appointment times come from each provider time slot below,
                           not a single event-level start time. */}
@@ -1949,11 +1950,12 @@ export default function EventsPage() {
                                   />
                                 </label>
                                 <label>
-                                  {t('evDefaultRoom')}
+                                  <span className="admin-events-field-label">{t('evDefaultRoom')} <b>*</b></span>
                                   <input
                                     value={provider.room}
                                     onChange={(event) => updateProvider(providerIndex, 'room', event.target.value)}
                                     placeholder={t('evRoomPlaceholder')}
+                                    required
                                   />
                                 </label>
                                 <label>
@@ -2014,21 +2016,17 @@ export default function EventsPage() {
 
                   {activeFormStep === 2 && (
                     <div className="admin-events-wizard-fields">
-                      <label>
-                        <span className="admin-events-field-label">{t('evLocationLabel')} <b>*</b></span>
-                        <select
-                          value={form.location}
-                          onChange={(event) => updateForm('location', event.target.value)}
-                          required
-                        >
-                          <option value="">{t('evLocationPlaceholder')}</option>
-                          {locationOptions.map((city) => (
-                            <option key={city.he} value={city.he}>
-                              {city.en ? `${city.he} (${city.en})` : city.he}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
+                      {form.type === 'workshop' && (
+                        <label>
+                          <span className="admin-events-field-label">{t('evRoom')} <b>*</b></span>
+                          <input
+                            value={form.location}
+                            onChange={(event) => updateForm('location', event.target.value)}
+                            placeholder={t('evWorkshopRoomLabel')}
+                            required
+                          />
+                        </label>
+                      )}
                       {/* Appointments are 1:1, so capacity is fixed at 1 and not editable.
                           Only workshops expose a capacity field. */}
                       {form.type === 'workshop' && (

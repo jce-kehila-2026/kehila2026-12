@@ -323,7 +323,15 @@ service cloud.firestore {
 
     // ── Appointments (flat, used by admin queries) ──────────
     match /bookings/{bookingId} {
-      allow read: if isAdmin()
+      // Registration transactions read the deterministic booking ID before
+      // creating it. Permit that missing-document lookup, but keep existing
+      // booking documents private to their owner and admins.
+      allow get: if isAdmin()
+        || (request.auth != null && (
+          !exists(/databases/$(database)/documents/bookings/$(bookingId))
+          || resource.data.userId == request.auth.uid
+        ));
+      allow list: if isAdmin()
         || (request.auth != null && resource.data.userId == request.auth.uid);
       allow create: if isAdmin()
         || isValidParticipantBookingCreate(bookingId);
