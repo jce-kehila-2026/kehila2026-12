@@ -11,7 +11,6 @@ import FileDownloadOutlined from '@mui/icons-material/FileDownloadOutlined';
 import Groups from '@mui/icons-material/Groups';
 import LocationOnOutlined from '@mui/icons-material/LocationOnOutlined';
 import PersonRemoveOutlined from '@mui/icons-material/PersonRemoveOutlined';
-import PreviewIcon from '@mui/icons-material/Preview';
 import Refresh from '@mui/icons-material/Refresh';
 import SendOutlined from '@mui/icons-material/SendOutlined';
 import Schedule from '@mui/icons-material/Schedule';
@@ -19,7 +18,6 @@ import Search from '@mui/icons-material/Search';
 import Tune from '@mui/icons-material/Tune';
 import VisibilityOutlined from '@mui/icons-material/VisibilityOutlined';
 import MailOutlineOutlinedIcon from '@mui/icons-material/MailOutlineOutlined';
-import Button from '@mui/material/Button';
 import { createEvent, deleteEvent, getAllEvents, updateEvent } from '../services/eventService';
 import {
   getBookingsByEvent,
@@ -30,6 +28,7 @@ import {
 } from '../services/registrationService';
 import { useAdminLocale } from '../context/AdminLocaleContext';
 import AdminPageHeader from '../components/AdminPageHeader';
+import AdminPreviewButton from '../components/AdminPreviewButton';
 import ReminderTimePicker from '../../../shared/components/ReminderTimePicker';
 import ReminderDatePicker from '../../../shared/components/ReminderDatePicker';
 import ISRAELI_CITIES from '../../../shared/data/israeliCities.json';
@@ -1421,33 +1420,10 @@ export default function EventsPage() {
       <AdminPageHeader
         title={t('evTitle')}
         actions={(
-          <Button
-            variant="outlined"
-            startIcon={<PreviewIcon />}
+          <AdminPreviewButton
+            label={t('umPreviewParticipant')}
             onClick={() => navigate('/home')}
-            sx={{
-              alignSelf: { xs: 'flex-start', lg: 'center' },
-              height: '3rem',
-              px: 3.2,
-              borderRadius: 999,
-              borderColor: 'rgba(223, 50, 123, 0.46)',
-              color: '#C52A72',
-              bgcolor: 'rgba(255,255,255,0.62)',
-              fontWeight: 900,
-              boxShadow: '0 12px 28px rgba(223, 50, 123, 0.06)',
-              '& .MuiButton-startIcon': {
-                marginInlineEnd: '14px',
-                marginInlineStart: 0,
-                display: 'inherit',
-              },
-              '&:hover': {
-                borderColor: 'rgba(223, 50, 123, 0.7)',
-                bgcolor: 'rgba(255, 246, 251, 0.92)',
-              },
-            }}
-          >
-            {t('umPreviewParticipant')}
-          </Button>
+          />
         )}
       />
 
