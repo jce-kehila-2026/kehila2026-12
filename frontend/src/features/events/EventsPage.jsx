@@ -1043,6 +1043,12 @@ function AppointmentBookingDrawer({
                     )}
                     <strong>{provider.name}</strong>
                     <small>{provider.specialty}</small>
+                    {provider.room ? (
+                      <span className="appointment-instructor-card__room">
+                        <HomeRoundedIcon fontSize="small" />
+                        {t('evRoom')}: {provider.room}
+                      </span>
+                    ) : null}
                     <em>
                       <StarRoundedIcon fontSize="small" />
                       {getProviderRating(provider.name)}
