@@ -429,15 +429,18 @@ function syncWorkshopFormForSave(form) {
   const provider = form.providers?.[0] || createEmptyProvider();
   const slot = provider.slots?.[0] || createEmptySlot();
   const startTime = normalizeTimeString(getWorkshopStartTime(form) || slot.startTime);
+  const room = String(form.location || '').trim();
 
   return {
     ...form,
     startTime,
     providers: [{
       ...provider,
+      room,
       slots: [{
         ...slot,
         startTime,
+        room,
         // The workshop form only exposes a single "Capacity" field (maxParticipants),
         // so it must be the authoritative per-session capacity. Previously slot.capacity
         // (defaulted to '1' by createEmptySlot) always won, so admin-created workshops
@@ -1813,14 +1816,6 @@ export default function EventsPage() {
                                 />
                               </label>
                               <label>
-                                {t('evDefaultRoom')}
-                                <input
-                                  value={workshopProvider.room}
-                                  onChange={(event) => updateProvider(0, 'room', event.target.value)}
-                                  placeholder={t('evRoomPlaceholder')}
-                                />
-                              </label>
-                              <label>
                                 {t('evAvatarUrl')}
                                 <input
                                   type="url"
@@ -2003,21 +1998,33 @@ export default function EventsPage() {
 
                   {activeFormStep === 2 && (
                     <div className="admin-events-wizard-fields">
-                      <label>
-                        <span className="admin-events-field-label">{t('evLocationLabel')} <b>*</b></span>
-                        <select
-                          value={form.location}
-                          onChange={(event) => updateForm('location', event.target.value)}
-                          required
-                        >
-                          <option value="">{t('evLocationPlaceholder')}</option>
-                          {locationOptions.map((city) => (
-                            <option key={city.he} value={city.he}>
-                              {city.en ? `${city.he} (${city.en})` : city.he}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
+                      {form.type === 'workshop' ? (
+                        <label>
+                          <span className="admin-events-field-label">{t('evRoom')} <b>*</b></span>
+                          <input
+                            value={form.location}
+                            onChange={(event) => updateForm('location', event.target.value)}
+                            placeholder={t('evWorkshopRoomLabel')}
+                            required
+                          />
+                        </label>
+                      ) : (
+                        <label>
+                          <span className="admin-events-field-label">{t('evLocationLabel')} <b>*</b></span>
+                          <select
+                            value={form.location}
+                            onChange={(event) => updateForm('location', event.target.value)}
+                            required
+                          >
+                            <option value="">{t('evLocationPlaceholder')}</option>
+                            {locationOptions.map((city) => (
+                              <option key={city.he} value={city.he}>
+                                {city.en ? `${city.he} (${city.en})` : city.he}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                      )}
                       {/* Appointments are 1:1, so capacity is fixed at 1 and not editable.
                           Only workshops expose a capacity field. */}
                       {form.type === 'workshop' && (
