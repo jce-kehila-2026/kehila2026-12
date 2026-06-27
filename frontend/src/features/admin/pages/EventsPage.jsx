@@ -1456,24 +1456,26 @@ export default function EventsPage() {
 
           <section className="admin-events-stats" aria-label={t('evSummaryAria')}>
             <article className="admin-events-stat admin-events-stat--pink">
-              <header>
-                <span className="admin-events-stat__icon"><Groups /></span>
-                <span className="admin-events-stat__menu">...</span>
-              </header>
-              <p>{t('evWorkshops')}</p>
-              <strong>{workshopsCount}</strong>
-              <span className="admin-events-stat__bar"><i style={{ width: `${typedEvents.length ? (workshopsCount / typedEvents.length) * 100 : 0}%` }} /></span>
-              <small>{workshopsCount} {workshopsCount === 1 ? t('evEventOne') : t('evEventMany')}</small>
+              <span className="admin-events-stat__icon"><Groups /></span>
+              <div className="admin-events-stat__content">
+                <p>{t('evWorkshops')}</p>
+                <strong>{workshopsCount}</strong>
+                <span className="admin-events-stat__bar">
+                  <i style={{ width: `${typedEvents.length ? (workshopsCount / typedEvents.length) * 100 : 0}%` }} />
+                </span>
+                <small>{workshopsCount} {workshopsCount === 1 ? t('evEventOne') : t('evEventMany')}</small>
+              </div>
             </article>
             <article className="admin-events-stat admin-events-stat--purple">
-              <header>
-                <span className="admin-events-stat__icon"><EventAvailable /></span>
-                <span className="admin-events-stat__menu">...</span>
-              </header>
-              <p>{t('evAppointments')}</p>
-              <strong>{appointmentsCount}</strong>
-              <span className="admin-events-stat__bar"><i style={{ width: `${typedEvents.length ? (appointmentsCount / typedEvents.length) * 100 : 0}%` }} /></span>
-              <small>{appointmentsCount} {appointmentsCount === 1 ? t('evEventOne') : t('evEventMany')}</small>
+              <span className="admin-events-stat__icon"><EventAvailable /></span>
+              <div className="admin-events-stat__content">
+                <p>{t('evAppointments')}</p>
+                <strong>{appointmentsCount}</strong>
+                <span className="admin-events-stat__bar">
+                  <i style={{ width: `${typedEvents.length ? (appointmentsCount / typedEvents.length) * 100 : 0}%` }} />
+                </span>
+                <small>{appointmentsCount} {appointmentsCount === 1 ? t('evEventOne') : t('evEventMany')}</small>
+              </div>
             </article>
           </section>
 
