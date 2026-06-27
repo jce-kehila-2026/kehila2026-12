@@ -30,6 +30,7 @@ import { localizeField } from '../../i18n/localizeField';
 import { useParticipantLocale } from '../participant/context/ParticipantLocaleContext';
 import {
   addRegistration,
+  getSlotRegistrationCounts,
   getUserRegisteredEventIds,
   removeRegistration,
 } from '../admin/services/registrationService';
@@ -1785,11 +1786,13 @@ export default function EventsPage({ embedInDashboard = false, locale = 'he' }) 
     }
 
     try {
-      const userRegistrations = currentUser?.uid
-        ? await getUserRegisteredEventIds(currentUser.uid)
-        : {};
+      const eventIds = eventList.map((event) => event.id).filter(Boolean);
+      const [userRegistrations, slotCounts] = await Promise.all([
+        currentUser?.uid ? getUserRegisteredEventIds(currentUser.uid) : {},
+        getSlotRegistrationCounts(eventIds),
+      ]);
 
-      setCounts({});
+      setCounts(slotCounts);
       setRegisteredMap(userRegistrations);
       setRegistrationWarning('');
     } catch (error) {

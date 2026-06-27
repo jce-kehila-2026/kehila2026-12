@@ -434,6 +434,45 @@ export async function getRegistrationCounts(eventIds) {
 }
 
 /**
+ * Read public-to-members per-slot seat counts without exposing participant
+ * roster documents. The participant Events page uses these counters to keep
+ * workshop availability accurate after registration and page refreshes.
+ */
+export async function getSlotRegistrationCounts(eventIds) {
+  const ids = [...new Set((eventIds || []).filter(Boolean))];
+  const counts = {};
+
+  for (const group of chunk(ids, 5)) {
+    const eventEntries = await Promise.all(
+      group.map(async (eventId) => {
+        try {
+          const snap = await getDocs(query(
+            collection(db, 'events', eventId, 'slotCounters'),
+            limit(500),
+          ));
+          return [eventId, snap.docs];
+        } catch (error) {
+          console.warn(`Could not load slot counts for event ${eventId}:`, error);
+          return [eventId, []];
+        }
+      }),
+    );
+
+    eventEntries.forEach(([eventId, docs]) => {
+      let eventTotal = 0;
+      docs.forEach((counterDoc) => {
+        const count = Math.max(0, Number(counterDoc.data()?.count) || 0);
+        counts[counterDoc.id] = count;
+        eventTotal += count;
+      });
+      counts[eventId] = eventTotal;
+    });
+  }
+
+  return counts;
+}
+
+/**
  * Register a participant for an event.
  * - If `data.uid` is provided OR the email matches an existing user, writes to
  *   both mirrors atomically.
