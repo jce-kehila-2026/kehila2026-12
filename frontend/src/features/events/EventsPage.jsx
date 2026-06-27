@@ -21,7 +21,6 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
-import StarRoundedIcon from '@mui/icons-material/StarRounded';
 import VolunteerActivismIcon from '@mui/icons-material/VolunteerActivismOutlined';
 import { useLocation, useNavigate } from 'react-router-dom';
 import appointmentsHero from '../../assets/appointments-hero.png';
@@ -670,11 +669,6 @@ function getProviderInitials(name = 'SN') {
   return parts.slice(0, 2).map((part) => part[0]).join('').toUpperCase();
 }
 
-function getProviderRating(providerName = '') {
-  const score = [...String(providerName)].reduce((sum, char) => sum + char.charCodeAt(0), 0);
-  return score % 3 === 0 ? '4.8' : '4.9';
-}
-
 function sortSessionsByDate(left, right) {
   const leftDate = toDate(left.startDate);
   const rightDate = toDate(right.startDate);
@@ -1049,10 +1043,6 @@ function AppointmentBookingDrawer({
                         {t('evRoom')}: {provider.room}
                       </span>
                     ) : null}
-                    <em>
-                      <StarRoundedIcon fontSize="small" />
-                      {getProviderRating(provider.name)}
-                    </em>
                   </button>
                 );
               })}
