@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { collection, doc, getCountFromServer, getDoc, getDocs, limit, orderBy, query } from 'firebase/firestore';
 import {
   CalendarDays,
@@ -23,7 +24,10 @@ import {
 } from '../services/reportsService';
 import ReportBarList from '../components/ReportBarList';
 import AdminPageHeader from '../components/AdminPageHeader';
+import '../../../shared/styles/public-cta-button.css';
 import './DashboardPage.css';
+
+const DASHBOARD_CTA_CLASS = 'public-button public-button--primary public-cta-button public-cta-button--compact';
 
 const EMPTY_FUNNEL = {
   workshop: { confirmed: 0, cancelled: 0 },
@@ -338,7 +342,7 @@ export default function DashboardPage() {
     return t(key);
   };
   return (
-    <section className="admin-dashboard-page">
+    <section className="admin-dashboard-page public-cta-scope">
       <AdminPageHeader title={t('dashWelcome').replace('{name}', adminName)} />
 
       {/* Today / This Week Snapshot — always renders all 4 cards; a 0 is a
@@ -399,7 +403,9 @@ export default function DashboardPage() {
         <article className="admin-dashboard-card admin-dashboard-reports-summary">
           <div className="admin-dashboard-card__header">
             <h2>{t('rptTherapistChartLabel')}</h2>
-            <a href="/admin/appointments">{t('dashViewBookingDetails')}</a>
+            <Link to="/admin/appointments" className={DASHBOARD_CTA_CLASS}>
+              {t('dashViewBookingDetails')}
+            </Link>
           </div>
           {reportsSummaryLoading ? (
             <p className="admin-dashboard-empty">{t('dashReportsLoading')}</p>
@@ -411,7 +417,9 @@ export default function DashboardPage() {
         <article className="admin-dashboard-card admin-dashboard-reports-summary">
           <div className="admin-dashboard-card__header">
             <h2>{t('rptActivityChartLabel')}</h2>
-            <a href="/admin/appointments">{t('dashViewBookingDetails')}</a>
+            <Link to="/admin/appointments" className={DASHBOARD_CTA_CLASS}>
+              {t('dashViewBookingDetails')}
+            </Link>
           </div>
           {reportsSummaryLoading ? (
             <p className="admin-dashboard-empty">{t('dashReportsLoading')}</p>
@@ -422,7 +430,9 @@ export default function DashboardPage() {
         <article className="admin-dashboard-card admin-dashboard-bookings">
           <div className="admin-dashboard-card__header">
             <h2>{t('dashRecentBookings')}</h2>
-            <a href="/admin/appointments">{t('dashViewAllBookings')}</a>
+            <Link to="/admin/appointments" className={DASHBOARD_CTA_CLASS}>
+              {t('dashViewAllBookings')}
+            </Link>
           </div>
           <div className="admin-dashboard-booking-table">
             <div className="admin-dashboard-booking admin-dashboard-booking--head">
