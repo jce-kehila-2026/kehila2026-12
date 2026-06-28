@@ -287,6 +287,7 @@ function LoginPageInner() {
                 type="submit"
                 className="login-page__submit"
                 block
+                showArrow={false}
                 disabled={submitting}
                 id="btn-login"
               >
