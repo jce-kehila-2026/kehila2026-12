@@ -16,17 +16,6 @@ import { getPublicHomeDoc, getDefaultPublicHomeDoc } from '../services/publicPag
 import { PublicLocaleProvider, usePublicLocale } from '../context/PublicLocaleContext';
 import '../styles/PublicHomePage.css';
 
-function PreviewBanner() {
-  return (
-    <div className="public-preview-banner" role="banner">
-      <span className="public-preview-banner__label">⚙ Preview mode</span>
-      <a className="public-preview-banner__back" href="/admin/cms">
-        ← Back to Admin
-      </a>
-    </div>
-  );
-}
-
 function PublicHomePageContent() {
   const pageRef = useRef(null);
   const { direction, lang, locale, t } = usePublicLocale();
@@ -102,7 +91,6 @@ function PublicHomePageContent() {
 
   return (
     <div className={`public-homepage public-homepage--main${isPreview ? ' public-homepage--preview' : ''}`} ref={pageRef} dir={direction} lang={lang}>
-      {isPreview && <PreviewBanner />}
       <a className="public-skip-link" href="#public-main">
         {t('skipToContent')}
       </a>
