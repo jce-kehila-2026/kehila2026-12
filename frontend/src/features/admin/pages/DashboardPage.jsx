@@ -89,16 +89,18 @@ function getEventType(event) {
 
 function MetricCard({ accent, icon, label, value, subtext, alert = false }) {
   return (
-    <article
-      className={`admin-dashboard-metric admin-dashboard-metric--${accent}${alert ? ' admin-dashboard-metric--alert' : ''}`}
-    >
-      <div className="admin-dashboard-metric__icon">{icon}</div>
-      <div>
-        <span>{label}</span>
-        <strong>{value.toLocaleString()}</strong>
-        <p>{subtext}</p>
-      </div>
-    </article>
+    <div className="admin-dashboard-metric-shell">
+      <article
+        className={`admin-dashboard-metric admin-dashboard-metric--${accent}${alert ? ' admin-dashboard-metric--alert' : ''}`}
+      >
+        <div className="admin-dashboard-metric__icon">{icon}</div>
+        <div>
+          <span>{label}</span>
+          <strong>{value.toLocaleString()}</strong>
+          <p>{subtext}</p>
+        </div>
+      </article>
+    </div>
   );
 }
 
