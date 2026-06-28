@@ -17,6 +17,7 @@ import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import BugReportOutlinedIcon from '@mui/icons-material/BugReportOutlined';
 import LogoutIcon from '@mui/icons-material/Logout';
+import AccessibilityNewIcon from '@mui/icons-material/AccessibilityNew';
 import { useAdmin } from '../context/AdminContext';
 import { useAdminLocale } from '../context/AdminLocaleContext';
 import SidebarCollapseButton from '../../../shared/components/SidebarCollapseButton';
@@ -199,6 +200,20 @@ export default function Sidebar({ drawerWidth = 260, collapsed = false, onToggle
             <LogoutIcon fontSize="small" />
           </ListItemIcon>
           <ListItemText primary={t('logout')} />
+        </ListItemButton>
+      </Tooltip>
+
+      <Tooltip title={collapsed ? t('accessibilityStatement') : ''} placement="right" arrow disableHoverListener={!collapsed}>
+        <ListItemButton
+          component={NavLink}
+          to="/accessibility"
+          id="link-accessibility-statement"
+          className="admin-sidebar-accessibility"
+        >
+          <ListItemIcon>
+            <AccessibilityNewIcon fontSize="small" />
+          </ListItemIcon>
+          <ListItemText primary={t('accessibilityStatement')} />
         </ListItemButton>
       </Tooltip>
     </Drawer>

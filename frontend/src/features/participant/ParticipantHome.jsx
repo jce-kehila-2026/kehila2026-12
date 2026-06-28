@@ -4,6 +4,7 @@ import Diversity3OutlinedIcon from '@mui/icons-material/Diversity3Outlined';
 import EventAvailableOutlinedIcon from '@mui/icons-material/EventAvailableOutlined';
 import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
 import LogoutIcon from '@mui/icons-material/Logout';
+import AccessibilityNewIcon from '@mui/icons-material/AccessibilityNew';
 import MoodOutlinedIcon from '@mui/icons-material/MoodOutlined';
 import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNoneOutlined';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
@@ -434,6 +435,16 @@ export default function ParticipantHome({ initialView = 'home' }) {
           <button className="participant-logout" type="button" onClick={logout} title={sidebarCollapsed ? t('logout') : undefined}>
             <LogoutIcon fontSize="small" />
             <span>{t('logout')}</span>
+          </button>
+
+          <button
+            className="participant-a11y-link"
+            type="button"
+            onClick={() => navigate('/accessibility')}
+            title={sidebarCollapsed ? t('accessibilityStatement') : undefined}
+          >
+            <AccessibilityNewIcon fontSize="small" />
+            <span>{t('accessibilityStatement')}</span>
           </button>
         </aside>
 

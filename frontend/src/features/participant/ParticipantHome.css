@@ -86,6 +86,7 @@
 .participant-nav,
 .participant-nav button,
 .participant-logout,
+.participant-a11y-link,
 .participant-sidebar-profile,
 .participant-sidebar-profile__copy,
 .participant-topbar,
@@ -257,7 +258,8 @@
 }
 
 .participant-nav button,
-.participant-logout {
+.participant-logout,
+.participant-a11y-link {
   position: relative;
   align-items: center;
   gap: 12px;
@@ -281,14 +283,16 @@
 }
 
 .participant-nav button:hover,
-.participant-logout:hover {
+.participant-logout:hover,
+.participant-a11y-link:hover {
   background: #fff5f9;
   color: #ec168c;
   box-shadow: 0 4px 14px rgba(236, 22, 140, 0.06);
 }
 
 .participant-nav button:hover svg,
-.participant-logout:hover svg {
+.participant-logout:hover svg,
+.participant-a11y-link:hover svg {
   color: #ec168c;
 }
 
