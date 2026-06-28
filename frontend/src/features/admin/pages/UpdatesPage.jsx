@@ -1,9 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import CircularProgress from '@mui/material/CircularProgress';
+import Pagination from '@mui/material/Pagination';
 import CampaignOutlinedIcon from '@mui/icons-material/CampaignOutlined';
-import AddIcon from '@mui/icons-material/Add';
 import DeleteOutlineIcon from '@mui/icons-material/DeleteOutlined';
 import ArchiveOutlinedIcon from '@mui/icons-material/ArchiveOutlined';
 import ForwardToInboxOutlinedIcon from '@mui/icons-material/ForwardToInboxOutlined';
+import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import CloseIcon from '@mui/icons-material/Close';
 import EventNoteOutlinedIcon from '@mui/icons-material/EventNoteOutlined';
 import NotificationsActiveOutlinedIcon from '@mui/icons-material/NotificationsActiveOutlined';
@@ -31,31 +33,68 @@ const UPDATE_TYPES = [
   { value: 'reminder', labelKey: 'upTypeReminder', icon: NotificationsActiveOutlinedIcon, color: '#d97706' },
 ];
 
-const INTL_LOCALE_BY_LANG = { he: 'he-IL', en: 'en-US' };
-
 function typeMeta(type) {
   return UPDATE_TYPES.find((t) => t.value === type) ?? UPDATE_TYPES[0];
 }
 
-function relativeTime(ts, t, intlLocale) {
-  if (!ts) return '—';
-  const date = ts.toDate ? ts.toDate() : new Date(ts);
-  if (Number.isNaN(date.getTime())) return '—';
-  const diff = (Date.now() - date.getTime()) / 1000;
-  if (diff < 60) return t('upJustNow');
-  if (diff < 3600) return t('upMinAgo').replace('{n}', Math.floor(diff / 60));
-  if (diff < 86400) return t('upHourAgo').replace('{n}', Math.floor(diff / 3600));
-  if (diff < 172800) return t('upYesterday');
-  return date.toLocaleDateString(intlLocale, { month: 'short', day: 'numeric', year: 'numeric' });
-}
-
 const BLANK_FORM = { title: '', body: '', type: 'general' };
 const SEND_ALL = '__all__';
+const PAGE_SIZE = 10;
+
+const TABLE_COLUMNS = [
+  { key: 'type', labelKey: 'upColType' },
+  { key: 'title', labelKey: 'upColTitle' },
+  { key: 'audience', labelKey: 'upColAudience' },
+  { key: 'created', labelKey: 'upColCreated' },
+  { key: 'admin', labelKey: 'upColAdmin' },
+  { key: 'actions', labelKey: 'upColActions' },
+];
+
+function toDateObject(ts) {
+  if (!ts) return null;
+  const date = ts.toDate ? ts.toDate() : new Date(ts);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function formatNumericDate(ts) {
+  const date = toDateObject(ts);
+  if (!date) return '—';
+  return [
+    String(date.getDate()).padStart(2, '0'),
+    String(date.getMonth() + 1).padStart(2, '0'),
+    date.getFullYear(),
+  ].join('/');
+}
+
+function formatDateInputValue(ts) {
+  const date = toDateObject(ts);
+  if (!date) return '';
+  return [
+    date.getFullYear(),
+    String(date.getMonth() + 1).padStart(2, '0'),
+    String(date.getDate()).padStart(2, '0'),
+  ].join('-');
+}
+
+function formatTwentyFourHourTime(ts) {
+  const date = toDateObject(ts);
+  if (!date) return '—';
+  return [
+    String(date.getHours()).padStart(2, '0'),
+    String(date.getMinutes()).padStart(2, '0'),
+  ].join(':');
+}
+
+function formatAdminName(update) {
+  const name = String(update.createdByName || update.createdBy || '').trim();
+  if (!name) return '—';
+  if (name.includes('@')) return name.split('@')[0] || name;
+  return name;
+}
 
 export default function UpdatesPage() {
   const { currentUser } = useAdmin();
-  const { t, lang, direction } = useAdminLocale();
-  const intlLocale = INTL_LOCALE_BY_LANG[lang] || 'en';
+  const { t, direction } = useAdminLocale();
 
   // ── Compose state ────────────────────────────────────────
   const [updates, setUpdates] = useState([]);
@@ -64,14 +103,20 @@ export default function UpdatesPage() {
   const [form, setForm] = useState(BLANK_FORM);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
-  const [showArchived, setShowArchived] = useState(false);
+  const [archiveTab, setArchiveTab] = useState('active');
+  const [search, setSearch] = useState('');
+  const [typeFilter, setTypeFilter] = useState('all');
+  const [dateFilter, setDateFilter] = useState('');
+  const [page, setPage] = useState(1);
   const modalRef = useRef(null);
+  const showArchived = archiveTab === 'archived';
 
   // ── Compose recipient picker state ───────────────────────
   const [composeRecipients, setComposeRecipients] = useState([]);
   const [composeRecipientsLoading, setComposeRecipientsLoading] = useState(false);
   const [composeRecipientsFetchError, setComposeRecipientsFetchError] = useState('');
   const [composeSelectedUids, setComposeSelectedUids] = useState(SEND_ALL);
+  const [composeRecipientSearch, setComposeRecipientSearch] = useState('');
 
   // ── Email modal state ────────────────────────────────────
   const [emailTarget, setEmailTarget] = useState(null); // the update being emailed
@@ -79,6 +124,14 @@ export default function UpdatesPage() {
   const [recipients, setRecipients] = useState([]); // [{ name, email }]
   const [selectedEmails, setSelectedEmails] = useState(() => new Set());
   const [emailFetchError, setEmailFetchError] = useState('');
+  const [emailRecipientSearch, setEmailRecipientSearch] = useState('');
+
+  // ── Details modal state ─────────────────────────────────
+  const [detailTarget, setDetailTarget] = useState(null);
+  const [detailRecipients, setDetailRecipients] = useState([]);
+  const [detailRecipientsLoading, setDetailRecipientsLoading] = useState(false);
+  const [detailRecipientsError, setDetailRecipientsError] = useState('');
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   // ── Data loading ─────────────────────────────────────────
   const loadUpdates = useCallback(async () => {
@@ -101,17 +154,20 @@ export default function UpdatesPage() {
       if (e.key === 'Escape') {
         setShowModal(false);
         setEmailTarget(null);
+        setDetailTarget(null);
+        setDeleteTarget(null);
       }
     }
-    if (showModal || emailTarget) window.addEventListener('keydown', onKey);
+    if (showModal || emailTarget || detailTarget || deleteTarget) window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [showModal, emailTarget]);
+  }, [showModal, emailTarget, detailTarget, deleteTarget]);
 
   // ── Compose handlers ─────────────────────────────────────
   async function openModal() {
     setForm(BLANK_FORM);
     setError('');
     setComposeSelectedUids(SEND_ALL);
+    setComposeRecipientSearch('');
     setComposeRecipients([]);
     setComposeRecipientsFetchError('');
     setShowModal(true);
@@ -159,6 +215,15 @@ export default function UpdatesPage() {
     ? composeRecipients.length
     : composeSelectedUids.size;
 
+  const visibleComposeRecipients = useMemo(() => {
+    const q = composeRecipientSearch.trim().toLowerCase();
+    if (!q) return composeRecipients;
+    return composeRecipients.filter((person) => (
+      [person.name, person.email]
+        .some((value) => String(value || '').toLowerCase().includes(q))
+    ));
+  }, [composeRecipients, composeRecipientSearch]);
+
   async function handleSubmit(e) {
     e.preventDefault();
     if (!form.title.trim() || !form.body.trim()) {
@@ -196,10 +261,11 @@ export default function UpdatesPage() {
     }
   }
 
-  async function handleDelete(id) {
-    if (!window.confirm(t('upConfirmDelete'))) return;
+  async function confirmDelete() {
+    if (!deleteTarget) return;
     try {
-      await deleteUpdate(id);
+      await deleteUpdate(deleteTarget.id);
+      setDeleteTarget(null);
       loadUpdates();
     } catch (err) {
       console.error('Failed to delete update:', err);
@@ -211,6 +277,7 @@ export default function UpdatesPage() {
     setEmailTarget(update);
     setRecipients([]);
     setSelectedEmails(new Set());
+    setEmailRecipientSearch('');
     setEmailFetchError('');
     setEmailLoading(true);
     try {
@@ -237,6 +304,15 @@ export default function UpdatesPage() {
 
   const allSelected = recipients.length > 0 && selectedEmails.size === recipients.length;
 
+  const visibleEmailRecipients = useMemo(() => {
+    const q = emailRecipientSearch.trim().toLowerCase();
+    if (!q) return recipients;
+    return recipients.filter((person) => (
+      [person.name, person.email]
+        .some((value) => String(value || '').toLowerCase().includes(q))
+    ));
+  }, [recipients, emailRecipientSearch]);
+
   function toggleSelectAll() {
     setSelectedEmails(allSelected ? new Set() : new Set(recipients.map((p) => p.email)));
   }
@@ -257,111 +333,361 @@ export default function UpdatesPage() {
     setEmailTarget(null);
   }
 
-  // ── Render ───────────────────────────────────────────────
-  const visibleUpdates = updates.filter((u) => showArchived || u.active !== false);
+  async function handleDetailsClick(update) {
+    setDetailTarget(update);
+    setDetailRecipients([]);
+    setDetailRecipientsError('');
+    setDetailRecipientsLoading(false);
+    const targetUids = Array.isArray(update.targetUids) ? update.targetUids : null;
+    if (!targetUids?.length) return;
+    setDetailRecipientsLoading(true);
+    try {
+      const people = await fetchParticipants();
+      const targetSet = new Set(targetUids);
+      setDetailRecipients(people.filter((person) => targetSet.has(person.uid)));
+    } catch (err) {
+      console.error('Failed to fetch update detail recipients:', err);
+      setDetailRecipientsError(t('upErrLoadParticipants'));
+    } finally {
+      setDetailRecipientsLoading(false);
+    }
+  }
+
+  // ── Table filters ───────────────────────────────────────
+  const visibleUpdates = useMemo(() => updates.filter((u) => showArchived || u.active !== false), [updates, showArchived]);
+
+  const filteredUpdates = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return visibleUpdates.filter((update) => {
+      const archived = update.active === false;
+      const matchesType = typeFilter === 'all' || (update.type || 'general') === typeFilter;
+      const matchesDate = !dateFilter || formatDateInputValue(update.createdAt) === dateFilter;
+      const matchesArchiveTab = archiveTab === 'archived' ? archived : !archived;
+      const matchesSearch =
+        !q ||
+        [
+          localizeField(update.title, 'he'),
+          localizeField(update.body, 'he'),
+          update.createdByName,
+          t(typeMeta(update.type).labelKey),
+        ].some((value) => String(value || '').toLowerCase().includes(q));
+      return matchesType && matchesDate && matchesArchiveTab && matchesSearch;
+    });
+  }, [visibleUpdates, search, typeFilter, dateFilter, archiveTab, t]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [search, typeFilter, dateFilter, archiveTab]);
+
+  const pageCount = Math.max(1, Math.ceil(filteredUpdates.length / PAGE_SIZE));
+
+  useEffect(() => {
+    if (page > pageCount) setPage(pageCount);
+  }, [page, pageCount]);
+
+  const paginatedUpdates = useMemo(() => {
+    const start = (page - 1) * PAGE_SIZE;
+    return filteredUpdates.slice(start, start + PAGE_SIZE);
+  }, [filteredUpdates, page]);
+
+  const clearFilters = () => {
+    setSearch('');
+    setTypeFilter('all');
+    setDateFilter('');
+  };
 
   return (
     <div className="updates-page" dir={direction}>
       {/* Header */}
       <AdminPageHeader
         title={t('upHeaderTitle')}
-        actions={(
-          <>
-            <button
-              type="button"
-              className={`updates-page__toggle-archived${showArchived ? ' is-active' : ''}`}
-              onClick={() => setShowArchived((v) => !v)}
-            >
-              {showArchived ? t('upHideArchived') : t('upShowArchived')}
-            </button>
-            <button type="button" className="updates-page__new-btn" onClick={openModal}>
-              <AddIcon fontSize="small" />
-              {t('upNewUpdate')}
-            </button>
-          </>
-        )}
       />
 
-      {/* List */}
-      <div className="updates-page__list">
-        {loading && (
-          <div className="updates-page__empty">
-            <p>{t('upLoading')}</p>
-          </div>
-        )}
-
-        {!loading && visibleUpdates.length === 0 && (
-          <div className="updates-page__empty">
-            <CampaignOutlinedIcon className="updates-page__empty-icon" />
-            <h3>{t('upEmptyTitle')}</h3>
-            <p>{t('upEmptySubtitle')}</p>
-            <button type="button" className="updates-page__new-btn" onClick={openModal}>
-              <AddIcon fontSize="small" />
-              {t('upPublishFirst')}
+      <main className="updates-page__main">
+        <div className="updates-page__tabs-row">
+          <div className="updates-page__tabs" role="tablist" aria-label={t('upArchiveTabsAria')}>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={archiveTab === 'active'}
+              className={archiveTab === 'active' ? 'is-active' : ''}
+              onClick={() => setArchiveTab('active')}
+            >
+              {t('upStatusActive')}
+            </button>
+            <button
+              type="button"
+              role="tab"
+              aria-selected={archiveTab === 'archived'}
+              className={archiveTab === 'archived' ? 'is-active' : ''}
+              onClick={() => setArchiveTab('archived')}
+            >
+              {t('upArchivedTag')}
             </button>
           </div>
-        )}
+          <button type="button" className="updates-page__new-btn" onClick={openModal}>
+            <span className="updates-page__new-btn-label">{t('upNewUpdate')}</span>
+            <span className="updates-page__new-btn-plus">+</span>
+          </button>
+        </div>
 
-        {!loading && visibleUpdates.map((update) => {
-          const meta = typeMeta(update.type);
-          const Icon = meta.icon;
-          const archived = update.active === false;
-          return (
-            <div key={update.id} className={`updates-page__card${archived ? ' is-archived' : ''}`}>
-              <div className="updates-page__card-left">
-                <span
-                  className="updates-page__type-badge"
-                  style={{ '--badge-color': meta.color }}
-                >
-                  <Icon style={{ fontSize: '0.8125rem' }} />
-                  {t(meta.labelKey)}
-                </span>
-                {archived && <span className="updates-page__archived-tag">{t('upArchivedTag')}</span>}
+        <section className="updates-page__filters" aria-label={t('upFiltersAria')}>
+          <label className="updates-page__search">
+            <input
+              value={search}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder={t('upSearchPlaceholder')}
+            />
+          </label>
+          <label className="updates-page__filter-field">
+            <span>{t('upColType')}</span>
+            <select value={typeFilter} onChange={(event) => setTypeFilter(event.target.value)}>
+              <option value="all">{t('upAllTypes')}</option>
+              {UPDATE_TYPES.map((type) => (
+                <option key={type.value} value={type.value}>{t(type.labelKey)}</option>
+              ))}
+            </select>
+          </label>
+          <label className="updates-page__filter-field updates-page__filter-field--date">
+            <span>{t('upDateFilter')}</span>
+            <input
+              type="date"
+              value={dateFilter}
+              onChange={(event) => setDateFilter(event.target.value)}
+              aria-label={t('upDateFilter')}
+            />
+          </label>
+          <button type="button" className="updates-page__clear-filters" onClick={clearFilters}>
+            {t('auditClear')}
+          </button>
+        </section>
+
+        <section className="updates-page__table-card" aria-busy={loading}>
+          <div className="updates-page__table updates-page__table--head" dir="ltr">
+            {TABLE_COLUMNS.map((column) => (
+              <span key={column.key}>{t(column.labelKey)}</span>
+            ))}
+          </div>
+
+          <div className="updates-page__table-body" dir="ltr">
+            {loading ? (
+              <div className="updates-page__table-state">
+                <CircularProgress size={26} />
+                <span>{t('upLoading')}</span>
               </div>
+            ) : paginatedUpdates.length > 0 ? (
+              paginatedUpdates.map((update) => {
+                const meta = typeMeta(update.type);
+                const Icon = meta.icon;
+                const archived = update.active === false;
+                const targetCount = Array.isArray(update.targetUids) ? update.targetUids.length : null;
+                return (
+                  <div key={update.id} className={`updates-page__table updates-page__table--row${archived ? ' is-archived' : ''}`}>
+                    <span
+                      className="updates-page__type-badge"
+                      style={{ '--badge-color': meta.color }}
+                    >
+                      <Icon style={{ fontSize: '0.8125rem' }} />
+                      {t(meta.labelKey)}
+                    </span>
+                    <div className="updates-page__update-cell">
+                      <strong dir="auto">{localizeField(update.title, 'he')}</strong>
+                    </div>
+                    <span className="updates-page__audience-cell">
+                      {targetCount == null ? t('upAudienceAll') : t('upAudienceCount').replace('{n}', targetCount)}
+                    </span>
+                    <span className="updates-page__date-cell">{formatNumericDate(update.createdAt)}</span>
+                    <span className="updates-page__admin-cell" dir="auto">
+                      {formatAdminName(update)}
+                    </span>
+                    <span className="updates-page__row-actions">
+                      <button
+                        type="button"
+                        className="updates-page__row-action updates-page__row-action--view"
+                        title={t('upViewDetails')}
+                        aria-label={t('upViewDetails')}
+                        onClick={() => handleDetailsClick(update)}
+                      >
+                        <VisibilityOutlinedIcon fontSize="small" />
+                      </button>
+                      {!archived && (
+                        <button
+                          type="button"
+                          className="updates-page__row-action updates-page__row-action--email"
+                          title={t('upSendEmail')}
+                          aria-label={t('upSendEmail')}
+                          onClick={() => handleEmailClick(update)}
+                        >
+                          <ForwardToInboxOutlinedIcon fontSize="small" />
+                        </button>
+                      )}
+                      {!archived && (
+                        <button
+                          type="button"
+                          className="updates-page__row-action updates-page__row-action--archive"
+                          title={t('upArchive')}
+                          aria-label={t('upArchive')}
+                          onClick={() => handleArchive(update.id)}
+                        >
+                          <ArchiveOutlinedIcon fontSize="small" />
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        className="updates-page__row-action updates-page__row-action--delete"
+                        title={t('upDeletePermanently')}
+                        aria-label={t('upDeletePermanently')}
+                        onClick={() => setDeleteTarget(update)}
+                      >
+                        <DeleteOutlineIcon fontSize="small" />
+                      </button>
+                    </span>
+                  </div>
+                );
+              })
+            ) : (
+              <div className="updates-page__table-state">
+                <CampaignOutlinedIcon className="updates-page__empty-icon" />
+                <strong>{updates.length === 0 ? t('upEmptyTitle') : t('upNoMatches')}</strong>
+                <span>{updates.length === 0 ? t('upEmptySubtitle') : t('upNoMatchesHint')}</span>
+                {updates.length === 0 && (
+                  <button type="button" className="updates-page__new-btn" onClick={openModal}>
+                    <span className="updates-page__new-btn-label">{t('upPublishFirst')}</span>
+                    <span className="updates-page__new-btn-plus">+</span>
+                  </button>
+                )}
+              </div>
+            )}
+          </div>
 
-              <div className="updates-page__card-body">
-                <h3 className="updates-page__card-title">{localizeField(update.title, 'he')}</h3>
-                <p className="updates-page__card-text">{localizeField(update.body, 'he')}</p>
-                <div className="updates-page__card-meta">
-                  <span>{relativeTime(update.createdAt, t, intlLocale)}</span>
-                  {update.createdByName && <span>{t('upBy').replace('{name}', update.createdByName)}</span>}
+          <footer className="updates-page__table-footer">
+            <Pagination
+              count={pageCount}
+              page={page}
+              onChange={(event, value) => setPage(value)}
+              siblingCount={1}
+              boundaryCount={1}
+              shape="rounded"
+            />
+          </footer>
+        </section>
+      </main>
+
+      {/* Details Modal */}
+      {detailTarget && (() => {
+        const meta = typeMeta(detailTarget.type);
+        const DetailIcon = meta.icon;
+        const targetUids = Array.isArray(detailTarget.targetUids) ? detailTarget.targetUids : null;
+        const archived = detailTarget.active === false;
+        return (
+          <div
+            className="updates-modal-overlay"
+            role="dialog"
+            aria-modal="true"
+            aria-label={t('upDetailsModalTitle')}
+            dir={direction}
+            onClick={(e) => { if (e.target === e.currentTarget) setDetailTarget(null); }}
+          >
+            <div className="updates-modal updates-detail-modal">
+              <div className="updates-modal__header">
+                <div className="updates-email-modal__title">
+                  <VisibilityOutlinedIcon style={{ fontSize: '1.25rem', color: '#6d35b8' }} />
+                  <h2>{t('upDetailsModalTitle')}</h2>
                 </div>
-              </div>
-
-              <div className="updates-page__card-actions">
-                {!archived && (
-                  <button
-                    type="button"
-                    className="updates-page__action-btn updates-page__action-btn--email"
-                    onClick={() => handleEmailClick(update)}
-                  >
-                    <ForwardToInboxOutlinedIcon fontSize="small" />
-                    {t('upSendEmail')}
-                  </button>
-                )}
-                {!archived && (
-                  <button
-                    type="button"
-                    className="updates-page__action-btn updates-page__action-btn--archive"
-                    onClick={() => handleArchive(update.id)}
-                  >
-                    <ArchiveOutlinedIcon fontSize="small" />
-                    {t('upArchive')}
-                  </button>
-                )}
                 <button
                   type="button"
-                  className="updates-page__action-btn updates-page__action-btn--delete"
-                  title={t('upDeletePermanently')}
-                  onClick={() => handleDelete(update.id)}
+                  className="updates-modal__close"
+                  aria-label={t('upClose')}
+                  onClick={() => setDetailTarget(null)}
                 >
-                  <DeleteOutlineIcon fontSize="small" />
+                  <CloseIcon fontSize="small" />
                 </button>
               </div>
+
+              <div className="updates-modal__form updates-detail-modal__body">
+                <div className="updates-detail-modal__summary">
+                  <span className="updates-page__type-badge" style={{ '--badge-color': meta.color }}>
+                    <DetailIcon style={{ fontSize: '0.8125rem' }} />
+                    {t(meta.labelKey)}
+                  </span>
+                  <span className={`updates-page__status updates-page__status--${archived ? 'archived' : 'active'}`}>
+                    {archived ? t('upArchivedTag') : t('upStatusActive')}
+                  </span>
+                </div>
+
+                <div className="updates-detail-modal__grid">
+                  <div className="updates-detail-modal__item">
+                    <span>{t('upDetailCreatedBy')}</span>
+                    <strong dir="auto">{detailTarget.createdByName || detailTarget.createdBy || '—'}</strong>
+                  </div>
+                  <div className="updates-detail-modal__item">
+                    <span>{t('upDetailDate')}</span>
+                    <strong dir="ltr">{formatNumericDate(detailTarget.createdAt)}</strong>
+                  </div>
+                  <div className="updates-detail-modal__item">
+                    <span>{t('upDetailTime')}</span>
+                    <strong dir="ltr">{formatTwentyFourHourTime(detailTarget.createdAt)}</strong>
+                  </div>
+                  <div className="updates-detail-modal__item">
+                    <span>{t('upDetailType')}</span>
+                    <strong>{t(meta.labelKey)}</strong>
+                  </div>
+                </div>
+
+                <div className="updates-detail-modal__section">
+                  <span>{t('upTitleLabel')}</span>
+                  <strong dir="auto">{localizeField(detailTarget.title, 'he') || '—'}</strong>
+                </div>
+
+                <div className="updates-detail-modal__section">
+                  <span>{t('upDetailContent')}</span>
+                  <p dir="auto">{localizeField(detailTarget.body, 'he') || '—'}</p>
+                </div>
+
+                <div className="updates-detail-modal__section">
+                  <span>{t('upDetailSentTo')}</span>
+                  {!targetUids?.length ? (
+                    <strong>{t('upAudienceAll')}</strong>
+                  ) : detailRecipientsLoading ? (
+                    <div className="updates-email-modal__status">
+                      <span className="updates-email-modal__spinner" />
+                      {t('upLoadingShort')}
+                    </div>
+                  ) : detailRecipientsError ? (
+                    <p className="updates-modal__error">{detailRecipientsError}</p>
+                  ) : (() => {
+                    const peopleByUid = new Map(detailRecipients.map((person) => [person.uid, person]));
+                    const recipientRows = targetUids.map((uid) => peopleByUid.get(uid) || { uid, name: uid, email: '' });
+                    return (
+                    <>
+                      <strong>{t('upAudienceCount').replace('{n}', targetUids.length)}</strong>
+                      <ul className="updates-detail-modal__recipients">
+                        {recipientRows.map((person) => (
+                          <li key={person.uid}>
+                            <span dir="auto">{person.name}</span>
+                            {person.email ? <small dir="ltr">{person.email}</small> : null}
+                          </li>
+                        ))}
+                      </ul>
+                    </>
+                    );
+                  })()}
+                </div>
+
+                <div className="updates-modal__footer">
+                  <button
+                    type="button"
+                    className="updates-modal__cancel"
+                    onClick={() => setDetailTarget(null)}
+                  >
+                    {t('upClose')}
+                  </button>
+                </div>
+              </div>
             </div>
-          );
-        })}
-      </div>
+          </div>
+        );
+      })()}
 
       {/* Compose Modal */}
       {showModal && (
@@ -373,7 +699,7 @@ export default function UpdatesPage() {
           dir={direction}
           onClick={(e) => { if (e.target === e.currentTarget) setShowModal(false); }}
         >
-          <div className="updates-modal" ref={modalRef}>
+          <div className="updates-modal updates-compose-modal" ref={modalRef}>
             <div className="updates-modal__header">
               <h2>{t('upModalTitle')}</h2>
               <button
@@ -386,7 +712,7 @@ export default function UpdatesPage() {
               </button>
             </div>
 
-            <form className="updates-modal__form" onSubmit={handleSubmit}>
+            <form className="updates-modal__form updates-compose-modal__form" onSubmit={handleSubmit}>
               <div className="updates-modal__field">
                 <label htmlFor="update-type">{t('upCategory')}</label>
                 <div className="updates-modal__type-grid">
@@ -453,14 +779,18 @@ export default function UpdatesPage() {
                   {!composeRecipientsLoading && !composeRecipientsFetchError && (
                     <>
                       <div className="updates-email-modal__recipients-head">
-                        <div className="updates-email-modal__count">
+                        <label className="updates-compose-recipients__search">
                           <GroupOutlinedIcon style={{ fontSize: '1.125rem' }} />
-                          <span>
-                            {t('upSelectedCount')
+                          <input
+                            type="search"
+                            value={composeRecipientSearch}
+                            onChange={(event) => setComposeRecipientSearch(event.target.value)}
+                            placeholder={`${t('upSearchRecipients')} · ${t('upSelectedCount')
                               .replace('{selected}', composeSelectedCount)
-                              .replace('{total}', composeRecipients.length)}
-                          </span>
-                        </div>
+                              .replace('{total}', composeRecipients.length)}`}
+                            aria-label={t('upSearchRecipients')}
+                          />
+                        </label>
                         {composeRecipients.length > 0 && (
                           <button
                             type="button"
@@ -474,7 +804,7 @@ export default function UpdatesPage() {
 
                       {composeRecipients.length > 0 && (
                         <ul className="updates-email-modal__recipients">
-                          {composeRecipients.map((p) => {
+                          {visibleComposeRecipients.map((p) => {
                             const checked = composeAllSelected || (composeSelectedUids instanceof Set && composeSelectedUids.has(p.uid));
                             return (
                               <li key={p.uid}>
@@ -495,6 +825,12 @@ export default function UpdatesPage() {
                             );
                           })}
                         </ul>
+                      )}
+
+                      {composeRecipients.length > 0 && visibleComposeRecipients.length === 0 && (
+                        <p className="updates-email-modal__note">
+                          {t('upNoRecipientMatches')}
+                        </p>
                       )}
 
                       {composeRecipients.length === 0 && (
@@ -580,14 +916,18 @@ export default function UpdatesPage() {
                 {!emailLoading && !emailFetchError && (
                   <>
                     <div className="updates-email-modal__recipients-head">
-                      <div className="updates-email-modal__count">
+                      <label className="updates-compose-recipients__search">
                         <GroupOutlinedIcon style={{ fontSize: '1.125rem' }} />
-                        <span>
-                          {t('upSelectedCount')
+                        <input
+                          type="search"
+                          value={emailRecipientSearch}
+                          onChange={(event) => setEmailRecipientSearch(event.target.value)}
+                          placeholder={`${t('upSearchRecipients')} · ${t('upSelectedCount')
                             .replace('{selected}', selectedEmails.size)
-                            .replace('{total}', recipients.length)}
-                        </span>
-                      </div>
+                            .replace('{total}', recipients.length)}`}
+                          aria-label={t('upSearchRecipients')}
+                        />
+                      </label>
                       {recipients.length > 0 && (
                         <button
                           type="button"
@@ -601,7 +941,7 @@ export default function UpdatesPage() {
 
                     {recipients.length > 0 && (
                       <ul className="updates-email-modal__recipients">
-                        {recipients.map((p) => {
+                        {visibleEmailRecipients.map((p) => {
                           const checked = selectedEmails.has(p.email);
                           return (
                             <li key={p.email}>
@@ -622,6 +962,12 @@ export default function UpdatesPage() {
                           );
                         })}
                       </ul>
+                    )}
+
+                    {recipients.length > 0 && visibleEmailRecipients.length === 0 && (
+                      <p className="updates-email-modal__note">
+                        {t('upNoRecipientMatches')}
+                      </p>
                     )}
 
                     {selectedEmails.size > 100 && (
@@ -669,6 +1015,53 @@ export default function UpdatesPage() {
                     : `${t('upOpenEmailClient')}${selectedEmails.size ? ` (${selectedEmails.size})` : ''}`}
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {deleteTarget && (
+        <div
+          className="updates-modal-overlay updates-modal-overlay--confirm"
+          role="dialog"
+          aria-modal="true"
+          aria-label={t('upDeletePermanently')}
+          dir={direction}
+          onClick={(e) => { if (e.target === e.currentTarget) setDeleteTarget(null); }}
+        >
+          <div className="updates-confirm-modal">
+            <div className="updates-confirm-modal__header">
+              <h2>{t('upDeletePermanently')}</h2>
+              <button
+                type="button"
+                className="updates-modal__close"
+                aria-label={t('upClose')}
+                onClick={() => setDeleteTarget(null)}
+              >
+                <CloseIcon fontSize="small" />
+              </button>
+            </div>
+            <div className="updates-confirm-modal__content">
+              <p>{t('upConfirmDelete')}</p>
+              <strong dir="auto">{localizeField(deleteTarget.title, 'he') || '—'}</strong>
+            </div>
+            <div className="updates-confirm-modal__actions">
+              <button
+                type="button"
+                className="updates-modal__cancel"
+                onClick={() => setDeleteTarget(null)}
+              >
+                {t('upCancel')}
+              </button>
+              <button
+                type="button"
+                className="updates-modal__submit updates-modal__submit--danger"
+                onClick={confirmDelete}
+              >
+                <DeleteOutlineIcon fontSize="small" />
+                {t('upDeletePermanently')}
+              </button>
             </div>
           </div>
         </div>
