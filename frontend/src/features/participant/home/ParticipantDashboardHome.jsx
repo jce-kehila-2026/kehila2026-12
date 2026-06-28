@@ -614,7 +614,7 @@ function FeatureCardErrorState({ variant, headingIcon: HeadingIcon, headingLabel
   );
 }
 
-function NotesCard({ userId }) {
+function NotesCard({ userId, darkMode = false }) {
   const { t } = useParticipantLocale();
   const titleInputId = useId();
   const datePickerId = useId();
@@ -853,6 +853,7 @@ function NotesCard({ userId }) {
           }}
           datePickerId={datePickerId}
           timePickerId={timePickerId}
+          darkMode={darkMode}
         />
 
       <ul className="pd-notes__list">
@@ -1065,6 +1066,7 @@ export default function ParticipantDashboardHome({
   onOpenNotifications,
   locale = 'he',
   refreshToken = 0,
+  darkMode = false,
 }) {
   const { t } = useParticipantLocale();
   const { appointment, event, isLoading, appointmentError, eventError } = useParticipantDashboardHomeData(
@@ -1146,7 +1148,7 @@ export default function ParticipantDashboardHome({
       </section>
 
         <section className="pd-home__row" aria-label={t('rowNotesCommunityAria')}>
-          <NotesCard userId={userId} />
+          <NotesCard userId={userId} darkMode={darkMode} />
           <CommunityCardSection
             post={latestCommunityPost}
             isLoading={isCommunityLoading}
