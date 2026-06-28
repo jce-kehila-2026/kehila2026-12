@@ -85,7 +85,14 @@ function ThemedApp() {
               <Route path="/accessibility" element={<AccessibilityStatementPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/set-password" element={<ForcePasswordChange />} />
-              <Route path="/profile" element={<ProfilePage />} />
+              <Route
+                path="/profile"
+                element={
+                  <AuthenticatedRoute>
+                    <ProfilePage />
+                  </AuthenticatedRoute>
+                }
+              />
               <Route
                 path="/home"
                 element={
