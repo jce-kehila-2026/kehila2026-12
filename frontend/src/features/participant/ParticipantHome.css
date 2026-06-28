@@ -86,7 +86,6 @@
 .participant-nav,
 .participant-nav button,
 .participant-logout,
-.participant-a11y-link,
 .participant-sidebar-profile,
 .participant-sidebar-profile__copy,
 .participant-topbar,
@@ -258,8 +257,7 @@
 }
 
 .participant-nav button,
-.participant-logout,
-.participant-a11y-link {
+.participant-logout {
   position: relative;
   align-items: center;
   gap: 12px;
@@ -283,17 +281,49 @@
 }
 
 .participant-nav button:hover,
-.participant-logout:hover,
-.participant-a11y-link:hover {
+.participant-logout:hover {
   background: #fff5f9;
   color: #ec168c;
   box-shadow: 0 4px 14px rgba(236, 22, 140, 0.06);
 }
 
 .participant-nav button:hover svg,
-.participant-logout:hover svg,
-.participant-a11y-link:hover svg {
+.participant-logout:hover svg {
   color: #ec168c;
+}
+
+/* Accessibility-statement link: a subtle footer link, not a nav button. */
+.participant-a11y-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  margin-top: 4px;
+  padding: 6px 8px;
+  border: none;
+  background: transparent;
+  color: #a99bbb;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 500;
+  text-decoration: underline;
+  transition: color 160ms ease;
+}
+
+.participant-a11y-link svg {
+  width: 16px;
+  height: 16px;
+}
+
+.participant-a11y-link:hover {
+  color: #ec168c;
+  text-decoration: underline;
+}
+
+.participant-home--sidebar-collapsed .participant-a11y-link span {
+  display: none;
 }
 
 .participant-nav button.is-active {
