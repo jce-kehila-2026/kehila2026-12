@@ -28,12 +28,6 @@
 .admin-dashboard-page *::after {
   box-sizing: border-box;
 }
-.admin-dashboard-page .admin-page-header {
-  position: static;
-  margin-top: -1.5rem;
-  padding-top: 0;
-  background: transparent;
-}
 
 .admin-dashboard-metric,
 .admin-dashboard-card {
@@ -154,6 +148,9 @@
   min-width: 0;
   min-height: 0;
   align-items: stretch;
+  /* Clip metric card box-shadow so it does not bleed into the grid gap below
+     and read as a horizontal divider between stats and overview cards. */
+  overflow: hidden;
 }
 
 .admin-dashboard-metric--alert {
@@ -319,6 +316,8 @@
 .admin-dashboard-overview-grid > .admin-dashboard-card {
   min-height: 0;
   height: 100%;
+  /* Avoid a visible top edge reading as a divider below the stats row. */
+  border-top-color: transparent;
 }
 
 .admin-dashboard-funnel__body {

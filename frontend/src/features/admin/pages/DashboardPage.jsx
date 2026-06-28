@@ -342,9 +342,10 @@ export default function DashboardPage() {
     return t(key);
   };
   return (
-    <section className="admin-dashboard-page public-cta-scope">
+    <>
       <AdminPageHeader title={t('dashWelcome').replace('{name}', adminName)} />
 
+      <section className="admin-dashboard-page public-cta-scope">
       {/* Today / This Week Snapshot — always renders all 4 cards; a 0 is a
           safe empty state, not a missing feature. */}
       <section className="admin-dashboard-snapshot" aria-label={t('dashMetricsAria')}>
@@ -461,5 +462,6 @@ export default function DashboardPage() {
       </section>
 
     </section>
+    </>
   );
 }
