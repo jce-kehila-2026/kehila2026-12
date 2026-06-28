@@ -1,4 +1,7 @@
 .admin-layout {
+  /* Keep the OUTER shell LTR so the sidebar/content flex arrangement is driven
+     solely by flex-direction (flipped to row-reverse for RTL below). The content
+     frame sets its own direction: rtl, so page content still reads right-to-left. */
   direction: ltr !important;
   display: flex !important;
   flex-direction: row !important;
@@ -38,11 +41,23 @@
   transition: width 0.35s ease, padding 0.35s ease, gap 0.35s ease, all 0.3s ease !important;
 }
 
-/* Hebrew (RTL): the sidebar panel itself stays where the rules above put it —
-   this only flips the CONTENT inside each nav row. The button content is
-   forced ltr by .admin-sidebar-paper above, so row-reverse here mirrors the
-   icon/label order (icon ends up on the right, label to its left) without
-   touching the panel's position, width, or the rest of the dashboard. */
+/* Hebrew (RTL): reverse the flex row so the sidebar's flex SPACER (order 0) moves
+   to the right and the content frame fills the space to its left — this is what
+   reserves room for the fixed sidebar and prevents it overlapping the content.
+   The fixed paper can't follow flow, so re-pin it to the right edge to match. */
+[dir="rtl"] .admin-layout {
+  flex-direction: row-reverse !important;
+}
+
+[dir="rtl"] .admin-sidebar .admin-sidebar-paper {
+  left: auto !important;
+  right: 12px !important;
+  box-shadow: -4px 0 24px rgba(109, 40, 217, 0.04) !important;
+}
+
+/* Hebrew (RTL): the nav rows keep their ltr content (forced by
+   .admin-sidebar-paper), so row-reverse here mirrors the icon/label order
+   (icon ends up on the right, label to its left). */
 [dir="rtl"] .admin-sidebar-nav .MuiListItemButton-root,
 [dir="rtl"] .admin-sidebar-logout {
   flex-direction: row-reverse;
