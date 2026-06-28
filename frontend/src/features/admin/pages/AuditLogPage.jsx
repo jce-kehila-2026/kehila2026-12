@@ -707,17 +707,24 @@ export default function AuditLogPage() {
                   <Button
                     type="button"
                     size="small"
-                    startIcon={<VisibilityOutlinedIcon />}
+                    aria-label={t('auditDetailsAria')}
+                    title={t('auditDetailsAria')}
                     onClick={() => setSelectedLog(log)}
                     sx={{
                       justifySelf: 'start',
+                      marginLeft: '18px',
                       borderRadius: 999,
+                      minWidth: 0,
+                      px: 1.25,
                       fontWeight: 900,
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
                       ...homepageButtonInteractionSx,
                     }}
                     variant="outlined"
                   >
-                    {t('view')}
+                    <VisibilityOutlinedIcon fontSize="small" />
                   </Button>
                 </Box>
               );

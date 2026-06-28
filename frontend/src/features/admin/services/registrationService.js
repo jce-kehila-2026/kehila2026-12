@@ -434,6 +434,39 @@ export async function getRegistrationCounts(eventIds) {
 }
 
 /**
+ * Read the per-slot booked counts that addRegistration maintains under
+ * events/{eventId}/slotCounters/{slotKey}. Each counter doc id is the slotKey
+ * (the booking's slotId, or the eventId for slot-less registrations), so the
+ * returned map is keyed by those same ids — exactly the slot/session ids the
+ * booking UI builds. Returns: { [slotKey]: count }.
+ */
+export async function getSlotCounts(eventIds) {
+  const ids = [...new Set((eventIds || []).filter(Boolean))];
+  if (!ids.length) return {};
+
+  const counts = {};
+  // Sequence small batches so a counters-heavy load doesn't burst past
+  // Firestore's read limits, mirroring getRegistrationCounts above.
+  for (const group of chunk(ids, 3)) {
+    const groupResults = await Promise.all(
+      group.map(async (eid) => {
+        try {
+          const snap = await getDocs(collection(db, 'events', eid, 'slotCounters'));
+          return snap.docs.map((docSnap) => [docSnap.id, Number(docSnap.data().count) || 0]);
+        } catch (_) {
+          return [];
+        }
+      })
+    );
+    groupResults.flat().forEach(([slotKey, count]) => {
+      counts[slotKey] = count;
+    });
+  }
+
+  return counts;
+}
+
+/**
  * Register a participant for an event.
  * - If `data.uid` is provided OR the email matches an existing user, writes to
  *   both mirrors atomically.

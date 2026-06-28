@@ -84,16 +84,16 @@ export default function AccessibilityStatementPage() {
             <div style={ROW_STYLE}>
               <dt style={LABEL_STYLE}>{t('a11yLabelEmail')}</dt>
               <dd style={{ margin: 0 }}>
-                <a href="mailto:[accessibility@she-na.org.il]" style={{ color: '#1a56a0' }}>
-                  [accessibility@she-na.org.il]
+                <a href="mailto:tali.reimm@gmail.com" style={{ color: '#1a56a0' }}>
+                  tali.reimm@gmail.com
                 </a>
               </dd>
             </div>
             <div style={ROW_STYLE}>
               <dt style={LABEL_STYLE}>{t('a11yLabelPhone')}</dt>
               <dd style={{ margin: 0 }}>
-                <a href="tel:[+972-XX-XXXXXXX]" style={{ color: '#1a56a0' }}>
-                  [+972-XX-XXXXXXX]
+                <a href="tel:+972545378437" style={{ color: '#1a56a0' }}>
+                  054-5378437
                 </a>
               </dd>
             </div>
@@ -102,6 +102,11 @@ export default function AccessibilityStatementPage() {
         <p style={{ marginTop: '1rem', fontSize: '0.9rem', color: '#555' }}>
           {t('a11yResponseCommitment')}
         </p>
+      </section>
+
+      <section aria-labelledby="provider-heading" style={{ marginBottom: '2rem' }}>
+        <h2 id="provider-heading" style={HEADING_STYLE}>{t('a11yProviderHeading')}</h2>
+        <p>{t('a11yProviderP')}</p>
       </section>
 
       <section aria-labelledby="legal-heading" style={{ marginBottom: '2rem' }}>

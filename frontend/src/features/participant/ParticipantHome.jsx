@@ -4,6 +4,7 @@ import Diversity3OutlinedIcon from '@mui/icons-material/Diversity3Outlined';
 import EventAvailableOutlinedIcon from '@mui/icons-material/EventAvailableOutlined';
 import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
 import LogoutIcon from '@mui/icons-material/Logout';
+import AccessibilityNewIcon from '@mui/icons-material/AccessibilityNew';
 import MoodOutlinedIcon from '@mui/icons-material/MoodOutlined';
 import NotificationsNoneOutlinedIcon from '@mui/icons-material/NotificationsNoneOutlined';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
@@ -220,7 +221,7 @@ export default function ParticipantHome({ initialView = 'home' }) {
         type="button"
         aria-label={t('notifications')}
         aria-expanded={notifOpen}
-        className={notifOpen ? 'is-active' : ''}
+        className={`pd-header-icon-btn${notifOpen ? ' is-active' : ''}`}
         onClick={handleBellClick}
       >
         <NotificationsNoneOutlinedIcon />
@@ -435,6 +436,16 @@ export default function ParticipantHome({ initialView = 'home' }) {
             <LogoutIcon fontSize="small" />
             <span>{t('logout')}</span>
           </button>
+
+          <button
+            className="participant-a11y-link"
+            type="button"
+            onClick={() => navigate('/accessibility')}
+            title={sidebarCollapsed ? t('accessibilityStatement') : undefined}
+          >
+            <AccessibilityNewIcon fontSize="small" />
+            <span>{t('accessibilityStatement')}</span>
+          </button>
         </aside>
 
         <section
@@ -473,20 +484,21 @@ export default function ParticipantHome({ initialView = 'home' }) {
               onOpenNotifications={handleOpenNotifications}
               locale={locale}
               refreshToken={homeRefreshKey}
+              darkMode={darkMode}
             />
           )}
 
           {activeView === 'calendar' && (
             <section className="participant-content participant-content--single participant-content--calendar">
               <div className="participant-panel participant-panel--wide">
-                <CalendarPage variant="embedded" />
+                <CalendarPage variant="embedded" darkMode={darkMode} />
               </div>
             </section>
           )}
 
           {activeView === 'events' && (
             <section className="participant-content participant-content--single participant-content--events">
-              <EventsPage embedInDashboard locale={locale} />
+              <EventsPage embedInDashboard locale={locale} darkMode={darkMode} />
             </section>
           )}
 

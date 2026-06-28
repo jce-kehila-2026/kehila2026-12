@@ -640,7 +640,7 @@
 .appointments-details-dialog {
   position: absolute;
   top: 18px;
-  right: 18px;
+  inset-inline-end: 18px;
   bottom: 18px;
   width: min(640px, calc(100vw - 36px));
   border: 1px solid rgba(223, 50, 123, 0.14);
@@ -656,7 +656,7 @@
 .appointments-details-close {
   position: absolute;
   top: 16px;
-  right: 16px;
+  inset-inline-end: 16px;
   z-index: 2;
   width: 38px;
   height: 38px;
@@ -818,7 +818,7 @@
   position: absolute;
   top: 5px;
   bottom: 5px;
-  left: 82px;
+  inset-inline-start: 82px;
   width: 0.0625rem;
   background: rgba(167, 139, 250, 0.22);
 }
@@ -1005,7 +1005,7 @@
   }
 
   .appointments-details-dialog {
-    left: 18px;
+    inset-inline-start: 18px;
     width: auto;
   }
 

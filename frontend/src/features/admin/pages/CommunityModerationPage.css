@@ -427,6 +427,17 @@
   transform: translateY(-1px);
 }
 
+.admin-community-post-card__tone-bar {
+  position: absolute;
+  inset-inline-start: 0;
+  top: 0;
+  bottom: 0;
+  width: 0.3125rem;
+  background: var(--tone-color, var(--soft-pink));
+  border-start-start-radius: 8px;
+  border-end-start-radius: 8px;
+}
+
 .admin-community-post-card__header {
   display: flex;
   align-items: center;
@@ -1327,7 +1338,7 @@
   font-weight: 600;
   color: rgba(36, 16, 79, 0.54);
   font-size: 0.75rem;
-  margin-left: 0.375rem;
+  margin-inline-start: 0.375rem;
 }
 
 .admin-community-guidelines-list {

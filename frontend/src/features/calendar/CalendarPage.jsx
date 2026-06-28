@@ -184,7 +184,7 @@ function CalendarPill({ item }) {
   );
 }
 
-export default function CalendarPage({ variant = 'standalone' }) {
+export default function CalendarPage({ variant = 'standalone', darkMode = false }) {
   const { t, lang } = useParticipantLocale();
   const intlLocale = INTL_LOCALE_BY_LANG[lang] || 'en';
   const { currentUser, effectiveUID, loading: authLoading } = useAdmin();
@@ -692,6 +692,7 @@ export default function CalendarPage({ variant = 'standalone' }) {
         datePickerId={datePickerId}
         timePickerId={timePickerId}
         errorMessage={noteModalError}
+        darkMode={darkMode}
       />
     </main>
   );

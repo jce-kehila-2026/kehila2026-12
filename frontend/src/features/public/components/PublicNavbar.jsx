@@ -1,6 +1,6 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
-import { useLocation } from 'react-router-dom';
+import { Link, useLocation, useSearchParams } from 'react-router-dom';
 import sheNaLogo from '../../../assets/she-na-logo.png';
 import { PUBLIC_DONATION_TARGET } from '../constants/publicDonationLink';
 import { useAdmin } from '../../admin/context/AdminContext';
@@ -14,6 +14,7 @@ import {
 } from '../i18n/publicHomeTranslations';
 import { scrollToPublicSectionAfterMenuClose } from '../utils/publicSectionScroll';
 import PublicLanguageSwitcher from './PublicLanguageSwitcher';
+import PreviewBanner from './PreviewBanner';
 
 const STORIES_ARTICLES_PATH = '/public/stories-articles';
 const TEAM_PARTNERS_PATH = '/public/team-partners';
@@ -36,6 +37,8 @@ export default function PublicNavbar({
   const storiesMenuId = useId();
   const teamMenuId = useId();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const isPreview = searchParams.get('preview') === '1';
   const { currentUser, userRole } = useAdmin();
   const { t } = usePublicLocale();
   const organizationName = organization?.name || 'SHE-NA';
@@ -50,6 +53,16 @@ export default function PublicNavbar({
     location.pathname === STORIES_ARTICLES_PATH ? href : `${STORIES_ARTICLES_PATH}${href}`;
   const resolveTeamHref = (href) =>
     location.pathname === TEAM_PARTNERS_PATH ? href : `${TEAM_PARTNERS_PATH}${href}`;
+  // Keep ?preview=1 on cross-page navigations so CMS preview mode persists across
+  // public pages. Only path navigations (starting with '/') get the param; pure
+  // in-page hash links are left untouched (same-page scroll handlers already
+  // preserve location.search). No-op when preview mode is not active.
+  const withPreview = (href) => {
+    if (!isPreview || typeof href !== 'string' || !href.startsWith('/')) return href;
+    const [path, hash] = href.split('#');
+    const separator = path.includes('?') ? '&' : '?';
+    return `${path}${separator}preview=1${hash ? `#${hash}` : ''}`;
+  };
 
   useEffect(() => {
     function handleScroll() {
@@ -177,6 +190,7 @@ export default function PublicNavbar({
   }
 
   return (
+    <>
     <header
       className={`public-navbar${isScrolled ? ' public-navbar--scrolled' : ''}`}
       data-public-navbar
@@ -185,7 +199,7 @@ export default function PublicNavbar({
         <div className="public-navbar__bar">
           <a
             className="public-navbar__brand"
-            href={resolveHomepageHref('#home')}
+            href={withPreview(resolveHomepageHref('#home'))}
             aria-label={`${organizationName} ${t('brandHomeAria')}`}
             onClick={(event) => handleCurrentPageSectionClick(event, '#home', '/public')}
           >
@@ -217,7 +231,7 @@ export default function PublicNavbar({
               onBlur={(event) => handleDropdownBlur(event, setIsHomeMenuOpen)}
             >
               <div className="public-navbar__dropdown-trigger">
-                <a href="/public" onClick={(event) => handlePageTopClick(event, '/public')}>
+                <a href={withPreview('/public')} onClick={(event) => handlePageTopClick(event, '/public')}>
                   {t('navHome')}
                 </a>
                 <button
@@ -239,7 +253,7 @@ export default function PublicNavbar({
                 {homeMenuLinks.map((link) => (
                   <li key={link.href} role="none">
                     <a
-                      href={resolveHomepageHref(link.href)}
+                      href={withPreview(resolveHomepageHref(link.href))}
                       role="menuitem"
                       onClick={(event) => handleCurrentPageSectionClick(event, link.href, '/public')}
                     >
@@ -262,7 +276,7 @@ export default function PublicNavbar({
                     onBlur={(event) => handleDropdownBlur(event, setIsStoriesMenuOpen)}
                   >
                     <div className="public-navbar__dropdown-trigger">
-                      <a href={STORIES_ARTICLES_PATH} onClick={(event) => handlePageTopClick(event, STORIES_ARTICLES_PATH)}>
+                      <a href={withPreview(STORIES_ARTICLES_PATH)} onClick={(event) => handlePageTopClick(event, STORIES_ARTICLES_PATH)}>
                         {link.label}
                       </a>
                       <button
@@ -289,7 +303,7 @@ export default function PublicNavbar({
                       {storiesMenuLinks.map((menuLink) => (
                         <li key={menuLink.href} role="none">
                           <a
-                            href={resolveStoriesHref(menuLink.href)}
+                            href={withPreview(resolveStoriesHref(menuLink.href))}
                             role="menuitem"
                             onClick={(event) =>
                               handleCurrentPageSectionClick(event, menuLink.href, STORIES_ARTICLES_PATH)
@@ -316,7 +330,7 @@ export default function PublicNavbar({
                     onBlur={(event) => handleDropdownBlur(event, setIsTeamMenuOpen)}
                   >
                     <div className="public-navbar__dropdown-trigger">
-                      <a href={TEAM_PARTNERS_PATH} onClick={(event) => handlePageTopClick(event, TEAM_PARTNERS_PATH)}>
+                      <a href={withPreview(TEAM_PARTNERS_PATH)} onClick={(event) => handlePageTopClick(event, TEAM_PARTNERS_PATH)}>
                         {link.label}
                       </a>
                       <button
@@ -338,7 +352,7 @@ export default function PublicNavbar({
                       {teamMenuLinks.map((menuLink) => (
                         <li key={menuLink.href} role="none">
                           <a
-                            href={resolveTeamHref(menuLink.href)}
+                            href={withPreview(resolveTeamHref(menuLink.href))}
                             role="menuitem"
                             onClick={(event) =>
                               handleCurrentPageSectionClick(event, menuLink.href, TEAM_PARTNERS_PATH)
@@ -364,7 +378,7 @@ export default function PublicNavbar({
               return (
                 <a
                   key={link.href}
-                  href={href}
+                  href={withPreview(href)}
                   className={isActive ? 'public-navbar__link--active' : undefined}
                   aria-current={isActive ? 'page' : undefined}
                   onClick={(event) => {
@@ -391,9 +405,9 @@ export default function PublicNavbar({
             <a className="public-navbar__cta public-navbar__cta--primary" href="#join" onClick={handleJoinClick}>
               {t('navJoin')}
             </a>
-            <a className="public-navbar__cta public-navbar__cta--highlight" href={personalAreaHref} onClick={closeMenu}>
+            <Link className="public-navbar__cta public-navbar__cta--highlight" to={personalAreaHref} onClick={closeMenu}>
               {t('navPersonalArea')}
-            </a>
+            </Link>
             <div className="public-navbar__actions-end">
               <a className="public-navbar__cta public-navbar__cta--primary" href="#volunteer" onClick={handleVolunteerClick}>
                 {t('navVolunteer')}
@@ -404,5 +418,7 @@ export default function PublicNavbar({
         </div>
       </div>
     </header>
+    {isPreview && <PreviewBanner />}
+    </>
   );
 }
