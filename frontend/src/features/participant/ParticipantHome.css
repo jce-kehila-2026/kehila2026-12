@@ -292,6 +292,40 @@
   color: #ec168c;
 }
 
+/* Accessibility-statement link: a subtle footer link, not a nav button. */
+.participant-a11y-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  width: 100%;
+  margin-top: 4px;
+  padding: 6px 8px;
+  border: none;
+  background: transparent;
+  color: #a99bbb;
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 500;
+  text-decoration: underline;
+  transition: color 160ms ease;
+}
+
+.participant-a11y-link svg {
+  width: 16px;
+  height: 16px;
+}
+
+.participant-a11y-link:hover {
+  color: #ec168c;
+  text-decoration: underline;
+}
+
+.participant-home--sidebar-collapsed .participant-a11y-link span {
+  display: none;
+}
+
 .participant-nav button.is-active {
   background: #fff4f8;
   border: 1px solid #f9d7e7;
