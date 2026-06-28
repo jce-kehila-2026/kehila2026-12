@@ -364,7 +364,7 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.16s;
-  text-align: left;
+  text-align: start;
 }
 
 .updates-modal__type-opt:hover {

@@ -46,12 +46,16 @@ function AdminLayoutInner() {
         />
         <Box
           className="admin-content-frame"
+          /* Set direction via the dir attribute, NOT the sx `direction` CSS
+             property: the active emotion cache uses stylis-plugin-rtl, which
+             flips a hand-written `direction: rtl` back to ltr. The attribute is
+             untouched by the plugin and cascades to the topbar + main content. */
+          dir={direction}
           sx={{
             flexGrow: 1,
             display: 'flex',
             flexDirection: 'column',
             minWidth: 0,
-            direction,
             transition: 'all 300ms ease-in-out',
           }}
         >
