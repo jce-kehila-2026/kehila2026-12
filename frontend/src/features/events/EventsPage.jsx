@@ -30,6 +30,7 @@ import { localizeField } from '../../i18n/localizeField';
 import { useParticipantLocale } from '../participant/context/ParticipantLocaleContext';
 import {
   addRegistration,
+  getSlotCounts,
   getUserRegisteredEventIds,
   removeRegistration,
 } from '../admin/services/registrationService';
@@ -486,6 +487,15 @@ function getLooseTimeSlots(event) {
   ].find((items) => Array.isArray(items) && items.length) || [];
 }
 
+// 1:1 therapy/appointment slots hold a single participant unless the event
+// explicitly defines a larger capacity, so a booked slot reads as full. Workshops
+// keep 0 = "open / unlimited" when no capacity is set.
+function resolveSlotCapacity(rawCapacity, event) {
+  const capacity = Number(rawCapacity) || 0;
+  if (capacity > 0) return capacity;
+  return inferEventType(event) === 'appointment' ? 1 : 0;
+}
+
 function getProviderSlots(event, t = null) {
   const providerEntries = getProviderSlotArrays(event);
 
@@ -513,7 +523,7 @@ function getProviderSlots(event, t = null) {
           startSource,
           endSource,
           room: slot.room || slot.location || provider.room || provider.location || event.room || event.location,
-          capacity: Number(slot.maxParticipants || slot.capacity || slot.availableSpots || provider.maxParticipants || provider.capacity || event.maxParticipants || event.capacity) || 0,
+          capacity: resolveSlotCapacity(slot.maxParticipants || slot.capacity || slot.availableSpots || provider.maxParticipants || provider.capacity || event.maxParticipants || event.capacity, event),
         };
       });
     });
@@ -536,7 +546,7 @@ function getProviderSlots(event, t = null) {
         startSource,
         endSource,
         room: slot.room || slot.location || event.room || event.location,
-        capacity: Number(slot.maxParticipants || slot.capacity || slot.availableSpots || event.maxParticipants || event.capacity) || 0,
+        capacity: resolveSlotCapacity(slot.maxParticipants || slot.capacity || slot.availableSpots || event.maxParticipants || event.capacity, event),
       };
     });
   }
@@ -554,7 +564,7 @@ function getProviderSlots(event, t = null) {
       startSource: event.startTime || event.date,
       endSource: event.endTime,
       room: event.room || event.location,
-      capacity: Number(event.maxParticipants || event.capacity) || 0,
+      capacity: resolveSlotCapacity(event.maxParticipants || event.capacity, event),
     },
   ];
 }
@@ -1785,11 +1795,13 @@ export default function EventsPage({ embedInDashboard = false, locale = 'he' }) 
     }
 
     try {
-      const userRegistrations = currentUser?.uid
-        ? await getUserRegisteredEventIds(currentUser.uid)
-        : {};
+      const eventIds = eventList.map((event) => event.id).filter(Boolean);
+      const [slotCounts, userRegistrations] = await Promise.all([
+        getSlotCounts(eventIds),
+        currentUser?.uid ? getUserRegisteredEventIds(currentUser.uid) : Promise.resolve({}),
+      ]);
 
-      setCounts({});
+      setCounts(slotCounts);
       setRegisteredMap(userRegistrations);
       setRegistrationWarning('');
     } catch (error) {
