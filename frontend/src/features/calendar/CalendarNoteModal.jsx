@@ -19,6 +19,7 @@ export default function CalendarNoteModal({
   datePickerId,
   timePickerId,
   errorMessage = '',
+  darkMode = false,
 }) {
   const { t } = useParticipantLocale();
   const titleId = useId();
@@ -49,7 +50,10 @@ export default function CalendarNoteModal({
   if (!open) return null;
 
   const modalContent = (
-    <div className="calendar-note-modal" role="presentation">
+    <div
+      className={`calendar-note-modal${darkMode ? ' participant-home--dark' : ''}`}
+      role="presentation"
+    >
       <div
         className="calendar-note-modal__backdrop"
         aria-hidden="true"
@@ -144,6 +148,7 @@ export default function CalendarNoteModal({
         onTimeChange={onTimeChange}
         datePickerId={datePickerId}
         timePickerId={timePickerId}
+        darkMode={darkMode}
       />
     </div>
   );

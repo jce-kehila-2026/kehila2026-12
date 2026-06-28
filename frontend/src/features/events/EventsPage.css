@@ -2689,6 +2689,219 @@
   box-shadow: none;
 }
 
+/* ── Appointment booking drawer ("View Available Times") — dark mode ──────
+   The drawer renders in a body portal, so the dark theme class is applied to
+   the modal root itself (see AppointmentBookingDrawer). Everything below is
+   compound-scoped to this modal root + dark only, so light mode and the Events
+   cards behind the modal are untouched. Reuses the shared --pd-* dark tokens. */
+.appointment-drawer-modal.participant-home--dark .appointment-drawer {
+  background: linear-gradient(180deg, #111827 0%, #0f172a 100%);
+  border-color: rgba(236, 72, 153, 0.25);
+  box-shadow: 0 24px 56px rgba(0, 0, 0, 0.5);
+}
+
+.appointment-drawer-modal.participant-home--dark .appointment-drawer__header {
+  background: linear-gradient(180deg, rgba(236, 72, 153, 0.08), rgba(17, 24, 39, 0));
+  border-bottom-color: rgba(236, 72, 153, 0.22);
+}
+
+.appointment-drawer-modal.participant-home--dark .appointment-drawer__header h2 {
+  color: #f8fafc;
+}
+
+.appointment-drawer-modal.participant-home--dark .appointment-drawer__header p {
+  color: #94a3b8;
+}
+
+.appointment-drawer-modal.participant-home--dark .appointment-drawer__close {
+  background: #1f2937;
+  border-color: rgba(236, 72, 153, 0.3);
+  color: #f472b6;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.3);
+}
+
+.appointment-drawer-modal.participant-home--dark .appointment-booking-step {
+  background: var(--pd-card-dark-soft);
+  border-color: rgba(236, 72, 153, 0.22);
+}
+
+.appointment-drawer-modal.participant-home--dark .appointment-booking-step h3 {
+  color: #f8fafc;
+}
+
+.appointment-drawer-modal.participant-home--dark .appointment-instructor-card {
+  background: var(--pd-card-dark);
+  border-color: rgba(236, 72, 153, 0.18);
+  color: var(--pd-text-dark);
+  box-shadow: inset 0 0 0 1px rgba(236, 72, 153, 0.06);
+}
+
+.appointment-drawer-modal.participant-home--dark .appointment-instructor-card:hover {
+  border-color: rgba(244, 114, 182, 0.4);
+}
+
+.appointment-drawer-modal.participant-home--dark .appointment-instructor-card.is-selected {
+  background: var(--pd-card-dark-soft);
+  border-color: rgba(244, 114, 182, 0.5);
+  box-shadow: 0 0 0 4px rgba(236, 72, 153, 0.16);
+}
+
+.appointment-drawer-modal.participant-home--dark .appointment-instructor-card strong {
+  color: var(--pd-text-dark);
+}
+
+.appointment-drawer-modal.participant-home--dark .appointment-instructor-card small {
+  color: var(--pd-text-subtle-dark);
+}
+
+.appointment-drawer-modal.participant-home--dark .appointment-instructor-card__room {
+  color: var(--pd-text-muted-dark);
+}
+
+.appointment-drawer-modal.participant-home--dark .appointment-date-selector {
+  background: var(--pd-card-dark);
+  border-color: rgba(236, 72, 153, 0.22);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+}
+
+.appointment-drawer-modal.participant-home--dark .appointment-date-selector button {
+  color: #f9a8d4;
+}
+
+.appointment-drawer-modal.participant-home--dark .appointment-date-selector button:disabled {
+  color: rgba(248, 250, 252, 0.25);
+}
+
+.appointment-drawer-modal.participant-home--dark .appointment-date-selector strong {
+  color: var(--pd-text-dark);
+}
+
+.appointment-drawer-modal.participant-home--dark .appointment-time-grid button {
+  background: var(--pd-card-dark);
+  border-color: rgba(192, 132, 252, 0.32);
+  color: var(--pd-text-dark);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.28);
+}
+
+.appointment-drawer-modal.participant-home--dark .appointment-time-grid button:hover:not(:disabled) {
+  border-color: rgba(244, 114, 182, 0.45);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.34);
+}
+
+.appointment-drawer-modal.participant-home--dark .appointment-time-grid button.is-disabled {
+  background: rgba(148, 163, 184, 0.08);
+  border-color: rgba(148, 163, 184, 0.12);
+  color: rgba(248, 250, 252, 0.3);
+}
+
+.appointment-drawer-modal.participant-home--dark .appointment-drawer__empty {
+  background: rgba(148, 163, 184, 0.08);
+  color: var(--pd-text-muted-dark);
+}
+
+.appointment-drawer-modal.participant-home--dark .appointment-drawer__actions {
+  background: var(--pd-card-dark);
+  border-top-color: rgba(236, 72, 153, 0.22);
+  box-shadow: 0 -10px 24px rgba(0, 0, 0, 0.3);
+}
+
+.appointment-drawer-modal.participant-home--dark .workshop-details-panel__detail-item {
+  background: var(--pd-card-dark-soft);
+  border-color: rgba(236, 72, 153, 0.22);
+}
+
+.appointment-drawer-modal.participant-home--dark .workshop-details-panel__detail-copy strong {
+  color: #f472b6;
+}
+
+.appointment-drawer-modal.participant-home--dark .workshop-details-panel__detail-copy span {
+  color: var(--pd-text-dark);
+}
+
+.appointment-drawer-modal.participant-home--dark .appointment-drawer__body {
+  scrollbar-color: rgba(236, 111, 162, 0.6) rgba(148, 163, 184, 0.12);
+}
+
+.appointment-drawer-modal.participant-home--dark .appointment-drawer__body::-webkit-scrollbar-track {
+  background: rgba(148, 163, 184, 0.08);
+}
+
+/* ── Workshop Details / Register modal — dark mode ────────────────────────
+   Renders in a body portal (root .booking-flow-modal), so the dark class is on
+   the modal root itself (see WorkshopDetailsPanel). Scoped via the unique
+   .workshop-details-panel dialog so it never affects the appointment drawer
+   (which shares the .booking-flow-modal root class), the shared detail-item
+   styles, or the Events cards behind it. Light mode is untouched. */
+.participant-home--dark .workshop-details-panel {
+  background: linear-gradient(180deg, #111827 0%, #0f172a 100%);
+  border-color: rgba(236, 72, 153, 0.25);
+  box-shadow: 0 24px 56px rgba(0, 0, 0, 0.5);
+}
+
+.participant-home--dark .workshop-details-panel__header {
+  background: linear-gradient(180deg, rgba(236, 72, 153, 0.08), rgba(17, 24, 39, 0));
+  border-bottom-color: rgba(236, 72, 153, 0.22);
+}
+
+.participant-home--dark .workshop-details-panel__header h2 {
+  color: #f8fafc;
+}
+
+.participant-home--dark .workshop-details-panel__header p {
+  color: #94a3b8;
+}
+
+.participant-home--dark .workshop-details-panel__close {
+  background: #1f2937;
+  border-color: rgba(236, 72, 153, 0.3);
+  color: #f472b6;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.3);
+}
+
+.participant-home--dark .workshop-details-panel .workshop-details-panel__detail-item {
+  background: var(--pd-card-dark-soft);
+  border-color: rgba(236, 72, 153, 0.22);
+}
+
+.participant-home--dark .workshop-details-panel .workshop-details-panel__detail-item svg {
+  color: #f472b6;
+}
+
+.participant-home--dark .workshop-details-panel .workshop-details-panel__detail-copy strong {
+  color: #f472b6;
+}
+
+.participant-home--dark .workshop-details-panel .workshop-details-panel__detail-copy span {
+  color: var(--pd-text-dark);
+}
+
+.participant-home--dark .workshop-details-panel__notice {
+  background: rgba(236, 72, 153, 0.12);
+  border-color: rgba(236, 72, 153, 0.3);
+  color: #fda4af;
+}
+
+.participant-home--dark .workshop-details-panel__actions {
+  background: var(--pd-card-dark);
+  border-top-color: rgba(236, 72, 153, 0.22);
+  box-shadow: 0 -10px 24px rgba(0, 0, 0, 0.3);
+}
+
+.participant-home--dark .workshop-details-panel__primary.is-cancel {
+  background: #1f2937;
+  border-color: rgba(236, 72, 153, 0.3);
+  color: #f9a8d4;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.3);
+}
+
+.participant-home--dark .workshop-details-panel__body {
+  scrollbar-color: rgba(236, 111, 162, 0.6) rgba(148, 163, 184, 0.12);
+}
+
+.participant-home--dark .workshop-details-panel__body::-webkit-scrollbar-track {
+  background: rgba(148, 163, 184, 0.08);
+}
+
 @keyframes appointmentDrawerIn {
   from {
     opacity: 0;

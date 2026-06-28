@@ -1864,14 +1864,6 @@
   box-shadow: 0 16px 34px rgba(236, 72, 153, 0.16);
 }
 
-.participant-home .participant-notif-wrap > button,
-.participant-home .pd-home__header-actions .participant-notif-wrap > button {
-  background: rgba(255, 255, 255, 0.97);
-  border-color: rgba(91, 30, 140, 0.2);
-  color: #5b1e8c;
-  box-shadow: 0 9px 24px rgba(91, 30, 140, 0.12);
-}
-
 .participant-home .participant-notif-wrap > button svg,
 .participant-home .pd-home__header-actions .participant-notif-wrap > button svg {
   color: currentColor;
@@ -1883,7 +1875,13 @@
 .participant-home .participant-notif-wrap > button.is-active,
 .participant-home .pd-home__header-actions .participant-notif-wrap > button:hover,
 .participant-home .pd-home__header-actions .participant-notif-wrap > button:focus-visible,
-.participant-home .pd-home__header-actions .participant-notif-wrap > button.is-active {
+.participant-home .pd-home__header-actions .participant-notif-wrap > button.is-active,
+.participant-home .pd-home__header-actions .pd-header-icon-btn:hover,
+.participant-home .pd-home__header-actions .pd-header-icon-btn:focus-visible,
+.participant-home .pd-home__header-actions .pd-header-icon-btn:active,
+.participant-home .pd-home__header-actions .public-lang-switcher__trigger:hover,
+.participant-home .pd-home__header-actions .public-lang-switcher__trigger:focus-visible,
+.participant-home .pd-home__header-actions .public-lang-switcher--open .public-lang-switcher__trigger {
   background: linear-gradient(135deg, #e73386, #dc2577);
   border-color: transparent;
   color: #fff;
@@ -1909,4 +1907,29 @@
   border-color: rgba(244, 114, 182, 0.38);
   color: #f9a8d4;
   box-shadow: 0 16px 34px rgba(236, 72, 153, 0.16);
+}
+
+/* ===========================================================================
+   Notification bell hover — force the exact Bug Report pink hover (LIGHT mode).
+   Final, highest-priority override so the bell can never fall back to the
+   subtle-white hover from ParticipantHeader.css regardless of source order or
+   injected styles. Scoped with :not(.participant-home--dark) so dark mode keeps
+   its own subtle-pink hover (which already matches the Bug Report button there).
+   ======================================================================== */
+.participant-home:not(.participant-home--dark) .participant-notif-wrap > button:hover,
+.participant-home:not(.participant-home--dark) .participant-notif-wrap > button:focus-visible,
+.participant-home:not(.participant-home--dark) .participant-notif-wrap > button.is-active {
+  background: linear-gradient(135deg, #e73386, #dc2577) !important;
+  border-color: transparent !important;
+  color: #fff !important;
+  box-shadow: 0 14px 26px rgba(223, 50, 123, 0.24) !important;
+  transform: translateY(-2px) !important;
+}
+
+.participant-home:not(.participant-home--dark) .participant-notif-wrap > button:hover svg,
+.participant-home:not(.participant-home--dark) .participant-notif-wrap > button:focus-visible svg,
+.participant-home:not(.participant-home--dark) .participant-notif-wrap > button.is-active svg {
+  color: #fff !important;
+  fill: #fff !important;
+  stroke: #fff !important;
 }

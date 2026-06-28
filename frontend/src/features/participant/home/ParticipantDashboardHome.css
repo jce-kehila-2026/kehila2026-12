@@ -4555,3 +4555,155 @@ input.pd-notes-time__step-value::-webkit-inner-spin-button {
 .participant-home--dark .pd-card--feature .pd-countdown-ring__status {
   color: #f8fafc;
 }
+
+/* ===========================================================================
+   Reminder schedule popup (NotesScheduleModal) — dark mode
+   Portaled to <body>, so the dark class is applied directly to its root.
+   Scoped to .pd-notes-schedule-modal.participant-home--dark so light mode and
+   the shared Home/admin pickers are untouched.
+   ======================================================================== */
+.pd-notes-schedule-modal.participant-home--dark .pd-notes-schedule-modal__panel {
+  border-color: rgba(236, 72, 153, 0.25);
+  background: linear-gradient(180deg, #111827 0%, #0f172a 100%);
+  box-shadow: 0 24px 48px rgba(0, 0, 0, 0.5);
+}
+
+.pd-notes-schedule-modal.participant-home--dark .pd-notes-schedule-modal__header h4 {
+  color: #f472b6;
+}
+
+.pd-notes-schedule-modal.participant-home--dark .pd-notes-schedule-modal__hint {
+  color: #94a3b8;
+}
+
+.pd-notes-schedule-modal.participant-home--dark .pd-notes-schedule-modal__close {
+  border-color: rgba(236, 72, 153, 0.3);
+  background: #1f2937;
+  color: #f472b6;
+}
+
+.pd-notes-schedule-modal.participant-home--dark .pd-notes-schedule-modal__close:hover {
+  border-color: rgba(236, 72, 153, 0.5);
+  background: #243042;
+}
+
+/* Date/time input boxes */
+.pd-notes-schedule-modal.participant-home--dark .pd-notes-picker__trigger {
+  border-color: rgba(236, 72, 153, 0.3);
+  background: #1f2937;
+  color: #f8fafc;
+}
+
+.pd-notes-schedule-modal.participant-home--dark .pd-notes-picker__trigger:hover {
+  border-color: rgba(236, 72, 153, 0.5);
+  background: #243042;
+}
+
+.pd-notes-schedule-modal.participant-home--dark .pd-notes-picker__trigger:focus-visible,
+.pd-notes-schedule-modal.participant-home--dark .pd-notes-picker.is-open .pd-notes-picker__trigger {
+  border-color: rgba(236, 72, 153, 0.55);
+  box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.18);
+}
+
+.pd-notes-schedule-modal.participant-home--dark .pd-notes-picker__value {
+  color: #f8fafc;
+}
+
+.pd-notes-schedule-modal.participant-home--dark .pd-notes-picker__value.is-placeholder {
+  color: #94a3b8;
+}
+
+.pd-notes-schedule-modal.participant-home--dark .pd-notes-picker__icon {
+  color: #f472b6;
+}
+
+/* Selected reminder preview row */
+.pd-notes-schedule-modal.participant-home--dark .pd-notes-schedule-modal__summary {
+  background: rgba(236, 72, 153, 0.16);
+  color: #fbcfe8;
+}
+
+/* Done button — pink capsule */
+.pd-notes-schedule-modal.participant-home--dark .pd-notes-schedule-modal__done,
+.pd-notes-schedule-modal.participant-home--dark .reminder-time-picker__done {
+  border-color: transparent;
+  background: linear-gradient(135deg, #ec4899, #db2777);
+  color: #fff;
+  box-shadow: 0 10px 22px rgba(219, 39, 119, 0.3);
+}
+
+.pd-notes-schedule-modal.participant-home--dark .pd-notes-schedule-modal__done:hover,
+.pd-notes-schedule-modal.participant-home--dark .reminder-time-picker__done:hover {
+  background: linear-gradient(135deg, #db2777, #be185d);
+  box-shadow: 0 12px 26px rgba(219, 39, 119, 0.38);
+}
+
+/* ---- Inline calendar panel (opens below the date box, in modal flow) ---- */
+.pd-notes-schedule-modal.participant-home--dark .pd-notes-calendar__panel,
+.pd-notes-schedule-modal.participant-home--dark .pd-notes-time__panel {
+  border-color: rgba(236, 72, 153, 0.22);
+  background: #1f2937;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.5);
+}
+
+.pd-notes-schedule-modal.participant-home--dark .pd-notes-calendar__nav-btn {
+  border-color: rgba(236, 72, 153, 0.25);
+  background: #111827;
+  color: #f472b6;
+}
+
+.pd-notes-schedule-modal.participant-home--dark .pd-notes-calendar__nav-btn:hover {
+  border-color: rgba(236, 72, 153, 0.45);
+  background: #243042;
+}
+
+.pd-notes-schedule-modal.participant-home--dark .pd-notes-calendar__month {
+  color: #f8fafc;
+}
+
+.pd-notes-schedule-modal.participant-home--dark .pd-notes-calendar__weekdays span {
+  color: #94a3b8;
+}
+
+.pd-notes-schedule-modal.participant-home--dark .pd-notes-calendar__day:not(.is-selected) {
+  color: #e2e8f0;
+}
+
+.pd-notes-schedule-modal.participant-home--dark .pd-notes-calendar__day:not(.is-selected):hover {
+  background: rgba(236, 72, 153, 0.14);
+}
+
+.pd-notes-schedule-modal.participant-home--dark .pd-notes-calendar__day.is-outside {
+  color: rgba(226, 232, 240, 0.32);
+}
+
+.pd-notes-schedule-modal.participant-home--dark .pd-notes-calendar__day.is-today:not(.is-selected) {
+  box-shadow: inset 0 0 0 1px rgba(236, 72, 153, 0.45);
+  color: #f472b6;
+}
+
+/* ---- Inline time panel steppers/period buttons ---- */
+.pd-notes-schedule-modal.participant-home--dark .pd-notes-time__column-label {
+  color: #94a3b8;
+}
+
+.pd-notes-schedule-modal.participant-home--dark .pd-notes-time__step-btn,
+.pd-notes-schedule-modal.participant-home--dark .pd-notes-time__period-btn:not(.is-selected) {
+  border-color: rgba(236, 72, 153, 0.25);
+  background: #111827;
+  color: #f8fafc;
+}
+
+.pd-notes-schedule-modal.participant-home--dark .pd-notes-time__step-btn:hover,
+.pd-notes-schedule-modal.participant-home--dark .pd-notes-time__period-btn:not(.is-selected):hover {
+  border-color: rgba(236, 72, 153, 0.45);
+  background: #243042;
+  color: #fbcfe8;
+}
+
+.pd-notes-schedule-modal.participant-home--dark .pd-notes-time__step-value,
+.pd-notes-schedule-modal.participant-home--dark input.pd-notes-time__step-value {
+  border-color: rgba(236, 72, 153, 0.2);
+  background: #1f2937;
+  color: #f8fafc;
+}
