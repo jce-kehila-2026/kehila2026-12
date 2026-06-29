@@ -8,7 +8,7 @@
 // Firestore rules already grant admins read/update/delete on `joinRequests`,
 // so no rules changes are needed for this read path.
 import { deleteApp, initializeApp } from 'firebase/app';
-import { createUserWithEmailAndPassword, inMemoryPersistence, initializeAuth, signOut } from 'firebase/auth';
+import { createUserWithEmailAndPassword, inMemoryPersistence, initializeAuth, sendPasswordResetEmail, signOut } from 'firebase/auth';
 import {
   collection,
   doc,
@@ -19,6 +19,7 @@ import {
   serverTimestamp,
   setDoc,
   updateDoc,
+  where,
 } from 'firebase/firestore';
 import { auth, db, firebaseConfig } from '../../../firebase';
 import { logAuditEvent } from './auditService';
@@ -121,12 +122,60 @@ async function provisionMemberAccount(email, password, profile) {
 }
 
 /**
+ * Revive a previously-deleted (tombstoned) account that owns this email.
+ *
+ * On the Spark plan a deleted member's Firebase Auth record can't be removed, so
+ * their users/{uid} doc is left as a `status:'deleted'` tombstone (see
+ * userAccountService.deleteMemberAccount). When that same email re-applies, we
+ * can't create a new Auth account (`auth/email-already-in-use`), so instead we
+ * reuse the existing uid: rewrite a fresh, active profile and send a password-
+ * reset email so the applicant can set a new password.
+ *
+ * @returns {Promise<{ uid: string } | null>} null when there's no tombstone to revive
+ *          (e.g. the email belongs to a still-active account — caller should then
+ *          surface EMAIL_IN_USE).
+ */
+async function reviveDeletedAccount(email, profile) {
+  const emailLower = String(email || '').trim().toLowerCase();
+  if (!emailLower) return null;
+
+  // Single-field equality query (auto-indexed, no composite index needed);
+  // filter to the deleted tombstone on the client.
+  const snap = await getDocs(query(
+    collection(db, 'users'),
+    where('emailLower', '==', emailLower),
+    limit(5),
+  ));
+  const tombstone = snap.docs.find((docSnap) => String(docSnap.data()?.status || '').toLowerCase() === 'deleted');
+  if (!tombstone) return null;
+
+  const uid = tombstone.id;
+  // Rebuild a fresh, active profile on the reused uid. They set a new password
+  // via the reset email below — we can't set one for an existing Auth account
+  // from the client on the Spark plan.
+  await setDoc(doc(db, 'users', uid), {
+    ...profile,
+    status: 'active',
+    isActive: true,
+    mustChangePassword: false,
+    revivedAt: serverTimestamp(),
+  });
+
+  await sendPasswordResetEmail(auth, email).catch((err) => {
+    console.warn('Revival password-reset email failed:', err);
+  });
+
+  return { uid };
+}
+
+/**
  * Approve a membership application: create the member's login account with a
  * temporary password, mark the request approved, and audit it.
  *
- * @returns {Promise<{ uid: string, email: string, tempPassword: string }>}
- *          The temp password is returned (never stored) so the UI can show it
- *          to the admin; Phase 3 emails it automatically.
+ * @returns {Promise<{ uid: string, email: string, tempPassword?: string, revived: boolean }>}
+ *          For a new account the temp password is returned (never stored) so the
+ *          UI can show/email it. For a revived (previously-deleted) account
+ *          `revived` is true and no temp password exists — a reset email is sent.
  */
 export async function approveJoinRequest(request) {
   const email = String(request?.email || '').trim();
@@ -170,6 +219,26 @@ export async function approveJoinRequest(request) {
     uid = await provisionMemberAccount(email, tempPassword, profile);
   } catch (error) {
     if (error?.code === 'auth/email-already-in-use') {
+      // The email may belong to a previously-deleted account. If so, revive it
+      // (reuse the uid + send a reset email) so the applicant effectively gets a
+      // fresh account; otherwise it's a genuine clash → surface EMAIL_IN_USE.
+      const revived = await reviveDeletedAccount(email, profile);
+      if (revived) {
+        await updateDoc(doc(db, JOIN_REQUESTS_COLLECTION, request.id), {
+          status: JOIN_REQUEST_STATUS.APPROVED,
+          decidedAt: serverTimestamp(),
+          decidedBy: auth.currentUser?.email || auth.currentUser?.uid || '',
+          linkedUserUid: revived.uid,
+        });
+
+        await logAuditEvent({
+          actionType: 'JOIN_REQUEST_APPROVED',
+          targetId: request.id,
+          details: { participant: request.fullName || email, email, uid: revived.uid, revived: true },
+        });
+
+        return { uid: revived.uid, email, revived: true };
+      }
       throw new JoinRequestError('EMAIL_IN_USE', 'An account with this email already exists. No new account was created.');
     }
     if (error?.code === 'auth/invalid-email') {
@@ -191,7 +260,7 @@ export async function approveJoinRequest(request) {
     details: { participant: request.fullName || email, email, uid },
   });
 
-  return { uid, email, tempPassword };
+  return { uid, email, tempPassword, revived: false };
 }
 
 /**

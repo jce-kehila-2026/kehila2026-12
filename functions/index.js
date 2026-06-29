@@ -1,6 +1,5 @@
 import admin from 'firebase-admin';
 import { onSchedule } from 'firebase-functions/v2/scheduler';
-import { onCall, HttpsError } from 'firebase-functions/v2/https';
 import { logger } from 'firebase-functions';
 
 admin.initializeApp();
@@ -185,53 +184,3 @@ export const processCommunityStreakRollover = onSchedule({
   schedule: '5 0 * * *',
   timeZone: STREAK_TIME_ZONE,
 }, processStreakRolloverRun);
-
-/**
- * Permanently delete a member account: removes the Firestore profile (and all of
- * its subcollections) AND the Firebase Auth user, so the email is freed and the
- * person can re-apply from scratch via the public join form.
- *
- * The client SDK cannot delete an arbitrary Auth user, so this must run with the
- * Admin SDK. Only admins (role === 'admin' in their own users doc) may call it,
- * and an admin cannot delete their own account (which would lock them out).
- */
-export const deleteUserAccount = onCall(async (request) => {
-  const callerUid = request.auth?.uid;
-  if (!callerUid) {
-    throw new HttpsError('unauthenticated', 'You must be signed in to perform this action.');
-  }
-
-  const targetUid = String(request.data?.uid || '').trim();
-  if (!targetUid) {
-    throw new HttpsError('invalid-argument', 'A target user id (uid) is required.');
-  }
-  if (targetUid === callerUid) {
-    throw new HttpsError('failed-precondition', 'You cannot delete your own account.');
-  }
-
-  // Admin gate: re-check the caller's role server-side; never trust the client.
-  const callerSnap = await db.collection(USERS_COL).doc(callerUid).get();
-  if (!callerSnap.exists || callerSnap.get('role') !== 'admin') {
-    throw new HttpsError('permission-denied', 'Only admins can delete accounts.');
-  }
-
-  // Delete the Auth account first: if this fails we abort before touching
-  // Firestore, leaving the account in a consistent (still-usable) state rather
-  // than a half-deleted one. A missing Auth user is fine — proceed to clean up
-  // any leftover profile doc.
-  try {
-    await admin.auth().deleteUser(targetUid);
-  } catch (err) {
-    if (err?.code !== 'auth/user-not-found') {
-      logger.error('Failed to delete auth account', { targetUid, code: err?.code, message: err?.message });
-      throw new HttpsError('internal', 'Failed to delete the authentication account.');
-    }
-  }
-
-  // Then remove the Firestore profile and every subcollection under it
-  // (registrations, bookings, appointments, calendar_notes, ...).
-  await db.recursiveDelete(db.collection(USERS_COL).doc(targetUid));
-
-  logger.info('Deleted user account', { targetUid, by: callerUid });
-  return { ok: true, uid: targetUid };
-});
