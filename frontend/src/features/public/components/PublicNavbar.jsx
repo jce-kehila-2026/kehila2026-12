@@ -1,6 +1,6 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
-import { useLocation } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import sheNaLogo from '../../../assets/she-na-logo.png';
 import { PUBLIC_DONATION_TARGET } from '../constants/publicDonationLink';
 import { useAdmin } from '../../admin/context/AdminContext';
@@ -391,9 +391,9 @@ export default function PublicNavbar({
             <a className="public-navbar__cta public-navbar__cta--primary" href="#join" onClick={handleJoinClick}>
               {t('navJoin')}
             </a>
-            <a className="public-navbar__cta public-navbar__cta--highlight" href={personalAreaHref} onClick={closeMenu}>
+            <Link className="public-navbar__cta public-navbar__cta--highlight" to={personalAreaHref} onClick={closeMenu}>
               {t('navPersonalArea')}
-            </a>
+            </Link>
             <div className="public-navbar__actions-end">
               <a className="public-navbar__cta public-navbar__cta--primary" href="#volunteer" onClick={handleVolunteerClick}>
                 {t('navVolunteer')}

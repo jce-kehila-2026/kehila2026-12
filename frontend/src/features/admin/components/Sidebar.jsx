@@ -6,6 +6,7 @@ import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import Tooltip from '@mui/material/Tooltip';
 import Avatar from '@mui/material/Avatar';
+import Box from '@mui/material/Box';
 import DashboardIcon from '@mui/icons-material/Dashboard';
 import EventIcon from '@mui/icons-material/Event';
 import PeopleIcon from '@mui/icons-material/People';
@@ -17,6 +18,7 @@ import DescriptionOutlinedIcon from '@mui/icons-material/DescriptionOutlined';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import BugReportOutlinedIcon from '@mui/icons-material/BugReportOutlined';
 import LogoutIcon from '@mui/icons-material/Logout';
+import AccessibilityNewIcon from '@mui/icons-material/AccessibilityNew';
 import { useAdmin } from '../context/AdminContext';
 import { useAdminLocale } from '../context/AdminLocaleContext';
 import SidebarCollapseButton from '../../../shared/components/SidebarCollapseButton';
@@ -200,6 +202,35 @@ export default function Sidebar({ drawerWidth = 260, collapsed = false, onToggle
           </ListItemIcon>
           <ListItemText primary={t('logout')} />
         </ListItemButton>
+      </Tooltip>
+
+      <Tooltip title={collapsed ? t('accessibilityStatement') : ''} placement="right" arrow disableHoverListener={!collapsed}>
+        <Box
+          component={NavLink}
+          to="/accessibility"
+          id="link-accessibility-statement"
+          className="admin-sidebar-a11y"
+          sx={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: 0.75,
+            mt: 0.5,
+            px: 1,
+            py: 0.75,
+            fontSize: '0.72rem',
+            fontWeight: 500,
+            color: 'text.secondary',
+            textDecoration: 'underline',
+            opacity: 0.7,
+            transition: 'opacity 160ms ease',
+            '&:hover': { opacity: 1, textDecoration: 'underline' },
+            '& svg': { fontSize: '0.95rem' },
+          }}
+        >
+          <AccessibilityNewIcon fontSize="small" />
+          {!collapsed && <span>{t('accessibilityStatement')}</span>}
+        </Box>
       </Tooltip>
     </Drawer>
   );
