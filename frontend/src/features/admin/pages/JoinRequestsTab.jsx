@@ -297,9 +297,14 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
       setApproveResult(result);
       onChanged?.();
 
-      // Send the approval email. Failure here must NOT undo the approval —
-      // the account already exists and the password is shown as a fallback.
-      if (!isApprovalEmailConfigured()) {
+      // Revived (previously-deleted) account: there's no temp password to share —
+      // approveJoinRequest already sent a Firebase password-reset email so they
+      // can set a new one. Nothing to send via EmailJS.
+      if (result.revived) {
+        setEmailStatus('reset-sent');
+      } else if (!isApprovalEmailConfigured()) {
+        // Send the approval email. Failure here must NOT undo the approval —
+        // the account already exists and the password is shown as a fallback.
         setEmailStatus('not-configured');
       } else {
         setEmailStatus('sending');
@@ -990,6 +995,23 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
         PaperProps={{ dir: direction, sx: { borderRadius: '24px', width: { xs: 'calc(100vw - 32px)', sm: '30rem' }, maxWidth: 480 } }}
       >
         {approveResult ? (
+          approveResult.revived ? (
+            <>
+              <DialogTitle sx={{ fontWeight: 950, color: '#15803D', display: 'flex', alignItems: 'center', gap: 1 }}>
+                <CheckCircleIcon /> {t('jrAccountRestored')}
+              </DialogTitle>
+              <DialogContent>
+                <Typography sx={{ color: '#4F4A70' }}>
+                  {t('jrRevivedNote').replace('{email}', approveResult.email)}
+                </Typography>
+              </DialogContent>
+              <DialogActions sx={{ px: 3, pb: 2.4 }}>
+                <Button onClick={resetAction} variant="contained" sx={{ borderRadius: 999, textTransform: 'none', fontWeight: 900, px: 3, background: 'linear-gradient(135deg, #7C3AED 0%, #DF327B 100%)' }}>
+                  {t('jrDone')}
+                </Button>
+              </DialogActions>
+            </>
+          ) : (
           <>
             <DialogTitle sx={{ fontWeight: 950, color: '#15803D', display: 'flex', alignItems: 'center', gap: 1 }}>
               <CheckCircleIcon /> {t('jrAccountCreated')}
@@ -1034,6 +1056,7 @@ export default function JoinRequestsTab({ requests = [], loading = false, onChan
               </Button>
             </DialogActions>
           </>
+          )
         ) : (
           <>
             <DialogTitle sx={{ fontWeight: 950, color: '#100B2F' }}>{t('jrApproveTitle')}</DialogTitle>

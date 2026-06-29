@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { collection, doc, documentId, getDoc, getDocs, limit, orderBy, query, serverTimestamp, updateDoc } from 'firebase/firestore';
-import { httpsCallable } from 'firebase/functions';
 import { Download } from 'lucide-react';
-import { db, functions } from '../../../firebase';
+import { db } from '../../../firebase';
 import { useAdmin } from '../context/AdminContext';
 import { logAuditEvent } from '../services/auditService';
+import { deleteMemberAccount, isDeletedUser } from '../services/userAccountService';
 import { listJoinRequests } from '../services/joinRequestAdminService';
 import { useAdminLocale } from '../context/AdminLocaleContext';
 import JoinRequestsTab from './JoinRequestsTab';
@@ -31,10 +31,6 @@ import VisibilityOutlinedIcon from '@mui/icons-material/VisibilityOutlined';
 import Avatar from '@mui/material/Avatar';
 
 const PAGE_SIZE = 10;
-
-// Callable that permanently deletes an Auth account + Firestore profile. Must run
-// server-side (Admin SDK) — the client SDK can't delete an arbitrary Auth user.
-const deleteUserAccountFn = httpsCallable(functions, 'deleteUserAccount');
 
 const ROLES = ['participant', 'admin'];
 
@@ -210,7 +206,9 @@ export default function UserManagementPage() {
     async function fetchUsers() {
       try {
         const snap = await getDocs(query(collection(db, 'users'), orderBy(documentId()), limit(100)));
-        const nextUsers = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+        // Tombstoned (deleted) accounts are kept in Firestore so re-application can
+        // revive them, but they must never appear in the admin list.
+        const nextUsers = snap.docs.map((d) => ({ id: d.id, ...d.data() })).filter((u) => !isDeletedUser(u));
         setUsers(nextUsers);
         setSelectedUser((current) => current || nextUsers[0] || null);
       } catch (err) {
@@ -337,7 +335,10 @@ export default function UserManagementPage() {
     setDeleting(true);
     setDeleteError('');
     try {
-      await deleteUserAccountFn({ uid: deleteTarget.id });
+      await deleteMemberAccount(deleteTarget.id, {
+        email: deleteTarget.email || '',
+        deletedBy: currentUser?.uid || null,
+      });
       // Audit before we drop the row so getFullName still has the data.
       await logAuditEvent({
         actionType: 'USER_DELETED',
@@ -349,7 +350,7 @@ export default function UserManagementPage() {
       setDetailsOpen((open) => (selectedUser?.id === deleteTarget.id ? false : open));
       setDeleteTarget(null);
     } catch (err) {
-      console.error('User deletion failed:', err);
+      console.error('User deletion failed:', err?.code, err?.message, err);
       setDeleteError(t('umDeleteFailed'));
     } finally {
       setDeleting(false);
