@@ -732,9 +732,9 @@ function getAppointmentDayPills(event, intlLocale = 'en') {
     .map(([, label]) => label);
 }
 
-function getAppointmentDateOptions(event, providerId, intlLocale = 'en') {
+function getAppointmentDateOptions(event, intlLocale = 'en') {
   return event.sessions
-    .filter((session) => session.options.some((option) => option.providerId === providerId))
+    .slice()
     .sort(sortSessionsByDate)
     .map((session) => ({
       dateKey: session.dateKey,
@@ -914,8 +914,8 @@ function AppointmentBookingDrawer({
 
   const selectedProvider = providers.find((provider) => provider.id === selectedProviderId) || providers[0] || null;
   const dateOptions = useMemo(
-    () => (selectedProvider ? getAppointmentDateOptions(event, selectedProvider.id, intlLocale) : []),
-    [event, selectedProvider, intlLocale],
+    () => getAppointmentDateOptions(event, intlLocale),
+    [event, intlLocale],
   );
   const selectedDate = dateOptions[dateIndex] || dateOptions[0] || null;
   const timeOptions = useMemo(
@@ -929,11 +929,6 @@ function AppointmentBookingDrawer({
     ),
     [activeAppointmentBookings, event, registeredSessionIds, selectedDate?.dateKey, selectedProvider?.id, t],
   );
-
-  useEffect(() => {
-    setDateIndex(0);
-    setSelectedOptionId('');
-  }, [selectedProviderId]);
 
   useEffect(() => {
     if (!dateOptions.length) {
@@ -960,6 +955,7 @@ function AppointmentBookingDrawer({
   }, [registeredSessionIds, selectedOptionId, timeOptions]);
 
   const visibleConflict = timeOptions.find((timeOption) => timeOption.bookingConflict)?.bookingConflict || null;
+  const providerHasAvailabilityOnSelectedDate = timeOptions.some((timeOption) => Boolean(timeOption.option));
 
   useEffect(() => {
     if (!visibleConflict) {
@@ -1084,7 +1080,9 @@ function AppointmentBookingDrawer({
 
           <section className="appointment-booking-step">
             <h3><span>3</span> {t('evStep3Times')}</h3>
-            {timeOptions.length ? (
+            {selectedDate && selectedProvider && !providerHasAvailabilityOnSelectedDate ? (
+              <p className="appointment-drawer__empty">{t('evProviderUnavailableOnDate')}</p>
+            ) : timeOptions.length ? (
               <div className="appointment-time-grid">
                 {timeOptions.map((timeOption) => {
                   const option = timeOption.option;
