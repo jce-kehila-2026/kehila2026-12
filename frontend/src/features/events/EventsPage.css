@@ -524,18 +524,30 @@
 
 .events-status--toast {
   position: fixed;
-  top: 1.5rem;
-  left: 50%;
+  right: 1rem;
+  bottom: 1rem;
+  left: auto;
   z-index: 1600;
-  width: min(90vw, 42rem);
+  width: max-content;
+  max-width: calc(100vw - 2rem);
   margin: 0;
   border: 1px solid rgba(198, 40, 40, 0.32);
-  border-radius: 12px;
+  border-radius: 10px;
   background: #fff7f7;
   color: #b3261e;
-  box-shadow: 0 10px 30px rgba(96, 24, 24, 0.16);
-  transform: translateX(-50%);
+  box-shadow: 0 8px 24px rgba(96, 24, 24, 0.14);
+  font-size: 0.82rem;
+  line-height: 1.4;
+  white-space: nowrap;
+  pointer-events: none;
   animation: appointment-validation-toast 5s ease both;
+}
+
+@media (max-width: 42rem) {
+  .events-status--toast {
+    width: min(calc(100vw - 2rem), 24rem);
+    white-space: normal;
+  }
 }
 
 .events-categories {
@@ -2655,34 +2667,35 @@
 
 .appointment-drawer__validation-toast {
   position: fixed;
-  top: 1.5rem;
-  left: 50%;
+  right: 1rem;
+  bottom: 1rem;
+  left: auto;
   z-index: 1600;
-  width: min(90vw, 42rem);
+  width: min(calc(100vw - 2rem), 24rem);
   margin: 0;
   border: 1px solid rgba(198, 40, 40, 0.32);
-  border-radius: 12px;
+  border-radius: 10px;
   background: #fff7f7;
-  box-shadow: 0 10px 30px rgba(96, 24, 24, 0.16);
-  font-size: 0.95rem;
+  box-shadow: 0 8px 24px rgba(96, 24, 24, 0.14);
+  font-size: 0.82rem;
   font-weight: 700;
-  line-height: 1.5;
-  transform: translateX(-50%);
+  line-height: 1.4;
+  pointer-events: none;
   animation: appointment-validation-toast 5s ease both;
 }
 
 @keyframes appointment-validation-toast {
   0% {
     opacity: 0;
-    transform: translate(-50%, -0.75rem);
+    transform: translateY(0.75rem);
   }
   10%, 82% {
     opacity: 1;
-    transform: translate(-50%, 0);
+    transform: translateY(0);
   }
   100% {
     opacity: 0;
-    transform: translate(-50%, -0.5rem);
+    transform: translateY(0.5rem);
   }
 }
 
