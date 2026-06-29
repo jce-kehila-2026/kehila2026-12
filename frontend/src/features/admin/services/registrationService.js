@@ -20,6 +20,11 @@ import {
 } from 'firebase/firestore';
 import { db } from '../../../firebase';
 import { logAuditEvent } from './auditService';
+import {
+  APPOINTMENT_BOOKING_CONFLICT,
+  buildAppointmentConstraintLocks,
+  findAppointmentBookingConflict,
+} from '../../appointments/appointmentBookingRules';
 
 // Deterministic key for email-only walk-in registrations.
 function emailKey(email) {
@@ -466,6 +471,14 @@ export async function getSlotCounts(eventIds) {
   return counts;
 }
 
+async function getActiveAppointmentBookingsForUser(uid) {
+  if (!uid) return [];
+  const snap = await getDocs(query(collection(db, 'users', uid, 'bookings'), limit(200)));
+  return snap.docs
+    .map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }))
+    .filter((booking) => !isInactiveRegistration(booking) && isAppointmentRegistration(booking));
+}
+
 /**
  * Register a participant for an event.
  * - If `data.uid` is provided OR the email matches an existing user, writes to
@@ -582,6 +595,20 @@ export async function addRegistration(data) {
     recurringSchedule: recurringSchedule || '',
   };
 
+  const isParticipantAppointment = Boolean(uid && isAppointmentRegistration(bookingDoc));
+  const appointmentConstraintLocks = isParticipantAppointment
+    ? buildAppointmentConstraintLocks(bookingDoc)
+    : [];
+
+  if (isParticipantAppointment) {
+    const activeAppointmentBookings = await getActiveAppointmentBookingsForUser(uid);
+    const conflict = findAppointmentBookingConflict(bookingDoc, activeAppointmentBookings);
+    if (conflict) {
+      throw new Error(conflict.code);
+    }
+    bookingDoc.appointmentConstraintIds = appointmentConstraintLocks.map((lock) => lock.id);
+  }
+
   const eventRosterDoc = {
     ...bookingDoc,
     registrationSource: 'event',
@@ -596,13 +623,17 @@ export async function addRegistration(data) {
   const slotKey = slotId || realEventId;
   const counterRef = doc(db, 'events', realEventId, 'slotCounters', slotKey);
   const userBookingRef = uid ? doc(db, 'users', uid, 'bookings', bookingId) : null;
+  const appointmentConstraintRefs = appointmentConstraintLocks.map((lock) => (
+    doc(db, 'users', uid, 'appointmentConstraints', lock.id)
+  ));
   const capacityLimit = Number(capacity) || 0;
 
   await runTransaction(db, async (tx) => {
     // All reads must precede writes inside a transaction.
-    const [counterSnap, bookingSnap] = await Promise.all([
+    const [counterSnap, bookingSnap, ...constraintSnaps] = await Promise.all([
       tx.get(counterRef),
       tx.get(bookingRef),
+      ...appointmentConstraintRefs.map((constraintRef) => tx.get(constraintRef)),
     ]);
     const currentCount = counterSnap.exists() ? (Number(counterSnap.data().count) || 0) : 0;
     const existingBooking = bookingSnap.exists() ? bookingSnap.data() : null;
@@ -615,6 +646,13 @@ export async function addRegistration(data) {
     if (capacityLimit > 0 && takesNewSeat && currentCount >= capacityLimit) {
       throw new Error('SLOT_FULL');
     }
+
+    constraintSnaps.forEach((constraintSnap, index) => {
+      if (!constraintSnap.exists()) return;
+      const existingBookingId = constraintSnap.data()?.bookingId;
+      if (!existingBookingId || existingBookingId === bookingId) return;
+      throw new Error(APPOINTMENT_BOOKING_CONFLICT.DAY);
+    });
 
     tx.set(bookingRef, bookingDoc, { merge: true });
     tx.set(eventRosterRef, eventRosterDoc, { merge: true });
@@ -629,6 +667,22 @@ export async function addRegistration(data) {
         updatedAt: serverTimestamp(),
       }, { merge: true });
     }
+    appointmentConstraintRefs.forEach((constraintRef, index) => {
+      const lock = appointmentConstraintLocks[index];
+      tx.set(constraintRef, {
+        userId: uid,
+        bookingId,
+        eventId: realEventId,
+        slotId: slotKey,
+        dateKey: lock.dateKey,
+        providerId: providerId || '',
+        providerKey: lock.providerKey || '',
+        kind: lock.kind,
+        startMinute: lock.startMinute ?? null,
+        endMinute: lock.endMinute ?? null,
+        createdAt: serverTimestamp(),
+      }, { merge: true });
+    });
   });
 
   try {
@@ -658,11 +712,13 @@ export async function removeRegistration(regId, participantName, eventId) {
   const registration = rosterSnap.exists() ? rosterSnap.data() : {};
   const bookingId = registration.bookingId || regId;
   let uid = registration.userId || null;
-  if (!uid && bookingId) {
+  let bookingData = {};
+  if (bookingId) {
     try {
       const bookingSnap = await getDoc(doc(db, 'bookings', bookingId));
       if (bookingSnap.exists()) {
-        uid = bookingSnap.data()?.userId || null;
+        bookingData = bookingSnap.data() || {};
+        uid = uid || bookingData.userId || null;
       }
     } catch (_) {}
   }
@@ -682,6 +738,10 @@ export async function removeRegistration(regId, participantName, eventId) {
   const slotKey = registration.slotId || sessionEventId;
   const counterRef = doc(db, 'events', sessionEventId, 'slotCounters', slotKey);
   const bookingDocRef = bookingId ? doc(db, 'bookings', bookingId) : null;
+  const appointmentConstraintIds = registration.appointmentConstraintIds || bookingData.appointmentConstraintIds || [];
+  const appointmentConstraintRefs = uid && Array.isArray(appointmentConstraintIds)
+    ? appointmentConstraintIds.map((constraintId) => doc(db, 'users', uid, 'appointmentConstraints', constraintId))
+    : [];
 
   await runTransaction(db, async (tx) => {
     const counterSnap = await tx.get(counterRef);
@@ -714,6 +774,8 @@ export async function removeRegistration(regId, participantName, eventId) {
         tx.delete(doc(db, 'users', uid, 'registrations', legacyRegistrationId));
       });
     }
+
+    appointmentConstraintRefs.forEach((constraintRef) => tx.delete(constraintRef));
 
     if (wasActive && currentCount > 0) {
       tx.set(counterRef, {

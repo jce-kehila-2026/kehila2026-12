@@ -30,10 +30,15 @@ import { localizeField } from '../../i18n/localizeField';
 import { useParticipantLocale } from '../participant/context/ParticipantLocaleContext';
 import {
   addRegistration,
+  getActiveRegisteredAppointmentBookings,
   getSlotCounts,
-  getUserRegisteredEventIds,
   removeRegistration,
 } from '../admin/services/registrationService';
+import {
+  APPOINTMENT_BOOKING_CONFLICT,
+  findAppointmentBookingConflict,
+  hasBookableAppointmentOption,
+} from '../appointments/appointmentBookingRules';
 import { createWorkshopSuggestion } from './workshopSuggestionService';
 import './EventsPage.css';
 
@@ -746,7 +751,7 @@ function getAppointmentDateOptions(event, providerId, intlLocale = 'en') {
     }));
 }
 
-function getAppointmentTimeOptions(event, dateKey, providerId, registeredSessionIds, t = null) {
+function getAppointmentTimeOptions(event, dateKey, providerId, registeredSessionIds, activeAppointmentBookings, t = null) {
   const session = event.sessions.find((item) => item.dateKey === dateKey);
   if (!session) return [];
 
@@ -768,6 +773,9 @@ function getAppointmentTimeOptions(event, dateKey, providerId, registeredSession
       const isProviderOption = option.providerId === providerId;
       const isRegistered = registeredSessionIds.has(option.id);
       const isFull = option.capacity > 0 && option.participants >= option.capacity && !isRegistered;
+      const bookingConflict = isProviderOption && !isRegistered
+        ? findAppointmentBookingConflict(option, activeAppointmentBookings)
+        : null;
 
       if (!existing) {
         orderedTimes.set(key, {
@@ -776,6 +784,7 @@ function getAppointmentTimeOptions(event, dateKey, providerId, registeredSession
           option: isProviderOption ? option : null,
           unavailable: !isProviderOption,
           isFull: isProviderOption ? isFull : false,
+          bookingConflict: isProviderOption ? bookingConflict : null,
           sortDate: option.startDate,
         });
         return;
@@ -789,6 +798,7 @@ function getAppointmentTimeOptions(event, dateKey, providerId, registeredSession
           option,
           unavailable: false,
           isFull,
+          bookingConflict,
           sortDate: option.startDate || existing.sortDate,
         });
       }
@@ -842,6 +852,7 @@ function AppointmentServicesPanel({
   events,
   selectedEvent,
   registeredSessionIds,
+  activeAppointmentBookings,
   onOpenBooking,
   onRegisterSession,
   onCancelSession,
@@ -868,6 +879,7 @@ function AppointmentServicesPanel({
           <AppointmentBookingDrawer
             event={selectedEvent}
             registeredSessionIds={registeredSessionIds}
+            activeAppointmentBookings={activeAppointmentBookings}
             onRegisterSession={onRegisterSession}
             onCancelSession={onCancelSession}
             onClose={onCloseBooking}
@@ -881,6 +893,7 @@ function AppointmentServicesPanel({
 function AppointmentBookingDrawer({
   event,
   registeredSessionIds,
+  activeAppointmentBookings,
   onRegisterSession,
   onCancelSession,
   onClose,
@@ -893,6 +906,7 @@ function AppointmentBookingDrawer({
   const [selectedProviderId, setSelectedProviderId] = useState('');
   const [dateIndex, setDateIndex] = useState(0);
   const [selectedOptionId, setSelectedOptionId] = useState('');
+  const [isConflictNoticeVisible, setIsConflictNoticeVisible] = useState(false);
 
   useEffect(() => {
     setSelectedProviderId(providers[0]?.id || '');
@@ -907,8 +921,15 @@ function AppointmentBookingDrawer({
   );
   const selectedDate = dateOptions[dateIndex] || dateOptions[0] || null;
   const timeOptions = useMemo(
-    () => getAppointmentTimeOptions(event, selectedDate?.dateKey, selectedProvider?.id, registeredSessionIds, t),
-    [event, registeredSessionIds, selectedDate?.dateKey, selectedProvider?.id, t],
+    () => getAppointmentTimeOptions(
+      event,
+      selectedDate?.dateKey,
+      selectedProvider?.id,
+      registeredSessionIds,
+      activeAppointmentBookings,
+      t,
+    ),
+    [activeAppointmentBookings, event, registeredSessionIds, selectedDate?.dateKey, selectedProvider?.id, t],
   );
 
   useEffect(() => {
@@ -927,17 +948,31 @@ function AppointmentBookingDrawer({
 
   useEffect(() => {
     const currentOption = timeOptions.find((timeOption) => timeOption.option?.id === selectedOptionId);
-    if (currentOption && !currentOption.unavailable && !currentOption.isFull) return;
+    if (currentOption && !currentOption.unavailable && !currentOption.isFull && !currentOption.bookingConflict) return;
 
     const firstBookableOption = timeOptions.find((timeOption) => (
       timeOption.option
       && !registeredSessionIds.has(timeOption.option.id)
       && !timeOption.unavailable
       && !timeOption.isFull
+      && !timeOption.bookingConflict
     ));
     const firstRegisteredOption = timeOptions.find((timeOption) => timeOption.option && registeredSessionIds.has(timeOption.option.id));
     setSelectedOptionId(firstBookableOption?.option?.id || firstRegisteredOption?.option?.id || '');
   }, [registeredSessionIds, selectedOptionId, timeOptions]);
+
+  const visibleConflict = timeOptions.find((timeOption) => timeOption.bookingConflict)?.bookingConflict || null;
+
+  useEffect(() => {
+    if (!visibleConflict) {
+      setIsConflictNoticeVisible(false);
+      return undefined;
+    }
+
+    setIsConflictNoticeVisible(true);
+    const timeoutId = window.setTimeout(() => setIsConflictNoticeVisible(false), 5000);
+    return () => window.clearTimeout(timeoutId);
+  }, [selectedDate?.dateKey, selectedProvider?.id, visibleConflict?.code]);
 
   if (!event) return null;
 
@@ -945,8 +980,18 @@ function AppointmentBookingDrawer({
   const selectedTime = timeOptions.find((timeOption) => timeOption.option?.id === selectedOptionId) || null;
   const selectedOption = selectedTime?.option || null;
   const isRegistered = selectedOption ? registeredSessionIds.has(selectedOption.id) : false;
+  const hasAnyBookableOption = hasBookableAppointmentOption(
+    event.sessionOptions,
+    activeAppointmentBookings,
+    registeredSessionIds,
+  );
+  const showRegisteredDetails = isRegistered && !hasAnyBookableOption;
   const canCancelBooking = isRegistered && canCancelSessionBooking(selectedOption);
-  const confirmDisabled = !selectedOption || selectedOption.isRegistering || selectedTime?.isFull || (isRegistered && !canCancelBooking);
+  const confirmDisabled = !selectedOption
+    || selectedOption.isRegistering
+    || selectedTime?.isFull
+    || selectedTime?.bookingConflict
+    || (isRegistered && !canCancelBooking);
 
   async function handleConfirmBooking() {
     if (!selectedOption || confirmDisabled) return;
@@ -968,7 +1013,7 @@ function AppointmentBookingDrawer({
         aria-label="Close appointment booking"
       />
       <aside
-        className={`appointment-drawer${isRegistered ? ' is-registered' : ''}`}
+        className={`appointment-drawer${showRegisteredDetails ? ' is-registered' : ''}`}
         role="dialog"
         aria-modal="true"
         aria-labelledby="appointment-drawer-title"
@@ -980,11 +1025,11 @@ function AppointmentBookingDrawer({
 
         <header className="appointment-drawer__header">
           <h2 id="appointment-drawer-title">{serviceLabel}</h2>
-          <p>{isRegistered ? t('evYouAreRegistered') : t('evBookASession')}</p>
+          <p>{showRegisteredDetails ? t('evYouAreRegistered') : t('evBookASession')}</p>
         </header>
 
         <div className="appointment-drawer__body">
-          {isRegistered && selectedOption ? (
+          {showRegisteredDetails && selectedOption ? (
             <div className="appointment-drawer__registered-details">
               <div className="workshop-details-panel__detail-item">
                 <EventAvailableIcon fontSize="small" />
@@ -1092,7 +1137,11 @@ function AppointmentBookingDrawer({
                 {timeOptions.map((timeOption) => {
                   const option = timeOption.option;
                   const isSelected = option?.id === selectedOptionId;
-                  const disabled = !option || timeOption.unavailable || timeOption.isFull || option.isRegistering;
+                  const disabled = !option
+                    || timeOption.unavailable
+                    || timeOption.isFull
+                    || Boolean(timeOption.bookingConflict)
+                    || option.isRegistering;
 
                   return (
                     <button
@@ -1110,6 +1159,15 @@ function AppointmentBookingDrawer({
               </div>
             ) : (
               <p className="appointment-drawer__empty">{t('evNoTimesInstructor')}</p>
+            )}
+            {visibleConflict && isConflictNoticeVisible && (
+              <p
+                className="appointment-drawer__empty appointment-drawer__validation-error appointment-drawer__validation-toast"
+                role="alert"
+                aria-live="assertive"
+              >
+                {t('evAppointmentDayConflict')}
+              </p>
             )}
           </section>
           </>
@@ -1762,6 +1820,7 @@ export default function EventsPage({ embedInDashboard = false, locale = 'he' }) 
   const [events, setEvents] = useState([]);
   const [counts, setCounts] = useState({});
   const [registeredMap, setRegisteredMap] = useState({});
+  const [activeAppointmentBookings, setActiveAppointmentBookings] = useState([]);
   const [loadingEvents, setLoadingEvents] = useState(true);
   const [eventsError, setEventsError] = useState('');
   const [registrationWarning, setRegistrationWarning] = useState('');
@@ -1791,26 +1850,31 @@ export default function EventsPage({ embedInDashboard = false, locale = 'he' }) 
     if (!eventList.length) {
       setCounts({});
       setRegisteredMap({});
+      setActiveAppointmentBookings([]);
       return;
     }
 
     try {
       const eventIds = eventList.map((event) => event.id).filter(Boolean);
-      const [slotCounts, userRegistrations] = await Promise.all([
+      const [slotCounts, appointmentRegistrationData] = await Promise.all([
         getSlotCounts(eventIds),
-        currentUser?.uid ? getUserRegisteredEventIds(currentUser.uid) : Promise.resolve({}),
+        currentUser?.uid
+          ? getActiveRegisteredAppointmentBookings(currentUser.uid)
+          : Promise.resolve({ rows: [], registeredMap: {} }),
       ]);
 
       setCounts(slotCounts);
-      setRegisteredMap(userRegistrations);
+      setRegisteredMap(appointmentRegistrationData.registeredMap);
+      setActiveAppointmentBookings(appointmentRegistrationData.rows);
       setRegistrationWarning('');
     } catch (error) {
       console.error('Failed to load event registration data:', error);
       setCounts({});
       setRegisteredMap({});
+      setActiveAppointmentBookings([]);
       setRegistrationWarning(t('evRegDataWarning'));
     }
-  }, [currentUser?.uid]);
+  }, [currentUser?.uid, t]);
 
   useEffect(() => {
     let cancelled = false;
@@ -1831,6 +1895,7 @@ export default function EventsPage({ embedInDashboard = false, locale = 'he' }) 
         setEvents([]);
         setCounts({});
         setRegisteredMap({});
+        setActiveAppointmentBookings([]);
         setRegistrationWarning('');
         setEventsError(t('evLoadError'));
         setLoadingEvents(false);
@@ -1855,6 +1920,12 @@ export default function EventsPage({ embedInDashboard = false, locale = 'he' }) 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [bookingEventId]);
+
+  useEffect(() => {
+    if (!registrationWarning) return undefined;
+    const timeoutId = window.setTimeout(() => setRegistrationWarning(''), 5000);
+    return () => window.clearTimeout(timeoutId);
+  }, [registrationWarning]);
 
   const displayEvents = useMemo(
     () =>
@@ -2025,6 +2096,14 @@ export default function EventsPage({ embedInDashboard = false, locale = 'he' }) 
       return;
     }
 
+    if (event.eventType === 'appointment') {
+      const conflict = findAppointmentBookingConflict(session, activeAppointmentBookings);
+      if (conflict) {
+        setRegistrationWarning(t('evAppointmentDayConflict'));
+        return;
+      }
+    }
+
     setRegisteringId(session.id);
     setEventsError('');
     setRegistrationWarning('');
@@ -2058,6 +2137,24 @@ export default function EventsPage({ embedInDashboard = false, locale = 'he' }) 
         recurringSchedule: event.weeklySchedule,
       });
       setRegisteredMap((current) => ({ ...current, [session.id]: newRegistrationId }));
+      if (event.eventType === 'appointment') {
+        setActiveAppointmentBookings((current) => [
+          ...current,
+          {
+            ...session,
+            id: newRegistrationId,
+            bookingId: newRegistrationId,
+            slotId: session.id,
+            eventId: event.id,
+            eventType: 'appointment',
+            eventTitle: event.title,
+            dateKey: session.selectedDate,
+            startAt: session.startDate,
+            endAt: session.endDate,
+            status: 'confirmed',
+          },
+        ]);
+      }
       setCounts((current) => ({
         ...current,
         [event.id]: (current[event.id] ?? 0) + 1,
@@ -2068,7 +2165,9 @@ export default function EventsPage({ embedInDashboard = false, locale = 'he' }) 
       setRegistrationWarning(
         error?.message === 'SLOT_FULL'
           ? tr(t, 'evSlotFull', 'Sorry, this time slot just filled up.')
-          : t('evRegisterFailed'),
+          : error?.message === APPOINTMENT_BOOKING_CONFLICT.DAY
+            ? t('evAppointmentDayConflict')
+            : t('evRegisterFailed'),
       );
     } finally {
       setRegisteringId(null);
@@ -2098,6 +2197,11 @@ export default function EventsPage({ embedInDashboard = false, locale = 'he' }) 
         delete next[session.id];
         return next;
       });
+      setActiveAppointmentBookings((current) => current.filter((booking) => (
+        booking.bookingId !== registrationId
+        && booking.id !== registrationId
+        && booking.slotId !== session.id
+      )));
       setCounts((current) => ({
         ...current,
         [realEventId]: Math.max(0, (current[realEventId] ?? 1) - 1),
@@ -2126,6 +2230,7 @@ export default function EventsPage({ embedInDashboard = false, locale = 'he' }) 
   }
 
   function openBookingModal(eventId) {
+    setRegistrationWarning('');
     setBookingEventId(eventId);
   }
 
@@ -2193,7 +2298,11 @@ export default function EventsPage({ embedInDashboard = false, locale = 'he' }) 
       </section>
 
       {(loadingEvents || eventsError || registrationWarning) && (
-        <div className={`events-status${eventsError || registrationWarning ? ' events-status--error' : ''}`}>
+        <div
+          className={`events-status${eventsError || registrationWarning ? ' events-status--error' : ''}${registrationWarning ? ' events-status--toast' : ''}`}
+          role={registrationWarning ? 'alert' : undefined}
+          aria-live={registrationWarning ? 'assertive' : undefined}
+        >
           <span>{loadingEvents ? t('evLoadingEvents') : (eventsError || registrationWarning)}</span>
           {eventsError && !loadingEvents && (
             <button type="button" onClick={() => setEventsReloadKey((current) => current + 1)}>
@@ -2210,6 +2319,7 @@ export default function EventsPage({ embedInDashboard = false, locale = 'he' }) 
               events={filteredEvents}
               selectedEvent={activeBookingEvent?.eventType === 'appointment' ? activeBookingEvent : null}
               registeredSessionIds={registeredSessionIds}
+              activeAppointmentBookings={activeAppointmentBookings}
               onOpenBooking={openBookingModal}
               onRegisterSession={handleRegisterSession}
               onCancelSession={handleCancelSession}
