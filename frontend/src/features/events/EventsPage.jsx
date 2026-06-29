@@ -2272,7 +2272,7 @@ export default function EventsPage({ embedInDashboard = false, locale = 'he', da
         </div>
       )}
 
-      {!loadingEvents && !eventsError && (
+      {!loadingEvents && !eventsError && filteredEvents.length > 0 && (
         <section className="events-list-panel">
           {activeView === VIEW_APPOINTMENTS ? (
             <AppointmentServicesPanel
@@ -2307,7 +2307,7 @@ export default function EventsPage({ embedInDashboard = false, locale = 'he', da
       )}
 
       {!loadingEvents && !eventsError && filteredEvents.length === 0 && (
-        <section className={`events-empty${activeView === VIEW_REGISTERED ? ' events-empty--registered' : ''}`}>
+        <section className={`events-empty${activeView === VIEW_REGISTERED ? ' events-empty--registered' : ''}`} dir={direction}>
           {activeView === VIEW_REGISTERED ? <EventAvailableIcon /> : <AutoAwesomeIcon />}
           <h2>{t(activeView === VIEW_REGISTERED ? 'evNoRegisteredEventsTitle' : 'evNoEventsTitle')}</h2>
           <p>{t(activeView === VIEW_REGISTERED ? 'evNoRegisteredEventsBody' : 'evNoEventsBody')}</p>
