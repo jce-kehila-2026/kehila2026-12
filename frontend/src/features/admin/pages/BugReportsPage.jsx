@@ -32,8 +32,8 @@ import {
 import AdminPageHeader from '../components/AdminPageHeader';
 import { useAdminLocale } from '../context/AdminLocaleContext';
 import './FormsPage.css';
+import './BugReportsPage.css';
 
-const INTL_LOCALE_BY_LANG = { he: 'he-IL', en: 'en-US' };
 const PAGE_SIZE = 10;
 
 const CATEGORY_KEYS = {
@@ -51,12 +51,17 @@ const STATUS_KEYS = {
 
 const CATEGORIES = ['bug', 'visual', 'content', 'performance', 'other'];
 
-function formatTableDate(value) {
+function toDate(value) {
   let date = null;
   if (value?.toDate) date = value.toDate();
   else if (value && typeof value === 'object' && typeof value.seconds === 'number') date = new Date(value.seconds * 1000);
   else if (value) date = new Date(value);
-  if (!date || Number.isNaN(date.getTime())) return '-';
+  return date && !Number.isNaN(date.getTime()) ? date : null;
+}
+
+function formatTableDate(value) {
+  const date = toDate(value);
+  if (!date) return '-';
   return [
     String(date.getDate()).padStart(2, '0'),
     String(date.getMonth() + 1).padStart(2, '0'),
@@ -64,13 +69,14 @@ function formatTableDate(value) {
   ].join('/');
 }
 
-function formatDateTime(value, intlLocale) {
-  let date = null;
-  if (value?.toDate) date = value.toDate();
-  else if (value && typeof value === 'object' && typeof value.seconds === 'number') date = new Date(value.seconds * 1000);
-  else if (value) date = new Date(value);
-  if (!date || Number.isNaN(date.getTime())) return '-';
-  return date.toLocaleString(intlLocale, { dateStyle: 'medium', timeStyle: 'short' });
+function formatDateTime(value) {
+  const date = toDate(value);
+  if (!date) return '-';
+  const pad = (number) => String(number).padStart(2, '0');
+  return [
+    `${pad(date.getDate())}/${pad(date.getMonth() + 1)}/${date.getFullYear()}`,
+    `${pad(date.getHours())}:${pad(date.getMinutes())}`,
+  ].join(', ');
 }
 
 function initialsOf(name) {
@@ -98,8 +104,7 @@ function DetailLine({ label, value }) {
 }
 
 export default function BugReportsPage() {
-  const { t, lang, direction } = useAdminLocale();
-  const intlLocale = INTL_LOCALE_BY_LANG[lang] || 'en-US';
+  const { t, direction } = useAdminLocale();
   const [reports, setReports] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -239,8 +244,8 @@ export default function BugReportsPage() {
             </button>
           </section>
 
-          <section className="forms-table-card" aria-busy={loading}>
-            <div className="forms-table forms-table--head" dir="ltr">
+          <section className="forms-table-card bug-reports-table-card" aria-busy={loading}>
+            <div className="forms-table forms-table--head bug-reports-table" dir="ltr">
               <span>{t('brColReporter')}</span>
               <span>{t('brColWhere')}</span>
               <span>{t('brColCategory')}</span>
@@ -259,7 +264,7 @@ export default function BugReportsPage() {
                   const isHandled = (report.status || 'new') === BUG_REPORT_STATUS.HANDLED;
                   const isBusy = busyId === report.id;
                   return (
-                    <div className="forms-table forms-table--row" key={report.id}>
+                    <div className="forms-table forms-table--row bug-reports-table" key={report.id}>
                       <div className="forms-user-cell">
                         <span className="forms-avatar">{initialsOf(report.reporterName || report.reporterEmail)}</span>
                         <strong dir="auto">{report.reporterName || report.reporterEmail || t('fmUnnamed')}</strong>
@@ -349,8 +354,8 @@ export default function BugReportsPage() {
             sx={{
               position: 'absolute',
               top: '50%',
-              right: 24,
-              transform: 'translateY(-50%)',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
               display: 'grid',
               gridTemplateRows: 'auto minmax(0, 1fr) auto',
               width: 'min(560px, calc(100vw - 36px))',
@@ -450,7 +455,7 @@ export default function BugReportsPage() {
                     <DetailLine label={t('brColCategory')} value={t(CATEGORY_KEYS[selected.category] || 'brCatOther')} />
                     <DetailLine label={t('brRoute')} value={selected.route} />
                     <DetailLine label={t('brLocale')} value={selected.locale} />
-                    <DetailLine label={t('brColSubmitted')} value={formatDateTime(selected.createdAt, intlLocale)} />
+                    <DetailLine label={t('brColSubmitted')} value={formatDateTime(selected.createdAt)} />
                   </Box>
                 </Box>
               </Box>
