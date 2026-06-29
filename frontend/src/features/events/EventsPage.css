@@ -522,6 +522,34 @@
   color: #9d0f61;
 }
 
+.events-status--toast {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  left: auto;
+  z-index: 1600;
+  width: max-content;
+  max-width: calc(100vw - 2rem);
+  margin: 0;
+  border: 1px solid rgba(198, 40, 40, 0.32);
+  border-radius: 10px;
+  background: #fff7f7;
+  color: #b3261e;
+  box-shadow: 0 8px 24px rgba(96, 24, 24, 0.14);
+  font-size: 0.82rem;
+  line-height: 1.4;
+  white-space: nowrap;
+  pointer-events: none;
+  animation: appointment-validation-toast 5s ease both;
+}
+
+@media (max-width: 42rem) {
+  .events-status--toast {
+    width: min(calc(100vw - 2rem), 24rem);
+    white-space: normal;
+  }
+}
+
 .events-categories {
   width: 100%;
   align-self: flex-start;
@@ -2631,6 +2659,44 @@
   border-radius: 18px;
   background: rgba(255, 255, 255, 0.48);
   padding: 0.875rem;
+}
+
+.appointment-drawer__validation-error {
+  color: #b3261e;
+}
+
+.appointment-drawer__validation-toast {
+  position: fixed;
+  right: 1rem;
+  bottom: 1rem;
+  left: auto;
+  z-index: 1600;
+  width: min(calc(100vw - 2rem), 24rem);
+  margin: 0;
+  border: 1px solid rgba(198, 40, 40, 0.32);
+  border-radius: 10px;
+  background: #fff7f7;
+  box-shadow: 0 8px 24px rgba(96, 24, 24, 0.14);
+  font-size: 0.82rem;
+  font-weight: 700;
+  line-height: 1.4;
+  pointer-events: none;
+  animation: appointment-validation-toast 5s ease both;
+}
+
+@keyframes appointment-validation-toast {
+  0% {
+    opacity: 0;
+    transform: translateY(0.75rem);
+  }
+  10%, 82% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
 }
 
 .appointment-drawer__actions {

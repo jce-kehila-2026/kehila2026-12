@@ -168,6 +168,25 @@ service cloud.firestore {
           || (isSelf(uid) && (isParticipantCancellation() || isParticipantRebooking()));
         allow delete: if isAdmin();
       }
+      // A deterministic daily lock prevents two browser sessions from creating
+      // more than one participant appointment on the same date.
+      match /appointmentConstraints/{constraintId} {
+        allow read: if isSelf(uid) || isAdmin();
+        allow create: if isAdmin()
+          || (isSelf(uid)
+            && request.resource.data.userId == uid
+            && request.resource.data.bookingId is string
+            && request.resource.data.bookingId.size() > 0
+            && request.resource.data.kind == 'day');
+        allow update: if isAdmin()
+          || (isSelf(uid)
+            && resource.data.userId == uid
+            && request.resource.data.userId == uid
+            && request.resource.data.bookingId == resource.data.bookingId
+            && request.resource.data.kind == resource.data.kind);
+        allow delete: if isAdmin()
+          || (isSelf(uid) && resource.data.userId == uid);
+      }
       match /appointments/{apptId} {
         allow read: if isSelf(uid) || isAdmin();
         allow create: if isAdmin();
