@@ -37,7 +37,6 @@ import {
 import {
   APPOINTMENT_BOOKING_CONFLICT,
   findAppointmentBookingConflict,
-  hasBookableAppointmentOption,
 } from '../appointments/appointmentBookingRules';
 import { createWorkshopSuggestion } from './workshopSuggestionService';
 import './EventsPage.css';
@@ -980,12 +979,6 @@ function AppointmentBookingDrawer({
   const selectedTime = timeOptions.find((timeOption) => timeOption.option?.id === selectedOptionId) || null;
   const selectedOption = selectedTime?.option || null;
   const isRegistered = selectedOption ? registeredSessionIds.has(selectedOption.id) : false;
-  const hasAnyBookableOption = hasBookableAppointmentOption(
-    event.sessionOptions,
-    activeAppointmentBookings,
-    registeredSessionIds,
-  );
-  const showRegisteredDetails = isRegistered && !hasAnyBookableOption;
   const canCancelBooking = isRegistered && canCancelSessionBooking(selectedOption);
   const confirmDisabled = !selectedOption
     || selectedOption.isRegistering
@@ -1013,7 +1006,7 @@ function AppointmentBookingDrawer({
         aria-label="Close appointment booking"
       />
       <aside
-        className={`appointment-drawer${showRegisteredDetails ? ' is-registered' : ''}`}
+        className="appointment-drawer"
         role="dialog"
         aria-modal="true"
         aria-labelledby="appointment-drawer-title"
@@ -1025,50 +1018,10 @@ function AppointmentBookingDrawer({
 
         <header className="appointment-drawer__header">
           <h2 id="appointment-drawer-title">{serviceLabel}</h2>
-          <p>{showRegisteredDetails ? t('evYouAreRegistered') : t('evBookASession')}</p>
+          <p>{t('evBookASession')}</p>
         </header>
 
         <div className="appointment-drawer__body">
-          {showRegisteredDetails && selectedOption ? (
-            <div className="appointment-drawer__registered-details">
-              <div className="workshop-details-panel__detail-item">
-                <EventAvailableIcon fontSize="small" />
-                <div className="workshop-details-panel__detail-copy">
-                  <strong>{t('evDate')}</strong>
-                  <span>{selectedOption.date || selectedOption.selectedDate || selectedDate?.label || t('evDateTBD')}</span>
-                </div>
-              </div>
-              <div className="workshop-details-panel__detail-item">
-                <AccessTimeIcon fontSize="small" />
-                <div className="workshop-details-panel__detail-copy">
-                  <strong>{t('evTime')}</strong>
-                  <span>{selectedOption.time || selectedOption.selectedTimeSlot || selectedTime?.label || t('evTimeTBD')}</span>
-                </div>
-              </div>
-              <div className="workshop-details-panel__detail-item">
-                <PersonIcon fontSize="small" />
-                <div className="workshop-details-panel__detail-copy">
-                  <strong>{t('evTherapist')}</strong>
-                  <span>{selectedOption.providerName || selectedProvider?.name || t('evSheNaTeam')}</span>
-                </div>
-              </div>
-              <div className="workshop-details-panel__detail-item">
-                <HomeRoundedIcon fontSize="small" />
-                <div className="workshop-details-panel__detail-copy">
-                  <strong>{t('evRoom')}</strong>
-                  <span>{selectedOption.room || selectedProvider?.room || event.location}</span>
-                </div>
-              </div>
-              <div className="workshop-details-panel__detail-item">
-                <CalendarMonthIcon fontSize="small" />
-                <div className="workshop-details-panel__detail-copy">
-                  <strong>{t('evStatus')}</strong>
-                  <span>{canCancelBooking ? t('evRegistered') : t('evCancellationClosed')}</span>
-                </div>
-              </div>
-            </div>
-          ) : (
-          <>
           <section className="appointment-booking-step">
             <h3><span>1</span> {t('evStep1Instructor')}</h3>
             <div className="appointment-instructor-grid">
@@ -1170,8 +1123,6 @@ function AppointmentBookingDrawer({
               </p>
             )}
           </section>
-          </>
-          )}
         </div>
 
         <div className="appointment-drawer__actions">
