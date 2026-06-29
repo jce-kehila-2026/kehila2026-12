@@ -9,7 +9,7 @@ import { getStoredAdminLocale } from '../context/AdminLocaleContext';
 import { createAdminT } from '../i18n/adminUiTranslations';
 
 export default function ProtectedRoute({ children, requiredRole = 'admin' }) {
-  const { currentUser, userRole, loading, accountInactive, logout } = useAdmin();
+  const { currentUser, userRole, loading, accountInactive, accountDeleted, logout } = useAdmin();
   // This gate renders outside AdminLocaleProvider (it wraps AdminLayout), so
   // resolve the persisted admin locale directly instead of via useAdminLocale.
   const locale = getStoredAdminLocale();
@@ -29,6 +29,23 @@ export default function ProtectedRoute({ children, requiredRole = 'admin' }) {
 
   if (!currentUser) {
     return <Navigate to="/login" replace />;
+  }
+
+  if (accountDeleted) {
+    return (
+      <Box dir={direction} sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: '100vh', textAlign: 'center', gap: '0.875rem', px: 2 }}>
+        <LockIcon sx={{ fontSize: '3.5rem', color: 'text.disabled' }} />
+        <Typography variant="h5" sx={{ fontWeight: 900 }}>
+          Your account has been deleted by an admin.
+        </Typography>
+        <Typography variant="body1" color="text.secondary" sx={{ maxWidth: 460 }}>
+          To use it again, please fill out a new join form to be approved.
+        </Typography>
+        <Button variant="outlined" color="inherit" onClick={logout} sx={{ mt: 1, borderRadius: 999 }}>
+          Back to login
+        </Button>
+      </Box>
+    );
   }
 
   if (accountInactive) {
