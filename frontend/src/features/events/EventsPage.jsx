@@ -855,6 +855,7 @@ function AppointmentServicesPanel({
   onRegisterSession,
   onCancelSession,
   onCloseBooking,
+  darkMode = false,
 }) {
   const { t } = useParticipantLocale();
   return (
@@ -881,6 +882,7 @@ function AppointmentServicesPanel({
             onRegisterSession={onRegisterSession}
             onCancelSession={onCancelSession}
             onClose={onCloseBooking}
+            darkMode={darkMode}
           />
         )}
       </div>
@@ -895,6 +897,7 @@ function AppointmentBookingDrawer({
   onRegisterSession,
   onCancelSession,
   onClose,
+  darkMode = false,
 }) {
   useLockBodyScroll();
 
@@ -993,7 +996,10 @@ function AppointmentBookingDrawer({
   }
 
   const modalContent = (
-    <div className="booking-flow-modal appointment-drawer-modal" role="presentation">
+    <div
+      className={`booking-flow-modal appointment-drawer-modal${darkMode ? ' participant-home--dark' : ''}`}
+      role="presentation"
+    >
       <button
         className="booking-flow-modal__backdrop appointment-drawer__backdrop"
         type="button"
@@ -1222,6 +1228,7 @@ function WorkshopDetailsPanel({
   onRegisterSession,
   onCancelSession,
   onClose,
+  darkMode = false,
 }) {
   useLockBodyScroll();
   const { t } = useParticipantLocale();
@@ -1244,7 +1251,10 @@ function WorkshopDetailsPanel({
   }
 
   const modalContent = (
-    <div className="booking-flow-modal" role="presentation">
+    <div
+      className={`booking-flow-modal${darkMode ? ' participant-home--dark' : ''}`}
+      role="presentation"
+    >
       <button
         className="booking-flow-modal__backdrop"
         type="button"
@@ -1344,6 +1354,7 @@ function WorkshopListPanel({
   onRegisterSession,
   onCancelSession,
   onCloseBooking,
+  darkMode = false,
 }) {
   const { t } = useParticipantLocale();
   return (
@@ -1368,6 +1379,7 @@ function WorkshopListPanel({
             onRegisterSession={onRegisterSession}
             onCancelSession={onCancelSession}
             onClose={onCloseBooking}
+            darkMode={darkMode}
           />
         )}
       </div>
@@ -1758,7 +1770,7 @@ function SuggestWorkshopModal({
   );
 }
 
-export default function EventsPage({ embedInDashboard = false, locale = 'he' }) {
+export default function EventsPage({ embedInDashboard = false, locale = 'he', darkMode = false }) {
   const { t, lang, direction } = useParticipantLocale();
   const intlLocale = INTL_LOCALE_BY_LANG[lang] || 'en';
   const navigate = useNavigate();
@@ -2272,6 +2284,7 @@ export default function EventsPage({ embedInDashboard = false, locale = 'he' }) 
               onRegisterSession={handleRegisterSession}
               onCancelSession={handleCancelSession}
               onCloseBooking={closeBookingModal}
+              darkMode={darkMode}
             />
           ) : activeView === VIEW_REGISTERED ? (
             <RegisteredEventsPanel
@@ -2287,6 +2300,7 @@ export default function EventsPage({ embedInDashboard = false, locale = 'he' }) 
               onRegisterSession={handleRegisterSession}
               onCancelSession={handleCancelSession}
               onCloseBooking={closeBookingModal}
+              darkMode={darkMode}
             />
           )}
         </section>

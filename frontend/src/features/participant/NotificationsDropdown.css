@@ -311,3 +311,110 @@
   margin-top: 0.125rem;
   display: block;
 }
+
+/* ===========================================================================
+   Notifications dropdown — dark mode
+   The dropdown renders inline inside the .participant-home--dark wrapper, so it
+   is scoped via the ancestor dark class. Light mode is untouched. Type-icon and
+   unread-dot colors come from inline --icon-color/--dot-color vars (pink/purple
+   per type) and are intentionally left as-is.
+   ======================================================================== */
+.participant-home--dark .notif-dropdown {
+  background: linear-gradient(180deg, rgba(17, 24, 39, 0.98) 0%, rgba(15, 23, 42, 0.98) 100%);
+  border-color: rgba(236, 72, 153, 0.22);
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.5), 0 4px 16px rgba(0, 0, 0, 0.35);
+  color: #e2e8f0;
+}
+
+/* Header */
+.participant-home--dark .notif-dropdown__header {
+  border-bottom-color: rgba(236, 72, 153, 0.18);
+}
+
+.participant-home--dark .notif-dropdown__header-left {
+  color: #f8fafc !important;
+}
+
+.participant-home--dark .notif-dropdown__header-icon {
+  color: #c084fc;
+}
+
+.participant-home--dark .notif-dropdown__mark-all {
+  color: #f472b6 !important;
+}
+
+/* Tabs */
+.participant-home--dark .notif-dropdown__tabs {
+  background: rgba(255, 255, 255, 0.02);
+  border-bottom-color: rgba(236, 72, 153, 0.16);
+}
+
+.participant-home--dark .notif-dropdown__tab {
+  color: rgba(226, 232, 240, 0.55) !important;
+}
+
+.participant-home--dark .notif-dropdown__tab:hover {
+  background: rgba(236, 72, 153, 0.1);
+  color: #f8fafc !important;
+}
+
+.participant-home--dark .notif-dropdown__tab.is-active {
+  color: #f8fafc !important;
+}
+
+/* List scrollbar */
+.participant-home--dark .notif-dropdown__list {
+  scrollbar-color: rgba(236, 72, 153, 0.4) transparent;
+}
+
+.participant-home--dark .notif-dropdown__list::-webkit-scrollbar-thumb {
+  background: rgba(236, 72, 153, 0.4);
+}
+
+/* Empty state */
+.participant-home--dark .notif-dropdown__empty-icon {
+  color: rgba(192, 132, 252, 0.5);
+}
+
+.participant-home--dark .notif-dropdown__empty p {
+  color: #e9d5ff !important;
+}
+
+.participant-home--dark .notif-dropdown__empty span {
+  color: rgba(226, 232, 240, 0.5) !important;
+}
+
+/* Items */
+.participant-home--dark .notif-dropdown__item {
+  border-bottom-color: rgba(236, 72, 153, 0.1);
+}
+
+.participant-home--dark .notif-dropdown__item:hover {
+  background: rgba(236, 72, 153, 0.08);
+}
+
+.participant-home--dark .notif-dropdown__item.is-unread {
+  background: rgba(236, 72, 153, 0.12);
+}
+
+.participant-home--dark .notif-dropdown__item.is-unread:hover {
+  background: rgba(236, 72, 153, 0.18);
+}
+
+.participant-home--dark .notif-dropdown__item.is-clickable:focus-visible {
+  outline-color: rgba(236, 72, 153, 0.55);
+  background: rgba(236, 72, 153, 0.16);
+}
+
+/* Item body text */
+.participant-home--dark .notif-dropdown__item-title {
+  color: #f8fafc !important;
+}
+
+.participant-home--dark .notif-dropdown__item-text {
+  color: rgba(226, 232, 240, 0.62) !important;
+}
+
+.participant-home--dark .notif-dropdown__item-time {
+  color: rgba(226, 232, 240, 0.42) !important;
+}

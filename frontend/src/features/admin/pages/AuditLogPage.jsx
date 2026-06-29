@@ -21,7 +21,6 @@ import { db } from '../../../firebase';
 import { useAdminLocale } from '../context/AdminLocaleContext';
 import AdminPageHeader from '../components/AdminPageHeader';
 
-const INTL_LOCALE_BY_LANG = { he: 'he-IL', en: 'en' };
 const PAGE_SIZE = 10;
 
 const ACTIVITY_FILTERS = [
@@ -45,28 +44,6 @@ const dateFilterFieldSx = {
   minWidth: { md: 210 },
   '& input[type="date"]': {
     color: '#171239',
-  },
-};
-
-const homepageButtonInteractionSx = {
-  color: '#5b1e8c',
-  borderColor: 'rgba(91, 30, 140, 0.2)',
-  background: 'rgba(255, 255, 255, 0.97)',
-  boxShadow: '0 9px 24px rgba(91, 30, 140, 0.12)',
-  transition: 'color 180ms ease, background 180ms ease, border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease',
-  '&:hover, &:focus-visible': {
-    color: '#fff',
-    background: 'linear-gradient(135deg, #e73386, #dc2577)',
-    borderColor: 'transparent',
-    boxShadow: '0 14px 26px rgba(223, 50, 123, 0.24)',
-    transform: 'translateY(-2px)',
-  },
-  '&:active': {
-    transform: 'translateY(0)',
-  },
-  '&:focus-visible': {
-    outline: '3px solid rgba(236, 72, 153, 0.28)',
-    outlineOffset: 3,
   },
 };
 
@@ -100,6 +77,9 @@ const ACTION_LABELS = {
   DELETE_PUBLIC_HOME_TEAM_MEMBER: 'Deleted team member',
   REORDER_PUBLIC_HOME_TEAM_MEMBERS: 'Reordered team members',
   ROLE_CHANGE: 'Changed user role',
+  USER_DEACTIVATED: 'Deactivated user',
+  USER_REACTIVATED: 'Reactivated user',
+  USER_DELETED: 'Deleted user account',
   JOIN_REQUEST_APPROVED: 'Approved join request',
   JOIN_REQUEST_REJECTED: 'Rejected join request',
   HIDE_COMMUNITY_POST: 'Hid community post',
@@ -142,6 +122,9 @@ const ACTION_LABELS_HE = {
   DELETE_PUBLIC_HOME_TEAM_MEMBER: 'נמחקה חברת צוות',
   REORDER_PUBLIC_HOME_TEAM_MEMBERS: 'סודרו מחדש חברות הצוות',
   ROLE_CHANGE: 'שונה תפקיד משתמשת',
+  USER_DEACTIVATED: 'הושבתה משתמשת',
+  USER_REACTIVATED: 'הופעלה מחדש משתמשת',
+  USER_DELETED: 'נמחק חשבון משתמשת',
   JOIN_REQUEST_APPROVED: 'אושרה בקשת הצטרפות',
   JOIN_REQUEST_REJECTED: 'נדחתה בקשת הצטרפות',
   HIDE_COMMUNITY_POST: 'הוסתר פוסט בקהילה',
@@ -227,19 +210,7 @@ function toDate(value) {
   return Number.isNaN(parsed.getTime()) ? null : parsed;
 }
 
-function formatDateTime(value, intlLocale = 'en') {
-  const date = toDate(value);
-  if (!date) return 'Date unavailable';
-  return new Intl.DateTimeFormat(intlLocale, {
-    month: 'short',
-    day: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  }).format(date);
-}
-
-function formatTableDateTime(value) {
+function formatDateTime(value) {
   const date = toDate(value);
   if (!date) return 'Date unavailable';
   const pad = (number) => String(number).padStart(2, '0');
@@ -433,7 +404,6 @@ function normalizeLog(log) {
 
 export default function AuditLogPage() {
   const { t, lang } = useAdminLocale();
-  const intlLocale = INTL_LOCALE_BY_LANG[lang] || 'en';
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -669,7 +639,7 @@ export default function AuditLogPage() {
                   }}
                 >
                   <Typography sx={{ color: '#303a58', fontSize: '0.82rem', fontWeight: 800 }}>
-                    {formatTableDateTime(log.timestamp)}
+                    {formatDateTime(log.timestamp)}
                   </Typography>
                   <Typography sx={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', color: '#303a58', fontSize: '0.82rem', fontWeight: 700 }}>
                     {log.adminLabel}
@@ -704,21 +674,39 @@ export default function AuditLogPage() {
                       {t(area.labelKey)}
                     </Typography>
                   </Stack>
-                  <Button
+                  <Box
+                    component="button"
                     type="button"
-                    size="small"
-                    startIcon={<VisibilityOutlinedIcon />}
+                    aria-label={t('auditDetailsAria')}
+                    title={t('auditDetailsAria')}
                     onClick={() => setSelectedLog(log)}
                     sx={{
                       justifySelf: 'start',
+                      marginLeft: '18px',
+                      width: '2.125rem',
+                      height: '2.125rem',
+                      border: 0,
                       borderRadius: 999,
-                      fontWeight: 900,
-                      ...homepageButtonInteractionSx,
+                      minWidth: 0,
+                      p: 0,
+                      display: 'grid',
+                      placeItems: 'center',
+                      color: '#5b1e8c',
+                      background: 'rgba(255, 255, 255, 0.97)',
+                      boxShadow: '0 9px 24px rgba(91, 30, 140, 0.12)',
+                      cursor: 'pointer',
+                      font: 'inherit',
+                      transition: 'color 180ms ease, background 180ms ease, box-shadow 180ms ease, transform 180ms ease',
+                      '&:hover, &:focus-visible': {
+                        color: '#fff',
+                        background: 'linear-gradient(135deg, #e73386, #dc2577)',
+                        boxShadow: '0 14px 26px rgba(223, 50, 123, 0.24)',
+                        transform: 'translateY(-2px)',
+                      },
                     }}
-                    variant="outlined"
                   >
-                    {t('view')}
-                  </Button>
+                    <VisibilityOutlinedIcon fontSize="small" />
+                  </Box>
                 </Box>
               );
             })
@@ -809,12 +797,13 @@ export default function AuditLogPage() {
           <Box
             sx={{
               position: 'absolute',
-              top: 18,
-              right: 18,
-              bottom: 18,
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
               display: 'grid',
               gridTemplateRows: 'auto minmax(0, 1fr)',
               width: 'min(640px, calc(100vw - 36px))',
+              maxHeight: 'calc(100vh - 36px)',
               overflow: 'hidden',
               border: '1px solid rgba(223, 50, 123, 0.14)',
               borderRadius: '24px',
@@ -935,7 +924,7 @@ export default function AuditLogPage() {
                   >
                     <DetailLine label={t('detailAdmin')} value={selectedLog.adminLabel} />
                     <DetailLine label={t('detailAdminEmail')} value={selectedLog.adminEmailLabel || t('detailNotSpecified')} />
-                    <DetailLine label={t('detailTimestamp')} value={formatDateTime(selectedLog.timestamp, intlLocale)} />
+                    <DetailLine label={t('detailTimestamp')} value={formatDateTime(selectedLog.timestamp)} />
                     <DetailLine label={t('detailArea')} value={t(selectedArea.labelKey)} />
                     <DetailLine label={t('detailTarget')} value={selectedLog.targetId || t('detailNotSpecified')} />
                   </Box>

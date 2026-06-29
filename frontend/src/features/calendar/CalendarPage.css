@@ -1505,6 +1505,70 @@
   color: #94a3b8;
 }
 
+/* The Add Note modal renders in a body portal, so the dark theme class lives on
+   the modal root itself (see CalendarNoteModal). The rules above cover the
+   panel/inputs; these fill the remaining elements. Compound-scoped to the modal
+   root so the shared .pd-notes__schedule-btn isn't affected elsewhere, and
+   light mode (no dark class) is never touched. */
+.calendar-note-modal.participant-home--dark .calendar-note-modal__close {
+  background: #1f2937;
+  border-color: rgba(236, 72, 153, 0.3);
+  color: #f472b6;
+}
+
+.calendar-note-modal.participant-home--dark .calendar-note-form input::placeholder,
+.calendar-note-modal.participant-home--dark .calendar-note-form textarea::placeholder {
+  color: #94a3b8;
+}
+
+.calendar-note-modal.participant-home--dark .calendar-note-form__schedule-label,
+.calendar-note-modal.participant-home--dark .calendar-note-form__schedule-value {
+  color: #f8fafc;
+}
+
+.calendar-note-modal.participant-home--dark .calendar-note-form__schedule-value.is-placeholder {
+  color: #94a3b8;
+}
+
+.calendar-note-modal.participant-home--dark .pd-notes__schedule-btn {
+  background: #1f2937;
+  border-color: rgba(236, 72, 153, 0.3);
+  color: #f472b6;
+}
+
+.calendar-note-modal.participant-home--dark .pd-notes__schedule-btn:hover {
+  border-color: rgba(236, 72, 153, 0.5);
+  background: #243042;
+  box-shadow: 0 4px 12px rgba(236, 72, 153, 0.2);
+}
+
+.calendar-note-modal.participant-home--dark .calendar-note-form__error {
+  background: rgba(236, 72, 153, 0.15);
+  color: #fda4af;
+}
+
+/* The submit uses .pd-btn--soft (light pink capsule); the --pd-btn-* vars
+   aren't redarkened, so it reads as a near-white capsule on the dark panel.
+   Give it the app's solid pink-gradient capsule instead. */
+.calendar-note-modal.participant-home--dark .calendar-note-form__submit {
+  background: linear-gradient(135deg, #ec4899, #db2777);
+  border-color: transparent;
+  color: #fff;
+  box-shadow: 0 10px 22px rgba(219, 39, 119, 0.3);
+}
+
+.calendar-note-modal.participant-home--dark .calendar-note-form__submit:hover:not(:disabled) {
+  background: linear-gradient(135deg, #db2777, #be185d);
+  box-shadow: 0 12px 26px rgba(219, 39, 119, 0.38);
+}
+
+.calendar-note-modal.participant-home--dark .calendar-note-form__submit:disabled {
+  background: rgba(219, 39, 119, 0.28);
+  border-color: transparent;
+  color: rgba(248, 250, 252, 0.62);
+  box-shadow: none;
+}
+
 .participant-home--dark .empty-state {
   background: #1f2937;
   border-color: rgba(236, 72, 153, 0.25);

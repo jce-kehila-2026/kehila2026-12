@@ -19,6 +19,7 @@ export default function NotesScheduleModal({
   onTimeChange,
   datePickerId,
   timePickerId,
+  darkMode = false,
 }) {
   const { t } = useParticipantLocale();
   const datePickerLabels = useMemo(
@@ -112,7 +113,10 @@ export default function NotesScheduleModal({
   const scheduleSummary = formatReminderDateTimeLabel(draftDate, draftTime);
 
   const modalContent = (
-    <div className="pd-notes-schedule-modal" role="presentation">
+    <div
+      className={`pd-notes-schedule-modal${darkMode ? ' participant-home--dark' : ''}`}
+      role="presentation"
+    >
       <div
         className="pd-notes-schedule-modal__backdrop"
         aria-hidden="true"

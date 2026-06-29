@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { collection, doc, getCountFromServer, getDoc, getDocs, limit, orderBy, query } from 'firebase/firestore';
 import {
   CalendarDays,
@@ -23,7 +24,10 @@ import {
 } from '../services/reportsService';
 import ReportBarList from '../components/ReportBarList';
 import AdminPageHeader from '../components/AdminPageHeader';
+import '../../../shared/styles/public-cta-button.css';
 import './DashboardPage.css';
+
+const DASHBOARD_CTA_CLASS = 'public-button public-button--primary public-cta-button public-cta-button--compact';
 
 const EMPTY_FUNNEL = {
   workshop: { confirmed: 0, cancelled: 0 },
@@ -85,16 +89,18 @@ function getEventType(event) {
 
 function MetricCard({ accent, icon, label, value, subtext, alert = false }) {
   return (
-    <article
-      className={`admin-dashboard-metric admin-dashboard-metric--${accent}${alert ? ' admin-dashboard-metric--alert' : ''}`}
-    >
-      <div className="admin-dashboard-metric__icon">{icon}</div>
-      <div>
-        <span>{label}</span>
-        <strong>{value.toLocaleString()}</strong>
-        <p>{subtext}</p>
-      </div>
-    </article>
+    <div className="admin-dashboard-metric-shell">
+      <article
+        className={`admin-dashboard-metric admin-dashboard-metric--${accent}${alert ? ' admin-dashboard-metric--alert' : ''}`}
+      >
+        <div className="admin-dashboard-metric__icon">{icon}</div>
+        <div>
+          <span>{label}</span>
+          <strong>{value.toLocaleString()}</strong>
+          <p>{subtext}</p>
+        </div>
+      </article>
+    </div>
   );
 }
 
@@ -338,9 +344,10 @@ export default function DashboardPage() {
     return t(key);
   };
   return (
-    <section className="admin-dashboard-page">
+    <>
       <AdminPageHeader title={t('dashWelcome').replace('{name}', adminName)} />
 
+      <section className="admin-dashboard-page public-cta-scope">
       {/* Today / This Week Snapshot — always renders all 4 cards; a 0 is a
           safe empty state, not a missing feature. */}
       <section className="admin-dashboard-snapshot" aria-label={t('dashMetricsAria')}>
@@ -399,7 +406,9 @@ export default function DashboardPage() {
         <article className="admin-dashboard-card admin-dashboard-reports-summary">
           <div className="admin-dashboard-card__header">
             <h2>{t('rptTherapistChartLabel')}</h2>
-            <a href="/admin/appointments">{t('dashViewBookingDetails')}</a>
+            <Link to="/admin/appointments" className={DASHBOARD_CTA_CLASS}>
+              {t('dashViewBookingDetails')}
+            </Link>
           </div>
           {reportsSummaryLoading ? (
             <p className="admin-dashboard-empty">{t('dashReportsLoading')}</p>
@@ -411,7 +420,9 @@ export default function DashboardPage() {
         <article className="admin-dashboard-card admin-dashboard-reports-summary">
           <div className="admin-dashboard-card__header">
             <h2>{t('rptActivityChartLabel')}</h2>
-            <a href="/admin/appointments">{t('dashViewBookingDetails')}</a>
+            <Link to="/admin/appointments" className={DASHBOARD_CTA_CLASS}>
+              {t('dashViewBookingDetails')}
+            </Link>
           </div>
           {reportsSummaryLoading ? (
             <p className="admin-dashboard-empty">{t('dashReportsLoading')}</p>
@@ -422,7 +433,9 @@ export default function DashboardPage() {
         <article className="admin-dashboard-card admin-dashboard-bookings">
           <div className="admin-dashboard-card__header">
             <h2>{t('dashRecentBookings')}</h2>
-            <a href="/admin/appointments">{t('dashViewAllBookings')}</a>
+            <Link to="/admin/appointments" className={DASHBOARD_CTA_CLASS}>
+              {t('dashViewAllBookings')}
+            </Link>
           </div>
           <div className="admin-dashboard-booking-table">
             <div className="admin-dashboard-booking admin-dashboard-booking--head">
@@ -451,5 +464,6 @@ export default function DashboardPage() {
       </section>
 
     </section>
+    </>
   );
 }

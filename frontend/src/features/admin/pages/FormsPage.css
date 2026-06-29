@@ -172,6 +172,10 @@
   flex: 0 0 auto;
 }
 
+.forms-table--head > span:first-child {
+  padding-inline-start: 2.75rem;
+}
+
 .forms-table--head > span:nth-child(n + 3),
 .forms-table--row > span:nth-child(n + 3) {
   justify-self: center;

@@ -3202,7 +3202,8 @@
 .participant-home--dark .create-post-card,
 .participant-home--dark .birthday-card,
 .participant-home--dark .guidelines-card,
-.participant-home--dark .community-streak-card {
+.participant-home--dark .community-streak-card,
+.participant-home--dark .community-empty-state {
   border-color: var(--community-card-border);
   background: var(--community-card-bg);
   color: #e2e8f0;

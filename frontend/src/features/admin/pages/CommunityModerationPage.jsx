@@ -1,7 +1,9 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import Pagination from '@mui/material/Pagination';
 import {
   AlertTriangle,
   CheckCircle2,
+  Eye,
   EyeOff,
   FileText,
   GripVertical,
@@ -28,14 +30,10 @@ import {
   saveGuidelinesDoc,
 } from '../services/communityModerationService';
 import AdminPageHeader from '../components/AdminPageHeader';
+import { paginateRows } from './bookingsPageUtils';
 import './CommunityModerationPage.css';
 
-const TONE_COLORS = {
-  pink: '#e05297',
-  lavender: '#a78bfa',
-  violet: '#7c3aed',
-  rose: '#fb7185',
-};
+const PAGE_SIZE = 10;
 
 const STATUS_FILTERS = ['all', 'active', 'reported', 'hidden', 'deleted'];
 
@@ -56,14 +54,31 @@ function tsToLabel(ts, intlLocale) {
   return date.toLocaleDateString(intlLocale, { month: 'short', day: 'numeric', year: 'numeric' });
 }
 
-function tsToFull(ts, intlLocale) {
+function tsToNumericLabel(ts) {
   if (!ts) return '—';
   const date = typeof ts.toDate === 'function' ? ts.toDate() : new Date(ts);
   if (Number.isNaN(date.getTime())) return '—';
-  return date.toLocaleString(intlLocale, {
-    month: 'short', day: 'numeric', year: 'numeric',
-    hour: '2-digit', minute: '2-digit',
-  });
+  return [
+    String(date.getDate()).padStart(2, '0'),
+    String(date.getMonth() + 1).padStart(2, '0'),
+    date.getFullYear(),
+  ].join('/');
+}
+
+function tsToFull(ts) {
+  if (!ts) return '—';
+  const date = typeof ts.toDate === 'function' ? ts.toDate() : new Date(ts);
+  if (Number.isNaN(date.getTime())) return '—';
+  const dateLabel = [
+    String(date.getDate()).padStart(2, '0'),
+    String(date.getMonth() + 1).padStart(2, '0'),
+    date.getFullYear(),
+  ].join('/');
+  const timeLabel = [
+    String(date.getHours()).padStart(2, '0'),
+    String(date.getMinutes()).padStart(2, '0'),
+  ].join(':');
+  return `${dateLabel}, ${timeLabel}`;
 }
 
 function getInitials(name) {
@@ -71,6 +86,10 @@ function getInitials(name) {
   const parts = name.trim().split(/\s+/);
   if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase();
   return name.slice(0, 2).toUpperCase();
+}
+
+function withoutReportCount(label) {
+  return label.replace(/\{n\}\s*/g, '').replace(/\s+/g, ' ').trim();
 }
 
 function MetricCard({ id, accent, icon, label, value, subtext }) {
@@ -115,6 +134,135 @@ function DeleteConfirmRow({ onConfirm, onCancel, t }) {
       >
         {t('cmCancel')}
       </button>
+    </div>
+  );
+}
+
+function PostDetailsDialog({ post, onClose, t, intlLocale }) {
+  if (!post) return null;
+
+  const reportsCount = post.reportsCount ?? (Array.isArray(post.reports) ? post.reports.length : 0);
+  const authorName = post.isAnonymous ? t('cmAnonymous') : (post.authorDisplayName ?? '—');
+  const postId = String(post.id ?? '').slice(0, 12) || '—';
+
+  return (
+    <div
+      className="admin-community-post-dialog-backdrop"
+      role="presentation"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
+      <section
+        className="admin-community-post-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="community-post-details-title"
+        onMouseDown={(event) => event.stopPropagation()}
+      >
+        <button className="admin-community-post-dialog__close" type="button" aria-label={t('cmCancel')} onClick={onClose}>
+          <X size={20} />
+        </button>
+        <header className="admin-community-post-dialog__header">
+          <span className="admin-community-post-dialog__avatar">
+            {post.isAnonymous ? 'AN' : getInitials(post.authorDisplayName)}
+          </span>
+          <div>
+            <h2 id="community-post-details-title">{authorName}</h2>
+            <p>{tsToFull(post.createdAt, intlLocale)}</p>
+          </div>
+        </header>
+        <div className="admin-community-post-dialog__meta" aria-label={t('auditDetailsAria')}>
+          <div className="admin-community-post-dialog__detail">
+            <span>{t('cmColStatus')}</span>
+            <StatusBadge status={post.status} hiddenByAdmin={post.hiddenByAdmin} t={t} />
+          </div>
+          <div className="admin-community-post-dialog__detail">
+            <span>{t('cmColReports')}</span>
+            <strong>{reportsCount > 0 ? reportsCount : t('cmNoReports')}</strong>
+          </div>
+          <div className="admin-community-post-dialog__detail">
+            <span>{t('cmAnonymousField')}</span>
+            <strong>{post.isAnonymous ? t('cmYes') : t('cmNo')}</strong>
+          </div>
+          <div className="admin-community-post-dialog__detail">
+            <span>{t('cmPostId')}</span>
+            <strong>{postId}</strong>
+          </div>
+        </div>
+        <section className="admin-community-post-dialog__content" aria-label={t('cmColContent')}>
+          <h3>{t('cmColContent')}</h3>
+          <p>{post.content || '—'}</p>
+        </section>
+      </section>
+    </div>
+  );
+}
+
+function ActionConfirmDialog({ action, onCancel, onConfirm, t, busy }) {
+  if (!action) return null;
+
+  const config = {
+    hide: {
+      icon: <EyeOff size={20} />,
+      tone: 'warning',
+      title: t('cmConfirmHideTitle'),
+      text: t('cmConfirmHideText'),
+      button: t('cmHide'),
+    },
+    restore: {
+      icon: <Undo2 size={20} />,
+      tone: 'success',
+      title: t('cmConfirmRestoreTitle'),
+      text: t('cmConfirmRestoreText'),
+      button: t('cmRestore'),
+    },
+    delete: {
+      icon: <Trash2 size={20} />,
+      tone: 'danger',
+      title: t('cmConfirmDeleteTitle'),
+      text: t('cmConfirmDeleteText'),
+      button: t('cmDeletePost'),
+    },
+  }[action.type];
+
+  const authorName = action.post?.isAnonymous ? t('cmAnonymous') : (action.post?.authorDisplayName ?? '—');
+
+  return (
+    <div
+      className="admin-community-action-dialog-backdrop"
+      role="presentation"
+      onMouseDown={(event) => {
+        if (event.target === event.currentTarget && !busy) onCancel();
+      }}
+    >
+      <section
+        className="admin-community-action-dialog"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="community-action-confirm-title"
+        onMouseDown={(event) => event.stopPropagation()}
+      >
+        <div className={`admin-community-action-dialog__icon admin-community-action-dialog__icon--${config.tone}`}>
+          {config.icon}
+        </div>
+        <h2 id="community-action-confirm-title">{config.title}</h2>
+        <p>{config.text}</p>
+        <strong>{authorName}</strong>
+        <footer className="admin-community-action-dialog__actions">
+          <button type="button" className="admin-community-btn admin-community-btn--ghost" disabled={busy} onClick={onCancel}>
+            {t('cmCancel')}
+          </button>
+          <button
+            type="button"
+            className={`admin-community-btn admin-community-btn--${config.tone}`}
+            disabled={busy}
+            onClick={onConfirm}
+          >
+            {config.button}
+          </button>
+        </footer>
+      </section>
     </div>
   );
 }
@@ -189,7 +337,6 @@ function ReportedPostsTab({ onStatsChange }) {
   return (
     <div className="admin-community-reported-list" id="reported-posts-list">
       {posts.map((post) => {
-        const toneColor = TONE_COLORS[post.tone] ?? TONE_COLORS.pink;
         const reports = Array.isArray(post.reports) ? post.reports : [];
         const reportsCount = post.reportsCount ?? reports.length;
         const isExpanded = Boolean(expandedReports[post.id]);
@@ -200,16 +347,10 @@ function ReportedPostsTab({ onStatsChange }) {
             key={post.id}
             id={`reported-post-${post.id}`}
             className="admin-community-post-card"
-            style={{ '--tone-color': toneColor }}
           >
-            <div className="admin-community-post-card__tone-bar" aria-hidden="true" />
-
             <header className="admin-community-post-card__header">
               <div className="admin-community-post-card__author">
-                <div
-                  className="admin-community-post-card__avatar"
-                  style={{ background: `linear-gradient(135deg, ${toneColor}44, ${toneColor}22)`, color: toneColor }}
-                >
+                <div className="admin-community-post-card__avatar">
                   {post.isAnonymous ? 'AN' : getInitials(post.authorDisplayName)}
                 </div>
                 <div>
@@ -224,98 +365,90 @@ function ReportedPostsTab({ onStatsChange }) {
                   </span>
                 </div>
               </div>
-              <div className="admin-community-post-card__badges">
-                <span className="admin-community-badge admin-community-badge--reported">
-                  <AlertTriangle size={11} />
-                  {(reportsCount === 1 ? t('cmReportsCountOne') : t('cmReportsCount')).replace('{n}', reportsCount)}
-                </span>
-                {post.tone && (
-                  <span
-                    className="admin-community-badge"
-                    style={{ background: `${toneColor}22`, color: toneColor, borderColor: `${toneColor}44` }}
-                  >
-                    {post.tone}
-                  </span>
-                )}
-              </div>
             </header>
 
             <p className="admin-community-post-card__content">{post.content}</p>
 
-            {reports.length > 0 && (
-              <div className="admin-community-post-card__reports">
-                <button
-                  className="admin-community-reports-toggle"
-                  type="button"
-                  aria-expanded={isExpanded}
-                  onClick={() => setExpandedReports((prev) => ({ ...prev, [post.id]: !prev[post.id] }))}
-                >
-                  <Shield size={14} />
-                  {(() => {
-                    const n = reports.length;
-                    const key = isExpanded
-                      ? (n === 1 ? 'cmReportDetailsHideOne' : 'cmReportDetailsHide')
-                      : (n === 1 ? 'cmReportDetailsShowOne' : 'cmReportDetailsShow');
-                    return t(key).replace('{n}', n);
-                  })()}
-                </button>
-                {isExpanded && (
-                  <ul className="admin-community-reports-list">
-                    {reports.map((report, i) => (
-                      <li key={report.id ?? i} className="admin-community-report-item">
-                        <span className="admin-community-report-item__reason">{report.reason || t('cmNoReasonGiven')}</span>
-                        <span className="admin-community-report-item__who">
-                          {t('cmReportBy').replace('{id}', report.reporterUserId?.slice(0, 8) ?? t('cmUnknownReporter'))}
-                        </span>
-                        <span className="admin-community-report-item__when">
-                          {tsToLabel(report.createdAt ?? report.reportedAt, intlLocale)}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            )}
+            <div className="admin-community-post-card__review-row">
+              {reports.length > 0 && (
+                <div className="admin-community-post-card__reports-summary">
+                  <span>
+                    <Shield size={14} />
+                    {(reportsCount === 1 ? t('cmReportsCountOne') : t('cmReportsCount')).replace('{n}', reportsCount)}
+                  </span>
+                  <button
+                    className="admin-community-reports-toggle"
+                    type="button"
+                    aria-expanded={isExpanded}
+                    onClick={() => setExpandedReports((prev) => ({ ...prev, [post.id]: !prev[post.id] }))}
+                  >
+                    {(() => {
+                      const n = reports.length;
+                      const key = isExpanded
+                        ? (n === 1 ? 'cmReportDetailsHideOne' : 'cmReportDetailsHide')
+                        : (n === 1 ? 'cmReportDetailsShowOne' : 'cmReportDetailsShow');
+                      return withoutReportCount(t(key));
+                    })()}
+                  </button>
+                </div>
+              )}
 
-            {confirmDeleteId === post.id ? (
-              <DeleteConfirmRow
-                onConfirm={() => handleDeleteConfirm(post.id)}
-                onCancel={() => setConfirmDeleteId(null)}
-                t={t}
-              />
-            ) : (
-              <footer className="admin-community-post-card__actions">
-                <button
-                  id={`btn-hide-${post.id}`}
-                  className="admin-community-btn admin-community-btn--warning"
-                  disabled={isBusy}
-                  type="button"
-                  onClick={() => handleHide(post.id)}
-                >
-                  <EyeOff size={14} />
-                  {t('cmHidePost')}
-                </button>
-                <button
-                  id={`btn-dismiss-${post.id}`}
-                  className="admin-community-btn admin-community-btn--success"
-                  disabled={isBusy}
-                  type="button"
-                  onClick={() => handleDismiss(post.id)}
-                >
-                  <CheckCircle2 size={14} />
-                  {t('cmDismissReports')}
-                </button>
-                <button
-                  id={`btn-delete-${post.id}`}
-                  className="admin-community-btn admin-community-btn--danger"
-                  disabled={isBusy}
-                  type="button"
-                  onClick={() => setConfirmDeleteId(post.id)}
-                >
-                  <Trash2 size={14} />
-                  {t('cmDeletePost')}
-                </button>
-              </footer>
+              {confirmDeleteId === post.id ? (
+                <DeleteConfirmRow
+                  onConfirm={() => handleDeleteConfirm(post.id)}
+                  onCancel={() => setConfirmDeleteId(null)}
+                  t={t}
+                />
+              ) : (
+                <footer className="admin-community-post-card__actions">
+                  <button
+                    id={`btn-hide-${post.id}`}
+                    className="admin-community-btn admin-community-btn--warning"
+                    disabled={isBusy}
+                    type="button"
+                    onClick={() => handleHide(post.id)}
+                  >
+                    <EyeOff size={14} />
+                    {t('cmHidePost')}
+                  </button>
+                  <button
+                    id={`btn-dismiss-${post.id}`}
+                    className="admin-community-btn admin-community-btn--success"
+                    disabled={isBusy}
+                    type="button"
+                    onClick={() => handleDismiss(post.id)}
+                  >
+                    <CheckCircle2 size={14} />
+                    {t('cmDismissReports')}
+                  </button>
+                  <button
+                    id={`btn-delete-${post.id}`}
+                    className="admin-community-btn admin-community-btn--danger"
+                    disabled={isBusy}
+                    type="button"
+                    onClick={() => setConfirmDeleteId(post.id)}
+                  >
+                    <Trash2 size={14} />
+                    {t('cmDeletePost')}
+                  </button>
+                </footer>
+              )}
+            </div>
+
+            {reports.length > 0 && isExpanded && (
+              <ul className="admin-community-reports-list">
+                {reports.map((report, i) => (
+                  <li key={report.id ?? i} className="admin-community-report-item">
+                    <span className="admin-community-report-item__reason">{report.reason || t('cmNoReasonGiven')}</span>
+                    <span className="admin-community-report-item__who">
+                      {t('cmReportBy').replace('{id}', report.reporterUserId?.slice(0, 8) ?? t('cmUnknownReporter'))}
+                    </span>
+                    <span className="admin-community-report-item__when">
+                      {tsToLabel(report.createdAt ?? report.reportedAt, intlLocale)}
+                    </span>
+                  </li>
+                ))}
+              </ul>
             )}
           </article>
         );
@@ -332,8 +465,12 @@ function AllPostsTab({ onStatsChange }) {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [statusFilter, setStatusFilter] = useState('all');
+  const [search, setSearch] = useState('');
+  const [reportFilter, setReportFilter] = useState('all');
   const [processing, setProcessing] = useState({});
-  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+  const [pendingAction, setPendingAction] = useState(null);
+  const [selectedPost, setSelectedPost] = useState(null);
+  const [page, setPage] = useState(1);
 
   const loadPosts = useCallback(async () => {
     setLoading(true);
@@ -374,56 +511,99 @@ function AllPostsTab({ onStatsChange }) {
   const handleDeleteConfirm = (postId) => withProcessing(postId, async () => {
     await hardDeletePost(postId);
     setPosts((prev) => prev.filter((p) => p.id !== postId));
-    setConfirmDeleteId(null);
+    setPendingAction(null);
   });
 
-  const filtered = posts.filter((p) => {
-    if (statusFilter === 'all') return true;
-    if (statusFilter === 'hidden') return Boolean(p.hiddenByAdmin);
-    return p.status === statusFilter;
-  });
+  const handleActionConfirm = async () => {
+    if (!pendingAction?.post?.id) return;
+    if (pendingAction.type === 'hide') await handleHide(pendingAction.post.id);
+    if (pendingAction.type === 'restore') await handleRestore(pendingAction.post.id);
+    if (pendingAction.type === 'delete') await handleDeleteConfirm(pendingAction.post.id);
+    setPendingAction(null);
+  };
+
+  const filtered = useMemo(() => posts.filter((p) => {
+    const matchesStatus = statusFilter === 'all'
+      ? true
+      : statusFilter === 'hidden'
+        ? Boolean(p.hiddenByAdmin)
+        : p.status === statusFilter;
+    const reportsCount = p.reportsCount ?? (Array.isArray(p.reports) ? p.reports.length : 0);
+    const matchesReports = reportFilter === 'all'
+      ? true
+      : reportFilter === 'with'
+        ? reportsCount > 0
+        : reportsCount === 0;
+    const term = search.trim().toLowerCase();
+    const haystack = [
+      p.isAnonymous ? t('cmAnonymous') : p.authorDisplayName,
+      p.content,
+      p.status,
+    ].filter(Boolean).join(' ').toLowerCase();
+    return matchesStatus && matchesReports && (!term || haystack.includes(term));
+  }), [posts, reportFilter, search, statusFilter, t]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [reportFilter, search, statusFilter]);
+
+  const pagination = useMemo(() => paginateRows(filtered, page, PAGE_SIZE), [filtered, page]);
+
+  function clearFilters() {
+    setSearch('');
+    setStatusFilter('all');
+    setReportFilter('all');
+  }
 
   return (
-    <div id="all-posts-tab">
-      <div className="admin-community-filter-chips" role="group" aria-label={t('cmFilterAria')}>
-        {STATUS_FILTERS.map((f) => (
-          <button
-            key={f}
-            id={`filter-chip-${f}`}
-            className={`admin-community-chip${statusFilter === f ? ' is-active' : ''}`}
-            type="button"
-            onClick={() => setStatusFilter(f)}
-          >
-            {t(STATUS_LABEL_KEYS[f] || f)}
-            {f !== 'all' && (
-              <span className="admin-community-chip__count">
-                {posts.filter((p) => {
-                  if (f === 'hidden') return Boolean(p.hiddenByAdmin);
-                  return p.status === f;
-                }).length}
-              </span>
-            )}
-          </button>
-        ))}
-      </div>
+    <div id="all-posts-tab" className="admin-community-all-posts">
+      <section className="admin-community-filter-card" aria-label={t('cmFilterAria')}>
+        <label className="admin-community-search-field">
+          <input
+            value={search}
+            onChange={(event) => setSearch(event.target.value)}
+            placeholder={t('cmSearchPlaceholder')}
+          />
+        </label>
+        <label className="admin-community-filter-field">
+          <span>{t('cmStatusFilterLabel')}</span>
+          <select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}>
+            {STATUS_FILTERS.map((f) => (
+              <option key={f} value={f}>
+                {t(STATUS_LABEL_KEYS[f] || f)}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="admin-community-filter-field">
+          <span>{t('cmReportsFilterLabel')}</span>
+          <select value={reportFilter} onChange={(event) => setReportFilter(event.target.value)}>
+            <option value="all">{t('cmReportsAll')}</option>
+            <option value="with">{t('cmReportsWith')}</option>
+            <option value="without">{t('cmReportsWithout')}</option>
+          </select>
+        </label>
+        <button type="button" className="admin-community-filter-clear-btn" onClick={clearFilters}>
+          {t('auditClear')}
+        </button>
+      </section>
 
-      {loading ? (
-        <p className="admin-community-loading">{t('cmLoadingPosts')}</p>
-      ) : (
-        <div className="admin-community-table" role="table" aria-label={t('cmTableAria')}>
-          <div className="admin-community-table__head" role="row">
-            <span role="columnheader">{t('cmColAuthor')}</span>
-            <span role="columnheader">{t('cmColContent')}</span>
-            <span role="columnheader">{t('cmColStatus')}</span>
-            <span role="columnheader">{t('cmColDate')}</span>
-            <span role="columnheader">{t('cmColReports')}</span>
-            <span role="columnheader">{t('cmColActions')}</span>
-          </div>
+      <div className="admin-community-table" role="table" aria-label={t('cmTableAria')} aria-busy={loading}>
+        <div className="admin-community-table__head" role="row">
+          <span role="columnheader">{t('cmColAuthor')}</span>
+          <span role="columnheader">{t('cmColStatus')}</span>
+          <span role="columnheader">{t('cmColDate')}</span>
+          <span role="columnheader">{t('cmColReports')}</span>
+          <span role="columnheader">{t('cmColActions')}</span>
+        </div>
 
-          {filtered.length === 0 ? (
-            <p className="admin-community-loading">{t('cmNoPostsMatch')}</p>
+        <div className="admin-community-table__body">
+          {loading ? (
+            <div className="admin-community-table-state">{t('cmLoadingPosts')}</div>
+          ) : pagination.rows.length === 0 ? (
+            <div className="admin-community-table-state">{t('cmNoPostsMatch')}</div>
           ) : (
-            filtered.map((post) => {
+            pagination.rows.map((post) => {
               const isBusy = Boolean(processing[post.id]);
               const isHidden = Boolean(post.hiddenByAdmin);
               const canHide = !isHidden && post.status !== 'deleted';
@@ -435,79 +615,74 @@ function AllPostsTab({ onStatsChange }) {
                     <div className="admin-community-table__avatar">
                       {post.isAnonymous ? 'AN' : getInitials(post.authorDisplayName)}
                     </div>
-                    <span>{post.isAnonymous ? t('cmAnonymous') : (post.authorDisplayName ?? '—')}</span>
+                    <div>
+                      <strong>{post.isAnonymous ? t('cmAnonymous') : (post.authorDisplayName ?? '—')}</strong>
+                    </div>
                   </div>
-                  <div className="admin-community-table__content" role="cell">
-                    <p>{String(post.content ?? '').slice(0, 90)}{(post.content?.length ?? 0) > 90 ? '…' : ''}</p>
-                  </div>
-                  <div role="cell">
+                  <div className="admin-community-table__status" role="cell">
                     <StatusBadge status={post.status} hiddenByAdmin={post.hiddenByAdmin} t={t} />
                   </div>
                   <div className="admin-community-table__date" role="cell">
-                    {tsToLabel(post.createdAt, intlLocale)}
+                    <strong>{tsToNumericLabel(post.createdAt)}</strong>
                   </div>
-                  <div role="cell">
+                  <div className="admin-community-table__reports" role="cell">
                     {(post.reportsCount ?? 0) > 0 ? (
-                      <span className="admin-community-badge admin-community-badge--reported">
+                      <span className="admin-community-table__reports-count">
                         {post.reportsCount}
                       </span>
-                    ) : '—'}
+                    ) : (
+                      <span className="admin-community-table__no-reports">{t('cmNoReports')}</span>
+                    )}
                   </div>
                   <div className="admin-community-table__actions" role="cell">
-                    {confirmDeleteId === post.id ? (
-                      <div className="admin-community-inline-confirm">
-                        <button
-                          id={`btn-confirm-all-delete-${post.id}`}
-                          className="admin-community-btn admin-community-btn--danger admin-community-btn--sm"
-                          type="button"
-                          onClick={() => handleDeleteConfirm(post.id)}
-                        >
-                          {t('cmConfirm')}
-                        </button>
-                        <button
-                          className="admin-community-btn admin-community-btn--ghost admin-community-btn--sm"
-                          type="button"
-                          onClick={() => setConfirmDeleteId(null)}
-                        >
-                          {t('cmCancel')}
-                        </button>
-                      </div>
-                    ) : (
-                      <>
-                        {canHide && (
-                          <button
-                            id={`btn-all-hide-${post.id}`}
-                            className="admin-community-btn admin-community-btn--warning admin-community-btn--sm"
-                            disabled={isBusy}
-                            type="button"
-                            onClick={() => handleHide(post.id)}
-                          >
-                            <EyeOff size={13} /> {t('cmHide')}
-                          </button>
-                        )}
-                        {canRestore && (
-                          <button
-                            id={`btn-all-restore-${post.id}`}
-                            className="admin-community-btn admin-community-btn--success admin-community-btn--sm"
-                            disabled={isBusy}
-                            type="button"
-                            onClick={() => handleRestore(post.id)}
-                          >
-                            <Undo2 size={13} /> {t('cmRestore')}
-                          </button>
-                        )}
-                        {post.status !== 'deleted' && (
-                          <button
-                            id={`btn-all-delete-${post.id}`}
-                            className="admin-community-btn admin-community-btn--danger admin-community-btn--sm"
-                            disabled={isBusy}
-                            type="button"
-                            onClick={() => setConfirmDeleteId(post.id)}
-                          >
-                            <Trash2 size={13} />
-                          </button>
-                        )}
-                      </>
+                    <button
+                      id={`btn-all-view-${post.id}`}
+                      className="admin-community-btn admin-community-btn--view admin-community-btn--sm"
+                      type="button"
+                      aria-label={t('pdViewDetailsTitle')}
+                      title={t('pdViewDetailsTitle')}
+                      onClick={() => setSelectedPost(post)}
+                    >
+                      <Eye size={13} />
+                    </button>
+                    {canHide && (
+                      <button
+                        id={`btn-all-hide-${post.id}`}
+                        className="admin-community-btn admin-community-btn--warning admin-community-btn--sm"
+                        disabled={isBusy}
+                        type="button"
+                        aria-label={t('cmHide')}
+                        title={t('cmHide')}
+                        onClick={() => setPendingAction({ type: 'hide', post })}
+                      >
+                        <EyeOff size={13} />
+                      </button>
+                    )}
+                    {canRestore && (
+                      <button
+                        id={`btn-all-restore-${post.id}`}
+                        className="admin-community-btn admin-community-btn--success admin-community-btn--sm"
+                        disabled={isBusy}
+                        type="button"
+                        aria-label={t('cmRestore')}
+                        title={t('cmRestore')}
+                        onClick={() => setPendingAction({ type: 'restore', post })}
+                      >
+                        <Undo2 size={13} />
+                      </button>
+                    )}
+                    {post.status !== 'deleted' && (
+                      <button
+                        id={`btn-all-delete-${post.id}`}
+                        className="admin-community-btn admin-community-btn--danger admin-community-btn--sm"
+                        disabled={isBusy}
+                        type="button"
+                        aria-label={t('cmDeletePost')}
+                        title={t('cmDeletePost')}
+                        onClick={() => setPendingAction({ type: 'delete', post })}
+                      >
+                        <Trash2 size={13} />
+                      </button>
                     )}
                   </div>
                 </div>
@@ -515,7 +690,25 @@ function AllPostsTab({ onStatsChange }) {
             })
           )}
         </div>
-      )}
+        <footer className="admin-community-table-footer">
+          <Pagination
+            count={pagination.pageCount}
+            page={pagination.page}
+            onChange={(event, value) => setPage(value)}
+            siblingCount={1}
+            boundaryCount={1}
+            shape="rounded"
+          />
+        </footer>
+      </div>
+      <PostDetailsDialog post={selectedPost} onClose={() => setSelectedPost(null)} t={t} intlLocale={intlLocale} />
+      <ActionConfirmDialog
+        action={pendingAction}
+        busy={Boolean(pendingAction?.post?.id && processing[pendingAction.post.id])}
+        onCancel={() => setPendingAction(null)}
+        onConfirm={handleActionConfirm}
+        t={t}
+      />
     </div>
   );
 }
@@ -813,7 +1006,7 @@ export default function CommunityModerationPage() {
 
       <div
         id={`tabpanel-${activeTab}`}
-        className="admin-community-tabpanel"
+        className={`admin-community-tabpanel${activeTab === 'all' ? ' admin-community-tabpanel--all' : ''}`}
         role="tabpanel"
         aria-labelledby={`tab-${activeTab}`}
       >

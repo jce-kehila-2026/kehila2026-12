@@ -28,6 +28,7 @@ export default function AdminProvider({ children }) {
   const [impersonatedDisplayName, setImpersonatedDisplayName] = useState('');
   const [mustChangePassword, setMustChangePassword] = useState(false);
   const [accountInactive, setAccountInactive] = useState(false);
+  const [accountDeleted, setAccountDeleted] = useState(false);
 
   // Listen to Firebase Auth state
   useEffect(() => {
@@ -44,11 +45,18 @@ export default function AdminProvider({ children }) {
           try {
             const snap = await withTimeout(getDoc(doc(db, 'users', user.uid)), null, 'Admin profile lookup');
             const profile = snap?.exists?.() ? snap.data() : {};
-            const inactive = profile.isActive === false || String(profile.status || '').toLowerCase() === 'inactive';
+            // A deleted account is a tombstone (status:'deleted'); it also has
+            // isActive:false, so distinguish it FIRST and keep the two states
+            // mutually exclusive — the sign-in gate shows a different screen.
+            const status = String(profile.status || '').toLowerCase();
+            const deleted = status === 'deleted';
+            const inactive = !deleted && (profile.isActive === false || status === 'inactive');
+            setAccountDeleted(deleted);
             setAccountInactive(inactive);
-            setMustChangePassword(!inactive && profile.mustChangePassword === true);
+            setMustChangePassword(!inactive && !deleted && profile.mustChangePassword === true);
           } catch (err) {
             console.error('Failed to read profile flags:', err);
+            setAccountDeleted(false);
             setAccountInactive(false);
             setMustChangePassword(false);
           }
@@ -57,11 +65,13 @@ export default function AdminProvider({ children }) {
           setImpersonatedUserUID(null);
           setMustChangePassword(false);
           setAccountInactive(false);
+          setAccountDeleted(false);
         }
       } catch (err) {
         console.error('Failed to resolve admin auth state:', err);
         setUserRole(user ? 'participant' : null);
         setAccountInactive(false);
+        setAccountDeleted(false);
         setMustChangePassword(false);
       } finally {
         setLoading(false);
@@ -119,6 +129,7 @@ export default function AdminProvider({ children }) {
       logout,
       mustChangePassword,
       accountInactive,
+      accountDeleted,
       clearMustChangePassword,
     }),
     [
@@ -134,6 +145,7 @@ export default function AdminProvider({ children }) {
       logout,
       mustChangePassword,
       accountInactive,
+      accountDeleted,
       clearMustChangePassword,
     ]
   );
