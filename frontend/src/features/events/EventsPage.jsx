@@ -105,8 +105,7 @@ function toDate(value) {
   return Number.isNaN(date.getTime()) ? null : date;
 }
 
-const CANCELLATION_WINDOW_MS = 48 * 60 * 60 * 1000;
-const CANCELLATION_CLOSED_MESSAGE = 'Booking can no longer be cancelled (less than 48h remaining)';
+const CANCELLATION_WINDOW_MS = 24 * 60 * 60 * 1000;
 const INTL_LOCALE_BY_LANG = { he: 'he-IL', ar: 'ar', en: 'en' };
 
 // Translation helper for module-level formatters: uses `t` when supplied,
