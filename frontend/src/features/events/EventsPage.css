@@ -3857,6 +3857,15 @@
   filter: none;
 }
 
+/* In the embedded dashboard the events area is a fixed-row grid with a flexible
+   row that would otherwise sit empty below the message, pinning the card to the
+   top. Span the leftover rows and center the (compact) card so it sits balanced
+   in the panel instead of clinging under the tabs. */
+.events-main--embedded .events-empty {
+  grid-row: 2 / -1;
+  align-self: center;
+}
+
 .events-empty svg {
   width: 3.25rem;
   height: 3.25rem;
@@ -3879,9 +3888,19 @@
 }
 
 .events-empty p {
-  max-width: 440px;
-  margin: 0.625rem 0 0;
+  max-width: 32rem;
+  margin: 0.625rem auto 0;
   line-height: 1.55;
+}
+
+/* The embedded dashboard view forces RTL + right-aligned text on every heading
+   and paragraph; the empty state is always a centered column, so re-center its
+   text explicitly (higher specificity than the blanket `:where(...)` rule). */
+.events-empty,
+.events-empty h2,
+.events-empty p,
+.events-main--embedded .events-empty :where(h2, p) {
+  text-align: center;
 }
 
 .registered-events {
