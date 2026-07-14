@@ -15,7 +15,11 @@
 
   position: relative;
   isolation: isolate;
-  overflow: hidden;
+  /* Grow with full card content (image + white body + button). Decor blobs
+     are clipped by .public-pink-section-decor / .public-events__decor. */
+  height: auto;
+  max-height: none;
+  overflow: visible;
   width: 100%;
   max-width: none;
   margin: 0;
@@ -171,6 +175,8 @@
   gap: var(--events-scroll-gap);
   width: 100%;
   max-width: 100%;
+  height: auto;
+  max-height: none;
   margin: 0;
   padding: 8px 4px 14px;
   overflow-x: auto;
