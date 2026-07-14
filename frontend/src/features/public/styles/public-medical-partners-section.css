@@ -1,0 +1,345 @@
+@import "./medical-partner-logo.css";
+
+/* Medical partners / hospitals — public homepage */
+.public-homepage .public-section.public-section--medical-partners {
+  --mp-purple: #5b1e8c;
+  --mp-purple-mid: #8a2da8;
+  --mp-pink: #d946a1;
+  --mp-pink-soft: #f7d6ea;
+  --mp-bg: #fdf6fb;
+  --mp-muted: #8a7a9c;
+  --mp-card-shadow: 0 18px 44px rgba(91, 30, 140, 0.1), 0 6px 18px rgba(217, 70, 161, 0.07);
+  --mp-card-shadow-hover: 0 26px 56px rgba(91, 30, 140, 0.16), 0 10px 26px rgba(217, 70, 161, 0.11);
+
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  width: 100%;
+  padding-block: clamp(88px, 10vw, 124px);
+  padding-inline: clamp(28px, 6vw, 104px);
+  background-color: var(--mp-bg);
+  background-image:
+    radial-gradient(ellipse 65% 48% at 10% 14%, rgba(217, 70, 161, 0.16) 0%, transparent 62%),
+    radial-gradient(ellipse 50% 42% at 90% 20%, rgba(138, 45, 168, 0.12) 0%, transparent 65%),
+    radial-gradient(ellipse 75% 50% at 50% 100%, rgba(255, 255, 255, 0.9) 0%, transparent 55%),
+    linear-gradient(180deg, #fffafc 0%, var(--mp-bg) 40%, #faf2f7 100%);
+}
+
+.public-homepage .public-section--medical-partners .medical-partners__decor {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.public-homepage .public-section--medical-partners .medical-partners__blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(56px);
+}
+
+.public-homepage .public-section--medical-partners .medical-partners__blob--pink {
+  width: min(480px, 46vw);
+  height: min(480px, 46vw);
+  inset-block-start: -10%;
+  inset-inline-end: -8%;
+  background: rgba(217, 70, 161, 0.32);
+}
+
+.public-homepage .public-section--medical-partners .medical-partners__blob--lavender {
+  width: min(420px, 40vw);
+  height: min(420px, 40vw);
+  inset-block-end: -8%;
+  inset-inline-start: -10%;
+  background: rgba(247, 214, 234, 0.88);
+}
+
+.public-homepage .public-section--medical-partners .medical-partners__blob--purple {
+  width: min(340px, 32vw);
+  height: min(340px, 32vw);
+  inset-block-start: 40%;
+  inset-inline-start: 36%;
+  background: rgba(138, 45, 168, 0.2);
+}
+
+.public-homepage .public-section--medical-partners .medical-partners__dots {
+  position: absolute;
+  opacity: 0.5;
+  background-image: radial-gradient(circle, rgba(217, 70, 161, 0.5) 2px, transparent 2px);
+  background-size: 16px 16px;
+}
+
+.public-homepage .public-section--medical-partners .medical-partners__dots--mesh {
+  inset: 8% 6%;
+  opacity: 0.35;
+  background-size: 20px 20px;
+  background-image: radial-gradient(circle, rgba(91, 30, 140, 0.12) 1.5px, transparent 1.5px);
+  mask-image: radial-gradient(ellipse at 50% 40%, #000 0%, transparent 75%);
+}
+
+.public-homepage .public-section--medical-partners .medical-partners__dots--one {
+  width: 150px;
+  height: 150px;
+  inset-block-start: 12%;
+  inset-inline-start: 7%;
+}
+
+.public-homepage .public-section--medical-partners .medical-partners__dots--two {
+  width: 130px;
+  height: 130px;
+  inset-block-end: 16%;
+  inset-inline-end: 9%;
+}
+
+.public-homepage .public-section--medical-partners .medical-partners__inner {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  gap: clamp(44px, 5vw, 64px);
+  width: min(100%, 1280px);
+  margin-inline: auto;
+}
+
+.public-homepage .public-section--medical-partners .medical-partners__heading-wrap .public-section-heading__subtitle {
+  max-width: 40rem;
+  color: var(--mp-muted);
+  font-weight: 500;
+  line-height: 1.8;
+}
+
+.public-homepage .public-section--medical-partners .medical-partners__carousel {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: transparent;
+}
+
+.public-homepage .public-section--medical-partners .medical-partners__nav-btn {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: none;
+  background: #ffffff;
+  box-shadow: 0 4px 20px rgba(109, 60, 207, 0.15), 0 1px 4px rgba(0, 0, 0, 0.06);
+  color: #6D3CCF;
+  cursor: pointer;
+  transition: box-shadow 280ms ease, transform 280ms ease;
+  z-index: 2;
+}
+
+.public-homepage .public-section--medical-partners .medical-partners__nav-btn:hover {
+  box-shadow: 0 8px 28px rgba(109, 60, 207, 0.25), 0 2px 8px rgba(0, 0, 0, 0.08);
+  transform: scale(1.08);
+}
+
+.public-homepage .public-section--medical-partners .medical-partners__nav-btn:active {
+  transform: scale(0.96);
+}
+
+.public-homepage .public-section--medical-partners .medical-partners__scroll-track {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: stretch;
+  gap: var(--public-grid-gap, clamp(20px, 2.4vw, 28px));
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  padding-block: 10px 14px;
+  background: transparent;
+  /* hide scrollbar cross-browser */
+  scrollbar-width: none;
+}
+
+.public-homepage .public-section--medical-partners .medical-partners__scroll-track::-webkit-scrollbar {
+  display: none;
+}
+
+/* In RTL the flex row already starts from the right — no extra change needed */
+
+.public-homepage .public-section--medical-partners .medical-partners__card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 0 0 var(--public-home-card-width);
+  scroll-snap-align: start;
+  padding-block-start: clamp(16px, 1.8vw, 22px);
+  padding-block-end: clamp(26px, 2.8vw, 32px);
+  padding-inline: clamp(18px, 2vw, 26px);
+  text-align: center;
+  background: #ffffff;
+  border: 1.5px solid var(--mp-pink-soft);
+  border-radius: 26px;
+  box-shadow: var(--mp-card-shadow);
+  transition:
+    transform 420ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 420ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color 320ms ease;
+}
+
+.public-homepage .public-section--medical-partners .medical-partners__card:hover {
+  border-color: rgba(217, 70, 161, 0.4);
+  transform: translate3d(0, -8px, 0);
+  box-shadow: var(--mp-card-shadow-hover);
+}
+
+.public-team-partners-page
+  .public-section--medical-partners
+  .medical-partners__card,
+.public-team-partners-page
+  .public-section--medical-partners
+  .medical-partners__card:hover {
+  box-shadow: none;
+}
+
+.public-homepage .public-section--medical-partners .medical-partners__name {
+  margin: 0;
+  color: var(--mp-purple);
+  font-size: clamp(1.05rem, 1.2vw, 1.22rem);
+  font-weight: 900;
+  line-height: 1.35;
+}
+
+.public-homepage .public-section--medical-partners .medical-partners__card-divider {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: min(100%, 112px);
+  margin-block: 12px;
+}
+
+.public-homepage .public-section--medical-partners .medical-partners__card-divider-line {
+  flex: 1;
+  height: 1px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, transparent, rgba(236, 60, 151, 0.35));
+}
+
+.public-homepage .public-section--medical-partners .medical-partners__card-divider-line:last-child {
+  background: linear-gradient(270deg, transparent, rgba(236, 60, 151, 0.35));
+}
+
+.public-homepage .public-section--medical-partners .medical-partners__card-divider-heart {
+  flex-shrink: 0;
+  color: #ec3c97;
+  font-size: 0.45rem;
+  line-height: 1;
+}
+
+.public-homepage .public-section--medical-partners .medical-partners__excerpt {
+  flex: 1 1 auto;
+  margin: 0 0 18px;
+  color: var(--mp-muted);
+  font-size: 0.9rem;
+  line-height: 1.7;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 4;
+  line-clamp: 4;
+  overflow: hidden;
+}
+
+
+@media (max-width: 768px) {
+  .public-homepage .public-section.public-section--medical-partners {
+    --partners-mobile-card-width: min(86vw, 420px);
+    display: block;
+    height: auto;
+    min-height: calc(100svh - var(--public-header-height, var(--public-navbar-offset)));
+    padding-block: clamp(48px, 8vw, 64px);
+    padding-inline: clamp(16px, 4vw, 28px);
+    scroll-margin-top: var(--public-header-height, var(--public-navbar-offset));
+  }
+
+  .public-homepage .public-section--medical-partners .medical-partners__inner {
+    align-content: start;
+    gap: clamp(20px, 4vw, 28px);
+    height: auto;
+    min-height: 0;
+  }
+
+  .public-homepage .public-section--medical-partners .medical-partners__heading-wrap {
+    margin-block-end: 0;
+  }
+
+  .public-homepage .public-section--medical-partners .medical-partners__carousel {
+    position: relative;
+    display: block;
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    margin: 0;
+  }
+
+  .public-homepage .public-section--medical-partners .medical-partners__scroll-track {
+    width: 100%;
+    height: auto;
+    min-height: 0;
+    padding-block: 8px 14px;
+    padding-inline:
+      calc((100% - var(--partners-mobile-card-width)) / 2)
+      calc((100% - var(--partners-mobile-card-width)) / 2 + clamp(16px, 4vw, 22px));
+    scroll-padding-inline: calc((100% - var(--partners-mobile-card-width)) / 2);
+    scroll-snap-type: x proximity;
+  }
+
+  .public-homepage .public-section--medical-partners .medical-partners__card {
+    flex: 0 0 var(--public-home-card-width);
+    width: var(--public-home-card-width);
+    scroll-snap-align: start;
+  }
+
+  .public-homepage .public-section--medical-partners .medical-partners__nav-btn {
+    position: absolute;
+    top: 50%;
+    z-index: 4;
+    width: 40px;
+    height: 40px;
+    transform: translateY(-50%);
+  }
+
+  .public-homepage .public-section--medical-partners .medical-partners__nav-btn:hover {
+    transform: translateY(-50%);
+  }
+
+  .public-homepage .public-section--medical-partners .medical-partners__nav-btn--prev {
+    inset-inline-start: 0;
+  }
+
+  .public-homepage .public-section--medical-partners .medical-partners__nav-btn--next {
+    inset-inline-end: 0;
+  }
+}
+
+.public-homepage .public-section--medical-partners .medical-partner-logo-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(138, 45, 168, 0.15), rgba(217, 70, 161, 0.15));
+  color: var(--mp-purple);
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .public-homepage .public-section--medical-partners .medical-partners__card {
+    transition: none;
+  }
+
+  .public-homepage .public-section--medical-partners .medical-partners__card:hover {
+    transform: none;
+  }
+}

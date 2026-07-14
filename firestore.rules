@@ -1,0 +1,611 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ── Helpers ─────────────────────────────────────────────
+    // Resolve a role from an already-fetched user doc. get() returns null for a
+    // missing document, so a null-check replaces the separate exists() call —
+    // halving the reads on every role check (getUserRole is reached via
+    // isAdmin() throughout the ruleset). The ?: short-circuits, so get() never
+    // runs for unauthenticated requests.
+    function userRoleFromDoc(userDoc) {
+      return userDoc != null ? userDoc.data.get('role', 'participant') : 'participant';
+    }
+    function getUserRole() {
+      return request.auth != null
+        ? userRoleFromDoc(get(/databases/$(database)/documents/users/$(request.auth.uid)))
+        : 'participant';
+    }
+    function isAdmin() {
+      return request.auth != null && getUserRole() == 'admin';
+    }
+    function isSelf(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+    function eventAcceptsRegistrations(eventId) {
+      return exists(/databases/$(database)/documents/events/$(eventId))
+        && get(/databases/$(database)/documents/events/$(eventId)).data.status == 'published'
+        && get(/databases/$(database)/documents/events/$(eventId)).data.get('registrationOpen', true) != false;
+    }
+    function isValidParticipantBookingCreate(bookingId) {
+      return request.auth != null
+        && request.resource.data.userId == request.auth.uid
+        && request.resource.data.bookingId == bookingId
+        && request.resource.data.eventId is string
+        && request.resource.data.eventId.size() > 0
+        && request.resource.data.status == 'confirmed'
+        && eventAcceptsRegistrations(request.resource.data.eventId);
+    }
+    function bookingIdentityIsUnchanged() {
+      return request.resource.data.userId == resource.data.userId
+        && request.resource.data.bookingId == resource.data.bookingId
+        && request.resource.data.eventId == resource.data.eventId
+        && request.resource.data.get('slotId', '') == resource.data.get('slotId', '')
+        && request.resource.data.get('providerId', '') == resource.data.get('providerId', '')
+        && request.resource.data.get('providerName', '') == resource.data.get('providerName', '')
+        && request.resource.data.get('dateKey', '') == resource.data.get('dateKey', '')
+        && request.resource.data.get('startAt', null) == resource.data.get('startAt', null)
+        && request.resource.data.get('endAt', null) == resource.data.get('endAt', null)
+        && request.resource.data.get('selectedDate', '') == resource.data.get('selectedDate', '')
+        && request.resource.data.get('selectedTime', '') == resource.data.get('selectedTime', '');
+    }
+    function isParticipantCancellation() {
+      return request.auth != null
+        && resource.data.userId == request.auth.uid
+        && bookingIdentityIsUnchanged()
+        && request.resource.data.status == 'cancelled'
+        && resource.data.status != 'cancelled'
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'status', 'cancelledAt'
+        ]);
+    }
+    function isParticipantRebooking() {
+      return request.auth != null
+        && resource.data.userId == request.auth.uid
+        && bookingIdentityIsUnchanged()
+        && resource.data.status == 'cancelled'
+        && request.resource.data.status == 'confirmed'
+        && eventAcceptsRegistrations(resource.data.eventId);
+    }
+    // A signed-in non-author may touch ONLY engagement/aggregate fields on a
+    // post, and only in ways tied to themselves: toggle their OWN like/support,
+    // bump the comment count by one, or add their OWN report. This stops vote
+    // inflation, liking on behalf of others, and report tampering/erasure on
+    // other members' posts (the previous rule allowed any value for these).
+    function listAddsOnlySelf(field) {
+      let before = resource.data.get(field, []);
+      let after = request.resource.data.get(field, []);
+      return after.hasAll(before)
+        && after.size() == before.size() + 1
+        && (request.auth.uid in after)
+        && !(request.auth.uid in before);
+    }
+    function listRemovesOnlySelf(field) {
+      let before = resource.data.get(field, []);
+      let after = request.resource.data.get(field, []);
+      return before.hasAll(after)
+        && after.size() == before.size() - 1
+        && (request.auth.uid in before)
+        && !(request.auth.uid in after);
+    }
+    function countChangedBy(field, delta) {
+      return request.resource.data.get(field, 0) == resource.data.get(field, 0) + delta;
+    }
+    function isLikeEngagement() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likedBy', 'likesCount'])
+        && (
+          (listAddsOnlySelf('likedBy') && countChangedBy('likesCount', 1))
+          || (listRemovesOnlySelf('likedBy') && countChangedBy('likesCount', -1))
+        );
+    }
+    function isSupportEngagement() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['supportedBy', 'supportCount'])
+        && (
+          (listAddsOnlySelf('supportedBy') && countChangedBy('supportCount', 1))
+          || (listRemovesOnlySelf('supportedBy') && countChangedBy('supportCount', -1))
+        );
+    }
+    function isCommentCountEngagement() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly(['commentsCount'])
+        && (countChangedBy('commentsCount', 1) || countChangedBy('commentsCount', -1));
+    }
+    function isReportEngagement() {
+      return request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['reportedBy', 'reportsCount', 'reports', 'status'])
+        && listAddsOnlySelf('reportedBy')
+        && countChangedBy('reportsCount', 1)
+        && request.resource.data.get('reports', []).size() == resource.data.get('reports', []).size() + 1
+        && request.resource.data.status == 'reported';
+    }
+    function isCommunityEngagementUpdate() {
+      return isLikeEngagement()
+        || isSupportEngagement()
+        || isCommentCountEngagement()
+        || isReportEngagement();
+    }
+
+    // Admin aggregate screens use collectionGroup('registrations') across
+    // registration subcollections. Keep this admin-only so participant access
+    // to user mirrors stays constrained by the /users/{uid} rules below.
+    match /{path=**}/registrations/{registrationId} {
+      allow read: if isAdmin();
+    }
+
+    // ── Users (top-level) ───────────────────────────────────
+    // Contains participant PII (name, email, phone, address) as of Phase 2, so
+    // reads are restricted to the owner and admins. Community-visible display
+    // data (name shown in the feed, birthday) is mirrored to /public_profiles.
+    // A user can write their own doc (except `role`); admins can write any.
+    match /users/{uid} {
+      allow read: if isSelf(uid) || isAdmin();
+      // A user may create their own doc but may NOT self-assign a privileged role.
+      allow create: if isSelf(uid)
+        && request.resource.data.get('role', 'participant') == 'participant';
+      // A user may update their own doc but may NOT change their own `role`
+      // (only an admin can promote/demote). This is what keeps isAdmin() —
+      // which reads users/{uid}.role — from being self-grantable.
+      allow update: if isAdmin()
+        || (isSelf(uid)
+            && request.resource.data.get('role', '') == resource.data.get('role', '')
+            // Account state is admin-controlled: a user must not be able to
+            // reactivate themselves or clear an inactive status to bypass the
+            // deactivation gate. (`mustChangePassword` stays writable — the user
+            // clears it themselves when completing the forced password change.)
+            && request.resource.data.get('isActive', true) == resource.data.get('isActive', true)
+            && request.resource.data.get('status', '') == resource.data.get('status', ''));
+      allow delete: if isSelf(uid) || isAdmin();
+
+      // Per-user subcollections — the owner has full access. Admins also have access.
+      match /registrations/{eventId} {
+        allow read, delete: if isSelf(uid) || isAdmin();
+        allow create, update: if isAdmin();
+      }
+      match /bookings/{bookingId} {
+        allow read: if isSelf(uid) || isAdmin();
+        allow create: if isAdmin()
+          || (isSelf(uid) && isValidParticipantBookingCreate(bookingId));
+        allow update: if isAdmin()
+          || (isSelf(uid) && (isParticipantCancellation() || isParticipantRebooking()));
+        allow delete: if isAdmin();
+      }
+      // A deterministic daily lock prevents two browser sessions from creating
+      // more than one participant appointment on the same date.
+      match /appointmentConstraints/{constraintId} {
+        allow read: if isSelf(uid) || isAdmin();
+        allow create: if isAdmin()
+          || (isSelf(uid)
+            && request.resource.data.userId == uid
+            && request.resource.data.bookingId is string
+            && request.resource.data.bookingId.size() > 0
+            && request.resource.data.kind == 'day');
+        allow update: if isAdmin()
+          || (isSelf(uid)
+            && resource.data.userId == uid
+            && request.resource.data.userId == uid
+            && request.resource.data.bookingId == resource.data.bookingId
+            && request.resource.data.kind == resource.data.kind);
+        allow delete: if isAdmin()
+          || (isSelf(uid) && resource.data.userId == uid);
+      }
+      match /appointments/{apptId} {
+        allow read: if isSelf(uid) || isAdmin();
+        allow create: if isAdmin();
+        allow update: if isAdmin()
+          || (isSelf(uid)
+            && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'cancelledAt'])
+            && request.resource.data.status == 'cancelled');
+        allow delete: if isAdmin();
+      }
+      match /calendar_notes/{noteId} {
+        allow read: if isSelf(uid) || isAdmin();
+        allow create: if isAdmin()
+          || (isSelf(uid)
+            && request.resource.data.userId == uid
+            && request.resource.data.title is string
+            && request.resource.data.title.size() > 0
+            && request.resource.data.title.size() <= 200
+            && request.resource.data.content is string
+            && request.resource.data.content.size() > 0
+            && request.resource.data.content.size() <= 5000);
+        allow update: if isAdmin()
+          || (isSelf(uid)
+            && request.resource.data.userId == resource.data.userId
+            && request.resource.data.userId == uid);
+        allow delete: if isAdmin()
+          || (isSelf(uid)
+            && resource.data.userId == uid);
+      }
+      match /dashboard_notes/{noteId} {
+        allow read: if request.auth != null && request.auth.uid == uid;
+        allow create: if request.auth != null && request.auth.uid == uid;
+        allow update, delete: if request.auth != null && request.auth.uid == uid;
+        allow read, create, update, delete: if isAdmin();
+      }
+
+      // Activity notifications (auto-generated when others engage with this
+      // user's community posts). The owner reads/clears their own feed; any
+      // signed-in user may create one addressed to this user, but only
+      // attributed to themselves and only for the supported activity types.
+      // Actors may remove their own reversible engagement notifications
+      // (currently likes/comments) when that engagement is removed. Self-
+      // notifications and edits are disallowed.
+      match /activity_notifications/{notificationId} {
+        allow read: if isSelf(uid) || isAdmin();
+        allow delete: if isSelf(uid)
+          || isAdmin()
+          || (
+            request.auth != null
+            && resource.data.actorId == request.auth.uid
+            && resource.data.type in ['comment', 'like']
+          );
+        allow create: if request.auth != null
+          && request.resource.data.recipientId == uid
+          && request.resource.data.actorId == request.auth.uid
+          && (
+            (
+              request.auth.uid != uid
+              && request.resource.data.type in ['comment', 'follow', 'like', 'support', 'birthday_wish']
+            )
+            || (
+              request.auth.uid == uid
+              && request.resource.data.type in ['streak_reminder', 'streak_grace', 'streak_lost']
+            )
+          );
+        // The owner may only flip their own read state; no other edits allowed.
+        allow update: if isSelf(uid)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read', 'readAt']);
+      }
+    }
+
+    // ── Public Profiles (community-visible display data only) ───
+    // Holds ONLY non-sensitive, opt-in display fields mirrored from
+    // users/{uid}: communityDisplayName, communityBirthday (stored here as
+    // 'MM-DD' only — the birth year is stripped so a member's age can't be
+    // derived), and showBirthdayInCommunity. Any signed-in user may read (the
+    // community birthday widget queries this), but only the owner may write,
+    // and only those fields — so contact PII in users/{uid} is never exposed.
+    match /public_profiles/{uid} {
+      allow read: if request.auth != null;
+      allow create, update: if isSelf(uid)
+        && request.resource.data.keys().hasOnly([
+             'communityDisplayName', 'communityBirthday',
+             'showBirthdayInCommunity', 'updatedAt'
+           ]);
+      allow delete: if isSelf(uid) || isAdmin();
+    }
+
+    // Admin lookup table (legacy, kept for role resolution).
+    match /admins/{adminId} {
+      allow read: if request.auth != null;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ── Audit Logs — APPEND ONLY ────────────────────────────
+    match /audit_logs/{logId} {
+      allow read, create: if isAdmin();
+      allow update, delete: if false;
+    }
+
+    // ── Events ──────────────────────────────────────────────
+    match /events/{eventId} {
+      allow read: if request.auth != null;
+      allow create, update, delete: if isAdmin();
+
+      // Event roster — admin can write; authenticated users can create their own
+      // entry (the doc id equals their uid) so participants can self-register.
+      match /registrations/{rosterKey} {
+        allow get: if isAdmin()
+          || (request.auth != null && resource.data.userId == request.auth.uid);
+        allow list: if isAdmin();
+        allow create: if isAdmin() ||
+          (request.auth != null
+            && request.resource.data.userId == request.auth.uid
+            && request.resource.data.eventId == eventId
+            && request.resource.data.bookingId == rosterKey
+            && request.resource.data.status == 'confirmed'
+            && eventAcceptsRegistrations(eventId)
+            && (
+              rosterKey == request.auth.uid
+              || request.resource.data.bookingId == rosterKey
+            ));
+        allow update: if isAdmin();
+        allow delete: if isAdmin() ||
+          (request.auth != null
+            && resource.data.userId == request.auth.uid);
+      }
+
+      // Per-slot seat counters used to enforce capacity transactionally
+      // (a client transaction can't run a query, so it reads this single doc).
+      // Any signed-in user may step the count by exactly one in either
+      // direction — paired with their own booking write in the same
+      // transaction — but cannot set it to an arbitrary value. NOTE: this is a
+      // best-effort guard; a determined client could still nudge a counter
+      // without booking (the airtight alternative is a Cloud Function gate).
+      // The backfill script reseeds via the Admin SDK, which bypasses rules.
+      match /slotCounters/{slotKey} {
+        allow read: if request.auth != null;
+        allow create: if request.auth != null
+          && request.resource.data.keys().hasOnly(['count', 'slotId', 'eventId', 'updatedAt'])
+          && request.resource.data.count == 1;
+        allow update: if request.auth != null
+          && request.resource.data.diff(resource.data).affectedKeys()
+               .hasOnly(['count', 'slotId', 'eventId', 'updatedAt'])
+          && request.resource.data.count is number
+          && request.resource.data.count >= 0
+          && (
+            request.resource.data.count == resource.data.count + 1
+            || request.resource.data.count == resource.data.count - 1
+          );
+        allow delete: if isAdmin();
+      }
+    }
+
+    // ── Appointments (flat, used by admin queries) ──────────
+    match /bookings/{bookingId} {
+      // Registration transactions read the deterministic booking ID before
+      // creating it. Permit that missing-document lookup, but keep existing
+      // booking documents private to their owner and admins.
+      allow get: if isAdmin()
+        || (request.auth != null && (
+          !exists(/databases/$(database)/documents/bookings/$(bookingId))
+          || resource.data.userId == request.auth.uid
+        ));
+      allow list: if isAdmin()
+        || (request.auth != null && resource.data.userId == request.auth.uid);
+      allow create: if isAdmin()
+        || isValidParticipantBookingCreate(bookingId);
+      allow update: if isAdmin()
+        || isParticipantCancellation()
+        || isParticipantRebooking();
+      allow delete: if isAdmin();
+    }
+
+    match /appointments/{appointmentId} {
+      // Admins see everything. Participants see appointments where they are
+      // the user (userId field or legacy participantId).
+      allow read: if isAdmin()
+        || (request.auth != null && (
+              resource.data.userId == request.auth.uid
+              || resource.data.participantId == request.auth.uid
+              || resource.data.participantEmail == request.auth.token.email
+           ));
+      // Participants can create their own; admin can create anything.
+      allow create: if isAdmin()
+        || (request.auth != null && request.resource.data.participantId == request.auth.uid);
+      allow update: if isAdmin()
+        || (request.auth != null && resource.data.participantId == request.auth.uid);
+      allow delete: if isAdmin();
+    }
+
+    // ── Appointment Settings ────────────────────────────────
+    match /appt_settings/{docId} {
+      allow read, write: if isAdmin();
+    }
+
+    // ── Therapists (reference data) ─────────────────────────
+    match /therapists/{therapistId} {
+      allow read: if request.auth != null;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ── CMS (public read, admin write) ──────────────────────
+    match /cms_articles/{articleId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+    match /cms_team/{memberId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+    match /cms_org/{docId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Backward-compat: legacy CMS collections still readable until migration completes.
+    match /articles/{articleId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+    match /team_profiles/{profileId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+    match /org_info/{docId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Public homepage sections
+    match /homepage_statistics/{docId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+    match /support_areas/{docId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+    match /homepage_content/{docId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ── Public Pages (public read, admin write) ─────────────
+    // Single collection for the public site. Each document is one page
+    // (e.g. `home`) with nested field groups per section.
+    match /public_pages/{pageId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ── Community Posts ──────────────────────────────────────
+    match /community_posts/{postId} {
+      allow read: if request.auth != null;
+
+      allow create: if request.auth != null
+        && request.resource.data.authorId == request.auth.uid;
+
+      // Author can edit their own post; admins can hide/restore/dismiss reports.
+      // Any signed-in user may update engagement/aggregate fields (like, support,
+      // comment count, report) on posts they don't own.
+      allow update: if request.auth != null
+        && (resource.data.authorId == request.auth.uid
+            || isAdmin()
+            || isCommunityEngagementUpdate());
+
+      // Hard delete: admin only. Soft delete (status='deleted') uses update above.
+      allow delete: if isAdmin()
+        || (request.auth != null && resource.data.authorId == request.auth.uid);
+
+      match /comments/{commentId} {
+        allow read: if request.auth != null;
+        allow create: if request.auth != null
+          && request.resource.data.authorId == request.auth.uid;
+        allow update, delete: if isAdmin()
+          || (request.auth != null && resource.data.authorId == request.auth.uid);
+      }
+    }
+
+    // ── Community Settings (guidelines, etc.) ────────────────
+    match /community_settings/{docId} {
+      allow read: if request.auth != null;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ── Workshop Suggestions ────────────────────────────────
+    match /workshop_suggestions/{suggestionId} {
+      allow create: if request.auth != null;
+      allow read, update, delete: if isAdmin();
+    }
+
+    // Public join requests from the website modal.
+    // Unauthenticated by design (public form), but the payload is constrained
+    // to a fixed field set with bounded sizes and a pinned status/source so the
+    // endpoint can't be used to write arbitrary/oversized documents.
+    // NOTE: enable Firebase App Check on this project for real bot protection.
+    match /joinRequests/{requestId} {
+      allow create: if request.resource.data.keys().hasOnly([
+            'firstName', 'lastName', 'fullName', 'address', 'birthDate', 'cancerStory',
+            'consentToReceiveInfo', 'email', 'phone', 'whatsappNote',
+            'readyToJoin', 'source', 'status', 'createdAt'
+          ])
+        && request.resource.data.firstName is string
+        && request.resource.data.firstName.size() > 0
+        && request.resource.data.firstName.size() <= 200
+        && request.resource.data.lastName is string
+        && request.resource.data.lastName.size() > 0
+        && request.resource.data.lastName.size() <= 200
+        && request.resource.data.fullName is string
+        && request.resource.data.fullName.size() > 0
+        && request.resource.data.fullName.size() <= 400
+        && request.resource.data.email is string
+        && request.resource.data.email.size() <= 320
+        && request.resource.data.cancerStory is string
+        && request.resource.data.cancerStory.size() <= 20000
+        && request.resource.data.phone is string
+        && request.resource.data.phone.size() <= 40
+        && request.resource.data.status == 'new'
+        && request.resource.data.source == 'public-website';
+      allow read, update, delete: if isAdmin();
+    }
+
+    // Public volunteer/donation contact forms from the website modals.
+    // Like joinRequests: unauthenticated create by design, but constrained to a
+    // fixed field set with bounded sizes and a pinned type/status/source so the
+    // endpoint can't be used to write arbitrary/oversized documents. Admins
+    // read and manage (mark handled / delete) from the Forms page.
+    // NOTE: enable Firebase App Check on this project for real bot protection.
+    match /formSubmissions/{submissionId} {
+      allow create: if request.resource.data.keys().hasOnly([
+            'type', 'firstName', 'lastName', 'fullName',
+            'email', 'phone', 'message', 'source', 'status', 'createdAt'
+          ])
+        && request.resource.data.type in ['volunteer', 'donation']
+        && request.resource.data.firstName is string
+        && request.resource.data.firstName.size() > 0
+        && request.resource.data.firstName.size() <= 200
+        && request.resource.data.lastName is string
+        && request.resource.data.lastName.size() <= 200
+        && request.resource.data.fullName is string
+        && request.resource.data.fullName.size() <= 400
+        && request.resource.data.email is string
+        && request.resource.data.email.size() <= 320
+        && request.resource.data.phone is string
+        && request.resource.data.phone.size() <= 40
+        && request.resource.data.message is string
+        && request.resource.data.message.size() <= 5000
+        && request.resource.data.status == 'new'
+        && request.resource.data.source == 'public-website';
+      allow read, update, delete: if isAdmin();
+    }
+
+    // ── Bug / problem reports (participant app) ─────────────
+    // Signed-in participants report issues from inside the app. Authenticated
+    // create, constrained to a fixed field set with bounded sizes and a pinned
+    // status/source so it can't be used to write arbitrary/oversized docs. The
+    // reporter must attribute the report to themselves. Admins triage them.
+    match /bugReports/{reportId} {
+      allow create: if request.auth != null
+        && request.resource.data.reporterUid == request.auth.uid
+        && request.resource.data.keys().hasOnly([
+             'message', 'category', 'route', 'locale', 'userAgent', 'appVersion',
+             'reporterUid', 'reporterEmail', 'reporterName',
+             'status', 'source', 'createdAt'
+           ])
+        && request.resource.data.message is string
+        && request.resource.data.message.size() > 0
+        && request.resource.data.message.size() <= 5000
+        && request.resource.data.category in ['bug', 'visual', 'content', 'performance', 'other']
+        && request.resource.data.get('route', '') is string
+        && request.resource.data.get('route', '').size() <= 600
+        && request.resource.data.get('userAgent', '') is string
+        && request.resource.data.get('userAgent', '').size() <= 1000
+        && request.resource.data.get('reporterEmail', '') is string
+        && request.resource.data.get('reporterEmail', '').size() <= 320
+        && request.resource.data.get('reporterName', '') is string
+        && request.resource.data.get('reporterName', '').size() <= 200
+        && request.resource.data.status == 'new'
+        && request.resource.data.source == 'participant-app';
+      allow read, update, delete: if isAdmin();
+    }
+
+    // ── Updates / Announcements ─────────────────────────────
+    // Any authenticated user can read active announcements.
+    // Only admins can create, update, and delete announcements.
+    match /updates/{updateId} {
+      allow read: if request.auth != null;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ── Stats Summary Docs ──────────────────────────────────
+    // public_summary is world-readable for the homepage; admin_summary is admin-only.
+    // Writes are admin-only (clients bump them via batched writes alongside admin ops).
+    match /stats/{docId} {
+      allow read: if docId == 'public_summary' || isAdmin();
+      allow write: if isAdmin();
+    }
+
+    // ── Legacy collections (read-only during migration window) ───
+    // event_registrations, registrations, participants, calendar_notes (top-level)
+    // remain readable so the migration script can ingest them. Direct writes
+    // are denied — all new writes go through subcollections.
+    match /event_registrations/{regId} {
+      allow read: if request.auth != null;
+      allow create, update, delete: if isAdmin();
+    }
+    match /registrations/{regId} {
+      allow read: if request.auth != null;
+      allow create, update, delete: if isAdmin();
+    }
+    match /participants/{participantId} {
+      allow read, write: if request.auth != null
+        && request.auth.uid == participantId;
+    }
+    match /calendar_notes/{noteId} {
+      allow read: if isAdmin()
+        || (request.auth != null && resource.data.userId == request.auth.uid);
+      allow write: if isAdmin();
+    }
+
+  }
+}

@@ -1,0 +1,1515 @@
+@import "./public-layout.css";
+@import "./public-hero-section.css";
+@import "./public-section-heading.css";
+@import "./public-sections.css";
+@import "./public-cards.css";
+@import "./join-modal.css";
+@import "./support-area-modal.css";
+@import "./public-about-section.css";
+@import "./public-statistics-section.css";
+@import "./public-support-cta.css";
+@import "./public-team-section.css";
+@import "./public-language-switcher.css";
+@import "./medical-partner-modal.css";
+@import "./public-responsive.css";
+@import "./public-support-section.css";
+@import "./public-medical-partners-section.css";
+@import "./public-articles-section.css";
+@import "./public-events-section.css";
+@import "./public-arabic-typography.css";
+
+/* ── Admin preview banner ─────────────────────────────── */
+.public-preview-banner {
+  position: fixed;
+  bottom: 0;
+  inset-inline-start: 0;
+  inset-inline-end: 0;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0 1.25rem;
+  height: 44px;
+  background: #4a0e8f;
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+.public-preview-banner__label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  opacity: 0.85;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+}
+
+.public-preview-banner__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.3rem 0.85rem;
+  border-radius: 6px;
+  border: 1.5px solid rgba(255,255,255,0.55);
+  color: #fff;
+  background: transparent;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.15s, border-color 0.15s;
+  white-space: nowrap;
+}
+
+.public-preview-banner__back:hover {
+  background: rgba(255,255,255,0.15);
+  border-color: #fff;
+}
+
+
+.public-homepage :where(.public-hero h1) {
+  font-weight: 700;
+  color: #ffffff;
+}
+
+.public-homepage :where(.public-section__header h2, .public-donation h2, .press-articles__heading, .public-card h3, .public-footer h2) {
+  font-weight: 900;
+}
+
+/* Unified premium section titles — same typography as eyebrow labels */
+.public-homepage .public-section--about .public-about__title,
+.public-homepage .public-section-heading__title {
+  font-family: inherit;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+.public-homepage :where(.public-button, .public-navbar__cta, .public-eyebrow) {
+  font-weight: 900;
+}
+
+.public-homepage :where(.public-navbar__links a, .public-contact__label) {
+  font-weight: 800;
+}
+
+.public-homepage :where(.public-section__text, .public-card p, .public-donation p, .public-footer__text) {
+  font-weight: 400;
+}
+
+.public-homepage :where(small, time, .public-article-card__meta) {
+  font-weight: 300;
+}
+
+/* Match visible homepage text actions to the navbar join button. */
+.public-homepage
+  :is(
+    .public-hero__btn,
+    .public-button,
+    .public-support__more,
+    .public-event-card__button,
+    .public-story-card__read-more,
+    .press-article-card__cta,
+    .public-support-cta__button,
+    .public-donation__button,
+    .public-team-section__email-trigger,
+    .public-team-section__email-copy
+  ) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 150px;
+  min-height: 52px;
+  padding: 12px 28px;
+  border: 2px solid rgba(91, 30, 140, 0.2);
+  border-radius: 999px;
+  color: #5b1e8c;
+  background: rgba(255, 255, 255, 0.97);
+  box-shadow: 0 9px 24px rgba(91, 30, 140, 0.12);
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1;
+  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    color 180ms ease,
+    background 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.public-homepage
+  :is(
+    .public-hero__btn,
+    .public-button,
+    .public-support__more,
+    .public-event-card__button,
+    .public-story-card__read-more,
+    .press-article-card__cta,
+    .public-support-cta__button,
+    .public-donation__button,
+    .public-team-section__email-trigger,
+    .public-team-section__email-copy
+  ):is(:hover, :focus-visible) {
+  color: #fff;
+  background: linear-gradient(135deg, #e73386, #dc2577);
+  border-color: transparent;
+  box-shadow: 0 14px 26px rgba(223, 50, 123, 0.24);
+  transform: translateY(-2px);
+}
+
+.public-homepage
+  :is(
+    .public-hero__btn,
+    .public-button,
+    .public-support__more,
+    .public-event-card__button,
+    .public-story-card__read-more,
+    .press-article-card__cta,
+    .public-support-cta__button,
+    .public-donation__button,
+    .public-team-section__email-trigger,
+    .public-team-section__email-copy
+  ):active {
+  transform: translateY(0);
+}
+
+.public-homepage
+  :is(
+    .public-hero__btn,
+    .public-button,
+    .public-support__more,
+    .public-event-card__button,
+    .public-story-card__read-more,
+    .press-article-card__cta,
+    .public-support-cta__button,
+    .public-donation__button,
+    .public-team-section__email-trigger,
+    .public-team-section__email-copy
+  ):focus-visible {
+  outline: 3px solid rgba(236, 72, 153, 0.28);
+  outline-offset: 3px;
+}
+
+/* —— Shared homepage card grids (responsive) —— */
+.public-homepage {
+  --public-grid-gap: clamp(20px, 2.4vw, 28px);
+  --public-grid-max: 1280px;
+  --public-grid-min: 280px;
+  --public-home-card-width: clamp(280px, calc((100% - 2 * var(--public-grid-gap)) / 3), 400px);
+}
+
+.public-homepage :is(
+  .public-about__cards,
+  .public-statistics__grid,
+  .medical-partners__grid,
+  .press-articles__grid,
+  .public-team-grid,
+  .public-articles-grid,
+  .public-section--support .public-support__grid
+) {
+  display: grid;
+  gap: var(--public-grid-gap);
+  width: min(100%, var(--public-grid-max));
+  max-width: 100%;
+  margin-inline: auto;
+  justify-items: stretch;
+  align-items: stretch;
+}
+
+.public-homepage :is(
+  .public-about__cards,
+  .public-statistics__grid:not(.public-statistics__grid--hero),
+  .medical-partners__grid,
+  .press-articles__grid
+) {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.public-homepage :is(
+  .public-team-grid,
+  .public-articles-grid,
+  .public-section--support .public-support__grid
+) {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.public-homepage :is(
+  .public-about__card,
+  .public-statistics__card,
+  .medical-partners__card,
+  .press-article-card,
+  .public-team-section__card,
+  .public-team-card,
+  .public-article-card,
+  .public-event-card,
+  .public-section--support .public-support__card
+) {
+  min-width: 0;
+  max-width: 100%;
+}
+
+/* Cards sit directly on each section without a shared-looking shadow layer. */
+.public-homepage--main :is(
+  .public-support__card,
+  .public-event-card,
+  .public-team-section__card,
+  .medical-partners__card
+),
+.public-stories-articles-page :is(
+  .press-article-card
+) {
+  flex-basis: var(--public-home-card-width);
+  width: var(--public-home-card-width);
+  min-width: var(--public-home-card-width);
+  max-width: var(--public-home-card-width);
+  box-shadow: none !important;
+}
+
+/* Shared horizontal carousel edges and navigation controls. */
+.public-homepage .public-card-carousel {
+  position: relative;
+}
+
+.public-homepage .public-card-carousel__track {
+  --public-carousel-fade-width: clamp(36px, 4vw, 56px);
+  overflow-anchor: none;
+  mask-image: none;
+  -webkit-mask-image: none;
+  transition: mask-image 180ms ease, -webkit-mask-image 180ms ease;
+}
+
+.public-homepage
+  .public-card-carousel--fade-left.public-card-carousel--fade-right
+  .public-card-carousel__track {
+  mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    #000 var(--public-carousel-fade-width),
+    #000 calc(100% - var(--public-carousel-fade-width)),
+    transparent 100%
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    #000 var(--public-carousel-fade-width),
+    #000 calc(100% - var(--public-carousel-fade-width)),
+    transparent 100%
+  );
+}
+
+.public-homepage
+  .public-card-carousel--fade-left:not(.public-card-carousel--fade-right)
+  .public-card-carousel__track {
+  mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    #000 var(--public-carousel-fade-width)
+  );
+  -webkit-mask-image: linear-gradient(
+    to right,
+    transparent 0,
+    #000 var(--public-carousel-fade-width)
+  );
+}
+
+.public-homepage
+  .public-card-carousel--fade-right:not(.public-card-carousel--fade-left)
+  .public-card-carousel__track {
+  mask-image: linear-gradient(
+    to left,
+    transparent 0,
+    #000 var(--public-carousel-fade-width)
+  );
+  -webkit-mask-image: linear-gradient(
+    to left,
+    transparent 0,
+    #000 var(--public-carousel-fade-width)
+  );
+}
+
+.public-homepage .public-card-carousel--without-controls {
+  grid-template-columns: minmax(0, 1fr) !important;
+}
+
+.public-homepage .public-card-carousel__button {
+  z-index: 4;
+  display: inline-grid !important;
+  width: 46px;
+  height: 46px;
+  flex: 0 0 46px;
+  place-items: center;
+  padding: 0;
+  color: #6d2aa5;
+  cursor: pointer;
+  background: #ffffff;
+  border: 1.5px solid rgba(217, 70, 161, 0.24);
+  border-radius: 50%;
+  box-shadow: 0 8px 22px rgba(91, 30, 140, 0.13);
+  opacity: 1;
+  transition:
+    color 200ms ease,
+    background 200ms ease,
+    border-color 200ms ease,
+    box-shadow 200ms ease,
+    opacity 200ms ease,
+    transform 200ms ease;
+}
+
+.public-homepage .public-card-carousel__button:hover:not(:disabled),
+.public-homepage .public-card-carousel__button:focus-visible:not(:disabled) {
+  color: #ffffff;
+  background: linear-gradient(135deg, #e73386, #dc2577);
+  border-color: transparent;
+  box-shadow: 0 14px 26px rgba(223, 50, 123, 0.24);
+  transform: translateY(-2px);
+}
+
+.public-homepage .public-card-carousel__button:disabled {
+  color: rgba(91, 30, 140, 0.35);
+  cursor: default;
+  background: rgba(255, 255, 255, 0.7);
+  border-color: rgba(217, 70, 161, 0.12);
+  box-shadow: none;
+  opacity: 0.42;
+  pointer-events: none;
+  transform: none;
+}
+
+.public-homepage--main main > :is(
+  #team,
+  #medical-partners
+) {
+  min-height: calc(100svh - var(--public-current-navbar-height, var(--public-navbar-offset)));
+}
+
+.public-homepage--main :is(
+  .public-support__card,
+  .public-event-card,
+  .public-team-section__card,
+  .medical-partners__card
+),
+.public-stories-articles-page :is(
+  .press-article-card
+):is(:hover, :focus-within) {
+  box-shadow: none !important;
+}
+
+.public-stories-articles-page {
+  --public-story-card-width: var(--public-home-card-width);
+}
+
+.public-stories-articles-page #stories .public-story-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 0 0 var(--public-story-card-width);
+  width: var(--public-story-card-width);
+  height: 360px;
+  min-width: var(--public-story-card-width);
+  max-width: var(--public-story-card-width);
+  min-height: 360px;
+  max-height: 360px;
+  padding: 24px 24px 22px;
+  overflow: hidden;
+  background: #ffffff;
+  border: 1px solid rgba(236, 60, 151, 0.18);
+  border-radius: 24px;
+  box-shadow: none;
+  text-align: center;
+}
+
+.public-stories-articles-page #stories .public-team-card__media {
+  width: 110px;
+  height: 110px;
+  flex: 0 0 110px;
+  padding: 3px;
+  border: 2px solid rgba(236, 60, 151, 0.32);
+  box-shadow:
+    0 0 0 4px rgba(255, 240, 248, 0.95),
+    0 10px 24px rgba(236, 60, 151, 0.14);
+}
+
+.public-stories-articles-page #stories .public-team-card__media > :is(img, .public-team-card__placeholder) {
+  position: absolute;
+  inset: 3px;
+  width: calc(100% - 6px);
+  height: calc(100% - 6px);
+  border-radius: 50%;
+}
+
+.public-stories-articles-page #stories .public-team-card:hover .public-team-card__media {
+  border-color: rgba(236, 60, 151, 0.48);
+  box-shadow:
+    0 0 0 6px rgba(236, 60, 151, 0.1),
+    0 14px 32px rgba(236, 60, 151, 0.22);
+}
+
+.public-stories-articles-page #stories .public-story-card__identity {
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  width: 100%;
+  margin-block-start: 18px;
+}
+
+.public-stories-articles-page #stories .public-story-card__identity h3 {
+  margin: 0;
+  color: #5b1e8c;
+  font-size: clamp(1.08rem, 1.2vw, 1.2rem);
+  font-weight: 900;
+  line-height: 1.35;
+}
+
+.public-stories-articles-page #stories .public-team-card__role {
+  color: #ec3c97;
+  font-size: clamp(0.9rem, 1vw, 0.98rem);
+  font-weight: 700;
+  line-height: 1.4;
+}
+
+.public-stories-articles-page #stories .public-story-card__content {
+  display: flex;
+  min-height: 0;
+  flex: 1 1 auto;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+
+.public-stories-articles-page #stories .public-story-card__text {
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  max-width: 22rem;
+  margin-block-start: 12px;
+  color: #6f6478;
+  font-size: clamp(0.88rem, 0.98vw, 0.94rem);
+  font-weight: 400;
+  font-style: normal;
+  line-height: 1.55;
+}
+
+.public-stories-articles-page #stories .public-story-card__read-more {
+  min-width: 150px;
+  min-height: 52px;
+  justify-content: center;
+  margin: auto 0 0;
+  padding: 12px 28px;
+  color: #5b1e8c;
+  background: rgba(255, 255, 255, 0.97);
+  border: 2px solid rgba(91, 30, 140, 0.2);
+  border-radius: 999px;
+  box-shadow: 0 9px 24px rgba(91, 30, 140, 0.12);
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1;
+  text-decoration: none;
+  transition:
+    color 180ms ease,
+    background 180ms ease,
+    border-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+
+.public-stories-articles-page #stories .public-story-card__read-more:hover,
+.public-stories-articles-page #stories .public-story-card__read-more:focus-visible {
+  color: #ffffff;
+  background: linear-gradient(135deg, #8e24aa, #ec4899);
+  border-color: transparent;
+  box-shadow: 0 13px 30px rgba(142, 36, 170, 0.28);
+  transform: translateY(-2px);
+}
+
+.public-stories-articles-page #stories .public-story-card__read-more:active {
+  transform: translateY(0);
+}
+
+.public-stories-articles-page #stories .public-story-card__read-more:focus-visible {
+  outline: 3px solid rgba(236, 72, 153, 0.28);
+  outline-offset: 3px;
+}
+
+.public-homepage :is(
+  .public-article-card__media img,
+  .public-event-card__media img,
+  .public-section--events .public-event-card__image,
+  .press-article-card__media img,
+  .public-support__media img,
+  .public-team-card__media img
+) {
+  display: block;
+  width: 100%;
+  object-fit: cover;
+}
+
+@media (max-width: 1024px) {
+.public-homepage {
+  --public-home-card-width: clamp(280px, calc((100% - var(--public-grid-gap)) / 2), 400px);
+}
+
+.public-homepage :is(
+  .public-about__cards,
+  .public-statistics__grid:not(.public-statistics__grid--hero),
+  .medical-partners__grid,
+  .press-articles__grid,
+  .public-team-grid,
+  .public-articles-grid,
+  .public-section--support .public-support__grid
+) {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+}
+
+@media (max-width: 640px) {
+  .public-homepage {
+    --public-home-card-width: min(86vw, 400px);
+  }
+
+  .public-homepage :is(
+    .public-about__cards,
+    .public-statistics__grid:not(.public-statistics__grid--hero),
+    .medical-partners__grid,
+    .press-articles__grid,
+    .public-team-grid,
+    .public-articles-grid,
+    .public-section--support .public-support__grid
+  ) {
+    grid-template-columns: minmax(0, 1fr);
+    gap: clamp(18px, 4vw, 22px);
+  }
+}
+
+@media (max-width: 768px) {
+  .public-homepage .public-card-carousel {
+    display: block !important;
+  }
+
+  .public-homepage .public-card-carousel__button {
+    position: absolute;
+    top: 50%;
+    width: 40px;
+    height: 40px;
+    flex-basis: 40px;
+    transform: translateY(-50%);
+  }
+
+  .public-homepage .public-card-carousel__button:hover:not(:disabled),
+  .public-homepage .public-card-carousel__button:focus-visible:not(:disabled) {
+    transform: translateY(-50%);
+  }
+
+  .public-homepage :is(
+    .public-support__scroll-btn--prev,
+    .public-events__scroll-btn--prev,
+    .public-stories-slider__arrow--prev,
+    .medical-partners__nav-btn--prev
+  ) {
+    inset-inline-start: 0;
+  }
+
+  .public-homepage :is(
+    .public-support__scroll-btn--next,
+    .public-events__scroll-btn--next,
+    .public-stories-slider__arrow--next,
+    .medical-partners__nav-btn--next
+  ) {
+    inset-inline-end: 0;
+  }
+}
+
+@media (min-width: 1121px) {
+  .public-team-partners-page main > #team {
+    min-height: calc(100svh - var(--public-current-navbar-height, 76px));
+    padding-block-start: clamp(40px, 5vh, 56px);
+  }
+
+  .public-team-partners-page main > #medical-partners {
+    min-height: calc(100svh - var(--public-current-navbar-height, 76px));
+  }
+
+  .public-homepage--main main > :is(
+    #team,
+    #medical-partners
+  ) {
+    height: calc(100svh - var(--public-current-navbar-height, 76px));
+    min-height: calc(100svh - var(--public-current-navbar-height, 76px));
+    max-height: calc(100svh - var(--public-current-navbar-height, 76px));
+    overflow: hidden;
+  }
+
+  /* Support (#support / learn-together) and Events composition live in their
+     section CSS files so production chunk order cannot undo these layouts. */
+
+  .public-homepage--main .public-section.public-section--team-section {
+    min-height: calc(100svh - 70px);
+    padding-block: clamp(36px, 4.5vh, 50px);
+  }
+
+  .public-homepage--main .public-team-section__heading {
+    margin-block-end: clamp(16px, 2vh, 24px);
+  }
+
+  .public-homepage--main :is(
+    .public-support__heading-wrap,
+    .public-events__heading-wrap,
+    .public-team-section__heading
+  ) .public-section-heading__eyebrow {
+    margin-block-end: 10px;
+  }
+
+  .public-homepage--main :is(
+    .public-support__heading-wrap,
+    .public-events__heading-wrap,
+    .public-team-section__heading
+  ) .public-section-heading__divider--title {
+    margin-block-start: 12px;
+  }
+
+  .public-homepage--main :is(
+    .public-support__heading-wrap,
+    .public-events__heading-wrap,
+    .public-team-section__heading
+  ) .public-section-heading__subtitle {
+    margin-block-start: 12px;
+  }
+
+  .public-homepage--main .public-section.public-section--medical-partners {
+    min-height: calc(100svh - 70px);
+    padding-block: clamp(48px, 5.5vh, 62px);
+  }
+
+  .public-homepage--main .public-section--medical-partners .medical-partners__inner {
+    gap: clamp(24px, 3vh, 34px);
+  }
+}
+
+@media (min-width: 1121px) and (max-height: 900px) {
+  .public-homepage--main .public-section--learn-together .public-support__media {
+    flex-basis: 180px;
+    height: 180px;
+  }
+
+  .public-homepage--main .public-section--learn-together .public-support__body {
+    min-height: 196px;
+    padding-block: 22px 24px;
+  }
+
+  .public-homepage--main .public-section--events .public-event-card__media {
+    flex-basis: 190px;
+    height: 190px;
+  }
+}
+
+.public-homepage.public-standalone-page {
+  --public-navbar-offset: 88px;
+}
+
+@media (min-width: 1121px) {
+  .public-stories-articles-page :is(#stories, #articles) {
+    height: calc(100svh - var(--public-current-navbar-height, 76px));
+    min-height: calc(100svh - var(--public-current-navbar-height, 76px));
+    max-height: calc(100svh - var(--public-current-navbar-height, 76px));
+    overflow: hidden;
+  }
+
+  .public-donations-page #donations {
+    min-height: calc(100svh - var(--public-navbar-offset));
+  }
+
+  .public-homepage.public-donations-page .public-section#donations {
+    display: grid;
+    align-items: center;
+    padding-block: clamp(36px, 4.5vh, 52px);
+    padding-inline: clamp(32px, 4.5vw, 76px);
+  }
+
+  .public-donations-page #donations .public-support-cta__inner {
+    grid-template-columns: minmax(420px, 0.95fr) minmax(0, 1.25fr);
+    gap: clamp(32px, 3.5vw, 52px);
+    width: min(100%, 1680px);
+  }
+
+  .public-donations-page #donations .public-support-cta__content {
+    gap: clamp(14px, 1.8vh, 20px);
+    width: 100%;
+    max-width: none;
+    padding-inline: 0;
+  }
+
+  .public-donations-page #donations .public-support-cta__heading .public-section-heading__eyebrow {
+    margin-block-end: 10px;
+  }
+
+  .public-donations-page #donations .public-support-cta__heading .public-section-heading__divider--title {
+    margin-block-start: 12px;
+  }
+
+  .public-donations-page #donations .public-support-cta__heading .public-section-heading__subtitle {
+    max-width: 38rem;
+    margin-block-start: 14px;
+    font-size: clamp(1.04rem, 1.2vw, 1.16rem);
+  }
+
+  .public-donations-page #donations .public-support-cta__heading .public-section-heading__title {
+    max-width: 42rem;
+    font-size: clamp(2.55rem, 4vw, 3.45rem);
+  }
+
+  .public-donations-page #donations .public-support-cta__feature-zone {
+    gap: clamp(16px, 2vh, 20px);
+    margin-block-start: 0;
+  }
+
+  .public-donations-page #donations .public-support-cta__features {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: clamp(16px, 1.6vw, 22px);
+    width: 100%;
+    margin-inline: 0;
+  }
+
+  .public-donations-page #donations .public-support-cta__feature {
+    align-content: start;
+    justify-items: center;
+    gap: 14px;
+    min-height: 178px;
+    padding: 24px;
+    border-radius: 26px;
+  }
+
+  .public-donations-page #donations .public-support-cta__feature-icon {
+    width: 58px;
+    height: 58px;
+    margin-inline: auto;
+  }
+
+  .public-donations-page #donations .public-support-cta__feature-icon-glyph {
+    width: 30px;
+    height: 30px;
+  }
+
+  .public-donations-page #donations .public-support-cta__feature-copy {
+    gap: 8px;
+  }
+
+  .public-donations-page #donations .public-support-cta__feature-copy strong {
+    font-size: clamp(1.15rem, 1.35vw, 1.28rem);
+  }
+
+  .public-donations-page #donations .public-support-cta__feature-copy span {
+    font-size: clamp(1rem, 1.15vw, 1.1rem);
+  }
+
+  .public-donations-page #donations .public-support-cta__button {
+    width: min(100%, 360px);
+  }
+
+  .public-donations-page #donations .public-support-cta__visual,
+  .public-donations-page #donations .public-support-cta__visual-stage {
+    min-height: clamp(430px, 38vw, 560px);
+  }
+
+  .public-donations-page #donations .public-support-cta__image-wrap,
+  .public-donations-page #donations .public-support-cta__image {
+    width: min(100%, 640px);
+  }
+
+  .public-donations-page #donations .public-support-cta__image {
+    max-height: clamp(440px, 45vw, 600px);
+  }
+
+  .public-homepage.public-stories-articles-page .public-section:is(#stories, #articles) {
+    padding-block: clamp(36px, 4.5vh, 50px);
+    padding-inline: clamp(28px, 6vw, 96px);
+  }
+
+  .public-stories-articles-page :is(#stories, #articles) .public-section-heading {
+    margin-block-end: clamp(16px, 2vh, 24px);
+  }
+
+  .public-stories-articles-page :is(#stories, #articles) .public-section-heading__eyebrow {
+    margin-block-end: 10px;
+  }
+
+  .public-stories-articles-page :is(#stories, #articles) .public-section-heading__divider--title {
+    margin-block-start: 12px;
+  }
+
+  .public-stories-articles-page :is(#stories, #articles) .public-section-heading__subtitle {
+    margin-block-start: 12px;
+  }
+
+  .public-stories-articles-page #stories .public-stories-slider__track,
+  .public-stories-articles-page #articles .press-articles__track {
+    padding-block: 8px 14px;
+  }
+
+  .public-homepage.public-stories-articles-page
+    #stories
+    .public-stories-slider__track
+    > .public-story-card {
+    flex-basis: var(--public-story-card-width);
+  }
+
+  .public-homepage.public-stories-articles-page
+    #articles
+    .press-articles__track
+    > .press-article-card {
+    flex-basis: var(--public-home-card-width);
+  }
+
+  .public-stories-articles-page #stories .public-story-card {
+    height: 360px;
+    min-height: 360px;
+    max-height: 360px;
+    padding: 24px 24px 22px;
+  }
+
+  .public-stories-articles-page #stories .public-story-card__read-more {
+    margin-block-start: auto;
+  }
+
+  .public-stories-articles-page #articles .press-article-card__media {
+    height: 200px;
+  }
+
+  .public-stories-articles-page #articles .press-article-card__body {
+    gap: 14px;
+    padding: 22px 20px 24px;
+  }
+
+  .public-stories-articles-page #articles .press-article-card__text {
+    gap: 14px;
+  }
+
+  .public-stories-articles-page #articles .press-article-card__cta {
+    min-height: 52px;
+    min-width: 150px;
+    padding: 12px 28px;
+  }
+}
+
+@media (max-width: 1120px) {
+  .public-homepage.public-standalone-page {
+    --public-navbar-offset: 76px;
+  }
+
+  .public-homepage.public-donations-page .public-section#donations {
+    padding-block: clamp(42px, 7vw, 64px);
+  }
+
+  .public-donations-page #donations .public-support-cta__inner {
+    gap: clamp(20px, 3vw, 30px);
+  }
+
+  .public-donations-page #donations .public-support-cta__content {
+    gap: clamp(12px, 2vw, 18px);
+  }
+
+  .public-donations-page #donations .public-support-cta__feature-zone {
+    gap: clamp(12px, 2vw, 18px);
+    margin-block-start: 0;
+  }
+
+  .public-donations-page #donations .public-support-cta__feature {
+    padding: clamp(16px, 2vw, 22px);
+  }
+
+  .public-homepage.public-stories-articles-page .public-section:is(#stories, #articles) {
+    padding-block: clamp(48px, 8vw, 72px);
+    padding-inline: clamp(20px, 5vw, 48px);
+  }
+
+  .public-stories-articles-page :is(#stories, #articles) .public-section-heading {
+    margin-block-end: clamp(28px, 5vw, 40px);
+  }
+
+  .public-stories-articles-page #articles .press-article-card__media {
+    height: 200px;
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1120px) {
+  .public-stories-articles-page {
+    --public-story-card-width: var(--public-home-card-width);
+  }
+
+  .public-stories-articles-page #stories .public-story-card {
+    height: 360px;
+    min-height: 360px;
+    max-height: 360px;
+    padding: 24px 22px 22px;
+  }
+}
+
+@media (max-width: 640px) {
+  .public-stories-articles-page {
+    --public-story-card-width: var(--public-home-card-width);
+  }
+
+  .public-homepage.public-donations-page .public-section#donations {
+    padding-block: 40px;
+    padding-inline: 18px;
+  }
+
+  .public-donations-page #donations .public-support-cta__visual {
+    min-height: 240px;
+    margin-block-start: 4px;
+  }
+
+  .public-donations-page #donations .public-support-cta__visual-stage {
+    min-height: 240px;
+  }
+
+  .public-donations-page #donations .public-support-cta__image {
+    max-height: 300px;
+  }
+
+  .public-stories-articles-page #stories .public-story-card {
+    height: 360px;
+    min-height: 360px;
+    max-height: 360px;
+    padding: 22px 20px 20px;
+  }
+
+  .public-stories-articles-page #articles .press-article-card__media {
+    height: 220px;
+  }
+}
+
+/* Responsive stability safeguards for shared public content. */
+.public-homepage :is(
+  .public-section-heading,
+  .public-card,
+  .public-team-section__card,
+  .public-team-card,
+  .public-event-card,
+  .press-article-card,
+  .public-support__card,
+  .public-support-cta__feature
+) {
+  min-width: 0;
+}
+
+.public-homepage :is(
+  .public-section-heading__title,
+  .public-section-heading__subtitle,
+  .public-team-section__name,
+  .public-team-section__role,
+  .public-team-section__description,
+  .public-team-card__description,
+  .public-team-card__role,
+  .public-event-card__title,
+  .public-event-card__description,
+  .press-article-card__title,
+  .press-article-card__description,
+  .public-support-cta__feature-copy,
+  .public-support-cta__feature-copy strong,
+  .public-support-cta__feature-copy span
+) {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+.public-homepage :is(
+  .public-support__media,
+  .public-event-card__media,
+  .press-article-card__media
+) img {
+  max-width: 100%;
+  height: 100%;
+}
+
+@media (min-width: 941px) and (max-height: 700px) {
+  .public-homepage--main .public-hero {
+    height: auto;
+    min-height: 100dvh;
+    max-height: none;
+    overflow: visible;
+  }
+}
+
+@media (max-width: 1120px) {
+  .public-homepage :is(
+    .public-event-card__button,
+    .press-article-card__cta,
+    .public-support-cta__button
+  ) {
+    max-width: 100%;
+    white-space: normal;
+    text-align: center;
+  }
+}
+
+@media (max-width: 720px) {
+  .public-homepage .public-navbar__dropdown-menu {
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .public-homepage .public-stories-slider {
+    gap: 8px;
+  }
+
+  .public-homepage .public-stories-slider__arrow {
+    width: 40px;
+    height: 40px;
+  }
+}
+
+@media (max-width: 640px) {
+  .public-homepage :is(
+    .public-event-card__button,
+    .press-article-card__cta,
+    .public-support-cta__button
+  ) {
+    width: 100%;
+  }
+
+  .public-homepage .public-stories-slider__track {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  html:has(.public-homepage--main) {
+    --public-header-height: 60px;
+    scroll-padding-top: var(--public-header-height);
+  }
+
+  .public-homepage {
+    --public-navbar-offset: 60px;
+    --public-header-height: 60px;
+    --public-anchor-gap: 0px;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: clip;
+    scroll-padding-top: calc(var(--public-header-height) + var(--public-anchor-gap));
+  }
+
+  .public-homepage :is(main, section, article, nav, header, footer) {
+    width: 100%;
+    max-width: 100%;
+    min-width: 0;
+  }
+
+  .public-homepage :is(section[id], footer[id]) {
+    scroll-margin-top: calc(var(--public-header-height) + var(--public-anchor-gap));
+  }
+
+  .public-homepage--main main > section[id]:not(.public-hero):not(.public-section--events):not(.public-section--team-section):not(.public-section--medical-partners),
+  .public-homepage--main > .public-footer[id] {
+    min-height: auto;
+  }
+
+  .public-navbar {
+    min-height: 60px;
+    padding-block: 8px;
+    padding-inline: clamp(12px, 4vw, 18px);
+  }
+
+  .public-navbar--scrolled {
+    min-height: 56px;
+  }
+
+  .public-navbar__bar {
+    min-height: 44px;
+    gap: 10px;
+  }
+
+  .public-navbar__brand-image {
+    width: auto;
+    max-width: clamp(104px, 30vw, 124px);
+    max-height: 38px;
+  }
+
+  .public-navbar__toggle {
+    width: 40px;
+    height: 40px;
+    padding: 8px;
+  }
+
+  .public-navbar__toggle span {
+    margin-block: 4px;
+  }
+
+  .public-navbar__menu {
+    max-height: calc(100dvh - 60px);
+    padding-block-start: 10px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  .public-navbar__menu--open {
+    gap: 10px;
+  }
+
+  .public-navbar__links,
+  .public-navbar__actions {
+    gap: 8px;
+  }
+
+  .public-navbar__links > a,
+  .public-navbar__dropdown-trigger {
+    min-height: 42px;
+    padding-block: 9px;
+    padding-inline: 10px;
+    font-size: clamp(0.92rem, 3.5vw, 1rem);
+  }
+
+  .public-navbar__cta {
+    min-height: 44px;
+    padding-block: 10px;
+    padding-inline: 14px;
+    font-size: clamp(0.9rem, 3.4vw, 0.98rem);
+  }
+
+  .public-homepage--main .public-hero {
+    min-height: 100svh;
+    height: auto;
+    max-height: none;
+    margin-block-end: 0;
+    padding-block:
+      calc(var(--public-navbar-offset) + clamp(10px, 1.5vh, 16px))
+      clamp(12px, 1.8vh, 18px);
+    padding-inline: clamp(14px, 4vw, 24px);
+    overflow: clip;
+  }
+
+  .public-homepage--main .public-hero__layout {
+    gap: clamp(8px, 1.2vh, 12px);
+    justify-content: center;
+    padding-block-start: 0;
+    transform: translateY(clamp(-64px, -7vh, -44px));
+  }
+
+  .public-homepage--main .public-hero__content-region {
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: flex-start;
+    padding-block: clamp(4px, 0.8vh, 8px) 0;
+  }
+
+  .public-homepage--main .public-hero__content {
+    gap: clamp(7px, 1vh, 10px);
+    width: min(100%, 560px);
+    margin-inline: auto;
+  }
+
+  .public-homepage--main .public-hero__content::before {
+    inset: -8px -6px;
+    border-radius: 24px;
+  }
+
+  .public-homepage--main .public-hero__background {
+    background-color: #d98fba;
+    background-position: center bottom;
+    background-size: 100% auto;
+  }
+
+  .public-homepage--main .public-hero__eyebrow {
+    max-width: 100%;
+    padding-block: 7px;
+    padding-inline: 14px;
+    font-size: clamp(0.82rem, 3.2vw, 0.92rem);
+    text-align: center;
+  }
+
+  .public-homepage--main .public-hero h1 {
+    font-size: clamp(1.9rem, 7.5vw, 2.7rem);
+    line-height: 1.14;
+    overflow-wrap: anywhere;
+  }
+
+  .public-homepage--main .public-hero__lead {
+    max-width: 30ch;
+    font-size: clamp(1rem, 3.6vw, 1.2rem);
+    line-height: 1.36;
+  }
+
+  .public-homepage--main .public-hero__support {
+    max-width: 34ch;
+    font-size: clamp(0.9rem, 3vw, 1rem);
+    line-height: 1.48;
+  }
+
+  .public-homepage--main .public-hero__ornament {
+    margin-block: 0;
+  }
+
+  .public-homepage--main .public-hero__actions {
+    width: min(100%, 320px);
+    gap: 7px;
+    margin-block-start: 2px;
+    margin-inline: auto;
+  }
+
+  .public-homepage--main .public-hero__btn {
+    width: min(100%, 300px);
+    min-height: 44px;
+    margin-inline: auto;
+    padding-block: 9px;
+    padding-inline: 18px;
+    font-size: clamp(0.9rem, 3.2vw, 0.98rem);
+  }
+
+  .public-homepage--main .public-hero__statistics {
+    width: min(100%, 520px);
+    margin-block-start: 0;
+    padding-block-start: 0;
+  }
+
+  .public-homepage--main .public-hero__statistics .public-statistics__grid--hero {
+    width: 100%;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .public-homepage--main .public-hero__statistics .public-statistics__card {
+    width: 100%;
+    min-width: 0;
+    gap: 4px;
+    padding: 8px 7px 7px;
+    border-radius: 14px;
+  }
+
+  .public-homepage--main .public-hero__statistics .public-statistics__icon {
+    width: clamp(36px, 10vw, 44px);
+    height: clamp(36px, 10vw, 44px);
+  }
+
+  .public-homepage--main .public-hero__statistics .public-statistics__icon-glyph {
+    width: clamp(18px, 5vw, 22px);
+    height: clamp(18px, 5vw, 22px);
+  }
+
+  .public-homepage--main .public-hero__statistics .public-statistics__value-number,
+  .public-homepage--main .public-hero__statistics .public-statistics__card strong {
+    font-size: clamp(1.12rem, 4.8vw, 1.45rem);
+  }
+
+  .public-homepage--main .public-hero__statistics .public-statistics__card h3 {
+    font-size: clamp(0.74rem, 2.8vw, 0.84rem);
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+  }
+
+  .public-homepage :is(
+    .public-section,
+    .public-section--about,
+    .public-section--statistics,
+    .public-section--support,
+    .public-section--events,
+    .public-section--team-section,
+    .public-section--medical-partners,
+    .public-section--press-articles,
+    .public-section--donation-cta
+  ) {
+    max-width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  html:has(.public-homepage--main) {
+    --public-header-height: 56px;
+  }
+
+  .public-homepage {
+    --public-navbar-offset: 56px;
+    --public-header-height: 56px;
+  }
+
+  .public-navbar {
+    min-height: 56px;
+    padding-block: 7px;
+    padding-inline: 12px;
+  }
+
+  .public-navbar__bar {
+    min-height: 40px;
+  }
+
+  .public-navbar__brand-image {
+    max-width: clamp(96px, 28vw, 112px);
+    max-height: 34px;
+  }
+
+  .public-navbar__toggle {
+    width: 38px;
+    height: 38px;
+    padding: 8px;
+  }
+
+  .public-navbar__actions-end {
+    flex-wrap: wrap;
+  }
+
+  .public-homepage--main .public-hero {
+    min-height: 100svh;
+    padding-block:
+      calc(var(--public-navbar-offset) + clamp(8px, 1.2vh, 12px))
+      clamp(10px, 1.5vh, 14px);
+    padding-inline: 14px;
+  }
+
+  .public-homepage--main .public-hero__background {
+    background-position: center bottom;
+    background-size: 100% auto;
+  }
+
+  .public-homepage--main .public-hero h1 {
+    font-size: clamp(1.75rem, 8.4vw, 2.3rem);
+  }
+
+  .public-homepage--main .public-hero__lead {
+    font-size: clamp(0.98rem, 4vw, 1.12rem);
+  }
+
+  .public-homepage--main .public-hero__support {
+    font-size: clamp(0.88rem, 3.5vw, 0.96rem);
+  }
+
+  .public-homepage--main .public-hero__statistics .public-statistics__grid--hero {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 7px;
+  }
+
+  .public-homepage--main .public-hero__statistics .public-statistics__card {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: auto;
+    justify-items: center;
+    gap: 3px;
+    padding: 7px 5px 6px;
+    text-align: center;
+  }
+
+  .public-homepage--main .public-hero__statistics .public-statistics__icon {
+    grid-row: auto;
+    width: 34px;
+    height: 34px;
+  }
+
+  .public-homepage--main .public-hero__statistics .public-statistics__value {
+    margin: 0;
+  }
+
+  .public-homepage--main .public-hero__statistics .public-statistics__divider--card,
+  .public-homepage--main .public-hero__statistics .public-statistics__card-text {
+    display: none;
+  }
+
+  .public-homepage--main .public-hero__statistics .public-statistics__card h3 {
+    width: 100%;
+    font-size: clamp(0.7rem, 3vw, 0.8rem);
+    text-align: center;
+  }
+
+  .public-section-heading {
+    padding-inline: 8px;
+  }
+
+  .public-section-heading__title {
+    font-size: clamp(1.9rem, 9vw, 2.45rem);
+  }
+
+  .public-section-heading__subtitle {
+    padding-inline: 0;
+  }
+}
+
+@media (max-width: 390px) {
+  .public-navbar__brand-image {
+    max-width: 96px;
+  }
+
+  .public-homepage--main .public-hero {
+    padding-inline: 12px;
+  }
+
+  .public-homepage--main .public-hero__content {
+    gap: 9px;
+  }
+
+  .public-homepage--main .public-hero h1 {
+    font-size: clamp(1.65rem, 8.2vw, 2rem);
+  }
+
+  .public-homepage--main .public-hero__actions {
+    gap: 8px;
+  }
+
+  .public-homepage--main .public-hero__btn {
+    min-height: 42px;
+  }
+
+  .public-homepage--main .public-hero__statistics .public-statistics__card {
+    padding-inline: 4px;
+  }
+}
+
+@media (max-width: 340px) {
+  .public-homepage--main .public-hero__statistics .public-statistics__grid--hero {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .public-homepage--main .public-hero__statistics .public-statistics__card {
+    grid-template-columns: auto minmax(0, 1fr);
+    justify-items: start;
+    column-gap: 8px;
+    padding: 7px 10px;
+    text-align: start;
+  }
+
+  .public-homepage--main .public-hero__statistics .public-statistics__icon {
+    grid-row: 1 / span 2;
+  }
+
+  .public-homepage--main .public-hero__statistics .public-statistics__card h3 {
+    text-align: start;
+  }
+}
+
+/* Keep card action buttons visually identical across services and stories. */
+.public-homepage .public-section--learn-together .public-support__more,
+.public-homepage .public-section--events .public-event-card__button,
+.public-homepage.public-stories-articles-page
+  #stories
+  .public-story-card__read-more {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 150px;
+  min-height: 52px;
+  margin-block-start: auto;
+  padding: 12px 28px;
+  color: #5b1e8c;
+  background: rgba(255, 255, 255, 0.97);
+  border: 2px solid rgba(91, 30, 140, 0.2);
+  border-radius: 999px;
+  box-shadow: 0 9px 24px rgba(91, 30, 140, 0.12);
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1;
+  text-align: center;
+  text-decoration: none;
+}
+
+.public-homepage .public-section--learn-together .public-support__more:is(:hover, :focus-visible),
+.public-homepage .public-section--events .public-event-card__button:is(:hover, :focus-visible),
+.public-homepage.public-stories-articles-page
+  #stories
+  .public-story-card__read-more:is(:hover, :focus-visible) {
+  color: #ffffff;
+  background: linear-gradient(135deg, #e73386, #dc2577);
+  border-color: transparent;
+  box-shadow: 0 14px 26px rgba(223, 50, 123, 0.24);
+  transform: translateY(-2px);
+}

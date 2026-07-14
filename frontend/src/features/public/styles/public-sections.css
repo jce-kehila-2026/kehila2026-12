@@ -1,0 +1,164 @@
+.public-eyebrow {
+  margin-block: 0 1rem;
+  margin-inline: 0;
+  color: var(--public-pink);
+  font-size: 0.96rem;
+  font-weight: 900;
+  letter-spacing: 0;
+}
+
+.public-donation .public-eyebrow {
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.public-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 3.875rem;
+  padding-block: 1rem;
+  padding-inline: 2.125rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 1.08rem;
+  font-weight: 900;
+  line-height: 1;
+  text-align: center;
+  text-decoration: none;
+  touch-action: manipulation;
+}
+
+.public-button--primary {
+  color: var(--public-purple-2);
+  background: #ffffff;
+  box-shadow: 0 18px 32px rgba(31, 12, 42, 0.18);
+}
+
+.public-button--secondary {
+  color: var(--public-purple-2);
+  background: #ffffff;
+  box-shadow: 0 18px 32px rgba(31, 12, 42, 0.18);
+}
+
+.public-button--tertiary {
+  min-height: auto;
+  padding: 0;
+  color: var(--public-purple-2);
+  background: transparent;
+  border: 0;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.public-button:hover,
+.public-button:focus-visible {
+  transform: translateY(-3px) scale(1.015);
+}
+
+.public-button:active {
+  transform: translateY(0) scale(0.985);
+}
+
+.public-button--primary:hover,
+.public-button--primary:focus-visible {
+  color: var(--public-pink);
+  box-shadow: 0 22px 40px rgba(31, 12, 42, 0.24);
+}
+
+.public-button--secondary:hover,
+.public-button--secondary:focus-visible {
+  color: var(--public-pink);
+  box-shadow: 0 22px 40px rgba(31, 12, 42, 0.24);
+}
+
+.public-section:not(.public-section--statistics):not(.public-section--donation-cta):not(.public-section--team-section):not(.public-section--about):not(.public-section--support):not(.public-section--medical-partners):not(.public-section--press-articles):not(.public-section--events):not(.public-contact) {
+  padding-block: clamp(4.375rem, 8vw, 7.375rem);
+  padding-inline: clamp(1.25rem, 8vw, 7.5rem);
+}
+
+.public-section--muted,
+.public-section--team-preview {
+  background: linear-gradient(180deg, #ffffff 0%, var(--public-soft) 100%);
+}
+
+.public-section__header {
+  max-width: 880px;
+}
+
+.public-section__header--centered,
+.public-section__header--team {
+  max-width: 880px;
+  margin-inline: auto;
+  text-align: center;
+}
+
+.public-section__header h2,
+.public-donation h2 {
+  margin: 0;
+  color: var(--public-purple);
+  font-size: clamp(2.7rem, 5vw, 4.2rem);
+  font-weight: 900;
+  line-height: 1.08;
+}
+
+.public-section__text {
+  margin: 0;
+  color: var(--public-muted);
+  font-size: clamp(1.08rem, 1.5vw, 1.28rem);
+  line-height: 1.85;
+}
+
+.public-section__header .public-section__text,
+.public-section__header--centered .public-section__text,
+.public-section__header--team .public-section__text {
+  margin-block-start: 18px;
+}
+
+.public-section__empty,
+.public-state {
+  margin-block-start: 28px;
+  padding-block: 1.375rem;
+  padding-inline: 1.375rem;
+  color: var(--public-muted);
+  background: #ffffff;
+  border: 1px dashed var(--public-line);
+  border-radius: 18px;
+  text-align: center;
+}
+
+.public-state {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  box-shadow: 0 12px 28px rgba(58, 27, 84, 0.08);
+  text-align: start;
+}
+
+.public-state p {
+  margin: 0;
+  line-height: 1.6;
+}
+
+.public-state--error {
+  color: #9d174d;
+  background: #fff8fc;
+}
+
+.public-state__indicator {
+  width: 0.75rem;
+  height: 0.75rem;
+  flex: 0 0 auto;
+  background: var(--public-magenta);
+  border-radius: 50%;
+  box-shadow: 0 0 0 6px rgba(223, 50, 123, 0.12);
+}
+
+@keyframes publicGradientDrift {
+  from {
+    background-position: 35% 50%;
+  }
+
+  to {
+    background-position: 68% 42%;
+  }
+}

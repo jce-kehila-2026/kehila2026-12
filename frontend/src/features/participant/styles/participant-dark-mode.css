@@ -1,0 +1,932 @@
+/**
+ * Participant dark mode — scoped to .participant-home--dark only.
+ * Sidebar styling lives in ParticipantHome.css (unchanged here).
+ */
+
+.participant-home--dark {
+  --pd-bg-dark: #0b1020;
+  --pd-card-dark: #111827;
+  --pd-card-dark-soft: #172033;
+  --pd-border-dark: rgba(236, 72, 153, 0.22);
+  --pd-text-dark: #f8fafc;
+  --pd-text-muted-dark: #d1d5db;
+  --pd-text-subtle-dark: #a8b4c4;
+  --pd-calendar-surface: #151d2e;
+  --pd-calendar-cell: #1a2332;
+  --pd-calendar-cell-muted: #141c2b;
+  --pd-calendar-border: rgba(236, 72, 153, 0.32);
+  --pd-pink: #ec4899;
+  --pd-purple: #7e22ce;
+}
+
+/* ── Main content area only ─────────────────────────────────────────────── */
+
+.participant-home--dark .participant-main,
+.participant-home--dark .participant-main--dashboard-home,
+.participant-home--dark .participant-main--events,
+.participant-home--dark .participant-main--community {
+  background: var(--pd-bg-dark);
+  color: var(--pd-text-dark);
+}
+
+.participant-home--dark .participant-content,
+.participant-home--dark .participant-content--single,
+.participant-home--dark .participant-content--calendar,
+.participant-home--dark .participant-content--events,
+.participant-home--dark .participant-home__main,
+.participant-home--dark .pd-home,
+.participant-home--dark .community-page {
+  background: var(--pd-bg-dark);
+  color: var(--pd-text-dark);
+}
+
+/* Settings/calendar wrappers — dark, not white */
+.participant-home--dark .participant-content .participant-panel,
+.participant-home--dark .participant-content .participant-panel--wide {
+  background: var(--pd-bg-dark);
+  border-color: transparent;
+  box-shadow: none;
+  color: var(--pd-text-dark);
+}
+
+/* ── Home cards ─────────────────────────────────────────────────────────── */
+
+.participant-home--dark .participant-home__main,
+.participant-home--dark .pd-home {
+  --pd-title: var(--pd-text-dark);
+  --pd-text: var(--pd-text-dark);
+  --pd-muted: var(--pd-text-muted-dark);
+  --pd-purple-deep: var(--pd-text-dark);
+  color: var(--pd-text-dark);
+}
+
+.participant-home--dark .pd-home__admin-message {
+  border-color: rgba(236, 72, 153, 0.22);
+  background: linear-gradient(135deg, rgba(42, 24, 52, 0.95) 0%, rgba(34, 20, 44, 0.92) 100%);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.18);
+}
+
+.participant-home--dark .pd-home__admin-message:hover {
+  border-color: rgba(236, 72, 153, 0.32);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.24);
+}
+
+.participant-home--dark .pd-home__admin-message-badge {
+  background: linear-gradient(
+    145deg,
+    rgba(236, 72, 153, 0.22) 0%,
+    rgba(167, 139, 250, 0.24) 100%
+  );
+  color: #f9a8d4;
+}
+
+.participant-home--dark .pd-home__admin-message-label {
+  color: #f472b6;
+}
+
+.participant-home--dark .pd-home__admin-message-title {
+  color: var(--pd-text-dark);
+}
+
+.participant-home--dark .pd-home__admin-message-preview,
+.participant-home--dark .pd-home__admin-message-preview--empty {
+  color: rgba(203, 213, 225, 0.68);
+}
+
+.participant-home--dark .pd-home__admin-message-time,
+.participant-home--dark .pd-home__admin-message-arrow {
+  color: rgba(232, 180, 220, 0.58);
+}
+
+.participant-home--dark .pd-home__admin-message:hover .pd-home__admin-message-arrow {
+  color: rgba(244, 114, 182, 0.85);
+}
+
+.participant-home--dark .pd-card,
+.participant-home--dark .pd-card--dashboard-skin,
+.participant-home--dark .pd-card--glass,
+.participant-home--dark .pd-card--appointment,
+.participant-home--dark .pd-card--event,
+.participant-home--dark .pd-card--notes,
+.participant-home--dark .pd-card--community,
+.participant-home--dark .pd-card--feature,
+.participant-home--dark .pd-card--empty,
+.participant-home--dark .pd-card--feature-loading {
+  background: var(--pd-card-dark) !important;
+  border: 1px solid var(--pd-border-dark) !important;
+  color: var(--pd-text-dark);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35) !important;
+}
+
+.participant-home--dark .pd-card--feature .pd-card__decor,
+.participant-home--dark .pd-card--feature .pd-feature__watermark {
+  z-index: 0;
+}
+
+.participant-home--dark .pd-card--feature > .pd-card__surface {
+  position: relative;
+  z-index: 2;
+}
+
+.participant-home--dark .pd-card--feature .pd-feature__body,
+.participant-home--dark .pd-card--feature .pd-feature__col--countdown {
+  position: relative;
+  z-index: 1;
+}
+
+.participant-home--dark .pd-card--feature .pd-card__heading-label {
+  color: var(--pd-purple);
+}
+
+.participant-home--dark .pd-card__heading--pink .pd-card__heading-label {
+  color: var(--pd-pink);
+}
+
+.participant-home--dark .pd-card--feature .pd-feature__title,
+.participant-home--dark .pd-card--feature .pd-feature__detail-value,
+.participant-home--dark .pd-feature-empty__headline,
+.participant-home--dark .pd-notes__copy span,
+.participant-home--dark .pd-community__author strong,
+/* "N Likes" / "N Comments" on the Community Highlight card: both the count
+   and the word use the same readable near-white. The heart/comment icons are
+   colored separately (.pd-community__stat svg) and stay untouched. */
+.participant-home--dark .pd-community__stat-text,
+.participant-home--dark .pd-community__stat-text strong {
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.participant-home--dark .pd-card--feature .pd-feature__subtitle,
+.participant-home--dark .pd-card--event.pd-card--feature .pd-feature__subtitle,
+.participant-home--dark .pd-card--feature .pd-feature__detail,
+.participant-home--dark .pd-feature-empty__text,
+.participant-home--dark .pd-feature-error__message,
+.participant-home--dark .pd-community__excerpt,
+.participant-home--dark .pd-community__author time,
+.participant-home--dark .pd-notes__hint {
+  color: var(--pd-text-muted-dark);
+}
+
+/* Participant Home + Settings — card action buttons (dark surface, pink/lilac accent) */
+.participant-home--dark .pd-home .pd-btn--view-cta,
+.participant-home--dark .profile-settings .pd-btn--view-cta {
+  color: #f472b6;
+  background: rgba(23, 32, 51, 0.94);
+  border: 1.5px solid rgba(236, 72, 153, 0.38);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
+}
+
+.participant-home--dark .pd-home .pd-btn--view-cta:hover,
+.participant-home--dark .pd-home .pd-btn--view-cta:focus-visible,
+.participant-home--dark .profile-settings .pd-btn--view-cta:hover,
+.participant-home--dark .profile-settings .pd-btn--view-cta:focus-visible {
+  color: #fce7f3;
+  background: rgba(236, 72, 153, 0.16);
+  border-color: rgba(244, 114, 182, 0.55);
+  box-shadow: 0 6px 18px rgba(236, 72, 153, 0.14);
+  transform: translateY(-1px);
+  filter: none;
+}
+
+.participant-home--dark .pd-home .pd-btn--view-cta:active,
+.participant-home--dark .profile-settings .pd-btn--view-cta:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.24);
+}
+
+.participant-home--dark .pd-home .pd-btn--view-cta:focus-visible,
+.participant-home--dark .profile-settings .pd-btn--view-cta:focus-visible {
+  outline: 2px solid rgba(244, 114, 182, 0.45);
+  outline-offset: 2px;
+}
+
+.participant-home--dark .pd-home .pd-btn--view-cta .pd-btn__arrow,
+.participant-home--dark .profile-settings .pd-btn--view-cta .pd-btn__arrow {
+  color: currentColor;
+}
+
+.participant-home--dark .pd-home .pd-btn--view-cta:hover .pd-btn__arrow,
+.participant-home--dark .pd-home .pd-btn--view-cta:focus-visible .pd-btn__arrow,
+.participant-home--dark .profile-settings .pd-btn--view-cta:hover .pd-btn__arrow,
+.participant-home--dark .profile-settings .pd-btn--view-cta:focus-visible .pd-btn__arrow {
+  color: currentColor;
+}
+
+.participant-home--dark .profile-settings .pd-btn--view-cta:disabled,
+.participant-home--dark .profile-settings button.pd-btn--view-cta:disabled,
+.participant-home--dark .profile-settings .pd-btn--view-cta:disabled:hover,
+.participant-home--dark .profile-settings button.pd-btn--view-cta:disabled:hover,
+.participant-home--dark .profile-settings .pd-btn--view-cta:disabled:focus-visible,
+.participant-home--dark .profile-settings button.pd-btn--view-cta:disabled:focus-visible {
+  color: rgba(244, 114, 182, 0.42);
+  background: rgba(23, 32, 51, 0.55);
+  border-color: rgba(236, 72, 153, 0.18);
+  box-shadow: none;
+  transform: none;
+  filter: none;
+  cursor: not-allowed;
+  outline: none;
+}
+
+/* Empty appointment/event cards — large icon badge */
+.participant-home--dark .pd-card--appointment.pd-card--empty .pd-feature-empty__badge,
+.participant-home--dark .pd-card--event.pd-card--empty .pd-feature-empty__badge {
+  color: #f472b6;
+  background:
+    radial-gradient(circle at 30% 24%, rgba(236, 72, 153, 0.16) 0%, transparent 52%),
+    linear-gradient(145deg, rgba(31, 23, 42, 0.96) 0%, rgba(42, 24, 52, 0.94) 48%, rgba(34, 20, 44, 0.92) 100%);
+  box-shadow:
+    0 6px 18px rgba(0, 0, 0, 0.28),
+    0 10px 28px rgba(236, 72, 153, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.participant-home--dark .pd-card--appointment.pd-card--empty .pd-feature-empty__badge--appointment {
+  color: #c084fc;
+}
+
+.participant-home--dark .pd-card--event.pd-card--empty .pd-feature-empty__badge--event {
+  color: #f472b6;
+}
+
+.participant-home--dark .pd-card--appointment.pd-card--empty .pd-feature-empty__badge-ring,
+.participant-home--dark .pd-card--event.pd-card--empty .pd-feature-empty__badge-ring {
+  border-color: rgba(192, 132, 252, 0.38);
+  opacity: 0.8;
+}
+
+.participant-home--dark .pd-card--feature .pd-feature__detail-sep,
+.participant-home--dark .pd-notes__copy small,
+.participant-home--dark .pd-card--feature .pd-countdown-ring__label span,
+.participant-home--dark .pd-card--feature .pd-countdown-ring__label small {
+  color: var(--pd-text-subtle-dark);
+}
+
+.participant-home--dark .pd-card--feature .pd-countdown-ring__inner {
+  fill: #1f2937;
+}
+
+.participant-home--dark .pd-card--feature .pd-countdown-ring__track {
+  stroke: rgba(236, 72, 153, 0.22);
+}
+
+.participant-home--dark .pd-card--feature .pd-countdown-ring__value--days,
+.participant-home--dark .pd-card--feature .pd-countdown-ring__value--hms,
+.participant-home--dark .pd-card--feature .pd-countdown-ring__status {
+  color: #f8fafc;
+}
+
+.participant-home--dark .pd-card--feature .pd-feature__detail-icon {
+  color: #f472b6;
+}
+
+.participant-home--dark .pd-card--event.pd-card--feature .pd-feature__detail-icon {
+  color: #f472b6;
+}
+
+.participant-home--dark .pd-notes__composer input[type='text'],
+.participant-home--dark .pd-notes__input-row input[type='text'] {
+  background: var(--pd-card-dark-soft);
+  border-color: var(--pd-border-dark);
+  color: var(--pd-text-dark);
+}
+
+.participant-home--dark .pd-notes__list li {
+  background: var(--pd-card-dark-soft);
+  border-color: var(--pd-border-dark);
+}
+
+/* ── Calendar (embedded) ────────────────────────────────────────────────── */
+
+.participant-home--dark .calendar-page,
+.participant-home--dark .calendar-page--embedded {
+  background: transparent !important;
+  color: var(--pd-text-dark);
+}
+
+.participant-home--dark .calendar-board {
+  background: var(--pd-calendar-surface);
+  border: 1px solid var(--pd-calendar-border);
+  border-radius: 18px;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+}
+
+.participant-home--dark .calendar-card,
+.participant-home--dark .selected-day-card,
+.participant-home--dark .note-card {
+  background: var(--pd-calendar-surface);
+  border-color: var(--pd-calendar-border);
+  color: var(--pd-text-dark);
+}
+
+.participant-home--dark .calendar-board__toolbar {
+  background: var(--pd-calendar-surface);
+  border-bottom-color: var(--pd-calendar-border);
+}
+
+.participant-home--dark .calendar-board__toolbar h2,
+.participant-home--dark .card-heading h2,
+.participant-home--dark .day-calendar__summary h3 {
+  color: var(--pd-text-dark);
+}
+
+.participant-home--dark .card-heading span,
+.participant-home--dark .calendar-kicker,
+.participant-home--dark .empty-state {
+  color: var(--pd-text-muted-dark);
+}
+
+.participant-home--dark .calendar-view-toggle {
+  background: var(--pd-card-dark-soft);
+}
+
+.participant-home--dark .calendar-view-toggle button {
+  color: var(--pd-text-muted-dark);
+}
+
+.participant-home--dark .calendar-view-toggle button.is-active {
+  color: var(--pd-text-dark);
+}
+
+.participant-home--dark .month-calendar__weekdays {
+  background: var(--pd-card-dark-soft);
+  border-bottom-color: var(--pd-calendar-border);
+  color: var(--pd-text-muted-dark);
+}
+
+.participant-home--dark .month-calendar__grid {
+  border-left-color: var(--pd-calendar-border);
+}
+
+.participant-home--dark .month-calendar__day {
+  background: var(--pd-calendar-cell);
+  border-right-color: var(--pd-calendar-border);
+  border-bottom-color: var(--pd-calendar-border);
+  color: var(--pd-text-dark);
+}
+
+.participant-home--dark .month-calendar__day:hover,
+.participant-home--dark .month-calendar__day.is-selected {
+  background: #1f2a3d;
+  box-shadow: inset 0 0 0 2px rgba(236, 72, 153, 0.38);
+}
+
+.participant-home--dark .month-calendar__day.is-muted {
+  background: var(--pd-calendar-cell-muted);
+  color: #64748b;
+}
+
+.participant-home--dark .month-calendar__date {
+  color: var(--pd-text-muted-dark);
+}
+
+.participant-home--dark .month-calendar__more {
+  color: var(--pd-text-subtle-dark);
+}
+
+.participant-home--dark .calendar-pill {
+  border: 1px solid rgba(236, 72, 153, 0.28);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.22);
+}
+
+.participant-home--dark .calendar-pill small {
+  color: rgba(248, 250, 252, 0.78);
+}
+
+.participant-home--dark .calendar-pill--appointment {
+  background: rgba(126, 34, 206, 0.32);
+  color: #e9d5ff;
+  border-color: rgba(167, 139, 250, 0.38);
+}
+
+.participant-home--dark .calendar-pill--registration {
+  background: rgba(236, 72, 153, 0.24);
+  color: #fce7f3;
+  border-color: rgba(236, 72, 153, 0.38);
+}
+
+.participant-home--dark .calendar-pill--note {
+  background: rgba(251, 191, 36, 0.16);
+  color: #fde68a;
+  border-color: rgba(251, 191, 36, 0.32);
+}
+
+.participant-home--dark .calendar-item--note {
+  background: var(--pd-card-dark-soft);
+  color: var(--pd-text-dark);
+  border: 1px solid var(--pd-calendar-border);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.28);
+}
+
+.participant-home--dark .calendar-item--note h3,
+.participant-home--dark .calendar-item--note p {
+  color: var(--pd-text-dark);
+}
+
+.participant-home--dark .calendar-item--note small {
+  color: var(--pd-text-muted-dark);
+  opacity: 1;
+}
+
+.participant-home--dark .calendar-item--appointment,
+.participant-home--dark .calendar-item--registration {
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.32);
+}
+
+.participant-home--dark .calendar-item small {
+  opacity: 0.88;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.participant-home--dark .day-calendar {
+  background: var(--pd-calendar-surface);
+}
+
+.participant-home--dark .day-calendar__summary {
+  border-bottom-color: var(--pd-calendar-border);
+}
+
+.participant-home--dark .day-calendar__summary h3 {
+  color: var(--pd-text-dark);
+}
+
+.participant-home--dark .day-calendar__summary span {
+  color: var(--pd-text-muted-dark);
+}
+
+.participant-home--dark .day-calendar__slot {
+  border-bottom-color: var(--pd-calendar-border);
+}
+
+.participant-home--dark .day-calendar__slot time {
+  color: var(--pd-text-subtle-dark);
+}
+
+.participant-home--dark .day-calendar__empty {
+  color: var(--pd-text-subtle-dark);
+}
+
+.participant-home--dark .weekly-calendar__scroll,
+.participant-home--dark .weekly-calendar__corner,
+.participant-home--dark .weekly-calendar__day,
+.participant-home--dark .weekly-calendar__cell {
+  background: var(--pd-calendar-cell);
+  border-bottom-color: var(--pd-calendar-border);
+}
+
+.participant-home--dark .weekly-calendar__day {
+  border-right-color: var(--pd-calendar-border);
+  color: var(--pd-text-muted-dark);
+}
+
+.participant-home--dark .weekly-calendar__day strong {
+  color: var(--pd-text-dark);
+}
+
+.participant-home--dark .weekly-calendar__day.is-selected {
+  background: #1f2a3d;
+}
+
+.participant-home--dark .weekly-calendar__day.is-selected strong {
+  color: #fce7f3;
+}
+
+.participant-home--dark .weekly-calendar__cell {
+  border-right: 1px solid var(--pd-calendar-border);
+}
+
+.participant-home--dark .weekly-calendar__time {
+  background: var(--pd-card-dark-soft);
+  color: var(--pd-text-subtle-dark);
+  border-right: 1px solid var(--pd-calendar-border);
+}
+
+.participant-home--dark .weekly-calendar__empty {
+  color: var(--pd-text-subtle-dark);
+}
+
+.participant-home--dark .note-form input,
+.participant-home--dark .note-form textarea {
+  background: var(--pd-card-dark-soft);
+  border-color: var(--pd-border-dark);
+  color: var(--pd-text-dark);
+}
+
+.participant-home--dark .note-form label {
+  color: var(--pd-text-muted-dark);
+}
+
+/* ── Events (embedded) ──────────────────────────────────────────────────── */
+
+.participant-home--dark .events-main--embedded {
+  background: transparent;
+  color: var(--pd-text-dark);
+}
+
+.participant-home--dark .events-hero,
+.participant-home--dark .events-card,
+.participant-home--dark .events-status,
+.participant-home--dark .registered-mini-card,
+.participant-home--dark .events-category-button {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+.participant-home--dark .events-hero {
+  background: var(--pd-card-dark) !important;
+  border-color: var(--pd-border-dark) !important;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35) !important;
+}
+
+.participant-home--dark .events-hero::before {
+  opacity: 0.08;
+}
+
+.participant-home--dark .events-list-panel,
+.participant-home--dark .registered-events,
+.participant-home--dark .events-empty,
+.participant-home--dark .events-categories {
+  background: transparent !important;
+  border-color: transparent !important;
+  box-shadow: none !important;
+}
+
+.participant-home--dark .events-empty {
+  border-color: var(--pd-border-dark) !important;
+  background: var(--pd-card-dark) !important;
+}
+
+.participant-home--dark .events-empty h2 {
+  color: var(--pd-text-dark) !important;
+}
+
+.participant-home--dark .events-empty p {
+  color: var(--pd-text-muted-dark) !important;
+}
+
+.participant-home--dark .events-empty svg {
+  color: var(--pd-pink) !important;
+}
+
+.participant-home--dark .events-card {
+  background: var(--pd-card-dark) !important;
+  border-color: var(--pd-border-dark) !important;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35) !important;
+}
+
+.participant-home--dark .events-hero h1,
+.participant-home--dark .events-card h3,
+.participant-home--dark .events-card__title,
+.participant-home--dark .events-list-heading h2 {
+  color: var(--pd-text-dark);
+}
+
+.participant-home--dark .events-hero p,
+.participant-home--dark .events-card p,
+.participant-home--dark .events-card__meta span {
+  color: var(--pd-text-muted-dark);
+}
+
+.participant-home--dark .registered-mini-card {
+  background: var(--pd-card-dark-soft) !important;
+  border-color: var(--pd-border-dark) !important;
+}
+
+.participant-home--dark .registered-mini-card strong {
+  color: var(--pd-text-dark);
+}
+
+.participant-home--dark .registered-mini-card small {
+  color: var(--pd-text-subtle-dark);
+}
+
+.participant-home--dark .events-category-grid {
+  background: transparent;
+}
+
+.participant-home--dark .events-category-button {
+  background: var(--pd-card-dark-soft) !important;
+  border: 1px solid rgba(236, 72, 153, 0.2) !important;
+  color: var(--pd-text-muted-dark) !important;
+  box-shadow: none !important;
+  filter: none !important;
+}
+
+.participant-home--dark .events-category-button::before,
+.participant-home--dark .events-category-button::after {
+  display: none;
+}
+
+.participant-home--dark .events-category-button span {
+  color: currentColor !important;
+  text-shadow: none !important;
+}
+
+.participant-home--dark .events-category-button svg {
+  color: currentColor;
+  opacity: 0.92;
+}
+
+.participant-home--dark .events-category-button:hover {
+  background: rgba(236, 72, 153, 0.1) !important;
+  border-color: rgba(236, 72, 153, 0.38) !important;
+  color: var(--pd-text-dark) !important;
+  box-shadow:
+    0 0 0 1px rgba(236, 72, 153, 0.14),
+    0 8px 18px rgba(236, 72, 153, 0.16) !important;
+}
+
+.participant-home--dark .events-category-button:hover span {
+  color: currentColor !important;
+}
+
+.participant-home--dark .events-category-button.is-active {
+  background: rgba(236, 72, 153, 0.88) !important;
+  border-color: rgba(244, 114, 182, 0.58) !important;
+  color: #ffffff !important;
+  box-shadow: 0 10px 22px rgba(236, 72, 153, 0.24) !important;
+}
+
+.participant-home--dark .events-category-button.is-active span {
+  color: currentColor !important;
+}
+
+/* ── Community ──────────────────────────────────────────────────────────── */
+
+.participant-home--dark .community-page {
+  --community-primary-text: #f8fafc;
+  --community-muted: #d1d5db;
+  --community-muted-strong: #a8b4c4;
+  --community-card-border: rgba(148, 163, 184, 0.14);
+  --community-card-bg: #111827;
+  --community-control-bg: #172033;
+  --community-divider: rgba(148, 163, 184, 0.12);
+  --community-home-btn-bg: rgba(23, 32, 51, 0.94);
+  --community-home-btn-border: rgba(192, 132, 252, 0.32);
+  --community-home-btn-text: #f472b6;
+  --community-home-btn-hover-bg: rgba(236, 72, 153, 0.14);
+  --community-home-btn-shadow: 0 4px 14px rgba(0, 0, 0, 0.28);
+  --community-home-btn-shadow-hover: 0 6px 18px rgba(236, 72, 153, 0.12);
+}
+
+.participant-home--dark .community-page-shell,
+.participant-home--dark .community-main-feed,
+.participant-home--dark .community-right-sidebar {
+  background: transparent;
+  color: var(--pd-text-dark);
+}
+
+.participant-home--dark .community-page-card,
+.participant-home--dark .community-page-post,
+.participant-home--dark .create-post-card,
+.participant-home--dark .birthday-card,
+.participant-home--dark .guidelines-card,
+.participant-home--dark .community-streak-card,
+.participant-home--dark .community-profile-setup {
+  background: var(--community-card-bg);
+  border-color: var(--community-card-border);
+  color: var(--pd-text-dark);
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.35);
+}
+
+.participant-home--dark .community-streak-card {
+  background: #172033;
+}
+
+.participant-home--dark .birthday-card__header span:not(.birthday-card__icon),
+.participant-home--dark .community-profile-setup__heading span:not(.community-profile-setup__icon) {
+  color: var(--pd-text-muted-dark);
+}
+
+.participant-home--dark .birthday-card h2,
+.participant-home--dark .community-profile-setup h2,
+.participant-home--dark .community-streak-card strong {
+  color: var(--pd-text-dark);
+}
+
+.participant-home--dark .birthday-card p,
+.participant-home--dark .community-profile-setup p,
+.participant-home--dark .community-streak-card p {
+  color: var(--pd-text-muted-dark);
+}
+
+.participant-home--dark .create-post-card textarea,
+.participant-home--dark .birthday-card__textarea,
+.participant-home--dark .community-comment-form input {
+  background: rgba(23, 32, 51, 0.94);
+  border-color: var(--community-card-border);
+  color: var(--pd-text-dark);
+}
+
+/* ── Settings / Profile (embedded MUI) ──────────────────────────────────── */
+
+.participant-home--dark .participant-panel .MuiPaper-root,
+.participant-home--dark .participant-panel .MuiCard-root {
+  background-color: var(--pd-card-dark) !important;
+  color: #f8fafc !important;
+  border-color: var(--pd-border-dark);
+}
+
+.participant-home--dark .participant-panel .MuiInputBase-root,
+.participant-home--dark .participant-panel .MuiOutlinedInput-root,
+.participant-home--dark .participant-panel .MuiPickersTextField-root .MuiOutlinedInput-root,
+.participant-home--dark .participant-panel .MuiPickersOutlinedInput-root {
+  background-color: var(--pd-card-dark-soft);
+  color: #f8fafc;
+}
+
+.participant-home--dark .participant-panel .MuiOutlinedInput-input,
+.participant-home--dark .participant-panel .MuiInputBase-input,
+.participant-home--dark .participant-panel .MuiSelect-select,
+.participant-home--dark .participant-panel .MuiPickersSectionList-root,
+.participant-home--dark .participant-panel .MuiPickersSectionList-section,
+.participant-home--dark .participant-panel .MuiPickersSectionList-sectionContent,
+.participant-home--dark .participant-panel .MuiPickersInputBase-sectionContent,
+.participant-home--dark .participant-panel [class*="MuiPickers"][class*="section"] {
+  color: #f8fafc !important;
+  -webkit-text-fill-color: #f8fafc !important;
+  opacity: 1 !important;
+}
+
+.participant-home--dark .participant-panel .MuiInputBase-root.Mui-disabled,
+.participant-home--dark .participant-panel .MuiOutlinedInput-root.Mui-disabled,
+.participant-home--dark .participant-panel .MuiPickersTextField-root .MuiOutlinedInput-root.Mui-disabled,
+.participant-home--dark .participant-panel .MuiPickersOutlinedInput-root.Mui-disabled {
+  background-color: var(--pd-card-dark-soft) !important;
+  color: #cbd5e1 !important;
+  -webkit-text-fill-color: #cbd5e1 !important;
+  opacity: 1 !important;
+}
+
+.participant-home--dark .participant-panel .MuiOutlinedInput-input.Mui-disabled,
+.participant-home--dark .participant-panel .MuiInputBase-input.Mui-disabled,
+.participant-home--dark .participant-panel .Mui-disabled .MuiSelect-select,
+.participant-home--dark .participant-panel .MuiPickersOutlinedInput-root.Mui-disabled .MuiPickersSectionList-section,
+.participant-home--dark .participant-panel .MuiPickersOutlinedInput-root.Mui-disabled .MuiPickersSectionList-sectionContent,
+.participant-home--dark .participant-panel .MuiPickersOutlinedInput-root.Mui-disabled .MuiPickersInputBase-sectionContent,
+.participant-home--dark .participant-panel .Mui-disabled [class*="MuiPickers"][class*="section"] {
+  color: #cbd5e1 !important;
+  -webkit-text-fill-color: #cbd5e1 !important;
+  opacity: 1 !important;
+}
+
+.participant-home--dark .participant-panel .MuiInputBase-input[readonly],
+.participant-home--dark .participant-panel .MuiOutlinedInput-input[readonly] {
+  color: #cbd5e1 !important;
+  -webkit-text-fill-color: #cbd5e1 !important;
+  opacity: 1 !important;
+}
+
+.participant-home--dark .participant-panel .MuiInputBase-input::placeholder,
+.participant-home--dark .participant-panel .MuiOutlinedInput-input::placeholder {
+  color: #94a3b8 !important;
+  opacity: 1 !important;
+}
+
+.participant-home--dark .participant-panel .MuiInputLabel-root {
+  color: #cbd5e1;
+}
+
+.participant-home--dark .participant-panel .MuiInputLabel-root.Mui-disabled,
+.participant-home--dark .participant-panel .MuiFormLabel-root.Mui-disabled {
+  color: #94a3b8 !important;
+  opacity: 1 !important;
+}
+
+.participant-home--dark .participant-panel .MuiFormHelperText-root {
+  color: #94a3b8;
+  opacity: 1;
+}
+
+.participant-home--dark .participant-panel .MuiOutlinedInput-notchedOutline {
+  border-color: var(--pd-border-dark) !important;
+}
+
+.participant-home--dark .participant-panel .Mui-disabled .MuiOutlinedInput-notchedOutline {
+  border-color: var(--pd-border-dark) !important;
+}
+
+.participant-home--dark .participant-panel .MuiSelect-icon,
+.participant-home--dark .participant-panel .MuiSvgIcon-root,
+.participant-home--dark .participant-panel .MuiIconButton-root,
+.participant-home--dark .participant-panel .MuiIconButton-root .MuiSvgIcon-root,
+.participant-home--dark .participant-panel .MuiInputAdornment-root .MuiIconButton-root,
+.participant-home--dark .participant-panel .MuiInputAdornment-root .MuiSvgIcon-root {
+  color: #cbd5e1 !important;
+  opacity: 1 !important;
+}
+
+.participant-home--dark .participant-panel .MuiIconButton-root:hover,
+.participant-home--dark .participant-panel .MuiIconButton-root:hover .MuiSvgIcon-root {
+  color: #f8fafc !important;
+}
+
+.participant-home--dark .participant-panel .Mui-disabled .MuiSelect-icon,
+.participant-home--dark .participant-panel .Mui-disabled.MuiIconButton-root,
+.participant-home--dark .participant-panel .MuiOutlinedInput-root.Mui-disabled .MuiIconButton-root,
+.participant-home--dark .participant-panel .MuiOutlinedInput-root.Mui-disabled .MuiSvgIcon-root {
+  color: #cbd5e1 !important;
+  opacity: 1 !important;
+}
+
+.participant-home--dark .participant-panel .react-tel-input .form-control {
+  color: #f8fafc !important;
+  -webkit-text-fill-color: #f8fafc !important;
+  opacity: 1 !important;
+  border: 1px solid var(--pd-border-dark) !important;
+  background-color: var(--pd-card-dark-soft) !important;
+  border-radius: 14px !important;
+  height: 3.625rem !important;
+}
+
+.participant-home--dark .participant-panel .react-tel-input .form-control:disabled {
+  color: #cbd5e1 !important;
+  -webkit-text-fill-color: #cbd5e1 !important;
+  opacity: 1 !important;
+  border-color: var(--pd-border-dark) !important;
+  background-color: var(--pd-card-dark-soft) !important;
+}
+
+.participant-home--dark .participant-panel .react-tel-input .flag-dropdown,
+.participant-home--dark .participant-panel .react-tel-input .flag-dropdown.open,
+.participant-home--dark .participant-panel .react-tel-input .selected-flag,
+.participant-home--dark .participant-panel .react-tel-input .selected-flag:hover,
+.participant-home--dark .participant-panel .react-tel-input .selected-flag:focus {
+  background-color: var(--pd-card-dark-soft) !important;
+  border-color: var(--pd-border-dark) !important;
+}
+
+.participant-home--dark .participant-panel .react-tel-input .flag-dropdown {
+  border-radius: 14px 0 0 14px !important;
+  border-right: 1px solid var(--pd-border-dark) !important;
+}
+
+.participant-home--dark .participant-panel .react-tel-input .country-list {
+  border: 1px solid var(--pd-border-dark) !important;
+  background-color: var(--pd-card-dark-soft) !important;
+}
+
+.participant-home--dark .participant-panel .MuiPickersTextField-root .MuiOutlinedInput-root,
+.participant-home--dark .participant-panel .MuiPickersOutlinedInput-root {
+  border-radius: 14px !important;
+  min-height: 3.625rem !important;
+  height: 3.625rem !important;
+}
+
+.participant-home--dark .participant-panel .MuiPickersTextField-root fieldset,
+.participant-home--dark .participant-panel .MuiPickersOutlinedInput-root fieldset,
+.participant-home--dark .participant-panel .MuiPickersTextField-root .MuiOutlinedInput-notchedOutline,
+.participant-home--dark .participant-panel .MuiPickersOutlinedInput-root .MuiOutlinedInput-notchedOutline {
+  border-color: var(--pd-border-dark) !important;
+  border-width: 1px !important;
+}
+
+.participant-home--dark .participant-panel .MuiPickersTextField-root .MuiOutlinedInput-root:hover fieldset,
+.participant-home--dark .participant-panel .MuiPickersOutlinedInput-root:hover fieldset,
+.participant-home--dark .participant-panel .MuiPickersTextField-root .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline,
+.participant-home--dark .participant-panel .MuiPickersOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+  border-color: rgba(196, 165, 245, 0.45) !important;
+}
+
+.participant-home--dark .participant-panel .MuiPickersTextField-root .MuiOutlinedInput-root.Mui-focused fieldset,
+.participant-home--dark .participant-panel .MuiPickersOutlinedInput-root.Mui-focused fieldset,
+.participant-home--dark .participant-panel .MuiPickersTextField-root .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline,
+.participant-home--dark .participant-panel .MuiPickersOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: #c4a5f5 !important;
+}
+
+.participant-home--dark .participant-panel .MuiPickersTextField-root .MuiOutlinedInput-root.Mui-disabled fieldset,
+.participant-home--dark .participant-panel .MuiPickersOutlinedInput-root.Mui-disabled fieldset,
+.participant-home--dark .participant-panel .MuiPickersTextField-root .MuiOutlinedInput-root.Mui-disabled .MuiOutlinedInput-notchedOutline,
+.participant-home--dark .participant-panel .MuiPickersOutlinedInput-root.Mui-disabled .MuiOutlinedInput-notchedOutline {
+  border-color: var(--pd-border-dark) !important;
+}
+
+.participant-home--dark .participant-panel .MuiOutlinedInput-root:hover .MuiOutlinedInput-notchedOutline {
+  border-color: rgba(196, 165, 245, 0.45) !important;
+}
+
+.participant-home--dark .participant-panel .MuiOutlinedInput-root.Mui-focused .MuiOutlinedInput-notchedOutline {
+  border-color: #c4a5f5 !important;
+}
+
+.participant-home--dark .participant-panel .MuiTypography-root {
+  color: inherit;
+}
+
+.participant-home--dark .participant-panel .MuiChip-root {
+  background-color: rgba(236, 72, 153, 0.14) !important;
+  color: #e9d5ff !important;
+  border-color: var(--pd-border-dark) !important;
+}
+
+.participant-home--dark .participant-panel .MuiMenuItem-root {
+  color: #f8fafc;
+}
+
+.participant-home--dark .participant-panel .MuiMenuItem-root.Mui-selected {
+  background-color: rgba(236, 72, 153, 0.16);
+}
+
+.participant-home--dark .participant-panel .MuiMenuItem-root:hover {
+  background-color: rgba(236, 72, 153, 0.1);
+}

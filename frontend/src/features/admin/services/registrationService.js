@@ -1,0 +1,920 @@
+// Bookings are the source of truth for workshop and appointment registrations:
+//   bookings/{bookingId}
+//   users/{uid}/bookings/{bookingId}
+//   events/{eventId}/registrations/{bookingId} — temporary event roster mirror
+// Legacy users/{uid}/registrations reads/deletes remain only for migration cleanup.
+
+import {
+  collection,
+  collectionGroup,
+  getCountFromServer,
+  getDocs,
+  getDoc,
+  doc,
+  query,
+  where,
+  limit,
+  writeBatch,
+  runTransaction,
+  serverTimestamp,
+} from 'firebase/firestore';
+import { db } from '../../../firebase';
+import { logAuditEvent } from './auditService';
+import {
+  APPOINTMENT_BOOKING_CONFLICT,
+  buildAppointmentConstraintLocks,
+  findAppointmentBookingConflict,
+} from '../../appointments/appointmentBookingRules';
+
+// Deterministic key for email-only walk-in registrations.
+function emailKey(email) {
+  return 'email_' + email.trim().toLowerCase().replace(/[^a-z0-9]/g, '_').slice(0, 80);
+}
+
+function keyPart(value, fallback = 'registration') {
+  return String(value || fallback)
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]/g, '_')
+    .replace(/^_+|_+$/g, '')
+    .slice(0, 100) || fallback;
+}
+
+function buildBookingId({ userId, participantEmail, eventId, slotId }) {
+  const participantKey = userId || emailKey(participantEmail || `unknown_${Date.now()}`);
+  return [
+    keyPart(participantKey, 'user'),
+    keyPart(eventId, 'event'),
+    keyPart(slotId || eventId, 'slot'),
+  ].join('_');
+}
+
+function getDateKey(value) {
+  if (!value) return '';
+  if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}/.test(value)) {
+    return value.slice(0, 10);
+  }
+  const date = value?.toDate ? value.toDate() : new Date(value);
+  if (Number.isNaN(date.getTime())) return '';
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+function isGeneratedSessionId(value) {
+  return String(value || '').includes('__');
+}
+
+function getEventIdFromSessionId(value) {
+  return String(value || '').split('__')[0] || value;
+}
+
+function resolveRegistrationTarget(data) {
+  const sourceEventId = data.eventId || '';
+  const realEventId =
+    data.eventTemplateId ||
+    data.parentEventId ||
+    (isGeneratedSessionId(sourceEventId) ? getEventIdFromSessionId(sourceEventId) : sourceEventId);
+  const slotId = data.slotId || (realEventId && realEventId !== sourceEventId ? sourceEventId : '');
+
+  return { realEventId, slotId };
+}
+
+function chunk(items, size = 10) {
+  const chunks = [];
+  for (let index = 0; index < items.length; index += size) {
+    chunks.push(items.slice(index, index + size));
+  }
+  return chunks;
+}
+
+function getRegistrationPathContext(snapshot) {
+  const parts = snapshot.ref.path.split('/');
+  const ownerCollection = parts[0] || '';
+  const ownerId = parts[1] || '';
+  const registrationId = parts[3] || snapshot.id;
+
+  if (ownerCollection === 'events') {
+    return {
+      source: 'event',
+      eventId: ownerId,
+      userId: '',
+      registrationId: snapshot.id,
+    };
+  }
+
+  if (ownerCollection === 'users') {
+    return {
+      source: 'user',
+      eventId: registrationId,
+      userId: ownerId,
+      registrationId,
+    };
+  }
+
+  return {
+    source: ownerCollection,
+    eventId: registrationId,
+    userId: '',
+    registrationId,
+  };
+}
+
+function isEventRosterSnapshot(snapshot) {
+  return snapshot.ref.path.startsWith('events/');
+}
+
+function normalizeRegistrationSnapshot(snapshot, fallbackEventId = '') {
+  const data = snapshot.data() || {};
+  const context = getRegistrationPathContext(snapshot);
+  const eventId = data.eventId || context.eventId || fallbackEventId;
+  const userId = data.userId || data.uid || context.userId || '';
+
+  return {
+    id: context.source === 'event' ? snapshot.id : (userId || snapshot.id),
+    eventId,
+    userId,
+    registrationSource: context.source,
+    rosterEventId: context.source === 'event' ? context.eventId : '',
+    ...data,
+  };
+}
+
+function getRegistrationUniqueKey(registration) {
+  return [
+    registration.eventId || '',
+    registration.slotId || registration.bookingId || '',
+    registration.userId ||
+      registration.uid ||
+      registration.participantEmail ||
+      registration.userEmail ||
+      registration.email ||
+      registration.id ||
+      '',
+  ].join('__');
+}
+
+function isInactiveRegistration(data) {
+  const status = String(data?.status || '').trim().toLowerCase();
+  return (
+    status === 'cancelled' ||
+    status === 'canceled' ||
+    status === 'inactive' ||
+    status === 'removed' ||
+    status === 'declined'
+  );
+}
+
+function isCancelledRegistration(data) {
+  return isInactiveRegistration(data);
+}
+
+function isAppointmentRegistration(data) {
+  const eventType = String(data?.eventType || data?.type || data?.category || '').trim().toLowerCase();
+  return (
+    eventType.includes('appointment') ||
+    String(data?.eventTitle || data?.title || '').toLowerCase().includes('appointment')
+  );
+}
+
+function getUserRegistrationMapKey(data, docId = '') {
+  return data?.slotId || (isGeneratedSessionId(docId) ? docId : '') || data?.eventId || docId;
+}
+
+function getUserRegistrationValue(data, docId = '', uid = '') {
+  return data?.registrationKey || data?.bookingId || data?.sessionRegistrationKey || docId || data?.userId || uid;
+}
+
+function getUserRegistrationIdentityKeys(data, docId = '') {
+  const slotKey = data?.slotId || (isGeneratedSessionId(docId) ? docId : '');
+  const keys = [
+    data?.bookingId,
+    data?.registrationKey,
+    data?.sessionRegistrationKey,
+    slotKey,
+    docId,
+  ].filter(Boolean);
+
+  if (!slotKey && data?.eventId) {
+    keys.push(data.eventId);
+  }
+
+  return [...new Set(keys)];
+}
+
+export function getLegacyUserRegistrationIds(registration = {}, eventId = '') {
+  return [...new Set([
+    registration.userMirrorId,
+    registration.slotId,
+    registration.sessionEventId,
+    registration.eventId,
+    eventId,
+  ].filter(Boolean))];
+}
+
+async function getRegistrationsMatchingField(fieldName, values) {
+  if (!values.length) return [];
+
+  const docs = [];
+  const groups = chunk([...new Set(values.filter(Boolean))]);
+
+  for (const group of groups) {
+    try {
+      const snap = await getDocs(
+        query(collectionGroup(db, 'registrations'), where(fieldName, 'in', group), limit(500))
+      );
+      docs.push(...snap.docs.filter(isEventRosterSnapshot));
+    } catch (error) {
+      console.warn(`Could not read registrations by ${fieldName}:`, error);
+    }
+  }
+
+  return docs;
+}
+
+async function getBookingsMatchingField(fieldName, values) {
+  if (!values.length) return [];
+
+  const docs = [];
+  const groups = chunk([...new Set(values.filter(Boolean))]);
+
+  for (const group of groups) {
+    try {
+      const snap = await getDocs(
+        query(collection(db, 'bookings'), where(fieldName, 'in', group), limit(500))
+      );
+      docs.push(...snap.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() })));
+    } catch (error) {
+      console.warn(`Could not read bookings by ${fieldName}:`, error);
+    }
+  }
+
+  return docs;
+}
+
+function mergeRegistrationSnapshots(snapshots, fallbackEventId = '') {
+  const map = new Map();
+
+  snapshots.forEach((snapshot) => {
+    const registration = normalizeRegistrationSnapshot(snapshot, fallbackEventId);
+    const key = getRegistrationUniqueKey(registration);
+    const existing = map.get(key) || {};
+    const keepExistingRosterId = existing.rosterEventId && existing.rosterEventId === fallbackEventId;
+    map.set(key, {
+      ...existing,
+      ...registration,
+      id: keepExistingRosterId ? existing.id : registration.id,
+      registrationSource: keepExistingRosterId ? existing.registrationSource : registration.registrationSource,
+      rosterEventId: keepExistingRosterId ? existing.rosterEventId : (registration.rosterEventId || existing.rosterEventId),
+      userId: existing.userId || registration.userId || null,
+      participantName: existing.participantName || registration.participantName || registration.userName || '',
+      participantEmail: existing.participantEmail || registration.participantEmail || registration.userEmail || '',
+      participantPhone: existing.participantPhone || registration.participantPhone || registration.userPhone || '',
+    });
+  });
+
+  return Array.from(map.values());
+}
+
+// Look up a user UID by email. Returns null if no account exists.
+async function findUidByEmail(email) {
+  if (!email) return null;
+  const q = query(collection(db, 'users'), where('email', '==', email), limit(1));
+  const snap = await getDocs(q);
+  return snap.empty ? null : snap.docs[0].id;
+}
+
+/**
+ * Read all registrations for one event from the event roster.
+ * Returns the same shape as before: { id, eventId, participantName, participantEmail, registeredAt, ... }
+ */
+export async function getRegistrationsByEvent(eventId) {
+  const [directSnap, templateDocs, parentDocs] = await Promise.all([
+    getDocs(query(collection(db, 'events', eventId, 'registrations'), limit(200))),
+    getRegistrationsMatchingField('eventTemplateId', [eventId]),
+    getRegistrationsMatchingField('parentEventId', [eventId]),
+  ]);
+
+  const docs = mergeRegistrationSnapshots(
+    [...directSnap.docs, ...templateDocs, ...parentDocs],
+    eventId
+  );
+
+  return docs.sort((a, b) => {
+    const aTime = a.registeredAt?.toDate?.() ?? new Date(0);
+    const bTime = b.registeredAt?.toDate?.() ?? new Date(0);
+    return bTime - aTime;
+  });
+}
+
+/**
+ * Appointment participant management uses central bookings as the source of
+ * truth. This keeps provider/date schedule views away from the legacy roster
+ * shape while still supporting template/parent event ids created earlier.
+ */
+export async function getBookingsByEvent(eventId) {
+  if (!eventId) return [];
+
+  const snapshots = await Promise.allSettled([
+    getDocs(query(collection(db, 'bookings'), where('eventId', '==', eventId), limit(500))),
+    getDocs(query(collection(db, 'bookings'), where('eventTemplateId', '==', eventId), limit(500))),
+    getDocs(query(collection(db, 'bookings'), where('parentEventId', '==', eventId), limit(500))),
+  ]);
+
+  const bookings = new Map();
+  snapshots.forEach((result) => {
+    if (result.status !== 'fulfilled') return;
+    result.value.docs.forEach((docSnap) => {
+      bookings.set(docSnap.id, { id: docSnap.id, ...docSnap.data() });
+    });
+  });
+
+  return Array.from(bookings.values()).sort((left, right) => {
+    const leftTime = left.startAt?.toDate?.() ?? new Date(left.selectedDate || left.dateKey || 0);
+    const rightTime = right.startAt?.toDate?.() ?? new Date(right.selectedDate || right.dateKey || 0);
+    return leftTime - rightTime;
+  });
+}
+
+export async function updateRegistrationStatus(regId, eventId, status) {
+  if (!regId || !eventId) throw new Error('updateRegistrationStatus requires registration and event ids.');
+  const normalizedStatus = String(status || '').toLowerCase();
+  const allowedStatuses = new Set(['confirmed', 'cancelled']);
+  if (!allowedStatuses.has(normalizedStatus)) throw new Error('Unsupported registration status.');
+
+  const rosterRef = doc(db, 'events', eventId, 'registrations', regId);
+  const rosterSnap = await getDoc(rosterRef);
+  const rosterData = rosterSnap.exists() ? rosterSnap.data() : {};
+  const bookingId = rosterData.bookingId || rosterData.id || regId;
+  const uid = rosterData.userId || rosterData.uid || null;
+  const patch = {
+    status: normalizedStatus,
+    updatedAt: serverTimestamp(),
+  };
+
+  const batch = writeBatch(db);
+  batch.set(doc(db, 'bookings', bookingId), patch, { merge: true });
+  batch.set(rosterRef, patch, { merge: true });
+  if (uid) {
+    batch.set(doc(db, 'users', uid, 'bookings', bookingId), patch, { merge: true });
+  }
+  await batch.commit();
+
+  await logAuditEvent('UPDATE', 'Event Registration', {
+    details: { registrationId: regId, bookingId, eventId, status: normalizedStatus },
+  });
+}
+
+/**
+ * Count registrations per event. Uses one getCountFromServer() call per event,
+ * which is cheap (server-side aggregation, doesn't return docs) and only requires
+ * read permission on that specific event roster.
+ * Returns: { eventId: count }
+ */
+export async function getRegistrationCounts(eventIds) {
+  if (!eventIds.length) return {};
+  const ids = [...new Set(eventIds.filter(Boolean))];
+  const aggregateSets = Object.fromEntries(ids.map((id) => [id, new Set()]));
+
+  // One getCountFromServer() per event would fire them all at once for
+  // events-heavy dashboards, which is enough to trip Firestore's aggregation
+  // query rate limit (429 resource-exhausted). Run small batches in sequence
+  // instead of all-at-once so the burst stays under the limit.
+  const directEntries = [];
+  for (const group of chunk(ids, 3)) {
+    const groupEntries = await Promise.all(
+      group.map(async (eid) => {
+        try {
+          const snap = await getCountFromServer(
+            collection(db, 'events', eid, 'registrations')
+          );
+          return [eid, snap.data().count];
+        } catch (_) {
+          return [eid, 0];
+        }
+      })
+    );
+    directEntries.push(...groupEntries);
+  }
+
+  const directCounts = Object.fromEntries(directEntries);
+  const [bookingEventDocs, bookingSlotDocs, templateDocs, parentDocs, slotDocs] = await Promise.all([
+    getBookingsMatchingField('eventId', ids),
+    getBookingsMatchingField('slotId', ids),
+    getRegistrationsMatchingField('eventTemplateId', ids),
+    getRegistrationsMatchingField('parentEventId', ids),
+    getRegistrationsMatchingField('slotId', ids),
+  ]);
+
+  bookingEventDocs.forEach((booking) => {
+    if (String(booking.status || '').toLowerCase() === 'cancelled') return;
+    if (!aggregateSets[booking.eventId]) return;
+    aggregateSets[booking.eventId].add(getRegistrationUniqueKey(booking));
+  });
+
+  bookingSlotDocs.forEach((booking) => {
+    if (String(booking.status || '').toLowerCase() === 'cancelled') return;
+    if (!booking.slotId || !aggregateSets[booking.slotId]) return;
+    aggregateSets[booking.slotId].add(getRegistrationUniqueKey(booking));
+  });
+
+  mergeRegistrationSnapshots([...templateDocs, ...parentDocs]).forEach((registration) => {
+    const templateId = registration.eventTemplateId || registration.parentEventId;
+    if (!aggregateSets[templateId]) return;
+    aggregateSets[templateId].add(getRegistrationUniqueKey(registration));
+  });
+
+  mergeRegistrationSnapshots(slotDocs).forEach((registration) => {
+    if (!registration.slotId || !aggregateSets[registration.slotId]) return;
+    aggregateSets[registration.slotId].add(getRegistrationUniqueKey(registration));
+  });
+
+  return Object.fromEntries(
+    ids.map((eventId) => [
+      eventId,
+      Math.max(directCounts[eventId] || 0, aggregateSets[eventId]?.size || 0),
+    ])
+  );
+}
+
+/**
+ * Read the per-slot booked counts that addRegistration maintains under
+ * events/{eventId}/slotCounters/{slotKey}. Each counter doc id is the slotKey
+ * (the booking's slotId, or the eventId for slot-less registrations), so the
+ * returned map is keyed by those same ids — exactly the slot/session ids the
+ * booking UI builds. Returns: { [slotKey]: count }.
+ */
+export async function getSlotCounts(eventIds) {
+  const ids = [...new Set((eventIds || []).filter(Boolean))];
+  if (!ids.length) return {};
+
+  const counts = {};
+  // Sequence small batches so a counters-heavy load doesn't burst past
+  // Firestore's read limits, mirroring getRegistrationCounts above.
+  for (const group of chunk(ids, 3)) {
+    const groupResults = await Promise.all(
+      group.map(async (eid) => {
+        try {
+          const snap = await getDocs(collection(db, 'events', eid, 'slotCounters'));
+          return snap.docs.map((docSnap) => [docSnap.id, Number(docSnap.data().count) || 0]);
+        } catch (_) {
+          return [];
+        }
+      })
+    );
+    groupResults.flat().forEach(([slotKey, count]) => {
+      counts[slotKey] = count;
+    });
+  }
+
+  return counts;
+}
+
+async function getActiveAppointmentBookingsForUser(uid) {
+  if (!uid) return [];
+  const snap = await getDocs(query(collection(db, 'users', uid, 'bookings'), limit(200)));
+  return snap.docs
+    .map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }))
+    .filter((booking) => !isInactiveRegistration(booking) && isAppointmentRegistration(booking));
+}
+
+/**
+ * Register a participant for an event.
+ * - If `data.uid` is provided OR the email matches an existing user, writes to
+ *   both mirrors atomically.
+ * - Otherwise writes only the event-roster entry (walk-in / no-account flow).
+ *
+ * @param {{ eventId, uid?, participantName, participantEmail, participantPhone? }} data
+ * @returns {Promise<string>} the registration key (uid or synthetic email key)
+ */
+export async function addRegistration(data) {
+  const {
+    eventId,
+    uid: callerUid,
+    participantName,
+    participantEmail,
+    participantPhone,
+    eventTitle,
+    eventDate,
+    eventLocation,
+    eventCoverUrl,
+    eventTemplateId,
+    parentEventId,
+    eventType,
+    selectedDate,
+    providerId,
+    providerName,
+    selectedTimeSlot,
+    selectedTime,
+    dateKey: callerDateKey,
+    startAt,
+    endAt,
+    slotId: callerSlotId,
+    room,
+    status: requestedStatus,
+    notes,
+    sessionDateLabel,
+    sessionTime,
+    recurringSchedule,
+    capacity,
+  } = data;
+
+  if (!eventId) throw new Error('eventId is required');
+
+  const { realEventId, slotId } = resolveRegistrationTarget({
+    eventId,
+    eventTemplateId,
+    parentEventId,
+    slotId: callerSlotId,
+  });
+  if (!realEventId) throw new Error('real eventId is required');
+
+  const eventSnap = await getDoc(doc(db, 'events', realEventId));
+  if (!eventSnap.exists()) {
+    throw new Error(`Cannot register for missing event document: ${realEventId}`);
+  }
+
+  const uid = callerUid || (await findUidByEmail(participantEmail));
+  const bookingId = buildBookingId({
+    userId: uid,
+    participantEmail,
+    eventId: realEventId,
+    slotId: slotId || realEventId,
+  });
+  const eventRosterKey = bookingId;
+  const templateEventId = eventTemplateId || parentEventId || realEventId;
+
+  const eventRosterRef = doc(db, 'events', realEventId, 'registrations', eventRosterKey);
+  const bookingRef = doc(db, 'bookings', bookingId);
+  const resolvedSelectedTime = selectedTime || selectedTimeSlot || sessionTime || '';
+  const resolvedStartAt = startAt || eventDate || null;
+  const resolvedEndAt = endAt || null;
+  const resolvedDateKey = callerDateKey || selectedDate || getDateKey(resolvedStartAt);
+  const resolvedRoom = room || eventLocation || '';
+
+  const resolvedStatus = requestedStatus || 'confirmed';
+  const bookingDoc = {
+    bookingId,
+    registrationKey: eventRosterKey,
+    sessionRegistrationKey: eventRosterKey,
+    templateRosterKey: eventRosterKey,
+    userId: uid || null,
+    userName: participantName || '',
+    userEmail: participantEmail || '',
+    userPhone: participantPhone || '',
+    status: resolvedStatus,
+    registeredAt: serverTimestamp(),
+    cancelledAt: null,
+    eventId: realEventId,
+    eventType: eventType || '',
+    eventTitle: eventTitle || '',
+    slotId: slotId || '',
+    providerId: providerId || '',
+    providerName: providerName || '',
+    dateKey: resolvedDateKey,
+    startAt: resolvedStartAt,
+    endAt: resolvedEndAt,
+    selectedDate: selectedDate || resolvedDateKey,
+    selectedTime: resolvedSelectedTime,
+    selectedTimeSlot: resolvedSelectedTime,
+    eventDate: eventDate || resolvedStartAt,
+    eventLocation: resolvedRoom,
+    eventCoverUrl: eventCoverUrl || '',
+    // Legacy field aliases kept so existing UI columns work unchanged.
+    participantName: participantName || '',
+    participantEmail: participantEmail || '',
+    participantPhone: participantPhone || '',
+    eventTemplateId: templateEventId,
+    parentEventId: parentEventId || templateEventId,
+    sessionEventId: realEventId,
+    room: resolvedRoom,
+    notes: notes || '',
+    sessionDateLabel: sessionDateLabel || '',
+    sessionTime: sessionTime || '',
+    recurringSchedule: recurringSchedule || '',
+  };
+
+  const isParticipantAppointment = Boolean(uid && isAppointmentRegistration(bookingDoc));
+  const appointmentConstraintLocks = isParticipantAppointment
+    ? buildAppointmentConstraintLocks(bookingDoc)
+    : [];
+
+  if (isParticipantAppointment) {
+    const activeAppointmentBookings = await getActiveAppointmentBookingsForUser(uid);
+    const conflict = findAppointmentBookingConflict(bookingDoc, activeAppointmentBookings);
+    if (conflict) {
+      throw new Error(conflict.code);
+    }
+    bookingDoc.appointmentConstraintIds = appointmentConstraintLocks.map((lock) => lock.id);
+  }
+
+  const eventRosterDoc = {
+    ...bookingDoc,
+    registrationSource: 'event',
+  };
+
+  // Capacity is enforced transactionally against a per-slot counter doc
+  // (events/{realEventId}/slotCounters/{slotKey}). The counter is the only
+  // value a client transaction can read to decide "is this slot full?", since
+  // Firestore transactions can't run queries. `capacity` is resolved by the
+  // caller (slot → provider → event cascade) and passed in; when it's 0/absent
+  // the counter is still maintained but no ceiling is enforced.
+  const slotKey = slotId || realEventId;
+  const counterRef = doc(db, 'events', realEventId, 'slotCounters', slotKey);
+  const userBookingRef = uid ? doc(db, 'users', uid, 'bookings', bookingId) : null;
+  const appointmentConstraintRefs = appointmentConstraintLocks.map((lock) => (
+    doc(db, 'users', uid, 'appointmentConstraints', lock.id)
+  ));
+  const capacityLimit = Number(capacity) || 0;
+
+  await runTransaction(db, async (tx) => {
+    // All reads must precede writes inside a transaction.
+    const [counterSnap, bookingSnap, ...constraintSnaps] = await Promise.all([
+      tx.get(counterRef),
+      tx.get(bookingRef),
+      ...appointmentConstraintRefs.map((constraintRef) => tx.get(constraintRef)),
+    ]);
+    const currentCount = counterSnap.exists() ? (Number(counterSnap.data().count) || 0) : 0;
+    const existingBooking = bookingSnap.exists() ? bookingSnap.data() : null;
+    // bookingId is deterministic per (user, event, slot), so a re-confirm of an
+    // already-active booking must NOT increment the counter again. Re-booking a
+    // previously cancelled slot does count as a new seat.
+    const alreadyActive = existingBooking ? existingBooking.status === 'confirmed' : false;
+    const takesNewSeat = !alreadyActive;
+
+    if (capacityLimit > 0 && takesNewSeat && currentCount >= capacityLimit) {
+      throw new Error('SLOT_FULL');
+    }
+
+    constraintSnaps.forEach((constraintSnap, index) => {
+      if (!constraintSnap.exists()) return;
+      const existingBookingId = constraintSnap.data()?.bookingId;
+      if (!existingBookingId || existingBookingId === bookingId) return;
+      throw new Error(APPOINTMENT_BOOKING_CONFLICT.DAY);
+    });
+
+    tx.set(bookingRef, bookingDoc, { merge: true });
+    tx.set(eventRosterRef, eventRosterDoc, { merge: true });
+    if (userBookingRef) {
+      tx.set(userBookingRef, bookingDoc, { merge: true });
+    }
+    if (takesNewSeat) {
+      tx.set(counterRef, {
+        count: currentCount + 1,
+        slotId: slotKey,
+        eventId: realEventId,
+        updatedAt: serverTimestamp(),
+      }, { merge: true });
+    }
+    appointmentConstraintRefs.forEach((constraintRef, index) => {
+      const lock = appointmentConstraintLocks[index];
+      tx.set(constraintRef, {
+        userId: uid,
+        bookingId,
+        eventId: realEventId,
+        slotId: slotKey,
+        dateKey: lock.dateKey,
+        providerId: providerId || '',
+        providerKey: lock.providerKey || '',
+        kind: lock.kind,
+        startMinute: lock.startMinute ?? null,
+        endMinute: lock.endMinute ?? null,
+        createdAt: serverTimestamp(),
+      }, { merge: true });
+    });
+  });
+
+  try {
+    await logAuditEvent({
+      actionType: 'ADD_REGISTRATION',
+      targetId: bookingId,
+      details: { bookingId, eventId: realEventId, slotId: slotId || '', participant: participantName || participantEmail },
+    });
+  } catch (_) {}
+
+  return bookingId;
+}
+
+/**
+ * Remove a registration. `regId` is the key under events/{eventId}/registrations/ —
+ * either a uid (for account holders) or a synthetic emailKey.
+ */
+export async function removeRegistration(regId, participantName, eventId) {
+  if (!eventId) {
+    // Legacy callers pass only regId. Best-effort: scan event_registrations is gone,
+    // so callers must pass eventId. Fail loudly so the bug surfaces.
+    throw new Error('removeRegistration now requires eventId as the third argument.');
+  }
+
+  const rosterRef = doc(db, 'events', eventId, 'registrations', regId);
+  const rosterSnap = await getDoc(rosterRef);
+  const registration = rosterSnap.exists() ? rosterSnap.data() : {};
+  const bookingId = registration.bookingId || regId;
+  let uid = registration.userId || null;
+  let bookingData = {};
+  if (bookingId) {
+    try {
+      const bookingSnap = await getDoc(doc(db, 'bookings', bookingId));
+      if (bookingSnap.exists()) {
+        bookingData = bookingSnap.data() || {};
+        uid = uid || bookingData.userId || null;
+      }
+    } catch (_) {}
+  }
+  const sessionEventId = registration.sessionEventId || registration.eventId || eventId;
+  const templateEventId = registration.eventTemplateId || registration.parentEventId || '';
+  const sessionRegistrationKey = registration.sessionRegistrationKey || registration.registrationKey || uid || regId;
+  const templateRosterKey = registration.templateRosterKey || (
+    templateEventId && templateEventId !== sessionEventId
+      ? `${sessionRegistrationKey}__${keyPart(sessionEventId, 'session')}`
+      : sessionRegistrationKey
+  );
+
+  // Release the seat on the per-slot counter that addRegistration maintains.
+  // Keyed identically (events/{sessionEventId}/slotCounters/{slotKey}) and only
+  // decremented when the booking was actually active, so repeated cancels can't
+  // drive the count negative.
+  const slotKey = registration.slotId || sessionEventId;
+  const counterRef = doc(db, 'events', sessionEventId, 'slotCounters', slotKey);
+  const bookingDocRef = bookingId ? doc(db, 'bookings', bookingId) : null;
+  const appointmentConstraintIds = registration.appointmentConstraintIds || bookingData.appointmentConstraintIds || [];
+  const appointmentConstraintRefs = uid && Array.isArray(appointmentConstraintIds)
+    ? appointmentConstraintIds.map((constraintId) => doc(db, 'users', uid, 'appointmentConstraints', constraintId))
+    : [];
+
+  await runTransaction(db, async (tx) => {
+    const counterSnap = await tx.get(counterRef);
+    let wasActive = true;
+    if (bookingDocRef) {
+      const bookingSnap = await tx.get(bookingDocRef);
+      wasActive = bookingSnap.exists() ? bookingSnap.data().status === 'confirmed' : false;
+    }
+    const currentCount = counterSnap.exists() ? (Number(counterSnap.data().count) || 0) : 0;
+
+    if (bookingId) {
+      const cancellationPatch = {
+        status: 'cancelled',
+        cancelledAt: serverTimestamp(),
+      };
+      tx.set(bookingDocRef, cancellationPatch, { merge: true });
+      if (uid) {
+        tx.set(doc(db, 'users', uid, 'bookings', bookingId), cancellationPatch, { merge: true });
+      }
+    }
+    tx.delete(rosterRef);
+    if (sessionEventId && sessionEventId !== eventId) {
+      tx.delete(doc(db, 'events', sessionEventId, 'registrations', sessionRegistrationKey));
+    }
+    if (templateEventId && templateEventId !== eventId) {
+      tx.delete(doc(db, 'events', templateEventId, 'registrations', templateRosterKey));
+    }
+    if (uid) {
+      getLegacyUserRegistrationIds(registration, eventId).forEach((legacyRegistrationId) => {
+        tx.delete(doc(db, 'users', uid, 'registrations', legacyRegistrationId));
+      });
+    }
+
+    appointmentConstraintRefs.forEach((constraintRef) => tx.delete(constraintRef));
+
+    if (wasActive && currentCount > 0) {
+      tx.set(counterRef, {
+        count: currentCount - 1,
+        slotId: slotKey,
+        eventId: sessionEventId,
+        updatedAt: serverTimestamp(),
+      }, { merge: true });
+    }
+  });
+
+  try {
+    await logAuditEvent({
+      actionType: 'REMOVE_REGISTRATION',
+      targetId: `${eventId}/${regId}`,
+      details: { removed: participantName },
+    });
+  } catch (_) {}
+}
+
+/**
+ * For a participant: { slotId|eventId: bookingId } map across active bookings.
+ * Falls back to users/{uid}/registrations only for legacy data.
+ */
+export async function getUserRegisteredEventIds(emailOrUid) {
+  if (!emailOrUid) return {};
+  // If it looks like an email, resolve to uid first.
+  let uid = emailOrUid;
+  if (emailOrUid.includes('@')) {
+    try {
+      uid = await findUidByEmail(emailOrUid);
+    } catch (error) {
+      console.warn('Could not resolve user id for registration state:', error);
+      return {};
+    }
+  }
+  if (!uid) return {};
+
+  const map = {};
+  const bookingIdentityKeys = new Set();
+
+  try {
+    const bookingsSnap = await getDocs(
+      query(collection(db, 'users', uid, 'bookings'), limit(200))
+    );
+
+    bookingsSnap.docs.forEach((d) => {
+      const data = d.data() || {};
+      if (isCancelledRegistration(data)) return;
+
+      getUserRegistrationIdentityKeys(data, d.id).forEach((key) => bookingIdentityKeys.add(key));
+
+      const mapKey = getUserRegistrationMapKey(data, d.id);
+      const registrationKey = getUserRegistrationValue(data, d.id, uid);
+      if (mapKey && registrationKey) {
+        map[mapKey] = registrationKey;
+      }
+    });
+  } catch (error) {
+    console.warn('Could not read user booking mirrors for registration state:', error);
+  }
+
+  try {
+    const legacySnap = await getDocs(
+      query(collection(db, 'users', uid, 'registrations'), limit(100))
+    );
+    legacySnap.docs.forEach((d) => {
+      const data = d.data() || {};
+      if (isCancelledRegistration(data)) return;
+
+      const legacyKeys = getUserRegistrationIdentityKeys(data, d.id);
+      if (legacyKeys.some((key) => bookingIdentityKeys.has(key))) return;
+
+      const mapKey = getUserRegistrationMapKey(data, d.id);
+      const registrationKey = getUserRegistrationValue(data, d.id, uid);
+      if (mapKey && registrationKey && !map[mapKey]) {
+        map[mapKey] = registrationKey;
+      }
+    });
+  } catch (error) {
+    console.warn('Could not read legacy user registrations for registration state:', error);
+  }
+  return map;
+}
+
+/**
+ * Active appointment bookings for a participant — same source/filter as the
+ * Registered Events tab (getUserRegisteredEventIds + users/{uid}/bookings).
+ * Does not read users/{uid}/appointments legacy mirror.
+ *
+ * @param {string} uid
+ * @returns {Promise<{ rows: Array<Record<string, unknown>>, registeredMap: Record<string, string> }>}
+ */
+export async function getActiveRegisteredAppointmentBookings(uid) {
+  if (!uid) return { rows: [], registeredMap: {} };
+
+  const registeredMap = await getUserRegisteredEventIds(uid);
+  const activeSessionKeys = new Set(Object.keys(registeredMap));
+
+  const bookingsSnap = await getDocs(
+    query(collection(db, 'users', uid, 'bookings'), limit(200)),
+  );
+
+  const allAppointmentBookings = bookingsSnap.docs.map((docSnap) => ({
+    id: docSnap.id,
+    source: 'booking',
+    ...docSnap.data(),
+  })).filter(isAppointmentRegistration);
+
+  const rows = allAppointmentBookings.filter((row) => {
+    if (isInactiveRegistration(row)) return false;
+    const mapKey = getUserRegistrationMapKey(row, row.id);
+    return activeSessionKeys.has(mapKey);
+  });
+
+  if (import.meta.env.DEV) {
+    console.log('[Dashboard:appointments] Registered Events active map', registeredMap);
+    console.log(
+      '[Dashboard:appointments] users/{uid}/bookings appointment rows',
+      allAppointmentBookings.map((row) => ({
+        id: row.id,
+        bookingId: row.bookingId,
+        status: row.status,
+        mapKey: getUserRegistrationMapKey(row, row.id),
+        title: row.eventTitle || row.title,
+        inRegisteredMap: activeSessionKeys.has(getUserRegistrationMapKey(row, row.id)),
+      })),
+    );
+    console.log(
+      '[Dashboard:appointments] active rows used by Home card',
+      rows.map((row) => ({
+        id: row.id,
+        bookingId: row.bookingId,
+        status: row.status,
+        mapKey: getUserRegistrationMapKey(row, row.id),
+        title: row.eventTitle || row.title,
+      })),
+    );
+  }
+
+  return { rows, registeredMap };
+}

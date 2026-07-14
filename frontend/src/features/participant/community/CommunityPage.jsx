@@ -1,0 +1,558 @@
+import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
+import Diversity3OutlinedIcon from '@mui/icons-material/Diversity3Outlined';
+import RefreshOutlinedIcon from '@mui/icons-material/RefreshOutlined';
+import {
+  FEED_TABS,
+  REPORT_REASON_OPTIONS,
+} from './constants/communityConstants';
+import {
+  filterPostsByTab,
+  getEmptyFeedMessage,
+  sortFeedPosts,
+} from './utils/communityFeedUtils';
+import {
+  isAuthorFollowed,
+  isPostOwnedByCurrentUser,
+  isPostReportedByUser,
+} from './utils/communityModerationUtils';
+import BirthdayCard from './components/BirthdayCard';
+import CommunityAccessPanel from './components/CommunityAccessPanel';
+import CommunityBirthdayPreferenceCard from './components/CommunityBirthdayPreferenceCard';
+import CommunityGuidelinesModal from './components/CommunityGuidelinesModal';
+import CommunityPostCard from './components/CommunityPostCard';
+import CommunityStreakCard from './components/CommunityStreakCard';
+import CreatePostCard from './components/CreatePostCard';
+import DeletePostModal from './components/DeletePostModal';
+import EditPostModal from './components/EditPostModal';
+import FeedTabs from './components/FeedTabs';
+import ReportPostModal from './components/ReportPostModal';
+import useCommunityComments from './hooks/useCommunityComments';
+import useCommunityFollows from './hooks/useCommunityFollows';
+import useCommunityGuidelines from './hooks/useCommunityGuidelines';
+import useCommunityPosts from './hooks/useCommunityPosts';
+import useCommunityProfile from './hooks/useCommunityProfile';
+import useCommunityReports from './hooks/useCommunityReports';
+import useCommunityStreak from './hooks/useCommunityStreak';
+import { useParticipantLocale } from '../context/ParticipantLocaleContext';
+import './styles/community.css';
+
+export default function CommunityPage({
+  personalDetails = {},
+  isPersonalDetailsLoading = false,
+  onGoToSettings,
+  focusPostId = null,
+  onFocusPostHandled,
+  onParticipantProfileSync,
+}) {
+  const { t } = useParticipantLocale();
+  const postInputRef = useRef(null);
+  const reportModalRef = useRef(null);
+  const deletePostModalRef = useRef(null);
+  const deleteCommentModalRef = useRef(null);
+  const editPostModalRef = useRef(null);
+  const [newPostText, setNewPostText] = useState('');
+  const [postAnonymously, setPostAnonymously] = useState(false);
+  const [postAttachment, setPostAttachment] = useState(null);
+  const [postError, setPostError] = useState('');
+  const [postSuccessMessage, setPostSuccessMessage] = useState('');
+  const [activeFeedTab, setActiveFeedTab] = useState('all');
+  const [confirmingDeletePostId, setConfirmingDeletePostId] = useState(null);
+  const [editingPostId, setEditingPostId] = useState(null);
+  const [editPostText, setEditPostText] = useState('');
+  const [editPostError, setEditPostError] = useState('');
+  const {
+    showGuidelinesModal,
+    showFullGuidelinesModal,
+    handleGuidelinesContinue,
+    handleReadFullGuidelines,
+    handleCloseFullGuidelines,
+  } = useCommunityGuidelines(personalDetails.id);
+
+  useEffect(() => {
+    if (!confirmingDeletePostId) return;
+
+    window.setTimeout(() => {
+      deletePostModalRef.current?.focus();
+    }, 0);
+  }, [confirmingDeletePostId]);
+
+  useEffect(() => {
+    if (!editingPostId) return;
+
+    window.setTimeout(() => {
+      editPostModalRef.current?.focus();
+    }, 0);
+  }, [editingPostId]);
+
+  const handlePostTextChange = (value) => {
+    setNewPostText(value);
+    if (postError) setPostError('');
+    if (postSuccessMessage) setPostSuccessMessage('');
+  };
+
+  const {
+    communityDisplayName,
+    hasRequiredPersonalDetails,
+    hasCommunityAccessDetails,
+    hasCompletedCommunitySetup,
+    canUseCommunity,
+    allowAnonymousPosting,
+    localUserId,
+    visibleBirthdayUsers,
+    profileSuccessMessage,
+    handleBirthdayPreferenceSave,
+  } = useCommunityProfile({ personalDetails, onProfileSync: onParticipantProfileSync, t });
+  const handleCancelEditPost = () => {
+    setEditingPostId(null);
+    setEditPostText('');
+    setEditPostError('');
+  };
+  const handleCancelDeletePost = () => {
+    setConfirmingDeletePostId(null);
+  };
+  const {
+    communityStreakCount,
+    lastActivityDate,
+    isCommunityStreakAtRisk,
+    registerCommunityActivity,
+  } = useCommunityStreak({ localUserId });
+  const {
+    posts,
+    updatePostById,
+    visiblePosts,
+    isRefreshingFeed,
+    refreshFeedback,
+    editFeedbackByPostId,
+    isEditPostUnchanged,
+    refreshPulseKey,
+    relativeTimeNow,
+    refreshCommunityFeed,
+    handleCreatePost,
+    handleToggleLike,
+    handleEditPostRequest,
+    handleEditPostSubmit,
+    handleDeletePostRequest,
+    handleConfirmDeletePost,
+  } = useCommunityPosts({
+    allowAnonymousPosting,
+    communityDisplayName,
+    confirmingDeletePostId,
+    editPostText,
+    editingPostId,
+    localUserId,
+    newPostText,
+    postAnonymously,
+    postAttachment,
+    registerCommunityActivity,
+    setNewPostText,
+    setPostAnonymously,
+    setPostAttachment,
+    setPostError,
+    setPostSuccessMessage,
+    onCancelDeletePost: handleCancelDeletePost,
+    onCancelEditPost: handleCancelEditPost,
+    setConfirmingDeletePostId,
+    setEditPostError,
+    setEditPostText,
+    setEditingPostId,
+    t,
+  });
+  const {
+    commentInputs,
+    commentFeedbackByPostId,
+    expandedCommentPostIds,
+    openCommentPostIds,
+    pendingCommentDeletion,
+    handleCommentInputChange,
+    handleSubmitComment,
+    handleToggleCommentsExpanded,
+    handleOpenCommentComposer,
+    handleDeleteCommentRequest,
+    handleCancelDeleteComment,
+    handleConfirmDeleteComment,
+  } = useCommunityComments({
+    communityDisplayName,
+    localUserId,
+    posts,
+    registerCommunityActivity,
+    updatePostById,
+    t,
+  });
+  const {
+    reportFeedbackByPostId,
+    confirmingReportPostId,
+    selectedReportReason,
+    reportReasonError,
+    handleReportPostRequest,
+    handleCancelReportPost,
+    handleReportReasonChange,
+    handleReportSubmit,
+  } = useCommunityReports({
+    communityDisplayName,
+    localUserId,
+    posts,
+    updatePostById,
+    t,
+  });
+  const {
+    followedAuthors,
+    handleToggleFollowAuthor,
+  } = useCommunityFollows({
+    communityDisplayName,
+    localUserId,
+  });
+  useEffect(() => {
+    if (!confirmingReportPostId) return;
+
+    window.setTimeout(() => {
+      reportModalRef.current?.focus();
+    }, 0);
+  }, [confirmingReportPostId]);
+
+  useEffect(() => {
+    if (!pendingCommentDeletion) return;
+
+    window.setTimeout(() => {
+      deleteCommentModalRef.current?.focus();
+    }, 0);
+  }, [pendingCommentDeletion]);
+
+  const filteredPosts = filterPostsByTab(
+    visiblePosts,
+    activeFeedTab,
+    followedAuthors,
+    localUserId,
+    communityDisplayName || 'Current User',
+  );
+  // Birthdays shown in the card are limited to people you follow, plus your own
+  // (so you see your day celebrated even if you follow no one). The card hides
+  // the wish controls for your own entry.
+  const followedBirthdayUsers = visibleBirthdayUsers.filter((user) => (
+    user?.id && (user.id === localUserId || followedAuthors.includes(user.id))
+  ));
+  const sortedVisiblePosts = sortFeedPosts(filteredPosts);
+  const emptyFeedMessage = getEmptyFeedMessage(activeFeedTab, followedAuthors.length);
+
+  useEffect(() => {
+    if (!focusPostId) return undefined;
+
+    setActiveFeedTab('all');
+
+    const tryScrollToPost = () => {
+      const postElement = document.getElementById(`community-post-${focusPostId}`);
+      if (!postElement) return false;
+
+      postElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      postElement.classList.add('community-page-post--focused');
+      window.setTimeout(() => {
+        postElement.classList.remove('community-page-post--focused');
+      }, 2600);
+      onFocusPostHandled?.();
+      return true;
+    };
+
+    if (tryScrollToPost()) {
+      return undefined;
+    }
+
+    const retryTimer = window.setInterval(() => {
+      if (tryScrollToPost()) {
+        window.clearInterval(retryTimer);
+      }
+    }, 200);
+
+    const timeoutTimer = window.setTimeout(() => {
+      window.clearInterval(retryTimer);
+      onFocusPostHandled?.();
+    }, 8000);
+
+    return () => {
+      window.clearInterval(retryTimer);
+      window.clearTimeout(timeoutTimer);
+    };
+    // Depend on the post count (a stable signal that the feed grew) rather than
+    // the freshly-built sortedVisiblePosts array, which changes identity every
+    // render and would otherwise tear down and recreate these timers each time.
+    // The retry interval already handles the target not being mounted yet.
+  }, [focusPostId, sortedVisiblePosts.length, onFocusPostHandled]);
+
+  useEffect(() => {
+    if (!allowAnonymousPosting && postAnonymously) {
+      setPostAnonymously(false);
+    }
+  }, [allowAnonymousPosting, postAnonymously]);
+
+  const handleGoToSettings = () => {
+    if (onGoToSettings) {
+      onGoToSettings();
+      return;
+    }
+
+    window.location.assign('/profile');
+  };
+
+  const handleReportModalBackdropClick = (event) => {
+    if (event.target === event.currentTarget) {
+      handleCancelReportPost();
+    }
+  };
+
+  const handleReportModalKeyDown = (event) => {
+    if (event.key === 'Escape') {
+      handleCancelReportPost();
+    }
+  };
+
+  const handleDeleteCommentModalBackdropClick = (event) => {
+    if (event.target === event.currentTarget) {
+      handleCancelDeleteComment();
+    }
+  };
+
+  const handleDeleteCommentModalKeyDown = (event) => {
+    if (event.key === 'Escape') {
+      handleCancelDeleteComment();
+    }
+  };
+
+  const handleEditPostModalBackdropClick = (event) => {
+    if (event.target === event.currentTarget) {
+      handleCancelEditPost();
+    }
+  };
+
+  const handleEditPostModalKeyDown = (event) => {
+    if (event.key === 'Escape') {
+      handleCancelEditPost();
+    }
+  };
+
+  const handleEditPostTextChange = (value) => {
+    setEditPostText(value);
+    if (editPostError) setEditPostError('');
+  };
+
+  const handleDeletePostModalBackdropClick = (event) => {
+    if (event.target === event.currentTarget) {
+      handleCancelDeletePost();
+    }
+  };
+
+  const handleDeletePostModalKeyDown = (event) => {
+    if (event.key === 'Escape') {
+      handleCancelDeletePost();
+    }
+  };
+
+  const reportModal = confirmingReportPostId ? (
+    <ReportPostModal
+      onBackdropMouseDown={handleReportModalBackdropClick}
+      onCancel={handleCancelReportPost}
+      onKeyDown={handleReportModalKeyDown}
+      onReasonChange={handleReportReasonChange}
+      onSubmit={handleReportSubmit}
+      reasonError={reportReasonError}
+      reasons={REPORT_REASON_OPTIONS}
+      reportModalRef={reportModalRef}
+      selectedReason={selectedReportReason}
+    />
+  ) : null;
+
+  const editPostModal = editingPostId ? (
+    <EditPostModal
+      editModalRef={editPostModalRef}
+      error={editPostError}
+      feedback={editFeedbackByPostId[editingPostId]}
+      isSaveDisabled={isEditPostUnchanged}
+      onBackdropMouseDown={handleEditPostModalBackdropClick}
+      onCancel={handleCancelEditPost}
+      onChange={handleEditPostTextChange}
+      onKeyDown={handleEditPostModalKeyDown}
+      onSubmit={handleEditPostSubmit}
+      postText={editPostText}
+    />
+  ) : null;
+
+  const deletePostModal = confirmingDeletePostId ? (
+    <DeletePostModal
+      deleteModalRef={deletePostModalRef}
+      onBackdropMouseDown={handleDeletePostModalBackdropClick}
+      onCancel={handleCancelDeletePost}
+      onConfirm={handleConfirmDeletePost}
+      onKeyDown={handleDeletePostModalKeyDown}
+    />
+  ) : null;
+
+  const deleteCommentModal = pendingCommentDeletion ? (
+    <DeletePostModal
+      closeLabel={t('closeCommentDeleteConfirmation')}
+      deleteModalRef={deleteCommentModalRef}
+      description={t('deleteCommentConfirm')}
+      title={t('deleteComment')}
+      titleId="community-delete-comment-title"
+      onBackdropMouseDown={handleDeleteCommentModalBackdropClick}
+      onCancel={handleCancelDeleteComment}
+      onConfirm={handleConfirmDeleteComment}
+      onKeyDown={handleDeleteCommentModalKeyDown}
+    />
+  ) : null;
+
+  return (
+    <section className="community-page" aria-label={t('communityAria')}>
+      {showGuidelinesModal && <CommunityGuidelinesModal onContinue={handleGuidelinesContinue} />}
+      {reportModal && typeof document !== 'undefined' ? createPortal(reportModal, document.body) : reportModal}
+      {editPostModal && typeof document !== 'undefined' ? createPortal(editPostModal, document.body) : editPostModal}
+      {deletePostModal && typeof document !== 'undefined' ? createPortal(deletePostModal, document.body) : deletePostModal}
+      {deleteCommentModal && typeof document !== 'undefined' ? createPortal(deleteCommentModal, document.body) : deleteCommentModal}
+
+      <div className="community-page-shell">
+        <main className="community-main-feed" aria-label={t('communityFeedAria')}>
+          {isPersonalDetailsLoading && (
+            <section className="community-profile-setup" aria-label={t('loadingProfileAria')}>
+              <div className="community-profile-setup__heading">
+                <span className="community-profile-setup__icon" aria-hidden="true">
+                  <Diversity3OutlinedIcon />
+                </span>
+                <div>
+                  <span>{t('communityAccessEyebrow')}</span>
+                  <h2>{t('checkingDetails')}</h2>
+                  <p>{t('preparingProfile')}</p>
+                </div>
+              </div>
+            </section>
+          )}
+          {!isPersonalDetailsLoading && !hasCommunityAccessDetails && (
+            <CommunityAccessPanel onGoToSettings={handleGoToSettings} />
+          )}
+          {!isPersonalDetailsLoading && hasRequiredPersonalDetails && !hasCompletedCommunitySetup && (
+            <CommunityBirthdayPreferenceCard onSave={handleBirthdayPreferenceSave} />
+          )}
+          {profileSuccessMessage && canUseCommunity && createPortal(
+            <p className="community-preference-toast" role="status" aria-live="polite">
+              {profileSuccessMessage}
+            </p>,
+            document.body,
+          )}
+          {canUseCommunity && (
+            <>
+              <CreatePostCard
+                attachment={postAttachment}
+                allowAnonymousPosting={allowAnonymousPosting}
+                isAnonymous={postAnonymously}
+                error={postError}
+                onAnonymousChange={setPostAnonymously}
+                onAttachmentChange={setPostAttachment}
+                onPostTextChange={handlePostTextChange}
+                onSubmit={handleCreatePost}
+                postInputRef={postInputRef}
+                postText={newPostText}
+                successMessage={postSuccessMessage}
+              />
+
+              <section className="community-feed-controls" aria-label={t('communityFeedControlsAria')}>
+                <FeedTabs
+                  activeTab={activeFeedTab}
+                  onTabChange={setActiveFeedTab}
+                  tabs={FEED_TABS}
+                />
+
+                <button
+                  aria-label={t('refreshFeedAria')}
+                  aria-busy={isRefreshingFeed}
+                  className={`community-feed-refresh${isRefreshingFeed ? ' is-refreshing' : ''}`}
+                  disabled={isRefreshingFeed}
+                  title={t('refreshFeedAria')}
+                  type="button"
+                  onClick={() => refreshCommunityFeed({ showFeedback: true })}
+                >
+                  <RefreshOutlinedIcon className="community-feed-refresh__icon" fontSize="small" />
+                  <span>{isRefreshingFeed ? t('refreshing') : t('refresh')}</span>
+                </button>
+              </section>
+              {refreshFeedback && (
+                <p className="community-feed-refresh__feedback" aria-live="polite">
+                  {refreshFeedback}
+                </p>
+              )}
+
+              {sortedVisiblePosts.length === 0 ? (
+                <section
+                  aria-labelledby={`community-feed-tab-${activeFeedTab}`}
+                  className={`community-empty-state${refreshPulseKey > 0 ? ' community-feed-panel--refreshed' : ''}`}
+                  id="community-feed-panel"
+                  key={`empty-${activeFeedTab}-${refreshPulseKey}`}
+                  role="tabpanel"
+                >
+                  <h2>{t(emptyFeedMessage.titleKey)}</h2>
+                  <p>{t(emptyFeedMessage.descriptionKey)}</p>
+                </section>
+              ) : (
+                <section
+                  aria-labelledby={`community-feed-tab-${activeFeedTab}`}
+                  className={`community-post-list${refreshPulseKey > 0 ? ' community-feed-panel--refreshed' : ''}`}
+                  id="community-feed-panel"
+                  key={`posts-${activeFeedTab}-${refreshPulseKey}`}
+                  role="tabpanel"
+                >
+                  {sortedVisiblePosts.map((post) => (
+                    <CommunityPostCard
+                      commentText={commentInputs[post.id] ?? ''}
+                      commentFeedback={commentFeedbackByPostId[post.id]}
+                      isCommentsExpanded={Boolean(expandedCommentPostIds[post.id])}
+                      isCommentComposerOpen={Boolean(openCommentPostIds[post.id])}
+                      isFollowingAuthor={isAuthorFollowed(post, followedAuthors)}
+                      isOwnPost={isPostOwnedByCurrentUser(post, localUserId, communityDisplayName || 'Current User')}
+                      key={post.id}
+                      onCommentTextChange={(value) => handleCommentInputChange(post.id, value)}
+                      onDeletePost={() => handleDeletePostRequest(post.id)}
+                      onEditPost={() => handleEditPostRequest(post.id)}
+                      onFollowAuthor={() => handleToggleFollowAuthor(post)}
+                      onOpenCommentComposer={() => handleOpenCommentComposer(post.id)}
+                      onReportPost={() => handleReportPostRequest(post.id)}
+                      onDeleteComment={(commentId) => handleDeleteCommentRequest(post.id, commentId)}
+                      onSubmitComment={() => handleSubmitComment(post.id)}
+                      onToggleCommentsExpanded={() => handleToggleCommentsExpanded(post.id)}
+                      onToggleLike={handleToggleLike}
+                      post={post}
+                      postEditFeedback={editFeedbackByPostId[post.id]}
+                      relativeTimeNow={relativeTimeNow}
+                      localUserId={localUserId}
+                      localUserName={communityDisplayName || 'Current User'}
+                      isReportedByCurrentUser={isPostReportedByUser(post, localUserId)}
+                      reportFeedback={reportFeedbackByPostId[post.id]}
+                    />
+                  ))}
+                </section>
+              )}
+            </>
+          )}
+        </main>
+
+        <aside className="community-right-sidebar" aria-label={t('communitySidebarAria')}>
+          <CommunityStreakCard
+            isAtRisk={isCommunityStreakAtRisk}
+            lastActivityDate={lastActivityDate}
+            streakCount={communityStreakCount}
+          />
+          <BirthdayCard
+            birthdayUsers={followedBirthdayUsers}
+            localUserId={localUserId}
+            localUserName={communityDisplayName || 'Current User'}
+          />
+          <div className="community-guidelines-shortcut">
+            <button type="button" onClick={handleReadFullGuidelines}>
+              {t('communityGuidelines')}
+            </button>
+          </div>
+        </aside>
+      </div>
+      {showFullGuidelinesModal && (
+        <CommunityGuidelinesModal
+          mode="read"
+          onClose={handleCloseFullGuidelines}
+        />
+      )}
+    </section>
+  );
+}

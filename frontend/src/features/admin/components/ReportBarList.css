@@ -1,0 +1,67 @@
+.admin-report-bars-empty {
+  margin: 0;
+  color: rgba(36, 16, 79, 0.5);
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.admin-report-bars {
+  --report-bar-bg: #f5f1ff;
+  --report-bar-fill: #8b6be8;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.admin-report-bars--pink {
+  --report-bar-bg: #fdf2f7;
+  --report-bar-fill: #d85b9a;
+}
+
+.admin-report-bars--purple {
+  --report-bar-bg: #f5f1ff;
+  --report-bar-fill: #8b6be8;
+}
+
+.admin-report-bar-row {
+  display: grid;
+  grid-template-columns: minmax(110px, 180px) 1fr 2.75rem;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.admin-report-bar-label {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.admin-report-bar-track {
+  height: 0.875rem;
+  border-radius: 999px;
+  overflow: hidden;
+  background: var(--report-bar-bg);
+}
+
+.admin-report-bar-fill {
+  display: block;
+  height: 100%;
+  border-radius: 999px;
+  background: var(--report-bar-fill);
+  min-width: 2px;
+}
+
+.admin-report-bar-value {
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-align: end;
+  color: rgba(36, 16, 79, 0.75);
+}
+
+@media (max-width: 600px) {
+  .admin-report-bar-row {
+    grid-template-columns: minmax(80px, 120px) 1fr 2.25rem;
+  }
+}

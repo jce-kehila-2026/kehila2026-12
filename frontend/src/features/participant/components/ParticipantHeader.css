@@ -1,0 +1,192 @@
+.pd-home__header {
+  --pd-purple: #5b1e8c;
+  --pd-purple-deep: #4b136b;
+  --pd-pink: #ec168c;
+  --pd-muted: rgba(75, 19, 107, 0.62);
+  --section-heading-pink: #ec3c97;
+  --section-heading-purple: #5b1e8c;
+
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0 0.25rem 0.5rem;
+  margin: 0 0 1.25rem;
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(236, 60, 151, 0.12);
+  box-shadow: none;
+  border-radius: 0;
+  flex-shrink: 0;
+  overflow: visible;
+}
+
+.pd-home__header-copy {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+  max-width: 100%;
+  overflow: visible;
+}
+
+.pd-home__header-copy h1 {
+  margin: 0;
+  color: var(--pd-purple-deep);
+  font-family: inherit;
+  font-size: clamp(1.95rem, 2.5vw, 2.5rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.28;
+  white-space: nowrap;
+  overflow: visible;
+  min-height: 0;
+  max-height: none;
+}
+
+.pd-home__header-copy .public-section-heading__divider--title {
+  width: min(100%, 23.75rem);
+  gap: 1rem;
+  margin: 0.5rem 0 0;
+  justify-content: flex-start;
+}
+
+.pd-home__header-copy .public-section-heading__divider-line {
+  flex: 1;
+  min-width: 4.5rem;
+}
+
+.pd-home__header-copy .public-section-heading__divider-heart {
+  font-size: 0.85rem;
+}
+
+.pd-home__header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  flex-shrink: 0;
+}
+
+.pd-header-icon-btn,
+.pd-home__header-actions .participant-notif-wrap > button {
+  position: relative;
+  width: 2.25rem;
+  height: 2.25rem;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(236, 22, 140, 0.14);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.72);
+  color: var(--pd-purple);
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(91, 30, 140, 0.06);
+  transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease;
+}
+
+.pd-header-icon-btn:hover,
+.pd-home__header-actions .participant-notif-wrap > button:hover {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 8px 18px rgba(91, 30, 140, 0.1);
+}
+
+.pd-home__header-actions .participant-notif-wrap > button.is-active {
+  background: rgba(236, 22, 140, 0.08);
+  border-color: rgba(236, 22, 140, 0.22);
+  color: #ec168c;
+}
+
+.pd-header-icon-btn__badge,
+.pd-home__header-actions .participant-notif-wrap > button span {
+  position: absolute;
+  top: 0.1875rem;
+  right: 0.1875rem;
+  min-width: 0.9375rem;
+  height: 0.9375rem;
+  display: grid;
+  place-items: center;
+  padding: 0 0.25rem;
+  border: 2px solid rgba(255, 255, 255, 0.96);
+  border-radius: 999px;
+  background: var(--pd-pink);
+  color: #fff;
+  font-size: 0.56rem;
+  font-weight: 800;
+  line-height: 1;
+  box-shadow: 0 2px 7px rgba(236, 22, 140, 0.28);
+}
+
+.pd-home__header-actions .participant-notif-wrap {
+  position: relative;
+}
+
+.pd-header-lang__trigger {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 12px;
+}
+
+.pd-home__header-divider {
+  width: 0.0625rem;
+  height: 1.75rem;
+  background: rgba(138, 45, 168, 0.22);
+  flex-shrink: 0;
+}
+
+.pd-home__header-logo {
+  width: 9.375rem;
+  height: auto;
+  max-height: 3.25rem;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+@media (max-width: 720px) {
+  .pd-home__header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .pd-home__header-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+.participant-home--dark .pd-home__header {
+  border-bottom-color: rgba(236, 72, 153, 0.22);
+}
+
+.participant-home--dark .pd-home__header-copy h1 {
+  color: #f8fafc;
+}
+
+.participant-home--dark .pd-header-icon-btn,
+.participant-home--dark .pd-home__header-actions .participant-notif-wrap > button {
+  background: rgba(26, 16, 40, 0.72);
+  border-color: rgba(236, 72, 153, 0.28);
+  color: #fbcfe8;
+}
+
+.participant-home--dark .pd-home__header-actions .public-lang-switcher__trigger,
+.participant-home--dark .pd-home__header-actions .pd-header-lang__trigger {
+  background: rgba(26, 16, 40, 0.72);
+  border-color: rgba(236, 72, 153, 0.28);
+  color: #fbcfe8;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.22);
+}
+
+.participant-home--dark .pd-home__header-actions .public-lang-switcher__trigger:hover,
+.participant-home--dark .pd-home__header-actions .public-lang-switcher__trigger:focus-visible,
+.participant-home--dark .pd-home__header-actions .public-lang-switcher--open .public-lang-switcher__trigger,
+.participant-home--dark .pd-header-icon-btn:hover,
+.participant-home--dark .pd-header-icon-btn:focus-visible,
+.participant-home--dark .pd-home__header-actions .participant-notif-wrap > button:hover,
+.participant-home--dark .pd-home__header-actions .participant-notif-wrap > button:focus-visible,
+.participant-home--dark .pd-home__header-actions .participant-notif-wrap > button.is-active {
+  background: rgba(236, 72, 153, 0.12);
+  border-color: rgba(244, 114, 182, 0.38);
+  color: #f9a8d4;
+  box-shadow: 0 16px 34px rgba(236, 72, 153, 0.16);
+}

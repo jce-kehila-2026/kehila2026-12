@@ -1,0 +1,268 @@
+import { useEffect, useState } from 'react';
+import {
+  getCommunityProfile,
+  getTodayCommunityBirthdays,
+  updateCommunityProfile,
+} from '../services/communityService';
+import { getCurrentCommunityUserId } from '../utils/communityModerationUtils';
+import {
+  getCommunityBirthday,
+  getExistingDisplayName,
+  hasRequiredCommunityPersonalDetails,
+  normalizeCommunityBirthday,
+} from '../utils/communityProfileUtils';
+import { createParticipantT } from '../../i18n/participantUiTranslations';
+
+const isRealUserId = (uid) => Boolean(uid) && uid !== 'current-user';
+
+const defaultProfile = {
+  id: 'current-user',
+  displayName: '',
+  avatarUrl: '',
+  birthday: '',
+  showBirthday: false,
+  allowAnonymousPosting: true,
+  communityJoinedAt: new Date(),
+  profileCompleted: false,
+  role: 'participant',
+  status: 'active',
+};
+
+const defaultPreferences = {
+  birthdayVisibilityCompleted: false,
+  showBirthday: false,
+};
+
+export default function useCommunityProfile({
+  personalDetails = {},
+  onProfileSync,
+  t = createParticipantT('en'),
+} = {}) {
+  const [communityUserProfile, setCommunityUserProfile] = useState(defaultProfile);
+  const [communityPreferences, setCommunityPreferences] = useState(defaultPreferences);
+  const [profileSuccessMessage, setProfileSuccessMessage] = useState('');
+  const [communityBirthdayUsers, setCommunityBirthdayUsers] = useState([]);
+
+  const uid = personalDetails?.uid ?? personalDetails?.userId ?? personalDetails?.id ?? null;
+
+  // Load today's community birthdays from Firestore (opted-in members in the
+  // public_profiles collection, which holds only community-visible display data).
+  useEffect(() => {
+    let cancelled = false;
+
+    getTodayCommunityBirthdays()
+      .then((users) => {
+        if (!cancelled) setCommunityBirthdayUsers(Array.isArray(users) ? users : []);
+      })
+      .catch(() => {});
+
+    return () => { cancelled = true; };
+  }, []);
+
+  useEffect(() => {
+    if (!profileSuccessMessage) return undefined;
+
+    const timerId = window.setTimeout(() => {
+      setProfileSuccessMessage('');
+    }, 3500);
+
+    return () => window.clearTimeout(timerId);
+  }, [profileSuccessMessage]);
+
+  const hasBirthdayPreferenceFromDetails = Object.prototype.hasOwnProperty.call(
+    personalDetails,
+    'showBirthdayInCommunity'
+  );
+  const hasCompletedBirthdayPreferenceFromDetails = Boolean(
+    personalDetails.communityBirthdayPreferenceCompleted
+    || personalDetails.communityProfileCompleted
+    || hasBirthdayPreferenceFromDetails
+  );
+
+  useEffect(() => {
+    if (!hasCompletedBirthdayPreferenceFromDetails) return;
+
+    setCommunityPreferences({
+      birthdayVisibilityCompleted: true,
+      showBirthday: Boolean(personalDetails.showBirthdayInCommunity),
+    });
+  }, [hasCompletedBirthdayPreferenceFromDetails, personalDetails.showBirthdayInCommunity]);
+
+  useEffect(() => {
+    if (!isRealUserId(uid)) return;
+    let cancelled = false;
+
+    getCommunityProfile(uid).then((profile) => {
+      if (cancelled || !profile) return;
+
+      if (profile.communityProfileCompleted && profile.communityDisplayName) {
+        setCommunityUserProfile({
+          id: uid,
+          displayName: profile.communityDisplayName,
+          avatarUrl: '',
+          birthday: profile.communityBirthday ?? '',
+          showBirthday: Boolean(profile.showBirthdayInCommunity),
+          allowAnonymousPosting: profile.allowAnonymousPosting !== false,
+          communityJoinedAt: profile.communityJoinedAt ?? new Date(),
+          profileCompleted: true,
+          role: 'participant',
+          status: 'active',
+        });
+      }
+
+      if (profile.communityBirthdayPreferenceCompleted) {
+        setCommunityPreferences({
+          birthdayVisibilityCompleted: true,
+          showBirthday: Boolean(profile.showBirthdayInCommunity),
+        });
+      }
+    }).catch(() => {});
+
+    return () => { cancelled = true; };
+  }, [uid]);
+
+  const displayName = getExistingDisplayName(personalDetails);
+  const birthDate = getCommunityBirthday(personalDetails);
+
+  // Keep the community birthday in sync with the member's real birth date.
+  // `communityBirthday` was historically snapshotted when a member first
+  // completed the birthday-preference setup, so editing your birthday in
+  // Settings later left both communityBirthday and the public_profiles mirror
+  // (which the birthday widget reads for everyone) pointing at the old date —
+  // your birthday would then silently never surface to anyone. Whenever the
+  // fresh birth date drifts from the stored one, re-save it (updateCommunityProfile
+  // re-mirrors the month/day to public_profiles).
+  useEffect(() => {
+    if (!isRealUserId(uid)) return;
+    if (!birthDate) return;
+    if (!communityUserProfile.profileCompleted) return;
+    if (normalizeCommunityBirthday(communityUserProfile.birthday) === birthDate) return;
+
+    setCommunityUserProfile((currentProfile) => ({ ...currentProfile, birthday: birthDate }));
+    updateCommunityProfile(uid, { communityBirthday: birthDate }).catch(() => {});
+  }, [uid, birthDate, communityUserProfile.profileCompleted, communityUserProfile.birthday]);
+
+  const hasCompletedCommunityProfile = communityUserProfile.profileCompleted === true;
+  const communityDisplayName = hasCompletedCommunityProfile
+    ? communityUserProfile.displayName
+    : displayName;
+  const communityBirthday = hasCompletedCommunityProfile
+    ? communityUserProfile.birthday
+    : birthDate;
+  const hasRequiredPersonalDetails = hasRequiredCommunityPersonalDetails(personalDetails);
+  const hasCommunityAccessDetails = hasRequiredPersonalDetails || hasCompletedCommunityProfile;
+  const hasCompletedCommunitySetup = communityPreferences.birthdayVisibilityCompleted || hasCompletedCommunityProfile;
+  const canUseCommunity = hasCommunityAccessDetails && hasCompletedCommunitySetup;
+  const showBirthdayInCommunity = communityPreferences.birthdayVisibilityCompleted
+    ? communityPreferences.showBirthday
+    : communityUserProfile.showBirthday;
+  const allowAnonymousPosting = communityUserProfile.allowAnonymousPosting !== false;
+  const localUserId = getCurrentCommunityUserId(personalDetails, communityUserProfile);
+  // Merge the current user's own entry (so a freshly-saved preference shows
+  // immediately, before the next fetch) with the Firestore-backed list, keeping
+  // the first occurrence of each id so the user isn't listed twice.
+  const currentUserBirthdayEntry = showBirthdayInCommunity && communityBirthday
+    ? [{
+      id: localUserId,
+      name: communityDisplayName || 'Current User',
+      birthday: communityBirthday,
+    }]
+    : [];
+  const seenBirthdayIds = new Set();
+  const visibleBirthdayUsers = [...currentUserBirthdayEntry, ...communityBirthdayUsers]
+    .filter((user) => {
+      const key = user.id ?? user.name;
+      if (seenBirthdayIds.has(key)) return false;
+      seenBirthdayIds.add(key);
+      return true;
+    });
+
+  const handleBirthdayPreferenceSave = (showBirthday) => {
+    const resolvedDisplayName = displayName || communityUserProfile.displayName;
+    const resolvedBirthday = birthDate || communityUserProfile.birthday || '';
+    const resolvedJoinedAt = communityUserProfile.communityJoinedAt || new Date();
+    const resolvedAllowAnon = communityUserProfile.allowAnonymousPosting !== false;
+
+    const nextProfile = {
+      id: localUserId,
+      displayName: resolvedDisplayName,
+      avatarUrl: communityUserProfile.avatarUrl ?? '',
+      birthday: resolvedBirthday,
+      showBirthday,
+      allowAnonymousPosting: resolvedAllowAnon,
+      profileCompleted: true,
+      communityJoinedAt: resolvedJoinedAt,
+      role: communityUserProfile.role ?? 'participant',
+      status: communityUserProfile.status ?? 'active',
+    };
+
+    setCommunityPreferences({ birthdayVisibilityCompleted: true, showBirthday });
+    setCommunityUserProfile(nextProfile);
+    setProfileSuccessMessage(t('communityPreferenceSaved'));
+    onProfileSync?.({
+      communityDisplayName: resolvedDisplayName,
+      communityBirthday: resolvedBirthday,
+      showBirthdayInCommunity: showBirthday,
+      communityBirthdayPreferenceCompleted: true,
+      allowAnonymousPosting: resolvedAllowAnon,
+      communityProfileCompleted: true,
+      communityJoinedAt: resolvedJoinedAt,
+    });
+
+    if (isRealUserId(uid)) {
+      updateCommunityProfile(uid, {
+        communityDisplayName: resolvedDisplayName,
+        communityBirthday: resolvedBirthday,
+        showBirthdayInCommunity: showBirthday,
+        communityBirthdayPreferenceCompleted: true,
+        allowAnonymousPosting: resolvedAllowAnon,
+        communityProfileCompleted: true,
+        communityJoinedAt: resolvedJoinedAt,
+      }).catch(() => {});
+    }
+  };
+
+  const handleBirthdayVisibilityChange = (showBirthday) => {
+    setCommunityPreferences({ birthdayVisibilityCompleted: true, showBirthday });
+    setCommunityUserProfile((currentProfile) => {
+      if (!currentProfile.profileCompleted) return currentProfile;
+      return { ...currentProfile, showBirthday };
+    });
+    setProfileSuccessMessage(t('birthdayPrivacyUpdated'));
+    onProfileSync?.({
+      showBirthdayInCommunity: showBirthday,
+      communityBirthdayPreferenceCompleted: true,
+    });
+
+    if (isRealUserId(uid)) {
+      updateCommunityProfile(uid, {
+        showBirthdayInCommunity: showBirthday,
+        communityBirthdayPreferenceCompleted: true,
+      }).catch(() => {});
+    }
+  };
+
+  return {
+    communityUserProfile,
+    setCommunityUserProfile,
+    communityPreferences,
+    setCommunityPreferences,
+    profileSuccessMessage,
+    setProfileSuccessMessage,
+    displayName,
+    birthDate,
+    hasCompletedCommunityProfile,
+    communityDisplayName,
+    communityBirthday,
+    hasRequiredPersonalDetails,
+    hasCommunityAccessDetails,
+    hasCompletedCommunitySetup,
+    canUseCommunity,
+    showBirthdayInCommunity,
+    allowAnonymousPosting,
+    localUserId,
+    visibleBirthdayUsers,
+    handleBirthdayPreferenceSave,
+    handleBirthdayVisibilityChange,
+  };
+}
