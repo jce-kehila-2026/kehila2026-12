@@ -9,7 +9,6 @@ import PublicSectionHeading from './PublicSectionHeading';
 import { usePublicLocale } from '../context/PublicLocaleContext';
 import { localizeEvents } from '../i18n/publicHomeContentLocalization';
 import useHorizontalCardCarousel from '../hooks/useHorizontalCardCarousel';
-import '../styles/public-events-section.css';
 
 function isUpcomingEvent(event) {
   if (event.status === 'past' || event.status === 'completed') {

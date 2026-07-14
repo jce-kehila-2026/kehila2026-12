@@ -383,7 +383,6 @@
 
 .public-homepage--main main > :is(
   #support,
-  #events,
   #team,
   #medical-partners
 ) {
@@ -654,38 +653,8 @@
     gap: clamp(16px, 2vh, 24px);
   }
 
-  /* Events cards are taller than a single viewport on many screens — do not
-     lock #events to 100svh / overflow:hidden or the white body gets clipped. */
-  .public-homepage--main main > #events,
-  .public-homepage--main .public-section.public-section--events {
-    height: auto;
-    max-height: none;
-    min-height: calc(100svh - var(--public-current-navbar-height, 76px));
-    overflow: visible;
-    padding-block: clamp(36px, 4.5vh, 50px);
-  }
-
-  .public-homepage--main .public-section--events .public-events__inner {
-    gap: clamp(14px, 1.8vh, 20px);
-    height: auto;
-    min-height: 0;
-    overflow: visible;
-  }
-
-  .public-homepage--main .public-section--events .public-events__carousel {
-    height: auto;
-    max-height: none;
-    overflow: visible;
-  }
-
-  .public-homepage--main .public-section--events .public-events-grid {
-    height: auto;
-    max-height: none;
-  }
-
-  .public-homepage--main .public-section--events .public-events__heading-wrap {
-    margin-block-end: 0;
-  }
+  /* Events viewport composition lives in public-events-section.css so it cannot
+     be overridden by a later-loaded duplicate of that stylesheet in production. */
 
   .public-homepage--main .public-section.public-section--team-section {
     min-height: calc(100svh - 70px);

@@ -478,10 +478,6 @@
   transform: translateY(-1px) scale(1.01);
 }
 
-.public-section--events {
-  padding-block-end: clamp(48px, 6vw, 80px);
-}
-
 /* Side-by-side layout: content column is too narrow for 3 cards */
 @container donation-cta-content (max-width: 720px) {
   .public-support-cta__features {
