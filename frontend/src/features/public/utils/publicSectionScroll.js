@@ -143,6 +143,11 @@ export function cancelPendingPublicSectionScroll() {
   activeScrollRequest = null;
 }
 
+/** Keep --public-current-navbar-height in sync for section min-height / scroll-margin. */
+export function syncPublicNavbarHeight() {
+  return getNavbarHeight();
+}
+
 export function scrollTargetBelowPublicNavbar(target, behavior = 'smooth') {
   if (!target) return false;
 

@@ -12,7 +12,7 @@ import {
   getPublicNavbarStoriesMenu,
   getPublicNavbarTeamMenu,
 } from '../i18n/publicHomeTranslations';
-import { scrollToPublicSectionAfterMenuClose } from '../utils/publicSectionScroll';
+import { scrollToPublicSectionAfterMenuClose, syncPublicNavbarHeight } from '../utils/publicSectionScroll';
 import PublicLanguageSwitcher from './PublicLanguageSwitcher';
 import PreviewBanner from './PreviewBanner';
 
@@ -67,13 +67,22 @@ export default function PublicNavbar({
   useEffect(() => {
     function handleScroll() {
       setIsScrolled(window.scrollY > 18);
+      syncPublicNavbarHeight();
     }
 
     handleScroll();
     window.addEventListener('scroll', handleScroll, { passive: true });
+    window.addEventListener('resize', syncPublicNavbarHeight, { passive: true });
 
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', syncPublicNavbarHeight);
+    };
   }, []);
+
+  useEffect(() => {
+    syncPublicNavbarHeight();
+  }, [isScrolled, isMenuOpen]);
 
   useEffect(() => {
     const contactSection = document.getElementById('contact');

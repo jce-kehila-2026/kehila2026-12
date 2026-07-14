@@ -422,6 +422,46 @@
   outline-offset: 3px;
 }
 
+/* Desktop composition — must live in THIS file (after base rules) so production
+   CSS chunk order cannot re-apply the large base padding/gap after PublicHomePage
+   overrides and push cards out of the viewport under the sticky navbar. */
+@media (min-width: 1121px) {
+  .public-homepage.public-homepage--main main > #events.public-section--events,
+  .public-homepage.public-homepage--main .public-section.public-section--events {
+    height: auto;
+    max-height: none;
+    min-height: calc(100svh - var(--public-current-navbar-height, var(--public-navbar-offset, 76px)));
+    overflow: visible;
+    margin: 0;
+    padding-block: clamp(36px, 4.5vh, 50px);
+    transform: none;
+    scroll-margin-top: var(--public-current-navbar-height, var(--public-navbar-offset, 76px));
+  }
+
+  .public-homepage.public-homepage--main .public-section--events .public-events__inner {
+    gap: clamp(14px, 1.8vh, 20px);
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+  }
+
+  .public-homepage.public-homepage--main .public-section--events .public-events__heading-wrap {
+    margin-block-end: 0;
+  }
+
+  .public-homepage.public-homepage--main .public-section--events .public-events__carousel,
+  .public-homepage.public-homepage--main .public-section--events .public-events-grid {
+    height: auto;
+    max-height: none;
+    overflow: visible;
+  }
+
+  .public-homepage.public-homepage--main .public-section--events .public-events-grid {
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+}
+
 @media (max-width: 1180px) {
   .public-homepage .public-section--events .public-event-card {
     flex-basis: var(--public-home-card-width);
