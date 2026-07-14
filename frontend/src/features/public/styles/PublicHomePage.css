@@ -382,7 +382,6 @@
 }
 
 .public-homepage--main main > :is(
-  #support,
   #team,
   #medical-partners
 ) {
@@ -635,7 +634,6 @@
   }
 
   .public-homepage--main main > :is(
-    #support,
     #team,
     #medical-partners
   ) {
@@ -645,16 +643,8 @@
     overflow: hidden;
   }
 
-  .public-homepage--main .public-section.public-section--support {
-    padding-block: clamp(36px, 4.5vh, 52px);
-  }
-
-  .public-homepage--main .public-section--support .public-support__inner {
-    gap: clamp(16px, 2vh, 24px);
-  }
-
-  /* Events viewport composition lives in public-events-section.css so it cannot
-     be overridden by a later-loaded duplicate of that stylesheet in production. */
+  /* Support (#support / learn-together) and Events composition live in their
+     section CSS files so production chunk order cannot undo these layouts. */
 
   .public-homepage--main .public-section.public-section--team-section {
     min-height: calc(100svh - 70px);

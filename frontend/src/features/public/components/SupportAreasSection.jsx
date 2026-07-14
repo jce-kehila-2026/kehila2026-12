@@ -15,7 +15,6 @@ import SupportAreaCardImage from './SupportAreaCardImage';
 import EmptyState from './EmptyState';
 import ErrorState from './ErrorState';
 import LoadingState from './LoadingState';
-import '../styles/public-support-section.css';
 
 const SupportAreaModal = lazy(() => import('./SupportAreaModal'));
 
